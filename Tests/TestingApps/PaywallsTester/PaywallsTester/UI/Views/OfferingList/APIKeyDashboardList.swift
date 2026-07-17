@@ -18,13 +18,41 @@ import UIKit
 
 struct APIKeyDashboardList: View {
 
-    fileprivate struct Template: Hashable {
-        var name: String?
+    enum PaywallSection: Hashable, Comparable {
+        case legacy(templateName: String)
+        case components
+        case noPaywall
+
+        init(hasPaywall: Bool, legacyTemplateName: String?) {
+            guard hasPaywall else {
+                self = .noPaywall
+                return
+            }
+
+            if let legacyTemplateName {
+                self = .legacy(templateName: legacyTemplateName)
+            } else {
+                self = .components
+            }
+        }
+
+        init(offering: Offering) {
+            self.init(
+                hasPaywall: offering.hasPaywall,
+                legacyTemplateName: offering.paywall?.templateName
+            )
+        }
+
+        static func < (lhs: Self, rhs: Self) -> Bool {
+            if lhs == .noPaywall { return false }
+            if rhs == .noPaywall { return true }
+            return lhs.description < rhs.description
+        }
     }
 
     fileprivate struct Data: Hashable {
-        var sections: [Template]
-        var offeringsBySection: [Template: [Offering]]
+        var sections: [PaywallSection]
+        var offeringsBySection: [PaywallSection: [Offering]]
     }
 
     fileprivate struct PresentedPaywall: Hashable {
@@ -151,28 +179,18 @@ struct APIKeyDashboardList: View {
 
             let offeringsBySection = Dictionary(
                 grouping: offerings,
-                by: { Template(name: templateGroupName(offering: $0)) }
+                by: PaywallSection.init(offering:)
             )
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted {
-                        switch ($0.name, $1.name) {
-                        case (nil, _): return false
-                        case (_, nil): return true
-                        default: return $0.description < $1.description
-                        }
-                    },
+                    sections: Array(offeringsBySection.keys).sorted(),
                     offeringsBySection: offeringsBySection
                 )
             )
         } catch let error as NSError {
             self.offerings = .failure(error)
         }
-    }
-
-    private func templateGroupName(offering: Offering) -> String? {
-        offering.paywall?.templateName ?? offering.paywallComponents?.data.templateName
     }
 
     @ViewBuilder
@@ -193,8 +211,8 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
-        let offerings = data.offeringsBySection[template] ?? []
+    private func filteredOfferings(for section: PaywallSection, in data: Data) -> [Offering] {
+        let offerings = data.offeringsBySection[section] ?? []
         guard !searchText.isEmpty else { return offerings }
         return offerings.filter {
             $0.id.localizedCaseInsensitiveContains(searchText) ||
@@ -206,8 +224,8 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
-            ForEach(data.sections, id: \.self) { template in
-                let offerings = filteredOfferings(for: template, in: data)
+            ForEach(data.sections, id: \.self) { section in
+                let offerings = filteredOfferings(for: section, in: data)
                 if !offerings.isEmpty {
                     Section {
                         ForEach(offerings, id: \.id) { offering in
@@ -259,7 +277,7 @@ struct APIKeyDashboardList: View {
                             }
                         }
                     } header: {
-                        Text(verbatim: template.description)
+                        Text(verbatim: section.description)
                     }
                 }
             }
@@ -273,7 +291,7 @@ struct APIKeyDashboardList: View {
                 .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
-                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                    if let errorInfo = paywall.offering.internalPaywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
@@ -287,7 +305,7 @@ struct APIKeyDashboardList: View {
                 .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
-                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                    if let errorInfo = paywall.offering.internalPaywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
@@ -430,7 +448,7 @@ struct APIKeyDashboardList: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
+                    if let errorInfo = self.offering.internalPaywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)
                     }
@@ -450,24 +468,23 @@ struct APIKeyDashboardList: View {
 
 }
 
-extension APIKeyDashboardList.Template: CustomStringConvertible {
+extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
 
     var description: String {
-        if let name = self.name {
-            if name == "components" {
-                return "V2"
+        switch self {
+        case let .legacy(templateName):
+            #if DEBUG
+            if let template = PaywallTemplate(rawValue: templateName) {
+                return template.name
             } else {
-                #if DEBUG
-                if let template = PaywallTemplate(rawValue: name) {
-                    return template.name
-                } else {
-                    return "Unrecognized template"
-                }
-                #else
-                return "Template \(name)"
-                #endif
+                return "Unrecognized template"
             }
-        } else {
+            #else
+            return "Template \(templateName)"
+            #endif
+        case .components:
+            return "V2"
+        case .noPaywall:
             return "No paywall"
         }
     }
