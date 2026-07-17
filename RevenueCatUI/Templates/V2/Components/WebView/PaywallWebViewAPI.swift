@@ -1,44 +1,14 @@
 import Foundation
-import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
-
-/// A validated message sent from a Paywalls V2 `web_view` component to your app.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallWebViewMessage: Sendable, Equatable {
-
-    /// The identifier of the `web_view` component that produced this message.
-    let componentID: String
-
-    /// The message type, e.g. `"rc:step-complete"`.
-    let type: String
-
-    /// The responses collected by the web flow. Only populated for `"rc:step-complete"` messages.
-    let responses: [String: PaywallWebViewValue]?
-
-    /// The error reported by the web content. Only populated for `"rc:error"` messages.
-    let error: String?
-
-    init(
-        componentID: String,
-        type: String,
-        responses: [String: PaywallWebViewValue]? = nil,
-        error: String? = nil
-    ) {
-        self.componentID = componentID
-        self.type = type
-        self.responses = responses
-        self.error = error
-    }
-
-}
 
 /// A JSON-compatible value exchanged between a Paywalls V2 `web_view` component and your app.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct PaywallWebViewValue: Sendable, Equatable, Hashable, Codable {
 
-    private indirect enum Storage: Sendable, Equatable, Hashable {
+    private enum Storage: Sendable, Equatable, Hashable {
         case string(String)
+        // The web peer uses JavaScript `Number` values, so there is no integer precision to preserve.
         case number(Double)
         case bool(Bool)
         case array([PaywallWebViewValue])
@@ -135,68 +105,6 @@ struct PaywallWebViewValue: Sendable, Equatable, Hashable, Codable {
         case .null:
             try container.encodeNil()
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-struct PaywallWebViewController {
-
-    init() {}
-
-    func postVariables(componentID: String, variables: [String: PaywallWebViewValue]) {
-        // Session wiring lands in a later PR.
-    }
-
-    func postMessage(componentID: String, type: String, variables: [String: PaywallWebViewValue]) {
-        // Session wiring lands in a later PR.
-    }
-
-}
-
-/// A wrapper for the Paywalls V2 `web_view` message handler.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallWebViewMessageAction {
-
-    private let action: @MainActor (PaywallWebViewMessage, PaywallWebViewController) -> Void
-
-    init(
-        _ action: @escaping @MainActor (PaywallWebViewMessage, PaywallWebViewController) -> Void
-    ) {
-        self.action = action
-    }
-
-    @MainActor
-    func callAsFunction(_ message: PaywallWebViewMessage, _ controller: PaywallWebViewController) {
-        self.action(message, controller)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct PaywallWebViewMessageActionKey: EnvironmentKey {
-    static let defaultValue: PaywallWebViewMessageAction? = nil
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension EnvironmentValues {
-
-    var paywallWebViewMessageAction: PaywallWebViewMessageAction? {
-        get { self[PaywallWebViewMessageActionKey.self] }
-        set { self[PaywallWebViewMessageActionKey.self] = newValue }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-extension View {
-
-    /// Invokes the given closure when a Paywalls V2 `web_view` component sends a message.
-    func onPaywallWebViewMessage(
-        _ action: @escaping @MainActor (PaywallWebViewMessage, PaywallWebViewController) -> Void
-    ) -> some View {
-        self.environment(\.paywallWebViewMessageAction, PaywallWebViewMessageAction(action))
     }
 
 }
