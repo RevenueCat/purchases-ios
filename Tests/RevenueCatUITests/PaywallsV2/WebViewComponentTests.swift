@@ -21,7 +21,7 @@ final class WebViewComponentTests: TestCase {
         XCTAssertNil(minimal.visible)
         XCTAssertEqual(minimal.protocolVersion, 1)
         XCTAssertEqual(minimal.size.width, .fill)
-        XCTAssertEqual(minimal.size.height, .fit)
+        XCTAssertEqual(minimal.size.height, .fit(nil))
         XCTAssertEqual(minimal.url, "https://example.com")
         XCTAssertEqual(minimal.type, "web_view")
     }
@@ -46,12 +46,43 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(component.url, "https://example.com/index.html")
     }
 
+    func testDecodesFitLoadingDefaults() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "url": "https://example.com",
+          "size": {
+            "width": { "type": "fit", "default": 320 },
+            "height": { "type": "fit", "default": 180 }
+          }
+        }
+        """.utf8))
+
+        XCTAssertEqual(component.size.width, .fit(320))
+        XCTAssertEqual(component.size.height, .fit(180))
+    }
+
+    func testResolvedFitDimensionPrecedence() {
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(measured: 420, defaultSize: 240, fallback: 300),
+            420
+        )
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(measured: nil, defaultSize: 240, fallback: 300),
+            240
+        )
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(measured: nil, defaultSize: nil, fallback: 300),
+            300
+        )
+    }
+
     func testViewModelURLValidationHashingAndLocale() {
         let component = PaywallComponent.WebViewComponent(
             id: "web",
             protocolVersion: 2,
             url: "https://example.com/path",
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
         let viewModel = WebViewComponentViewModel(
             component: component,
