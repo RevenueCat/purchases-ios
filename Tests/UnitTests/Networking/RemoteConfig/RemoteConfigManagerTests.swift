@@ -1495,6 +1495,19 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
+    func testFourHundredResponseNotifiesWhenRemoteConfigIsDisabled() {
+        var disabledCallbackCount = 0
+        self.manager.onRemoteConfigDisabled = { disabledCallbackCount += 1 }
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .invalidRequest)))
+
+        expect(disabledCallbackCount) == 1
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        expect(disabledCallbackCount) == 1
+    }
+
     func testTooManyRequestsResponseDisablesRemoteConfig() {
         expect(self.manager.isDisabled) == false
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)

@@ -2995,6 +2995,7 @@
 		A1B2C3D42FE6000000000009 /* RemoteConfigBlobDownloaderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobDownloaderTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE8000000000001 /* RemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductionRemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE300000000002 /* WorkflowComponentsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowComponentsIntegrationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FEA000000000001 /* RecordingBlobDownloader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingBlobDownloader.swift; sourceTree = "<group>"; };
 		A1B2C3D42FEA000000000002 /* RemoteConfigBlobHealthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobHealthTests.swift; sourceTree = "<group>"; };
 		E31E8A264E9F4375A3B29D78 /* RemoteConfigurationDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigurationDecodingTests.swift; sourceTree = "<group>"; };
@@ -6204,6 +6205,7 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */,
+				A1B2C3D42FE300000000002 /* WorkflowComponentsIntegrationTests.swift */,
 			);
 			path = BackendIntegrationTests;
 			sourceTree = "<group>";

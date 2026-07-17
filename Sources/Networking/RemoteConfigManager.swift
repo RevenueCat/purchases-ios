@@ -17,6 +17,8 @@ protocol RemoteConfigManagerType: AnyObject {
     /// Monotonically increases whenever committed remote config state is replaced or invalidated.
     var configGeneration: Int { get }
 
+    var onRemoteConfigDisabled: (() -> Void)? { get set }
+
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
 
@@ -200,6 +202,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     let isDisabled = true
     let configGeneration = 0
+    var onRemoteConfigDisabled: (() -> Void)?
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
@@ -284,6 +287,8 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// Incremented whenever committed config changes or becomes invalid. Async cache warmers use this
     /// as a stale-write guard so older work cannot repopulate memory after a newer config is active.
     private var generation = 0
+
+    var onRemoteConfigDisabled: (() -> Void)?
 
     /// App user ID captured by an identity-bound cache clear.
     ///
@@ -684,28 +689,39 @@ private extension RemoteConfigManager {
         requestEpoch: Int,
         shouldDisableRefresh: Bool
     ) {
-        let continuations = self.lock.perform {
-            guard self.epoch == requestEpoch else { return nil as [CheckedContinuation<Void, Never>]? }
+        let result = self.lock.perform {
+            guard self.epoch == requestEpoch else {
+                return nil as (continuations: [CheckedContinuation<Void, Never>], didDisable: Bool)?
+            }
 
+            let didDisable: Bool
             if shouldDisableRefresh {
-                self.disableRefreshIfNeeded(for: error)
+                didDisable = self.disableRefreshIfNeeded(for: error)
+            } else {
+                didDisable = false
             }
             self.isRefreshing = false
 
-            return self.drainRefreshContinuations()
+            return (self.drainRefreshContinuations(), didDisable)
         }
 
-        guard let continuations else { return }
-        continuations.forEach { $0.resume() }
+        guard let result else { return }
+        result.continuations.forEach { $0.resume() }
+
+        if result.didDisable {
+            self.onRemoteConfigDisabled?()
+        }
 
         Logger.error(Strings.remoteConfig.refreshFailed(error))
     }
 
-    func disableRefreshIfNeeded(for error: BackendError) {
-        guard error.isRemoteConfigDisablingClientError else { return }
+    func disableRefreshIfNeeded(for error: BackendError) -> Bool {
+        guard error.isRemoteConfigDisablingClientError,
+              !self.isDisabledInternal else { return false }
 
         self.isDisabledInternal = true
         self.generation += 1
+        return true
     }
 
     func isCurrent(_ requestEpoch: Int) -> Bool {

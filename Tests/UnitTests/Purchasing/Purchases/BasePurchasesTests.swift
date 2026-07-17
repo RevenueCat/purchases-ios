@@ -680,6 +680,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     var isDisabled = false
+    var onRemoteConfigDisabled: (() -> Void)?
     var onConfigGenerationRead: (() -> Void)?
     var configGeneration: Int {
         get {
