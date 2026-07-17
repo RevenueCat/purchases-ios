@@ -138,15 +138,40 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    func testGetWorkflowForOfferingIdFallsBackToOfferingIdAsWorkflowId() async throws {
-        // No entry in stubbedWorkflowIdForOfferingId, so the mapping is unresolved.
-        let expected = try Self.workflowDataResult(id: "default")
-        self.mockProvider.stubbedGetWorkflowResult = ["default": expected]
+    func testGetWorkflowForOfferingIdThrowsOfferingHasNoWorkflowWithoutFetchingWhenUnmapped() async {
+        // No offeringId → workflowId mapping: the offering has no workflow attached. This fails fast
+        // with a distinct error (so the paywall falls back to the default paywall) and must NOT attempt
+        // a guaranteed-miss fetch by offering id. Mirrors purchases-android's presentWorkflow (#3760).
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .offeringHasNoWorkflow(offeringId: "default"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+    }
 
-        let result = try await self.manager.getWorkflow(forOfferingId: "default")
+    func testGetWorkflowForOfferingIdSurfacesWorkflowNotFoundWhenMappedWorkflowUnresolvable() async {
+        // The offering maps to a workflow, but that workflow can't be resolved (a broken rollout, not
+        // an unmapped offering). It must surface as `workflowNotFound` — which does NOT trigger the
+        // default-paywall fallback — never `offeringHasNoWorkflow`.
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
 
-        expect(result) == expected
-        expect(self.mockProvider.invokedGetWorkflowParameters) == ["default"]
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowNotFound(workflowId: "wf_1"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
     }
 
     // MARK: - Helpers

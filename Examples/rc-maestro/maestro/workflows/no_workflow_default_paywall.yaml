@@ -1,0 +1,31 @@
+# Opens an offering that has no paywall and no workflow attached (`no_paywall`). The SDK should
+# fall back to rendering the default paywall (the same behavior as the classic offerings path),
+# not surface an error.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/no_workflow_default_paywall.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Offering with no paywall or workflow renders the default paywall
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_no_paywall
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The default paywall renders (has a Restore purchases control); no error alert.
+- extendedWaitUntil:
+    visible: "Restore purchases"
+    timeout: 15000
+- assertNotVisible: "OK"
+- takeScreenshot: "no_workflow_default_paywall"

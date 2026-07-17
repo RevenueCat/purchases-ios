@@ -128,8 +128,9 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               eTagManager: eTagManager,
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
-                              requestTimeout: 30,
-                              operationDispatcher: OperationDispatcher())
+                              networkTimeout: .custom(30),
+                              operationDispatcher: OperationDispatcher(),
+                              apiSourceProvider: nil)
         }
 
         func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
