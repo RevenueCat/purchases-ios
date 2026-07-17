@@ -1,8 +1,10 @@
 # Opens a workflow offering (`default_workflows`) while the /v1/config endpoint is unreachable
-# (a transport failure, simulating no network) on a cold cache (`clearState`). The workflow lives in
-# /v1/config, and this offering has no classic paywall of its own, so with nothing cached the SDK
-# renders its built-in default paywall (the generic fallback) instead of the workflow, and never
-# crashes. This is bug-bash case #15 (#11 in the doc): "no network, nothing cached -> default paywall".
+# (a transport failure, simulating no network) on a cold cache (`clearState`). For a workflow offering
+# the SDK nulls the offerings-provided paywall components at runtime (their bodies come from remote
+# config, see OfferingsFactory.removingPaywallComponents), so with config unreachable and nothing
+# cached there is no renderable paywall for the offering: the SDK renders its built-in default paywall
+# (the generic fallback) instead of the workflow, and never crashes. This is the "no network, nothing
+# cached -> default paywall" bug-bash case.
 #
 # The `remote_config_network_error` strategy routes config requests to an unreachable host, so the app
 # receives a real URLError. Offerings are not blocked, so the offering still resolves and a paywall is
