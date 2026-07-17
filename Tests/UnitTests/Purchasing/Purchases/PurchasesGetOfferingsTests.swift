@@ -118,6 +118,22 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.deviceCache.clearOfferingsCacheTimestampCount) == 0
     }
 
+    func testRemoteConfigDisabledInvalidatesAndRefetchesOfferings() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        self.setupPurchases()
+
+        self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
+        self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount = 0
+        self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters = nil
+
+        self.mockRemoteConfigManager.onRemoteConfigDisabled?()
+
+        expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiate) == true
+        expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount) == 1
+        expect(self.mockOfferingsManager.invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters) ==
+            self.identityManager.currentAppUserID
+    }
+
     func testWarmsUpPaywallsCache() throws {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 

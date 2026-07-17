@@ -129,7 +129,8 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
                               requestTimeout: 30,
-                              operationDispatcher: OperationDispatcher())
+                              operationDispatcher: OperationDispatcher(),
+                              apiSourceProvider: nil)
         }
 
         func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {

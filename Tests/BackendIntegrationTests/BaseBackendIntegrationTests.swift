@@ -62,6 +62,7 @@ class BaseBackendIntegrationTests: TestCase {
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
     }
+    class var useWorkflows: Bool { return false }
     var enableReceiptFetchRetry: Bool = true
 
     var apiKey: String { return Constants.apiKey }
@@ -253,7 +254,8 @@ private extension BaseBackendIntegrationTests {
 
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
-                     internalSettings: self)
+                     internalSettings: self,
+                     useWorkflows: Self.useWorkflows)
     }
 
 }
@@ -263,6 +265,7 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
+    var usesRemoteConfigAPISources: Bool { return false }
 
     final func serverDown() {
         self.forceServerErrorStrategy = .allServersDown
