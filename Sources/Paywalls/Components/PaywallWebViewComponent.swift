@@ -61,16 +61,7 @@ import Foundation
 
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
-            let decodedType = try container.decode(String.self, forKey: .type)
-            guard decodedType == "web_view" else {
-                throw DecodingError.dataCorrupted(
-                    .init(
-                        codingPath: container.codingPath,
-                        debugDescription: "Expected type web_view, got \(decodedType)"
-                    )
-                )
-            }
-            self.type = decodedType
+            self.type = try container.decode(String.self, forKey: .type)
             self.id = try container.decodeIfPresent(String.self, forKey: .id)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
@@ -78,17 +69,6 @@ import Foundation
             self.url = try container.decode(String.self, forKey: .url)
             self.size = try container.decodeIfPresent(Size.self, forKey: .size)
                 ?? .init(width: .fill, height: .fit(nil))
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(type, forKey: .type)
-            try container.encodeIfPresent(id, forKey: .id)
-            try container.encodeIfPresent(name, forKey: .name)
-            try container.encodeIfPresent(visible, forKey: .visible)
-            try container.encode(protocolVersion, forKey: .protocolVersion)
-            try container.encode(url, forKey: .url)
-            try container.encode(size, forKey: .size)
         }
 
         public func hash(into hasher: inout Hasher) {

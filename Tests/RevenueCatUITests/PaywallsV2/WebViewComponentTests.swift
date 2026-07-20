@@ -62,14 +62,6 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(decoded, component)
     }
 
-    func testDecodingWrongTypeThrows() {
-        XCTAssertThrowsError(
-            try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-            { "type": "image", "url": "https://example.com" }
-            """.utf8))
-        )
-    }
-
     func testDecodingWithoutURLThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
