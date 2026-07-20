@@ -44,6 +44,44 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(component.url, "https://example.com/index.html")
     }
 
+    func testIgnoresCapabilitiesDeclaredByTheSchema() throws {
+        // Isolation from external sources is expected from the server-provided CSP, so any
+        // schema-declared capabilities are decoded-and-ignored rather than failing to parse.
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "url": "https://example.com/index.html",
+          "capabilities": {
+            "network_access": { "allowed_domains": ["api.segment.io"] },
+            "camera": true,
+            "microphone": true,
+            "clipboard_write": true,
+            "clipboard_read": true,
+            "geolocation": true
+          }
+        }
+        """.utf8))
+
+        XCTAssertEqual(component, PaywallComponent.WebViewComponent(url: "https://example.com/index.html"))
+    }
+
+    func testDecodesTemplateURLVerbatim() throws {
+        // Template placeholders in the URL are resolved elsewhere; decoding must preserve them as-is.
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "protocol_version": 1,
+          "url": "https://example.com/{{ custom.animal }}.html"
+        }
+        """.utf8))
+
+        XCTAssertEqual(component.url, "https://example.com/{{ custom.animal }}.html")
+        XCTAssertEqual(
+            component,
+            PaywallComponent.WebViewComponent(protocolVersion: 1, url: "https://example.com/{{ custom.animal }}.html")
+        )
+    }
+
     func testEncodeDecodeRoundTripUsesSnakeCaseWireKeys() throws {
         let component = PaywallComponent.WebViewComponent(
             id: "web",
