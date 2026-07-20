@@ -2701,6 +2701,7 @@
 		887A61342C1D168B00E1A461 /* SnapshotTesting+Extensions.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SnapshotTesting+Extensions.swift"; sourceTree = "<group>"; };
 		887A61352C1D168B00E1A461 /* TestCase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TestCase.swift; sourceTree = "<group>"; };
 		887A61372C1D168B00E1A461 /* PurchaseHandlerTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PurchaseHandlerTests.swift; sourceTree = "<group>"; };
+		45010544C32C2A21A2F323D7 /* OnWebCheckoutOpenedModifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnWebCheckoutOpenedModifierTests.swift; sourceTree = "<group>"; };
 		B10A136C03A9FF34FB805EFA /* ExitOfferPresenterTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ExitOfferPresenterTests.swift; sourceTree = "<group>"; };
 		887A620F2C1D168B00E1A461 /* OtherPaywallViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = OtherPaywallViewTests.swift; sourceTree = "<group>"; };
 		887A62102C1D168B00E1A461 /* PaywallViewDynamicTypeTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallViewDynamicTypeTests.swift; sourceTree = "<group>"; };
@@ -5873,6 +5874,7 @@
 				57F4B2C12F8E10A600BB46C9 /* ExitOfferHelperTests.swift */,
 				16E146B42E99FF640089B609 /* MockStoreTransaction.swift */,
 				887A61372C1D168B00E1A461 /* PurchaseHandlerTests.swift */,
+				45010544C32C2A21A2F323D7 /* OnWebCheckoutOpenedModifierTests.swift */,
 				B10A136C03A9FF34FB805EFA /* ExitOfferPresenterTests.swift */,
 				7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */,
 				ECEA10EF63BC10F9BE6DB9F5 /* WorkflowPreviewTests.swift */,

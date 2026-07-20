@@ -365,6 +365,7 @@ extension RevenueCatUI.PaywallViewController : UIKit.UIAdaptivePresentationContr
   @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:) optional func paywallViewController(_ controller: RevenueCatUI.PaywallViewController, didFinishPurchasingWith customerInfo: RevenueCat.CustomerInfo)
   @objc(paywallViewController:didFinishPurchasingWithCustomerInfo:transaction:) optional func paywallViewController(_ controller: RevenueCatUI.PaywallViewController, didFinishPurchasingWith customerInfo: RevenueCat.CustomerInfo, transaction: RevenueCat.StoreTransaction?)
   @objc(paywallViewControllerDidCancelPurchase:) optional func paywallViewControllerDidCancelPurchase(_ controller: RevenueCatUI.PaywallViewController)
+  @objc(paywallViewControllerDidOpenWebCheckout:) optional func paywallViewControllerDidOpenWebCheckout(_ controller: RevenueCatUI.PaywallViewController)
   @objc(paywallViewController:didFailPurchasingWithError:) optional func paywallViewController(_ controller: RevenueCatUI.PaywallViewController, didFailPurchasingWith error: Foundation.NSError)
   @objc(paywallViewControllerDidStartRestore:) optional func paywallViewControllerDidStartRestore(_ controller: RevenueCatUI.PaywallViewController)
   @objc(paywallViewController:didFinishRestoringWithCustomerInfo:) optional func paywallViewController(_ controller: RevenueCatUI.PaywallViewController, didFinishRestoringWith customerInfo: RevenueCat.CustomerInfo)
@@ -481,6 +482,7 @@ public typealias PurchaseCompletedHandler = @_Concurrency.MainActor @Sendable (_
 public typealias PurchaseStartedHandler = @_Concurrency.MainActor @Sendable () -> Swift.Void
 public typealias PurchaseOfPackageStartedHandler = @_Concurrency.MainActor @Sendable (_ package: RevenueCat.Package) -> Swift.Void
 public typealias PurchaseCancelledHandler = @_Concurrency.MainActor @Sendable () -> Swift.Void
+public typealias WebCheckoutOpenedHandler = @_Concurrency.MainActor @Sendable () -> Swift.Void
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PerformPurchase = @_Concurrency.MainActor @Sendable (_ packageToPurchase: RevenueCat.Package) async -> (userCancelled: Swift.Bool, error: (any Swift.Error)?)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -515,6 +517,8 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func onPurchaseCompleted(_ handler: @escaping RevenueCatUI.PurchaseCompletedHandler) -> some SwiftUICore.View
   
   @_Concurrency.MainActor @preconcurrency public func onPurchaseCancelled(_ handler: @escaping RevenueCatUI.PurchaseCancelledHandler) -> some SwiftUICore.View
+  
+  @_Concurrency.MainActor @preconcurrency public func onWebCheckoutOpened(_ handler: @escaping RevenueCatUI.WebCheckoutOpenedHandler) -> some SwiftUICore.View
   
   @_Concurrency.MainActor @preconcurrency public func onRestoreStarted(_ handler: @escaping RevenueCatUI.RestoreStartedHandler) -> some SwiftUICore.View
   
