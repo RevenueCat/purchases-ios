@@ -63,6 +63,115 @@ final class WebViewEnvelopeTests: TestCase {
         )
     }
 
+    func testEncodedFrameUsesSnakeCaseKeysAndOmitsNilFields() throws {
+        let envelope = WebViewEnvelope.Envelope(kind: .connect, componentID: "web")
+
+        let data = try JSONEncoder().encode(envelope)
+        let object = try XCTUnwrap(try JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        XCTAssertEqual(Set(object.keys), ["channel", "protocol_version", "kind", "component_id"])
+        XCTAssertEqual(object["channel"] as? String, WebViewEnvelope.channel)
+        XCTAssertEqual(object["protocol_version"] as? Int, 1)
+        XCTAssertEqual(object["kind"] as? String, "connect")
+        XCTAssertEqual(object["component_id"] as? String, "web")
+    }
+
+    func testDecodesFullMessageFrameWithRichPayload() throws {
+        let envelope = try XCTUnwrap(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1,
+            "kind": "response",
+            "component_id": "web",
+            "type": "rc:variables",
+            "id": "req-1",
+            "payload": [
+                "string": "value",
+                "number": 1.25,
+                "bool": true,
+                "nested": ["inner": false],
+                "list": [1, 2, 3],
+                "nothing": NSNull()
+            ]
+        ])))
+
+        XCTAssertEqual(envelope.kind, .response)
+        XCTAssertEqual(envelope.componentID, "web")
+        XCTAssertEqual(envelope.type, "rc:variables")
+        XCTAssertEqual(envelope.id, "req-1")
+
+        let payload = try XCTUnwrap(envelope.payload)
+        XCTAssertEqual(payload["string"]?.stringValue, "value")
+        XCTAssertEqual(payload["number"]?.numberValue, 1.25)
+        XCTAssertEqual(payload["bool"]?.boolValue, true)
+        XCTAssertEqual(payload["nested"]?.objectValue?["inner"]?.boolValue, false)
+        XCTAssertEqual(payload["list"]?.arrayValue?.count, 3)
+        XCTAssertTrue(payload["nothing"]?.isNull == true)
+    }
+
+    func testRejectsInvalidProtocolVersion() {
+        // Missing protocol_version.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "kind": "message",
+            "component_id": "web"
+        ])))
+        // Fractional protocol_version (integral only).
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1.5,
+            "kind": "message",
+            "component_id": "web"
+        ])))
+        // Non-numeric protocol_version.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": "1",
+            "kind": "message",
+            "component_id": "web"
+        ])))
+    }
+
+    func testRejectsNonStringFieldsAndNonObjectPayload() {
+        // Non-string type.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1,
+            "kind": "message",
+            "component_id": "web",
+            "type": 123
+        ])))
+        // Non-string id.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1,
+            "kind": "response",
+            "component_id": "web",
+            "id": 123
+        ])))
+        // Non-string error.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1,
+            "kind": "error",
+            "component_id": "web",
+            "error": 123
+        ])))
+        // Non-object payload.
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+            "channel": WebViewEnvelope.channel,
+            "protocol_version": 1,
+            "kind": "message",
+            "component_id": "web",
+            "payload": [1, 2, 3]
+        ])))
+    }
+
+    func testRejectsValidJSONThatIsNotAnObject() {
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: "[1,2,3]"))
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: "\"hello\""))
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: "5"))
+    }
+
     func testEncodeDecodeRoundTripAndEscaping() throws {
         let hostile = "annual\" }); alert('xss'); //\n</script>\\ end\u{2028}\u{2029}"
         let envelope = WebViewEnvelope.Envelope(

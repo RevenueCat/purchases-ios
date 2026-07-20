@@ -34,6 +34,7 @@ enum WebViewEnvelope {
         case error
     }
 
+    /// One JSON message exchanged with the `web_view` content. Fields used vary by ``kind``.
     struct Envelope: Codable, Equatable {
         let channel: String
         let protocolVersion: Int
