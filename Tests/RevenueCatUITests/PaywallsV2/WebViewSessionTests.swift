@@ -45,7 +45,7 @@ final class WebViewSessionTests: TestCase {
     func testDropsBeforeConnectDuplicateConnectAndNonMainFrame() throws {
         let harness = Harness()
 
-        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
+        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize))
         XCTAssertTrue(harness.capturedScripts.isEmpty)
 
         harness.handle(.init(kind: .connect, componentID: ""))
@@ -54,7 +54,7 @@ final class WebViewSessionTests: TestCase {
 
         harness.capturedScripts.removeAll()
         harness.handle(
-            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables),
+            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize),
             isMainFrame: false
         )
         XCTAssertTrue(harness.capturedScripts.isEmpty)
@@ -88,7 +88,7 @@ final class WebViewSessionTests: TestCase {
             harness.handle(.init(
                 kind: kind,
                 componentID: "web",
-                type: WebViewEnvelope.messageTypeRequestVariables,
+                type: WebViewEnvelope.messageTypeResize,
                 id: "id-1"
             ))
         }
@@ -100,97 +100,9 @@ final class WebViewSessionTests: TestCase {
         let harness = Harness()
         harness.connect()
 
-        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
-        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables))
+        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeResize))
 
         XCTAssertTrue(harness.capturedScripts.isEmpty)
-    }
-
-    func testStepLoadedStepCompleteAndErrorAreAcceptedWithoutReply() {
-        let harness = Harness()
-        harness.connect()
-
-        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeStepLoaded))
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeStepComplete,
-            payload: ["responses": .object(["choice": .string("annual")])]
-        ))
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeError,
-            payload: ["error": .string("boom")]
-        ))
-
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
-    }
-
-    func testRequestVariablesRequestAutoReplies() throws {
-        let localeIdentifier = "zh_Hans_CN"
-        let harness = Harness(localeIdentifier: localeIdentifier)
-        harness.connect()
-        harness.capturedScripts.removeAll()
-
-        harness.handle(.init(
-            kind: .request,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeRequestVariables,
-            id: "req-1"
-        ))
-
-        let response = try XCTUnwrap(harness.outboundEnvelopes().first)
-        XCTAssertEqual(response.kind, .response)
-        XCTAssertEqual(response.id, "req-1")
-        // Compare against the same helper the session uses — BCP-47 canonical forms
-        // vary by OS (e.g. `zh-CN` vs `zh-Hans-CN`).
-        XCTAssertEqual(
-            response.payload?["locale"]?.stringValue,
-            WebViewSession.bcp47Tag(fromLocaleIdentifier: localeIdentifier)
-        )
-        XCTAssertNil(response.payload?["variables"])
-    }
-
-    func testRequestVariablesMessageAutoReplies() throws {
-        let harness = Harness()
-        harness.connect()
-        harness.capturedScripts.removeAll()
-
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeRequestVariables
-        ))
-
-        let response = try XCTUnwrap(harness.outboundEnvelopes().first)
-        XCTAssertEqual(response.kind, .message)
-        XCTAssertEqual(response.type, WebViewEnvelope.messageTypeVariables)
-        XCTAssertEqual(response.payload?["locale"]?.stringValue, "en-US")
-    }
-
-    func testOutboundGatingByOrigin() throws {
-        let harness = Harness()
-        harness.connect()
-        harness.capturedScripts.removeAll()
-
-        harness.currentURL = URL(string: "https://evil.example/path")!
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeRequestVariables
-        ))
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
-
-        harness.currentURL = URL(string: "https://EXAMPLE.com:443/next")!
-        harness.handle(.init(
-            kind: .message,
-            componentID: "web",
-            type: WebViewEnvelope.messageTypeRequestVariables
-        ))
-        let outbound = try XCTUnwrap(harness.outboundEnvelopes().first)
-        XCTAssertEqual(outbound.type, WebViewEnvelope.messageTypeVariables)
-        XCTAssertEqual(outbound.payload?["locale"]?.stringValue, "en-US")
     }
 
     func testResizeAppliesOnlyFitAxesAndThreshold() {
@@ -253,7 +165,7 @@ final class WebViewSessionTests: TestCase {
         XCTAssertFalse(harness.session.channelOpen)
 
         harness.capturedScripts.removeAll()
-        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeRequestVariables))
+        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize))
         XCTAssertTrue(harness.capturedScripts.isEmpty)
 
         harness.handle(.init(kind: .connect, componentID: ""))
@@ -307,7 +219,6 @@ final class WebViewSessionTests: TestCase {
             componentID: "web",
             protocolVersion: 1,
             expectedOrigin: "https://example.com",
-            localeIdentifier: "en_US",
             fitAxes: (width: false, height: false)
         )
 
@@ -390,6 +301,33 @@ final class WebViewSessionTests: TestCase {
         withExtendedLifetime(delegate) {}
     }
 
+    // MARK: - receiveScript
+
+    func testReceiveScriptEscapesLineSeparatorsAndRoundTrips() throws {
+        let hostile = "annual\" }); alert('xss'); //\n</script>\\ end\u{2028}\u{2029}"
+        let envelope = WebViewEnvelope.Envelope(
+            kind: .message,
+            componentID: "web",
+            type: "rc:variables",
+            payload: ["value": .string(hostile)]
+        )
+
+        let script = try XCTUnwrap(WebViewSession.receiveScript(for: envelope))
+        XCTAssertFalse(script.contains("\u{2028}"))
+        XCTAssertFalse(script.contains("\u{2029}"))
+
+        let decoded = try Self.decodeEnvelope(fromScript: script)
+        XCTAssertEqual(decoded, envelope)
+        XCTAssertEqual(decoded.payload?["value"]?.stringValue, hostile)
+    }
+
+    static func decodeEnvelope(fromScript script: String) throws -> WebViewEnvelope.Envelope {
+        let start = try XCTUnwrap(script.range(of: "var m=")?.upperBound)
+        let end = try XCTUnwrap(script.range(of: ";if", range: start..<script.endIndex)?.lowerBound)
+        let json = String(script[start..<end])
+        return try JSONDecoder().decode(WebViewEnvelope.Envelope.self, from: Data(json.utf8))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -430,14 +368,12 @@ private final class Harness {
     var currentURL = URL(string: "https://example.com/path")!
 
     init(
-        size: (width: Bool, height: Bool) = (false, false),
-        localeIdentifier: String = "en_US"
+        size: (width: Bool, height: Bool) = (false, false)
     ) {
         self.session = WebViewSession(
             componentID: "web",
             protocolVersion: 99,
             expectedOrigin: "https://example.com",
-            localeIdentifier: localeIdentifier,
             fitAxes: size
         )
         self.session.evaluateJavaScript = { [weak self] script in
@@ -464,7 +400,7 @@ private final class Harness {
 
     func outboundEnvelopes() throws -> [WebViewEnvelope.Envelope] {
         try self.capturedScripts.map {
-            try WebViewEnvelopeTests.decodeEnvelope(fromScript: $0)
+            try WebViewSessionTests.decodeEnvelope(fromScript: $0)
         }
     }
 

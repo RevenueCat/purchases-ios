@@ -24,7 +24,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let fitAxes: (width: Bool, height: Bool)
 
-    private let localeIdentifier: String
     private var lastAppliedWidth: CGFloat?
     private var lastAppliedHeight: CGFloat?
 
@@ -32,7 +31,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         componentID: String,
         protocolVersion: Int,
         expectedOrigin: String,
-        localeIdentifier: String,
         fitAxes: (width: Bool, height: Bool),
         evaluateJavaScript: @escaping (String) -> Void = { _ in },
         currentURL: @escaping () -> URL? = { nil }
@@ -40,7 +38,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.componentID = componentID
         self.protocolVersion = protocolVersion
         self.expectedOrigin = expectedOrigin
-        self.localeIdentifier = localeIdentifier
         self.fitAxes = fitAxes
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
@@ -92,15 +89,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         switch type {
         case WebViewEnvelope.messageTypeResize:
             self.handleResize(envelope.payload)
-        case WebViewEnvelope.messageTypeStepLoaded:
-            // Recognized protocol frame; the SDK takes no action on it.
-            break
-        case WebViewEnvelope.messageTypeStepComplete:
-            self.handleStepComplete(envelope)
-        case WebViewEnvelope.messageTypeRequestVariables:
-            self.handleRequestVariables(envelope)
-        case WebViewEnvelope.messageTypeError:
-            self.handleError(envelope)
         default:
             self.logRejected("unknown-message-type")
         }
@@ -160,63 +148,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
     }
 
-    /// Validates the frame shape so malformed frames are still logged and rejected;
-    /// the SDK takes no further action on well-formed step-complete frames.
-    private func handleStepComplete(_ envelope: WebViewEnvelope.Envelope) {
-        if let value = envelope.payload?["responses"] {
-            guard value.objectValue != nil else {
-                self.logRejected("malformed-responses")
-                return
-            }
-        } else if let payload = envelope.payload {
-            guard WebViewEnvelope.reservedPayloadKeys.isDisjoint(with: payload.keys) else {
-                self.logRejected("reserved-response-key")
-                return
-            }
-        }
-    }
-
-    private func handleRequestVariables(_ envelope: WebViewEnvelope.Envelope) {
-        switch envelope.kind {
-        case .request:
-            guard let id = envelope.id else {
-                self.logRejected("request-without-id")
-                return
-            }
-            self.send(
-                .init(
-                    kind: .response,
-                    componentID: self.componentID,
-                    type: WebViewEnvelope.messageTypeRequestVariables,
-                    id: id,
-                    payload: self.sdkVariables
-                ),
-                allowBeforeNavigation: false
-            )
-        case .message:
-            self.send(
-                .init(
-                    kind: .message,
-                    componentID: self.componentID,
-                    type: WebViewEnvelope.messageTypeVariables,
-                    payload: self.sdkVariables
-                ),
-                allowBeforeNavigation: false
-            )
-        default:
-            self.logRejected("unsupported-request-variables-kind")
-        }
-    }
-
-    /// Validates the frame shape so malformed frames are still logged and rejected;
-    /// the SDK takes no further action on well-formed error frames.
-    private func handleError(_ envelope: WebViewEnvelope.Envelope) {
-        let error = envelope.payload?["error"]?.stringValue ?? envelope.error
-        if error == nil {
-            self.logRejected("missing-error")
-        }
-    }
-
     private func handleResize(_ payload: [String: PaywallWebViewValue]?) {
         guard let payload else {
             return
@@ -263,7 +194,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             Logger.debug(Strings.paywall_web_view_post_message_skipped)
             return
         }
-        guard let script = WebViewEnvelope.receiveScript(for: envelope) else {
+        guard let script = Self.receiveScript(for: envelope) else {
             Logger.debug(Strings.paywall_web_view_post_message_failed("encoding failed"))
             return
         }
@@ -271,16 +202,25 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.evaluateJavaScript(script)
     }
 
-    private var sdkVariables: [String: PaywallWebViewValue] {
-        ["locale": .string(Self.bcp47Tag(fromLocaleIdentifier: self.localeIdentifier))]
-    }
+    /// Name of the JS function injected into the web view that receives host-to-content frames.
+    private static let receiveFunction = "__rcWebComponentsReceive"
 
-    nonisolated static func bcp47Tag(fromLocaleIdentifier identifier: String) -> String {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return Locale(identifier: identifier).identifier(.bcp47)
-        } else {
-            return identifier.replacingOccurrences(of: "_", with: "-")
+    /// Serializes `envelope` into the JS snippet injected into the web view to deliver a
+    /// host-to-content frame. This is bridge/transport behavior, so it lives here rather than
+    /// on the envelope data model.
+    nonisolated static func receiveScript(for envelope: WebViewEnvelope.Envelope) -> String? {
+        guard let data = try? JSONEncoder().encode(envelope),
+              let json = String(data: data, encoding: .utf8) else {
+            return nil
         }
+        let escaped = json
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+
+        return """
+        (function(){var m=\(escaped);if(typeof window.\(Self.receiveFunction)==='function'){\
+        window.\(Self.receiveFunction)(m);}})();
+        """
     }
 
     private func validResizeValue(_ value: Double?, axisIsFit: Bool) -> CGFloat? {

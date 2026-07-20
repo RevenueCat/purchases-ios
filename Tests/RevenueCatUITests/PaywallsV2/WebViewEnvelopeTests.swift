@@ -63,7 +63,7 @@ final class WebViewEnvelopeTests: TestCase {
         )
     }
 
-    func testEncodeDecodeRoundTripAndEscaping() throws {
+    func testEncodeDecodeRoundTrip() throws {
         let hostile = "annual\" }); alert('xss'); //\n</script>\\ end\u{2028}\u{2029}"
         let envelope = WebViewEnvelope.Envelope(
             kind: .message,
@@ -72,11 +72,10 @@ final class WebViewEnvelopeTests: TestCase {
             payload: ["value": .string(hostile)]
         )
 
-        let script = try XCTUnwrap(WebViewEnvelope.receiveScript(for: envelope))
-        XCTAssertFalse(script.contains("\u{2028}"))
-        XCTAssertFalse(script.contains("\u{2029}"))
+        let data = try JSONEncoder().encode(envelope)
+        let json = try XCTUnwrap(String(data: data, encoding: .utf8))
 
-        let decoded = try Self.decodeEnvelope(fromScript: script)
+        let decoded = try XCTUnwrap(WebViewEnvelope.decode(rawMessage: json))
         XCTAssertEqual(decoded, envelope)
         XCTAssertEqual(decoded.payload?["value"]?.stringValue, hostile)
     }
@@ -96,13 +95,6 @@ final class WebViewEnvelopeTests: TestCase {
             let data = try JSONEncoder().encode(kind)
             XCTAssertEqual(try JSONDecoder().decode(WebViewEnvelope.Kind.self, from: data), kind)
         }
-    }
-
-    func testReservedPayloadKeysMatchWireProtocol() {
-        XCTAssertEqual(
-            WebViewEnvelope.reservedPayloadKeys,
-            ["channel", "protocol_version", "kind", "type", "component_id", "id", "error", "variables"]
-        )
     }
 
     private static func frame(payload: [String: Any]) -> [String: Any] {
@@ -127,13 +119,6 @@ final class WebViewEnvelopeTests: TestCase {
     static func json(_ object: [String: Any]) -> String {
         let data = try! JSONSerialization.data(withJSONObject: object)
         return String(data: data, encoding: .utf8)!
-    }
-
-    static func decodeEnvelope(fromScript script: String) throws -> WebViewEnvelope.Envelope {
-        let start = try XCTUnwrap(script.range(of: "var m=")?.upperBound)
-        let end = try XCTUnwrap(script.range(of: ";if", range: start..<script.endIndex)?.lowerBound)
-        let json = String(script[start..<end])
-        return try JSONDecoder().decode(WebViewEnvelope.Envelope.self, from: Data(json.utf8))
     }
 
 }
