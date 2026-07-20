@@ -18,7 +18,7 @@ import UIKit
 
 struct APIKeyDashboardList: View {
 
-    enum PaywallSection: Hashable, Comparable {
+    fileprivate enum PaywallSection: Hashable, Comparable {
         case legacy(templateName: String)
         case components
         case noPaywall
