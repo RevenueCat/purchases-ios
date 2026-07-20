@@ -1,5 +1,5 @@
 //
-//  open-workflow.swift
+//  open-workflow-presented.swift
 //  Maestro
 //
 //  Copyright © 2025 RevenueCat, Inc. All rights reserved.
@@ -10,19 +10,12 @@ import RevenueCat
 import RevenueCatUI
 
 extension E2ETestFlowView {
-    struct OpenWorkflow: View {
+    /// Opens the workflow paywall via the `.presentPaywall(offering:)` modifier rather than a raw
+    /// `PaywallView` sheet. This is the exit-offer-aware presentation path: it surfaces a configured
+    /// workflow exit offer when the paywall is dismissed (from the exit-offer step) without a purchase.
+    struct OpenWorkflowPresented: View {
 
         static let offeringIdentifier = "default_workflows"
-
-        /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
-        /// `custom_users_count` is not provided, so the workflow renders the dashboard default value.
-        static var customVariableOverrides: [String: CustomVariableValue] {
-            guard let raw = UserDefaults.standard.string(forKey: "custom_users_count"),
-                  let value = Double(raw) else {
-                return [:]
-            }
-            return ["users_count": .number(value)]
-        }
 
         enum GetOfferingsState {
             case loading
@@ -31,11 +24,11 @@ extension E2ETestFlowView {
         }
 
         @State private var offeringsState: GetOfferingsState = .loading
-        @State private var presentPaywall = false
+        @State private var presentedOffering: Offering?
 
         var body: some View {
             VStack {
-                Text("Workflow paywall")
+                Text("Workflow paywall (presented)")
                     .font(.largeTitle)
 
                 switch offeringsState {
@@ -43,13 +36,9 @@ extension E2ETestFlowView {
                     Text("Loading offerings...")
                 case .loaded(let offering):
                     Button("Present Paywall") {
-                        presentPaywall = true
+                        presentedOffering = offering
                     }
                     .buttonStyle(.borderedProminent)
-                    .sheet(isPresented: $presentPaywall) {
-                        PaywallView(offering: offering)
-                            .customPaywallVariables(Self.customVariableOverrides)
-                    }
                 case .failed(let error):
                     Text("Error: \(error.localizedDescription)")
                         .foregroundColor(.red)
@@ -57,6 +46,7 @@ extension E2ETestFlowView {
 
                 EntitlementView(identifier: "pro")
             }
+            .presentPaywall(offering: $presentedOffering)
             .task {
                 do {
                     let offerings = try await Purchases.shared.offerings()
@@ -78,7 +68,7 @@ extension E2ETestFlowView {
             var errorDescription: String? {
                 switch self {
                 case .notFound:
-                    return "Offering '\(OpenWorkflow.offeringIdentifier)' not found"
+                    return "Offering '\(OpenWorkflowPresented.offeringIdentifier)' not found"
                 }
             }
         }

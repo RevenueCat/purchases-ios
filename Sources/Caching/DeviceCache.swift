@@ -215,7 +215,12 @@ class DeviceCache {
         return self.value(for: CacheKey.offerings(appUserID))
     }
 
-    func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+    func cache(
+        offerings: Offerings,
+        diskContents: Offerings.Contents? = nil,
+        preferredLocales: [String],
+        appUserID: String
+    ) {
         // We can't get the preferred locales from the `systemInfo` object because they may change
         // during the get offerings request, before this cache method gets called.
         // For the cache we need the preferred locales that were used in the request.
@@ -223,7 +228,7 @@ class DeviceCache {
         self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
-        if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
+        if self.largeItemCache.set(codable: diskContents ?? offerings.contents, forKey: key) {
 
             // Delete old file from documents directory if it exists
             self.deleteOldFileIfNeeded(for: key)

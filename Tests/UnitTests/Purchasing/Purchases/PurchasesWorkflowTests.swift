@@ -20,13 +20,20 @@ import XCTest
 /// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
 
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
+    func testRemoteConfigEnabledReturnsFalseWhenDisabledByKillSwitch() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
+
+        expect(self.purchases.remoteConfigEnabled) == true
+
+        self.mockRemoteConfigManager.isDisabled = true
+
+        expect(self.purchases.remoteConfigEnabled) == false
     }
 
     func testWorkflowForOfferingIdentifierThrowsWhenOfferingHasNoWorkflow() async throws {
+        self.setupPurchases()
+
         // The `workflows` topic has synced, but no item maps to the "default" offering (its item carries
         // no matching `offeringIdentifier`). With no mapping, resolution fails fast with a distinct
         // `offeringHasNoWorkflow` and does NOT attempt a fetch by offering id — the prior lazy
