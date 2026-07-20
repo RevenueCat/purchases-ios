@@ -88,6 +88,39 @@ final class WebViewNavigationPolicyTests: TestCase {
         )
     }
 
+    func testMainFrameNonCanonicalExpectedOriginCaseIsAllowed() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https://Example.COM"
+            ),
+            .allow
+        )
+    }
+
+    func testMainFrameNonCanonicalExpectedOriginDefaultPortIsAllowed() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com:443"
+            ),
+            .allow
+        )
+    }
+
+    func testMainFrameHostlessExpectedOriginIsCancelled() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https:///no-host"
+            ),
+            .cancel
+        )
+    }
+
     func testOriginStripsDefaultPortKeepsNonDefaultAndNormalizesCase() {
         XCTAssertEqual(
             WebViewOrigin.origin(of: URL(string: "https://Example.COM:443/path")!),

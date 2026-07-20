@@ -38,9 +38,13 @@ enum WebViewNavigationPolicy {
     // The origin check is enforced on every frame, including sub-frames, so cross-origin iframes
     // cannot navigate freely even if a third-party document load slips past the content rules.
     // `isMainFrame` is kept for call-site context and potential future differentiation.
+    // Both sides are canonicalized so a non-canonical `expectedOrigin` (mixed case, explicit
+    // default port) doesn't cause legitimate same-origin navigations to be cancelled.
     static func policy(for url: URL?, isMainFrame: Bool, expectedOrigin: String) -> WKNavigationActionPolicy {
         guard let url,
-              WebViewOrigin.origin(of: url) == expectedOrigin else {
+              let origin = WebViewOrigin.origin(of: url),
+              let expected = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:)),
+              origin == expected else {
             return .cancel
         }
         return .allow
