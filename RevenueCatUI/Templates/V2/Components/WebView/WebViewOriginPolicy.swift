@@ -36,7 +36,8 @@ enum WebViewOrigin {
 enum WebViewNavigationPolicy {
 
     // The origin check is enforced on every frame, including sub-frames, so cross-origin iframes
-    // cannot navigate freely even if a third-party document load slips past the content rules.
+    // cannot navigate freely. The bundle's CSP blocks cross-origin resource and document loads;
+    // this is the navigation-level counterpart, which CSP has no directive to cover.
     // `isMainFrame` is kept for call-site context and potential future differentiation.
     // Both sides are canonicalized so a non-canonical `expectedOrigin` (mixed case, explicit
     // default port) doesn't cause legitimate same-origin navigations to be cancelled.

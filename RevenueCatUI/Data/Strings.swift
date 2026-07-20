@@ -109,9 +109,6 @@ enum Strings {
     case video_failed_to_set_audio_session_category(Error)
     case video_failed_to_cache(URL, Error)
 
-    // WebView
-    case paywall_web_view_content_rules_failed(String)
-
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -366,9 +363,6 @@ extension Strings: CustomStringConvertible {
             return "Failed to set audio session category: \(error)"
         case .video_failed_to_cache(let url, let error):
             return "Failed to cache video at \(url): \(error)"
-
-        case .paywall_web_view_content_rules_failed(let error):
-            return "Paywalls V2 web_view content rules failed: \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
