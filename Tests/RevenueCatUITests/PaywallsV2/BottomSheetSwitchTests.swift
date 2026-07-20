@@ -162,7 +162,7 @@ private extension BottomSheetSwitchTests {
             name: nil,
             stack: stack,
             backgroundBlur: false,
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         return SheetViewModel(sheet: sheet, sheetStackViewModel: stackViewModel)
