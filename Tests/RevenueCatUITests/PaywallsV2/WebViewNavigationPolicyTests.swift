@@ -38,10 +38,41 @@ final class WebViewNavigationPolicyTests: TestCase {
         )
     }
 
+    func testMainFrameCancelsNilURLSchemeDowngradeAndPortMismatch() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: nil,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "http://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com:8443/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
     func testOriginStripsDefaultPortKeepsNonDefaultAndNormalizesCase() {
         XCTAssertEqual(
             WebViewOrigin.origin(of: URL(string: "https://Example.COM:443/path")!),
             "https://example.com"
+        )
+        XCTAssertEqual(
+            WebViewOrigin.origin(of: URL(string: "http://Example.COM:80/path")!),
+            "http://example.com"
         )
         XCTAssertEqual(
             WebViewOrigin.origin(of: URL(string: "HTTPS://Example.COM:8443/path")!),
