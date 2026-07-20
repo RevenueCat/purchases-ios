@@ -29,7 +29,7 @@ class OfferingsManager {
     // Nil when remote config is disabled, in which case offerings delivery is unchanged.
     private let remoteConfigManager: RemoteConfigManagerType?
     private let uiConfigProvider: UiConfigProvider?
-    private let workflowsConfigProvider: WorkflowsConfigProviderType?
+    private let workflowAssetPrewarmer: WorkflowAssetPrewarmingType?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -41,7 +41,7 @@ class OfferingsManager {
          dateProvider: DateProvider = DateProvider(),
          remoteConfigManager: RemoteConfigManagerType? = nil,
          uiConfigProvider: UiConfigProvider? = nil,
-         workflowsConfigProvider: WorkflowsConfigProviderType? = nil) {
+         workflowAssetPrewarmer: WorkflowAssetPrewarmingType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -52,7 +52,7 @@ class OfferingsManager {
         self.dateProvider = dateProvider
         self.remoteConfigManager = remoteConfigManager
         self.uiConfigProvider = uiConfigProvider
-        self.workflowsConfigProvider = workflowsConfigProvider
+        self.workflowAssetPrewarmer = workflowAssetPrewarmer
     }
 
     func offerings(
@@ -439,9 +439,12 @@ private extension OfferingsManager {
         }
         Task {
             let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
-            async let workflowsReady: Void = self.warmWorkflowConfigIfNeeded(remoteConfigManager: remoteConfigManager)
+            async let workflowBodyDataReady: Void = self.cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
+                remoteConfigManager: remoteConfigManager,
+                includingOfferingId: offerings.current?.identifier
+            )
             async let uiConfigReady = uiConfigProvider.getUiConfig()
-            _ = await (workflowsReady, uiConfigReady)
+            _ = await (workflowBodyDataReady, uiConfigReady)
 
             if self.shouldRefreshOfferingsWithPrunedComponents(offerings) {
                 refreshIfNeeded()
@@ -482,9 +485,14 @@ private extension OfferingsManager {
         )
     }
 
-    private func warmWorkflowConfigIfNeeded(remoteConfigManager: RemoteConfigManagerType) async {
-        if let workflowsConfigProvider = self.workflowsConfigProvider {
-            await workflowsConfigProvider.warmPrefetchedWorkflows()
+    private func cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
+        remoteConfigManager: RemoteConfigManagerType,
+        includingOfferingId: String?
+    ) async {
+        if let workflowAssetPrewarmer = self.workflowAssetPrewarmer {
+            await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
+                includingOfferingId: includingOfferingId
+            )
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }
