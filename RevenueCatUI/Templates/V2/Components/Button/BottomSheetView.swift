@@ -104,6 +104,14 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .onAppear {
                         self.onSheetContentAppear?()
                     }
+                    // Tie the sheet content's identity to the sheet's `id` so that
+                    // switching to a different sheet disposes the previous sheet's
+                    // content and builds the new one from scratch, instead of reusing
+                    // the views positionally. Without this, a rapid dismiss→open reuses
+                    // the same view identity while the dismiss animation is still in
+                    // flight, and media such as a video from the previous sheet keeps
+                    // playing in the newly-opened sheet.
+                    .id(sheetViewModel.sheet.id)
                 }
             }
             .background(
