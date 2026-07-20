@@ -43,6 +43,25 @@ final class PaywallViewConfigurationTests: TestCase {
         )).to(beNil())
     }
 
+    func testCachedInitialPaywallViewDataReturnsLegacyOfferingWhenRemoteConfigEnabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            remoteConfigEnabled: true
+        )
+
+        expect(result?.offering.identifier) == cachedOffering.identifier
+        expect(result?.workflowContext).to(beNil())
+    }
+
     func testCachedInitialOfferingUsesCachedOfferingsWhenRemoteConfigDisabled() {
         let cachedOffering = TestData.offeringWithNoIntroOffer
         let purchases = Self.createMockPurchases()
@@ -65,6 +84,47 @@ final class PaywallViewConfigurationTests: TestCase {
             for: .offeringIdentifier(cachedOffering.identifier, presentedOfferingContext: nil),
             remoteConfigEnabled: false
         )?.identifier) == cachedOffering.identifier
+    }
+
+    func testCachedInitialPaywallViewDataUsesCachedOfferingsWhenRemoteConfigDisabled() {
+        let cachedOffering = TestData.offeringWithNoIntroOffer
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        purchases.cachedOfferings = Self.createOfferings(
+            [cachedOffering],
+            currentOfferingID: cachedOffering.identifier
+        )
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            remoteConfigEnabled: false
+        )
+
+        expect(result?.offering.identifier) == cachedOffering.identifier
+        expect(result?.workflowContext).to(beNil())
+    }
+
+    func testCachedInitialPaywallViewDataUsesInjectedWorkflowContext() throws {
+        let initialOffering = Self.createOffering(identifier: "offering_a")
+        let workflowContext = WorkflowContext(
+            workflow: try Self.createWorkflow(offeringIdentifier: initialOffering.identifier),
+            uiConfig: PreviewUIConfig.make(),
+            allOfferings: Self.createOfferings([initialOffering]),
+            initialOffering: initialOffering,
+            presentedOfferingContext: initialOffering.presentedOfferingContext
+        )
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+
+        let result = handler.cachedInitialPaywallViewData(
+            for: .defaultOffering,
+            injectedWorkflowContext: workflowContext
+        )
+
+        expect(result?.offering.identifier) == initialOffering.identifier
+        expect(result?.workflowContext?.initialOffering.identifier) == workflowContext.initialOffering.identifier
+        expect(result?.workflowContext?.workflow.id) == workflowContext.workflow.id
     }
 
     func testResolvePaywallViewDataReturnsNilWorkflowContextWhenRemoteConfigDisabled() async throws {
