@@ -35,10 +35,10 @@ enum WebViewOrigin {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum WebViewNavigationPolicy {
 
+    // The origin check is enforced on every frame, including sub-frames, so cross-origin iframes
+    // cannot navigate freely even if a third-party document load slips past the content rules.
+    // `isMainFrame` is kept for call-site context and potential future differentiation.
     static func policy(for url: URL?, isMainFrame: Bool, expectedOrigin: String) -> WKNavigationActionPolicy {
-        guard isMainFrame else {
-            return .allow
-        }
         guard let url,
               WebViewOrigin.origin(of: url) == expectedOrigin else {
             return .cancel

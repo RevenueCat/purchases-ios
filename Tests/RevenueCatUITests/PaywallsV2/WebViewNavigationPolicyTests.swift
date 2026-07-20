@@ -11,7 +11,7 @@ import WebKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewNavigationPolicyTests: TestCase {
 
-    func testMainFrameSameOriginAllowedCrossOriginCancelledSubFrameAllowed() {
+    func testMainFrameSameOriginIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com/next")!,
@@ -20,6 +20,9 @@ final class WebViewNavigationPolicyTests: TestCase {
             ),
             .allow
         )
+    }
+
+    func testMainFrameCrossOriginIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://evil.example/next")!,
@@ -28,9 +31,12 @@ final class WebViewNavigationPolicyTests: TestCase {
             ),
             .cancel
         )
+    }
+
+    func testSubFrameSameOriginIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
-                for: URL(string: "https://evil.example/next")!,
+                for: URL(string: "https://example.com/next")!,
                 isMainFrame: false,
                 expectedOrigin: "https://example.com"
             ),
@@ -38,7 +44,18 @@ final class WebViewNavigationPolicyTests: TestCase {
         )
     }
 
-    func testMainFrameCancelsNilURLSchemeDowngradeAndPortMismatch() {
+    func testSubFrameCrossOriginIsCancelled() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://evil.example/next")!,
+                isMainFrame: false,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
+    func testMainFrameNilURLIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: nil,
@@ -47,6 +64,9 @@ final class WebViewNavigationPolicyTests: TestCase {
             ),
             .cancel
         )
+    }
+
+    func testMainFrameSchemeDowngradeIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "http://example.com/next")!,
@@ -55,6 +75,9 @@ final class WebViewNavigationPolicyTests: TestCase {
             ),
             .cancel
         )
+    }
+
+    func testMainFramePortMismatchIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com:8443/next")!,
