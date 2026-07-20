@@ -30,6 +30,36 @@ final class PaywallWebViewValueTests: TestCase {
         XCTAssertEqual(decoded.objectValue?["number"]?.numberValue, 1.25)
         XCTAssertEqual(decoded.objectValue?["bool"]?.boolValue, true)
         XCTAssertTrue(decoded.objectValue?["null"]?.isNull == true)
+
+        let array = try XCTUnwrap(decoded.objectValue?["array"]?.arrayValue)
+        XCTAssertEqual(array.count, 2)
+        XCTAssertTrue(array.first?.isNull == true)
+        XCTAssertEqual(array.last?.stringValue, "x")
+
+        XCTAssertEqual(decoded.objectValue?["object"]?.objectValue?["nested"]?.boolValue, false)
+    }
+
+    func testTopLevelScalarsAndEmptyContainersRoundTrip() throws {
+        let values: [PaywallWebViewValue] = [
+            .string("hello"),
+            .number(1.25),
+            .bool(true),
+            .bool(false),
+            .null,
+            .array([]),
+            .object([:])
+        ]
+
+        for value in values {
+            let decoded = try JSONDecoder().decode(
+                PaywallWebViewValue.self,
+                from: try JSONEncoder().encode(value)
+            )
+            XCTAssertEqual(decoded, value)
+        }
+
+        XCTAssertEqual(PaywallWebViewValue.array([]).arrayValue, [])
+        XCTAssertEqual(PaywallWebViewValue.object([:]).objectValue, [:])
     }
 
     func testNumberBoolDisambiguation() throws {
