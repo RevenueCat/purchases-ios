@@ -136,7 +136,7 @@ final class WebViewComponentTests: TestCase {
           "id": "web",
           "name": "Survey",
           "visible": false,
-          "protocol_version": 2,
+          "protocol_version": 1,
           "url": "https://example.com/index.html",
           "size": { "width": { "type": "fixed", "value": 320 }, "height": { "type": "fit" } },
           "unknown": true
@@ -149,10 +149,67 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(fullComponent.id, "web")
         XCTAssertEqual(fullComponent.name, "Survey")
         XCTAssertEqual(fullComponent.visible, false)
-        XCTAssertEqual(fullComponent.protocolVersion, 2)
+        XCTAssertEqual(fullComponent.protocolVersion, 1)
         XCTAssertEqual(fullComponent.url, "https://example.com/index.html")
         XCTAssertEqual(fullComponent.type, .webView)
     }
+
+    func testUnsupportedProtocolVersionRendersFallbackThroughPaywallComponent() throws {
+        // A version this SDK cannot service is treated like an unrecognized component: the author's
+        // fallback is rendered instead of the web view.
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """.utf8))
+
+        guard case .stack = decoded else {
+            return XCTFail("Expected fallback stack, got \(decoded)")
+        }
+    }
+
+    func testUnsupportedProtocolVersionWithoutFallbackThrows() throws {
+        let json = Data("""
+        {
+          "type": "web_view",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html"
+        }
+        """.utf8)
+
+        XCTAssertThrowsError(try JSONDecoder.default.decode(PaywallComponent.self, from: json))
+    }
+
+    func testSupportedProtocolVersionIgnoresFallback() throws {
+        // A supported version renders the web view even when a fallback is present.
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """.utf8))
+
+        guard case .webView(let component) = decoded else {
+            return XCTFail("Expected web_view, got \(decoded)")
+        }
+        XCTAssertEqual(component.url, "https://example.com/index.html")
+    }
+
+    private static let fallbackStackJSON = """
+    {
+      "type": "stack",
+      "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+      "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+      "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+      "components": []
+    }
+    """
 
     func testViewModelFactoryBuildsWebViewViewModel() throws {
         let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""

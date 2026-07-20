@@ -150,40 +150,49 @@ import Foundation
         if let type = ComponentType(rawValue: typeString) {
             self = try Self.decodeType(from: decoder, type: type)
         } else {
-            if !container.contains(.fallback) {
-                let context = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription:
-                      """
-                      Failed to decode unknown type "\(typeString)" without a fallback.
-                      """
-                )
-                throw DecodingError.dataCorrupted(context)
-            }
+            // If `typeString` is unknown, render the author-provided fallback.
+            self = try Self.decodeFallback(from: decoder, typeString: typeString)
+        }
+    }
 
-            do {
-                // If `typeString` is unknown, try to decode the fallback
-                self = try container.decode(PaywallComponent.self, forKey: .fallback)
-            } catch DecodingError.valueNotFound {
-                let context = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription:
-                      """
-                      Failed to decode unknown type "\(typeString)" without a fallback.
-                      """
-                )
-                throw DecodingError.dataCorrupted(context)
-            } catch {
-                let context = DecodingError.Context(
-                    codingPath: container.codingPath,
-                    debugDescription:
-                      """
-                      Failed to decode fallback for unknown type "\(typeString)".
-                      """,
-                    underlyingError: error
-                )
-                throw DecodingError.dataCorrupted(context)
-            }
+    /// Decodes the author-provided `fallback` component, used both for unknown component types and
+    /// for known components this SDK version cannot service (e.g. an unsupported `web_view`
+    /// `protocol_version`). Throws if no usable fallback is present.
+    private static func decodeFallback(from decoder: Decoder, typeString: String) throws -> PaywallComponent {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        guard container.contains(.fallback) else {
+            let context = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription:
+                  """
+                  Failed to decode unknown type "\(typeString)" without a fallback.
+                  """
+            )
+            throw DecodingError.dataCorrupted(context)
+        }
+
+        do {
+            return try container.decode(PaywallComponent.self, forKey: .fallback)
+        } catch DecodingError.valueNotFound {
+            let context = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription:
+                  """
+                  Failed to decode unknown type "\(typeString)" without a fallback.
+                  """
+            )
+            throw DecodingError.dataCorrupted(context)
+        } catch {
+            let context = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription:
+                  """
+                  Failed to decode fallback for unknown type "\(typeString)".
+                  """,
+                underlyingError: error
+            )
+            throw DecodingError.dataCorrupted(context)
         }
     }
 
@@ -223,7 +232,14 @@ import Foundation
         case .countdown:
             return .countdown(try CountdownComponent(from: decoder))
         case .webView:
-            return .webView(try WebViewComponent(from: decoder))
+            let component = try WebViewComponent(from: decoder)
+            // A config declaring a bridge protocol version this SDK does not implement is treated
+            // like an unrecognized component: render the author-provided `fallback` (the backend
+            // also rejects unsupported versions at publish time). Mirrors purchases-android.
+            guard component.protocolVersion == WebViewComponent.supportedProtocolVersion else {
+                return try Self.decodeFallback(from: decoder, typeString: type.rawValue)
+            }
+            return .webView(component)
         case .fallbackHeader:
             return .fallbackHeader
         }
