@@ -11,110 +11,80 @@ import WebKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewNavigationPolicyTests: TestCase {
 
-    func testMainFrameSameOriginIsAllowed() {
+    func testSameOriginIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .allow
         )
     }
 
-    func testMainFrameCrossOriginIsCancelled() {
+    func testCrossOriginIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://evil.example/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .cancel
         )
     }
 
-    func testSubFrameSameOriginIsAllowed() {
-        XCTAssertEqual(
-            WebViewNavigationPolicy.policy(
-                for: URL(string: "https://example.com/next")!,
-                isMainFrame: false,
-                expectedOrigin: "https://example.com"
-            ),
-            .allow
-        )
-    }
-
-    func testSubFrameCrossOriginIsCancelled() {
-        XCTAssertEqual(
-            WebViewNavigationPolicy.policy(
-                for: URL(string: "https://evil.example/next")!,
-                isMainFrame: false,
-                expectedOrigin: "https://example.com"
-            ),
-            .cancel
-        )
-    }
-
-    func testMainFrameNilURLIsCancelled() {
+    func testNilURLIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: nil,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .cancel
         )
     }
 
-    func testMainFrameSchemeDowngradeIsCancelled() {
+    func testSchemeDowngradeIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "http://example.com/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .cancel
         )
     }
 
-    func testMainFramePortMismatchIsCancelled() {
+    func testPortMismatchIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com:8443/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .cancel
         )
     }
 
-    func testMainFrameNonCanonicalExpectedOriginCaseIsAllowed() {
+    func testNonCanonicalExpectedOriginCaseIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://Example.COM"
             ),
             .allow
         )
     }
 
-    func testMainFrameNonCanonicalExpectedOriginDefaultPortIsAllowed() {
+    func testNonCanonicalExpectedOriginDefaultPortIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https://example.com:443"
             ),
             .allow
         )
     }
 
-    func testMainFrameHostlessExpectedOriginIsCancelled() {
+    func testHostlessExpectedOriginIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
                 for: URL(string: "https://example.com/next")!,
-                isMainFrame: true,
                 expectedOrigin: "https:///no-host"
             ),
             .cancel
