@@ -1,7 +1,7 @@
 orbs:
   macos: circleci/macos@2.5.1
   slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@4.1.0
+  revenuecat: revenuecat/sdks-common-config@4.5.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -155,6 +155,7 @@ commands:
           template: basic_fail_1
 
   install-bundle-dependencies:
+    description: "Runs bundle install. Assumes ruby is already on PATH (see install-mise-tools: tools: ruby in callers)."
     parameters:
       directory:
         type: string
@@ -167,19 +168,9 @@ commands:
             echo "macOS version: $(cat .macos_version)"
       - restore_cache:
           keys:
-            # This cache key should be updated whenever we change the Ruby version
-            - v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
-      # CircleCI images fail on Ruby 3.3
-      # https://github.com/fastlane/fastlane/issues/21794#issuecomment-2021331335
-      # Also, not using macos/switch-ruby because its broken
-      - run:
-          # We're using Ruby 3.2.0 here to avoid an issue that caused a crash with Fastlane and Ruby 3.2.2.
-          name: Set Ruby 3.2.0
-          command: |
-            eval "$(rbenv init -)"
-            rbenv install -s 3.2.0  # Replace with your required Ruby version
-            rbenv global 3.2.0
-            rbenv rehash
+            # Bump this key whenever the Ruby version or provider changes: native gem extensions
+            # link against a specific libruby path (v5 = rbenv -> mise migration).
+            - v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
       - run:
           name: Verify Ruby version
           command: ruby -v
@@ -192,10 +183,9 @@ commands:
             bundle install
       - save_cache:
           # This cache key should be updated whenever we change the Ruby version
-          key: v4-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
+          key: v5-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}-macos-{{ checksum ".macos_version" }}-ruby-3.2.0
           paths:
             - vendor/bundle
-            - ~/.rbenv/versions/3.2.0
 
   install-dependencies:
     parameters:
@@ -209,31 +199,31 @@ commands:
         type: boolean
         default: false
     steps:
+      # Ruby 3.2.0 comes from mise (see mise.toml); pinned to avoid a Fastlane crash on 3.2.2 and Ruby 3.3.
+      # rbenv is deprecated here in favor of mise.
+      - revenuecat/install-mise-tools:
+          tools: ruby
       - install-bundle-dependencies:
           directory: << parameters.directory >>
-      - run:
-          name: Generate homebrew cache key
-          command: |
-            echo "xcbeautify:<< parameters.install_xcbeautify >>" > .homebrew-deps
-            echo "mint:<< parameters.install_mint >>" >> .homebrew-deps
-      - restore_cache:
-          keys:
-            - v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
       - when:
           condition: << parameters.install_xcbeautify >>
           steps:
-            - install-brew-dependency:
-                dependency_name: "xcbeautify"
+            # xcbeautify (2.30.1) comes from mise (see mise.toml); replaces the deprecated brew install.
+            - revenuecat/install-mise-tools:
+                tools: xcbeautify
       - when:
           condition: << parameters.install_mint >>
           steps:
+            # Homebrew cache is now mint-only: xcbeautify moved to mise above.
+            - restore_cache:
+                keys:
+                  - v3-homebrew-cache-mint-{{ arch }}
             - install-brew-dependency:
                 dependency_name: "mint"
-      - save_cache:
-          key: v2-homebrew-cache-{{ checksum ".homebrew-deps" }}-{{ arch }}
-          paths:
-            - /opt/homebrew/Cellar/xcbeautify/
-            - /Users/$USER/Library/Caches/Homebrew/
+            - save_cache:
+                key: v3-homebrew-cache-mint-{{ arch }}
+                paths:
+                  - /Users/$USER/Library/Caches/Homebrew/
 
   install-brew-dependency:
     parameters:
@@ -254,6 +244,7 @@ commands:
           environment:
             HOMEBREW_NO_INSTALL_CLEANUP: 1
 
+  # Not on mise: mise.toml pins 2.30.1, which is not Xcode 14 compatible. Legacy Xcode 14 job only.
   install-xcbeautify-for-xcode14:
     description: "Installs xcbeautify 1.6.0 using Mint"
     steps:
@@ -274,23 +265,10 @@ commands:
             - ~/.mint
 
   install-xcbeautify-for-xcode15:
-    description: "Installs xcbeautify 2.30.1 using Mint"
+    description: "Installs xcbeautify (2.30.1) via mise (see mise.toml)"
     steps:
-      - restore_cache:
-          keys:
-            - mint-xcbeautify-2.30.1-{{ arch }}
-      - run:
-          name: Install xcbeautify 2.30.1 using Mint
-          command: |
-            if which xcbeautify > /dev/null 2>&1; then
-                echo "xcbeautify already installed, skipping."
-                exit 0
-            fi
-            mint install cpisciotta/xcbeautify@2.30.1
-      - save_cache:
-          key: mint-xcbeautify-2.30.1-{{ arch }}
-          paths:
-            - ~/.mint
+      - revenuecat/install-mise-tools:
+          tools: xcbeautify
 
   install-xcodes-for-xcode14:
     description: "Installs the xcodes 2.0.3 prebuilt binary"
@@ -562,16 +540,19 @@ commands:
         default: false
         description: "Whether to include test/dev dependencies when generating the workspace."
     steps:
-      - revenuecat/install-tuist
+      - revenuecat/install-mise-tools:
+          tools: tuist
       - run:
           name: Generate Tuist workspace
           command: |
-            export PATH="$HOME/.local/share/mise/shims:$PATH"
             export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
+            # --skip-tools: tuist is already installed by install-mise-tools above;
+            # without it, `mise run` re-verifies every declared tool (ruby, xcbeautify, etc.)
+            # on every call.
             if [ -n "<< parameters.query >>" ]; then
-              tuist install && tuist generate << parameters.query >> --no-open
+              mise run --skip-tools tuist-install && tuist generate << parameters.query >> --no-open
             else
-              tuist install && tuist generate --no-open
+              mise run --skip-tools tuist-install && tuist generate --no-open
             fi
 
   create-snapshot-pr-if-needed:
@@ -1588,9 +1569,10 @@ jobs:
           key: v2-gem-cache-{{ checksum "Gemfile.lock" }}-{{ arch }}
           paths:
             - vendor/bundle
-      - install-dependencies
+      - revenuecat/install-mise-tools:
+          tools: ruby,xcbeautify,tuist
+      - install-bundle-dependencies
       - update-spm-installation-commit
-      - revenuecat/install-tuist
       - run:
           name: Deployment checks
           command: bundle exec fastlane release_checks
@@ -1879,15 +1861,14 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-dependencies:
-          install_xcbeautify: false
-      - revenuecat/install-swiftlint
+      - revenuecat/install-mise-tools:
+          tools: ruby,swiftlint
+      - install-bundle-dependencies
       - run:
           command: mkdir -p fastlane/test_output/swiftlint
       - run:
           name: Run fastlane swiftlint lane
           command: |
-            export PATH="$HOME/.local/share/mise/shims:$PATH"
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
           no_output_timeout: 5m
@@ -1978,8 +1959,9 @@ jobs:
       - checkout
       - revenuecat/setup-git-credentials
       - revenuecat/trust-github-key
-      - install-dependencies
-      - revenuecat/install-tuist
+      - revenuecat/install-mise-tools:
+          tools: ruby,xcbeautify,tuist
+      - install-bundle-dependencies
       - run:
           name: Submit RCT Tester
           command: bundle exec fastlane deploy_rct_tester dry_run:<< parameters.dry_run >>
