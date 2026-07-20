@@ -109,6 +109,13 @@
 		16DA8ECD2E4EE33700283940 /* ImageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */; };
 		16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */; };
 		16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */; };
+		16F00A002FE0000000000001 /* PaywallWebViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000011 /* PaywallWebViewComponent.swift */; };
+		16F00A002FE0000000000002 /* PaywallWebViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000012 /* PaywallWebViewAPI.swift */; };
+		16F00A002FE0000000000003 /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000013 /* WebViewComponentView.swift */; };
+		16F00A002FE0000000000004 /* WebViewComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000014 /* WebViewComponentViewModel.swift */; };
+		16F00A002FE0000000000005 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000015 /* WebViewEnvelope.swift */; };
+		16F00A002FE0000000000006 /* WebViewIsolation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000016 /* WebViewIsolation.swift */; };
+		16F00A002FE0000000000007 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F00A002FE0000000000017 /* WebViewSession.swift */; };
 		16DA8F1E2E4FB6E200283940 /* ImageComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1B2E4FB6E200283940 /* ImageComponent.json */; };
 		16DA8F1F2E4FB6E200283940 /* VideoComponent.json in Resources */ = {isa = PBXBuildFile; fileRef = 16DA8F1C2E4FB6E200283940 /* VideoComponent.json */; };
 		16E146AD2E99F3480089B609 /* TransactionNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */; };
@@ -1671,6 +1678,19 @@
 		16DA8ECC2E4EE33700283940 /* ImageComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentTests.swift; sourceTree = "<group>"; };
 		16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallVideoComponent.swift; sourceTree = "<group>"; };
 		16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentTests.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000011 /* PaywallWebViewComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewComponent.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000012 /* PaywallWebViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewAPI.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000013 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000014 /* WebViewComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewModel.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000015 /* WebViewEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelope.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000016 /* WebViewIsolation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewIsolation.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000017 /* WebViewSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSession.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000018 /* WebViewEnvelopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelopeTests.swift; sourceTree = "<group>"; };
+		16F00A002FE0000000000019 /* PaywallWebViewValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValueTests.swift; sourceTree = "<group>"; };
+		16F00A002FE000000000001A /* WebViewSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSessionTests.swift; sourceTree = "<group>"; };
+		16F00A002FE000000000001B /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
+		16F00A002FE000000000001C /* WebViewIsolationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewIsolationTests.swift; sourceTree = "<group>"; };
+		16F00A002FE000000000001D /* WebViewNavigationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationPolicyTests.swift; sourceTree = "<group>"; };
 		16DA8F1B2E4FB6E200283940 /* ImageComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ImageComponent.json; sourceTree = "<group>"; };
 		16DA8F1C2E4FB6E200283940 /* VideoComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VideoComponent.json; sourceTree = "<group>"; };
 		16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionNotifications.swift; sourceTree = "<group>"; };
@@ -3232,6 +3252,12 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				16F00A002FE0000000000018 /* WebViewEnvelopeTests.swift */,
+				16F00A002FE0000000000019 /* PaywallWebViewValueTests.swift */,
+				16F00A002FE000000000001A /* WebViewSessionTests.swift */,
+				16F00A002FE000000000001B /* WebViewComponentTests.swift */,
+				16F00A002FE000000000001C /* WebViewIsolationTests.swift */,
+				16F00A002FE000000000001D /* WebViewNavigationPolicyTests.swift */,
 				802593842FE07057005AF6DF /* PaywallStateStoreTests.swift */,
 				16A9F7B62FAA22D0008E8A4D /* VideoComponentViewTests.swift */,
 				A9D45E4EAFAD4C0385BEDFB3 /* VideoPlayerViewTests.swift */,
@@ -3365,6 +3391,19 @@
 			path = Video;
 			sourceTree = "<group>";
 		};
+		16F00A002FE0000000000020 /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				16F00A002FE0000000000012 /* PaywallWebViewAPI.swift */,
+				16F00A002FE0000000000013 /* WebViewComponentView.swift */,
+				16F00A002FE0000000000014 /* WebViewComponentViewModel.swift */,
+				16F00A002FE0000000000015 /* WebViewEnvelope.swift */,
+				16F00A002FE0000000000016 /* WebViewIsolation.swift */,
+				16F00A002FE0000000000017 /* WebViewSession.swift */,
+			);
+			path = WebView;
+			sourceTree = "<group>";
+		};
 		1699BD5C2EEFBEEC002001FB /* DefaultPaywall */ = {
 			isa = PBXGroup;
 			children = (
@@ -3456,6 +3495,7 @@
 				0387D4AD2EC58AA5008E4A6B /* Countdown */,
 				E1C0A00BBEEF0001CCDD0001 /* Header */,
 				164681CD2E6B577600854AA5 /* Video */,
+				16F00A002FE0000000000020 /* WebView */,
 				2C7457472CEA66AB004ACE52 /* ComponentsView.swift */,
 				7707A94A2CAD936A006E0313 /* Button */,
 				03C06FC82D479C6300600693 /* Carousel */,
@@ -5950,6 +5990,7 @@
 			isa = PBXGroup;
 			children = (
 				16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */,
+				16F00A002FE0000000000011 /* PaywallWebViewComponent.swift */,
 				16A7F4C02E563B89001F9FC8 /* Transitions */,
 				03C730F22D35F13F00297FEC /* PaywallV2CacheWarming.swift */,
 				2CC791612CC0493600FBE120 /* Common */,
@@ -7512,6 +7553,7 @@
 				4F8929192A65EF3000A91EA2 /* EnsureNonEmptyCollectionDecodable.swift in Sources */,
 				757E73CE2F0FE2410066DCDC /* LocalTransactionMetadata.swift in Sources */,
 				16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */,
+				16F00A002FE0000000000001 /* PaywallWebViewComponent.swift in Sources */,
 				35F82BB626A9B8040051DF03 /* AttributionDataMigrator.swift in Sources */,
 				4F5F47082AA91F8A005649D8 /* HealthOperation.swift in Sources */,
 				4FEF41AB2B4F2F3400CD699F /* MapAppStoreDetector.swift in Sources */,
@@ -8311,6 +8353,12 @@
 				164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */,
 				164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */,
 				164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */,
+				16F00A002FE0000000000002 /* PaywallWebViewAPI.swift in Sources */,
+				16F00A002FE0000000000003 /* WebViewComponentView.swift in Sources */,
+				16F00A002FE0000000000004 /* WebViewComponentViewModel.swift in Sources */,
+				16F00A002FE0000000000005 /* WebViewEnvelope.swift in Sources */,
+				16F00A002FE0000000000006 /* WebViewIsolation.swift in Sources */,
+				16F00A002FE0000000000007 /* WebViewSession.swift in Sources */,
 				DBAA1FC22F8D4ED8000E8C81 /* HeaderNestedHeroZLayerSafeAreaPreview.swift in Sources */,
 				164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */,
 				2C7457422CE81107004ACE52 /* IntroOfferEligibilityContext.swift in Sources */,

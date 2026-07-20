@@ -101,6 +101,8 @@ struct ComponentsView: View {
             VideoComponentView(viewModel: viewModel)
         case .countdown(let viewModel):
             CountdownComponentView(viewModel: viewModel, onDismiss: onDismiss)
+        case .webView(let viewModel):
+            WebViewComponentView(viewModel: viewModel)
         }
     }
 }
