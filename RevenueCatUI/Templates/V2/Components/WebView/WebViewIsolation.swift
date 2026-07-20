@@ -30,7 +30,7 @@ enum WebViewIsolation {
                 encodedContentRuleList: rules
             ) { ruleList, error in
                 if let error {
-                    Logger.debug(Strings.paywall_web_view_content_rules_failed(String(describing: error)))
+                    Logger.error(Strings.paywall_web_view_content_rules_failed(String(describing: error)))
                 }
                 continuation.resume(returning: ruleList)
             }
