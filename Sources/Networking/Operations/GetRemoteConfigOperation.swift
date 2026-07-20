@@ -76,7 +76,6 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
 
     var cacheKey: String {
         [
-            "fetch_context=\(self.fetchContext.rawValue)",
             "app_user_id=\(self.appUserID)",
             "domain=\(self.domain)",
             "manifest=\(self.manifest ?? "")",

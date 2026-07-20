@@ -512,7 +512,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -522,7 +522,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -550,7 +550,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -560,7 +560,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -588,7 +588,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -598,7 +598,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -613,7 +613,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -626,13 +626,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -642,13 +642,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -658,13 +658,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))
@@ -687,7 +687,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -697,7 +697,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -722,7 +722,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -732,7 +732,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -757,7 +757,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -767,7 +767,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -785,7 +785,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit)
+                    size: .init(width: .fit(nil), height: .fit(nil))
                 )
             ),
             tabs: [
@@ -795,13 +795,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -811,13 +811,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -827,13 +827,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))
@@ -850,7 +850,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_toggle",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControlToggle(.init(
                             defaultValue: false,
@@ -861,7 +861,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         ))
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit)
+                    size: .init(width: .fit(nil), height: .fit(nil))
                 )
             ),
             tabs: [
@@ -871,13 +871,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -887,13 +887,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -903,13 +903,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))

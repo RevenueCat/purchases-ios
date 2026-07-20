@@ -166,7 +166,7 @@ struct BottomSheetViewTestView: View {
                 backgroundColor: nil
             ),
             backgroundBlur: false,
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         ),
         // swiftlint:disable:next force_try
         sheetStackViewModel: try! .init(component: .init(

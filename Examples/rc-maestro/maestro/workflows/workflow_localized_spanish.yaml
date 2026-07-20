@@ -1,0 +1,42 @@
+# Opens the workflow paywall (offering `default_workflows`) with a Spanish device locale and asserts
+# the workflow renders its Spanish localizations (from /v1/config) on both the first and second steps,
+# including the CTA. Launch arguments set the app's locale for this run (no simulator reboot needed).
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_localized_spanish.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow paywall renders Spanish localizations
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        AppleLanguages: "(es)"
+        AppleLocale: "es_ES"
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1: Spanish headline + localized CTA.
+- extendedWaitUntil:
+    visible: "Empieza tu semana gratis y recupera más de 30 minutos al día"
+    timeout: 15000
+- assertVisible: "Continuar"
+- takeScreenshot: "workflow_localized_spanish - screen 1"
+- tapOn:
+    text: "Continuar"
+
+# Screen 2: Spanish headline, proving localization persists across workflow navigation.
+- extendedWaitUntil:
+    visible: "La mayoría de las personas se sienten más tranquilas después de solo 3 sesiones"
+    timeout: 15000
+- takeScreenshot: "workflow_localized_spanish - screen 2"
