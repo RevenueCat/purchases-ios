@@ -12,10 +12,10 @@ final class WebViewComponentTests: TestCase {
 
     func testDecodesMinimalJSONDefaultsAndIgnoresUnknownKeys() throws {
         let minimal = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-        { "type": "web_view", "url": "https://example.com", "unknown": true }
+        { "type": "web_view", "id": "web", "protocol_version": 1, "url": "https://example.com", "unknown": true }
         """.utf8))
 
-        XCTAssertNil(minimal.id)
+        XCTAssertEqual(minimal.id, "web")
         XCTAssertNil(minimal.visible)
         XCTAssertEqual(minimal.protocolVersion, 1)
         XCTAssertEqual(minimal.size.width, .fill)
@@ -50,6 +50,8 @@ final class WebViewComponentTests: TestCase {
         let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
         {
           "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
           "url": "https://example.com/index.html",
           "capabilities": {
             "network_access": { "allowed_domains": ["api.segment.io"] },
@@ -62,7 +64,10 @@ final class WebViewComponentTests: TestCase {
         }
         """.utf8))
 
-        XCTAssertEqual(component, PaywallComponent.WebViewComponent(url: "https://example.com/index.html"))
+        XCTAssertEqual(
+            component,
+            PaywallComponent.WebViewComponent(id: "web", protocolVersion: 1, url: "https://example.com/index.html")
+        )
     }
 
     func testDecodesTemplateURLVerbatim() throws {
@@ -70,6 +75,7 @@ final class WebViewComponentTests: TestCase {
         let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
         {
           "type": "web_view",
+          "id": "web",
           "protocol_version": 1,
           "url": "https://example.com/{{ custom.animal }}.html"
         }
@@ -78,7 +84,11 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(component.url, "https://example.com/{{ custom.animal }}.html")
         XCTAssertEqual(
             component,
-            PaywallComponent.WebViewComponent(protocolVersion: 1, url: "https://example.com/{{ custom.animal }}.html")
+            PaywallComponent.WebViewComponent(
+                id: "web",
+                protocolVersion: 1,
+                url: "https://example.com/{{ custom.animal }}.html"
+            )
         )
     }
 
@@ -103,7 +113,23 @@ final class WebViewComponentTests: TestCase {
     func testDecodingWithoutURLThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-            { "type": "web_view" }
+            { "type": "web_view", "id": "web", "protocol_version": 1 }
+            """.utf8))
+        )
+    }
+
+    func testDecodingWithoutIDThrows() {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+            { "type": "web_view", "protocol_version": 1, "url": "https://example.com" }
+            """.utf8))
+        )
+    }
+
+    func testDecodingWithoutProtocolVersionThrows() {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+            { "type": "web_view", "id": "web", "url": "https://example.com" }
             """.utf8))
         )
     }

@@ -19,7 +19,7 @@ import Foundation
 
         /// Wire `type` value. `ComponentType.webView` is registered in the activation PR.
         let type: String
-        public let id: String?
+        public let id: String
         public let name: String?
         public let visible: Bool?
 
@@ -33,10 +33,10 @@ import Foundation
         public let size: Size
 
         public init(
-            id: String? = nil,
+            id: String,
             name: String? = nil,
             visible: Bool? = nil,
-            protocolVersion: Int = 1,
+            protocolVersion: Int,
             url: String,
             size: Size = .init(width: .fill, height: .fit(nil))
         ) {
@@ -62,10 +62,10 @@ import Foundation
         required public init(from decoder: Decoder) throws {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(String.self, forKey: .type)
-            self.id = try container.decodeIfPresent(String.self, forKey: .id)
+            self.id = try container.decode(String.self, forKey: .id)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
             self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
-            self.protocolVersion = try container.decodeIfPresent(Int.self, forKey: .protocolVersion) ?? 1
+            self.protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
             self.url = try container.decode(String.self, forKey: .url)
             self.size = try container.decodeIfPresent(Size.self, forKey: .size)
                 ?? .init(width: .fill, height: .fit(nil))
