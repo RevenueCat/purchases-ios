@@ -79,14 +79,26 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    public let paywallComponents: PaywallComponents?
+    @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
+    public var paywallComponents: PaywallComponents? { self.internalPaywallComponents }
 
     /**
-     Whether the offering contains a paywall.
+     Paywall components configuration defined in RevenueCat dashboard, used internally by the SDK.
+     */
+    @_spi(Internal) public let internalPaywallComponents: PaywallComponents?
+
+    /**
+    Whether the offering contains a paywall.
      */
     public var hasPaywall: Bool {
-        return paywall != nil || paywallComponents != nil
+        return paywall != nil || internalPaywallComponents != nil || hasPaywallComponents
     }
+
+    /**
+     Whether the backend served paywall components for this offering, tracked independently
+     of whether the components payload is retained in memory.
+     */
+    let hasPaywallComponents: Bool
 
     /**
      Draft paywall components configuration defined in RevenueCat dashboard.
@@ -235,6 +247,7 @@ import Foundation
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
+        hasPaywallComponents: Bool = false,
         draftPaywallComponents: PaywallComponents?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
@@ -244,7 +257,8 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
-        self.paywallComponents = paywallComponents
+        self.internalPaywallComponents = paywallComponents
+        self.hasPaywallComponents = hasPaywallComponents || paywallComponents != nil
         self.draftPaywallComponents = draftPaywallComponents
         self.webCheckoutUrl = webCheckoutUrl
 
@@ -315,7 +329,8 @@ public extension Offering {
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: paywall,
-            paywallComponents: paywallComponents,
+            paywallComponents: internalPaywallComponents,
+            hasPaywallComponents: hasPaywallComponents,
             draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
             webCheckoutUrl: webCheckoutUrl
@@ -330,6 +345,7 @@ public extension Offering {
             metadata: metadata,
             paywall: paywall,
             paywallComponents: paywallComponents,
+            hasPaywallComponents: true,
             draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl

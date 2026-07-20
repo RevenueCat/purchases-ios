@@ -123,6 +123,20 @@ public struct PaywallView: View {
 
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
+        offeringIdentifier: String,
+        displayCloseButton: Bool = false
+    ) {
+        self.init(
+            configuration: .init(
+                content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: .default()
+            )
+        )
+    }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -188,16 +202,13 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
-        // An injected workflow context (preview/injection path) is used directly; there is no
-        // synchronous cache seed for a workflow paywall, so otherwise the seed is nil and the async
-        // resolve path always takes over, falling back to the cached offering in the meantime.
-        let seededWorkflowContext = configuration.injectedWorkflowContext
-        self._workflowContext = .init(initialValue: seededWorkflowContext)
+        let initialPaywallViewData = configuration.purchaseHandler.cachedInitialPaywallViewData(
+            for: configuration.content,
+            injectedWorkflowContext: configuration.injectedWorkflowContext
+        )
+        self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
         self._offering = .init(
-            initialValue: seededWorkflowContext?.initialOffering
-                ?? configuration.purchaseHandler.cachedInitialOffering(
-                    for: configuration.content
-                )
+            initialValue: initialPaywallViewData?.offering
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
@@ -338,7 +349,10 @@ public struct PaywallView: View {
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+        let selectedPaywallComponents = useDraftPaywall
+            ? offering.draftPaywallComponents
+            : offering.internalPaywallComponents
+        if let paywallComponents = selectedPaywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
             let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
