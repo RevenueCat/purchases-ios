@@ -288,6 +288,7 @@ struct ButtonComponentView: View {
             }
         }
 #endif
+        self.purchaseHandler.signalWebCheckoutOpened()
         onDismiss()
     }
 }

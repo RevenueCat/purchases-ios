@@ -111,6 +111,12 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
+    /// Set to a new UUID each time the user taps a web checkout CTA.
+    /// Used to propagate the ``WebCheckoutOpenedPreferenceKey`` so callers can distinguish
+    /// "web checkout opened" from a regular cancellation.
+    @Published
+    fileprivate(set) var webCheckoutOpened: UUID?
+
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
@@ -258,6 +264,7 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
+        self.webCheckoutOpened = nil
         self.activePaywallSessionID = nil
     }
 
@@ -856,6 +863,14 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
+    /// Signals that the user tapped a web checkout CTA and the paywall is about to be dismissed
+    /// to open the browser. Sets a new UUID on ``webCheckoutOpened`` so the
+    /// ``WebCheckoutOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalWebCheckoutOpened() {
+        self.webCheckoutOpened = UUID()
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
@@ -1186,6 +1201,19 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
     static var defaultValue: NSError?
 
     static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
+        value = nextValue()
+    }
+
+}
+
+/// Preference key emitted whenever the user taps a web checkout CTA.
+/// Each new UUID represents a distinct tap, allowing consecutive taps to both fire the callback.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: UUID?
+
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
         value = nextValue()
     }
 
