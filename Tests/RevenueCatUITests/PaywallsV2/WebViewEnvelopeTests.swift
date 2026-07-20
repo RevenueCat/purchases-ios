@@ -4,7 +4,6 @@
 
 @testable import RevenueCatUI
 import XCTest
-// swiftlint:disable force_try
 
 #if !os(tvOS)
 
@@ -12,7 +11,7 @@ import XCTest
 final class WebViewEnvelopeTests: TestCase {
 
     func testDecodesValidConnectFrame() throws {
-        let envelope = WebViewEnvelope.decode(rawMessage: Self.json([
+        let envelope = WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "connect",
@@ -24,20 +23,20 @@ final class WebViewEnvelopeTests: TestCase {
         XCTAssertEqual(envelope?.componentID, "")
     }
 
-    func testRejectsMalformedFrames() {
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+    func testRejectsMalformedFrames() throws {
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": "wrong",
             "protocol_version": 1,
             "kind": "connect",
             "component_id": ""
         ])))
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "unknown",
             "component_id": ""
         ])))
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "message"
@@ -50,16 +49,16 @@ final class WebViewEnvelopeTests: TestCase {
         XCTAssertNil(WebViewEnvelope.decode(rawMessage: 1))
     }
 
-    func testDoesNotEnforceClientSideByteLimit() {
+    func testDoesNotEnforceClientSideByteLimit() throws {
         let payload = String(repeating: "x", count: 65_537)
         let frame = Self.frame(payload: ["value": payload])
 
-        XCTAssertNotNil(WebViewEnvelope.decode(rawMessage: Self.json(frame)))
+        XCTAssertNotNil(WebViewEnvelope.decode(rawMessage: try Self.json(frame)))
     }
 
-    func testDoesNotEnforceClientSideDepthLimit() {
+    func testDoesNotEnforceClientSideDepthLimit() throws {
         XCTAssertNotNil(
-            WebViewEnvelope.decode(rawMessage: Self.json(Self.frame(payload: Self.nestedObject(depth: 16))))
+            WebViewEnvelope.decode(rawMessage: try Self.json(Self.frame(payload: Self.nestedObject(depth: 16))))
         )
     }
 
@@ -77,7 +76,7 @@ final class WebViewEnvelopeTests: TestCase {
     }
 
     func testDecodesFullMessageFrameWithRichPayload() throws {
-        let envelope = try XCTUnwrap(WebViewEnvelope.decode(rawMessage: Self.json([
+        let envelope = try XCTUnwrap(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "response",
@@ -108,22 +107,22 @@ final class WebViewEnvelopeTests: TestCase {
         XCTAssertTrue(payload["nothing"]?.isNull == true)
     }
 
-    func testRejectsInvalidProtocolVersion() {
+    func testRejectsInvalidProtocolVersion() throws {
         // Missing protocol_version.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "kind": "message",
             "component_id": "web"
         ])))
         // Fractional protocol_version (integral only).
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1.5,
             "kind": "message",
             "component_id": "web"
         ])))
         // Non-numeric protocol_version.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": "1",
             "kind": "message",
@@ -131,9 +130,9 @@ final class WebViewEnvelopeTests: TestCase {
         ])))
     }
 
-    func testRejectsNonStringFieldsAndNonObjectPayload() {
+    func testRejectsNonStringFieldsAndNonObjectPayload() throws {
         // Non-string type.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "message",
@@ -141,7 +140,7 @@ final class WebViewEnvelopeTests: TestCase {
             "type": 123
         ])))
         // Non-string id.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "response",
@@ -149,7 +148,7 @@ final class WebViewEnvelopeTests: TestCase {
             "id": 123
         ])))
         // Non-string error.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "error",
@@ -157,7 +156,7 @@ final class WebViewEnvelopeTests: TestCase {
             "error": 123
         ])))
         // Non-object payload.
-        XCTAssertNil(WebViewEnvelope.decode(rawMessage: Self.json([
+        XCTAssertNil(WebViewEnvelope.decode(rawMessage: try Self.json([
             "channel": WebViewEnvelope.channel,
             "protocol_version": 1,
             "kind": "message",
@@ -207,13 +206,6 @@ final class WebViewEnvelopeTests: TestCase {
         }
     }
 
-    func testReservedPayloadKeysMatchWireProtocol() {
-        XCTAssertEqual(
-            WebViewEnvelope.reservedPayloadKeys,
-            ["channel", "protocol_version", "kind", "type", "component_id", "id", "error", "variables"]
-        )
-    }
-
     private static func frame(payload: [String: Any]) -> [String: Any] {
         [
             "channel": WebViewEnvelope.channel,
@@ -233,9 +225,9 @@ final class WebViewEnvelopeTests: TestCase {
         return value
     }
 
-    static func json(_ object: [String: Any]) -> String {
-        let data = try! JSONSerialization.data(withJSONObject: object)
-        return String(data: data, encoding: .utf8)!
+    static func json(_ object: [String: Any]) throws -> String {
+        let data = try JSONSerialization.data(withJSONObject: object)
+        return try XCTUnwrap(String(data: data, encoding: .utf8))
     }
 
     static func decodeEnvelope(fromScript script: String) throws -> WebViewEnvelope.Envelope {

@@ -108,10 +108,6 @@ enum WebViewEnvelope {
         """
     }
 
-    static let reservedPayloadKeys: Set<String> = [
-        "channel", "protocol_version", "kind", "type", "component_id", "id", "error", "variables"
-    ]
-
 }
 
 #endif
