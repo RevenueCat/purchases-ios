@@ -13,9 +13,8 @@ import WebKit
 final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let componentID: String
-    /// The canonical origin every message is gated against, or `nil` when the caller's origin
-    /// could not be normalized. A `nil` origin makes the bridge inert (all traffic is rejected).
-    let expectedOrigin: String?
+    /// The canonical origin every message is gated against.
+    let expectedOrigin: WebViewOrigin
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
     var onDocumentReset: (@MainActor () -> Void)?
@@ -36,20 +35,13 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     init(
         componentID: String,
-        expectedOrigin: String,
+        expectedOrigin: WebViewOrigin,
         fitAxes: (width: Bool, height: Bool),
         evaluateJavaScript: @escaping (String) -> Void,
         currentURL: @escaping () -> URL?
     ) {
         self.componentID = componentID
-        // Normalize to a canonical origin so comparisons match the navigation policy, whether the
-        // caller passes a bare origin or a full URL. A value that cannot be normalized is kept `nil`
-        // so the bridge stays inert and the misconfiguration is diagnosable.
-        let normalizedOrigin = URL(string: expectedOrigin)?.webViewOrigin
-        if normalizedOrigin == nil {
-            Logger.warning(Strings.paywall_web_view_invalid_expected_origin(expectedOrigin))
-        }
-        self.expectedOrigin = normalizedOrigin
+        self.expectedOrigin = expectedOrigin
         self.fitAxes = fitAxes
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
@@ -72,7 +64,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     ) {
         // Validate against the origin of the frame that actually posted the message, not the
         // WebView's top-level URL (which can lag behind navigations).
-        let sourceOrigin = message.frameInfo.securityOrigin.webViewOrigin
+        let sourceOrigin = WebViewOrigin(securityOrigin: message.frameInfo.securityOrigin)?.value
         let isMainFrame = message.frameInfo.isMainFrame
         let body = message.body
         self.handle(rawMessage: body, isMainFrame: isMainFrame, sourceOrigin: sourceOrigin)
@@ -255,22 +247,19 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     /// origin (the authoritative source); subframe messages are always rejected — isolation for
     /// those is expected from the server CSP.
     private func isSourceTrusted(sourceOrigin: String?, isMainFrame: Bool) -> Bool {
-        guard isMainFrame, let expectedOrigin = self.expectedOrigin, let sourceOrigin else {
+        guard isMainFrame else {
             return false
         }
-        return sourceOrigin == expectedOrigin
+        return self.expectedOrigin.matches(originString: sourceOrigin)
     }
 
     /// Whether the WebView's current top-level URL still has the expected origin. Used only as an
     /// outbound defense-in-depth check; inbound traffic is gated by ``isSourceTrusted(sourceOrigin:isMainFrame:)``.
     private func isCurrentURLTrusted(allowBeforeNavigation: Bool) -> Bool {
-        guard let expectedOrigin = self.expectedOrigin else {
-            return false
-        }
         guard let currentURL = self.currentURL() else {
             return allowBeforeNavigation
         }
-        return currentURL.webViewOrigin == expectedOrigin
+        return self.expectedOrigin.matches(url: currentURL)
     }
 
     private func logRejected(_ reason: String) {
