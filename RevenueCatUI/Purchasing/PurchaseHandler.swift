@@ -883,6 +883,14 @@ extension PurchaseHandler {
         self.activePaywallSessionID = nil
     }
 
+    /// Clears a pending web checkout signal without a full session reset. Used when an exit offer is
+    /// about to be presented reusing this same `PurchaseHandler`, so the exit offer's paywall doesn't
+    /// spuriously observe a stale, already-handled signal from the paywall it replaced.
+    @MainActor
+    func clearWebCheckoutOpened() {
+        self.webCheckoutOpened = nil
+    }
+
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
         return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
     }
