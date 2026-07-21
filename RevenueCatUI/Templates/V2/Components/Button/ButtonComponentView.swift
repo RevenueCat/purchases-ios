@@ -276,19 +276,14 @@ struct ButtonComponentView: View {
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
         self.purchaseHandler.invalidateCustomerInfoCache()
-#if os(watchOS)
-        // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
-        openURL(url)
-#else
-        openURL(url) { success in
-            if success {
-                Logger.debug(Strings.successfully_opened_url_external_browser(url.absoluteString))
-            } else {
-                Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
-            }
+        Browser.navigateTo(url: url,
+                           method: method,
+                           openURL: self.openURL,
+                           inAppBrowserURL: self.$inAppBrowserURL) { opened in
+            guard opened else { return }
+            self.purchaseHandler.signalWebCheckoutOpened()
+            onDismiss()
         }
-#endif
-        onDismiss()
     }
 }
 
