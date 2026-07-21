@@ -38,6 +38,7 @@ class Backend {
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType?,
         dateProvider: DateProvider = DateProvider()
     ) {
         let httpClient = HTTPClient(systemInfo: systemInfo,
@@ -46,7 +47,8 @@ class Backend {
                                     diagnosticsTracker: diagnosticsTracker,
                                     networkTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
-                                    apiSourceProvider: apiSourceProvider)
+                                    apiSourceProvider: apiSourceProvider,
+                                    timeoutManager: timeoutManager)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),

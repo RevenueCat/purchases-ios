@@ -24,26 +24,38 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
         case unexpectedStatusCode(Int)
     }
 
-    static let timeout: TimeInterval = 5
-
     private let session: URLSession
+    private let timeoutManager: HTTPRequestTimeoutManagerType
 
-    init(session: URLSession = URLSession(
-        configuration: URLSessionRemoteConfigBlobDownloader.defaultSessionConfiguration()
-    )) {
+    init(timeoutManager: HTTPRequestTimeoutManagerType, session: URLSession = .shared) {
+        self.timeoutManager = timeoutManager
         self.session = session
     }
 
-    static func defaultSessionConfiguration() -> URLSessionConfiguration {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = Self.timeout
-        configuration.timeoutIntervalForResource = Self.timeout
-        return configuration
+    func data(from url: URL) async throws -> Data {
+        let host = url.host
+        let timeout = self.timeoutManager.timeout(host: host,
+                                                  isFallbackHostRequest: false,
+                                                  endpointSupportsFallbackURLs: false,
+                                                  isProxied: false)
+
+        var request = URLRequest(url: url)
+        request.timeoutInterval = timeout
+
+        do {
+            let data = try await self.performRequest(request)
+            self.timeoutManager.recordRequestResult(host: host, .successOnMainBackend)
+            return data
+        } catch {
+            let isTimeout = (error as? URLError)?.code == .timedOut
+            self.timeoutManager.recordRequestResult(host: host, isTimeout ? .mainSourceTimedOut : .other)
+            throw error
+        }
     }
 
-    func data(from url: URL) async throws -> Data {
+    private func performRequest(_ request: URLRequest) async throws -> Data {
         return try await withCheckedThrowingContinuation { continuation in
-            let task = self.session.dataTask(with: url) { data, response, error in
+            let task = self.session.dataTask(with: request) { data, response, error in
                 if let error {
                     continuation.resume(throwing: error)
                     return

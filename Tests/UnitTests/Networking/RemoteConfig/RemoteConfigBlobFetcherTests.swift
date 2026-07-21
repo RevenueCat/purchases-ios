@@ -244,7 +244,9 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            downloader: URLSessionRemoteConfigBlobDownloader()
+            downloader: URLSessionRemoteConfigBlobDownloader(
+                timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15)
+            )
         )
 
         let result = await self.fetcher.ensureDownloaded(ref: ref)
