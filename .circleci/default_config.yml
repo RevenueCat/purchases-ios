@@ -1601,6 +1601,8 @@ jobs:
     steps:
       - revenuecat/setup-git-credentials
       - checkout
+      - revenuecat/install-mise-tools:
+          tools: ruby
       - install-bundle-dependencies
       - run:
           name: Build docs
@@ -1618,6 +1620,8 @@ jobs:
     steps:
       - revenuecat/setup-git-credentials
       - checkout
+      - revenuecat/install-mise-tools:
+          tools: ruby
       - install-bundle-dependencies
       - run:
           name: Build docs
@@ -1643,6 +1647,8 @@ jobs:
       name: macos-executor
     steps:
       - checkout
+      - revenuecat/install-mise-tools:
+          tools: ruby
       - install-bundle-dependencies
       - revenuecat/trust-github-key
       - run:
@@ -1655,6 +1661,8 @@ jobs:
       name: macos-executor
     steps:
       - checkout
+      - revenuecat/install-mise-tools:
+          tools: ruby
       - install-bundle-dependencies
       - revenuecat/trust-github-key
       - run:
