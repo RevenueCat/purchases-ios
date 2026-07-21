@@ -129,6 +129,7 @@ class MockDeviceCache: DeviceCache {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
         self.latestCachedOfferingsContents = diskContents ?? offerings.contents
+        self.stubbedOfferings = offerings
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
