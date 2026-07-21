@@ -1021,13 +1021,19 @@ extension Result where Success == VerifiedHTTPResponse<Data>, Failure == Network
 
     // Parses a `Result<VerifiedHTTPResponse<Data>>` to `Result<VerifiedHTTPResponse<Value>>`
     func parseResponse<Value: HTTPResponseBody>() -> VerifiedHTTPResponse<Value>.Result {
+        return self.parseResponse { data, statusCode in
+            try Value.create(with: data, httpStatusCode: statusCode)
+        }
+    }
+
+    /// Parses a response using a request-specific decoder while preserving standard network decoding errors.
+    func parseResponse<Value: HTTPResponseBody>(
+        using create: (Data, HTTPStatusCode) throws -> Value
+    ) -> VerifiedHTTPResponse<Value>.Result {
         return self.flatMap { response in                   // Convert the `Result` type
             Result<VerifiedHTTPResponse<Value>, Error> {    // Create a new `Result<Value>`
                 try response.mapBody { data in              // Convert the from `Data` -> `Value`
-                    try Value.create(                       // Decode `Data` into `Value`
-                        with: data,
-                        httpStatusCode: response.httpStatusCode
-                    )
+                    try create(data, response.httpStatusCode)
                 }
                 .copyWithNewRequestDate()                   // Update request date for 304 responses
             }

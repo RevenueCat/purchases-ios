@@ -39,6 +39,15 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.saveDataInvocations.count, 1)
     }
 
+    func testSetDataWritesBytesWithoutEncoding() {
+        let (mock, sut) = self.makeSystemUnderTest()
+        let data = Data([0x00, 0x01, 0xfe, 0xff])
+        mock.stubSaveData(with: .success(.init(data: data, url: baseDirectory)))
+
+        XCTAssertTrue(sut.set(data: data, forKey: "raw-key"))
+        XCTAssertEqual(mock.saveDataInvocations.first?.data, data)
+    }
+
     func testValueReturnsDecodedData() throws {
         let (mock, sut) = self.makeSystemUnderTest()
         let key = "value-key"

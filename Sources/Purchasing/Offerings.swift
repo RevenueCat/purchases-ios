@@ -218,10 +218,15 @@ extension Offerings {
     struct Contents {
         var response: OfferingsResponse
         var originalSource: Offerings.OriginalSource
+        /// Original verified response bytes used only to persist the existing offerings cache representation.
+        var responseDataForCache: Data?
 
-        init(response: OfferingsResponse, httpResponseOriginalSource: HTTPResponseOriginalSource) {
+        init(response: OfferingsResponse,
+             httpResponseOriginalSource: HTTPResponseOriginalSource,
+             responseDataForCache: Data? = nil) {
             self.response = response
             self.originalSource = Offerings.OriginalSource(httpResponseOriginalSource: httpResponseOriginalSource)
+            self.responseDataForCache = responseDataForCache
         }
     }
 }
@@ -249,6 +254,7 @@ extension Offerings.Contents: Codable {
         self.response = try OfferingsResponse(from: decoder)
         self.originalSource = try container.decodeIfPresent(Offerings.OriginalSource.self,
                                                             forKey: .originalSource) ?? .main
+        self.responseDataForCache = nil
     }
 
 }

@@ -145,9 +145,13 @@ class MockDeviceCache: DeviceCache {
         self.clearCachedOfferingsCount += 1
     }
 
-    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+    override func cachedOfferingsContents(
+        appUserID: String,
+        decodingMode: OfferingsResponse.DecodingMode = .full
+    ) -> Offerings.Contents? {
         if let stubbedCachedOfferingsData {
-            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+            let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
+            return try? decoder.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
         }
         return nil
     }
