@@ -112,7 +112,8 @@ enum Strings {
     // WebView
     case paywall_web_view_message_rejected(reason: String)
     case paywall_web_view_post_message_failed(String)
-    case paywall_web_view_post_message_skipped
+    case paywall_web_view_post_message_skipped(reason: String)
+    case paywall_web_view_invalid_expected_origin(String)
     case paywall_web_view_content_process_terminated
 
     // Exit Offers
@@ -374,8 +375,11 @@ extension Strings: CustomStringConvertible {
             return "Paywalls V2 web_view message rejected: \(reason)"
         case .paywall_web_view_post_message_failed(let error):
             return "Paywalls V2 web_view postMessage failed: \(error)"
-        case .paywall_web_view_post_message_skipped:
-            return "Paywalls V2 web_view postMessage skipped because the channel is not ready or origin changed."
+        case .paywall_web_view_post_message_skipped(let reason):
+            return "Paywalls V2 web_view postMessage skipped: \(reason)"
+        case .paywall_web_view_invalid_expected_origin(let origin):
+            return "Paywalls V2 web_view expected origin '\(origin)' is not a valid origin; " +
+                "the bridge cannot verify message provenance and will reject all messages."
         case .paywall_web_view_content_process_terminated:
             return "Paywalls V2 web_view content process terminated. Removing the web view."
 
