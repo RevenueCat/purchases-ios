@@ -41,7 +41,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.componentID = componentID
         // Normalize to a canonical origin so comparisons match the navigation policy (and Android),
         // whether the caller passes a bare origin or a full URL.
-        self.expectedOrigin = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:)) ?? expectedOrigin
+        self.expectedOrigin = URL(string: expectedOrigin)?.webViewOrigin ?? expectedOrigin
         self.fitAxes = fitAxes
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
@@ -58,18 +58,16 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.onDocumentReset?()
     }
 
-    nonisolated func userContentController(
+    func userContentController(
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
         // Validate against the origin of the frame that actually posted the message, not the
         // WebView's top-level URL (which can lag behind navigations).
-        let sourceOrigin = WebViewOrigin.origin(of: message.frameInfo.securityOrigin)
+        let sourceOrigin = message.frameInfo.securityOrigin.webViewOrigin
         let isMainFrame = message.frameInfo.isMainFrame
         let body = message.body
-        MainActor.assumeIsolated {
-            self.handle(rawMessage: body, isMainFrame: isMainFrame, sourceOrigin: sourceOrigin)
-        }
+        self.handle(rawMessage: body, isMainFrame: isMainFrame, sourceOrigin: sourceOrigin)
     }
 
     func handle(rawMessage: Any, isMainFrame: Bool, sourceOrigin: String?) {
@@ -255,7 +253,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         guard let currentURL = self.currentURL() else {
             return allowBeforeNavigation
         }
-        return WebViewOrigin.origin(of: currentURL) == self.expectedOrigin
+        return currentURL.webViewOrigin == self.expectedOrigin
     }
 
     private func logRejected(_ reason: String) {
