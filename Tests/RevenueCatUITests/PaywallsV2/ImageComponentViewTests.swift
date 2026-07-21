@@ -177,7 +177,7 @@ final class ImageComponentViewTests: TestCase {
             source: .init(
                 light: .init(width: 750, height: 530, original: url, heic: url, heicLowRes: url)
             ),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fitMode: .fit,
             padding: padding,
             margin: margin,
