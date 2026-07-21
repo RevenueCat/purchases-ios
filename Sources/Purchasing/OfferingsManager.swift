@@ -30,6 +30,7 @@ class OfferingsManager {
     private let remoteConfigManager: RemoteConfigManagerType?
     private let uiConfigProvider: UiConfigProvider?
     private let workflowAssetPrewarmer: WorkflowAssetPrewarmingType?
+    private let offeringsCacheGeneration = Atomic(0)
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -130,10 +131,15 @@ class OfferingsManager {
     ) {
         // We keep track of preferred locales at the time of launching the request
         let preferredLocales = systemInfo.preferredLocales
+        // Snapshot the generation before the mode. If remote config disables between these reads,
+        // the request is conservatively treated as stale instead of allowing a pruned response into
+        // the new generation.
+        let cacheGeneration = self.offeringsCacheGeneration.value
+        let decodingMode = self.offeringsResponseDecodingMode
         self.backend.offerings.getOfferings(
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded,
-            decodingMode: self.offeringsResponseDecodingMode
+            decodingMode: decodingMode
         ) { result in
             switch result {
             case let .success(contents):
@@ -142,6 +148,7 @@ class OfferingsManager {
                                                   isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
+                                                  cacheGeneration: cacheGeneration,
                                                   completion: completion)
 
             case let .failure(backendError) where backendError.shouldFallBackToCache:
@@ -206,6 +213,7 @@ class OfferingsManager {
     }
 
     func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
+        self.offeringsCacheGeneration.modify { $0 += 1 }
         let cachedOfferings = self.deviceCache.cachedOfferings
 
         // Preserve the full response on disk so it can provide legacy paywall components if the network fails.
@@ -371,6 +379,7 @@ private extension OfferingsManager {
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
+        cacheGeneration: Int,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
         self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
@@ -378,10 +387,18 @@ private extension OfferingsManager {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
-                self.deviceCache.cache(offerings: offeringsResultData.offerings,
-                                       diskContents: contents,
-                                       preferredLocales: preferredLocales,
-                                       appUserID: appUserID)
+                let didCache = self.offeringsCacheGeneration.modify { currentGeneration in
+                    guard currentGeneration == cacheGeneration else { return false }
+
+                    self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                           diskContents: contents,
+                                           preferredLocales: preferredLocales,
+                                           appUserID: appUserID)
+                    return true
+                }
+
+                // Superseded background refreshes have nothing to deliver and must not mutate either cache.
+                guard didCache || completion != nil else { return }
 
                 // A background refresh (nil completion) only updates the cache; skip the
                 // readiness gate so it doesn't await (and decode) config for a no-op delivery.
