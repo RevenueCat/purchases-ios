@@ -211,15 +211,89 @@ final class WebViewSessionTests: TestCase {
         XCTAssertFalse(harness.session.channelOpen)
     }
 
+    // MARK: - Origin gating
+
+    func testDropsInboundFromUntrustedOrigin() {
+        let harness = Harness()
+        harness.connect()
+
+        harness.handle(
+            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize),
+            sourceOrigin: "https://evil.example.org"
+        )
+
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testDropsConnectFromUntrustedOrigin() {
+        let harness = Harness()
+
+        harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: "https://evil.example.org")
+
+        XCTAssertFalse(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testDropsInboundWithoutSourceOrigin() {
+        let harness = Harness()
+
+        harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: nil)
+
+        XCTAssertFalse(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testConnectBeforeNavigationURLIsAvailable() throws {
+        let harness = Harness()
+        harness.currentURL = nil
+
+        harness.handle(.init(kind: .connect, componentID: ""))
+
+        XCTAssertTrue(harness.session.channelOpen)
+        XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`])
+    }
+
+    func testNormalizesExpectedOriginFromFullURL() {
+        // Caller passes a full URL (path, uppercase host, explicit default port). It must normalize
+        // to a canonical origin so trusted same-origin traffic still matches.
+        let harness = Harness(expectedOrigin: "https://Example.com:443/paywall/index.html")
+
+        harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: "https://example.com")
+
+        XCTAssertTrue(harness.session.channelOpen)
+    }
+
+    func testDeliversOutboundOnSameOriginDifferentPath() throws {
+        let harness = Harness(size: (width: false, height: true))
+        harness.currentURL = URL(string: "https://example.com/promo/step-two.html")!
+
+        harness.handle(.init(kind: .connect, componentID: ""))
+
+        XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`, .message])
+    }
+
+    func testDropsOutboundAfterNavigationToUnexpectedOrigin() {
+        let harness = Harness()
+        // Inbound source is still the trusted origin, but the top-level URL has left it: every
+        // outbound frame (even `init`) must be dropped.
+        harness.currentURL = URL(string: "https://evil.example.org/phish.html")!
+
+        harness.handle(.init(kind: .connect, componentID: ""))
+
+        XCTAssertTrue(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
     // MARK: - Round trip through a real WKWebView
 
     func testRoundTripThroughRealWebView() throws {
         let expectedURL = URL(string: "https://example.com/index.html")!
         let session = WebViewSession(
             componentID: "web",
-            protocolVersion: 1,
             expectedOrigin: "https://example.com",
-            fitAxes: (width: false, height: false)
+            fitAxes: (width: false, height: false),
+            evaluateJavaScript: { _ in },
+            currentURL: { nil }
         )
 
         let configuration = WKWebViewConfiguration()
@@ -363,18 +437,22 @@ private final class RoundTripNavigationDelegate: NSObject, WKNavigationDelegate 
 @MainActor
 private final class Harness {
 
+    static let expectedOrigin = "https://example.com"
+
     let session: WebViewSession
     var capturedScripts: [String] = []
-    var currentURL = URL(string: "https://example.com/path")!
+    var currentURL: URL? = URL(string: "https://example.com/path")!
 
     init(
-        size: (width: Bool, height: Bool) = (false, false)
+        size: (width: Bool, height: Bool) = (false, false),
+        expectedOrigin: String = Harness.expectedOrigin
     ) {
         self.session = WebViewSession(
             componentID: "web",
-            protocolVersion: 99,
-            expectedOrigin: "https://example.com",
-            fitAxes: size
+            expectedOrigin: expectedOrigin,
+            fitAxes: size,
+            evaluateJavaScript: { _ in },
+            currentURL: { nil }
         )
         self.session.evaluateJavaScript = { [weak self] script in
             self?.capturedScripts.append(script)
@@ -389,12 +467,16 @@ private final class Harness {
         self.capturedScripts.removeAll()
     }
 
-    func handle(_ envelope: WebViewEnvelope.Envelope, isMainFrame: Bool = true) {
+    func handle(
+        _ envelope: WebViewEnvelope.Envelope,
+        isMainFrame: Bool = true,
+        sourceOrigin: String? = Harness.expectedOrigin
+    ) {
         let data = try! JSONEncoder().encode(envelope)
         self.session.handle(
             rawMessage: String(data: data, encoding: .utf8)!,
             isMainFrame: isMainFrame,
-            currentURL: self.currentURL
+            sourceOrigin: sourceOrigin
         )
     }
 

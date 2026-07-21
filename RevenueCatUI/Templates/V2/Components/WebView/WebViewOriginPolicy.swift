@@ -26,6 +26,26 @@ enum WebViewOrigin {
         return "\(scheme)://\(host)\(suffix)"
     }
 
+    /// Canonical origin of the frame that posted a script message. Uses the frame's security origin
+    /// (the authoritative sender) rather than the WebView's top-level URL.
+    nonisolated static func origin(of securityOrigin: WKSecurityOrigin) -> String? {
+        let scheme = securityOrigin.`protocol`.lowercased()
+        let host = securityOrigin.host.lowercased()
+        guard !scheme.isEmpty, !host.isEmpty else {
+            return nil
+        }
+
+        let port = securityOrigin.port
+        let suffix: String
+        // `WKSecurityOrigin` reports `0` for the scheme's default port.
+        if port != 0, !Self.isDefaultPort(port, scheme: scheme) {
+            suffix = ":\(port)"
+        } else {
+            suffix = ""
+        }
+        return "\(scheme)://\(host)\(suffix)"
+    }
+
     nonisolated private static func isDefaultPort(_ port: Int, scheme: String) -> Bool {
         (scheme == "https" && port == 443) || (scheme == "http" && port == 80)
     }
