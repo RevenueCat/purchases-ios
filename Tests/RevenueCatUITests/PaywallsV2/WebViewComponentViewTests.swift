@@ -67,6 +67,23 @@ final class WebViewComponentViewTests: TestCase {
         }
     }
 
+    #if canImport(WebKit)
+    func testViewModelResolvesOriginFromValidURL() {
+        let viewModel = WebViewComponentViewModel(
+            component: .init(id: "web", protocolVersion: 1, url: "https://example.com/path?q=1")
+        )
+        XCTAssertEqual(viewModel.origin?.value, "https://example.com")
+    }
+
+    func testViewModelHasNoOriginWhenURLIsInvalid() {
+        let viewModel = WebViewComponentViewModel(
+            component: .init(id: "web", protocolVersion: 1, url: "http://example.com")
+        )
+        XCTAssertNil(viewModel.url)
+        XCTAssertNil(viewModel.origin)
+    }
+    #endif
+
     func testViewModelDefaultsToVisible() {
         XCTAssertTrue(
             WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "https://example.com"))
@@ -117,7 +134,7 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
     func testDidCommitResetsConnectedSessionChannel() {
         let session = WebViewSession(
             componentID: "web",
-            expectedOrigin: "https://example.com",
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!,
             fitAxes: (width: false, height: false),
             evaluateJavaScript: { _ in },
             currentURL: { nil }
@@ -130,7 +147,9 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         )
         XCTAssertTrue(session.channelOpen)
 
-        let coordinator = WebViewRepresentable.Coordinator(expectedOrigin: "https://example.com")
+        let coordinator = WebViewRepresentable.Coordinator(
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!
+        )
         coordinator.session = session
         coordinator.webView(WKWebView(frame: .zero), didCommit: nil)
 
@@ -138,7 +157,9 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
     }
 
     func testProcessTerminationInvokesCallbackOncePerCall() {
-        let coordinator = WebViewRepresentable.Coordinator(expectedOrigin: "https://example.com")
+        let coordinator = WebViewRepresentable.Coordinator(
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!
+        )
         var calls = 0
         coordinator.onProcessTerminated = { calls += 1 }
 
@@ -151,7 +172,7 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
 
     // Note: the coordinator's `decidePolicyFor` is a thin delegation to
     // `WebViewNavigationPolicy.policy(for:isMainFrame:expectedOrigin:)`, which is exhaustively
-    // covered (allow/cancel, origin normalization, nil/empty origin) in WebViewNavigationPolicyTests.
+    // covered (allow/cancel, origin normalization, nil URL) in WebViewNavigationPolicyTests.
     // `WKNavigationAction`/`WKFrameInfo` cannot be constructed or subclassed for a unit test, so the
     // delegation itself is not re-tested here.
 
