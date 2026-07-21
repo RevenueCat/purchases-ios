@@ -132,6 +132,7 @@ private final class MockAudioSession: AudioSessionConfiguring {
     var category: AVAudioSession.Category { configuration.category }
     var mode: AVAudioSession.Mode { configuration.mode }
     var categoryOptions: AVAudioSession.CategoryOptions { configuration.options }
+    var secondaryAudioShouldBeSilencedHint = false
 
     init(configuration: Configuration = .default) {
         self.configuration = configuration

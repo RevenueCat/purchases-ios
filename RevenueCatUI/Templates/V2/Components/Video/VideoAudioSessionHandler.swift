@@ -20,6 +20,7 @@ protocol AudioSessionConfiguring: AnyObject {
     var category: AVAudioSession.Category { get }
     var mode: AVAudioSession.Mode { get }
     var categoryOptions: AVAudioSession.CategoryOptions { get }
+    var secondaryAudioShouldBeSilencedHint: Bool { get }
 
     func setCategory(
         _ category: AVAudioSession.Category,
@@ -101,11 +102,17 @@ final class VideoAudioSessionHandler {
             return
         }
 
+        guard let restorationConfiguration = state.previousConfiguration.restoringMixingIfNeeded(
+            externalAudioIsPlaying: audioSession.secondaryAudioShouldBeSilencedHint
+        ) else {
+            return
+        }
+
         do {
             try audioSession.setCategory(
-                state.previousConfiguration.category,
-                mode: state.previousConfiguration.mode,
-                options: state.previousConfiguration.options
+                restorationConfiguration.category,
+                mode: restorationConfiguration.mode,
+                options: restorationConfiguration.options
             )
         } catch {
             Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
@@ -145,6 +152,20 @@ private extension VideoAudioSessionHandler {
             mode: .default,
             options: [.mixWithOthers]
         )
+
+        /// Returns `nil` when restoring this configuration would interrupt audio from another app.
+        func restoringMixingIfNeeded(externalAudioIsPlaying: Bool) -> Self? {
+            guard externalAudioIsPlaying else {
+                return self
+            }
+
+            switch category {
+            case .playback, .playAndRecord, .multiRoute:
+                return Self(category: category, mode: mode, options: options.union(.mixWithOthers))
+            default:
+                return nil
+            }
+        }
 
         private init(
             category: AVAudioSession.Category,
