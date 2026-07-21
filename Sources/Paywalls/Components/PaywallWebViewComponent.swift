@@ -17,14 +17,12 @@ import Foundation
 
     final class WebViewComponent: PaywallComponentBase {
 
-        /// Wire `type` value. `ComponentType.webView` is registered in the activation PR.
+        /// Wire `type` value, kept as a `String` because `web_view` is not yet a `ComponentType` case.
         let type: String
         public let id: String
         public let name: String?
         public let visible: Bool?
 
-        /// The declared Paywalls web component protocol version.
-        /// Decoded and preserved; native host capability is fixed by the SDK build.
         public let protocolVersion: Int
 
         /// The static HTTPS URL of the web bundle entry point.
