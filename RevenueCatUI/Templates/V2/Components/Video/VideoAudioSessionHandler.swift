@@ -37,9 +37,13 @@ extension AVAudioSession: AudioSessionConfiguring {}
 /// The playback category keeps the host app's background audio working, while `mixWithOthers`
 /// prevents the paywall video from interrupting audio played by another app. The initial session
 /// configuration is restored only after the last video is released.
+///
+/// Isolated to the main actor: the SwiftUI video coordinators that own it are created and
+/// dismantled on the main actor, so the shared `states` map is accessed single-threaded and needs
+/// no locking. Registration happens in `init`; the owner must call `release()` from its teardown.
+@MainActor
 final class VideoAudioSessionHandler {
 
-    private static let lock = NSLock()
     private static var states: [ObjectIdentifier: State] = [:]
 
     private let audioSession: AudioSessionConfiguring
@@ -49,9 +53,6 @@ final class VideoAudioSessionHandler {
     init(audioSession: AudioSessionConfiguring = AVAudioSession.sharedInstance()) {
         self.audioSession = audioSession
         self.sessionIdentifier = ObjectIdentifier(audioSession)
-
-        Self.lock.lock()
-        defer { Self.lock.unlock() }
 
         if let state = Self.states[sessionIdentifier] {
             state.handlerCount += 1
@@ -82,13 +83,14 @@ final class VideoAudioSessionHandler {
         }
     }
 
-    deinit {
-        Self.lock.lock()
-        defer { Self.lock.unlock() }
-
+    /// Releases this handler's claim on the shared audio session, restoring the original
+    /// configuration once the last live handler is released. Idempotent, so a coordinator can call
+    /// it from teardown without worrying about being torn down twice.
+    func release() {
         guard isRegistered, let state = Self.states[sessionIdentifier] else {
             return
         }
+        self.isRegistered = false
 
         state.handlerCount -= 1
         guard state.handlerCount == 0 else {

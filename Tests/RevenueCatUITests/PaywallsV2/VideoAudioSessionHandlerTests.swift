@@ -16,6 +16,7 @@ import XCTest
 
 #if canImport(UIKit) && !os(watchOS) && !os(tvOS)
 
+@MainActor
 final class VideoAudioSessionHandlerTests: TestCase {
 
     func testSetsPlaybackCategoryWithMixing() {
@@ -35,9 +36,8 @@ final class VideoAudioSessionHandlerTests: TestCase {
         )
         let audioSession = MockAudioSession(configuration: previousConfiguration)
 
-        var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(handler)
-        handler = nil
+        let handler = VideoAudioSessionHandler(audioSession: audioSession)
+        handler.release()
 
         XCTAssertEqual(audioSession.configuration, previousConfiguration)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
@@ -47,16 +47,14 @@ final class VideoAudioSessionHandlerTests: TestCase {
         let previousConfiguration = Configuration(category: .playback, mode: .default, options: [])
         let audioSession = MockAudioSession(configuration: previousConfiguration)
 
-        var firstHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        var secondHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(firstHandler)
-        XCTAssertNotNil(secondHandler)
-        firstHandler = nil
+        let firstHandler = VideoAudioSessionHandler(audioSession: audioSession)
+        let secondHandler = VideoAudioSessionHandler(audioSession: audioSession)
+        firstHandler.release()
 
         XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 1)
 
-        secondHandler = nil
+        secondHandler.release()
 
         XCTAssertEqual(audioSession.configuration, previousConfiguration)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
@@ -64,20 +62,18 @@ final class VideoAudioSessionHandlerTests: TestCase {
 
     func testUnregisteredHandlerDoesNotRestoreAnotherHandlerConfiguration() {
         let audioSession = MockAudioSession(configuration: .playbackWithMixing)
-        var unregisteredHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(unregisteredHandler)
+        let unregisteredHandler = VideoAudioSessionHandler(audioSession: audioSession)
 
         let previousConfiguration = Configuration(category: .record, mode: .voiceChat, options: [])
         audioSession.configuration = previousConfiguration
-        var registeredHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(registeredHandler)
+        let registeredHandler = VideoAudioSessionHandler(audioSession: audioSession)
 
-        unregisteredHandler = nil
+        unregisteredHandler.release()
 
         XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 1)
 
-        registeredHandler = nil
+        registeredHandler.release()
 
         XCTAssertEqual(audioSession.configuration, previousConfiguration)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
@@ -88,9 +84,8 @@ final class VideoAudioSessionHandlerTests: TestCase {
         let audioSession = MockAudioSession(configuration: previousConfiguration)
         audioSession.secondaryAudioShouldBeSilencedHint = true
 
-        var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(handler)
-        handler = nil
+        let handler = VideoAudioSessionHandler(audioSession: audioSession)
+        handler.release()
 
         XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
@@ -98,12 +93,11 @@ final class VideoAudioSessionHandlerTests: TestCase {
 
     func testDoesNotOverwriteHostConfigurationChangedDuringVideoPlayback() {
         let audioSession = MockAudioSession()
-        var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(handler)
+        let handler = VideoAudioSessionHandler(audioSession: audioSession)
         let hostConfiguration = Configuration(category: .playAndRecord, mode: .videoChat, options: [.allowBluetoothHFP])
         audioSession.configuration = hostConfiguration
 
-        handler = nil
+        handler.release()
 
         XCTAssertEqual(audioSession.configuration, hostConfiguration)
         XCTAssertEqual(audioSession.setCategoryCalls.count, 1)
@@ -113,9 +107,8 @@ final class VideoAudioSessionHandlerTests: TestCase {
         let audioSession = MockAudioSession()
         audioSession.shouldThrow = true
 
-        var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
-        XCTAssertNotNil(handler)
-        handler = nil
+        let handler = VideoAudioSessionHandler(audioSession: audioSession)
+        handler.release()
 
         XCTAssertEqual(audioSession.setCategoryCalls.count, 1)
         XCTAssertEqual(audioSession.configuration, .default)

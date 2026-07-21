@@ -98,6 +98,7 @@ struct VideoPlayerLayerView: UIViewRepresentable {
 
         private let audioSessionHandler: VideoAudioSessionHandler
 
+        @MainActor
         init(
             videoURL: URL,
             shouldAutoPlay: Bool,
@@ -136,11 +137,13 @@ struct VideoPlayerLayerView: UIViewRepresentable {
             }
         }
 
+        @MainActor
         func tearDown() {
             // Stop lifecycle resume before pausing, so a later didBecomeActive can't restart a
             // player that's being dismantled.
             autoplayHandler.invalidate()
             player.pause()
+            audioSessionHandler.release()
         }
 
     }

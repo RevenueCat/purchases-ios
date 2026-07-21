@@ -97,6 +97,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         private var loopObserver: NSObjectProtocol?
         private var isTornDown = false
 
+        @MainActor
         init(
             videoURL: URL,
             shouldAutoPlay: Bool,
@@ -154,6 +155,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
             }
         }
 
+        @MainActor
         func tearDown() {
             isTornDown = true
             autoplayHandler.invalidate()
@@ -162,6 +164,7 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
                 NotificationCenter.default.removeObserver(loopObserver)
                 self.loopObserver = nil
             }
+            audioSessionHandler.release()
         }
 
         deinit {
