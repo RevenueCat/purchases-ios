@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -87,7 +91,7 @@ private struct BridgedWebViewComponentView: View {
         self.url = url
         self.componentID = componentID
 
-        let origin = WebViewOrigin.origin(of: url) ?? ""
+        let origin = url.webViewOrigin ?? ""
         // `evaluateJavaScript`/`currentURL` are rebound to the live web view in the representable's
         // `configureSession(for:)`; the no-op defaults only cover the window before it is created.
         self._session = StateObject(
