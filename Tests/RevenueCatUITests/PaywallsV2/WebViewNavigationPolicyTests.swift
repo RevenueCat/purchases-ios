@@ -11,28 +11,98 @@ import WebKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewNavigationPolicyTests: TestCase {
 
-    func testMainFrameSameOriginAllowedCrossOriginCancelledSubFrameAllowed() {
+    func testSameOriginMainFrameDifferentPathIsAllowed() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
-                for: URL(string: "https://example.com/next")!,
+                for: URL(string: "https://example.com/promo/step-two.html")!,
                 isMainFrame: true,
                 expectedOrigin: "https://example.com"
             ),
             .allow
         )
+    }
+
+    func testCrossOriginMainFrameIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
-                for: URL(string: "https://evil.example/next")!,
+                for: URL(string: "https://evil.example/phish.html")!,
                 isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
+    func testMainFramePortMismatchIsCancelled() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com:8443/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
+    func testNonHttpsIsCancelledOnAnyFrame() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "http://example.com/promo/index.html")!,
+                isMainFrame: false,
                 expectedOrigin: "https://example.com"
             ),
             .cancel
         )
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(
-                for: URL(string: "https://evil.example/next")!,
+                for: URL(string: "custom://example.com/")!,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
+    func testCrossOriginHttpsSubFrameIsAllowed() {
+        // Sub-frame isolation is expected from the server-provided CSP, not this navigation policy.
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://other.example.com/frame.html")!,
                 isMainFrame: false,
                 expectedOrigin: "https://example.com"
+            ),
+            .allow
+        )
+    }
+
+    func testNilURLMainFrameIsCancelled() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: nil,
+                isMainFrame: true,
+                expectedOrigin: "https://example.com"
+            ),
+            .cancel
+        )
+    }
+
+    func testHostlessExpectedOriginMainFrameIsCancelled() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: "https:///no-host"
+            ),
+            .cancel
+        )
+    }
+
+    func testNonCanonicalExpectedOriginCaseAndDefaultPortIsAllowed() {
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/promo/index.html")!,
+                isMainFrame: true,
+                expectedOrigin: "https://Example.COM:443"
             ),
             .allow
         )
@@ -42,6 +112,10 @@ final class WebViewNavigationPolicyTests: TestCase {
         XCTAssertEqual(
             WebViewOrigin.origin(of: URL(string: "https://Example.COM:443/path")!),
             "https://example.com"
+        )
+        XCTAssertEqual(
+            WebViewOrigin.origin(of: URL(string: "http://Example.COM:80/path")!),
+            "http://example.com"
         )
         XCTAssertEqual(
             WebViewOrigin.origin(of: URL(string: "HTTPS://Example.COM:8443/path")!),

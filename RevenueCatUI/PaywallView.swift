@@ -202,16 +202,13 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
-        let seededWorkflowContext = configuration.injectedWorkflowContext
-        let cachedPaywallViewData = seededWorkflowContext == nil
-            ? configuration.purchaseHandler.cachedInitialPaywallViewData(for: configuration.content)
-            : nil
-        self._workflowContext = .init(
-            initialValue: seededWorkflowContext ?? cachedPaywallViewData?.workflowContext
+        let initialPaywallViewData = configuration.purchaseHandler.cachedInitialPaywallViewData(
+            for: configuration.content,
+            injectedWorkflowContext: configuration.injectedWorkflowContext
         )
+        self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
         self._offering = .init(
-            initialValue: seededWorkflowContext?.initialOffering
-                ?? cachedPaywallViewData?.offering
+            initialValue: initialPaywallViewData?.offering
         )
         self._customerInfo = .init(
             initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()

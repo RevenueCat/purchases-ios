@@ -79,6 +79,7 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThread = false
     var invokedDispatchAsyncOnWorkerThreadCount = 0
     var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
+    private(set) var dispatchedAsyncWorkerThreadBlocks: [@Sendable () async -> Void] = []
 
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
@@ -87,6 +88,7 @@ class MockOperationDispatcher: OperationDispatcher {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
+        self.dispatchedAsyncWorkerThreadBlocks.append(block)
 
         if self.forwardToOriginalDispatchOnWorkerThread {
             super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
@@ -110,6 +112,13 @@ class MockOperationDispatcher: OperationDispatcher {
             if result == .timedOut {
                 XCTFail("Dispatch on worker thread timed out")
             }
+        }
+    }
+
+    func invokeAllDispatchedAsyncWorkerThreadBlocks() async {
+        while !self.dispatchedAsyncWorkerThreadBlocks.isEmpty {
+            let block = self.dispatchedAsyncWorkerThreadBlocks.removeFirst()
+            await block()
         }
     }
 

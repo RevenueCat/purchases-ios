@@ -35,15 +35,22 @@ enum WebViewOrigin {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum WebViewNavigationPolicy {
 
+    // Non-https navigation is blocked on any frame. Cross-origin navigation is additionally blocked
+    // on the main frame (same-origin different-path navigation stays allowed), which makes
+    // cross-origin message races structurally impossible. Cross-origin sub-frame loads are not
+    // blocked here; isolation for those is left to the server-provided CSP (`frame-src` falls back
+    // to `default-src 'self'`).
     static func policy(for url: URL?, isMainFrame: Bool, expectedOrigin: String) -> WKNavigationActionPolicy {
+        guard let url,
+              let origin = WebViewOrigin.origin(of: url),
+              origin.hasPrefix("https://") else {
+            return .cancel
+        }
         guard isMainFrame else {
             return .allow
         }
-        guard let url,
-              WebViewOrigin.origin(of: url) == expectedOrigin else {
-            return .cancel
-        }
-        return .allow
+        let expected = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:))
+        return origin == expected ? .allow : .cancel
     }
 
 }

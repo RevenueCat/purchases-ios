@@ -115,6 +115,7 @@ class PaywallPreviewResourcesLoader {
                     packages: packages.packages,
                     paywallComponents: offering.paywallComponents,
                     draftPaywallComponents: offering.draftPaywallComponents,
+                    hasPaywallComponents: offering.hasPaywallComponents,
                     webCheckoutUrl: offering.webCheckoutUrl
                 )
             }
