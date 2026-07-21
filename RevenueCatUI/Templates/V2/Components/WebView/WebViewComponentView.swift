@@ -195,6 +195,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
     #endif
 
+    @MainActor
     private func makeWebView(context: Context) -> PlatformWebView {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
@@ -241,10 +242,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         return webView
     }
 
+    @MainActor
     private func update(_ webView: PlatformWebView) {
         self.configureSession(for: webView)
     }
 
+    @MainActor
     private func configureSession(for webView: PlatformWebView) {
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
