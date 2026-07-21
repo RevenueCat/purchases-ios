@@ -68,7 +68,6 @@ private struct BridgedWebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
     let url: URL
-    let componentID: String
 
     @StateObject
     private var session: WebViewSession
@@ -89,7 +88,6 @@ private struct BridgedWebViewComponentView: View {
     ) {
         self.viewModel = viewModel
         self.url = url
-        self.componentID = componentID
 
         let origin = url.webViewOrigin ?? ""
         // `evaluateJavaScript`/`currentURL` are rebound to the live web view in the representable's
@@ -281,6 +279,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         #endif
     }
 
+    // `WKNavigationDelegate` is `@MainActor`-annotated in the SDK (its `WK_SWIFT_UI_ACTOR` attribute
+    // resolves to `@MainActor`), so isolating the coordinator to the main actor lets the delegate
+    // methods touch main-actor state directly instead of wrapping each body in `assumeIsolated`.
+    @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
 
         let expectedOrigin: String
@@ -305,16 +307,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         }
 
         func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
-            MainActor.assumeIsolated {
-                self.session?.resetForNewDocument()
-            }
+            self.session?.resetForNewDocument()
         }
 
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-            MainActor.assumeIsolated {
-                Logger.debug(Strings.paywall_web_view_content_process_terminated)
-                self.onProcessTerminated?()
-            }
+            Logger.debug(Strings.paywall_web_view_content_process_terminated)
+            self.onProcessTerminated?()
         }
 
     }
