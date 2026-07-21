@@ -137,7 +137,16 @@ def pr_size_messages
   prod_files = (git.modified_files + git.added_files).uniq.select { |f| production_swift_file?(f) }
 
   total_changed = prod_files.sum do |f|
-    info = git.info_for_file(f)
+    # `git.info_for_file` raises for renamed files: the new path is listed in
+    # `added_files`/`modified_files`, but git keys the diff stats under the
+    # `{old => new}` rename entry, so the internal `stats[:insertions]` lookup
+    # hits nil. Treat any file whose churn we can't resolve as zero.
+    info =
+      begin
+        git.info_for_file(f)
+      rescue StandardError
+        nil
+      end
     info ? info[:insertions] + info[:deletions] : 0
   end
 
