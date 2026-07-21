@@ -110,18 +110,18 @@ final class WebViewNavigationPolicyTests: TestCase {
 
     func testOriginStripsDefaultPortKeepsNonDefaultAndNormalizesCase() {
         XCTAssertEqual(
-            WebViewOrigin.origin(of: URL(string: "https://Example.COM:443/path")!),
+            URL(string: "https://Example.COM:443/path")!.webViewOrigin,
             "https://example.com"
         )
         XCTAssertEqual(
-            WebViewOrigin.origin(of: URL(string: "http://Example.COM:80/path")!),
+            URL(string: "http://Example.COM:80/path")!.webViewOrigin,
             "http://example.com"
         )
         XCTAssertEqual(
-            WebViewOrigin.origin(of: URL(string: "HTTPS://Example.COM:8443/path")!),
+            URL(string: "HTTPS://Example.COM:8443/path")!.webViewOrigin,
             "https://example.com:8443"
         )
-        XCTAssertNil(WebViewOrigin.origin(of: URL(string: "https:///no-host")!))
+        XCTAssertNil(URL(string: "https:///no-host")!.webViewOrigin)
     }
 
 }

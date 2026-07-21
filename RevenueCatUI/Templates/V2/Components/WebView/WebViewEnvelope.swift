@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 import Foundation
 
 #if !os(tvOS) // For Paywalls V2
@@ -7,6 +11,8 @@ enum WebViewEnvelope {
 
     static let channel = "rc-web-components"
     static let messageHandlerName = "rcWebComponents"
+    /// Name of the JS function injected into the web view that receives host-to-content frames.
+    static let receiveFunction = "__rcWebComponentsReceive"
     static let defaultProtocolVersion = 1
 
     static let messageTypeResize = "resize"
