@@ -205,6 +205,19 @@ class OfferingsManager {
         }
     }
 
+    func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
+        let cachedOfferings = self.deviceCache.cachedOfferings
+
+        // Preserve the full response on disk so it can provide legacy paywall components if the network fails.
+        self.clearInMemoryOfferingsCache()
+
+        if cachedOfferings != nil {
+            self.offerings(appUserID: appUserID,
+                           fetchPolicy: .ignoreNotFoundProducts,
+                           trackDiagnostics: false) { @Sendable _ in }
+        }
+    }
+
 }
 
 private extension OfferingsManager {

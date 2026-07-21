@@ -1571,6 +1571,52 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == 1
     }
 
+    func testRemoteConfigDisableRefreshPreservesFullDiskCacheWhenNetworkFails() throws {
+        let mockRemoteConfigManager = MockRemoteConfigManager()
+        mockRemoteConfigManager.isDisabled = true
+        let manager = self.makeOfferingsManager(
+            remoteConfigManager: mockRemoteConfigManager,
+            offeringsFactory: OfferingsFactory(systemInfo: self.mockSystemInfo)
+        )
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
+
+        let response: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let uiConfig: UIConfig = try BaseHTTPResponseTest.decodeFixture("UIConfig")
+        let cachedContents = Offerings.Contents(
+            response: .init(
+                currentOfferingId: response.currentOfferingId,
+                offerings: response.offerings,
+                placements: response.placements,
+                targeting: response.targeting,
+                uiConfig: uiConfig
+            ),
+            httpResponseOriginalSource: .mainServer
+        )
+        self.mockDeviceCache.stubbedCachedOfferingsData = try cachedContents.jsonEncodedData
+
+        manager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: MockData.anyAppUserID)
+
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.cacheOfferingsInMemoryCount).toEventually(equal(1))
+        expect(self.mockDeviceCache.clearInMemoryOfferingsCacheCount) == 1
+        expect(self.mockDeviceCache.clearCachedOfferingsCount) == 0
+        expect(self.mockDeviceCache.stubbedOfferings?.loadedFromDiskCache) == true
+        expect(self.mockDeviceCache.stubbedOfferings?.offering(identifier: "paywall_components")?
+            .paywallComponents).toNot(beNil())
+    }
+
+    func testGeneralInvalidateAndRefetchClearsDiskCache() {
+        let manager = self.makeOfferingsManager(remoteConfigManager: nil)
+        self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings()
+        self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
+
+        manager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: MockData.anyAppUserID)
+
+        expect(self.mockDeviceCache.clearCachedOfferingsCount) == 1
+        expect(self.mockDeviceCache.clearInMemoryOfferingsCacheCount) == 0
+    }
+
     private func makeOfferingsManager(
         remoteConfigManager: RemoteConfigManagerType?,
         offeringsFactory: OfferingsFactory? = nil,
