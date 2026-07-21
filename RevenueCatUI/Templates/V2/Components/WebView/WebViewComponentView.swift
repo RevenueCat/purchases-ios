@@ -114,7 +114,10 @@ private struct BridgedWebViewComponentView: View {
         if !processTerminated {
             WebViewRepresentable(
                 url: url,
-                expectedOrigin: session.expectedOrigin,
+                // A `nil` session origin means the origin was unresolvable; pass "" so the navigation
+                // policy cancels main-frame loads too, keeping the whole web view inert (not just the
+                // message bridge). See WebViewSession.expectedOrigin.
+                expectedOrigin: session.expectedOrigin ?? "",
                 session: session,
                 onContentResize: { width, height in
                     if let width {

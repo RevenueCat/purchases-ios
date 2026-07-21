@@ -272,6 +272,17 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`, .message])
     }
 
+    func testInvalidExpectedOriginRejectsAllTraffic() {
+        // A caller origin that cannot be normalized leaves the bridge inert: even a `connect` that
+        // looks like it comes from the configured origin is rejected, so the channel never opens.
+        let harness = Harness(expectedOrigin: "not a valid origin")
+
+        harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: "not a valid origin")
+
+        XCTAssertFalse(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
     func testDropsOutboundAfterNavigationToUnexpectedOrigin() {
         let harness = Harness()
         // Inbound source is still the trusted origin, but the top-level URL has left it: every
@@ -342,8 +353,8 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testRenderOnlyWebViewExposesNoBridgeSurface() throws {
-        // Render-only mode (`componentID == nil`) registers NO script message handler, so page
-        // JavaScript must see no native bridge surface at all.
+        // A web view configured without the bridge (no script message handler registered) must
+        // expose no native bridge surface to page JavaScript at all.
         let webView = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
 
         let loaded = self.expectation(description: "web view finished loading")
