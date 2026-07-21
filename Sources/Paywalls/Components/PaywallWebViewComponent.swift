@@ -9,7 +9,7 @@
 //
 //  PaywallWebViewComponent.swift
 //
-// swiftlint:disable missing_docs nesting
+// swiftlint:disable missing_docs
 
 import Foundation
 
