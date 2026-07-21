@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 #if !os(tvOS) && canImport(WebKit) // For Paywalls V2
 
 import Foundation

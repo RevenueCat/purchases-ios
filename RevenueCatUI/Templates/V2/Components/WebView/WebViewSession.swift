@@ -1,8 +1,12 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 #if !os(tvOS) && canImport(WebKit) // For Paywalls V2
 
 import Foundation
-import WebKit
 @_spi(Internal) import RevenueCat
+import WebKit
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor

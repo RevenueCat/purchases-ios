@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 import Foundation
 
 #if !os(tvOS) // For Paywalls V2
