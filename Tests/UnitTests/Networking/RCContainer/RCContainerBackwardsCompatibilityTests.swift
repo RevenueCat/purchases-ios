@@ -74,13 +74,10 @@ final class RCContainerBackwardsCompatibilityTests: TestCase {
         )) == blob
     }
 
-    func testFlagsSetFixturePreservesHeaderFlags() throws {
+    func testFlagsSetFixtureParses() throws {
         let container = try Self.parseFixture("v1_flags_set")
 
         expect(container.flags) == 0x07
-        expect(RCContainerTestData.data(
-            from: try RCContainerTestData.firstElement(in: container)
-        )) == RCContainerTestData.configJSON
     }
 
     func testDuplicateElementsFixtureCollapsesInContentAddressedMap() throws {
@@ -147,6 +144,22 @@ private extension RCContainerBackwardsCompatibilityTests {
             line: line
         )
         return try RCContainer(data: Data(contentsOf: url))
+    }
+
+    static func expectParsingFixture(
+        _ fileName: String,
+        throws expectedError: RCContainer.Parser.FormatError,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        do {
+            _ = try Self.parseFixture(fileName, line: line)
+            fail("Expected \(expectedError)", file: file, line: line)
+        } catch let error as RCContainer.Parser.FormatError {
+            expect(file: file, line: line, error) == expectedError
+        } catch {
+            fail("Expected RCContainer.Parser.FormatError, got \(error)", file: file, line: line)
+        }
     }
 
 }

@@ -29,6 +29,9 @@ protocol PaywallPurchasesType: Sendable {
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
 
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    var remoteConfigEnabled: Bool { get }
+
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
@@ -41,8 +44,6 @@ protocol PaywallPurchasesType: Sendable {
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
 
-    /// Synchronously returns the cached workflow for `offeringID` when present and fresh, otherwise
-    /// `nil`. Used to seed the workflow paywall without waiting on the async resolve path.
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
 #endif
 

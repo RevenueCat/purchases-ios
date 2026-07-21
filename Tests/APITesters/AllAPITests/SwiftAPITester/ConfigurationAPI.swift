@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Experimental) import RevenueCat
 
 func checkConfigurationAPI() {
     let builder = Configuration
@@ -23,6 +23,7 @@ func checkConfigurationAPI() {
         .with(storeKitVersion: .default)
         .with(entitlementVerificationMode: .informational)
         .with(automaticDeviceIdentifierCollectionEnabled: true)
+        .with(iamEnabled: false)
         .with(preferredUILocaleOverride: "de_DE")
         .with(preferredUILocaleOverride: nil)
 

@@ -96,7 +96,8 @@ class MockHTTPClient: HTTPClient {
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout,
-                   operationDispatcher: MockOperationDispatcher())
+                   operationDispatcher: MockOperationDispatcher(),
+                   apiSourceProvider: nil)
     }
 
     /// Disables snapshot testing for this mock HTTP client.
@@ -154,6 +155,10 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.DiagnosticsPath, response: Response) {
+        self.mock(path: requestPath, response: response)
+    }
+
+    func mock(requestPath: HTTPRequest.FallbackPath, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 

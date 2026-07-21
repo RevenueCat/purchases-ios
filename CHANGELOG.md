@@ -1,3 +1,116 @@
+## 5.81.0
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* Fix Paywalls V2 carousel image stuck in size-unknown state on first display (#7180) via Jacob Rakidzich (@JZDesign)
+### Paywallv2
+#### ✨ New Features
+* feat(paywalls): support transparent sticky footers (#7188) via Álvaro Brey (@AlvaroBrey)
+
+### 🔄 Other Changes
+* feat(remote-config): force app_start on the first config request (#7219) via Antonio Pallares (@ajpallares)
+* test(workflows): add Maestro flow for classic-paywall fallback on config failure (#7235) via Facundo Menzella (@facumenzella)
+* test(workflows): add Maestro flow for workflow paywall back navigation (#7224) via Facundo Menzella (@facumenzella)
+* test(remote-config): don't send app_start in no-content config tests (#7222) via Antonio Pallares (@ajpallares)
+* test(workflows): add Maestro flow that navigates a workflow paywall to purchase (#7221) via Facundo Menzella (@facumenzella)
+* ci(remote-config): run the blob health monitor (#7218) via Facundo Menzella (@facumenzella)
+* test(remote-config): add a real-backend health check for CDN blob downloads (#7215) via Facundo Menzella (@facumenzella)
+* feat(remote-config): send fetch_context on config endpoint requests (#7214) via Antonio Pallares (@ajpallares)
+* Internal `DangerousSettings.useWorkflows` to enable remote config/workflows programmatically (#7209) via Cesar de la Vega (@vegaro)
+* test(remote-config): cover downloading several config blobs at once (#7212) via Facundo Menzella (@facumenzella)
+* test(remote-config): cover getOfferings delivering when a prefetch blob fails (#7211) via Facundo Menzella (@facumenzella)
+* Use short timeouts for remote config blob downloads (#7210) via Rick (@rickvdl)
+* perf(remote-config): give /config its own request lane so it overlaps /offerings (#7196) via Facundo Menzella (@facumenzella)
+* Pass Tuist Swift conditions to local package (#7195) via Rick (@rickvdl)
+* other(remote-config): stabilize flaky RemoteConfig blob integration test (#7193) via Antonio Pallares (@ajpallares)
+* Chore(deps): Bump excon from 0.112.0 to 1.5.0 in /Tests/InstallationTests/CocoapodsInstallation (#7190) via dependabot[bot] (@dependabot[bot])
+* fix(ci): stop mirroring main to purchases-ios-spm, tags only (#7189) via Álvaro Brey (@AlvaroBrey)
+* feat(remote-config): add static fallback config endpoint (#7182) via Rick (@rickvdl)
+* Chore(deps): Bump cocoapods from 1.16.2 to 1.17.0 (#7187) via dependabot[bot] (@dependabot[bot])
+* Don't switch hosts on device-connectivity errors (#7176) via Antonio Pallares (@ajpallares)
+* other(offerings): gate getOfferings delivery on ui_config and stale-cache paths (#7181) via Facundo Menzella (@facumenzella)
+* fix(remote-config): align edge-case handling with Android implementation (#7173) via Rick (@rickvdl)
+* fix(paywalls): fail decoding a present-but-malformed custom_variables (#7184) via Antonio Pallares (@ajpallares)
+* Chore(deps): Bump fastlane from 2.236.1 to 2.237.0 (#7175) via dependabot[bot] (@dependabot[bot])
+* fix(remote-config): bind refresh requests to identity clears (#7150) via Rick (@rickvdl)
+* New IAMEnabled configuration option (#7146) via Dave DeLong (@davedelong)
+
+## 5.80.3
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Fix decode for sheet actions without inline sheet (#7158) via Monika Mateska (@MonikaMateska)
+* Expose preferred UI locale override APIs to Objective-C (#7121) via Álvaro Brey (@AlvaroBrey)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* fix(paywalls-v2): fix package selection resetting unexpectedly when switching tabs (#7148) via Facundo Menzella (@facumenzella)
+### Paywallv2
+#### 🐞 Bugfixes
+* fix(paywalls-v2): skip stale onChange invocations when propagating tab package to parent (#7168) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* other(workflows): unify workflows and remote config into a single gate (#7166) via Facundo Menzella (@facumenzella)
+* perf(remote-config): merge blob data via byte concatenation (#7163) via Antonio Pallares (@ajpallares)
+* other(paywalls): fall back to the offerings paywall when the workflow fetch fails (#7143) via Facundo Menzella (@facumenzella)
+* test(remote-config): add additional regression test coverage (#7164) via Rick (@rickvdl)
+* feat(remote-config): use merged blobs helper for ui config (#7153) via Rick (@rickvdl)
+* other(networking): remove unused workflows OperationQueue and HTTP path cases (#7145) via Facundo Menzella (@facumenzella)
+* other(networking): delete the dead workflows endpoint (#7144) via Facundo Menzella (@facumenzella)
+* other(paywalls): read workflows from remote config (#7141) via Facundo Menzella (@facumenzella)
+* refactor(remote-config): encapsulate topic-ready waiting on RemoteConfigManager (#7157) via Facundo Menzella (@facumenzella)
+* test(remote-config): add integration test coverage with mocked API responses (#7147) via Rick (@rickvdl)
+* other(paywalls): gate getOfferings on remote-config readiness (#7142) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add merged blob data API (#7149) via Rick (@rickvdl)
+* other(remote-config): read ui_config via remote config (#7140) via Facundo Menzella (@facumenzella)
+* fix(remote-config): use RemoteConfigTopic enum in disk cache tests (#7139) via Antonio Pallares (@ajpallares)
+* perf(remote-config): cache persisted config in memory in RemoteConfigDiskCache (#7136) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add APIs for reading topic/blob data from RemoteConfigManager (#7134) via Rick (@rickvdl)
+* Add SecureItemStorage (#7094) via Dave DeLong (@davedelong)
+* Decode id on PaywallComponent.PackageComponent (#7135) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add observability logs (#7132) via Rick (@rickvdl)
+* feat(remote-config): wire up remote config manager behind feature flag (#7130) via Rick (@rickvdl)
+* Support multi-grant reward + moreRewards in reward verification (#7039) via Pol Miro (@polmiro)
+* Add CI build step for app extension safe API checks (#7131) via Rick (@rickvdl)
+* fix(remote-config): rearm exhausted blob sources + in memory knownRefs (#7120) via Rick (@rickvdl)
+* feat(remote-config): disable refresh after client errors (#7118) via Rick (@rickvdl)
+
+## 5.80.2
+## RevenueCat SDK
+### 🐞 Bugfixes
+* UIApplication may not be available in extensions (#7124) via Dave DeLong (@davedelong)
+
+### 🔄 Other Changes
+* feat(remote-config): add blob fetcher (#7115) via Rick (@rickvdl)
+* feat(remote-config): RemoteConfigManager cache invalidation (#7111) via Rick (@rickvdl)
+
+## 5.80.1
+## RevenueCat SDK
+### 🐞 Bugfixes
+* [EXTERNAL] Fix T-SAN crash due to memory misalignment when building with Xcode 27.0 (b1 and b2) (#7070) via @salling (#7105) via Antonio Pallares (@ajpallares)
+
+### 🔄 Other Changes
+* feat(remote-config): persist full topic index (#7110) via Rick (@rickvdl)
+* fix(remote-config): avoid using Brotli compression on iOS versions below 16.0 (#7113) via Rick (@rickvdl)
+* feat(remote-config): drive RemoteConfigSourceProvider from a topic store (#7106) via Antonio Pallares (@ajpallares)
+* refactor(remote-config): prefer lowest priority number for source ordering (#7112) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add rc container compression support (#7107) via Rick (@rickvdl)
+* feat(workflows): gate all paywall events by step screen_type (#7109) via Facundo Menzella (@facumenzella)
+* feat(workflows): gate paywall impressions by step screen_type (#7104) via Facundo Menzella (@facumenzella)
+* feat(remote-config): add production signing integration tests (#7097) via Rick (@rickvdl)
+* Workflow preview injection via (@_spi) (#7103) via Facundo Menzella (@facumenzella)
+* Chore(deps): Bump faraday from 1.10.5 to 1.10.6 in /Tests/InstallationTests/CocoapodsInstallation (#7101) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump faraday from 1.10.5 to 1.10.6 (#7102) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `70bf5c7` to `dab6765` (#7100) via dependabot[bot] (@dependabot[bot])
+* feat(remote-config): switch config request to v1 and send app user id (#7080) via Rick (@rickvdl)
+* [AUTOMATIC][Paywalls V2] Updates commit hash of paywall-preview-resources (#7096) via RevenueCat Git Bot (@RCGitBot)
+* feat(remote-config): store inlined blobs to disk (#7073) via Rick (@rickvdl)
+* refactor(remote-config): make rc container validation domain-specific (#7074) via Rick (@rickvdl)
+* feat(remote-config): add RemoteConfigSourceProvider for source failover (#7093) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add RemoteConfigManager (#7067) via Rick (@rickvdl)
+* Add WeightedSourceSelector for remote config source selection (#7077) via Antonio Pallares (@ajpallares)
+* feat(remote-config): add manifest disk persistence (#7076) via Rick (@rickvdl)
+* Make LargeItemCache writes atomic (#7081) via Rick (@rickvdl)
+* feat(remote-config): verify RC container signatures (#7046) via Rick (@rickvdl)
+
 ## 5.80.0
 ## RevenueCat SDK
 ### ✨ New Features

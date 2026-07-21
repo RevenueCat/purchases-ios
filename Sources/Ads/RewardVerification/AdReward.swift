@@ -15,7 +15,7 @@ import Foundation
 
 /// Reward payload describing the outcome of a verified rewarded ad.
 ///
-/// Inspect the received reward by checking ``virtualCurrency`` / ``entitlement`` or comparing against
+/// Inspect the reward by checking ``virtualCurrency`` / ``entitlement`` or comparing against
 /// ``noReward`` / ``unsupportedReward``:
 ///
 /// ```swift
@@ -49,7 +49,6 @@ import Foundation
         AdReward(storage: .virtualCurrency(payload))
     }
 
-    /// Reward is a temporary entitlement grant with an identifier and expiration.
     internal static func entitlement(_ payload: EntitlementReward) -> AdReward {
         AdReward(storage: .entitlement(payload))
     }
@@ -66,7 +65,7 @@ import Foundation
         return payload
     }
 
-    /// Non-`nil` when this reward represents an ``EntitlementReward``.
+    /// Entitlement reward payload, if present.
     public var entitlement: EntitlementReward? {
         guard case .entitlement(let payload) = self.storage else { return nil }
         return payload

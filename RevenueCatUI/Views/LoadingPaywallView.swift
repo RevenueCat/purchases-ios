@@ -163,6 +163,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var isUIPreviewMode: Bool { false }
 
+    var remoteConfigEnabled: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }

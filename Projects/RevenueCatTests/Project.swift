@@ -69,7 +69,13 @@ let project = Project(
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
+            entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [],
+            settings: .appTarget(including: [
+                "CODE_SIGNING_ALLOWED": "YES",
+                "CODE_SIGNING_REQUIRED": "YES",
+                "CODE_SIGN_IDENTITY": "Apple Development"
+            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
@@ -222,6 +228,34 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
+        // MARK: – RemoteConfigProductionTests
+        // Lean real-backend health check for the remote config CDN blob path. No StoreKit,
+        // so no host app: just RevenueCat + Nimble. Skips itself unless a live key is injected.
+        .target(
+            name: "RemoteConfigProductionTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RemoteConfigProductionTests",
+            deploymentTargets: .iOS("16.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/RemoteConfigProductionTests/**/*.swift",
+                // Shared `TestCase` base (repo convention) and its helpers.
+                "../../Tests/UnitTests/Misc/**/TestCase.swift",
+                "../../Tests/UnitTests/Misc/XCTestCase+Extensions.swift",
+                "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
+                "../../Tests/UnitTests/TestHelpers/**/CurrentTestCaseTracker.swift",
+                "../../Tests/UnitTests/TestHelpers/**/AsyncTestHelpers.swift",
+                "../../Tests/UnitTests/TestHelpers/**/OSVersionEquivalent.swift"
+            ],
+            dependencies: [
+                .revenueCat,
+                .nimble,
+                .snapshotTesting
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
         // MARK: – RevenueCatAdMobTests
         .target(
             name: "RevenueCatAdMobTests",
@@ -262,7 +296,7 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         )
 
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
 
         .scheme(

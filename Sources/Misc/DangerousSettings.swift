@@ -16,6 +16,7 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
+        let usesRemoteConfigAPISources: Bool
 
         #if DEBUG
         let forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -25,12 +26,14 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
@@ -38,9 +41,11 @@ import Foundation
         }
         #else
         init(
-            enableReceiptFetchRetry: Bool = false
+            enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         }
 
         #endif
@@ -55,6 +60,7 @@ import Foundation
         let autoSyncPurchases: Bool
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
+        let useWorkflows: Bool
     }
 
     internal let storage: Storage
@@ -75,6 +81,11 @@ import Foundation
      * products obtained from StoreKit. This is useful for testing or preview purposes.
      */
     @_spi(Internal) public var uiPreviewMode: Bool { self.storage.uiPreviewMode }
+
+    /**
+     * Enables RevenueCat Workflows (multipage paywalls). Internal RevenueCat use only.
+     */
+    @_spi(Internal) public var useWorkflows: Bool { self.storage.useWorkflows }
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -127,15 +138,30 @@ import Foundation
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
+    /**
+     * Used to enable RevenueCat Workflows (multipage paywalls). Internal RevenueCat use only;
+     * behavior may change without warning.
+     *
+     * - Parameter useWorkflows: if `true`, the SDK wires up the workflows endpoint so multipage
+     * paywalls can be rendered.
+     */
+    @_spi(Internal) public convenience init(useWorkflows: Bool) {
+        self.init(autoSyncPurchases: true,
+                  internalSettings: Internal.default,
+                  useWorkflows: useWorkflows)
+    }
+
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false) {
+                  uiPreviewMode: Bool = false,
+                  useWorkflows: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
-            customEntitlementComputation: customEntitlementComputation
+            customEntitlementComputation: customEntitlementComputation,
+            useWorkflows: useWorkflows
         )
         self.internalSettings = internalSettings
     }
@@ -156,6 +182,11 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
+
+    /// Whether main-API requests resolve their base host from the remote-config API sources
+    /// instead of the static `SystemInfo.apiBaseURL`. Disabled by default; enabled in tests while
+    /// remote-config-driven host resolution is being validated.
+    var usesRemoteConfigAPISources: Bool { get }
 
     #if DEBUG
     /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.

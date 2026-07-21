@@ -17,6 +17,7 @@ const JOBS = {
   "backend-integration-tests-custom-entitlements": ["slack-secrets"],
   "backend-integration-tests-offline": ["slack-secrets"],
   "backend-integration-tests-other": ["slack-secrets"],
+  "check-app-extension-safe-api-usage": ["slack-secrets"],
   "build-xcode-265": ["slack-secrets"],
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
   "check-api-changes-revenuecat": ["slack-secrets-ios"],
@@ -27,11 +28,14 @@ const JOBS = {
   "generate-swiftinterface": ["slack-secrets-ios"],
   "installation-tests-all-but-carthage": ["slack-secrets"],
   "installation-tests-carthage": ["slack-secrets"],
+  "installation-tests-carthage-xcode-27": ["slack-secrets"],
   "integration-tests-all": ["slack-secrets"],
   "lint": ["slack-secrets"],
   "pod-lib-lint": ["slack-secrets"],
+  "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
+  "run-workflow-maestro-tests": ["e2e-tests", "slack-secrets"],
   "run-revenuecat-ui-ios-18-and-17": ["slack-secrets"],
   "run-revenuecat-ui-ios-26": ["slack-secrets"],
   "run-test-ios-15-and-14": ["slack-secrets"],
@@ -44,6 +48,16 @@ const JOBS = {
   "spm-revenuecat-ui-ios-15": ["slack-secrets"],
   "spm-revenuecat-ui-ios-16": ["slack-secrets"],
   "spm-revenuecat-ui-watchos": ["slack-secrets"],
+};
+
+// Some allowlisted entries are parameterized variants of an underlying job rather
+// than standalone jobs. They map to the real job name plus the parameters to pass,
+// matching how they're invoked in default_config.yml's workflows.
+const PARAMETERIZED_JOBS = {
+  "installation-tests-carthage-xcode-27": {
+    job: "installation-tests-carthage",
+    parameters: { xcode_version: "27.0.0" },
+  },
 };
 
 const requestedJobs = (process.env.REQUESTED_JOBS || "").trim().split(/\s+/).filter(Boolean);
@@ -74,11 +88,27 @@ const header = lines.slice(0, workflowsIndex + 1).join("\n");
 const workflow = requestedJobs
   .map((job) => {
     const contexts = JOBS[job];
-    if (contexts.length === 0) {
+    const variant = PARAMETERIZED_JOBS[job];
+    const realJob = variant ? variant.job : job;
+
+    if (contexts.length === 0 && !variant) {
       return `      - ${job}`;
     }
-    const contextLines = contexts.map((ctx) => `            - ${ctx}`).join("\n");
-    return `      - ${job}:\n          context:\n${contextLines}`;
+
+    const lines = [`      - ${realJob}:`];
+    if (variant) {
+      lines.push(`          name: ${job}`);
+      for (const [key, value] of Object.entries(variant.parameters)) {
+        lines.push(`          ${key}: "${value}"`);
+      }
+    }
+    if (contexts.length > 0) {
+      lines.push("          context:");
+      for (const ctx of contexts) {
+        lines.push(`            - ${ctx}`);
+      }
+    }
+    return lines.join("\n");
   })
   .join("\n");
 

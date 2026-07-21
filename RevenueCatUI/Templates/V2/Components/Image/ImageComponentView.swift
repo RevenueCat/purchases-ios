@@ -180,8 +180,12 @@ struct ImageComponentView: View {
                         }
                     }
                     .onSizeChange { newSize in
-                        let effectiveCurrentSize = self.size ?? self.viewModel.cachedMeasuredSize
-                        guard effectiveCurrentSize != newSize else {
+                        // Compare against local @State only. Looping carousels mount multiple
+                        // copies of a page that share one ImageComponentViewModel (and thus one
+                        // cachedMeasuredSize). If we fell back to the shared cache here, the first
+                        // copy to measure would poison later copies: their local size would stay
+                        // nil and they'd remain stuck in the "size unknown" render path.
+                        guard Self.shouldAcceptMeasuredSize(localSize: self.size, newSize: newSize) else {
                             return
                         }
 
@@ -191,6 +195,15 @@ struct ImageComponentView: View {
                 }
             }
         }
+    }
+
+    /// Whether a newly measured size should be written into this view's local `@State`.
+    ///
+    /// Intentionally ignores any shared `cachedMeasuredSize`: duplicate carousel page copies
+    /// share one view model, so comparing against the cache would let the first copy to measure
+    /// prevent every other copy from ever applying the size to its own state.
+    static func shouldAcceptMeasuredSize(localSize: CGSize?, newSize: CGSize) -> Bool {
+        localSize != newSize
     }
 
     static func renderPlan(
@@ -414,20 +427,20 @@ struct ImageComponentView_Previews: PreviewProvider {
         ScrollView {
             VStack {
                 imageView(url: bigImageUrl,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 1080, height: 599)
                 imageView(url: bigImageUrl,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 1080, height: 599)
 
                 imageView(url: smallImage,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fit, width: 22, height: 21)
                 imageView(url: smallImage,
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
@@ -436,7 +449,7 @@ struct ImageComponentView_Previews: PreviewProvider {
                           size: .init(width: .fill, height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 22, height: 21)
                 imageView(url: smallImage,
-                          size: .init(width: .fit, height: .fixed(fixedHeight)),
+                          size: .init(width: .fit(nil), height: .fixed(fixedHeight)),
                           fitMode: .fill, width: 22, height: 21)
             }.background(.blue)
         }
@@ -448,13 +461,13 @@ struct ImageComponentView_Previews: PreviewProvider {
             VStack {
                 VStack {
                     imageView(url: smallImage,
-                              size: .init(width: .fixed(32), height: .fit),
+                              size: .init(width: .fixed(32), height: .fit(nil)),
                               fitMode: .fill, width: 22, height: 21)
                 }.frame(width: 300, height: 300).border(.green)
 
                 VStack {
                     imageView(url: smallImage,
-                              size: .init(width: .fixed(32), height: .fit),
+                              size: .init(width: .fixed(32), height: .fit(nil)),
                               fitMode: .fit, width: 22, height: 21)
                 }.frame(width: 300, height: 300).border(.green)
 

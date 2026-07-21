@@ -25,19 +25,19 @@ final class WeightedSourceSelectorTests: TestCase {
         expect(selector.current) == only
     }
 
-    func testHighestPriorityWins() {
-        let low = TestSource(id: "low", priority: 0, weight: 100)
-        let high = TestSource(id: "high", priority: 10, weight: 1)
+    func testLowestPriorityNumberWins() {
+        let low = TestSource(id: "low", priority: 0, weight: 1)
+        let high = TestSource(id: "high", priority: 10, weight: 100)
         let selector = WeightedSourceSelector(sources: [low, high], randomizer: FakeRandomizer(0))
-        expect(selector.current) == high
+        expect(selector.current) == low
     }
 
-    func testHighestPriorityWinsRegardlessOfOrder() {
-        let low1 = TestSource(id: "low1", priority: 0, weight: 100)
-        let high = TestSource(id: "high", priority: 5, weight: 1)
-        let low2 = TestSource(id: "low2", priority: 0, weight: 100)
-        let selector = WeightedSourceSelector(sources: [low1, high, low2], randomizer: FakeRandomizer(0))
-        expect(selector.current) == high
+    func testLowestPriorityNumberWinsRegardlessOfOrder() {
+        let high1 = TestSource(id: "high1", priority: 10, weight: 100)
+        let low = TestSource(id: "low", priority: 5, weight: 1)
+        let high2 = TestSource(id: "high2", priority: 10, weight: 100)
+        let selector = WeightedSourceSelector(sources: [high1, low, high2], randomizer: FakeRandomizer(0))
+        expect(selector.current) == low
     }
 
     // MARK: - Weighted random tie-breaking (weights [30, 70])
@@ -94,7 +94,7 @@ final class WeightedSourceSelectorTests: TestCase {
         // last resort: tried after its weighted peer, yet still before any lower-priority source.
         let weighted = TestSource(id: "weighted", priority: 10, weight: 50)
         let zero = TestSource(id: "zero", priority: 10, weight: 0)
-        let lowerPriority = TestSource(id: "lower", priority: 0, weight: 100)
+        let lowerPriority = TestSource(id: "lower", priority: 20, weight: 100)
         let selector = WeightedSourceSelector(
             sources: [weighted, zero, lowerPriority],
             randomizer: FakeRandomizer(0)
@@ -126,9 +126,9 @@ final class WeightedSourceSelectorTests: TestCase {
         let low = TestSource(id: "low", priority: 0, weight: 1)
         let selector = WeightedSourceSelector(sources: [high, low], randomizer: FakeRandomizer(0))
 
-        expect(selector.current) == high
-        expect(selector.advance()) == low
         expect(selector.current) == low
+        expect(selector.advance()) == high
+        expect(selector.current) == high
     }
 
     func testAdvanceReturnsNilWhenSourcesExhausted() {
@@ -136,7 +136,7 @@ final class WeightedSourceSelectorTests: TestCase {
         let low = TestSource(id: "low", priority: 0, weight: 1)
         let selector = WeightedSourceSelector(sources: [high, low], randomizer: FakeRandomizer(0))
 
-        expect(selector.advance()) == low
+        expect(selector.advance()) == high
         expect(selector.advance()).to(beNil())
         expect(selector.current).to(beNil())
     }
@@ -177,10 +177,10 @@ final class WeightedSourceSelectorTests: TestCase {
         let low = TestSource(id: "low", priority: 0, weight: 1)
         let selector = WeightedSourceSelector(sources: [high, low], randomizer: FakeRandomizer(0))
 
-        expect(selector.advance()) == low
+        expect(selector.advance()) == high
         selector.reset()
-        expect(selector.current) == high
-        expect(selector.advance()) == low
+        expect(selector.current) == low
+        expect(selector.advance()) == high
     }
 
     // MARK: - Helpers

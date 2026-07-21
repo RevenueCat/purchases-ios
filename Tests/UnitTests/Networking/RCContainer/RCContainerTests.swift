@@ -112,22 +112,15 @@ final class RCContainerTests: TestCase {
         expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == config
     }
 
-    func testParsesNonZeroFlags() throws {
-        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
-
-        expect(container.flags) == 0x07
-        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
-    }
-
-    func testIgnoresReservedFields() throws {
+    func testIgnoresHeaderReservedFields() throws {
         let container = try RCContainer(data: RCContainerTestData.container(
             config: "config".asData,
-            headerReservedBytes: [1, 2, 3, 4],
-            elementReserved: 0x01020304
+            headerReservedBytes: [1, 2, 3, 4]
         ))
 
         expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
-        expect(try RCContainerTestData.firstElement(in: container).reserved) == 0x01020304
+        expect(try RCContainerTestData.firstElement(in: container).encoding)
+            == RCContainer.Element.ContentEncoding.none
     }
 
     func testAcceptsOmittedFinalPadding() throws {
@@ -179,6 +172,33 @@ final class RCContainerTests: TestCase {
         Self.expectParsing(unsupportedVersion, throws: .unsupportedVersion(2))
     }
 
+    func testParsesNonZeroHeaderFlags() throws {
+        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
+
+        expect(container.flags) == 0x07
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+    }
+
+    func testWarnsAndParsesNonZeroHeaderFlags() throws {
+        self.logger.clearMessages()
+
+        let container = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0x07))
+
+        expect(container.flags) == 0x07
+        self.logger.verifyMessageWasLogged(
+            "RC Container header flags non-zero (0x7); ignoring unknown flags.",
+            level: .warn
+        )
+    }
+
+    func testDoesNotWarnWhenHeaderFlagsAreZero() throws {
+        self.logger.clearMessages()
+
+        _ = try RCContainer(data: RCContainerTestData.container(config: "config".asData, flags: 0))
+
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
+    }
+
     func testRejectsTruncatedContainers() {
         Self.expectParsing(Data([UInt8(ascii: "R")]), throws: .truncatedHeader)
         Self.expectParsing(
@@ -201,12 +221,177 @@ final class RCContainerTests: TestCase {
         expect(container.elementsByChecksum).to(beEmpty())
     }
 
-    func testRejectsNonZeroPadding() {
+    func testIgnoresPaddingByteValues() throws {
         var data = RCContainerTestData.container(config: "abc".asData)
         let lastIndex = data.index(before: data.endIndex)
         data[lastIndex] = 1
 
-        Self.expectParsing(data, throws: .nonZeroPadding(index: 0))
+        let container = try RCContainer(data: data)
+
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "abc".asData
+    }
+
+    func testUnsupportedContentEncodingParsesButFailsDecodeAndChecksumValidation() throws {
+        var data = RCContainerTestData.container(config: "config".asData)
+        data[data.index(data.startIndex, offsetBy: RCContainerTestData.firstElementEncodingOffset)] = 0xff
+
+        let element = try RCContainerTestData.firstElement(in: try RCContainer(data: data))
+
+        expect(element.encoding) == .unsupported(0xff)
+        expect(element.isChecksumValid()) == false
+        Self.expectDecoding(element, throws: .unsupportedContentEncoding(0xff))
+    }
+
+    func testZstdContentEncodingParsesButFailsDecodeAndChecksumValidation() throws {
+        var data = RCContainerTestData.container(config: "config".asData)
+        data[data.index(data.startIndex, offsetBy: RCContainerTestData.firstElementEncodingOffset)] =
+            RCContainer.Element.ContentEncoding.zstd.rawValue
+
+        let element = try RCContainerTestData.firstElement(in: try RCContainer(data: data))
+
+        expect(element.encoding) == .zstd
+        expect(element.isChecksumValid()) == false
+        Self.expectDecoding(
+            element,
+            throws: .unsupportedContentEncoding(RCContainer.Element.ContentEncoding.zstd.rawValue)
+        )
+    }
+
+    func testContentEncodingElementHeaderValues() {
+        expect(RCContainer.Element.ContentEncoding.none.elementEncodingHeaderValue).to(beNil())
+        expect(RCContainer.Element.ContentEncoding.gzip.elementEncodingHeaderValue) == "gzip"
+        expect(RCContainer.Element.ContentEncoding.brotli.elementEncodingHeaderValue) == "br"
+        expect(RCContainer.Element.ContentEncoding.zstd.elementEncodingHeaderValue) == "zstd"
+        expect(RCContainer.Element.ContentEncoding.unsupported(0xff).elementEncodingHeaderValue).to(beNil())
+    }
+
+    func testContentEncodingSupport() {
+        expect(RCContainer.Element.ContentEncoding.none.isSupported) == true
+        expect(RCContainer.Element.ContentEncoding.gzip.isSupported) == true
+        expect(RCContainer.Element.ContentEncoding.zstd.isSupported) == false
+        expect(RCContainer.Element.ContentEncoding.unsupported(0xff).isSupported) == false
+    }
+
+    func testSupportedRequestEncodings() {
+        if RCContainer.Element.ContentEncoding.brotli.isSupported {
+            expect(RCContainer.Element.ContentEncoding.supportedEncodingsInPriorityOrder) == [.brotli, .gzip, .none]
+            expect(RCContainer.Element.ContentEncoding.supportedRequestElementEncodingsInPriorityOrder)
+                == [.brotli, .gzip]
+            expect(RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue) == "br, gzip"
+        } else {
+            expect(RCContainer.Element.ContentEncoding.supportedEncodingsInPriorityOrder) == [.gzip, .none]
+            expect(RCContainer.Element.ContentEncoding.supportedRequestElementEncodingsInPriorityOrder) == [.gzip]
+            expect(RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue) == "gzip"
+        }
+    }
+
+    func testIgnoresNonZeroElementReservedBytes() throws {
+        var data = RCContainerTestData.container(config: "config".asData)
+        let reservedIndex = data.index(
+            data.startIndex,
+            offsetBy: RCContainerTestData.firstElementEncodingOffset + 1
+        )
+        data[reservedIndex] = 0x01
+
+        let container = try RCContainer(data: data)
+
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+    }
+
+    func testWarnsAndParsesNonZeroElementReservedBytes() throws {
+        var data = RCContainerTestData.container(config: "config".asData)
+        let reservedIndex = data.index(
+            data.startIndex,
+            offsetBy: RCContainerTestData.firstElementEncodingOffset + 1
+        )
+        data[reservedIndex] = 0x01
+
+        self.logger.clearMessages()
+
+        let container = try RCContainer(data: data)
+
+        expect(RCContainerTestData.data(from: try RCContainerTestData.firstElement(in: container))) == "config".asData
+        self.logger.verifyMessageWasLogged(
+            "RC element reserved bits non-zero (0x100); ignoring unknown reserved bits.",
+            level: .warn
+        )
+    }
+
+    func testDoesNotWarnWhenOnlyElementCodecByteIsSet() throws {
+        self.logger.clearMessages()
+
+        _ = try RCContainer(data: RCContainerTestData.compressedContainer(
+            config: Data(repeating: UInt8(ascii: "a"), count: 2048),
+            configEncoding: .gzip
+        ))
+
+        expect(self.logger.messages.filter { $0.level == .warn }).to(beEmpty())
+    }
+
+    func testParsesGzipElementAndValidatesChecksumOverDecodedBytes() throws {
+        let payload = Data(repeating: UInt8(ascii: "a"), count: 2048)
+        let container = try RCContainer(data: RCContainerTestData.compressedContainer(
+            config: payload,
+            configEncoding: .gzip
+        ))
+        let element = try RCContainerTestData.firstElement(in: container)
+
+        expect(element.encoding) == .gzip
+        expect(element.size).to(beLessThan(payload.count))
+        expect(RCContainerTestData.data(from: element)) != payload
+        expect(try RCContainerTestData.decodedData(from: element)) == payload
+        expect(element.isChecksumValid()) == true
+    }
+
+    func testGzipElementWithTrailingBytesFailsDecodeAndChecksumValidation() throws {
+        let payload = Data(repeating: UInt8(ascii: "a"), count: 2048)
+        let container = try RCContainer(data: RCContainerTestData.compressedContainerWithTrailingGzipBytes(
+            config: payload,
+            trailingBytes: Data([0xff])
+        ))
+        let element = try RCContainerTestData.firstElement(in: container)
+
+        expect(element.encoding) == .gzip
+        expect(element.isChecksumValid()) == false
+        Self.expectDecoding(
+            element,
+            throws: .contentDecompressionFailed(RCContainer.Element.ContentEncoding.gzip.rawValue)
+        )
+    }
+
+    func testParsesBrotliElementAndValidatesChecksumOverDecodedBytesWhenAvailable() throws {
+        guard RCContainer.Element.ContentEncoding.brotli.isSupported else {
+            throw XCTSkip("Brotli compression is only available on newer Apple OS versions.")
+        }
+
+        let payload = Data(repeating: UInt8(ascii: "b"), count: 2048)
+        let container = try RCContainer(data: RCContainerTestData.compressedContainer(
+            config: payload,
+            configEncoding: .brotli
+        ))
+        let element = try RCContainerTestData.firstElement(in: container)
+
+        expect(element.encoding) == .brotli
+        expect(element.size).to(beLessThan(payload.count))
+        expect(RCContainerTestData.data(from: element)) != payload
+        expect(try RCContainerTestData.decodedData(from: element)) == payload
+        expect(element.isChecksumValid()) == true
+    }
+
+    func testUsesWireSizeForCompressedElementPaddingAndOffsets() throws {
+        let config = Data(repeating: UInt8(ascii: "a"), count: 2048)
+        let content = "content after compressed config".asData
+        let container = try RCContainer(data: RCContainerTestData.compressedContainer(
+            config: config,
+            configEncoding: .gzip,
+            contentElements: [(payload: content, encoding: .none)]
+        ))
+        let contentElementsByChecksum = RCContainerTestData.contentElements(in: container)
+
+        expect(try RCContainerTestData.decodedData(from: try RCContainerTestData.firstElement(in: container))) == config
+        expect(RCContainerTestData.data(
+            from: try XCTUnwrap(contentElementsByChecksum[RCContainerTestData.blobRef(for: content)])
+        )) == content
     }
 
     func testParsesStructurallyValidContainerWithConfigChecksumMismatch() throws {
@@ -307,6 +492,22 @@ private extension RCContainerTests {
     ) {
         do {
             _ = try RCContainer(data: data)
+            fail("Expected \(expectedError)", file: file, line: line)
+        } catch let error as RCContainer.Parser.FormatError {
+            expect(file: file, line: line, error) == expectedError
+        } catch {
+            fail("Expected RCContainer.Parser.FormatError, got \(error)", file: file, line: line)
+        }
+    }
+
+    static func expectDecoding(
+        _ element: RCContainer.Element,
+        throws expectedError: RCContainer.Parser.FormatError,
+        file: FileString = #file,
+        line: UInt = #line
+    ) {
+        do {
+            _ = try element.withDecodedPayloadBytes { Data($0) }
             fail("Expected \(expectedError)", file: file, line: line)
         } catch let error as RCContainer.Parser.FormatError {
             expect(file: file, line: line, error) == expectedError

@@ -16,7 +16,7 @@ internal extension RewardVerification {
 
     /// Terminal SSV verdict from the polling loop.
     enum Outcome: Sendable {
-        case verified(AdReward)
+        case verified(reward: AdReward, moreRewards: [AdReward])
         case failed(FailureReason)
 
         var logDescription: String {

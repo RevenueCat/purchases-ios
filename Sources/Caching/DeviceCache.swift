@@ -215,7 +215,12 @@ class DeviceCache {
         return self.value(for: CacheKey.offerings(appUserID))
     }
 
-    func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+    func cache(
+        offerings: Offerings,
+        diskContents: Offerings.Contents? = nil,
+        preferredLocales: [String],
+        appUserID: String
+    ) {
         // We can't get the preferred locales from the `systemInfo` object because they may change
         // during the get offerings request, before this cache method gets called.
         // For the cache we need the preferred locales that were used in the request.
@@ -223,7 +228,7 @@ class DeviceCache {
         self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
-        if self.largeItemCache.set(codable: offerings.contents, forKey: key) {
+        if self.largeItemCache.set(codable: diskContents ?? offerings.contents, forKey: key) {
 
             // Delete old file from documents directory if it exists
             self.deleteOldFileIfNeeded(for: key)
@@ -269,39 +274,6 @@ class DeviceCache {
         } else {
             return .valid
         }
-    }
-
-    // MARK: - Workflows list response
-    // The workflows list is persisted under a single, non-user-scoped key.
-    // Cross-user safety is handled by clearing it on identity transitions.
-
-    func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
-        return self.value(for: CacheKey.workflowsListResponse)
-    }
-
-    func cache(workflowsListResponse: WorkflowsListResponse) {
-        self.largeItemCache.set(codable: workflowsListResponse, forKey: CacheKey.workflowsListResponse.rawValue)
-    }
-
-    func clearWorkflowsListResponseCache() {
-        self.largeItemCache.removeObject(forKey: CacheKey.workflowsListResponse.rawValue)
-    }
-
-    // MARK: - Workflow details
-    // The prefetched workflow details are persisted under a single, non-user-scoped key as a
-    // `workflowId -> WorkflowDataResult` map, mirroring how the workflows list is stored above.
-    // Cross-user safety is handled by clearing it on identity transitions.
-
-    func cachedWorkflowDetails() -> [String: WorkflowDataResult]? {
-        return self.value(for: CacheKey.workflowDetails)
-    }
-
-    func cache(workflowDetails: [String: WorkflowDataResult]) {
-        self.largeItemCache.set(codable: workflowDetails, forKey: CacheKey.workflowDetails.rawValue)
-    }
-
-    func clearWorkflowDetailsCache() {
-        self.largeItemCache.removeObject(forKey: CacheKey.workflowDetails.rawValue)
     }
 
     // MARK: - subscriber attributes
@@ -567,8 +539,6 @@ class DeviceCache {
         case customerInfo(String)
         case customerInfoLastUpdated(String)
         case offerings(String)
-        case workflowsListResponse
-        case workflowDetails
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
         case syncedSK2ObserverModeTransactionIDs
@@ -580,8 +550,6 @@ class DeviceCache {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
-            case .workflowsListResponse: return "\(Self.base)workflowsListResponse"
-            case .workflowDetails: return "\(Self.base)workflowDetails"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
             case .syncedSK2ObserverModeTransactionIDs:
