@@ -1013,12 +1013,12 @@ private extension OfferingsManagerTests {
 
 extension OfferingsManagerTests {
 
-    func testGetOfferingsWarmsWorkflowForCurrentOffering() {
+    func testGetOfferingsSchedulesAssetPrewarmingForCurrentOfferingWorkflow() {
         let mockRemoteConfigManager = MockRemoteConfigManager()
-        let mockWorkflowsConfigProvider = MockWorkflowsConfigProvider()
+        let mockWorkflowAssetPrewarmer = MockWorkflowAssetPrewarmer()
         let manager = self.makeOfferingsManager(
             remoteConfigManager: mockRemoteConfigManager,
-            workflowsConfigProvider: mockWorkflowsConfigProvider
+            workflowAssetPrewarmer: mockWorkflowAssetPrewarmer
         )
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
@@ -1027,7 +1027,7 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(mockWorkflowsConfigProvider.invokedWarmPrefetchedWorkflowsParameters) == ["base"]
+        expect(mockWorkflowAssetPrewarmer.invokedPrefetchedAssetPrewarmingParameters) == ["base"]
     }
 
     func testGetOfferingsDeliversImmediatelyWhenRemoteConfigManagerIsNil() {
@@ -1479,7 +1479,7 @@ extension OfferingsManagerTests {
     private func makeOfferingsManager(
         remoteConfigManager: RemoteConfigManagerType?,
         offeringsFactory: OfferingsFactory? = nil,
-        workflowsConfigProvider: WorkflowsConfigProviderType? = nil
+        workflowAssetPrewarmer: WorkflowAssetPrewarmingType? = nil
     ) -> OfferingsManager {
         return OfferingsManager(deviceCache: self.mockDeviceCache,
                                 operationDispatcher: self.mockOperationDispatcher,
@@ -1489,7 +1489,7 @@ extension OfferingsManagerTests {
                                 productsManager: self.mockProductsManager,
                                 diagnosticsTracker: self.mockDiagnosticsTracker,
                                 remoteConfigManager: remoteConfigManager,
-                                workflowsConfigProvider: workflowsConfigProvider)
+                                workflowAssetPrewarmer: workflowAssetPrewarmer)
     }
 
     private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [

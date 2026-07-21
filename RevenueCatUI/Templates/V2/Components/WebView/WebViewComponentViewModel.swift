@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 import Foundation
 @_spi(Internal) import RevenueCat
 #if !os(tvOS) // For Paywalls V2
@@ -8,9 +12,7 @@ final class WebViewComponentViewModel: Hashable {
     let urlString: String
     let size: PaywallComponent.Size
     let visible: Bool
-    let componentID: String?
-    let protocolVersion: Int
-    let locale: Locale
+    let componentID: String
 
     var url: URL? {
         guard !self.urlString.contains("{{"),
@@ -27,8 +29,6 @@ final class WebViewComponentViewModel: Hashable {
         self.size = component.size
         self.visible = component.visible ?? true
         self.componentID = component.id
-        self.protocolVersion = component.protocolVersion
-        self.locale = localizationProvider.locale
     }
 
     func hash(into hasher: inout Hasher) {

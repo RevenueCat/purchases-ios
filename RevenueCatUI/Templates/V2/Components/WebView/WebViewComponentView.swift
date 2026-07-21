@@ -1,3 +1,7 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
@@ -17,23 +21,15 @@ struct WebViewComponentView: View {
         EmptyView()
         #else
         if viewModel.visible, let url = viewModel.url {
-            if let componentID = viewModel.componentID {
-                BridgedWebViewComponentView(
-                    viewModel: viewModel,
-                    url: url,
-                    componentID: componentID
-                )
-                .id(
-                    "\(viewModel.urlString)-\(componentID)-" +
-                    "\(viewModel.size.width.isFit)-\(viewModel.size.height.isFit)"
-                )
-            } else {
-                RenderOnlyWebViewComponentView(viewModel: viewModel, url: url)
-                    .id("\(viewModel.urlString)-render-only")
-                    .onAppear {
-                        Logger.debug(Strings.paywall_web_view_missing_id)
-                    }
-            }
+            BridgedWebViewComponentView(
+                viewModel: viewModel,
+                url: url,
+                componentID: viewModel.componentID
+            )
+            .id(
+                "\(viewModel.urlString)-\(viewModel.componentID)-" +
+                "\(viewModel.size.width.isFit)-\(viewModel.size.height.isFit)"
+            )
         }
         #endif
     }
@@ -95,17 +91,19 @@ private struct BridgedWebViewComponentView: View {
         self.url = url
         self.componentID = componentID
 
-        let origin = WebViewOrigin.origin(of: url) ?? ""
+        let origin = url.webViewOrigin ?? ""
+        // `evaluateJavaScript`/`currentURL` are rebound to the live web view in the representable's
+        // `configureSession(for:)`; the no-op defaults only cover the window before it is created.
         self._session = StateObject(
             wrappedValue: WebViewSession(
                 componentID: componentID,
-                protocolVersion: viewModel.protocolVersion,
                 expectedOrigin: origin,
-                localeIdentifier: viewModel.locale.identifier,
                 fitAxes: (
                     width: viewModel.size.width.isFit,
                     height: viewModel.size.height.isFit
-                )
+                ),
+                evaluateJavaScript: { _ in },
+                currentURL: { nil }
             )
         )
     }
@@ -137,32 +135,6 @@ private struct BridgedWebViewComponentView: View {
             .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
             // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
             // placeholder -> measured); never paint outside the component's box.
-            .clipped()
-        }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct RenderOnlyWebViewComponentView: View {
-
-    let viewModel: WebViewComponentViewModel
-    let url: URL
-
-    @State
-    private var processTerminated = false
-
-    var body: some View {
-        if !processTerminated {
-            WebViewRepresentable(
-                url: url,
-                expectedOrigin: WebViewOrigin.origin(of: url) ?? "",
-                session: nil,
-                onProcessTerminated: {
-                    self.processTerminated = true
-                }
-            )
-            .webViewSize(viewModel.size, measuredWidth: nil, measuredHeight: nil)
             .clipped()
         }
     }
@@ -288,15 +260,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     private func load(_ webView: PlatformWebView) {
-        Task { @MainActor in
-            guard let rules = await WebViewIsolation.ruleList() else {
-                Logger.debug(Strings.paywall_web_view_content_rules_failed("rule list unavailable"))
-                return
-            }
-
-            webView.configuration.userContentController.add(rules)
-            webView.load(URLRequest(url: url))
-        }
+        // Cross-origin isolation is delegated to the server-provided CSP (see WebViewNavigationPolicy),
+        // so no WKContentRuleList is installed here.
+        webView.load(URLRequest(url: url))
     }
 
     private static func dismantle(_ webView: PlatformWebView) {
