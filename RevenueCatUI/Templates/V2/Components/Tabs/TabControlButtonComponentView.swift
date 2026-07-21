@@ -75,7 +75,13 @@ struct TabControlButtonComponentView: View {
             )
             .environment(\.componentViewState, self.selectedState)
         }
-
+        // Warm the haptics engine as the tab control appears, so the first tab
+        // selection's render isn't stalled behind the one-time engine load.
+        .onAppear {
+            if self.viewModel.component.hapticFeedbackEnabled ?? true {
+                self.hapticFeedback.prepare()
+            }
+        }
     }
 
     private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
