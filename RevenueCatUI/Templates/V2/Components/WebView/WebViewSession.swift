@@ -13,9 +13,7 @@ import WebKit
 final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let componentID: String
-    /// The canonical origin every message is gated against. Guaranteed valid by construction:
-    /// callers resolve the origin (and skip creating the web view if it cannot be) before the
-    /// session exists.
+    /// The canonical origin every message is gated against.
     let expectedOrigin: WebViewOrigin
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
