@@ -253,7 +253,7 @@ extension View {
     /// Invokes the given closure when the user taps a web checkout CTA and is taken out of the
     /// app to complete payment externally (e.g. via browser or in-app browser).
     ///
-    /// This is distinct from ``onPurchaseCancelled(_:)`` — the user has not cancelled; they have
+    /// This is distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled; they have
     /// initiated a purchase flow outside of the app.
     ///
     /// Example:
