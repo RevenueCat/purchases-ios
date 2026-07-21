@@ -19,8 +19,7 @@ import Foundation
 
         /// The host<->component bridge protocol version this SDK implements. A config declaring any
         /// other version is treated as an unrecognized component and rendered via its `fallback`.
-        /// Kept in sync with `WebViewEnvelope.defaultProtocolVersion` in `RevenueCatUI`.
-        static let supportedProtocolVersion: Int = 1
+        public static let supportedProtocolVersion: Int = 1
 
         let type: ComponentType
         public let id: String
