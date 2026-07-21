@@ -1,44 +1,47 @@
-import Foundation
-
-#if canImport(WebKit)
-import WebKit
-#endif
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
 
 #if !os(tvOS) && canImport(WebKit) // For Paywalls V2
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum WebViewOrigin {
+import Foundation
+import WebKit
 
-    nonisolated static func origin(of url: URL) -> String? {
-        guard let scheme = url.scheme?.lowercased(),
-              let host = url.host?.lowercased(),
+extension URL {
+
+    /// Canonical origin (`scheme://host[:port]`) of the URL, or `nil` if it has no scheme or host.
+    nonisolated var webViewOrigin: String? {
+        guard let scheme = self.scheme?.lowercased(),
+              let host = self.host?.lowercased(),
               !host.isEmpty else {
             return nil
         }
-
-        let port = url.port
-        let suffix: String
-        if let port, !Self.isDefaultPort(port, scheme: scheme) {
-            suffix = ":\(port)"
-        } else {
-            suffix = ""
-        }
-        return "\(scheme)://\(host)\(suffix)"
+        return WebViewOrigin.canonicalOrigin(scheme: scheme, host: host, port: self.port)
     }
+
+}
+
+extension WKSecurityOrigin {
 
     /// Canonical origin of the frame that posted a script message. Uses the frame's security origin
     /// (the authoritative sender) rather than the WebView's top-level URL.
-    nonisolated static func origin(of securityOrigin: WKSecurityOrigin) -> String? {
-        let scheme = securityOrigin.`protocol`.lowercased()
-        let host = securityOrigin.host.lowercased()
+    var webViewOrigin: String? {
+        let scheme = self.`protocol`.lowercased()
+        let host = self.host.lowercased()
         guard !scheme.isEmpty, !host.isEmpty else {
             return nil
         }
-
-        let port = securityOrigin.port
-        let suffix: String
         // `WKSecurityOrigin` reports `0` for the scheme's default port.
-        if port != 0, !Self.isDefaultPort(port, scheme: scheme) {
+        return WebViewOrigin.canonicalOrigin(scheme: scheme, host: host, port: self.port == 0 ? nil : self.port)
+    }
+
+}
+
+private enum WebViewOrigin {
+
+    nonisolated static func canonicalOrigin(scheme: String, host: String, port: Int?) -> String {
+        let suffix: String
+        if let port, !isDefaultPort(port, scheme: scheme) {
             suffix = ":\(port)"
         } else {
             suffix = ""
@@ -62,14 +65,14 @@ enum WebViewNavigationPolicy {
     // to `default-src 'self'`).
     static func policy(for url: URL?, isMainFrame: Bool, expectedOrigin: String) -> WKNavigationActionPolicy {
         guard let url,
-              let origin = WebViewOrigin.origin(of: url),
+              let origin = url.webViewOrigin,
               origin.hasPrefix("https://") else {
             return .cancel
         }
         guard isMainFrame else {
             return .allow
         }
-        let expected = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:))
+        let expected = URL(string: expectedOrigin)?.webViewOrigin
         return origin == expected ? .allow : .cancel
     }
 

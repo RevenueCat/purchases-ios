@@ -296,7 +296,7 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         )
 
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
 
         .scheme(
