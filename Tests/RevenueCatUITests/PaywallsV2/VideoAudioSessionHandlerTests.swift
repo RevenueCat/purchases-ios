@@ -62,6 +62,40 @@ final class VideoAudioSessionHandlerTests: TestCase {
         XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
     }
 
+    func testUnregisteredHandlerDoesNotRestoreAnotherHandlerConfiguration() {
+        let audioSession = MockAudioSession(configuration: .playbackWithMixing)
+        var unregisteredHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
+        XCTAssertNotNil(unregisteredHandler)
+
+        let previousConfiguration = Configuration(category: .record, mode: .voiceChat, options: [])
+        audioSession.configuration = previousConfiguration
+        var registeredHandler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
+        XCTAssertNotNil(registeredHandler)
+
+        unregisteredHandler = nil
+
+        XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
+        XCTAssertEqual(audioSession.setCategoryCalls.count, 1)
+
+        registeredHandler = nil
+
+        XCTAssertEqual(audioSession.configuration, previousConfiguration)
+        XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
+    }
+
+    func testPreservesMixingWhenExternalAudioIsPlaying() {
+        let previousConfiguration = Configuration(category: .playback, mode: .default, options: [])
+        let audioSession = MockAudioSession(configuration: previousConfiguration)
+        audioSession.secondaryAudioShouldBeSilencedHint = true
+
+        var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)
+        XCTAssertNotNil(handler)
+        handler = nil
+
+        XCTAssertEqual(audioSession.configuration, .playbackWithMixing)
+        XCTAssertEqual(audioSession.setCategoryCalls.count, 2)
+    }
+
     func testDoesNotOverwriteHostConfigurationChangedDuringVideoPlayback() {
         let audioSession = MockAudioSession()
         var handler: VideoAudioSessionHandler? = VideoAudioSessionHandler(audioSession: audioSession)

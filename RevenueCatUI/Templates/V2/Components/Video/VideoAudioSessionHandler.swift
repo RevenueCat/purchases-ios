@@ -43,6 +43,7 @@ final class VideoAudioSessionHandler {
 
     private let audioSession: AudioSessionConfiguring
     private let sessionIdentifier: ObjectIdentifier
+    private var isRegistered = false
 
     init(audioSession: AudioSessionConfiguring = AVAudioSession.sharedInstance()) {
         self.audioSession = audioSession
@@ -53,6 +54,7 @@ final class VideoAudioSessionHandler {
 
         if let state = Self.states[sessionIdentifier] {
             state.handlerCount += 1
+            self.isRegistered = true
             return
         }
 
@@ -73,6 +75,7 @@ final class VideoAudioSessionHandler {
                 previousConfiguration: previousConfiguration,
                 handlerCount: 1
             )
+            self.isRegistered = true
         } catch {
             Logger.warning(Strings.video_failed_to_set_audio_session_category(error))
         }
@@ -82,7 +85,7 @@ final class VideoAudioSessionHandler {
         Self.lock.lock()
         defer { Self.lock.unlock() }
 
-        guard let state = Self.states[sessionIdentifier] else {
+        guard isRegistered, let state = Self.states[sessionIdentifier] else {
             return
         }
 
