@@ -14,8 +14,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let componentID: String
     /// The canonical origin every message is gated against, or `nil` when the caller's origin
-    /// could not be normalized. A `nil` origin makes the bridge inert (all traffic is rejected),
-    /// mirroring purchases-android.
+    /// could not be normalized. A `nil` origin makes the bridge inert (all traffic is rejected).
     let expectedOrigin: String?
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
@@ -43,10 +42,9 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         currentURL: @escaping () -> URL?
     ) {
         self.componentID = componentID
-        // Normalize to a canonical origin so comparisons match the navigation policy (and Android),
-        // whether the caller passes a bare origin or a full URL. A value that cannot be normalized
-        // is kept `nil` (rather than silently trusting the raw string) so the bridge stays inert and
-        // the misconfiguration is diagnosable, like purchases-android.
+        // Normalize to a canonical origin so comparisons match the navigation policy, whether the
+        // caller passes a bare origin or a full URL. A value that cannot be normalized is kept `nil`
+        // so the bridge stays inert and the misconfiguration is diagnosable.
         let normalizedOrigin = URL(string: expectedOrigin)?.webViewOrigin
         if normalizedOrigin == nil {
             Logger.warning(Strings.paywall_web_view_invalid_expected_origin(expectedOrigin))
@@ -91,7 +89,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
 
         if envelope.kind == .connect {
-            self.handleConnect(envelope)
+            self.handleConnect(protocolVersion: envelope.protocolVersion)
             return
         }
 
@@ -135,12 +133,12 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         return type
     }
 
-    private func handleConnect(_ envelope: WebViewEnvelope.Envelope) {
+    private func handleConnect(protocolVersion: Int) {
         guard !self.channelOpen else {
             return
         }
 
-        if envelope.protocolVersion == self.protocolVersion {
+        if protocolVersion == self.protocolVersion {
             self.channelOpen = true
             // Handshake replies (`init` and the follow-up fit message) use `allowBeforeNavigation:
             // true`: the `connect` that triggered them was already gated against the authoritative
@@ -150,7 +148,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             self.send(.init(kind: .`init`, componentID: self.componentID), allowBeforeNavigation: true)
             self.sendFitMessageIfNeeded()
         } else {
-            let error = "Unsupported protocol_version \(envelope.protocolVersion); " +
+            let error = "Unsupported protocol_version \(protocolVersion); " +
                 "native host supports \(self.protocolVersion)"
             self.send(.init(kind: .reject, componentID: "", error: error), allowBeforeNavigation: true)
         }
@@ -219,9 +217,10 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
               let json = String(data: data, encoding: .utf8) else {
             return nil
         }
+        // Escape JS line terminators that are legal in JSON but not in JS string literals.
         let escaped = json
-            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
-            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028") // line separator
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029") // paragraph separator
 
         let receiveFunction = WebViewEnvelope.receiveFunction
         return """

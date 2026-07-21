@@ -43,21 +43,34 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testDropsBeforeConnectDuplicateConnectAndNonMainFrame() throws {
-        let harness = Harness()
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
 
-        harness.handle(.init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize))
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
+        // A resize before the handshake is dropped (channel closed).
+        harness.handle(.init(
+            kind: .message,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeResize,
+            payload: ["height": .number(200)]
+        ))
+        XCTAssertTrue(resizes.isEmpty)
 
         harness.handle(.init(kind: .connect, componentID: ""))
         harness.handle(.init(kind: .connect, componentID: ""))
         XCTAssertEqual(try harness.outboundEnvelopes().filter { $0.kind == .`init` }.count, 1)
 
-        harness.capturedScripts.removeAll()
+        // A resize from a subframe is dropped even after the channel is open.
         harness.handle(
-            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize),
+            .init(
+                kind: .message,
+                componentID: "web",
+                type: WebViewEnvelope.messageTypeResize,
+                payload: ["height": .number(200)]
+            ),
             isMainFrame: false
         )
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
+        XCTAssertTrue(resizes.isEmpty)
     }
 
     func testFitMessageDeclaresExactlyTheFitAxes() throws {
@@ -81,27 +94,96 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testDropsAppFramesWithNonAppKinds() {
-        let harness = Harness()
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
         harness.connect()
 
+        // Each carries a payload that would apply if the kind gate let it through.
         for kind: WebViewEnvelope.Kind in [.`init`, .reject, .response, .error] {
             harness.handle(.init(
                 kind: kind,
                 componentID: "web",
                 type: WebViewEnvelope.messageTypeResize,
-                id: "id-1"
+                id: "id-1",
+                payload: ["height": .number(200)]
             ))
         }
 
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
+        XCTAssertTrue(resizes.isEmpty)
     }
 
     func testDropsAnyRequestWithoutID() {
-        let harness = Harness()
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
         harness.connect()
 
-        harness.handle(.init(kind: .request, componentID: "web", type: WebViewEnvelope.messageTypeResize))
+        harness.handle(.init(
+            kind: .request,
+            componentID: "web",
+            type: WebViewEnvelope.messageTypeResize,
+            payload: ["height": .number(200)]
+        ))
 
+        XCTAssertTrue(resizes.isEmpty)
+    }
+
+    func testDropsAppFrameFromDifferentComponent() {
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
+        harness.connect()
+
+        // Same shape as an applied resize, but addressed to another component on the same page.
+        harness.handle(.init(
+            kind: .message,
+            componentID: "other",
+            type: WebViewEnvelope.messageTypeResize,
+            payload: ["height": .number(200)]
+        ))
+
+        XCTAssertTrue(resizes.isEmpty)
+    }
+
+    func testDropsUnknownMessageType() {
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
+        harness.connect()
+
+        harness.handle(.init(
+            kind: .message,
+            componentID: "web",
+            type: "rc:not-a-real-type",
+            payload: ["height": .number(200)]
+        ))
+
+        XCTAssertTrue(resizes.isEmpty)
+    }
+
+    func testDropsMessageWithoutType() {
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
+        harness.connect()
+
+        harness.handle(.init(kind: .message, componentID: "web", payload: ["height": .number(200)]))
+
+        XCTAssertTrue(resizes.isEmpty)
+    }
+
+    func testDropsEnvelopeOnUnexpectedChannel() {
+        let harness = Harness()
+
+        // Well-formed connect frame, but riding another SDK's channel: it must never open ours.
+        harness.session.handle(
+            rawMessage: #"{"channel":"someone-elses-channel","protocol_version":1,"kind":"connect","component_id":""}"#,
+            isMainFrame: true,
+            sourceOrigin: Harness.expectedOrigin
+        )
+
+        XCTAssertFalse(harness.session.channelOpen)
         XCTAssertTrue(harness.capturedScripts.isEmpty)
     }
 
@@ -214,15 +296,22 @@ final class WebViewSessionTests: TestCase {
     // MARK: - Origin gating
 
     func testDropsInboundFromUntrustedOrigin() {
-        let harness = Harness()
+        let harness = Harness(size: (width: false, height: true))
+        var resizes: [(CGFloat?, CGFloat?)] = []
+        harness.session.onContentResize = { resizes.append(($0, $1)) }
         harness.connect()
 
         harness.handle(
-            .init(kind: .message, componentID: "web", type: WebViewEnvelope.messageTypeResize),
+            .init(
+                kind: .message,
+                componentID: "web",
+                type: WebViewEnvelope.messageTypeResize,
+                payload: ["height": .number(200)]
+            ),
             sourceOrigin: "https://evil.example.org"
         )
 
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
+        XCTAssertTrue(resizes.isEmpty)
     }
 
     func testDropsConnectFromUntrustedOrigin() {
