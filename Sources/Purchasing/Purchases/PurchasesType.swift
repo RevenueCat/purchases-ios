@@ -1298,16 +1298,17 @@ public protocol PurchasesSwiftType: AnyObject {
          */
         func virtualCurrencies() async throws -> VirtualCurrencies
     #endif
+
+    /// Performs an unauthenticated request to the API to verify connectivity.
+    /// - Parameter signatureVerification: Whether to verify the response signature.
+    /// - Throws: ``PublicError`` if request failed.
+    func healthRequest(signatureVerification: Bool) async throws
 }
 
 // MARK: -
 
 /// Interface for ``Purchases``'s internal-only methods.
 internal protocol InternalPurchasesType: AnyObject {
-
-    /// Performs an unauthenticated request to the API to verify connectivity.
-    /// - Throws: `PublicError` if request failed.
-    func healthRequest(signatureVerification: Bool) async throws
 
     #if DEBUG
         /// Requests an in-depth report of the SDK's configuration from the server.
