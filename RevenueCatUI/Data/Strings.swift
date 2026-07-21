@@ -110,11 +110,9 @@ enum Strings {
     case video_failed_to_cache(URL, Error)
 
     // WebView
-    case paywall_web_view_content_rules_failed(String)
     case paywall_web_view_message_rejected(reason: String)
     case paywall_web_view_post_message_failed(String)
     case paywall_web_view_post_message_skipped
-    case paywall_web_view_missing_id
     case paywall_web_view_content_process_terminated
 
     // Exit Offers
@@ -372,16 +370,12 @@ extension Strings: CustomStringConvertible {
         case .video_failed_to_cache(let url, let error):
             return "Failed to cache video at \(url): \(error)"
 
-        case .paywall_web_view_content_rules_failed(let error):
-            return "Paywalls V2 web_view content rules failed: \(error)"
         case .paywall_web_view_message_rejected(let reason):
             return "Paywalls V2 web_view message rejected: \(reason)"
         case .paywall_web_view_post_message_failed(let error):
             return "Paywalls V2 web_view postMessage failed: \(error)"
         case .paywall_web_view_post_message_skipped:
             return "Paywalls V2 web_view postMessage skipped because the channel is not ready or origin changed."
-        case .paywall_web_view_missing_id:
-            return "Paywalls V2 web_view component is missing an id. Rendering without native bridge."
         case .paywall_web_view_content_process_terminated:
             return "Paywalls V2 web_view content process terminated. Removing the web view."
 

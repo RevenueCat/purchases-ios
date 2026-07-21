@@ -12,7 +12,6 @@ import WebKit
 final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let componentID: String
-    let protocolVersion: Int
     let expectedOrigin: String
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     /// Invoked from ``resetForNewDocument()`` so the SwiftUI host can clear measured fit sizes.
@@ -24,23 +23,25 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     let fitAxes: (width: Bool, height: Bool)
 
-    private let localeIdentifier: String
+    /// The single protocol version this SDK build implements. Deliberately not the schema's
+    /// `protocol_version`: the host must never accept a handshake for a version it cannot service,
+    /// even if a future schema declares one.
+    private let protocolVersion = WebViewEnvelope.defaultProtocolVersion
+
     private var lastAppliedWidth: CGFloat?
     private var lastAppliedHeight: CGFloat?
 
     init(
         componentID: String,
-        protocolVersion: Int,
         expectedOrigin: String,
-        localeIdentifier: String,
         fitAxes: (width: Bool, height: Bool),
-        evaluateJavaScript: @escaping (String) -> Void = { _ in },
-        currentURL: @escaping () -> URL? = { nil }
+        evaluateJavaScript: @escaping (String) -> Void,
+        currentURL: @escaping () -> URL?
     ) {
         self.componentID = componentID
-        self.protocolVersion = protocolVersion
-        self.expectedOrigin = expectedOrigin
-        self.localeIdentifier = localeIdentifier
+        // Normalize to a canonical origin so comparisons match the navigation policy (and Android),
+        // whether the caller passes a bare origin or a full URL.
+        self.expectedOrigin = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:)) ?? expectedOrigin
         self.fitAxes = fitAxes
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
@@ -61,18 +62,19 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         _ userContentController: WKUserContentController,
         didReceive message: WKScriptMessage
     ) {
+        // Validate against the origin of the frame that actually posted the message, not the
+        // WebView's top-level URL (which can lag behind navigations).
+        let sourceOrigin = WebViewOrigin.origin(of: message.frameInfo.securityOrigin)
+        let isMainFrame = message.frameInfo.isMainFrame
+        let body = message.body
         MainActor.assumeIsolated {
-            self.handle(
-                rawMessage: message.body,
-                isMainFrame: message.frameInfo.isMainFrame,
-                currentURL: message.webView?.url
-            )
+            self.handle(rawMessage: body, isMainFrame: isMainFrame, sourceOrigin: sourceOrigin)
         }
     }
 
-    func handle(rawMessage: Any, isMainFrame: Bool, currentURL: URL?) {
-        guard isMainFrame else {
-            self.logRejected("non-main-frame")
+    func handle(rawMessage: Any, isMainFrame: Bool, sourceOrigin: String?) {
+        guard self.isSourceTrusted(sourceOrigin: sourceOrigin, isMainFrame: isMainFrame) else {
+            self.logRejected("untrusted-source")
             return
         }
         guard let envelope = WebViewEnvelope.decode(rawMessage: rawMessage) else {
@@ -81,26 +83,17 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
 
         if envelope.kind == .connect {
-            self.handleConnect(envelope, currentURL: currentURL)
+            self.handleConnect(envelope)
             return
         }
 
-        guard let type = self.validatedAppFrameType(envelope, currentURL: currentURL) else {
+        guard let type = self.validatedAppFrameType(envelope) else {
             return
         }
 
         switch type {
         case WebViewEnvelope.messageTypeResize:
             self.handleResize(envelope.payload)
-        case WebViewEnvelope.messageTypeStepLoaded:
-            // Recognized protocol frame; the SDK takes no action on it.
-            break
-        case WebViewEnvelope.messageTypeStepComplete:
-            self.handleStepComplete(envelope)
-        case WebViewEnvelope.messageTypeRequestVariables:
-            self.handleRequestVariables(envelope)
-        case WebViewEnvelope.messageTypeError:
-            self.handleError(envelope)
         default:
             self.logRejected("unknown-message-type")
         }
@@ -108,10 +101,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     /// Validates a post-handshake frame and returns its app message type, or `nil` (logged) when
     /// the frame must be dropped.
-    private func validatedAppFrameType(
-        _ envelope: WebViewEnvelope.Envelope,
-        currentURL: URL?
-    ) -> String? {
+    private func validatedAppFrameType(_ envelope: WebViewEnvelope.Envelope) -> String? {
         guard self.channelOpen else {
             self.logRejected("channel-closed")
             return nil
@@ -130,10 +120,6 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             self.logRejected("component-id-mismatch")
             return nil
         }
-        guard self.originMatches(currentURL: currentURL, allowBeforeNavigation: false) else {
-            self.logRejected("origin-mismatch")
-            return nil
-        }
         guard let type = envelope.type else {
             self.logRejected("missing-type")
             return nil
@@ -141,79 +127,19 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         return type
     }
 
-    private func handleConnect(_ envelope: WebViewEnvelope.Envelope, currentURL: URL?) {
-        guard self.originMatches(currentURL: currentURL, allowBeforeNavigation: true) else {
-            self.logRejected("origin-mismatch")
-            return
-        }
+    private func handleConnect(_ envelope: WebViewEnvelope.Envelope) {
         guard !self.channelOpen else {
             return
         }
 
-        if envelope.protocolVersion == WebViewEnvelope.defaultProtocolVersion {
+        if envelope.protocolVersion == self.protocolVersion {
             self.channelOpen = true
             self.send(.init(kind: .`init`, componentID: self.componentID), allowBeforeNavigation: true)
             self.sendFitMessageIfNeeded()
         } else {
-            let error = "Unsupported protocol_version \(envelope.protocolVersion); native host supports 1"
+            let error = "Unsupported protocol_version \(envelope.protocolVersion); " +
+                "native host supports \(self.protocolVersion)"
             self.send(.init(kind: .reject, componentID: "", error: error), allowBeforeNavigation: true)
-        }
-    }
-
-    /// Validates the frame shape so malformed frames are still logged and rejected;
-    /// the SDK takes no further action on well-formed step-complete frames.
-    private func handleStepComplete(_ envelope: WebViewEnvelope.Envelope) {
-        if let value = envelope.payload?["responses"] {
-            guard value.objectValue != nil else {
-                self.logRejected("malformed-responses")
-                return
-            }
-        } else if let payload = envelope.payload {
-            guard WebViewEnvelope.reservedPayloadKeys.isDisjoint(with: payload.keys) else {
-                self.logRejected("reserved-response-key")
-                return
-            }
-        }
-    }
-
-    private func handleRequestVariables(_ envelope: WebViewEnvelope.Envelope) {
-        switch envelope.kind {
-        case .request:
-            guard let id = envelope.id else {
-                self.logRejected("request-without-id")
-                return
-            }
-            self.send(
-                .init(
-                    kind: .response,
-                    componentID: self.componentID,
-                    type: WebViewEnvelope.messageTypeRequestVariables,
-                    id: id,
-                    payload: self.sdkVariables
-                ),
-                allowBeforeNavigation: false
-            )
-        case .message:
-            self.send(
-                .init(
-                    kind: .message,
-                    componentID: self.componentID,
-                    type: WebViewEnvelope.messageTypeVariables,
-                    payload: self.sdkVariables
-                ),
-                allowBeforeNavigation: false
-            )
-        default:
-            self.logRejected("unsupported-request-variables-kind")
-        }
-    }
-
-    /// Validates the frame shape so malformed frames are still logged and rejected;
-    /// the SDK takes no further action on well-formed error frames.
-    private func handleError(_ envelope: WebViewEnvelope.Envelope) {
-        let error = envelope.payload?["error"]?.stringValue ?? envelope.error
-        if error == nil {
-            self.logRejected("missing-error")
         }
     }
 
@@ -256,14 +182,15 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     private func send(_ envelope: WebViewEnvelope.Envelope, allowBeforeNavigation: Bool) {
         guard self.channelOpen || envelope.kind == .reject else {
-            Logger.debug(Strings.paywall_web_view_post_message_skipped)
+            Logger.warning(Strings.paywall_web_view_post_message_skipped)
             return
         }
-        guard self.originMatches(currentURL: self.currentURL(), allowBeforeNavigation: allowBeforeNavigation) else {
-            Logger.debug(Strings.paywall_web_view_post_message_skipped)
+        // Defense in depth: drop outbound frames if the top-level URL left the expected origin.
+        guard self.isCurrentURLTrusted(allowBeforeNavigation: allowBeforeNavigation) else {
+            Logger.warning(Strings.paywall_web_view_post_message_skipped)
             return
         }
-        guard let script = WebViewEnvelope.receiveScript(for: envelope) else {
+        guard let script = Self.receiveScript(for: envelope) else {
             Logger.debug(Strings.paywall_web_view_post_message_failed("encoding failed"))
             return
         }
@@ -271,16 +198,23 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         self.evaluateJavaScript(script)
     }
 
-    private var sdkVariables: [String: PaywallWebViewValue] {
-        ["locale": .string(Self.bcp47Tag(fromLocaleIdentifier: self.localeIdentifier))]
-    }
-
-    nonisolated static func bcp47Tag(fromLocaleIdentifier identifier: String) -> String {
-        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-            return Locale(identifier: identifier).identifier(.bcp47)
-        } else {
-            return identifier.replacingOccurrences(of: "_", with: "-")
+    /// Serializes `envelope` into the JS snippet injected into the web view to deliver a
+    /// host-to-content frame. This is bridge/transport behavior, so it lives here rather than
+    /// on the envelope data model.
+    nonisolated static func receiveScript(for envelope: WebViewEnvelope.Envelope) -> String? {
+        guard let data = try? JSONEncoder().encode(envelope),
+              let json = String(data: data, encoding: .utf8) else {
+            return nil
         }
+        let escaped = json
+            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
+            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
+
+        let receiveFunction = WebViewEnvelope.receiveFunction
+        return """
+        (function(){var m=\(escaped);if(typeof window.\(receiveFunction)==='function'){\
+        window.\(receiveFunction)(m);}})();
+        """
     }
 
     private func validResizeValue(_ value: Double?, axisIsFit: Bool) -> CGFloat? {
@@ -305,15 +239,27 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         return value
     }
 
-    private func originMatches(currentURL: URL?, allowBeforeNavigation: Bool) -> Bool {
-        guard let currentURL else {
+    /// Whether the message came from the expected origin on the main frame. Uses the sender frame's
+    /// origin (the authoritative source); subframe messages are always rejected — isolation for
+    /// those is expected from the server CSP.
+    private func isSourceTrusted(sourceOrigin: String?, isMainFrame: Bool) -> Bool {
+        guard isMainFrame, let sourceOrigin else {
+            return false
+        }
+        return sourceOrigin == self.expectedOrigin
+    }
+
+    /// Whether the WebView's current top-level URL still has the expected origin. Used only as an
+    /// outbound defense-in-depth check; inbound traffic is gated by ``isSourceTrusted(sourceOrigin:isMainFrame:)``.
+    private func isCurrentURLTrusted(allowBeforeNavigation: Bool) -> Bool {
+        guard let currentURL = self.currentURL() else {
             return allowBeforeNavigation
         }
         return WebViewOrigin.origin(of: currentURL) == self.expectedOrigin
     }
 
     private func logRejected(_ reason: String) {
-        Logger.debug(Strings.paywall_web_view_message_rejected(reason: reason))
+        Logger.warning(Strings.paywall_web_view_message_rejected(reason: reason))
     }
 
 }

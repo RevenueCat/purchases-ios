@@ -110,10 +110,10 @@
 		16DA8EDF2E4F6A6600283940 /* PaywallVideoComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EDE2E4F6A6600283940 /* PaywallVideoComponent.swift */; };
 		66EAEED2B259D54A9E789F4A /* PaywallWebViewComponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14C1ACED1916C08B0E8E2776 /* PaywallWebViewComponent.swift */; };
 		16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */; };
-		FA4A2DF41FC434A9401F08CC /* PaywallWebViewAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewAPI.swift */; };
-		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
-		1401E951ACE24C7B84F94B7F /* WebViewIsolation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 833251CB0C6FE0BA16C2AC41 /* WebViewIsolation.swift */; };
+		E7EB64E9D44783DD16A28B06 /* WebViewComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7EB64E9D44783DD16A28B05 /* WebViewComponentTests.swift */; };
 		FC5AE63E8F81C3EC2FFDA408 /* WebViewOriginPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28661C6CE3F64078A0138080 /* WebViewOriginPolicy.swift */; };
+		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
+		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
 		D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2779D02050D28BF369658 /* WebViewComponentView.swift */; };
 		B53032B7D38B14FE9850F314 /* WebViewComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */; };
@@ -1681,18 +1681,16 @@
 		14C1ACED1916C08B0E8E2776 /* PaywallWebViewComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewComponent.swift; sourceTree = "<group>"; };
 		E7EB64E9D44783DD16A28B05 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
 		16DA8EF32E4F7A2500283940 /* VideoComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentTests.swift; sourceTree = "<group>"; };
-		9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewAPI.swift; sourceTree = "<group>"; };
+		28661C6CE3F64078A0138080 /* WebViewOriginPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewOriginPolicy.swift; sourceTree = "<group>"; };
+		9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationPolicyTests.swift; sourceTree = "<group>"; };
+		9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValue.swift; sourceTree = "<group>"; };
 		89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelope.swift; sourceTree = "<group>"; };
 		C1B939C7DAAFEA1DE2DE2674 /* WebViewEnvelopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelopeTests.swift; sourceTree = "<group>"; };
 		686562C08D953A27986DB276 /* PaywallWebViewValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWebViewValueTests.swift; sourceTree = "<group>"; };
-		833251CB0C6FE0BA16C2AC41 /* WebViewIsolation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewIsolation.swift; sourceTree = "<group>"; };
-		28661C6CE3F64078A0138080 /* WebViewOriginPolicy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewOriginPolicy.swift; sourceTree = "<group>"; };
 		72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSession.swift; sourceTree = "<group>"; };
 		D0A2779D02050D28BF369658 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
 		6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewModel.swift; sourceTree = "<group>"; };
 		F75819E258F47D1DB058500D /* WebViewSessionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSessionTests.swift; sourceTree = "<group>"; };
-		19B79CAD4C423F576E7DFBA9 /* WebViewIsolationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewIsolationTests.swift; sourceTree = "<group>"; };
-		9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationPolicyTests.swift; sourceTree = "<group>"; };
 		16DA8F1B2E4FB6E200283940 /* ImageComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ImageComponent.json; sourceTree = "<group>"; };
 		16DA8F1C2E4FB6E200283940 /* VideoComponent.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = VideoComponent.json; sourceTree = "<group>"; };
 		16E146AB2E99F1E20089B609 /* TransactionNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransactionNotifications.swift; sourceTree = "<group>"; };
@@ -2942,6 +2940,7 @@
 		B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorCodeTests.swift; sourceTree = "<group>"; };
 		B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselTabSwitchTests.swift; sourceTree = "<group>"; };
 		B413E5A02F97B3B900B5F0CA /* PaywallsV2ViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsV2ViewTests.swift; sourceTree = "<group>"; };
+		DBB32F183007CACD00A86DC7 /* BottomSheetSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomSheetSwitchTests.swift; sourceTree = "<group>"; };
 		B49121C11022272A08D75B4E /* AccessorOperatorsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessorOperatorsTests.swift; sourceTree = "<group>"; };
 		B72848B4B4D101F1B94E228E /* Value+JSON.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Value+JSON.swift"; sourceTree = "<group>"; };
 		B78483ACCDD62ABD40AF8827 /* Evaluator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Evaluator.swift; sourceTree = "<group>"; };
@@ -3254,10 +3253,10 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				E7EB64E9D44783DD16A28B05 /* WebViewComponentTests.swift */,
+				9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */,
 				686562C08D953A27986DB276 /* PaywallWebViewValueTests.swift */,
 				C1B939C7DAAFEA1DE2DE2674 /* WebViewEnvelopeTests.swift */,
-				19B79CAD4C423F576E7DFBA9 /* WebViewIsolationTests.swift */,
-				9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */,
 				F75819E258F47D1DB058500D /* WebViewSessionTests.swift */,
 				E7EB64E9D44783DD16A28B05 /* WebViewComponentTests.swift */,
 				802593842FE07057005AF6DF /* PaywallStateStoreTests.swift */,
@@ -3287,6 +3286,7 @@
 				E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */,
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				B413E5A02F97B3B900B5F0CA /* PaywallsV2ViewTests.swift */,
+				DBB32F183007CACD00A86DC7 /* BottomSheetSwitchTests.swift */,
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
 				C07759C930F712D2D53B9333 /* WorkflowStepEventTrackerTests.swift */,
@@ -3393,13 +3393,12 @@
 			path = Video;
 			sourceTree = "<group>";
 		};
-		EB23E44596DD9714E81840CF /* WebView */ = {
+		2561352F00BE1ECE1BAC4E9A /* WebView */ = {
 			isa = PBXGroup;
 			children = (
-				9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewAPI.swift */,
-				89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */,
-				833251CB0C6FE0BA16C2AC41 /* WebViewIsolation.swift */,
 				28661C6CE3F64078A0138080 /* WebViewOriginPolicy.swift */,
+				9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */,
+				89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */,
 				72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */,
 				D0A2779D02050D28BF369658 /* WebViewComponentView.swift */,
 				6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */,
@@ -3498,7 +3497,7 @@
 				0387D4AD2EC58AA5008E4A6B /* Countdown */,
 				E1C0A00BBEEF0001CCDD0001 /* Header */,
 				164681CD2E6B577600854AA5 /* Video */,
-				EB23E44596DD9714E81840CF /* WebView */,
+				2561352F00BE1ECE1BAC4E9A /* WebView */,
 				2C7457472CEA66AB004ACE52 /* ComponentsView.swift */,
 				7707A94A2CAD936A006E0313 /* Button */,
 				03C06FC82D479C6300600693 /* Carousel */,
@@ -7920,6 +7919,7 @@
 				351B51BA26D450E800BD2BD7 /* ProductRequestDataExtensions.swift in Sources */,
 				57E6C27E29723F9E001AFE98 /* SigningTests.swift in Sources */,
 				16DA8EF42E4F7A2500283940 /* VideoComponentTests.swift in Sources */,
+				E7EB64E9D44783DD16A28B06 /* WebViewComponentTests.swift in Sources */,
 				574A2F3F282D75E300150D40 /* OfferingsDecodingTests.swift in Sources */,
 				3AC9CEA8FC6D49A3EB7D7393 /* PublishedWorkflowCodableTests.swift in Sources */,
 				35E840CE2710E2EB00899AE2 /* MockManageSubscriptionsHelper.swift in Sources */,
@@ -8356,10 +8356,9 @@
 				164681D02E6B577600854AA5 /* VideoComponentView.swift in Sources */,
 				164681D12E6B577600854AA5 /* VideoPlayerViewUIView.swift in Sources */,
 				164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */,
-				FA4A2DF41FC434A9401F08CC /* PaywallWebViewAPI.swift in Sources */,
-				11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */,
-				1401E951ACE24C7B84F94B7F /* WebViewIsolation.swift in Sources */,
 				FC5AE63E8F81C3EC2FFDA408 /* WebViewOriginPolicy.swift in Sources */,
+				FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */,
+				11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */,
 				0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */,
 				D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */,
 				B53032B7D38B14FE9850F314 /* WebViewComponentViewModel.swift in Sources */,
@@ -9185,6 +9184,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
@@ -9196,7 +9196,11 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TVOS_DEPLOYMENT_TARGET = 14.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 			};
 			name = Debug;
 		};
@@ -9217,6 +9221,7 @@
 					"@executable_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 11.0;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.StoreKitUnitTestsHostApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -9226,7 +9231,11 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6";
 				TVOS_DEPLOYMENT_TARGET = 14.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				WATCHOS_DEPLOYMENT_TARGET = 7.0;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 			};
 			name = Release;
 		};
@@ -9285,7 +9294,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -9296,9 +9308,13 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
@@ -9352,7 +9368,10 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				MTL_ENABLE_DEBUG_INFO = NO;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -9364,10 +9383,14 @@
 				SWIFT_TREAT_WARNINGS_AS_ERRORS = NO;
 				SWIFT_VERSION = 5.0;
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9527,12 +9550,15 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternal;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -9547,10 +9573,14 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VALIDATE_PRODUCT = YES;
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Release;
@@ -9578,6 +9608,8 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9629,6 +9661,8 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2024 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -9671,12 +9705,15 @@
 				INFOPLIST_KEY_NSHumanReadableCopyright = "Copyright © 2026 RevenueCat. All rights reserved.";
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.15;
+				"MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]" = "12.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternal;
 				PRODUCT_MODULE_NAME = "$(TARGET_NAME:c99extidentifier)";
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
@@ -9691,9 +9728,13 @@
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2,3,4,6,7";
 				TVOS_DEPLOYMENT_TARGET = 13.0;
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]" = "15.0";
+				"TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]" = "15.0";
 				VERSIONING_SYSTEM = "apple-generic";
 				VERSION_INFO_PREFIX = "";
 				WATCHOS_DEPLOYMENT_TARGET = 6.2;
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]" = "9.0";
+				"WATCHOS_DEPLOYMENT_TARGET[sdk=watchsimulator27*]" = "9.0";
 				XROS_DEPLOYMENT_TARGET = 1.0;
 			};
 			name = Debug;
@@ -9707,6 +9748,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternalTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";
@@ -9729,6 +9772,8 @@
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]" = "15.0";
+				"IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]" = "15.0";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.RulesEngineInternalTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = "";

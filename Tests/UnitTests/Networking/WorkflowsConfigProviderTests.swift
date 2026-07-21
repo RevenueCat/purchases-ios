@@ -275,7 +275,7 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(secondWorkflowId) == "wf-2"
     }
 
-    func testWarmPrefetchedWorkflowsCachesPrefetchedAndCurrentOfferingBodiesAndAllMappings() async throws {
+    func testCachePrefetchedWorkflowBodyDataCachesPrefetchedAndCurrentOfferingBodiesAndAllMappings() async throws {
         let prefetchedWorkflow = try Self.workflowJSON(id: "wf-prefetch")
         let currentWorkflow = try Self.workflowJSON(id: "wf-current")
         let otherWorkflow = try Self.workflowJSON(id: "wf-other")
@@ -305,9 +305,9 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: "basic")
-        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
-        _ = await (workflowsWarm, uiConfigWarm)
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "basic")
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        let (workflowIDsWithCachedBodyData, _) = await (cachedWorkflowIDs, uiConfigReady)
 
         let cachedPrefetched = self.provider.cachedWorkflow(forOfferingId: "premium")
         let cachedCurrent = self.provider.cachedWorkflow(forOfferingId: "basic")
@@ -318,12 +318,13 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(cachedCurrent?.workflow.id) == "wf-current"
         expect(cachedOther).to(beNil())
         expect(mappedOther) == "wf-other"
+        expect(workflowIDsWithCachedBodyData) == ["wf-current", "wf-prefetch"]
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(contain("wf-prefetch-ref"))
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).to(contain("wf-current-ref"))
         expect(self.blobFetcher.invokedEnsureDownloadedRefs).toNot(contain("wf-other-ref"))
     }
 
-    func testWarmPrefetchedWorkflowsDefersDecodingUntilFirstReadAndRetainsTheResult() async throws {
+    func testCachePrefetchedWorkflowBodyDataDefersDecodingUntilFirstReadAndRetainsTheResult() async throws {
         let decodeCount: Atomic<Int> = .init(0)
         self.provider = self.makeProvider(decodeCount: decodeCount)
         self.commit(
@@ -340,9 +341,9 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
-        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
-        _ = await (workflowsWarm, uiConfigWarm)
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
 
         expect(decodeCount.value) == 0
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
@@ -351,7 +352,38 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(decodeCount.value) == 1
     }
 
-    func testMalformedPrefetchedWorkflowWarmsAsBytesAndFailsOnceWhenRead() async throws {
+    func testAssetPrewarmingDecodeIsNotRetainedForLaterUse() async throws {
+        let decodeCount: Atomic<Int> = .init(0)
+        self.provider = self.makeProvider(decodeCount: decodeCount)
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offeringIdentifier": "premium"]
+                )
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
+            ]) { current, _ in current }
+        )
+
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
+
+        let decodedResult = await self.provider.decodeCachedWorkflowForAssetPrewarming(workflowId: "wf-prefetch")
+        expect(try decodedResult.get().workflow.id) == "wf-prefetch"
+        expect(decodeCount.value) == 1
+
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+        expect(decodeCount.value) == 2
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
+        expect(decodeCount.value) == 2
+    }
+
+    func testMalformedPrefetchedWorkflowCachesAsBodyDataAndFailsOnceWhenRead() async throws {
         let decodeCount: Atomic<Int> = .init(0)
         self.provider = self.makeProvider(decodeCount: decodeCount)
         self.commit(
@@ -368,9 +400,9 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
-        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
-        _ = await (workflowsWarm, uiConfigWarm)
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
 
         expect(decodeCount.value) == 0
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")).to(beNil())
@@ -384,7 +416,7 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(decodeCount.value) == 1
     }
 
-    func testWarmPrefetchedWorkflowsReturnsEarlyWhenCacheAlreadyWarmForGeneration() async throws {
+    func testCachePrefetchedWorkflowBodyDataReturnsEarlyWhenBodiesAreAlreadyCachedForGeneration() async throws {
         self.commit(
             workflows: [
                 "wf-prefetch": .init(
@@ -399,18 +431,18 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
-        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
-        _ = await (workflowsWarm, uiConfigWarm)
-        let ensureAllDownloadedCountAfterFirstWarm = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
+        let ensureAllDownloadedCountAfterFirstCache = self.blobFetcher.invokedEnsureAllDownloadedRefs.count
 
-        await self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
 
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"
-        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstWarm
+        expect(self.blobFetcher.invokedEnsureAllDownloadedRefs.count) == ensureAllDownloadedCountAfterFirstCache
     }
 
-    func testWarmPrefetchedWorkflowsWarmsNewCurrentOfferingAndRetainsExistingWorkflow() async throws {
+    func testCachePrefetchedWorkflowBodyDataCachesNewCurrentOfferingAndRetainsExistingWorkflow() async throws {
         let decodeCount: Atomic<Int> = .init(0)
         self.provider = self.makeProvider(decodeCount: decodeCount)
         self.commit(
@@ -433,20 +465,20 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "first")
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "first")
         _ = await self.uiConfigProvider.getUiConfig()
         expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
         expect(decodeCount.value) == 1
         expect(self.provider.cachedWorkflow(forOfferingId: "second")).to(beNil())
 
-        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "second")
+        _ = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "second")
 
         expect(self.provider.cachedWorkflow(forOfferingId: "first")?.workflow.id) == "wf-first"
         expect(self.provider.cachedWorkflow(forOfferingId: "second")?.workflow.id) == "wf-second"
         expect(decodeCount.value) == 2
     }
 
-    func testWarmPrefetchedWorkflowsRetriesMissingCurrentOfferingBody() async throws {
+    func testCachePrefetchedWorkflowBodyDataRetriesMissingCurrentOfferingBody() async throws {
         self.commit(
             workflows: [
                 "wf-current": .init(
@@ -459,13 +491,17 @@ class WorkflowsConfigProviderTests: TestCase {
             blobs: Self.uiConfigBlobs
         )
 
-        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "current")
+        let initiallyCachedWorkflowIDs = await self.provider.cachePrefetchedWorkflowBodyData(
+            includingOfferingId: "current"
+        )
         _ = await self.uiConfigProvider.getUiConfig()
+        expect(initiallyCachedWorkflowIDs).to(beEmpty())
         expect(self.provider.cachedWorkflow(forOfferingId: "current")).to(beNil())
 
         self.blobStore.stubbedData["wf-current-ref"] = try Self.workflowJSON(id: "wf-current")
-        await self.provider.warmPrefetchedWorkflows(currentOfferingId: "current")
+        let retriedWorkflowIDs = await self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "current")
 
+        expect(retriedWorkflowIDs) == ["wf-current"]
         expect(self.provider.cachedWorkflow(forOfferingId: "current")?.workflow.id) == "wf-current"
         expect(self.blobFetcher.invokedEnsureDownloadedRefs.filter { $0 == "wf-current-ref" }.count) == 2
     }
@@ -484,9 +520,9 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch")
             ]) { current, _ in current }
         )
-        async let workflowsWarm: Void = self.provider.warmPrefetchedWorkflows(currentOfferingId: nil)
-        async let uiConfigWarm = self.uiConfigProvider.getUiConfig()
-        _ = await (workflowsWarm, uiConfigWarm)
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")).toNot(beNil())
 
         self.manager.clearCache()
@@ -494,7 +530,7 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(self.provider.cachedWorkflow(forOfferingId: "premium")).to(beNil())
     }
 
-    func testWarmPrefetchedWorkflowsStoresCacheWhenGenerationChangesDuringInitialTopicRead() async throws {
+    func testCachePrefetchedWorkflowBodyDataStoresCacheWhenGenerationChangesDuringInitialTopicRead() async throws {
         let mockManager = MockRemoteConfigManager()
         let uiConfigProvider = UiConfigProvider(manager: mockManager)
         let provider = WorkflowsConfigProvider(manager: mockManager, uiConfigProvider: uiConfigProvider)
@@ -513,12 +549,12 @@ class WorkflowsConfigProviderTests: TestCase {
         mockManager.stubbedBlobData[.uiConfig] = Self.uiConfigBlobsByItemKey
         mockManager.shouldStoreTopicCompletion = true
 
-        async let workflowsWarm: Void = provider.warmPrefetchedWorkflows(currentOfferingId: nil)
+        async let cachedWorkflowIDs = provider.cachePrefetchedWorkflowBodyData(includingOfferingId: nil)
         await self.waitUntilTopicRequested(on: mockManager)
         mockManager.configGeneration += 1
         mockManager.completeStoredTopic(with: workflowsTopic)
 
-        await workflowsWarm
+        _ = await cachedWorkflowIDs
         _ = await uiConfigProvider.getUiConfig()
 
         expect(provider.cachedWorkflow(forOfferingId: "premium")?.workflow.id) == "wf-prefetch"

@@ -7,14 +7,10 @@ enum WebViewEnvelope {
 
     static let channel = "rc-web-components"
     static let messageHandlerName = "rcWebComponents"
+    /// Name of the JS function injected into the web view that receives host-to-content frames.
     static let receiveFunction = "__rcWebComponentsReceive"
     static let defaultProtocolVersion = 1
 
-    static let messageTypeStepLoaded = "rc:step-loaded"
-    static let messageTypeStepComplete = "rc:step-complete"
-    static let messageTypeRequestVariables = "rc:request-variables"
-    static let messageTypeVariables = "rc:variables"
-    static let messageTypeError = "rc:error"
     static let messageTypeResize = "resize"
     static let messageTypeFit = "fit"
 
@@ -34,6 +30,7 @@ enum WebViewEnvelope {
         case error
     }
 
+    /// One JSON message exchanged with the `web_view` content. Fields used vary by ``kind``.
     struct Envelope: Codable, Equatable {
         let channel: String
         let protocolVersion: Int
@@ -90,26 +87,6 @@ enum WebViewEnvelope {
 
         return envelope
     }
-
-    static func receiveScript(for envelope: Envelope) -> String? {
-        let encoder = JSONEncoder()
-        guard let data = try? encoder.encode(envelope),
-              let json = String(data: data, encoding: .utf8) else {
-            return nil
-        }
-        let escaped = json
-            .replacingOccurrences(of: "\u{2028}", with: "\\u2028")
-            .replacingOccurrences(of: "\u{2029}", with: "\\u2029")
-
-        return """
-        (function(){var m=\(escaped);if(typeof window.\(Self.receiveFunction)==='function'){\
-        window.\(Self.receiveFunction)(m);}})();
-        """
-    }
-
-    static let reservedPayloadKeys: Set<String> = [
-        "channel", "protocol_version", "kind", "type", "component_id", "id", "error", "variables"
-    ]
 
 }
 

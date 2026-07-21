@@ -26,6 +26,26 @@ enum WebViewOrigin {
         return "\(scheme)://\(host)\(suffix)"
     }
 
+    /// Canonical origin of the frame that posted a script message. Uses the frame's security origin
+    /// (the authoritative sender) rather than the WebView's top-level URL.
+    nonisolated static func origin(of securityOrigin: WKSecurityOrigin) -> String? {
+        let scheme = securityOrigin.`protocol`.lowercased()
+        let host = securityOrigin.host.lowercased()
+        guard !scheme.isEmpty, !host.isEmpty else {
+            return nil
+        }
+
+        let port = securityOrigin.port
+        let suffix: String
+        // `WKSecurityOrigin` reports `0` for the scheme's default port.
+        if port != 0, !Self.isDefaultPort(port, scheme: scheme) {
+            suffix = ":\(port)"
+        } else {
+            suffix = ""
+        }
+        return "\(scheme)://\(host)\(suffix)"
+    }
+
     nonisolated private static func isDefaultPort(_ port: Int, scheme: String) -> Bool {
         (scheme == "https" && port == 443) || (scheme == "http" && port == 80)
     }
@@ -35,15 +55,22 @@ enum WebViewOrigin {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum WebViewNavigationPolicy {
 
+    // Non-https navigation is blocked on any frame. Cross-origin navigation is additionally blocked
+    // on the main frame (same-origin different-path navigation stays allowed), which makes
+    // cross-origin message races structurally impossible. Cross-origin sub-frame loads are not
+    // blocked here; isolation for those is left to the server-provided CSP (`frame-src` falls back
+    // to `default-src 'self'`).
     static func policy(for url: URL?, isMainFrame: Bool, expectedOrigin: String) -> WKNavigationActionPolicy {
+        guard let url,
+              let origin = WebViewOrigin.origin(of: url),
+              origin.hasPrefix("https://") else {
+            return .cancel
+        }
         guard isMainFrame else {
             return .allow
         }
-        guard let url,
-              WebViewOrigin.origin(of: url) == expectedOrigin else {
-            return .cancel
-        }
-        return .allow
+        let expected = URL(string: expectedOrigin).flatMap(WebViewOrigin.origin(of:))
+        return origin == expected ? .allow : .cancel
     }
 
 }

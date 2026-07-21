@@ -9,7 +9,7 @@
 //
 //  PaywallWebViewComponent.swift
 //
-// swiftlint:disable missing_docs nesting
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -17,14 +17,12 @@ import Foundation
 
     final class WebViewComponent: PaywallComponentBase {
 
-        /// Wire `type` value. `ComponentType.webView` is registered in the activation PR.
+        /// Wire `type` value, kept as a `String` because `web_view` is not yet a `ComponentType` case.
         let type: String
-        public let id: String?
+        public let id: String
         public let name: String?
         public let visible: Bool?
 
-        /// The declared Paywalls web component protocol version.
-        /// Decoded and preserved; native host capability is fixed by the SDK build.
         public let protocolVersion: Int
 
         /// The static HTTPS URL of the web bundle entry point.
@@ -33,10 +31,10 @@ import Foundation
         public let size: Size
 
         public init(
-            id: String? = nil,
+            id: String,
             name: String? = nil,
             visible: Bool? = nil,
-            protocolVersion: Int = 1,
+            protocolVersion: Int,
             url: String,
             size: Size = .init(width: .fill, height: .fit(nil))
         ) {
@@ -47,48 +45,6 @@ import Foundation
             self.protocolVersion = protocolVersion
             self.url = url
             self.size = size
-        }
-
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case id
-            case name
-            case visible
-            case protocolVersion
-            case url
-            case size
-        }
-
-        required public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            let decodedType = try container.decode(String.self, forKey: .type)
-            guard decodedType == "web_view" else {
-                throw DecodingError.dataCorrupted(
-                    .init(
-                        codingPath: container.codingPath,
-                        debugDescription: "Expected type web_view, got \(decodedType)"
-                    )
-                )
-            }
-            self.type = decodedType
-            self.id = try container.decodeIfPresent(String.self, forKey: .id)
-            self.name = try container.decodeIfPresent(String.self, forKey: .name)
-            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
-            self.protocolVersion = try container.decodeIfPresent(Int.self, forKey: .protocolVersion) ?? 1
-            self.url = try container.decode(String.self, forKey: .url)
-            self.size = try container.decodeIfPresent(Size.self, forKey: .size)
-                ?? .init(width: .fill, height: .fit(nil))
-        }
-
-        public func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try container.encode(type, forKey: .type)
-            try container.encodeIfPresent(id, forKey: .id)
-            try container.encodeIfPresent(name, forKey: .name)
-            try container.encodeIfPresent(visible, forKey: .visible)
-            try container.encode(protocolVersion, forKey: .protocolVersion)
-            try container.encode(url, forKey: .url)
-            try container.encode(size, forKey: .size)
         }
 
         public func hash(into hasher: inout Hasher) {
