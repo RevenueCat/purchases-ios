@@ -28,6 +28,7 @@ enum RemoteConfigStrings {
     case notModified
     case prefetchEnqueued(Int)
     case prefetchingBlobCount(Int)
+    case productEntitlementMappingDecodeFailed(Error)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
     case refreshFailed(BackendError)
@@ -88,6 +89,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Enqueued \(count) remote config blob prefetch downloads."
         case let .prefetchingBlobCount(count):
             return "Prefetching \(count) remote config blobs requested by the latest configuration."
+        case let .productEntitlementMappingDecodeFailed(error):
+            return "Failed to decode product_entitlement_mapping.default: \(error.localizedDescription)"
         case let .receivedConfiguration(activeTopics, changedTopics):
             return "Received remote config with \(activeTopics.count) active topics " +
                 "(\(activeTopics.sorted().joined(separator: ", "))) and \(changedTopics.count) changed topics " +

@@ -446,6 +446,31 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(data) == blob
     }
 
+    func testProductEntitlementMappingDecodesFromBackendResponse() async throws {
+        let mapping = ProductEntitlementMappingResponse(products: [
+            "monthly": .init(identifier: "monthly", entitlements: ["pro"])
+        ])
+        let blob = try JSONEncoder.default.encode(mapping)
+        let ref = RCContainerTestData.blobRef(for: blob)
+        let topics = RemoteConfiguration.Topics(entries: [
+            RemoteConfigTopic.productEntitlementMapping.wireName: ["default": .init(blobRef: ref)]
+        ])
+        let container = try Self.containerData(
+            topics: topics,
+            contentElements: [(blob, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let provider = ProductEntitlementMappingTopicProvider(manager: self.manager)
+        let result = await provider.getProductEntitlementMapping()
+        let requestedURLs = await self.downloader.requestedURLs()
+
+        expect(result) == mapping
+        expect(self.remoteConfigRequestCount) == 1
+        expect(requestedURLs).to(beEmpty())
+    }
+
     func testEnforcedVerificationFailureDoesNotPersistResponse() async throws {
         self.mockRemoteConfigError(.signatureVerificationFailed(
             path: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
