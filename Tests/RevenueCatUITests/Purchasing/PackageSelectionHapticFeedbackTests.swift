@@ -37,4 +37,22 @@ class PackageSelectionHapticFeedbackTests: TestCase {
         expect(fireCount) == 3
     }
 
+    func testPrepareInvokesTheInjectedPrepareAction() {
+        var didPrepare = false
+
+        let feedback = PackageSelectionHapticFeedback(action: {}, prepare: { didPrepare = true })
+        feedback.prepare()
+
+        expect(didPrepare) == true
+    }
+
+    func testPrepareDoesNotInvokeTheFireAction() {
+        var didFire = false
+
+        let feedback = PackageSelectionHapticFeedback(action: { didFire = true }, prepare: {})
+        feedback.prepare()
+
+        expect(didFire) == false
+    }
+
 }
