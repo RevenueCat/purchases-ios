@@ -869,6 +869,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         super.init()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.offlineEntitlementsManager.setProductEntitlementMappingTopicProvider(
+            ProductEntitlementMappingTopicProvider(manager: self.remoteConfigManager)
+        )
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
             guard let self else { return }
             self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)

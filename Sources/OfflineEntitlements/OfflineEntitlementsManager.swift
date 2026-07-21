@@ -20,6 +20,8 @@ class OfflineEntitlementsManager {
     private let api: OfflineEntitlementsAPI
     private let systemInfo: SystemInfo
 
+    private var productEntitlementMappingTopicProvider: EntitlementMappingTopicProviderType?
+
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
          api: OfflineEntitlementsAPI,
@@ -28,6 +30,11 @@ class OfflineEntitlementsManager {
         self.operationDispatcher = operationDispatcher
         self.api = api
         self.systemInfo = systemInfo
+    }
+
+    // Late-bound to break the OfflineEntitlementsManager → IdentityManager → RemoteConfigManager dependency cycle.
+    func setProductEntitlementMappingTopicProvider(_ provider: EntitlementMappingTopicProviderType) {
+        self.productEntitlementMappingTopicProvider = provider
     }
 
     func updateProductsEntitlementsCacheIfStale(
@@ -49,6 +56,27 @@ class OfflineEntitlementsManager {
 
         Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_stale_updating)
 
+        Task { [weak self] in
+            guard let self else { return }
+
+            if let response = await self.productEntitlementMappingTopicProvider?.getProductEntitlementMapping() {
+                self.handleProductEntitlementMappingBackendResult(with: response)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(()))
+                return
+            }
+
+            self.fetchLegacyProductEntitlementMapping(
+                isAppBackgrounded: isAppBackgrounded,
+                completion: completion
+            )
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func fetchLegacyProductEntitlementMapping(
+        isAppBackgrounded: Bool,
+        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
+    ) {
         self.api.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded) { result in
             switch result {
             case let .success(response):
