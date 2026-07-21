@@ -1,10 +1,7 @@
-import Foundation
-
-#if canImport(WebKit)
-import WebKit
-#endif
-
 #if !os(tvOS) && canImport(WebKit) // For Paywalls V2
+
+import Foundation
+import WebKit
 
 extension URL {
 
