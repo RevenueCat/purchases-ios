@@ -128,9 +128,9 @@ extension FeatureEventsRequest.WorkflowEvent {
 
     private static let schemaVersion = 1
     private static let typeValue = "workflows"
-    private static let stepStartedEventName = "workflows_step_started"
-    private static let stepCompletedEventName = "workflows_step_completed"
-    private static let closeEventName = "workflows_close"
+    private static let stepStartedEventName = "workflow_step_started"
+    private static let stepCompletedEventName = "workflow_step_completed"
+    private static let closeEventName = "workflow_close"
 
 }
 
