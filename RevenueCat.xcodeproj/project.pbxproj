@@ -3258,7 +3258,6 @@
 				686562C08D953A27986DB276 /* PaywallWebViewValueTests.swift */,
 				C1B939C7DAAFEA1DE2DE2674 /* WebViewEnvelopeTests.swift */,
 				F75819E258F47D1DB058500D /* WebViewSessionTests.swift */,
-				E7EB64E9D44783DD16A28B05 /* WebViewComponentTests.swift */,
 				802593842FE07057005AF6DF /* PaywallStateStoreTests.swift */,
 				16A9F7B62FAA22D0008E8A4D /* VideoComponentViewTests.swift */,
 				A9D45E4EAFAD4C0385BEDFB3 /* VideoPlayerViewTests.swift */,
