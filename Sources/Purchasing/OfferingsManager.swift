@@ -130,7 +130,11 @@ class OfferingsManager {
     ) {
         // We keep track of preferred locales at the time of launching the request
         let preferredLocales = systemInfo.preferredLocales
-        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
+        self.backend.offerings.getOfferings(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded,
+            decodingMode: self.offeringsResponseDecodingMode
+        ) { result in
             switch result {
             case let .success(contents):
                 self.handleOfferingsBackendResult(with: contents,
@@ -244,7 +248,18 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let contents = self.deviceCache.cachedOfferingsContents(appUserID: appUserID) else {
+        guard let contents = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: self.offeringsResponseDecodingMode
+        ) else {
+            completion(nil)
+            return
+        }
+
+        // A workflows-mode response intentionally omits legacy component bodies. Once remote config disables,
+        // that disk entry cannot provide the backwards-compatible paywall, so require a full network response
+        // instead of repeatedly rebuilding and rejecting the same pruned offering.
+        guard !self.shouldRejectPrunedDiskContents(contents) else {
             completion(nil)
             return
         }
@@ -504,6 +519,10 @@ private extension OfferingsManager {
         return self.remoteConfigManager?.isDisabled ?? true
     }
 
+    var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
+        return self.shouldCreatePaywallComponents ? .full : .withoutPaywallComponents
+    }
+
     /// If remote config was disabled after a workflows-enabled offerings fetch, the in-memory offering
     /// can still carry only the lightweight paywall marker, not the renderable components payload.
     /// Refetch so the legacy offerings paywall fallback is restored for the disabled-RC path.
@@ -512,6 +531,14 @@ private extension OfferingsManager {
 
         return offerings.all.values.contains { offering in
             offering.hasPaywallComponents && offering.internalPaywallComponents == nil
+        }
+    }
+
+    private func shouldRejectPrunedDiskContents(_ contents: Offerings.Contents) -> Bool {
+        guard self.remoteConfigManager?.isDisabled == true else { return false }
+
+        return contents.response.offerings.contains { offering in
+            offering.hasPaywallComponents == true && offering.paywallComponents == nil
         }
     }
 

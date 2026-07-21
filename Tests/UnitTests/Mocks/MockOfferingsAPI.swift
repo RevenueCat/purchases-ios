@@ -39,17 +39,26 @@ class MockOfferingsAPI: OfferingsAPI {
 
     var invokedGetOfferingsForAppUserID = false
     var invokedGetOfferingsForAppUserIDCount = 0
-    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)?
-    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?, isAppBackgrounded: Bool, completion: OfferingsAPI.OfferingsResponseHandler?)]()
+    var invokedGetOfferingsForAppUserIDParameters: (appUserID: String?,
+                                                     isAppBackgrounded: Bool,
+                                                     decodingMode: OfferingsResponse.DecodingMode,
+                                                     completion: OfferingsAPI.OfferingsResponseHandler?)?
+    var invokedGetOfferingsForAppUserIDParametersList = [(appUserID: String?,
+                                                          isAppBackgrounded: Bool,
+                                                          decodingMode: OfferingsResponse.DecodingMode,
+                                                          completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<Offerings.Contents, BackendError>?
 
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,
+                               decodingMode: OfferingsResponse.DecodingMode = .full,
                                completion: @escaping OfferingsResponseHandler) {
         self.invokedGetOfferingsForAppUserID = true
         self.invokedGetOfferingsForAppUserIDCount += 1
-        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, completion)
-        self.invokedGetOfferingsForAppUserIDParametersList.append((appUserID, isAppBackgrounded, completion))
+        self.invokedGetOfferingsForAppUserIDParameters = (appUserID, isAppBackgrounded, decodingMode, completion)
+        self.invokedGetOfferingsForAppUserIDParametersList.append(
+            (appUserID, isAppBackgrounded, decodingMode, completion)
+        )
 
         completion(self.stubbedGetOfferingsCompletionResult!)
     }

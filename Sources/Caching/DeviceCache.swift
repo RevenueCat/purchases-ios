@@ -98,7 +98,10 @@ class DeviceCache {
 
     // MARK: - generic methods
 
-    private func value<Key: DeviceCacheKeyType, Value: Codable>(for key: Key) -> Value? {
+    private func value<Key: DeviceCacheKeyType, Value: Codable>(
+        for key: Key,
+        decoder: JSONDecoder = .default
+    ) -> Value? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data
         userDefaults.write { defaults in
@@ -106,12 +109,12 @@ class DeviceCache {
         }
 
         // Try to get from new cache location first
-        if let value: Value = try? self.largeItemCache.value(forKey: key.rawValue) {
+        if let value: Value = try? self.largeItemCache.value(forKey: key.rawValue, decoder: decoder) {
             return value
         }
 
         // Check old documents directory and migrate if found
-        return self.migrateAndReturnValueIfNeeded(for: key.rawValue)
+        return self.migrateAndReturnValueIfNeeded(for: key.rawValue, decoder: decoder)
     }
 
     // MARK: - appUserID
@@ -211,8 +214,12 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
-        return self.value(for: CacheKey.offerings(appUserID))
+    func cachedOfferingsContents(
+        appUserID: String,
+        decodingMode: OfferingsResponse.DecodingMode = .full
+    ) -> Offerings.Contents? {
+        let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
+        return self.value(for: CacheKey.offerings(appUserID), decoder: decoder)
     }
 
     func cache(
@@ -228,7 +235,24 @@ class DeviceCache {
         self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
-        if self.largeItemCache.set(codable: diskContents ?? offerings.contents, forKey: key) {
+        let contents = diskContents ?? offerings.contents
+        let didCache: Bool
+        if let responseData = contents.responseDataForCache {
+            do {
+                let data = try Self.offeringsCacheData(
+                    responseData: responseData,
+                    originalSource: contents.originalSource
+                )
+                didCache = self.largeItemCache.set(data: data, forKey: key)
+            } catch {
+                Logger.error(Strings.cache.failed_to_save_codable_to_cache(error))
+                didCache = false
+            }
+        } else {
+            didCache = self.largeItemCache.set(codable: contents, forKey: key)
+        }
+
+        if didCache {
 
             // Delete old file from documents directory if it exists
             self.deleteOldFileIfNeeded(for: key)
@@ -810,6 +834,22 @@ fileprivate extension UserDefaults {
 
 private extension DeviceCache {
 
+    static func offeringsCacheData(
+        responseData: Data,
+        originalSource: Offerings.OriginalSource
+    ) throws -> Data {
+        let value = try JSONSerialization.jsonObject(with: responseData)
+        guard var object = value as? [String: Any] else {
+            throw EncodingError.invalidValue(
+                value,
+                .init(codingPath: [], debugDescription: "Offerings response must be a JSON object")
+            )
+        }
+
+        object["original_source"] = originalSource.rawValue
+        return try JSONSerialization.data(withJSONObject: object)
+    }
+
     enum CacheDuration {
 
         // swiftlint:disable:next nesting
@@ -874,14 +914,17 @@ private extension DeviceCache {
     }
 
     // swiftlint:enable avoid_using_directory_apis_directly
-    private func migrateAndReturnValueIfNeeded<Value: Codable>(for key: String) -> Value? {
+    private func migrateAndReturnValueIfNeeded<Value: Codable>(
+        for key: String,
+        decoder: JSONDecoder = .default
+    ) -> Value? {
         return self.migrationLock.perform {
             guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }
 
             let oldFileURL = oldDirectoryURL.appendingPathComponent(key)
 
             // Check if file already exists in new location (it may have been migrated before the lock was released)
-            if let value: Value = try? self.largeItemCache.value(forKey: key) {
+            if let value: Value = try? self.largeItemCache.value(forKey: key, decoder: decoder) {
                 // File already migrated, clean up old file if it still exists
                 if fileManager.fileExists(atPath: oldFileURL.path) {
                     try? fileManager.removeItem(at: oldFileURL)
@@ -898,7 +941,7 @@ private extension DeviceCache {
             // Try to load from old location
             // If decoding of the file from the old location fails, remove it since the file is corrupt
             guard let data = try? Data(contentsOf: oldFileURL),
-                  let value: Value = try? JSONDecoder.default.decode(jsonData: data, logErrors: true) else {
+                  let value: Value = try? decoder.decode(jsonData: data, logErrors: true) else {
                 try? fileManager.removeItem(at: oldFileURL)
                 return nil
             }

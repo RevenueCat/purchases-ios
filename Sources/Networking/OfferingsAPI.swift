@@ -32,6 +32,7 @@ class OfferingsAPI {
 
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
+                      decodingMode: OfferingsResponse.DecodingMode = .full,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -40,7 +41,11 @@ class OfferingsAPI {
             offeringsCallbackCache: self.offeringsCallbacksCache
         )
 
-        let offeringsCallback = OfferingsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let offeringsCallback = OfferingsCallback(
+            cacheKey: factory.cacheKey,
+            decodingMode: decodingMode,
+            completion: completion
+        )
         let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)
 
         if cacheStatus == .firstCallbackAddedToList {

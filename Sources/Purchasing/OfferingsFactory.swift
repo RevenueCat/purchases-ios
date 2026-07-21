@@ -44,9 +44,10 @@ class OfferingsFactory {
             return nil
         }
 
-        let storedContents = shouldCreatePaywallComponents
+        var storedContents = shouldCreatePaywallComponents
             ? contents
             : contents.removingPaywallComponents()
+        storedContents.responseDataForCache = nil
 
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,

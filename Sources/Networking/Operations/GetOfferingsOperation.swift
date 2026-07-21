@@ -66,21 +66,46 @@ private extension GetOfferingsOperation {
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: appUserID))
 
-        httpClient.perform(request) { (response: VerifiedHTTPResponse<OfferingsResponse>.Result) in
+        httpClient.perform(request) { (response: VerifiedHTTPResponse<Data>.Result) in
             defer {
                 completion()
             }
 
+            var resultsByDecodingMode: [OfferingsResponse.DecodingMode: OfferingsResponseHandlerResult] = [:]
+
             self.offeringsCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
-                callbackObject.completion(response
-                    .map {
-                        Offerings.Contents(response: $0.body,
-                                           httpResponseOriginalSource: $0.originalSource)
-                    }
-                    .mapError(BackendError.networkError)
-                )
+                let decodingMode = callbackObject.decodingMode
+                let result: OfferingsResponseHandlerResult
+                if let cachedResult = resultsByDecodingMode[decodingMode] {
+                    result = cachedResult
+                } else {
+                    result = Self.decode(response, using: decodingMode)
+                    resultsByDecodingMode[decodingMode] = result
+                }
+
+                callbackObject.completion(result)
             }
         }
+    }
+
+    typealias OfferingsResponseHandlerResult = Result<Offerings.Contents, BackendError>
+
+    static func decode(
+        _ response: VerifiedHTTPResponse<Data>.Result,
+        using decodingMode: OfferingsResponse.DecodingMode
+    ) -> OfferingsResponseHandlerResult {
+        let responseDataForCache = try? response.get().body
+        let decodedResponse: VerifiedHTTPResponse<OfferingsResponse>.Result = response.parseResponse { data, _ in
+            try OfferingsResponse.create(with: data, decodingMode: decodingMode)
+        }
+
+        return decodedResponse
+            .map {
+                Offerings.Contents(response: $0.body,
+                                   httpResponseOriginalSource: $0.originalSource,
+                                   responseDataForCache: responseDataForCache)
+            }
+            .mapError(BackendError.networkError)
     }
 
 }

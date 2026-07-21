@@ -66,6 +66,84 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
+    func testGetOfferingsCoalescesDifferentDecodingModesAndDecodesForEachCallback() throws {
+        self.httpClient.disableSnapshotTesting()
+        let responseData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        self.httpClient.mock(
+            requestPath: .getOfferings(appUserID: Self.userID),
+            response: .init(
+                statusCode: .success,
+                body: responseData,
+                delay: .milliseconds(10),
+                isFallbackUrlResponse: true
+            )
+        )
+
+        let fullResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let prunedResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+
+        self.offerings.getOfferings(
+            appUserID: Self.userID,
+            isAppBackgrounded: false,
+            decodingMode: .full
+        ) { fullResult.value = $0 }
+        self.offerings.getOfferings(
+            appUserID: Self.userID,
+            isAppBackgrounded: false,
+            decodingMode: .withoutPaywallComponents
+        ) { prunedResult.value = $0 }
+
+        expect(fullResult.value).toEventuallyNot(beNil())
+        expect(prunedResult.value).toEventuallyNot(beNil())
+        expect(self.httpClient.calls).to(haveCount(1))
+
+        let fullContents = try XCTUnwrap(fullResult.value?.value)
+        let prunedContents = try XCTUnwrap(prunedResult.value?.value)
+        expect(fullContents.response.offerings.first?.paywallComponents).toNot(beNil())
+        expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
+        expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
+        expect(fullContents.responseDataForCache) == responseData
+        expect(prunedContents.responseDataForCache) == responseData
+        expect(fullContents.originalSource) == .fallbackUrl
+        expect(prunedContents.originalSource) == .fallbackUrl
+    }
+
+    func testGetOfferingsDeliversMalformedResponseErrorToCallbacksWithDifferentModes() {
+        self.httpClient.disableSnapshotTesting()
+        self.httpClient.mock(
+            requestPath: .getOfferings(appUserID: Self.userID),
+            response: .init(statusCode: .success, body: Data("{".utf8), delay: .milliseconds(10))
+        )
+
+        let fullResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let prunedResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+
+        self.offerings.getOfferings(
+            appUserID: Self.userID,
+            isAppBackgrounded: false,
+            decodingMode: .full
+        ) { fullResult.value = $0 }
+        self.offerings.getOfferings(
+            appUserID: Self.userID,
+            isAppBackgrounded: false,
+            decodingMode: .withoutPaywallComponents
+        ) { prunedResult.value = $0 }
+
+        expect(fullResult.value).toEventually(beFailure())
+        expect(prunedResult.value).toEventually(beFailure())
+        expect(self.httpClient.calls).to(haveCount(1))
+
+        let subsequentResult = waitUntilValue { completed in
+            self.offerings.getOfferings(
+                appUserID: Self.userID,
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+        expect(subsequentResult).to(beFailure())
+        expect(self.httpClient.calls).to(haveCount(2))
+    }
+
     func testRepeatedRequestsLogDebugMessage() {
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
@@ -112,6 +190,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(result.value).toEventuallyNot(beNil())
 
         let offeringsContents = try XCTUnwrap(result.value?.value)
+        expect(offeringsContents.responseDataForCache).toNot(beNil())
         let response = offeringsContents.response
         let offerings = try XCTUnwrap(response.offerings)
         let offeringA = try XCTUnwrap(offerings.first)
