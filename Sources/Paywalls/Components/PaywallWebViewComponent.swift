@@ -47,28 +47,6 @@ import Foundation
             self.size = size
         }
 
-        private enum CodingKeys: String, CodingKey {
-            case type
-            case id
-            case name
-            case visible
-            case protocolVersion
-            case url
-            case size
-        }
-
-        required public init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: CodingKeys.self)
-            self.type = try container.decode(String.self, forKey: .type)
-            self.id = try container.decode(String.self, forKey: .id)
-            self.name = try container.decodeIfPresent(String.self, forKey: .name)
-            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
-            self.protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
-            self.url = try container.decode(String.self, forKey: .url)
-            self.size = try container.decodeIfPresent(Size.self, forKey: .size)
-                ?? .init(width: .fill, height: .fit(nil))
-        }
-
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(id)

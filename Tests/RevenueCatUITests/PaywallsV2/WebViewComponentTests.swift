@@ -10,12 +10,20 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewComponentTests: TestCase {
 
-    func testDecodesMinimalJSONDefaultsAndIgnoresUnknownKeys() throws {
+    func testDecodesMinimalJSONAndIgnoresUnknownKeys() throws {
         let minimal = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-        { "type": "web_view", "id": "web", "protocol_version": 1, "url": "https://example.com", "unknown": true }
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "unknown": true
+        }
         """.utf8))
 
         XCTAssertEqual(minimal.id, "web")
+        XCTAssertNil(minimal.name)
         XCTAssertNil(minimal.visible)
         XCTAssertEqual(minimal.protocolVersion, 1)
         XCTAssertEqual(minimal.size.width, .fill)
@@ -53,6 +61,7 @@ final class WebViewComponentTests: TestCase {
           "id": "web",
           "protocol_version": 1,
           "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
           "capabilities": {
             "network_access": { "allowed_domains": ["api.segment.io"] },
             "camera": true,
@@ -77,7 +86,8 @@ final class WebViewComponentTests: TestCase {
           "type": "web_view",
           "id": "web",
           "protocol_version": 1,
-          "url": "https://example.com/{{ custom.animal }}.html"
+          "url": "https://example.com/{{ custom.animal }}.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
         }
         """.utf8))
 
@@ -113,7 +123,12 @@ final class WebViewComponentTests: TestCase {
     func testDecodingWithoutURLThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-            { "type": "web_view", "id": "web", "protocol_version": 1 }
+            {
+              "type": "web_view",
+              "id": "web",
+              "protocol_version": 1,
+              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+            }
             """.utf8))
         )
     }
@@ -121,7 +136,12 @@ final class WebViewComponentTests: TestCase {
     func testDecodingWithoutIDThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-            { "type": "web_view", "protocol_version": 1, "url": "https://example.com" }
+            {
+              "type": "web_view",
+              "protocol_version": 1,
+              "url": "https://example.com",
+              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+            }
             """.utf8))
         )
     }
@@ -129,7 +149,20 @@ final class WebViewComponentTests: TestCase {
     func testDecodingWithoutProtocolVersionThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
-            { "type": "web_view", "id": "web", "url": "https://example.com" }
+            {
+              "type": "web_view",
+              "id": "web",
+              "url": "https://example.com",
+              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+            }
+            """.utf8))
+        )
+    }
+
+    func testDecodingWithoutSizeThrows() {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+            { "type": "web_view", "id": "web", "protocol_version": 1, "url": "https://example.com" }
             """.utf8))
         )
     }
