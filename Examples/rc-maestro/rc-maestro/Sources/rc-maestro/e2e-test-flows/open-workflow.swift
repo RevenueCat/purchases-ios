@@ -14,6 +14,16 @@ extension E2ETestFlowView {
 
         static let offeringIdentifier = "default_workflows"
 
+        /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
+        /// `custom_users_count` is not provided, so the workflow renders the dashboard default value.
+        static var customVariableOverrides: [String: CustomVariableValue] {
+            guard let raw = UserDefaults.standard.string(forKey: "custom_users_count"),
+                  let value = Double(raw) else {
+                return [:]
+            }
+            return ["users_count": .number(value)]
+        }
+
         enum GetOfferingsState {
             case loading
             case loaded(Offering)
@@ -38,6 +48,7 @@ extension E2ETestFlowView {
                     .buttonStyle(.borderedProminent)
                     .sheet(isPresented: $presentPaywall) {
                         PaywallView(offering: offering)
+                            .customPaywallVariables(Self.customVariableOverrides)
                     }
                 case .failed(let error):
                     Text("Error: \(error.localizedDescription)")

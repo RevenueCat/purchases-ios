@@ -583,8 +583,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
+        let workflowsConfigProvider = WorkflowsConfigProvider(
+            manager: remoteConfigManager,
+            uiConfigProvider: uiConfigProvider
+        )
+
         let workflowManager = WorkflowManager(
-            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            workflowsConfigProvider: workflowsConfigProvider,
             paywallCache: paywallCache,
             operationDispatcher: operationDispatcher
         )
@@ -598,6 +604,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 diagnosticsTracker: diagnosticsTracker,
                                                 remoteConfigManager: systemInfo.remoteConfigEnabled
                                                 ? remoteConfigManager
+                                                : nil,
+                                                uiConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? uiConfigProvider
+                                                : nil,
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
+                                                ? workflowManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -861,6 +873,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         super.init()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
+            guard let self else { return }
+            self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
+        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -1031,6 +1047,11 @@ public extension Purchases {
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -2416,11 +2437,11 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
-    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
-    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
+    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
-        return self.systemInfo.remoteConfigEnabled
+        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
     }
 
     // swiftlint:disable missing_docs

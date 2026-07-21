@@ -1545,6 +1545,34 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  run-workflow-maestro-tests:
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies
+      - revenuecat/install-maestro
+      - tuist-generate-workspace:
+          query: "Maestro"
+      - run:
+          name: Set API key for workflow e2e tests (test_store)
+          command: |
+            echo 'export REVENUECAT_API_KEY="${RC_E2E_TEST_API_KEY_PRODUCTION_TEST_STORE}"' >> $BASH_ENV
+      - run:
+          name: Run workflow e2e tests (production, test_store)
+          command: |
+            bundle exec fastlane run_maestro_e2e_tests_ios backend_environment:production store:test_store flow_subdir:workflows output_dir:test_output/workflows_production_test_store skip_slack_notification:true
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output
+      - store_artifacts:
+          path: fastlane/test_output
+
   release-checks:
     executor:
       name: macos-executor
@@ -1818,8 +1846,13 @@ jobs:
             }
 
   installation-tests-carthage:
+    parameters:
+      xcode_version:
+        type: string
+        default: "26.5"
     executor:
       name: macos-executor-large
+      xcode_version: << parameters.xcode_version >>
     steps:
       - checkout-with-minimal-permissions
       - run:
@@ -2345,6 +2378,10 @@ workflows:
       - revenuecat-admob-tests:
           context:
             - slack-secrets
+      - run-workflow-maestro-tests:
+          context:
+            - e2e-tests
+            - slack-secrets
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2508,6 +2545,7 @@ workflows:
             - emerge_purchases_ui_snapshot_tests
             - emerge_binary_size_analysis
             - build-tv-watch-mac-and-visionos
+            - run-workflow-maestro-tests
             # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
