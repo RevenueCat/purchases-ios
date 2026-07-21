@@ -367,7 +367,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ],
                     size: .init(
                         width: .fill,
-                        height: .fit
+                        height: .fit(nil)
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
@@ -396,8 +396,8 @@ struct StackComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000"))))
                     ],
                     size: .init(
-                        width: .fit,
-                        height: .fit
+                        width: .fit(nil),
+                        height: .fit(nil)
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
@@ -428,7 +428,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fill,
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
@@ -453,8 +453,8 @@ struct StackComponentView_Previews: PreviewProvider {
                                 color: .init(light: .hex("#000000"))))
                         ],
                         size: .init(
-                            width: .fit,
-                            height: .fit
+                            width: .fit(nil),
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#0000ff"))
                     ),
@@ -480,7 +480,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fixed(100),
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#00ff00"))
                     ),
@@ -506,7 +506,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fill,
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
@@ -556,7 +556,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         dimension: .horizontal(.center, .start),
                         size: .init(
                             width: .fixed(400),
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ffcc00")),
@@ -641,7 +641,7 @@ struct StackComponentView_Previews: PreviewProvider {
                                     text: "text_1",
                                     color: .init(light: .hex("#000000")),
                                     backgroundColor: .init(light: .hex("#ffcc00")),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 )),
                                 .stack(PaywallComponent.StackComponent(
@@ -650,12 +650,12 @@ struct StackComponentView_Previews: PreviewProvider {
                                             text: "text_1",
                                             color: .init(light: .hex("#000000")),
                                             backgroundColor: .init(light: .hex("#ffcc00")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                         ))
                                     ],
                                     dimension: .vertical(.center, .center),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     backgroundColor: .init(light: .hex("#dedede")),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 )),
@@ -665,18 +665,18 @@ struct StackComponentView_Previews: PreviewProvider {
                                             text: "text_1",
                                             color: .init(light: .hex("#000000")),
                                             backgroundColor: .init(light: .hex("#ffcc00")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                         ))
                                     ],
                                     dimension: .horizontal(.center, .center),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     backgroundColor: .init(light: .hex("#dedede")),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 ))
                             ],
                             dimension: .vertical(.center, .center),
-                            size: .init(width: .fit, height: .fit),
+                            size: .init(width: .fit(nil), height: .fit(nil)),
                             backgroundColor: .init(light: .hex("#0000ff")),
                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                         ))

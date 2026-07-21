@@ -112,15 +112,22 @@ class MockDeviceCache: DeviceCache {
     var stubbedIsOfferingsCacheStale = false
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
+    var latestCachedOfferingsContents: Offerings.Contents?
     var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+    override func cache(
+        offerings: Offerings,
+        diskContents: Offerings.Contents? = nil,
+        preferredLocales: [String],
+        appUserID: String
+    ) {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
+        self.latestCachedOfferingsContents = diskContents ?? offerings.contents
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1

@@ -96,7 +96,8 @@ class MockHTTPClient: HTTPClient {
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
                    requestTimeout: requestTimeout,
-                   operationDispatcher: MockOperationDispatcher())
+                   operationDispatcher: MockOperationDispatcher(),
+                   apiSourceProvider: nil)
     }
 
     /// Disables snapshot testing for this mock HTTP client.

@@ -35,6 +35,7 @@ const JOBS = {
   "remote-config-production-tests": ["config-endpoint-tests", "slack-secrets"],
   "revenuecat-admob-tests": ["slack-secrets"],
   "run-all-maestro-e2e-tests": ["e2e-tests", "slack-secrets"],
+  "run-workflow-maestro-tests": ["e2e-tests", "slack-secrets"],
   "run-revenuecat-ui-ios-18-and-17": ["slack-secrets"],
   "run-revenuecat-ui-ios-26": ["slack-secrets"],
   "run-test-ios-15-and-14": ["slack-secrets"],
