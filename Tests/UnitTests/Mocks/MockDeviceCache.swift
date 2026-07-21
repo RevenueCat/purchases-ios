@@ -106,6 +106,7 @@ class MockDeviceCache: DeviceCache {
     var cacheOfferingsCount = 0
     var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
+    var clearInMemoryOfferingsCacheCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
@@ -131,6 +132,12 @@ class MockDeviceCache: DeviceCache {
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
+        self.stubbedOfferings = offerings
+    }
+
+    override func clearInMemoryOfferingsCache() {
+        self.clearInMemoryOfferingsCacheCount += 1
+        self.stubbedOfferings = nil
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -143,6 +150,8 @@ class MockDeviceCache: DeviceCache {
 
     override func clearOfferingsCache(appUserID: String) {
         self.clearCachedOfferingsCount += 1
+        self.stubbedOfferings = nil
+        self.stubbedCachedOfferingsData = nil
     }
 
     override func cachedOfferingsContents(
