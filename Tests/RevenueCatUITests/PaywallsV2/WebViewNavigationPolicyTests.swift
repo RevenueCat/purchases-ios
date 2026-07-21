@@ -86,6 +86,20 @@ final class WebViewNavigationPolicyTests: TestCase {
         )
     }
 
+    func testEmptyExpectedOriginMainFrameIsCancelled() {
+        // The view coerces an unresolvable origin to "" (see BridgedWebViewComponentView); that must
+        // cancel main-frame navigation too, keeping the whole web view inert rather than just muting
+        // the message bridge.
+        XCTAssertEqual(
+            WebViewNavigationPolicy.policy(
+                for: URL(string: "https://example.com/next")!,
+                isMainFrame: true,
+                expectedOrigin: ""
+            ),
+            .cancel
+        )
+    }
+
     func testHostlessExpectedOriginMainFrameIsCancelled() {
         XCTAssertEqual(
             WebViewNavigationPolicy.policy(

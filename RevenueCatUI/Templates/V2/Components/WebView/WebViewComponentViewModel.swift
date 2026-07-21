@@ -14,9 +14,18 @@ final class WebViewComponentViewModel: Hashable {
     let visible: Bool
     let componentID: String
 
-    var url: URL? {
-        guard !self.urlString.contains("{{"),
-              let url = URL(string: self.urlString),
+    lazy var url: URL? = Self.validatedHTTPSURL(from: self.urlString)
+
+    init(component: PaywallComponent.WebViewComponent) {
+        self.urlString = component.url
+        self.size = component.size
+        self.visible = component.visible ?? true
+        self.componentID = component.id
+    }
+
+    private static func validatedHTTPSURL(from urlString: String) -> URL? {
+        guard !urlString.contains("{{"),
+              let url = URL(string: urlString),
               url.scheme?.lowercased() == "https",
               url.host?.isEmpty == false else {
             return nil
@@ -24,20 +33,18 @@ final class WebViewComponentViewModel: Hashable {
         return url
     }
 
-    init(component: PaywallComponent.WebViewComponent, localizationProvider: LocalizationProvider) {
-        self.urlString = component.url
-        self.size = component.size
-        self.visible = component.visible ?? true
-        self.componentID = component.id
-    }
-
     func hash(into hasher: inout Hasher) {
         hasher.combine(self.urlString)
         hasher.combine(self.componentID)
+        hasher.combine(self.size)
+        hasher.combine(self.visible)
     }
 
     static func == (lhs: WebViewComponentViewModel, rhs: WebViewComponentViewModel) -> Bool {
-        lhs.urlString == rhs.urlString && lhs.componentID == rhs.componentID
+        lhs.urlString == rhs.urlString &&
+            lhs.componentID == rhs.componentID &&
+            lhs.size == rhs.size &&
+            lhs.visible == rhs.visible
     }
 }
 

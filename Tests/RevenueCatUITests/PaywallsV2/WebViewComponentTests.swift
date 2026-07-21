@@ -288,26 +288,18 @@ final class WebViewComponentTests: TestCase {
 
     // MARK: - View model
 
-    func testViewModelURLValidationAndHashing() {
-        let component = PaywallComponent.WebViewComponent(
-            id: "web",
-            protocolVersion: 2,
-            url: "https://example.com/path",
-            size: .init(width: .fill, height: .fit(nil))
-        )
+    func testViewModelURLValidation() {
         let viewModel = WebViewComponentViewModel(
-            component: component,
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:])
+            component: .init(
+                id: "web",
+                protocolVersion: 2,
+                url: "https://example.com/path",
+                size: .init(width: .fill, height: .fit(nil))
+            )
         )
 
         XCTAssertEqual(viewModel.url?.absoluteString, "https://example.com/path")
         XCTAssertEqual(viewModel.componentID, "web")
-
-        let differentID = WebViewComponentViewModel(
-            component: .init(id: "other", protocolVersion: 1, url: "https://example.com/path"),
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:])
-        )
-        XCTAssertNotEqual(viewModel, differentID)
 
         for invalidURL in [
             "http://example.com",
@@ -317,8 +309,7 @@ final class WebViewComponentTests: TestCase {
             "https://example.com/{{ custom.url }}"
         ] {
             let invalid = WebViewComponentViewModel(
-                component: .init(id: "web", protocolVersion: 1, url: invalidURL),
-                localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:])
+                component: .init(id: "web", protocolVersion: 1, url: invalidURL)
             )
             XCTAssertNil(invalid.url)
         }
@@ -369,6 +360,44 @@ final class WebViewComponentTests: TestCase {
         }
         XCTAssertEqual(built.componentID, "web")
         XCTAssertEqual(built.url?.absoluteString, "https://example.com/index.html")
+    }
+
+    func testViewModelDefaultsToVisible() {
+        XCTAssertTrue(
+            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "https://example.com"))
+                .visible
+        )
+        XCTAssertFalse(
+            WebViewComponentViewModel(
+                component: .init(id: "web", visible: false, protocolVersion: 1, url: "https://example.com")
+            ).visible
+        )
+    }
+
+    func testViewModelEqualityAndHashingConsidersRenderedState() {
+        func makeViewModel(
+            id: String = "web",
+            url: String = "https://example.com/path",
+            visible: Bool? = nil,
+            size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil))
+        ) -> WebViewComponentViewModel {
+            WebViewComponentViewModel(
+                component: .init(id: id, visible: visible, protocolVersion: 1, url: url, size: size)
+            )
+        }
+
+        let base = makeViewModel()
+
+        // Equal inputs produce equal (and identically hashing) view models.
+        let same = makeViewModel()
+        XCTAssertEqual(base, same)
+        XCTAssertEqual(base.hashValue, same.hashValue)
+
+        // Any rendered-state difference breaks equality.
+        XCTAssertNotEqual(base, makeViewModel(id: "other"))
+        XCTAssertNotEqual(base, makeViewModel(url: "https://example.com/other"))
+        XCTAssertNotEqual(base, makeViewModel(visible: false))
+        XCTAssertNotEqual(base, makeViewModel(size: .init(width: .fixed(320), height: .fit(nil))))
     }
 
     private static let fallbackStackJSON = """
@@ -425,6 +454,12 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
 
         XCTAssertEqual(calls, 2)
     }
+
+    // Note: the coordinator's `decidePolicyFor` is a thin delegation to
+    // `WebViewNavigationPolicy.policy(for:isMainFrame:expectedOrigin:)`, which is exhaustively
+    // covered (allow/cancel, origin normalization, nil/empty origin) in WebViewNavigationPolicyTests.
+    // `WKNavigationAction`/`WKFrameInfo` cannot be constructed or subclassed for a unit test, so the
+    // delegation itself is not re-tested here.
 
 }
 
