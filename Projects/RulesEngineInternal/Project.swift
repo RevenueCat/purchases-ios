@@ -37,7 +37,7 @@ let project = Project(
                 .target(name: "RulesEngineInternal")
             ]
         )
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "RulesEngineInternal",

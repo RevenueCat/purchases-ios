@@ -148,7 +148,7 @@ let project = Project(
                 defaultSettings: .essential
             )
         )
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "BinarySizeTest",
