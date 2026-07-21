@@ -1846,8 +1846,13 @@ jobs:
             }
 
   installation-tests-carthage:
+    parameters:
+      xcode_version:
+        type: string
+        default: "26.5"
     executor:
       name: macos-executor-large
+      xcode_version: << parameters.xcode_version >>
     steps:
       - checkout-with-minimal-permissions
       - run:
