@@ -30,8 +30,6 @@ public struct PaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
-    private let useDraftPaywall: Bool
-
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
 
@@ -140,7 +138,7 @@ public struct PaywallView: View {
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool,
+        useDraftPaywall _: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
@@ -153,7 +151,6 @@ public struct PaywallView: View {
                 offering: offering,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
-                useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler,
                 promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
@@ -218,7 +215,6 @@ public struct PaywallView: View {
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.useDraftPaywall = configuration.useDraftPaywall
         self.promoOfferCache = configuration.promoOfferCache
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
@@ -278,7 +274,6 @@ public struct PaywallView: View {
                 if let offering = self.offering, let customerInfo = self.customerInfo {
                     self.paywallView(for: offering,
                                      workflowContext: self.workflowContext,
-                                     useDraftPaywall: self.useDraftPaywall,
                                      activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
@@ -342,17 +337,13 @@ public struct PaywallView: View {
     private func paywallView(
         for offering: Offering,
         workflowContext: WorkflowContext?,
-        useDraftPaywall: Bool,
         activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        let selectedPaywallComponents = useDraftPaywall
-            ? offering.draftPaywallComponents
-            : offering.internalPaywallComponents
-        if let paywallComponents = selectedPaywallComponents {
+        if let paywallComponents = offering.internalPaywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
             let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
