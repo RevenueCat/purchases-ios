@@ -628,6 +628,24 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
+    func testBlobDataSnapshotIsRejectedAfterIdentityInvalidation() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        let maybeSnapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+        let snapshot = try XCTUnwrap(maybeSnapshot)
+
+        self.manager.clearCache(forAppUserID: "new-user")
+
+        var invoked = false
+        expect(self.manager.useIfCurrent(snapshot) { _ in invoked = true }) == false
+        expect(invoked) == false
+    }
+
     func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
         let refs = ["ref-1", "ref-2"]
 
