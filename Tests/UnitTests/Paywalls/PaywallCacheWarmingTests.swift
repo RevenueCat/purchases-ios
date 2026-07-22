@@ -218,6 +218,26 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+    func testWorkflowAssetPrewarmingAttemptsSharedFontOnlyOnce() async {
+        let installCallCount = await self.workflowFontInstallCallCount(fontNames: ["MockFont", "MockFont"])
+        XCTAssertEqual(installCallCount, 1)
+    }
+
+    func testWorkflowAssetPrewarmingDoesNotDeduplicateDistinctFontNames() async {
+        let installCallCount = await self.workflowFontInstallCallCount(
+            fontNames: ["Font Regular", "Font Bold"]
+        )
+        XCTAssertEqual(installCallCount, 2)
+    }
+
+    func testWorkflowAssetPrewarmingDoesNotRepeatFailedSharedFontAttempt() async {
+        let installCallCount = await self.workflowFontInstallCallCount(
+            fontNames: ["MockFont", "MockFont"],
+            shouldFailInstallation: true
+        )
+        XCTAssertEqual(installCallCount, 1)
+    }
+
 #endif
 
     func testDownloadFont_PerformsExpectedActions() async throws {
@@ -331,6 +351,52 @@ final class PaywallCacheWarmingTests: TestCase {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension PaywallCacheWarmingTests {
 
+#if !os(tvOS)
+    func workflowFontInstallCallCount(
+        fontNames: [String],
+        shouldFailInstallation: Bool = false
+    ) async -> Int {
+        let fontURL = URL(string: "https://example.com/font.ttf")!
+        let fontsManager = MockFontsManager(
+            installDelayInSeconds: 0,
+            shouldFailInstallation: shouldFailInstallation
+        )
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: fontsManager
+        )
+
+        for (index, fontName) in fontNames.enumerated() {
+            let uiConfig = UIConfig(
+                app: .init(
+                    colors: [:],
+                    fonts: [
+                        "font": .init(
+                            ios: .init(
+                                name: fontName,
+                                webFontInfo: .init(url: fontURL.absoluteString, hash: "abc123")
+                            )
+                        )
+                    ]
+                ),
+                localizations: [:],
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            )
+            let workflow = PublishedWorkflow(
+                id: "workflow-\(index)",
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: [:]
+            )
+            await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: uiConfig)
+        }
+
+        return await fontsManager.installCallCount
+    }
+#endif
+
     static func createOffering(
         identifier: String,
         paywall: PaywallData?,
@@ -438,12 +504,18 @@ final actor MockFontsManager: PaywallFontManagerType {
     private(set) var installCallCount = 0
     var installDelayInSeconds: TimeInterval = 0
 
-    init(installDelayInSeconds: TimeInterval, fontIsAlreadyInstalled: Bool = false) {
+    init(
+        installDelayInSeconds: TimeInterval,
+        fontIsAlreadyInstalled: Bool = false,
+        shouldFailInstallation: Bool = false
+    ) {
         self.installDelayInSeconds = installDelayInSeconds
         self.fontIsAlreadyInstalled = fontIsAlreadyInstalled
+        self.shouldFailInstallation = shouldFailInstallation
     }
 
     let fontIsAlreadyInstalled: Bool
+    let shouldFailInstallation: Bool
 
     nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
         return self.fontIsAlreadyInstalled
@@ -451,6 +523,10 @@ final actor MockFontsManager: PaywallFontManagerType {
 
     func installFont(_ font: RevenueCat.DownloadableFont) async throws {
         installCallCount += 1
+
+        if self.shouldFailInstallation {
+            throw NSError(domain: "MockFontsManager", code: 1)
+        }
 
         let duration = UInt64(installDelayInSeconds * 1_000_000_000)
         try await Task.sleep(nanoseconds: duration)

@@ -145,12 +145,11 @@ private struct BridgedWebViewComponentView: View {
 }
 
 #if os(macOS)
-typealias PlatformViewRepresentable = NSViewRepresentable
-typealias PlatformWebView = WKWebView
+private typealias PlatformViewRepresentable = NSViewRepresentable
 #else
-typealias PlatformViewRepresentable = UIViewRepresentable
-typealias PlatformWebView = WKWebView
+private typealias PlatformViewRepresentable = UIViewRepresentable
 #endif
+typealias PlatformWebView = WKWebView
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebViewRepresentable: PlatformViewRepresentable {
@@ -197,6 +196,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
     #endif
 
+    @MainActor
     private func makeWebView(context: Context) -> PlatformWebView {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
@@ -243,10 +243,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         return webView
     }
 
+    @MainActor
     private func update(_ webView: PlatformWebView) {
         self.configureSession(for: webView)
     }
 
+    @MainActor
     private func configureSession(for webView: PlatformWebView) {
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
@@ -272,13 +274,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewEnvelope.messageHandlerName
         )
-
-        #if os(macOS)
-        webView.configuration.websiteDataStore.removeData(
-            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
-            modifiedSince: .distantPast
-        ) {}
-        #endif
     }
 
     // `WKNavigationDelegate` is `@MainActor`-annotated in the SDK (its `WK_SWIFT_UI_ACTOR` attribute
