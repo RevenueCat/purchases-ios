@@ -934,6 +934,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
+        self.offlineEntitlementsManager.close()
         self.remoteConfigManager.close()
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil

@@ -21,6 +21,10 @@ class OfflineEntitlementsManager {
     private let systemInfo: SystemInfo
 
     private var productEntitlementMappingTopicProvider: EntitlementMappingTopicProviderType?
+    private let productEntitlementMappingTasksLock = Lock()
+    private var productEntitlementMappingTasks: [UUID: Task<Void, Never>] = [:]
+    private var completedProductEntitlementMappingTaskIDs: Set<UUID> = []
+    private var isClosed = false
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -54,21 +58,84 @@ class OfflineEntitlementsManager {
             return
         }
 
+        guard self.productEntitlementMappingTasksLock.perform({ !self.isClosed }) else { return }
+
         Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_stale_updating)
 
-        Task { [weak self] in
+        guard let provider = self.productEntitlementMappingTopicProvider,
+              provider.isAvailable else {
+            self.productEntitlementMappingTasksLock.perform {
+                guard !self.isClosed else { return }
+                self.fetchLegacyProductEntitlementMapping(
+                    isAppBackgrounded: isAppBackgrounded,
+                    completion: completion
+                )
+            }
+            return
+        }
+
+        let taskID = UUID()
+        let task = Task { [weak self] in
+            defer { self?.productEntitlementMappingTaskDidFinish(taskID) }
             guard let self else { return }
 
-            if let response = await self.productEntitlementMappingTopicProvider?.getProductEntitlementMapping() {
-                self.handleProductEntitlementMappingBackendResult(with: response)
-                self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(()))
+            if let result = await provider.getProductEntitlementMapping(),
+               self.productEntitlementMappingTasksLock.perform({
+                   guard !self.isClosed, !Task.isCancelled else { return false }
+                   guard result.useIfCurrent({
+                       self.handleProductEntitlementMappingBackendResult(with: $0)
+                   }) else { return false }
+                   self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(()))
+                   return true
+               }) {
                 return
             }
 
-            self.fetchLegacyProductEntitlementMapping(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: completion
-            )
+            self.productEntitlementMappingTasksLock.perform {
+                guard !self.isClosed, !Task.isCancelled else { return }
+                self.fetchLegacyProductEntitlementMapping(
+                    isAppBackgrounded: isAppBackgrounded,
+                    completion: completion
+                )
+            }
+        }
+        self.registerProductEntitlementMappingTask(task, id: taskID)
+    }
+
+    func close() {
+        let tasks = self.productEntitlementMappingTasksLock.perform {
+            self.isClosed = true
+            let tasks = Array(self.productEntitlementMappingTasks.values)
+            self.productEntitlementMappingTasks.removeAll()
+            self.completedProductEntitlementMappingTaskIDs.removeAll()
+            return tasks
+        }
+        tasks.forEach { $0.cancel() }
+    }
+
+    private func registerProductEntitlementMappingTask(_ task: Task<Void, Never>, id: UUID) {
+        let shouldCancel = self.productEntitlementMappingTasksLock.perform {
+            if self.isClosed {
+                self.completedProductEntitlementMappingTaskIDs.remove(id)
+                return true
+            }
+            if self.completedProductEntitlementMappingTaskIDs.remove(id) != nil {
+                return false
+            }
+
+            self.productEntitlementMappingTasks[id] = task
+            return false
+        }
+        if shouldCancel {
+            task.cancel()
+        }
+    }
+
+    private func productEntitlementMappingTaskDidFinish(_ id: UUID) {
+        self.productEntitlementMappingTasksLock.perform {
+            if self.productEntitlementMappingTasks.removeValue(forKey: id) == nil, !self.isClosed {
+                self.completedProductEntitlementMappingTaskIDs.insert(id)
+            }
         }
     }
 
