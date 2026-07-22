@@ -742,11 +742,15 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
+        // Format the discount's displayed price string rather than reformatting the
+        // decimal price through `NumberFormatter`. The formatter can emit a different
+        // currency token than the displayed price (e.g. "6,99 USD" vs "$6.99") when its
+        // locale metadata doesn't match the product's currency, which would make the
+        // offer price inconsistent with `product.price` and `product.currency_symbol`.
         return formatDiscountPrice(
-            discount.price,
+            discount.localizedPriceString,
             package: package,
-            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices,
-            fallback: discount.localizedPriceString
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
@@ -1088,6 +1092,23 @@ private extension VariablesV2 {
             price,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         ) ?? fallback
+    }
+
+    /// Formats an already-displayed discount price string, preserving its currency token.
+    /// Mirrors the base price path (`Package.localizedPrice`) so the currency token stays
+    /// consistent across the paywall instead of being re-derived from `NumberFormatter`.
+    func formatDiscountPrice(
+        _ priceString: String,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        guard let formatter = package.storeProduct.priceFormatter else {
+            return priceString
+        }
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            from: priceString,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
     }
 
 }
