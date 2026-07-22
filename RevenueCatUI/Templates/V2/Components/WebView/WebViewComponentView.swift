@@ -143,12 +143,11 @@ private struct BridgedWebViewComponentView: View {
 }
 
 #if os(macOS)
-typealias PlatformViewRepresentable = NSViewRepresentable
-typealias PlatformWebView = WKWebView
+private typealias PlatformViewRepresentable = NSViewRepresentable
 #else
-typealias PlatformViewRepresentable = UIViewRepresentable
-typealias PlatformWebView = WKWebView
+private typealias PlatformViewRepresentable = UIViewRepresentable
 #endif
+typealias PlatformWebView = WKWebView
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebViewRepresentable: PlatformViewRepresentable {
