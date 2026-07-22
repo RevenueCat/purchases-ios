@@ -336,17 +336,32 @@ final class WebViewComponentTests: TestCase {
     }
 
     func testUnsupportedProtocolVersionWithoutFallbackThrows() {
-        XCTAssertThrowsError(
-            try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
-            {
-              "type": "web_view",
-              "id": "web",
-              "protocol_version": 2,
-              "url": "https://example.com/index.html",
-              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
-            }
-            """.utf8))
-        )
+        // Missing `fallback` key surfaces as `keyNotFound`, which must be reported as a missing
+        // fallback rather than a failed fallback decode.
+        assertDecodingThrowsMissingFallback("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+        }
+        """)
+    }
+
+    func testUnsupportedProtocolVersionWithNullFallbackThrowsMissingFallback() {
+        // An explicit `null` fallback surfaces as `valueNotFound`, which must also be reported as a
+        // missing fallback rather than a failed fallback decode.
+        assertDecodingThrowsMissingFallback("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": null
+        }
+        """)
     }
 
     #if canImport(WebKit) && !os(watchOS)
@@ -416,6 +431,30 @@ final class WebViewComponentTests: TestCase {
             file: file,
             line: line
         )
+    }
+
+    /// Asserts decoding throws a `dataCorrupted` error reporting an absent fallback, rather than a
+    /// failed fallback decode (which would indicate the wrong `catch` branch handled the error).
+    private func assertDecodingThrowsMissingFallback(
+        _ json: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8)),
+            file: file,
+            line: line
+        ) { error in
+            guard case let DecodingError.dataCorrupted(context) = error else {
+                return XCTFail("Expected dataCorrupted, got \(error)", file: file, line: line)
+            }
+            XCTAssertTrue(
+                context.debugDescription.contains("without a fallback"),
+                "Unexpected error description: \(context.debugDescription)",
+                file: file,
+                line: line
+            )
+        }
     }
 
 }
