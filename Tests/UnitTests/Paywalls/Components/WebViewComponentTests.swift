@@ -238,15 +238,6 @@ final class WebViewComponentTests: TestCase {
           "fallback": \(Self.fallbackStackJSON)
         }
         """)
-        try assertDecodesFallback("""
-        {
-          "type": "web_view",
-          "id": "web",
-          "protocol_version": 1,
-          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
-          "fallback": \(Self.fallbackStackJSON)
-        }
-        """)
     }
 
     func testUnsupportedProtocolVersionDoesNotRequireOtherWebViewFieldsToRenderFallback() throws {
@@ -259,8 +250,8 @@ final class WebViewComponentTests: TestCase {
         """)
     }
 
-    func testMissingOrMalformedProtocolVersionRendersFallback() throws {
-        try assertDecodesFallback("""
+    func testMissingOrMalformedProtocolVersionThrowsEvenWithFallback() {
+        assertDecodingThrows("""
         {
           "type": "web_view",
           "id": "web",
@@ -269,7 +260,7 @@ final class WebViewComponentTests: TestCase {
           "fallback": \(Self.fallbackStackJSON)
         }
         """)
-        try assertDecodesFallback("""
+        assertDecodingThrows("""
         {
           "type": "web_view",
           "id": "web",
@@ -281,8 +272,8 @@ final class WebViewComponentTests: TestCase {
         """)
     }
 
-    func testMalformedWebViewFieldsRenderFallback() throws {
-        try assertDecodesFallback("""
+    func testMalformedWebViewFieldsThrowEvenWithFallback() {
+        assertDecodingThrows("""
         {
           "type": "web_view",
           "protocol_version": 1,
@@ -291,7 +282,7 @@ final class WebViewComponentTests: TestCase {
           "fallback": \(Self.fallbackStackJSON)
         }
         """)
-        try assertDecodesFallback("""
+        assertDecodingThrows("""
         {
           "type": "web_view",
           "id": "web",
@@ -300,16 +291,25 @@ final class WebViewComponentTests: TestCase {
           "fallback": \(Self.fallbackStackJSON)
         }
         """)
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
     }
 
-    func testUnrenderableIDOrURLRendersFallback() throws {
+    func testUnrenderableIDOrURLThrowsEvenWithFallback() {
         for (id, url) in [
             ("   ", "https://example.com/index.html"),
             ("web", "http://example.com/index.html"),
             ("web", "https:///missing-host"),
             ("web", "https://example.com/{{ custom.path }}")
         ] {
-            try assertDecodesFallback("""
+            assertDecodingThrows("""
             {
               "type": "web_view",
               "id": "\(id)",
@@ -404,6 +404,18 @@ final class WebViewComponentTests: TestCase {
         guard case .stack = decoded else {
             return XCTFail("Expected fallback stack, got \(decoded)", file: file, line: line)
         }
+    }
+
+    private func assertDecodingThrows(
+        _ json: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8)),
+            file: file,
+            line: line
+        )
     }
 
 }

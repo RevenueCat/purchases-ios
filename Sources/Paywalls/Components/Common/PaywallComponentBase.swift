@@ -240,25 +240,27 @@ import Foundation
     }
 
     private static func decodeWebView(from decoder: Decoder) throws -> PaywallComponent {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Gate a valid raw version before decoding the full model. This lets a newer protocol use
+        // its fallback without requiring this SDK to understand that protocol's remaining fields.
+        let protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
+        guard protocolVersion == WebViewComponent.supportedProtocolVersion else {
+            return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
+        }
+
+        let component = try WebViewComponent(from: decoder)
+        if let validationError = component.configurationValidationError {
+            let context = DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: validationError
+            )
+            throw DecodingError.dataCorrupted(context)
+        }
+
         #if os(watchOS) || os(tvOS) || !canImport(WebKit)
         return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
         #else
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-
-        // Gate the raw version before decoding the full model. This keeps a newer or malformed
-        // payload from failing on fields this SDK does not need in order to select its fallback.
-        guard let protocolVersion = try? container.decode(Int.self, forKey: .protocolVersion),
-              protocolVersion == WebViewComponent.supportedProtocolVersion else {
-            return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
-        }
-
-        // Once `web_view` is registered, a malformed model would normally abort the whole paywall.
-        // Treat any configuration this SDK cannot render like an unknown component instead.
-        guard let component = try? WebViewComponent(from: decoder),
-              component.hasRenderableConfiguration else {
-            return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
-        }
-
         return .webView(component)
         #endif
     }

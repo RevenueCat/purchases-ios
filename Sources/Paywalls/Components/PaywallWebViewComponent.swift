@@ -33,18 +33,20 @@ import Foundation
 
         public let size: Size
 
-        /// Whether this SDK can create a functional web view from the decoded static configuration.
-        var hasRenderableConfiguration: Bool {
-            guard self.protocolVersion == Self.supportedProtocolVersion,
-                  !self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
-                  !self.url.contains("{{"),
+        /// Describes why the decoded static configuration is invalid, if applicable.
+        var configurationValidationError: String? {
+            if self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "Web view component ID must not be blank."
+            }
+
+            guard !self.url.contains("{{"),
                   let url = URL(string: self.url),
                   url.scheme?.lowercased() == "https",
                   url.host?.isEmpty == false else {
-                return false
+                return "Web view component URL must be a resolved HTTPS URL with a host."
             }
 
-            return true
+            return nil
         }
 
         public init(
