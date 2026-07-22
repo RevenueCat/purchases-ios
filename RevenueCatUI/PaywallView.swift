@@ -109,14 +109,16 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
         self.init(
-            offering: offering,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            useDraftPaywall: false,
-            performPurchase: performPurchase,
-            performRestore: performRestore
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
             )
+        )
     }
 
     // swiftlint:disable:next missing_docs
@@ -138,7 +140,6 @@ public struct PaywallView: View {
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall _: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
