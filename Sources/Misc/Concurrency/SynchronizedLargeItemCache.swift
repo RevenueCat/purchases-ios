@@ -93,7 +93,7 @@ internal final class SynchronizedLargeItemCache {
 
     /// Load a codable value from the cache
     /// - Throws: If the file cannot be loaded or decoded
-    func value<T: Decodable>(forKey key: String, decoder: JSONDecoder = .default) throws -> T? {
+    func value<T: Decodable>(forKey key: String, decoder: JSONDecoder) throws -> T? {
         guard let fileURL = self.getFileURL(for: key) else {
             return nil
         }
