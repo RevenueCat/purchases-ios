@@ -16,6 +16,22 @@ final class WebViewComponentViewModel: Hashable {
 
     lazy var url: URL? = Self.validatedHTTPSURL(from: self.urlString)
 
+    #if canImport(WebKit)
+    /// Canonical origin derived from ``url``. Because ``url`` is already validated as HTTPS with a
+    /// host, this should always resolve; a `nil` result is logged and keeps the web view unrendered
+    /// (the ``WebViewComponentView`` body gates on it) rather than showing an inert bridge.
+    lazy var origin: WebViewOrigin? = {
+        guard let url = self.url else {
+            return nil
+        }
+        guard let origin = WebViewOrigin(url: url) else {
+            Logger.warning(Strings.paywall_web_view_invalid_expected_origin(self.urlString))
+            return nil
+        }
+        return origin
+    }()
+    #endif
+
     init(component: PaywallComponent.WebViewComponent) {
         self.urlString = component.url
         self.size = component.size
