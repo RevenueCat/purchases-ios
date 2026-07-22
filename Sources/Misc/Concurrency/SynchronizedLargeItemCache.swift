@@ -60,6 +60,11 @@ internal final class SynchronizedLargeItemCache {
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: String) -> Bool {
+        guard self.getFileURL(for: key) != nil else {
+            Logger.error(Strings.cache.cache_url_not_available)
+            return false
+        }
+
         guard let data = try? JSONEncoder.default.encode(value: value, logErrors: true) else {
             return false
         }

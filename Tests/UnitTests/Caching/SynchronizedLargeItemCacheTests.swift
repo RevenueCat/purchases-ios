@@ -48,6 +48,19 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.saveDataInvocations.first?.data, data)
     }
 
+    func testSetCodableDoesNotEncodeWhenCacheDirectoryIsUnavailable() {
+        let mock = createAndTrackForMemoryLeak(MockSimpleCache(cacheDirectory: nil))
+        let sut = createAndTrackForMemoryLeak(
+            SynchronizedLargeItemCache(cache: mock, basePath: "unavailable-cache")
+        )
+        let value = EncodingProbe()
+
+        XCTAssertFalse(sut.set(codable: value, forKey: "key"))
+        XCTAssertFalse(value.wasEncoded)
+        XCTAssertTrue(mock.saveDataInvocations.isEmpty)
+        self.logger.verifyMessageWasLogged(Strings.cache.cache_url_not_available, level: .error)
+    }
+
     func testValueReturnsDecodedData() throws {
         let (mock, sut) = self.makeSystemUnderTest()
         let key = "value-key"
@@ -161,3 +174,11 @@ private struct TestValue: Codable, Equatable {
 }
 
 private struct MockError: Error { }
+
+private final class EncodingProbe: Encodable {
+    var wasEncoded = false
+
+    func encode(to encoder: Encoder) throws {
+        self.wasEncoded = true
+    }
+}
