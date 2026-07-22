@@ -33,6 +33,20 @@ import Foundation
 
         public let size: Size
 
+        /// Whether this SDK can create a functional web view from the decoded static configuration.
+        var hasRenderableConfiguration: Bool {
+            guard self.protocolVersion == Self.supportedProtocolVersion,
+                  !self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+                  !self.url.contains("{{"),
+                  let url = URL(string: self.url),
+                  url.scheme?.lowercased() == "https",
+                  url.host?.isEmpty == false else {
+                return false
+            }
+
+            return true
+        }
+
         public init(
             id: String,
             name: String? = nil,
