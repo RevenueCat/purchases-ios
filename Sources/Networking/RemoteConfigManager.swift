@@ -9,6 +9,17 @@ import Foundation
 
 // swiftlint:disable file_length
 
+struct RemoteConfigBlobData<Value>: @unchecked Sendable {
+
+    let value: Value
+    fileprivate let topic: RemoteConfigTopic
+    fileprivate let itemKey: String
+    fileprivate let blobRef: String
+    fileprivate let epoch: Int
+    fileprivate let generation: Int
+
+}
+
 protocol RemoteConfigManagerType: AnyObject {
 
     /// Whether remote config should be ignored for the current manager lifetime.
@@ -33,6 +44,12 @@ protocol RemoteConfigManagerType: AnyObject {
     /// Inline item metadata is exposed through `topic(_:)`; items without `blob_ref` return `nil`. Missing items
     /// wait for an in-flight refresh or trigger one foreground refresh before resolving the blob on demand.
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data?
+
+    /// Returns blob bytes together with the exact committed config state that produced them.
+    func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>?
+
+    /// Runs `operation` atomically only if `snapshot` still belongs to the current committed config.
+    func useIfCurrent<T>(_ snapshot: RemoteConfigBlobData<T>, operation: (T) -> Void) -> Bool
 
     /// Decodes a blob payload as a concrete `Decodable` type.
     ///
@@ -76,6 +93,24 @@ protocol RemoteConfigManagerType: AnyObject {
 }
 
 extension RemoteConfigManagerType {
+
+    func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
+        guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+        return .init(
+            value: data,
+            topic: topic,
+            itemKey: itemKey,
+            blobRef: "",
+            epoch: 0,
+            generation: self.configGeneration
+        )
+    }
+
+    func useIfCurrent<T>(_ snapshot: RemoteConfigBlobData<T>, operation: (T) -> Void) -> Bool {
+        guard self.configGeneration == snapshot.generation else { return false }
+        operation(snapshot.value)
+        return true
+    }
 
     func withCurrentConfigGeneration<T>(_ operation: (Int) -> T?) -> T? {
         let generation = self.configGeneration
@@ -213,7 +248,15 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        return await self.blobDataSnapshot(for: topic, itemKey: itemKey)?.value
+    }
+
+    func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
         return nil
+    }
+
+    func useIfCurrent<T>(_ snapshot: RemoteConfigBlobData<T>, operation: (T) -> Void) -> Bool {
+        return false
     }
 
     func blobData<T: Decodable>(
@@ -374,15 +417,45 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        return await self.blobDataSnapshot(for: topic, itemKey: itemKey)?.value
+    }
+
+    func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
         guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: true, {
             await self.committedTopic(topic)?[itemKey]
         }),
-              let item = itemSnapshot.value else {
+              let item = itemSnapshot.value,
+              let blobRef = item.blobRef,
+              let generation = self.currentGeneration(
+                for: topic,
+                itemKey: itemKey,
+                blobRef: blobRef,
+                epoch: itemSnapshot.epoch
+              ) else {
             return nil
         }
 
-        return await self.readCommittedState(epoch: itemSnapshot.epoch) {
+        guard let data = await self.readCommittedState(epoch: itemSnapshot.epoch, {
             await self.blobData(for: item)
+        }) else { return nil }
+
+        let snapshot = RemoteConfigBlobData(
+            value: data,
+            topic: topic,
+            itemKey: itemKey,
+            blobRef: blobRef,
+            epoch: itemSnapshot.epoch,
+            generation: generation
+        )
+        return self.isCurrent(snapshot) ? snapshot : nil
+    }
+
+    func useIfCurrent<T>(_ snapshot: RemoteConfigBlobData<T>, operation: (T) -> Void) -> Bool {
+        return self.lock.perform {
+            guard self.isCurrentWithoutLock(snapshot) else { return false }
+
+            operation(snapshot.value)
+            return true
         }
     }
 
@@ -881,6 +954,38 @@ private extension RemoteConfigManager {
         return self.lock.perform {
             !self.isDisabledInternal && !self.isClosed && self.epoch == epoch
         }
+    }
+
+    func currentGeneration(
+        for topic: RemoteConfigTopic,
+        itemKey: String,
+        blobRef: String,
+        epoch: Int
+    ) -> Int? {
+        return self.lock.perform {
+            guard !self.isDisabledInternal,
+                  !self.isClosed,
+                  self.epoch == epoch,
+                  self.diskCache.topic(topic)?[itemKey]?.blobRef == blobRef else {
+                return nil
+            }
+
+            return self.generation
+        }
+    }
+
+    func isCurrent<T>(_ snapshot: RemoteConfigBlobData<T>) -> Bool {
+        return self.lock.perform {
+            self.isCurrentWithoutLock(snapshot)
+        }
+    }
+
+    func isCurrentWithoutLock<T>(_ snapshot: RemoteConfigBlobData<T>) -> Bool {
+        return !self.isDisabledInternal &&
+        !self.isClosed &&
+        self.epoch == snapshot.epoch &&
+        self.generation == snapshot.generation &&
+        self.diskCache.topic(snapshot.topic)?[snapshot.itemKey]?.blobRef == snapshot.blobRef
     }
 
     /// Reads committed topic metadata off the caller's executor.
