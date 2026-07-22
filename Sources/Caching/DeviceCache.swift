@@ -100,7 +100,7 @@ class DeviceCache {
 
     private func value<Key: DeviceCacheKeyType, Value: Codable>(
         for key: Key,
-        decoder: JSONDecoder = .default
+        decoder: JSONDecoder
     ) -> Value? {
         // Large data used to be stored in the user defaults and resulted in crashes, we need to ensure that
         // we are cleaning out that data
@@ -458,7 +458,7 @@ class DeviceCache {
     }
 
     var cachedProductEntitlementMapping: ProductEntitlementMapping? {
-        return self.value(for: CacheKeys.productEntitlementMapping)
+        return self.value(for: CacheKeys.productEntitlementMapping, decoder: .default)
     }
 
     // MARK: - StoreKit 2
@@ -916,7 +916,7 @@ private extension DeviceCache {
     // swiftlint:enable avoid_using_directory_apis_directly
     private func migrateAndReturnValueIfNeeded<Value: Codable>(
         for key: String,
-        decoder: JSONDecoder = .default
+        decoder: JSONDecoder
     ) -> Value? {
         return self.migrationLock.perform {
             guard let oldDirectoryURL = self.oldDocumentsDirectoryURL() else { return nil }

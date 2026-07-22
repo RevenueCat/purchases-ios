@@ -69,7 +69,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         mock.stubCachedContentExists(with: true)
         mock.stubLoadFile(with: .success(value.asData))
 
-        let cached: TestValue? = try sut.value(forKey: key)
+        let cached: TestValue? = try sut.value(forKey: key, decoder: .default)
 
         XCTAssertEqual(cached, value)
     }
@@ -80,7 +80,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
         // By default, cachedContentExists returns false
 
-        let cached: TestValue? = try? sut.value(forKey: key)
+        let cached: TestValue? = try? sut.value(forKey: key, decoder: .default)
 
         XCTAssertNil(cached)
     }
@@ -123,7 +123,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         // Return invalid JSON data that can't be decoded to TestValue
         mock.stubLoadFile(with: .success(Data("invalid json".utf8)))
 
-        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
+        XCTAssertThrowsError(try sut.value(forKey: key, decoder: .default) as TestValue?)
     }
 
     func testValueThrowsWhenLoadFileFails() throws {
@@ -133,7 +133,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         mock.stubCachedContentExists(with: true)
         mock.stubLoadFile(with: .failure(MockError()))
 
-        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
+        XCTAssertThrowsError(try sut.value(forKey: key, decoder: .default) as TestValue?)
     }
 
     // MARK: - Helpers

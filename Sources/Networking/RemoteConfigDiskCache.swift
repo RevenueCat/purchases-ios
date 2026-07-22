@@ -121,7 +121,7 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private func readFromDisk() -> PersistedRemoteConfiguration? {
         do {
-            return try self.cache.value(forKey: Self.fileName)
+            return try self.cache.value(forKey: Self.fileName, decoder: .default)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil
