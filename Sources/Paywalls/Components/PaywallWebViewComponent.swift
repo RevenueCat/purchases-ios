@@ -33,16 +33,25 @@ import Foundation
 
         public let size: Size
 
+        /// Resolves a URL that is safe to use as a web view component entry point.
+        public static func validatedHTTPSURL(from urlString: String) -> URL? {
+            guard !urlString.contains("{{"),
+                  let url = URL(string: urlString),
+                  url.scheme?.lowercased() == "https",
+                  url.host?.isEmpty == false else {
+                return nil
+            }
+
+            return url
+        }
+
         /// Describes why the decoded static configuration is invalid, if applicable.
         var configurationValidationError: String? {
             if self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 return "Web view component ID must not be blank."
             }
 
-            guard !self.url.contains("{{"),
-                  let url = URL(string: self.url),
-                  url.scheme?.lowercased() == "https",
-                  url.host?.isEmpty == false else {
+            guard Self.validatedHTTPSURL(from: self.url) != nil else {
                 return "Web view component URL must be a resolved HTTPS URL with a host."
             }
 
