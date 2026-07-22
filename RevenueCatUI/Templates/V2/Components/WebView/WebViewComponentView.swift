@@ -100,7 +100,7 @@ private struct BridgedWebViewComponentView: View {
                     width: viewModel.size.width.isFit,
                     height: viewModel.size.height.isFit
                 ),
-                evaluateJavaScript: { _ in },
+                evaluateJavaScript: { _ in false },
                 currentURL: { nil }
             )
         )
@@ -251,11 +251,14 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
         self.session?.evaluateJavaScript = { [weak webView] script in
-            webView?.evaluateJavaScript(script) { _, error in
+            // A released web view means the frame never reaches the page; report the miss
+            guard let webView else { return false }
+            webView.evaluateJavaScript(script) { _, error in
                 if let error {
                     Logger.debug(Strings.paywall_web_view_post_message_failed(String(describing: error)))
                 }
             }
+            return true
         }
         self.session?.currentURL = { [weak webView] in
             webView?.url
