@@ -251,8 +251,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         self.session?.onContentResize = self.onContentResize
         self.session?.onDocumentReset = self.onDocumentReset
         self.session?.evaluateJavaScript = { [weak webView] script in
-            // A released web view means the frame never reaches the page; report the miss so the
-            // bridge does not open the channel on an `init` that was silently dropped.
+            // A released web view means the frame never reaches the page; report the miss
             guard let webView else { return false }
             webView.evaluateJavaScript(script) { _, error in
                 if let error {
