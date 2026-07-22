@@ -114,6 +114,7 @@ enum Strings {
     case paywall_web_view_post_message_failed(String)
     case paywall_web_view_post_message_skipped(reason: String)
     case paywall_web_view_invalid_expected_origin(String)
+    case paywall_web_view_content_process_terminated
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -379,6 +380,8 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_invalid_expected_origin(let origin):
             return "Paywalls V2 web_view expected origin '\(origin)' is not a valid origin; " +
                 "the bridge cannot verify message provenance and will reject all messages."
+        case .paywall_web_view_content_process_terminated:
+            return "Paywalls V2 web_view content process terminated. Removing the web view."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

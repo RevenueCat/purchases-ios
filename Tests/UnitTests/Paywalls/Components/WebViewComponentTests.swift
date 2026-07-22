@@ -1,7 +1,17 @@
 //
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WebViewComponentTests.swift
+//
+//  Created by Antonio Pallares on 7/21/26.
 
+import Foundation
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
@@ -187,6 +197,24 @@ final class WebViewComponentTests: TestCase {
             { "type": "web_view", "url": "https://example.com" }
             """.utf8))
         )
+    }
+
+    func testDecodesFitLoadingDefaults() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com",
+          "size": {
+            "width": { "type": "fit", "default": 320 },
+            "height": { "type": "fit", "default": 180 }
+          }
+        }
+        """.utf8))
+
+        XCTAssertEqual(component.size.width, .fit(320))
+        XCTAssertEqual(component.size.height, .fit(180))
     }
 
     private static let fallbackStackJSON = """
