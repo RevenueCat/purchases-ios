@@ -148,6 +148,9 @@ extension OfferingsResponse.Offering: Codable, Equatable {
         )
         let decodingMode = decoder.userInfo[OfferingsResponse.decodingModeUserInfoKey]
             as? OfferingsResponse.DecodingMode ?? .withPaywallComponents
+        let inferredHasPaywallComponents = decodingMode == .withoutPaywallComponents
+            ? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
+            : nil
 
         switch decodingMode {
         case .withPaywallComponents:
@@ -155,13 +158,12 @@ extension OfferingsResponse.Offering: Codable, Equatable {
                 PaywallComponentsData.self,
                 forKey: .paywallComponents
             )
-            self.hasPaywallComponents = explicitHasPaywallComponents
 
         case .withoutPaywallComponents:
             self.paywallComponents = nil
-            self.hasPaywallComponents = explicitHasPaywallComponents
-                ?? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
         }
+
+        self.hasPaywallComponents = explicitHasPaywallComponents ?? inferredHasPaywallComponents
     }
 
     private static func hasNonNullValue(
