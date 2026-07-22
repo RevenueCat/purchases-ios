@@ -421,3 +421,32 @@ final class WebViewComponentTests: TestCase {
 }
 
 #endif
+
+#if os(tvOS)
+
+@available(tvOS 15.0, *)
+final class WebViewComponentTVOSFallbackTests: TestCase {
+
+    func testRendersFallbackWithoutDecodingWebViewFields() throws {
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "fallback": {
+            "type": "stack",
+            "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+            "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "components": []
+          }
+        }
+        """.utf8))
+
+        guard case .stack = decoded else {
+            return XCTFail("Expected fallback stack, got \(decoded)")
+        }
+    }
+
+}
+
+#endif
