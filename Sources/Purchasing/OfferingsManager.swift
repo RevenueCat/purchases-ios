@@ -550,7 +550,7 @@ private extension OfferingsManager {
     }
 
     var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
-        return self.shouldCreatePaywallComponents ? .full : .withoutPaywallComponents
+        return self.shouldCreatePaywallComponents ? .withPaywallComponents : .withoutPaywallComponents
     }
 
     /// If remote config was disabled after a workflows-enabled offerings fetch, the in-memory offering

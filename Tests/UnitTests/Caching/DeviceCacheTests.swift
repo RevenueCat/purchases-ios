@@ -524,7 +524,10 @@ class DeviceCacheTests: TestCase {
             appUserID: appUserID,
             decodingMode: .withoutPaywallComponents
         )
-        let full = self.deviceCache.cachedOfferingsContents(appUserID: appUserID, decodingMode: .full)
+        let full = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: .withPaywallComponents
+        )
 
         expect(pruned?.originalSource) == .fallbackUrl
         expect(pruned?.response.offerings.first?.paywallComponents).to(beNil())

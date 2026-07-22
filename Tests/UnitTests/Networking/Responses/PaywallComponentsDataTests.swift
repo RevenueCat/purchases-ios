@@ -116,7 +116,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
 
         let data = try JSONSerialization.data(withJSONObject: ["offerings": [offering]])
         let full = try XCTUnwrap(
-            OfferingsResponse.create(with: data, decodingMode: .full).offerings.first
+            OfferingsResponse.create(with: data, decodingMode: .withPaywallComponents).offerings.first
         )
         let pruned = try XCTUnwrap(
             OfferingsResponse.create(with: data, decodingMode: .withoutPaywallComponents).offerings.first

@@ -157,7 +157,7 @@ class MockDeviceCache: DeviceCache {
 
     override func cachedOfferingsContents(
         appUserID: String,
-        decodingMode: OfferingsResponse.DecodingMode = .full
+        decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents
     ) -> Offerings.Contents? {
         if let stubbedCachedOfferingsData {
             let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)

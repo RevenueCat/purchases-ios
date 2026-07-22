@@ -1163,7 +1163,7 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == 2
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParametersList.map(\.decodingMode)) == [
             .withoutPaywallComponents,
-            .full
+            .withPaywallComponents
         ]
         let deliveredOffering = deliveredResult.value?.value?.offering(identifier: "paywall_components")
         expect(deliveredOffering?.paywallComponents).toNot(beNil())
@@ -1534,7 +1534,8 @@ extension OfferingsManagerTests {
         expect(result).to(beFailure())
         expect(result?.error).to(matchError(OfferingsManager.Error.backendError(error)))
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == 1
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode) == .full
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
+            == .withPaywallComponents
     }
 
     func testDisabledRemoteConfigUsesFullCompatibleDiskCacheWhenNetworkFails() throws {
@@ -1719,7 +1720,7 @@ extension OfferingsManagerTests {
         )
 
         self.mockOfferings.getOfferingsHandler = { decodingMode, completion in
-            completion(.success(decodingMode == .full ? fullContents : prunedContents))
+            completion(.success(decodingMode == .withPaywallComponents ? fullContents : prunedContents))
         }
         self.mockProductsManager.shouldDeferProductsCompletion = true
         self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)
