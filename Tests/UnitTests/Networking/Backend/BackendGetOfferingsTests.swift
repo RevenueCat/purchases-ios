@@ -85,7 +85,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .full
+            decodingMode: .withPaywallComponents
         ) { fullResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
@@ -121,7 +121,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .full
+            decodingMode: .withPaywallComponents
         ) { fullResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
