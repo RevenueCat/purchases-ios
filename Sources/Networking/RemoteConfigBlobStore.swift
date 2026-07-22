@@ -23,7 +23,7 @@ protocol RemoteConfigBlobStoreType: AnyObject {
 /// Content-addressed disk cache for remote config blobs, keyed by 32-character URL-safe base64 refs.
 final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
 
-    private let fileManager: FileManager
+    private let cache: LargeItemCacheType
     private let directoryURL: URL?
     private let lock = Lock(.nonRecursive)
 
@@ -32,10 +32,10 @@ final class RemoteConfigBlobStore: RemoteConfigBlobStoreType {
     private var knownRefs: Set<String>?
 
     init(
-        fileManager: FileManager = .default,
+        cache: LargeItemCacheType = FileManager.default,
         directoryURL: URL? = RemoteConfigBlobStore.defaultDirectoryURL
     ) {
-        self.fileManager = fileManager
+        self.cache = cache
         self.directoryURL = directoryURL
     }
 
@@ -86,7 +86,7 @@ private extension RemoteConfigBlobStore {
     func containsWithoutLock(ref: String) -> Bool {
         guard self.loadedRefsWithoutLock().contains(ref),
               let fileURL = self.fileURL(for: ref),
-              self.isRegularFile(fileURL) else {
+              self.cache.cachedFileExists(at: fileURL) else {
             self.knownRefs?.remove(ref)
             return false
         }
@@ -96,13 +96,13 @@ private extension RemoteConfigBlobStore {
 
     func readWithoutLock(ref: String) -> Data? {
         guard let fileURL = self.fileURL(for: ref),
-              self.isRegularFile(fileURL) else {
+              self.cache.cachedFileExists(at: fileURL) else {
             self.knownRefs?.remove(ref)
             return nil
         }
 
         do {
-            return try Data(contentsOf: fileURL)
+            return try self.cache.loadFile(at: fileURL)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadBlob(ref, error))
             return nil
@@ -113,7 +113,7 @@ private extension RemoteConfigBlobStore {
         ref: String,
         bytes: UnsafeRawBufferPointer
     ) -> Bool {
-        guard let directoryURL = self.directoryURL else {
+        guard self.directoryURL != nil else {
             Logger.error(Strings.remoteConfig.cacheURLNotAvailable)
             return false
         }
@@ -124,15 +124,9 @@ private extension RemoteConfigBlobStore {
         }
 
         do {
-            try self.fileManager.createDirectory(
-                at: directoryURL,
-                withIntermediateDirectories: true,
-                attributes: nil
-            )
-
             var data = Data()
             data.append(contentsOf: bytes.bindMemory(to: UInt8.self))
-            try data.write(to: fileURL, options: .atomic)
+            try self.cache.saveData(data, to: fileURL)
             guard var refs = self.knownRefs else {
                 return true
             }
@@ -155,18 +149,15 @@ private extension RemoteConfigBlobStore {
             return
         }
 
-        guard let contents = try? self.fileManager.contentsOfDirectory(
-                at: directoryURL,
-                includingPropertiesForKeys: [.isRegularFileKey],
-                options: []
-              ) else {
+        guard let contents = try? self.cache.contentsOfDirectory(at: directoryURL) else {
             self.knownRefs = nil
             return
         }
 
-        for fileURL in contents where self.isRegularFile(fileURL) && !validRefs.contains(fileURL.lastPathComponent) {
+        for fileURL in contents where self.cache.cachedFileExists(at: fileURL)
+            && !validRefs.contains(fileURL.lastPathComponent) {
             do {
-                try self.fileManager.removeItem(at: fileURL)
+                try self.cache.remove(fileURL)
             } catch {
                 Logger.error(Strings.remoteConfig.failedToDeleteBlob(fileURL.lastPathComponent, error))
             }
@@ -176,16 +167,20 @@ private extension RemoteConfigBlobStore {
     }
 
     func clearWithoutLock() {
-        guard let directoryURL = self.directoryURL,
-              self.fileManager.fileExists(atPath: directoryURL.path) else {
+        guard let directoryURL = self.directoryURL else {
             self.knownRefs = []
             return
         }
 
         do {
-            try self.fileManager.removeItem(at: directoryURL)
+            try self.cache.remove(directoryURL)
             self.knownRefs = []
         } catch {
+            guard !self.isMissingFileError(error) else {
+                self.knownRefs = []
+                return
+            }
+
             Logger.error(Strings.remoteConfig.failedToClearBlobStore(error))
             self.knownRefs = nil
         }
@@ -206,8 +201,9 @@ private extension RemoteConfigBlobStore {
         return self.directoryURL?.appendingPathComponent(ref, isDirectory: false)
     }
 
-    func isRegularFile(_ fileURL: URL) -> Bool {
-        return (try? fileURL.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
+    func isMissingFileError(_ error: Error) -> Bool {
+        let error = error as NSError
+        return error.domain == NSCocoaErrorDomain && error.code == CocoaError.fileNoSuchFile.rawValue
     }
 
     func loadedRefsWithoutLock() -> Set<String> {
@@ -230,16 +226,12 @@ private extension RemoteConfigBlobStore {
 
     func scannedRefsWithoutLock() -> Set<String>? {
         guard let directoryURL = self.directoryURL,
-              let contents = try? self.fileManager.contentsOfDirectory(
-                at: directoryURL,
-                includingPropertiesForKeys: [.isRegularFileKey],
-                options: []
-              ) else {
+              let contents = try? self.cache.contentsOfDirectory(at: directoryURL) else {
             return nil
         }
 
         let scannedRefs = contents.reduce(into: Set<String>()) { refs, fileURL in
-            guard self.isRegularFile(fileURL),
+            guard self.cache.cachedFileExists(at: fileURL),
                   RemoteConfigBlobRefHelpers.isValid(fileURL.lastPathComponent) else {
                 return
             }

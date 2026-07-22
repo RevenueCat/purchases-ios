@@ -50,7 +50,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         self.diskCache = RemoteConfigDiskCache(cache: synchronizedCache)
         self.blobStore = RemoteConfigBlobStore(
-            fileManager: .default,
+            cache: FileManager.default,
             directoryURL: cacheDirectoryURL.appendingPathComponent("blobs", isDirectory: true)
         )
         self.sourceProvider = RemoteConfigSourceProvider(topicStore: self.diskCache)

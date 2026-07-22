@@ -216,6 +216,46 @@ final class LargeItemCacheTypeTests: TestCase {
 
     }
 
+    // MARK: - cachedFileExists Tests
+
+    func testCachedFileExistsReturnsTrueForNonEmptyFile() throws {
+        let url = self.testDirectory.appendingPathComponent("cached_file_nonempty.txt")
+        try "A".write(to: url, atomically: true, encoding: .utf8)
+
+        let exists = self.fileManager.cachedFileExists(at: url)
+
+        expect(exists) == true
+        try fileManager.removeItem(at: url)
+    }
+
+    func testCachedFileExistsReturnsTrueForEmptyFile() throws {
+        let url = self.testDirectory.appendingPathComponent("cached_file_empty.txt")
+        try Data().write(to: url)
+
+        let exists = self.fileManager.cachedFileExists(at: url)
+
+        expect(exists) == true
+        try fileManager.removeItem(at: url)
+    }
+
+    func testCachedFileExistsReturnsFalseForDirectory() throws {
+        let url = self.testDirectory.appendingPathComponent("cached_file_directory", isDirectory: true)
+        try self.fileManager.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+
+        let exists = self.fileManager.cachedFileExists(at: url)
+
+        expect(exists) == false
+        try fileManager.removeItem(at: url)
+    }
+
+    func testCachedFileExistsReturnsFalseForMissingFile() {
+        let url = self.testDirectory.appendingPathComponent("cached_file_missing.txt")
+
+        let exists = self.fileManager.cachedFileExists(at: url)
+
+        expect(exists) == false
+    }
+
     // MARK: - loadFile Tests
 
     func testLoadFileReturnsCorrectData() throws {
