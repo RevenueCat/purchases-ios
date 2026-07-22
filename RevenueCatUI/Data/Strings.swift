@@ -377,9 +377,9 @@ extension Strings: CustomStringConvertible {
             return "Paywalls V2 web_view postMessage failed: \(error)"
         case .paywall_web_view_post_message_skipped(let reason):
             return "Paywalls V2 web_view postMessage skipped: \(reason)"
-        case .paywall_web_view_invalid_expected_origin(let origin):
-            return "Paywalls V2 web_view expected origin '\(origin)' is not a valid origin; " +
-                "the bridge cannot verify message provenance and will reject all messages."
+        case .paywall_web_view_invalid_expected_origin(let url):
+            return "Paywalls V2 web_view URL '\(url)' has no resolvable origin; " +
+                "the web view cannot verify message provenance and will not be shown."
         case .paywall_web_view_content_process_terminated:
             return "Paywalls V2 web_view content process terminated. Removing the web view."
 

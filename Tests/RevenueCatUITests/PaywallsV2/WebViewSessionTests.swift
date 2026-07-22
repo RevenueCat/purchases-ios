@@ -180,7 +180,7 @@ final class WebViewSessionTests: TestCase {
         harness.session.handle(
             rawMessage: #"{"channel":"someone-elses-channel","protocol_version":1,"kind":"connect","component_id":""}"#,
             isMainFrame: true,
-            sourceOrigin: Harness.expectedOrigin
+            sourceOrigin: Harness.expectedOriginString
         )
 
         XCTAssertFalse(harness.session.channelOpen)
@@ -343,9 +343,9 @@ final class WebViewSessionTests: TestCase {
     }
 
     func testNormalizesExpectedOriginFromFullURL() {
-        // Caller passes a full URL (path, uppercase host, explicit default port). It must normalize
-        // to a canonical origin so trusted same-origin traffic still matches.
-        let harness = Harness(expectedOrigin: "https://Example.com:443/paywall/index.html")
+        // Caller resolves the origin from a full URL (path, uppercase host, explicit default port).
+        // It must canonicalize so trusted same-origin traffic still matches.
+        let harness = Harness(expectedOrigin: WebViewOrigin(string: "https://Example.com:443/paywall/index.html")!)
 
         harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: "https://example.com")
 
@@ -361,16 +361,9 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`, .message])
     }
 
-    func testInvalidExpectedOriginRejectsAllTraffic() {
-        // A caller origin that cannot be normalized leaves the bridge inert: even a `connect` that
-        // looks like it comes from the configured origin is rejected, so the channel never opens.
-        let harness = Harness(expectedOrigin: "not a valid origin")
-
-        harness.handle(.init(kind: .connect, componentID: ""), sourceOrigin: "not a valid origin")
-
-        XCTAssertFalse(harness.session.channelOpen)
-        XCTAssertTrue(harness.capturedScripts.isEmpty)
-    }
+    // An origin that cannot be resolved no longer reaches the session: `WebViewOrigin`'s failable
+    // init returns `nil`, so the web view is never created (see `WebViewOriginTests` and
+    // `WebViewComponentViewTests`). The session is therefore guaranteed a valid origin.
 
     func testDropsOutboundAfterNavigationToUnexpectedOrigin() {
         let harness = Harness()
@@ -390,7 +383,7 @@ final class WebViewSessionTests: TestCase {
         let expectedURL = URL(string: "https://example.com/index.html")!
         let session = WebViewSession(
             componentID: "web",
-            expectedOrigin: "https://example.com",
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!,
             fitAxes: (width: false, height: false),
             evaluateJavaScript: { _ in },
             currentURL: { nil }
@@ -537,7 +530,8 @@ private final class RoundTripNavigationDelegate: NSObject, WKNavigationDelegate 
 @MainActor
 private final class Harness {
 
-    static let expectedOrigin = "https://example.com"
+    nonisolated static let expectedOriginString = "https://example.com"
+    nonisolated static let expectedOrigin = WebViewOrigin(string: Harness.expectedOriginString)!
 
     let session: WebViewSession
     var capturedScripts: [String] = []
@@ -545,7 +539,7 @@ private final class Harness {
 
     init(
         size: (width: Bool, height: Bool) = (false, false),
-        expectedOrigin: String = Harness.expectedOrigin
+        expectedOrigin: WebViewOrigin = Harness.expectedOrigin
     ) {
         self.session = WebViewSession(
             componentID: "web",
@@ -570,7 +564,7 @@ private final class Harness {
     func handle(
         _ envelope: WebViewEnvelope.Envelope,
         isMainFrame: Bool = true,
-        sourceOrigin: String? = Harness.expectedOrigin
+        sourceOrigin: String? = Harness.expectedOriginString
     ) {
         let data = try! JSONEncoder().encode(envelope)
         self.session.handle(

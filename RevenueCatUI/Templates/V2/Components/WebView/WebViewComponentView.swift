@@ -20,10 +20,13 @@ struct WebViewComponentView: View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
         #else
-        if viewModel.visible, let url = viewModel.url {
+        // Resolving the origin here (rather than deep in the session) is what lets the whole web view
+        // stay unrendered when the URL has no usable origin, instead of rendering an inert bridge.
+        if viewModel.visible, let url = viewModel.url, let origin = viewModel.origin {
             BridgedWebViewComponentView(
                 viewModel: viewModel,
                 url: url,
+                expectedOrigin: origin,
                 componentID: viewModel.componentID
             )
             .id(
@@ -68,6 +71,7 @@ private struct BridgedWebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
     let url: URL
+    let expectedOrigin: WebViewOrigin
 
     @StateObject
     private var session: WebViewSession
@@ -84,18 +88,19 @@ private struct BridgedWebViewComponentView: View {
     init(
         viewModel: WebViewComponentViewModel,
         url: URL,
+        expectedOrigin: WebViewOrigin,
         componentID: String
     ) {
         self.viewModel = viewModel
         self.url = url
+        self.expectedOrigin = expectedOrigin
 
-        let origin = url.webViewOrigin ?? ""
         // `evaluateJavaScript`/`currentURL` are rebound to the live web view in the representable's
         // `configureSession(for:)`; the no-op defaults only cover the window before it is created.
         self._session = StateObject(
             wrappedValue: WebViewSession(
                 componentID: componentID,
-                expectedOrigin: origin,
+                expectedOrigin: expectedOrigin,
                 fitAxes: (
                     width: viewModel.size.width.isFit,
                     height: viewModel.size.height.isFit
@@ -112,10 +117,7 @@ private struct BridgedWebViewComponentView: View {
         if !processTerminated {
             WebViewRepresentable(
                 url: url,
-                // A `nil` session origin means the origin was unresolvable; pass "" so the navigation
-                // policy cancels main-frame loads too, keeping the whole web view inert (not just the
-                // message bridge). See WebViewSession.expectedOrigin.
-                expectedOrigin: session.expectedOrigin ?? "",
+                expectedOrigin: expectedOrigin,
                 session: session,
                 onContentResize: { width, height in
                     if let width {
@@ -153,7 +155,7 @@ typealias PlatformWebView = WKWebView
 struct WebViewRepresentable: PlatformViewRepresentable {
 
     let url: URL
-    let expectedOrigin: String
+    let expectedOrigin: WebViewOrigin
     weak var session: WebViewSession?
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     var onDocumentReset: (@MainActor () -> Void)?
@@ -284,11 +286,11 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     final class Coordinator: NSObject, WKNavigationDelegate {
 
-        let expectedOrigin: String
+        let expectedOrigin: WebViewOrigin
         weak var session: WebViewSession?
         var onProcessTerminated: (@MainActor () -> Void)?
 
-        init(expectedOrigin: String) {
+        init(expectedOrigin: WebViewOrigin) {
             self.expectedOrigin = expectedOrigin
         }
 
