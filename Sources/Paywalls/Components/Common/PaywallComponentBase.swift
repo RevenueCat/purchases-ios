@@ -240,6 +240,9 @@ import Foundation
     }
 
     private static func decodeWebView(from decoder: Decoder) throws -> PaywallComponent {
+        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
+        return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
+        #else
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
         // Gate a valid raw version before decoding the full model. This lets a newer protocol use
@@ -258,9 +261,6 @@ import Foundation
             throw DecodingError.dataCorrupted(context)
         }
 
-        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
-        return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
-        #else
         return .webView(component)
         #endif
     }

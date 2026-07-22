@@ -250,6 +250,7 @@ final class WebViewComponentTests: TestCase {
         """)
     }
 
+    #if canImport(WebKit) && !os(watchOS)
     func testMissingOrMalformedProtocolVersionThrowsEvenWithFallback() {
         assertDecodingThrows("""
         {
@@ -321,16 +322,13 @@ final class WebViewComponentTests: TestCase {
             """)
         }
     }
+    #endif
 
-    func testUnsupportedPlatformRendersFallback() throws {
+    func testUnsupportedPlatformRendersFallbackWithoutDecodingWebViewFields() throws {
         #if os(watchOS) || os(tvOS) || !canImport(WebKit)
         try assertDecodesFallback("""
         {
           "type": "web_view",
-          "id": "web",
-          "protocol_version": 1,
-          "url": "https://example.com/index.html",
-          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
           "fallback": \(Self.fallbackStackJSON)
         }
         """)
@@ -351,6 +349,7 @@ final class WebViewComponentTests: TestCase {
         )
     }
 
+    #if canImport(WebKit) && !os(watchOS)
     func testUnrenderableConfigurationWithoutFallbackThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
@@ -364,6 +363,7 @@ final class WebViewComponentTests: TestCase {
             """.utf8))
         )
     }
+    #endif
 
     func testDecodesFitLoadingDefaults() throws {
         let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
