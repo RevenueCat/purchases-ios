@@ -448,7 +448,7 @@ extension BasePurchasesTests {
                 return
             }
 
-            completion(.success(.mockContents))
+            completion(.success(.init(contents: .mockContents, rawResponseData: nil)))
         }
 
         var postOfferForSigningCalled = false

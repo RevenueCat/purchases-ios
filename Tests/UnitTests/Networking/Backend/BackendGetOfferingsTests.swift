@@ -79,8 +79,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let fullResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
-        let prunedResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let fullResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let prunedResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
@@ -97,13 +97,15 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(prunedResult.value).toEventuallyNot(beNil())
         expect(self.httpClient.calls).to(haveCount(1))
 
-        let fullContents = try XCTUnwrap(fullResult.value?.value)
-        let prunedContents = try XCTUnwrap(prunedResult.value?.value)
+        let fullFetchResult = try XCTUnwrap(fullResult.value?.value)
+        let prunedFetchResult = try XCTUnwrap(prunedResult.value?.value)
+        let fullContents = fullFetchResult.contents
+        let prunedContents = prunedFetchResult.contents
         expect(fullContents.response.offerings.first?.paywallComponents).toNot(beNil())
         expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
         expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
-        expect(fullContents.responseDataForCache) == responseData
-        expect(prunedContents.responseDataForCache) == responseData
+        expect(fullFetchResult.rawResponseData) == responseData
+        expect(prunedFetchResult.rawResponseData) == responseData
         expect(fullContents.originalSource) == .fallbackUrl
         expect(prunedContents.originalSource) == .fallbackUrl
     }
@@ -115,8 +117,8 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, body: Data("{".utf8), delay: .milliseconds(10))
         )
 
-        let fullResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
-        let prunedResult: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let fullResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let prunedResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
@@ -182,15 +184,16 @@ class BackendGetOfferingsTests: BaseBackendTests {
             response: .init(statusCode: .success, response: Self.oneOfferingResponse)
         )
 
-        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let result: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let offeringsContents = try XCTUnwrap(result.value?.value)
-        expect(offeringsContents.responseDataForCache).toNot(beNil())
+        let fetchResult = try XCTUnwrap(result.value?.value)
+        expect(fetchResult.rawResponseData).toNot(beNil())
+        let offeringsContents = fetchResult.contents
         let response = offeringsContents.response
         let offerings = try XCTUnwrap(response.offerings)
         let offeringA = try XCTUnwrap(offerings.first)
@@ -221,14 +224,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let result: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let offeringsContents = try XCTUnwrap(result.value?.value)
+        let offeringsContents = try XCTUnwrap(result.value?.value?.contents)
         expect(offeringsContents.originalSource) == .main
     }
 
@@ -243,14 +246,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let result: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let offeringsContents = try XCTUnwrap(result.value?.value)
+        let offeringsContents = try XCTUnwrap(result.value?.value?.contents)
         expect(offeringsContents.originalSource) == .loadShedder
     }
 
@@ -265,14 +268,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let result: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let offeringsContents = try XCTUnwrap(result.value?.value)
+        let offeringsContents = try XCTUnwrap(result.value?.value?.contents)
         expect(offeringsContents.originalSource) == .fallbackUrl
     }
 
@@ -288,14 +291,14 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let result: Atomic<Result<Offerings.Contents, BackendError>?> = nil
+        let result: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
         self.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) {
             result.value = $0
         }
 
         expect(result.value).toEventuallyNot(beNil())
 
-        let offeringsContents = try XCTUnwrap(result.value?.value)
+        let offeringsContents = try XCTUnwrap(result.value?.value?.contents)
         expect(offeringsContents.originalSource) == .fallbackUrl
     }
 

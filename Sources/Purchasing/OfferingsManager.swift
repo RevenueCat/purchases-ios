@@ -142,8 +142,8 @@ class OfferingsManager {
             decodingMode: decodingMode
         ) { result in
             switch result {
-            case let .success(contents):
-                self.handleOfferingsBackendResult(with: contents,
+            case let .success(fetchResult):
+                self.handleOfferingsBackendResult(with: fetchResult,
                                                   appUserID: appUserID,
                                                   isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
@@ -374,7 +374,7 @@ private extension OfferingsManager {
 
     // swiftlint:disable:next function_parameter_count
     func handleOfferingsBackendResult(
-        with contents: Offerings.Contents,
+        with fetchResult: OfferingsFetchResult,
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
@@ -382,6 +382,7 @@ private extension OfferingsManager {
         cacheGeneration: Int,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
+        let contents = fetchResult.contents
         self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
@@ -391,7 +392,7 @@ private extension OfferingsManager {
                     guard currentGeneration == cacheGeneration else { return false }
 
                     self.deviceCache.cache(offerings: offeringsResultData.offerings,
-                                           diskContents: contents,
+                                           fetchResult: fetchResult,
                                            preferredLocales: preferredLocales,
                                            appUserID: appUserID)
                     return true
