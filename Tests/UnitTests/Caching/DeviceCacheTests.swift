@@ -492,14 +492,13 @@ class DeviceCacheTests: TestCase {
         )
         let contents = Offerings.Contents(
             response: response,
-            httpResponseOriginalSource: .fallbackUrl,
-            responseDataForCache: responseData
+            httpResponseOriginalSource: .fallbackUrl
         )
 
         self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
         self.deviceCache.cache(
             offerings: .empty,
-            diskContents: contents,
+            fetchResult: .init(contents: contents, rawResponseData: responseData),
             preferredLocales: ["en-US"],
             appUserID: appUserID
         )
@@ -543,13 +542,12 @@ class DeviceCacheTests: TestCase {
         )
         let contents = Offerings.Contents(
             response: response,
-            httpResponseOriginalSource: .mainServer,
-            responseDataForCache: Data("[]".utf8)
+            httpResponseOriginalSource: .mainServer
         )
 
         self.deviceCache.cache(
             offerings: .empty,
-            diskContents: contents,
+            fetchResult: .init(contents: contents, rawResponseData: Data("[]".utf8)),
             preferredLocales: ["en-US"],
             appUserID: "testUser"
         )

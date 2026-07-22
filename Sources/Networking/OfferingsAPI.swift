@@ -13,11 +13,16 @@
 
 import Foundation
 
+struct OfferingsFetchResult {
+    let contents: Offerings.Contents
+    let rawResponseData: Data?
+}
+
 class OfferingsAPI {
 
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
-    typealias OfferingsResponseHandler = Backend.ResponseHandler<Offerings.Contents>
+    typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsFetchResult>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>

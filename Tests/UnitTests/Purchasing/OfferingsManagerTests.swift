@@ -1202,10 +1202,10 @@ extension OfferingsManagerTests {
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             Offerings.Contents(
                 response: offeringResp,
-                httpResponseOriginalSource: .mainServer,
-                responseDataForCache: try decodedOfferingResponse.jsonEncodedData
+                httpResponseOriginalSource: .mainServer
             )
         )
+        self.mockOfferings.stubbedGetOfferingsRawResponseData = try decodedOfferingResponse.jsonEncodedData
 
         let result = waitUntilValue { completed in
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
@@ -1213,12 +1213,11 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).to(beNil())
-        expect(result?.value?.contents.responseDataForCache).to(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?.paywallComponents)
             .to(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?.hasPaywallComponents)
             == true
-        expect(self.mockDeviceCache.latestCachedOfferingsContents?.responseDataForCache).toNot(beNil())
+        expect(self.mockDeviceCache.latestCachedOfferingsFetchResult?.rawResponseData).toNot(beNil())
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
             == .withoutPaywallComponents
     }
@@ -1626,7 +1625,8 @@ extension OfferingsManagerTests {
 
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
         expect(self.mockDeviceCache.stubbedOfferings?.contents.originalSource) == .fallbackUrl
-        expect(self.mockDeviceCache.stubbedOfferings?.all.values.first?.internalPaywallComponents).toNot(beNil())
+        expect(self.mockDeviceCache.stubbedOfferings?.offering(identifier: "paywall_components")?
+            .internalPaywallComponents).toNot(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.originalSource) == .fallbackUrl
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?
             .paywallComponents).toNot(beNil())
@@ -1651,7 +1651,8 @@ extension OfferingsManagerTests {
 
         expect(self.mockDeviceCache.cacheOfferingsCount) == 1
         expect(self.mockDeviceCache.stubbedOfferings?.contents.originalSource) == .fallbackUrl
-        expect(self.mockDeviceCache.stubbedOfferings?.all.values.first?.internalPaywallComponents).toNot(beNil())
+        expect(self.mockDeviceCache.stubbedOfferings?.offering(identifier: "paywall_components")?
+            .internalPaywallComponents).toNot(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.originalSource) == .fallbackUrl
     }
 
@@ -1710,17 +1711,22 @@ extension OfferingsManagerTests {
         )
         let prunedContents = Offerings.Contents(
             response: prunedResponse,
-            httpResponseOriginalSource: .mainServer,
-            responseDataForCache: responseData
+            httpResponseOriginalSource: .mainServer
         )
         let fullContents = Offerings.Contents(
             response: fullResponse,
-            httpResponseOriginalSource: .fallbackUrl,
-            responseDataForCache: responseData
+            httpResponseOriginalSource: .fallbackUrl
         )
 
         self.mockOfferings.getOfferingsHandler = { decodingMode, completion in
-            completion(.success(decodingMode == .withPaywallComponents ? fullContents : prunedContents))
+            completion(
+                .success(
+                    .init(
+                        contents: decodingMode == .withPaywallComponents ? fullContents : prunedContents,
+                        rawResponseData: responseData
+                    )
+                )
+            )
         }
         self.mockProductsManager.shouldDeferProductsCompletion = true
         self.mockDeviceCache.stubbedOfferings = MockData.makeSampleOfferings(hasPaywallComponents: true)

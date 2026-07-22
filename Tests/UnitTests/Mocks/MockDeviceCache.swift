@@ -114,6 +114,7 @@ class MockDeviceCache: DeviceCache {
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
     var latestCachedOfferingsContents: Offerings.Contents?
+    var latestCachedOfferingsFetchResult: OfferingsFetchResult?
     var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
@@ -122,13 +123,14 @@ class MockDeviceCache: DeviceCache {
 
     override func cache(
         offerings: Offerings,
-        diskContents: Offerings.Contents? = nil,
+        fetchResult: OfferingsFetchResult? = nil,
         preferredLocales: [String],
         appUserID: String
     ) {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
-        self.latestCachedOfferingsContents = diskContents ?? offerings.contents
+        self.latestCachedOfferingsContents = fetchResult?.contents ?? offerings.contents
+        self.latestCachedOfferingsFetchResult = fetchResult
         self.stubbedOfferings = offerings
     }
     override func cacheInMemory(offerings: Offerings) {

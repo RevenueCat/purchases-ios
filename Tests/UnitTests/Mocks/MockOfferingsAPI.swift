@@ -48,6 +48,7 @@ class MockOfferingsAPI: OfferingsAPI {
                                                           decodingMode: OfferingsResponse.DecodingMode,
                                                           completion: OfferingsAPI.OfferingsResponseHandler?)]()
     var stubbedGetOfferingsCompletionResult: Result<Offerings.Contents, BackendError>?
+    var stubbedGetOfferingsRawResponseData: Data?
     var getOfferingsHandler: ((OfferingsResponse.DecodingMode, @escaping OfferingsResponseHandler) -> Void)?
 
     override func getOfferings(appUserID: String,
@@ -64,7 +65,11 @@ class MockOfferingsAPI: OfferingsAPI {
         if let getOfferingsHandler {
             getOfferingsHandler(decodingMode, completion)
         } else {
-            completion(self.stubbedGetOfferingsCompletionResult!)
+            completion(
+                self.stubbedGetOfferingsCompletionResult!.map {
+                    OfferingsFetchResult(contents: $0, rawResponseData: self.stubbedGetOfferingsRawResponseData)
+                }
+            )
         }
     }
 

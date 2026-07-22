@@ -224,7 +224,7 @@ class DeviceCache {
 
     func cache(
         offerings: Offerings,
-        diskContents: Offerings.Contents? = nil,
+        fetchResult: OfferingsFetchResult? = nil,
         preferredLocales: [String],
         appUserID: String
     ) {
@@ -235,12 +235,12 @@ class DeviceCache {
         self.offeringsCachePreferredLocales.value = preferredLocales
 
         let key = CacheKey.offerings(appUserID).rawValue
-        let contents = diskContents ?? offerings.contents
+        let contents = fetchResult?.contents ?? offerings.contents
         let didCache: Bool
-        if let responseData = contents.responseDataForCache {
+        if let rawResponseData = fetchResult?.rawResponseData {
             do {
                 let data = try Self.offeringsCacheData(
-                    responseData: responseData,
+                    responseData: rawResponseData,
                     originalSource: contents.originalSource
                 )
                 didCache = self.largeItemCache.set(data: data, forKey: key)

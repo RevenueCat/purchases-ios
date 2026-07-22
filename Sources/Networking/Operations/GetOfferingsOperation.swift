@@ -88,22 +88,26 @@ private extension GetOfferingsOperation {
         }
     }
 
-    typealias OfferingsResponseHandlerResult = Result<Offerings.Contents, BackendError>
+    typealias OfferingsResponseHandlerResult = Result<OfferingsFetchResult, BackendError>
 
     static func decode(
         _ response: VerifiedHTTPResponse<Data>.Result,
         using decodingMode: OfferingsResponse.DecodingMode
     ) -> OfferingsResponseHandlerResult {
-        let responseDataForCache = try? response.get().body
+        let rawResponseData = try? response.get().body
         let decodedResponse: VerifiedHTTPResponse<OfferingsResponse>.Result = response.parseResponse { data, _ in
             try OfferingsResponse.create(with: data, decodingMode: decodingMode)
         }
 
         return decodedResponse
             .map {
-                Offerings.Contents(response: $0.body,
-                                   httpResponseOriginalSource: $0.originalSource,
-                                   responseDataForCache: responseDataForCache)
+                OfferingsFetchResult(
+                    contents: Offerings.Contents(
+                        response: $0.body,
+                        httpResponseOriginalSource: $0.originalSource
+                    ),
+                    rawResponseData: rawResponseData
+                )
             }
             .mapError(BackendError.networkError)
     }
