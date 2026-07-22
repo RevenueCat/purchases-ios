@@ -87,7 +87,10 @@ struct VideoPlayerUIView: UIViewControllerRepresentable {
         coordinator.tearDown()
     }
 
-    class Coordinator {
+    // The loop observer is always delivered on the main queue, and this coordinator is only
+    // created and torn down by UIKit on the main actor. `NotificationCenter` nevertheless marks
+    // its observer block as `@Sendable`, so the compiler cannot infer this queue confinement.
+    class Coordinator: @unchecked Sendable {
 
         let player: AVPlayer
 
