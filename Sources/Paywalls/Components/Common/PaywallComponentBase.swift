@@ -76,6 +76,7 @@ import Foundation
 
         case type
         case fallback
+        case protocolVersion
 
     }
 
@@ -232,17 +233,36 @@ import Foundation
         case .countdown:
             return .countdown(try CountdownComponent(from: decoder))
         case .webView:
-            let component = try WebViewComponent(from: decoder)
-            // A config declaring a bridge protocol version this SDK does not implement is treated
-            // like an unrecognized component: render the author-provided `fallback` (the backend
-            // also rejects unsupported versions at publish time). Mirrors purchases-android.
-            guard component.protocolVersion == WebViewComponent.supportedProtocolVersion else {
-                return try Self.decodeFallback(from: decoder, typeString: type.rawValue)
-            }
-            return .webView(component)
+            return try Self.decodeWebView(from: decoder)
         case .fallbackHeader:
             return .fallbackHeader
         }
+    }
+
+    private static func decodeWebView(from decoder: Decoder) throws -> PaywallComponent {
+        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
+        return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
+        #else
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        // Gate a valid raw version before decoding the full model. This lets a newer protocol use
+        // its fallback without requiring this SDK to understand that protocol's remaining fields.
+        let protocolVersion = try container.decode(Int.self, forKey: .protocolVersion)
+        guard protocolVersion == WebViewComponent.supportedProtocolVersion else {
+            return try Self.decodeFallback(from: decoder, typeString: ComponentType.webView.rawValue)
+        }
+
+        let component = try WebViewComponent(from: decoder)
+        if let validationError = component.configurationValidationError {
+            let context = DecodingError.Context(
+                codingPath: decoder.codingPath,
+                debugDescription: validationError
+            )
+            throw DecodingError.dataCorrupted(context)
+        }
+
+        return .webView(component)
+        #endif
     }
 
 }
