@@ -184,7 +184,7 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
             componentID: "web",
             expectedOrigin: WebViewOrigin(string: "https://example.com")!,
             fitAxes: (width: false, height: false),
-            evaluateJavaScript: { _ in },
+            evaluateJavaScript: { _ in true },
             currentURL: { nil }
         )
         let data = try! JSONEncoder().encode(WebViewEnvelope.Envelope(kind: .connect, componentID: ""))
