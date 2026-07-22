@@ -9,8 +9,29 @@ import Foundation
 
 protocol EntitlementMappingTopicProviderType: AnyObject {
 
+    var isAvailable: Bool { get }
+
     /// Returns the mapping when its remote-config blob is available and decodes successfully.
-    func getProductEntitlementMapping() async -> ProductEntitlementMappingResponse?
+    func getProductEntitlementMapping() async -> ProductEntitlementMappingResult?
+
+}
+
+struct ProductEntitlementMappingResult: @unchecked Sendable {
+
+    let response: ProductEntitlementMappingResponse
+    private let useIfCurrentOperation: ((ProductEntitlementMappingResponse) -> Void) -> Bool
+
+    init(
+        response: ProductEntitlementMappingResponse,
+        useIfCurrent: @escaping ((ProductEntitlementMappingResponse) -> Void) -> Bool
+    ) {
+        self.response = response
+        self.useIfCurrentOperation = useIfCurrent
+    }
+
+    func useIfCurrent(_ operation: (ProductEntitlementMappingResponse) -> Void) -> Bool {
+        return self.useIfCurrentOperation(operation)
+    }
 
 }
 
@@ -25,15 +46,26 @@ final class ProductEntitlementMappingTopicProvider: EntitlementMappingTopicProvi
         self.manager = manager
     }
 
-    func getProductEntitlementMapping() async -> ProductEntitlementMappingResponse? {
-        guard let manager = self.manager else { return nil }
+    var isAvailable: Bool {
+        guard let manager = self.manager else { return false }
+        return !manager.isDisabled
+    }
+
+    func getProductEntitlementMapping() async -> ProductEntitlementMappingResult? {
+        guard let manager = self.manager,
+              let blobData = await manager.blobDataSnapshot(
+                for: .productEntitlementMapping,
+                itemKey: Self.itemKey
+              ) else { return nil }
 
         do {
-            return try await manager.blobData(
-                for: .productEntitlementMapping,
-                itemKey: Self.itemKey,
-                as: ProductEntitlementMappingResponse.self
+            let response = try JSONDecoder.default.decode(
+                ProductEntitlementMappingResponse.self,
+                from: blobData.value
             )
+            return ProductEntitlementMappingResult(response: response) { operation in
+                manager.useIfCurrent(blobData) { _ in operation(response) }
+            }
         } catch {
             Logger.error(Strings.remoteConfig.productEntitlementMappingDecodeFailed(error))
             return nil
