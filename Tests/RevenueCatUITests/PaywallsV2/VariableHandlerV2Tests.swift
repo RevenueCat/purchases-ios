@@ -558,6 +558,50 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$1.99"))
     }
 
+    func testOfferPriceUsesDisplayedPriceCurrencyTokenWhenFormatterLocaleDoesNotMatch() {
+        // The displayed price uses "$", but the formatter locale (ro_RO) would render
+        // the currency differently. The offer price should match the displayed price
+        // token so it stays consistent with product.price and product.currency_symbol
+        // across the paywall (same divergence fixed for currency_symbol in #6572).
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "USD",
+                localizedPriceString: "$6.99",
+                productIdentifier: "com.revenuecat.product.offer_price_regression",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                introductoryDiscount: .init(
+                    identifier: "intro",
+                    price: 6.99,
+                    localizedPriceString: "$6.99",
+                    paymentMode: .payUpFront,
+                    subscriptionPeriod: .init(value: 1, unit: .week),
+                    numberOfPeriods: 1,
+                    type: .introductory
+                ),
+                locale: Locale(identifier: "ro_RO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$6.99"))
+    }
+
     func testProductPayUpFrontOfferPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_day }}",
