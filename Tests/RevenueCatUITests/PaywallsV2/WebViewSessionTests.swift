@@ -368,13 +368,49 @@ final class WebViewSessionTests: TestCase {
     func testDropsOutboundAfterNavigationToUnexpectedOrigin() {
         let harness = Harness()
         // Inbound source is still the trusted origin, but the top-level URL has left it: every
-        // outbound frame (even `init`) must be dropped.
+        // outbound frame (even `init`) must be dropped. Because `init` never reaches the page, the
+        // channel must stay closed so a later `connect` can retry instead of stranding it half-open.
         harness.currentURL = URL(string: "https://evil.example.org/phish.html")!
 
         harness.handle(.init(kind: .connect, componentID: ""))
 
-        XCTAssertTrue(harness.session.channelOpen)
+        XCTAssertFalse(harness.session.channelOpen)
         XCTAssertTrue(harness.capturedScripts.isEmpty)
+    }
+
+    func testConnectRetriesAfterDroppedInitFromUntrustedURL() throws {
+        let harness = Harness(size: (width: false, height: true))
+        // First `connect` arrives while the top-level URL is off-origin, so `init` is dropped and
+        // the channel must remain closed.
+        harness.currentURL = URL(string: "https://evil.example.org/phish.html")!
+        harness.handle(.init(kind: .connect, componentID: ""))
+        XCTAssertFalse(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+
+        // Once the top-level URL is back on the expected origin, a retried `connect` opens the
+        // channel and delivers `init` (+ fit) — the bridge is not stuck from the earlier failure.
+        harness.currentURL = URL(string: "https://example.com/path")!
+        harness.handle(.init(kind: .connect, componentID: ""))
+
+        XCTAssertTrue(harness.session.channelOpen)
+        XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`, .message])
+    }
+
+    func testConnectRetriesAfterInitDeliveryMiss() throws {
+        let harness = Harness()
+        // Simulate the backing web view being unavailable when the first `connect` arrives: the
+        // `init` frame is never handed off, so the channel must stay closed.
+        harness.deliverOutbound = false
+        harness.handle(.init(kind: .connect, componentID: ""))
+        XCTAssertFalse(harness.session.channelOpen)
+        XCTAssertTrue(harness.capturedScripts.isEmpty)
+
+        // With the web view available again, a retried `connect` opens the channel and delivers init.
+        harness.deliverOutbound = true
+        harness.handle(.init(kind: .connect, componentID: ""))
+
+        XCTAssertTrue(harness.session.channelOpen)
+        XCTAssertEqual(try harness.outboundEnvelopes().map(\.kind), [.`init`])
     }
 
     // MARK: - Round trip through a real WKWebView
@@ -385,7 +421,7 @@ final class WebViewSessionTests: TestCase {
             componentID: "web",
             expectedOrigin: WebViewOrigin(string: "https://example.com")!,
             fitAxes: (width: false, height: false),
-            evaluateJavaScript: { _ in },
+            evaluateJavaScript: { _ in false },
             currentURL: { nil }
         )
 
@@ -396,7 +432,9 @@ final class WebViewSessionTests: TestCase {
         )
         let webView = WKWebView(frame: .zero, configuration: configuration)
         session.evaluateJavaScript = { [weak webView] script in
-            webView?.evaluateJavaScript(script)
+            guard let webView else { return false }
+            webView.evaluateJavaScript(script)
+            return true
         }
         session.currentURL = { [weak webView] in
             webView?.url
@@ -536,6 +574,9 @@ private final class Harness {
     let session: WebViewSession
     var capturedScripts: [String] = []
     var currentURL: URL? = URL(string: "https://example.com/path")!
+    /// Simulates a delivery miss (e.g. a released web view): when `false`, outbound frames are not
+    /// captured and `evaluateJavaScript` reports failure.
+    var deliverOutbound = true
 
     init(
         size: (width: Bool, height: Bool) = (false, false),
@@ -545,11 +586,15 @@ private final class Harness {
             componentID: "web",
             expectedOrigin: expectedOrigin,
             fitAxes: size,
-            evaluateJavaScript: { _ in },
+            evaluateJavaScript: { _ in false },
             currentURL: { nil }
         )
         self.session.evaluateJavaScript = { [weak self] script in
-            self?.capturedScripts.append(script)
+            guard let self, self.deliverOutbound else {
+                return false
+            }
+            self.capturedScripts.append(script)
+            return true
         }
         self.session.currentURL = { [weak self] in
             self?.currentURL

@@ -20,7 +20,10 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     var onDocumentReset: (@MainActor () -> Void)?
     private(set) var channelOpen = false
 
-    var evaluateJavaScript: (String) -> Void
+    /// Delivers a JS snippet to the web view. Returns `false` when the frame could not be handed
+    /// off (e.g. the backing web view was released), so callers can tell a real delivery from a
+    /// no-op and avoid opening the channel on an `init` that never reached the page.
+    var evaluateJavaScript: (String) -> Bool
     var currentURL: () -> URL?
 
     let fitAxes: (width: Bool, height: Bool)
@@ -37,7 +40,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         componentID: String,
         expectedOrigin: WebViewOrigin,
         fitAxes: (width: Bool, height: Bool),
-        evaluateJavaScript: @escaping (String) -> Void,
+        evaluateJavaScript: @escaping (String) -> Bool,
         currentURL: @escaping () -> URL?
     ) {
         self.componentID = componentID
@@ -130,20 +133,22 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             return
         }
 
-        if protocolVersion == self.protocolVersion {
-            self.channelOpen = true
-            // Handshake replies (`init` and the follow-up fit message) use `allowBeforeNavigation:
-            // true`: the `connect` that triggered them was already gated against the authoritative
-            // sender-frame origin, but the WebView's top-level `url` may not be populated yet this
-            // early, and dropping these would leave the bridge half-open. The stricter current-URL
-            // check still applies to every later send.
-            self.send(.init(kind: .`init`, componentID: self.componentID), allowBeforeNavigation: true)
-            self.sendFitMessageIfNeeded()
-        } else {
+        guard protocolVersion == self.protocolVersion else {
             let error = "Unsupported protocol_version \(protocolVersion); " +
                 "native host supports \(self.protocolVersion)"
             self.send(.init(kind: .reject, componentID: "", error: error), allowBeforeNavigation: true)
+            return
         }
+
+        // Open the channel only once `init` is actually delivered, so a dropped `init` lets a later
+        // `connect` retry instead of stranding the bridge half-open (native "open", page never got
+        // `init`). `allowBeforeNavigation: true` because the top-level `url` may not be populated
+        // this early; the `connect` was already origin-gated and later sends still check it.
+        guard self.send(.init(kind: .`init`, componentID: self.componentID), allowBeforeNavigation: true) else {
+            return
+        }
+        self.channelOpen = true
+        self.sendFitMessageIfNeeded()
     }
 
     private func handleResize(_ payload: [String: PaywallWebViewValue]?) {
@@ -183,22 +188,27 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         )
     }
 
-    private func send(_ envelope: WebViewEnvelope.Envelope, allowBeforeNavigation: Bool) {
-        guard self.channelOpen || envelope.kind == .reject else {
+    /// Delivers a host-to-content frame. Returns `true` only when the frame was handed to the web
+    /// view.
+    @discardableResult
+    private func send(_ envelope: WebViewEnvelope.Envelope, allowBeforeNavigation: Bool) -> Bool {
+        // `init` and `reject` are handshake frames delivered while the channel is still opening;
+        // every other kind requires an already-open channel.
+        guard self.channelOpen || envelope.kind == .`init` || envelope.kind == .reject else {
             Logger.warning(Strings.paywall_web_view_post_message_skipped(reason: "channel-not-open"))
-            return
+            return false
         }
         // Defense in depth: drop outbound frames if the top-level URL left the expected origin.
         guard self.isCurrentURLTrusted(allowBeforeNavigation: allowBeforeNavigation) else {
             Logger.warning(Strings.paywall_web_view_post_message_skipped(reason: "untrusted-current-url"))
-            return
+            return false
         }
         guard let script = Self.receiveScript(for: envelope) else {
             Logger.debug(Strings.paywall_web_view_post_message_failed("encoding failed"))
-            return
+            return false
         }
 
-        self.evaluateJavaScript(script)
+        return self.evaluateJavaScript(script)
     }
 
     /// Serializes `envelope` into the JS snippet injected into the web view to deliver a
