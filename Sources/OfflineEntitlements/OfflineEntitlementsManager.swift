@@ -16,22 +16,18 @@ import Foundation
 class OfflineEntitlementsManager {
 
     private let deviceCache: DeviceCache
-    private let operationDispatcher: OperationDispatcher
     private let api: OfflineEntitlementsAPI
     private let systemInfo: SystemInfo
 
     private var productEntitlementMappingTopicProvider: EntitlementMappingTopicProviderType?
-    private let productEntitlementMappingTasksLock = Lock()
-    private var productEntitlementMappingTasks: [UUID: Task<Void, Never>] = [:]
-    private var completedProductEntitlementMappingTaskIDs: Set<UUID> = []
+    private let productEntitlementMappingLock = Lock()
+    private var productEntitlementMappingTask: Task<Void, Never>?
     private var isClosed = false
 
     init(deviceCache: DeviceCache,
-         operationDispatcher: OperationDispatcher,
          api: OfflineEntitlementsAPI,
          systemInfo: SystemInfo) {
         self.deviceCache = deviceCache
-        self.operationDispatcher = operationDispatcher
         self.api = api
         self.systemInfo = systemInfo
     }
@@ -41,110 +37,77 @@ class OfflineEntitlementsManager {
         self.productEntitlementMappingTopicProvider = provider
     }
 
-    func updateProductsEntitlementsCacheIfStale(
-        isAppBackgrounded: Bool,
-        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
-    ) {
+    func updateProductsEntitlementsCacheIfStale(isAppBackgrounded: Bool) {
         guard #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
               self.systemInfo.supportsOfflineEntitlements else {
             Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_unavailable)
-
-            self.dispatchCompletionOnMainThreadIfPossible(completion, result: .failure(.notAvailable))
             return
         }
 
-        guard self.deviceCache.isProductEntitlementMappingCacheStale else {
-            self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(()))
-            return
-        }
-
-        guard self.productEntitlementMappingTasksLock.perform({ !self.isClosed }) else { return }
+        guard self.deviceCache.isProductEntitlementMappingCacheStale else { return }
 
         Logger.debug(Strings.offlineEntitlements.product_entitlement_mapping_stale_updating)
 
         guard let provider = self.productEntitlementMappingTopicProvider,
               provider.isAvailable else {
-            self.productEntitlementMappingTasksLock.perform {
+            self.productEntitlementMappingLock.perform {
                 guard !self.isClosed else { return }
-                self.fetchLegacyProductEntitlementMapping(
-                    isAppBackgrounded: isAppBackgrounded,
-                    completion: completion
-                )
+                self.fetchLegacyProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded)
             }
             return
         }
 
-        let taskID = UUID()
-        let task = Task { [weak self] in
-            defer { self?.productEntitlementMappingTaskDidFinish(taskID) }
-            guard let self else { return }
+        self.productEntitlementMappingLock.perform {
+            guard !self.isClosed, self.productEntitlementMappingTask == nil else { return }
 
-            if let result = await provider.getProductEntitlementMapping(),
-               self.productEntitlementMappingTasksLock.perform({
-                   guard !self.isClosed, !Task.isCancelled else { return false }
-                   guard result.useIfCurrent({
-                       self.handleProductEntitlementMappingBackendResult(with: $0)
-                   }) else { return false }
-                   self.dispatchCompletionOnMainThreadIfPossible(completion, result: .success(()))
-                   return true
-               }) {
-                return
-            }
+            self.productEntitlementMappingTask = Task { [weak self, provider] in
+                let remoteResult = await provider.getProductEntitlementMapping()
+                guard let self else { return }
 
-            self.productEntitlementMappingTasksLock.perform {
-                guard !self.isClosed, !Task.isCancelled else { return }
-                self.fetchLegacyProductEntitlementMapping(
-                    isAppBackgrounded: isAppBackgrounded,
-                    completion: completion
+                await self.completeProductEntitlementMappingUpdate(
+                    remoteResult: remoteResult, isAppBackgrounded: isAppBackgrounded
                 )
             }
         }
-        self.registerProductEntitlementMappingTask(task, id: taskID)
     }
 
     func close() {
-        let tasks = self.productEntitlementMappingTasksLock.perform {
+        let task = self.productEntitlementMappingLock.perform {
             self.isClosed = true
-            let tasks = Array(self.productEntitlementMappingTasks.values)
-            self.productEntitlementMappingTasks.removeAll()
-            self.completedProductEntitlementMappingTaskIDs.removeAll()
-            return tasks
+            let task = self.productEntitlementMappingTask
+            self.productEntitlementMappingTask = nil
+            return task
         }
-        tasks.forEach { $0.cancel() }
-    }
-
-    private func registerProductEntitlementMappingTask(_ task: Task<Void, Never>, id: UUID) {
-        let shouldCancel = self.productEntitlementMappingTasksLock.perform {
-            if self.isClosed {
-                self.completedProductEntitlementMappingTaskIDs.remove(id)
-                return true
-            }
-            if self.completedProductEntitlementMappingTaskIDs.remove(id) != nil {
-                return false
-            }
-
-            self.productEntitlementMappingTasks[id] = task
-            return false
-        }
-        if shouldCancel {
-            task.cancel()
-        }
-    }
-
-    private func productEntitlementMappingTaskDidFinish(_ id: UUID) {
-        self.productEntitlementMappingTasksLock.perform {
-            if self.productEntitlementMappingTasks.removeValue(forKey: id) == nil, !self.isClosed {
-                self.completedProductEntitlementMappingTaskIDs.insert(id)
-            }
-        }
+        task?.cancel()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func fetchLegacyProductEntitlementMapping(
-        isAppBackgrounded: Bool,
-        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
-    ) {
-        self.api.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded) { result in
+    private func completeProductEntitlementMappingUpdate(
+        remoteResult: ProductEntitlementMappingResult?,
+        isAppBackgrounded: Bool
+    ) async {
+        if let remoteResult {
+            let didCacheRemoteResult = self.productEntitlementMappingLock.perform {
+                guard !self.isClosed, !Task.isCancelled else { return false }
+                guard remoteResult.useIfCurrent({
+                    self.handleProductEntitlementMappingBackendResult(with: $0)
+                }) else { return false }
+
+                self.productEntitlementMappingTask = nil
+                return true
+            }
+            if didCacheRemoteResult { return }
+        }
+
+        guard self.productEntitlementMappingLock.perform({
+            !self.isClosed && !Task.isCancelled
+        }) else {
+            return
+        }
+
+        let result = await self.fetchLegacyProductEntitlementMappingResult(isAppBackgrounded: isAppBackgrounded)
+        self.productEntitlementMappingLock.perform {
+            guard !self.isClosed, !Task.isCancelled else { return }
             switch result {
             case let .success(response):
                 self.handleProductEntitlementMappingBackendResult(with: response)
@@ -153,12 +116,30 @@ class OfflineEntitlementsManager {
                 self.handleProductsEntitlementsUpdateError(error)
             }
 
-            self.dispatchCompletionOnMainThreadIfPossible(
-                completion,
-                result: result
-                    .map { _ in () }
-                    .mapError(Error.backend)
-            )
+            self.productEntitlementMappingTask = nil
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    private func fetchLegacyProductEntitlementMapping(isAppBackgrounded: Bool) {
+        self.api.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded) { result in
+            switch result {
+            case let .success(response):
+                self.handleProductEntitlementMappingBackendResult(with: response)
+
+            case let .failure(error):
+                self.handleProductsEntitlementsUpdateError(error)
+            }
+        }
+    }
+
+    private func fetchLegacyProductEntitlementMappingResult(
+        isAppBackgrounded: Bool
+    ) async -> Result<ProductEntitlementMappingResponse, BackendError> {
+        return await withCheckedContinuation { continuation in
+            self.api.getProductEntitlementMapping(isAppBackgrounded: isAppBackgrounded) {
+                continuation.resume(returning: $0)
+            }
         }
     }
 
@@ -174,18 +155,6 @@ class OfflineEntitlementsManager {
 
 }
 
-extension OfflineEntitlementsManager {
-
-    enum Error: Swift.Error {
-
-        case backend(BackendError)
-        /// Offline entitlements require iOS 15+, and not available for custom entitlements computation
-        case notAvailable
-
-    }
-
-}
-
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 private extension OfflineEntitlementsManager {
 
@@ -197,21 +166,6 @@ private extension OfflineEntitlementsManager {
 
     func handleProductsEntitlementsUpdateError(_ error: BackendError) {
         Logger.error(Strings.offlineEntitlements.product_entitlement_mapping_fetching_error(error))
-    }
-
-}
-
-private extension OfflineEntitlementsManager {
-
-    func dispatchCompletionOnMainThreadIfPossible<Value, Error: Swift.Error>(
-        _ completion: (@MainActor @Sendable (Result<Value, Error>) -> Void)?,
-        result: Result<Value, Error>
-    ) {
-        if let completion = completion {
-            self.operationDispatcher.dispatchOnMainActor {
-                completion(result)
-            }
-        }
     }
 
 }

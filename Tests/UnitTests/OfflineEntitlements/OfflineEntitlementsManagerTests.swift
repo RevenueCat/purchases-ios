@@ -22,7 +22,6 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
     var mockSystemInfo: MockSystemInfo!
 
     var mockDeviceCache: MockDeviceCache!
-    let mockOperationDispatcher = MockOperationDispatcher()
     var mockOfflineEntitlements: MockOfflineEntitlementsAPI!
     var mockProductEntitlementMappingTopicProvider: MockEntitlementMappingTopicProvider!
 
@@ -42,7 +41,6 @@ class BaseOfflineEntitlementsManagerTests: TestCase {
 
     fileprivate func createManager() -> OfflineEntitlementsManager {
         let manager = OfflineEntitlementsManager(deviceCache: self.mockDeviceCache,
-                                                 operationDispatcher: self.mockOperationDispatcher,
                                                  api: self.mockOfflineEntitlements,
                                                  systemInfo: self.mockSystemInfo)
         manager.setProductEntitlementMappingTopicProvider(self.mockProductEntitlementMappingTopicProvider)
@@ -64,82 +62,78 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         self.mockSystemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
         self.manager = self.createManager()
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beFailure())
-        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
+        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
+        expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 0
     }
 
     func testUpdateEntitlementsCacheForObserverMode() {
         self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
         self.manager = self.createManager()
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
-
-        expect(result).to(beFailure())
-        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
-    }
-
-    func testUpdateProductsEntitlementsCacheDoesNotUpdateIfNotStale() {
-        self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = false
-
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
-        expect(result).to(beSuccess())
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
         expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 0
     }
 
-    func testUpdateProductEntitlementMappingCacheUsesRemoteConfig() throws {
+    func testUpdateProductsEntitlementsCacheDoesNotUpdateIfNotStale() {
+        self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = false
+
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
+
+        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
+        expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 0
+    }
+
+    func testUpdateProductEntitlementMappingCacheUsesRemoteConfig() async throws {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
             "a": .init(identifier: "a", entitlements: ["pro_1", "pro_2"])
         ])
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
         self.mockProductEntitlementMappingTopicProvider.stubbedProductEntitlementMapping = mapping
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beSuccess())
-        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == mapping.toMapping()
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping).toEventually(equal(mapping.toMapping()))
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
         expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 1
     }
 
-    func testUnavailableRemoteConfigMappingFallsBackToLegacyEndpoint() {
+    func testConcurrentUpdatesShareOneRemoteConfigTask() async {
+        let mapping: ProductEntitlementMappingResponse = .init(products: [
+            "a": .init(identifier: "a", entitlements: ["pro"])
+        ])
+        self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
+        self.mockProductEntitlementMappingTopicProvider.getProductEntitlementMappingHandler = {
+            try? await Task.sleep(nanoseconds: 50_000_000)
+            return ProductEntitlementMappingResult(response: mapping) { operation in
+                operation(mapping)
+                return true
+            }
+        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
+
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping).toEventually(equal(mapping.toMapping()))
+        expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 1
+    }
+
+    func testUnavailableRemoteConfigMappingFallsBackToLegacyEndpoint() async {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
             "legacy": .init(identifier: "legacy", entitlements: ["pro"])
         ])
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
         self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .success(mapping)
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beSuccess())
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping).toEventually(equal(mapping.toMapping()))
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
-        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == mapping.toMapping()
     }
 
-    func testDisabledRemoteConfigFallsBackToLegacyEndpoint() {
+    func testDisabledRemoteConfigFallsBackToLegacyEndpoint() async {
         let remoteConfigManager = NoOpRemoteConfigManager()
         self.manager.setProductEntitlementMappingTopicProvider(
             ProductEntitlementMappingTopicProvider(manager: remoteConfigManager)
@@ -150,15 +144,10 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
         self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .success(mapping)
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beSuccess())
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping).toEventually(equal(mapping.toMapping()))
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
-        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == mapping.toMapping()
     }
 
     func testDisabledRemoteConfigEnqueuesLegacyRequestSynchronously() {
@@ -167,12 +156,12 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         )
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
 
-        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false, completion: nil)
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
     }
 
-    func testInvalidatedRemoteConfigMappingFallsBackToLegacyEndpoint() {
+    func testInvalidatedRemoteConfigMappingFallsBackToLegacyEndpoint() async {
         let remoteMapping: ProductEntitlementMappingResponse = .init(products: [
             "remote": .init(identifier: "remote", entitlements: ["pro"])
         ])
@@ -184,14 +173,10 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         self.mockProductEntitlementMappingTopicProvider.stubbedUseIfCurrent = false
         self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .success(legacyMapping)
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beSuccess())
-        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == legacyMapping.toMapping()
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping)
+            .toEventually(equal(legacyMapping.toMapping()))
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
     }
 
@@ -204,7 +189,7 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
             return nil
         }
 
-        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false, completion: nil)
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
         await Task.yield()
         self.manager.close()
         await Task.yield()
@@ -213,7 +198,7 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
     }
 
-    func testUpdateProductEntitlementMappingCacheUpdatesIfStaleSuccess() {
+    func testUpdateProductEntitlementMappingCacheUpdatesIfStaleSuccess() async {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
             "a": .init(identifier: "a", entitlements: ["pro_1", "pro_2"])
         ])
@@ -222,34 +207,26 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
         self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .success(mapping)
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: isAppBackgrounded) {
-                completion($0)
-            }
-        }
-        expect(result).to(beSuccess())
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: isAppBackgrounded)
 
-        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
+        await expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping).toEventually(beTrue())
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMappingCount) == 1
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMappingParameter) == isAppBackgrounded
+        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == mapping.toMapping()
     }
 
-    func testUpdateProductEntitlementMappingCacheDoesNotUpdateIfStaleFailure() {
+    func testUpdateProductEntitlementMappingCacheDoesNotUpdateIfStaleFailure() async {
         let expectedError: BackendError = .missingAppUserID()
+        let cachedMapping = self.mockDeviceCache.cachedProductEntitlementMapping
 
         self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
         self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .failure(expectedError)
 
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
-        expect(result).to(beFailure())
-        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.backend(expectedError)))
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
+        await expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping).toEventually(beTrue())
         expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMappingCount) == 1
+        expect(self.mockDeviceCache.cachedProductEntitlementMapping) == cachedMapping
     }
 
     func testShouldComputeOfflineCustomerInfo() {
@@ -394,15 +371,11 @@ class OfflineEntitlementsManagerUnavailableTests: BaseOfflineEntitlementsManager
         }
     }
 
-    func testUpdateEntitlementsCacheReturnsNotAvailable() {
-        let result = waitUntilValue { completion in
-            self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false) {
-                completion($0)
-            }
-        }
+    func testUpdateEntitlementsCacheDoesNothingWhenUnavailable() {
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
 
-        expect(result).to(beFailure())
-        expect(result?.error).to(matchError(OfflineEntitlementsManager.Error.notAvailable))
+        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
+        expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 0
     }
 
 }

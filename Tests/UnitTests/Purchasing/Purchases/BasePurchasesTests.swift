@@ -831,7 +831,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         return self.stateLock.perform {
             guard !self.isDisabledStorage,
                   !self.isClosed,
-                  snapshot.belongs(toGeneration: self.configGenerationStorage) else {
+                  snapshot.isSameGeneration(self.configGenerationStorage) else {
                 return false
             }
 
