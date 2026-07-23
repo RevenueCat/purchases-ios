@@ -902,6 +902,25 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testOnWebCheckoutOpenedFiredInWorkflow() throws {
+        // Regression test: PaywallsV2View (which WorkflowPaywallView renders internally) must publish
+        // WebCheckoutOpenedPreferenceKey like it does for the other purchase/restore preferences, or
+        // .onWebCheckoutOpened never fires for V2 full-screen paywalls, the only surface with web
+        // checkout buttons.
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var fireCount = 0
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onWebCheckoutOpened { fireCount += 1 }
+            .addToHierarchy()
+
+        purchaseHandler.signalWebCheckoutOpened()
+
+        expect(fireCount).toEventually(equal(1))
+    }
+
+    @MainActor
     func testOnPurchaseCancelledFiredInWorkflow() throws {
         let purchaseHandler: PurchaseHandler = .cancelling()
         let context = try Self.makeContext(singleStepFallbackId: "step_terminal")

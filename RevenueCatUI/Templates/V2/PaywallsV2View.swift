@@ -386,6 +386,8 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+            .preference(key: WebCheckoutOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.webCheckoutOpened)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear {
                 // Standalone closes on disappear. A workflow page closes here only if it is still the
