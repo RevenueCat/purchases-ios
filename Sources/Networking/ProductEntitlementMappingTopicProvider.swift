@@ -67,7 +67,7 @@ final class ProductEntitlementMappingTopicProvider: EntitlementMappingTopicProvi
                 manager.useIfCurrent(blobData) { _ in operation(response) }
             }
         } catch {
-            Logger.error(Strings.remoteConfig.productEntitlementMappingDecodeFailed(error))
+            Logger.error(Strings.offlineEntitlements.product_entitlement_mapping_remote_config_decoding_error(error))
             return nil
         }
     }
