@@ -387,7 +387,7 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_not_rendered(let reason):
             return "Paywalls V2 web_view will not render: \(reason)"
         case .paywall_web_view_load_failed(let error):
-            return "Paywalls V2 web_view failed to load: \(error). Removing the web view."
+            return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
