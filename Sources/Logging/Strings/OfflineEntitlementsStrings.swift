@@ -24,6 +24,7 @@ enum OfflineEntitlementsStrings {
     case product_entitlement_mapping_updated_from_network
     case product_entitlement_mapping_unavailable
     case product_entitlement_mapping_fetching_error(BackendError)
+    case product_entitlement_mapping_remote_config_decoding_error(Error)
     case found_unverified_transactions_in_sk2(transactionID: UInt64, Error)
 
     case computing_offline_customer_info_with_no_entitlement_mapping
@@ -59,6 +60,9 @@ extension OfflineEntitlementsStrings: LogMessage {
 
         case let .product_entitlement_mapping_fetching_error(error):
             return "Failed updating ProductEntitlementMapping from network: \(error.localizedDescription)"
+
+        case let .product_entitlement_mapping_remote_config_decoding_error(error):
+            return "Failed decoding ProductEntitlementMapping from Remote Config: \(error.localizedDescription)"
 
         case let .found_unverified_transactions_in_sk2(transactionID, error):
             return """
