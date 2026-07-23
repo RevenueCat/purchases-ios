@@ -195,9 +195,17 @@ import Foundation
     private static func decodeFallback(from decoder: Decoder, reason: FallbackReason) throws -> PaywallComponent {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
+        guard container.contains(.fallback) else {
+            let context = DecodingError.Context(
+                codingPath: container.codingPath,
+                debugDescription: reason.missingFallbackDescription
+            )
+            throw DecodingError.dataCorrupted(context)
+        }
+
         do {
             return try container.decode(PaywallComponent.self, forKey: .fallback)
-        } catch DecodingError.keyNotFound, DecodingError.valueNotFound {
+        } catch DecodingError.valueNotFound {
             let context = DecodingError.Context(
                 codingPath: container.codingPath,
                 debugDescription: reason.missingFallbackDescription
