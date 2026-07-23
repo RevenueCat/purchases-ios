@@ -83,16 +83,13 @@ class OfflineEntitlementsManager {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     private func completeProductEntitlementMappingUpdate(
-        remoteResult: ProductEntitlementMappingResult?,
+        remoteResult: ProductEntitlementMappingResponse?,
         isAppBackgrounded: Bool
     ) async {
         if let remoteResult {
             let didCacheRemoteResult = self.productEntitlementMappingLock.perform {
                 guard !self.isClosed, !Task.isCancelled else { return false }
-                guard remoteResult.useIfCurrent({
-                    self.handleProductEntitlementMappingBackendResult(with: $0)
-                }) else { return false }
-
+                self.handleProductEntitlementMappingBackendResult(with: remoteResult)
                 self.productEntitlementMappingTask = nil
                 return true
             }

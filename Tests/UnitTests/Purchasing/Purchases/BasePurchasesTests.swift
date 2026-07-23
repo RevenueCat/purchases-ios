@@ -805,40 +805,6 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
-    func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
-        let generation = self.stateLock.perform {
-            guard !self.isDisabledStorage, !self.isClosed else { return nil as Int? }
-            return self.configGenerationStorage
-        }
-        guard let generation,
-              let data = await self.blobData(for: topic, itemKey: itemKey) else {
-            return nil
-        }
-
-        return self.stateLock.perform {
-            guard !self.isDisabledStorage,
-                  !self.isClosed,
-                  self.configGenerationStorage == generation else {
-                return nil
-            }
-
-            return RemoteConfigBlobData(value: data, generation: generation)
-        }
-    }
-
-    func useIfCurrent<T>(_ snapshot: RemoteConfigBlobData<T>, operation: (T) -> Void) -> Bool {
-        return self.stateLock.perform {
-            guard !self.isDisabledStorage,
-                  !self.isClosed,
-                  snapshot.isSameGeneration(self.configGenerationStorage) else {
-                return false
-            }
-
-            operation(snapshot.value)
-            return true
-        }
-    }
-
     /// Resumes every held blob read with its key's stubbed data and stops holding subsequent
     /// reads, so sequential read chains (like `mergeItemsBlobData`'s loop) run to completion.
     func completeStoredBlobReads() {

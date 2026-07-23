@@ -466,7 +466,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         let result = await provider.getProductEntitlementMapping()
         let requestedURLs = await self.downloader.requestedURLs()
 
-        expect(result?.response) == mapping
+        expect(result) == mapping
         expect(self.remoteConfigRequestCount) == 1
         expect(requestedURLs).to(beEmpty())
     }

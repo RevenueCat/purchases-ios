@@ -12,26 +12,7 @@ protocol EntitlementMappingTopicProviderType: AnyObject {
     var isAvailable: Bool { get }
 
     /// Returns the mapping when its remote-config blob is available and decodes successfully.
-    func getProductEntitlementMapping() async -> ProductEntitlementMappingResult?
-
-}
-
-struct ProductEntitlementMappingResult: @unchecked Sendable {
-
-    let response: ProductEntitlementMappingResponse
-    private let useIfCurrentOperation: ((ProductEntitlementMappingResponse) -> Void) -> Bool
-
-    init(
-        response: ProductEntitlementMappingResponse,
-        useIfCurrent: @escaping ((ProductEntitlementMappingResponse) -> Void) -> Bool
-    ) {
-        self.response = response
-        self.useIfCurrentOperation = useIfCurrent
-    }
-
-    func useIfCurrent(_ operation: (ProductEntitlementMappingResponse) -> Void) -> Bool {
-        return self.useIfCurrentOperation(operation)
-    }
+    func getProductEntitlementMapping() async -> ProductEntitlementMappingResponse?
 
 }
 
@@ -51,21 +32,18 @@ final class ProductEntitlementMappingTopicProvider: EntitlementMappingTopicProvi
         return !manager.isDisabled
     }
 
-    func getProductEntitlementMapping() async -> ProductEntitlementMappingResult? {
+    func getProductEntitlementMapping() async -> ProductEntitlementMappingResponse? {
         guard let manager = self.manager,
-              let blobData = await manager.blobDataSnapshot(
+              let blobData = await manager.blobData(
                 for: .productEntitlementMapping,
                 itemKey: Self.itemKey
               ) else { return nil }
 
         do {
-            let response = try JSONDecoder.default.decode(
+            return try JSONDecoder.default.decode(
                 ProductEntitlementMappingResponse.self,
-                from: blobData.value
+                from: blobData
             )
-            return ProductEntitlementMappingResult(response: response) { operation in
-                manager.useIfCurrent(blobData) { _ in operation(response) }
-            }
         } catch {
             Logger.error(Strings.offlineEntitlements.product_entitlement_mapping_remote_config_decoding_error(error))
             return nil
