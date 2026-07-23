@@ -33,9 +33,27 @@ struct WebViewComponentView: View {
                 "\(viewModel.urlString)-\(viewModel.componentID)-" +
                 "\(viewModel.size.width.isFit)-\(viewModel.size.height.isFit)"
             )
+        } else if viewModel.visible {
+            // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
+            // this renders nothing, so surface why instead of leaving authors with a silent blank.
+            Color.clear
+                .frame(width: 0, height: 0)
+                .onAppear { Logger.error(Strings.paywall_web_view_not_rendered(reason: self.nonRenderReason)) }
         }
         #endif
     }
+
+    #if canImport(WebKit) && !os(watchOS)
+    private var nonRenderReason: String {
+        if viewModel.componentID.isEmpty {
+            return "missing component id"
+        } else if viewModel.url == nil {
+            return "invalid or unsupported URL '\(viewModel.urlString)'"
+        } else {
+            return "URL '\(viewModel.urlString)' has no resolvable origin"
+        }
+    }
+    #endif
 
 }
 
@@ -85,6 +103,9 @@ private struct BridgedWebViewComponentView: View {
     @State
     private var processTerminated = false
 
+    @State
+    private var loadFailed = false
+
     init(
         viewModel: WebViewComponentViewModel,
         url: URL,
@@ -114,7 +135,7 @@ private struct BridgedWebViewComponentView: View {
     var body: some View {
         // The resize sink is (re)assigned inside the representable's make/update (not `.onAppear`)
         // so a connect arriving before `.onAppear` fires always sees the current values.
-        if !processTerminated {
+        if !processTerminated, !loadFailed {
             WebViewRepresentable(
                 url: url,
                 expectedOrigin: expectedOrigin,
@@ -133,6 +154,9 @@ private struct BridgedWebViewComponentView: View {
                 },
                 onProcessTerminated: {
                     self.processTerminated = true
+                },
+                onLoadFailed: {
+                    self.loadFailed = true
                 }
             )
             .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
@@ -160,11 +184,13 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
     var onDocumentReset: (@MainActor () -> Void)?
     var onProcessTerminated: (@MainActor () -> Void)?
+    var onLoadFailed: (@MainActor () -> Void)?
 
     func makeCoordinator() -> Coordinator {
         let coordinator = Coordinator(expectedOrigin: expectedOrigin)
         coordinator.session = session
         coordinator.onProcessTerminated = onProcessTerminated
+        coordinator.onLoadFailed = onLoadFailed
         return coordinator
     }
 
@@ -175,6 +201,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     func updateNSView(_ webView: PlatformWebView, context: Context) {
         context.coordinator.onProcessTerminated = onProcessTerminated
+        context.coordinator.onLoadFailed = onLoadFailed
         self.update(webView)
     }
 
@@ -188,6 +215,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     func updateUIView(_ webView: PlatformWebView, context: Context) {
         context.coordinator.onProcessTerminated = onProcessTerminated
+        context.coordinator.onLoadFailed = onLoadFailed
         self.update(webView)
     }
 
@@ -247,6 +275,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         webView.scrollView.maximumZoomScale = 1
         #endif
 
+        // Expose the web view to Safari Web Inspector only when the SDK is in a debug/verbose
+        // logging mode, so authors can inspect the bundle without making it inspectable in production.
+        if #available(iOS 16.4, macOS 13.3, *), Purchases.logLevel <= .debug {
+            webView.isInspectable = true
+        }
+
         self.configureSession(for: webView)
         self.load(webView)
         return webView
@@ -297,6 +331,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         let expectedOrigin: WebViewOrigin
         weak var session: WebViewSession?
         var onProcessTerminated: (@MainActor () -> Void)?
+        var onLoadFailed: (@MainActor () -> Void)?
 
         init(expectedOrigin: WebViewOrigin) {
             self.expectedOrigin = expectedOrigin
@@ -319,9 +354,38 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             self.session?.resetForNewDocument()
         }
 
+        func webView(
+            _ webView: WKWebView,
+            didFailProvisionalNavigation navigation: WKNavigation!,
+            withError error: Error
+        ) {
+            self.handleLoadFailure(error)
+        }
+
+        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            self.handleLoadFailure(error)
+        }
+
         func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
             Logger.debug(Strings.paywall_web_view_content_process_terminated)
             self.onProcessTerminated?()
+        }
+
+        /// Treats a terminal navigation failure (including SSL/server-trust failures, which WebKit
+        /// surfaces here) as a reason to remove the web view. Cancellations are ignored: we
+        /// deliberately cancel cross-origin navigations in `decidePolicyFor`, and those surface here.
+        private func handleLoadFailure(_ error: Error) {
+            let nsError = error as NSError
+            if nsError.domain == NSURLErrorDomain, nsError.code == NSURLErrorCancelled {
+                return
+            }
+            // Cancelling via the navigation policy can also surface as WebKitErrorDomain 102
+            // ("frame load interrupted by a policy change"), which is not a real failure.
+            if nsError.domain == "WebKitErrorDomain", nsError.code == 102 {
+                return
+            }
+            Logger.error(Strings.paywall_web_view_load_failed(nsError.localizedDescription))
+            self.onLoadFailed?()
         }
 
     }

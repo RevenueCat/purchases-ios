@@ -175,6 +175,39 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         XCTAssertEqual(calls, 2)
     }
 
+    func testTerminalLoadFailureInvokesCallback() {
+        let coordinator = WebViewRepresentable.Coordinator(
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!
+        )
+        var calls = 0
+        coordinator.onLoadFailed = { calls += 1 }
+
+        // An SSL/server-trust failure surfaces as a provisional navigation failure.
+        let sslError = NSError(domain: NSURLErrorDomain, code: NSURLErrorServerCertificateUntrusted)
+        coordinator.webView(WKWebView(frame: .zero), didFailProvisionalNavigation: nil, withError: sslError)
+
+        let genericError = NSError(domain: NSURLErrorDomain, code: NSURLErrorCannotConnectToHost)
+        coordinator.webView(WKWebView(frame: .zero), didFail: nil, withError: genericError)
+
+        XCTAssertEqual(calls, 2)
+    }
+
+    func testCancellationsAreNotTreatedAsLoadFailures() {
+        let coordinator = WebViewRepresentable.Coordinator(
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!
+        )
+        var calls = 0
+        coordinator.onLoadFailed = { calls += 1 }
+
+        // Cancelling a cross-origin navigation in `decidePolicyFor` surfaces here; not a real failure.
+        let cancelled = NSError(domain: NSURLErrorDomain, code: NSURLErrorCancelled)
+        let policyChange = NSError(domain: "WebKitErrorDomain", code: 102)
+        coordinator.webView(WKWebView(frame: .zero), didFailProvisionalNavigation: nil, withError: cancelled)
+        coordinator.webView(WKWebView(frame: .zero), didFailProvisionalNavigation: nil, withError: policyChange)
+
+        XCTAssertEqual(calls, 0)
+    }
+
     // Note: the coordinator's `decidePolicyFor` is a thin delegation to
     // `WebViewNavigationPolicy.policy(for:isMainFrame:expectedOrigin:)`, which is exhaustively
     // covered (allow/cancel, origin normalization, nil URL) in WebViewNavigationPolicyTests.
