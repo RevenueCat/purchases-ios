@@ -18,7 +18,6 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
 
     init() {
         super.init(deviceCache: MockDeviceCache(),
-                   operationDispatcher: MockOperationDispatcher(),
                    api: MockOfflineEntitlementsAPI(),
                    systemInfo: MockSystemInfo(finishTransactions: false))
     }
@@ -28,10 +27,7 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
     var invokedUpdateProductsEntitlementsCacheIfStaleParameters: Bool?
     var invokedUpdateProductsEntitlementsCacheIfStaleParametersList = [Bool]()
 
-    override func updateProductsEntitlementsCacheIfStale(
-        isAppBackgrounded: Bool,
-        completion: (@MainActor @Sendable (Result<(), Error>) -> Void)?
-    ) {
+    override func updateProductsEntitlementsCacheIfStale(isAppBackgrounded: Bool) {
         self.invokedUpdateProductsEntitlementsCacheIfStale = true
         self.invokedUpdateProductsEntitlementsCacheIfStaleCount += 1
         self.invokedUpdateProductsEntitlementsCacheIfStaleParameters = isAppBackgrounded

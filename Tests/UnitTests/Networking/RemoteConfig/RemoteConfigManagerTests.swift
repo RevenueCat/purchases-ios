@@ -628,6 +628,68 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedReadRefs) == [ref]
     }
 
+    func testBlobDataRetainsLegacyBehaviorWhenConfigCommitsDuringResolution() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        let replacementData = #"{"id":"replacement"}"#.asData
+        let replacementRef = RCContainerTestData.blobRef(for: replacementData)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v2",
+          "active_topics": ["workflows"],
+          "topics": { "workflows": { "default": { "blob_ref": "\(replacementRef)" } } }
+        }
+        """
+        let container = try Self.container(config: response)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        self.blobFetcher.ensureDownloadedHandler = { _ in
+            self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+            self.remoteConfigAPI.complete(
+                with: .success(.test(container: container))
+            )
+        }
+
+        let resolvedData = await self.manager.blobData(for: .workflows, itemKey: "default")
+
+        expect(resolvedData) == data
+    }
+
+    func testBlobDataSnapshotRejectsConfigCommitDuringResolution() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        let replacementData = #"{"id":"replacement"}"#.asData
+        let replacementRef = RCContainerTestData.blobRef(for: replacementData)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v2",
+          "active_topics": ["workflows"],
+          "topics": { "workflows": { "default": { "blob_ref": "\(replacementRef)" } } }
+        }
+        """
+        let container = try Self.container(config: response)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        self.blobFetcher.ensureDownloadedHandler = { _ in
+            self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+            self.remoteConfigAPI.complete(
+                with: .success(.test(container: container))
+            )
+        }
+
+        let snapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+
+        expect(snapshot).to(beNil())
+    }
+
     func testBlobDataSnapshotIsRejectedAfterIdentityInvalidation() async throws {
         let data = #"{"id":"workflow"}"#.asData
         let ref = RCContainerTestData.blobRef(for: data)
@@ -3205,6 +3267,7 @@ private final class MockRemoteConfigBlobStore: RemoteConfigBlobStoreType {
 private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
 
     var stubbedEnsureDownloadedResult = true
+    var ensureDownloadedHandler: ((String) -> Void)?
 
     private let lock = Lock()
     private var _invokedEnsureDownloadedRefs: [String] = []
@@ -3222,6 +3285,7 @@ private final class MockRemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
         self.lock.perform {
             self._invokedEnsureDownloadedRefs.append(ref)
         }
+        self.ensureDownloadedHandler?(ref)
         return self.stubbedEnsureDownloadedResult
     }
 

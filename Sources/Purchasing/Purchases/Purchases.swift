@@ -464,10 +464,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             localTransactionMetadataStore: localTransactionMetadataStore
         )
 
-        let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
-                                                                    operationDispatcher: operationDispatcher,
-                                                                    api: backend.offlineEntitlements,
-                                                                    systemInfo: systemInfo)
+        let offlineEntitlementsManager = OfflineEntitlementsManager(
+            deviceCache: deviceCache,
+            api: backend.offlineEntitlements,
+            systemInfo: systemInfo
+        )
 
         let customerInfoManager: CustomerInfoManager
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -2785,8 +2786,7 @@ private extension Purchases {
                                                                       isAppBackgrounded: isAppBackgrounded,
                                                                       completion: nil)
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: nil
+                isAppBackgrounded: isAppBackgrounded
             )
         }
 
@@ -2833,8 +2833,7 @@ private extension Purchases {
             }
 
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: nil
+                isAppBackgrounded: isAppBackgrounded
             )
         }
 

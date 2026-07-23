@@ -19,8 +19,8 @@ struct RemoteConfigBlobData<Value>: @unchecked Sendable {
         self.generation = generation
     }
 
-    func belongs(toGeneration generation: Int) -> Bool {
-        return self.generation == generation
+    func isSameGeneration(_ value: Int) -> Bool {
+        return self.generation == value
     }
 
 }
@@ -235,7 +235,7 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        return await self.blobDataSnapshot(for: topic, itemKey: itemKey)?.value
+        return nil
     }
 
     func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
@@ -404,7 +404,16 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
-        return await self.blobDataSnapshot(for: topic, itemKey: itemKey)?.value
+        guard let itemSnapshot = await self.readCommittedStateSnapshot(refreshIfMissing: true, {
+            await self.committedTopic(topic)?[itemKey]
+        }),
+              let item = itemSnapshot.value else {
+            return nil
+        }
+
+        return await self.readCommittedState(epoch: itemSnapshot.epoch) {
+            await self.blobData(for: item)
+        }
     }
 
     func blobDataSnapshot(for topic: RemoteConfigTopic, itemKey: String) async -> RemoteConfigBlobData<Data>? {
