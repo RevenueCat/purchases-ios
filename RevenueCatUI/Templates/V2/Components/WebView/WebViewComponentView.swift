@@ -209,6 +209,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             )
         }
 
+        // This is required to allow media to begin playing without a user gesture
+        configuration.mediaTypesRequiringUserActionForPlayback = []
+
         #if os(iOS)
         configuration.allowsInlineMediaPlayback = true
         let disableZoomScript = """
