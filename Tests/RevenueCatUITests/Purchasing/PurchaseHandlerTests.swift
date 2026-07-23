@@ -122,7 +122,8 @@ class PurchaseHandlerTests: TestCase {
 
         handler.resetForNewSession()
 
-        expect(handler.webCheckoutOpened).to(beNil())
+        // Cleared a tick later (see `deferredClearWebCheckoutOpened`), not synchronously.
+        await expect(handler.webCheckoutOpened).toEventually(beNil())
     }
 
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
