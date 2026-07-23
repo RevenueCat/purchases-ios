@@ -275,11 +275,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         webView.scrollView.maximumZoomScale = 1
         #endif
 
-        // Expose the web view to Safari Web Inspector so authors can inspect the bundle. This is
-        // double-gated on purpose: `#if DEBUG` keeps it out of release builds entirely (a shipped
-        // app could otherwise set `logLevel` to debug/verbose), and the log level keeps it opt-in.
-        // `isInspectable` defaults to false; when true, a Mac attached via Safari's Develop menu can
-        // inspect this web view's content, so it must never be enabled in production.
+        // Enable Safari Web Inspector for authors, double-gated so it can never ship enabled:
+        // `#if DEBUG` strips it from release builds and the log level keeps it opt-in.
+        // https://webkit.org/blog/13936/enabling-the-inspection-of-web-content-in-apps/
         #if DEBUG
         if #available(iOS 16.4, macOS 13.3, *), Purchases.logLevel <= .debug {
             webView.isInspectable = true
