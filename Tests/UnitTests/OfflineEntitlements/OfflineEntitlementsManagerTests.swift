@@ -340,6 +340,24 @@ final class EntitlementMappingTopicProviderTests: TestCase {
         expect(result?.useIfCurrent { _ in }).to(beFalse())
     }
 
+    func testReturnsNilWhenRemoteConfigChangesDuringBlobRead() async throws {
+        let mapping: ProductEntitlementMappingResponse = .init(products: [
+            "monthly": .init(identifier: "monthly", entitlements: ["pro"])
+        ])
+        self.remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = [
+            "default": try JSONEncoder.default.encode(mapping)
+        ]
+        self.remoteConfigManager.shouldStoreBlobDataCompletion = true
+
+        async let result = self.provider.getProductEntitlementMapping()
+        await expect(self.remoteConfigManager.invokedBlobDataParameters).toEventuallyNot(beEmpty())
+        self.remoteConfigManager.clearCache()
+        self.remoteConfigManager.completeStoredBlobReads()
+
+        let resolvedResult = await result
+        expect(resolvedResult).to(beNil())
+    }
+
 }
 
 final class MockEntitlementMappingTopicProvider: EntitlementMappingTopicProviderType {

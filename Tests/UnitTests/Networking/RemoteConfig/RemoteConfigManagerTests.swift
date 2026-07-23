@@ -646,6 +646,92 @@ final class RemoteConfigManagerTests: TestCase {
         expect(invoked) == false
     }
 
+    func testUseIfCurrentExecutesExactlyOnceForCurrentBlobSnapshot() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        let maybeSnapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+        let snapshot = try XCTUnwrap(maybeSnapshot)
+        var invocationCount = 0
+
+        let used = self.manager.useIfCurrent(snapshot) { value in
+            invocationCount += 1
+            expect(value) == data
+        }
+
+        expect(used) == true
+        expect(invocationCount) == 1
+    }
+
+    func testUseIfCurrentRejectsBlobSnapshotAfterNewerConfigCommit() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        let maybeSnapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+        let snapshot = try XCTUnwrap(maybeSnapshot)
+        let replacementData = #"{"id":"replacement"}"#.asData
+        let replacementRef = RCContainerTestData.blobRef(for: replacementData)
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v2",
+          "active_topics": ["workflows"],
+          "topics": { "workflows": { "default": { "blob_ref": "\(replacementRef)" } } }
+        }
+        """
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+        var invoked = false
+
+        expect(self.manager.useIfCurrent(snapshot) { _ in invoked = true }) == false
+        expect(invoked) == false
+    }
+
+    func testUseIfCurrentRejectsBlobSnapshotAfterRemoteConfigIsDisabled() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        let maybeSnapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+        let snapshot = try XCTUnwrap(maybeSnapshot)
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .forbidden)))
+        var invoked = false
+
+        expect(self.manager.useIfCurrent(snapshot) { _ in invoked = true }) == false
+        expect(invoked) == false
+    }
+
+    func testUseIfCurrentRejectsBlobSnapshotAfterManagerCloses() async throws {
+        let data = #"{"id":"workflow"}"#.asData
+        let ref = RCContainerTestData.blobRef(for: data)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.workflows:etag1",
+            topics: .init(entries: ["workflows": ["default": .init(blobRef: ref)]])
+        )
+        self.blobStore.stubbedReadDataByRef[ref] = data
+        let maybeSnapshot = await self.manager.blobDataSnapshot(for: .workflows, itemKey: "default")
+        let snapshot = try XCTUnwrap(maybeSnapshot)
+        self.manager.close()
+        var invoked = false
+
+        expect(self.manager.useIfCurrent(snapshot) { _ in invoked = true }) == false
+        expect(invoked) == false
+    }
+
     func testEnsureBlobsDownloadedDelegatesToBlobFetcher() async {
         let refs = ["ref-1", "ref-2"]
 
