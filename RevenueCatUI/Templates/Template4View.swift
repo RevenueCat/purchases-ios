@@ -91,6 +91,7 @@ struct Template4View: TemplateViewType {
                     .padding([.horizontal])
                     .padding(.top, Self.verticalPadding)
                     .dynamicTypeSize(...Constants.maximumDynamicTypeSize)
+                    .accessibilityAddTraits(.isHeader)
 
                 self.packagesScrollView
             } else {
