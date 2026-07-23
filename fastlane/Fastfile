@@ -62,6 +62,10 @@ REPO_NAME = 'purchases-ios'
 PAYWALL_PREVIEW_RESOURCES_REPO_NAME = 'paywall-preview-resources'
 CHANGELOG_LATEST_PATH = './CHANGELOG.latest.md'
 CHANGELOG_PATH = './CHANGELOG.md'
+BINARY_SIZE_ANALYSIS_DEVICE = 'iPhone17,1'
+BINARY_SIZE_ANALYSIS_CONFIGURATION = 'Release'
+SENTRY_ORG_SLUG = 'revenuecat'
+SENTRY_PROJECT_SLUG = 'purchases-ios'
 
 platform :ios do
   before_all do
@@ -955,20 +959,53 @@ platform :ios do
     build_release(platform: 'macOS')
   end
 
-  desc "Build BinarySizeTest app and upload to Emerge"
-  lane :build_and_upload_emerge_binary_size_analysis do |options|
+  desc "Build BinarySizeTest app and upload it for size analysis"
+  lane :build_and_upload_binary_size_analysis do |options|
     integration_method = options[:integration_method]
     unless integration_method
       UI.user_error!("Missing required option: integration_method. Expected one of: LOCAL_SOURCE, COCOAPODS, SPM")
     end
 
-    archive_path = build_binary_size_test_app(
+    build = build_binary_size_test_app(
       integration_method: integration_method
     )
 
     send_to_emerge(
-      archive_path: archive_path
+      archive_path: build[:archive_path]
     )
+
+    send_to_sentry(
+      ipa_path: build[:ipa_path]
+    )
+  end
+
+  private_lane :send_to_sentry do |options|
+    ipa_path = options[:ipa_path]
+    unless ipa_path && File.exist?(ipa_path)
+      UI.user_error!("Missing thinned IPA for Sentry upload at '#{ipa_path}'")
+    end
+
+    sentry_args = {
+      org_slug: SENTRY_ORG_SLUG,
+      project_slug: SENTRY_PROJECT_SLUG,
+      ipa_path: ipa_path,
+      build_configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION,
+      vcs_provider: "github",
+      head_repo_name: "RevenueCat/#{REPO_NAME}",
+      base_repo_name: "RevenueCat/#{REPO_NAME}",
+      force_git_metadata: true
+    }
+
+    head_sha = ENV["CIRCLE_SHA1"]
+    sentry_args[:head_sha] = head_sha if head_sha && !head_sha.empty?
+
+    head_ref = ENV["CIRCLE_BRANCH"]
+    sentry_args[:head_ref] = head_ref if head_ref && !head_ref.empty?
+
+    pr_number = detect_pr_number
+    sentry_args[:pr_number] = pr_number if pr_number
+
+    sentry_upload_build(sentry_args)
   end
 
   private_lane :build_binary_size_test_app do |options|
@@ -1020,10 +1057,10 @@ platform :ios do
     end
 
     bundle_id = settings[:bundle_id]
-    provisioning_profile_name = "match AppStore #{bundle_id}"
+    provisioning_profile_name = "match AdHoc #{bundle_id}"
 
     match(
-      type: "appstore",
+      type: "adhoc",
       readonly: true,
       platform: "ios",
       app_identifier: bundle_id,
@@ -1037,19 +1074,20 @@ platform :ios do
     gym(
       workspace: workspace_path,
       scheme: "BinarySizeTest",
-      configuration: "Release",
+      configuration: BINARY_SIZE_ANALYSIS_CONFIGURATION,
       destination: "generic/platform=iOS",
       archive_path: archive_path,
-      export_method: "app-store",
+      export_method: "ad-hoc",
       export_options: {
         signingStyle: "manual",
         stripSwiftSymbols: false,
-        thinning: "<none>",
+        thinning: BINARY_SIZE_ANALYSIS_DEVICE,
         provisioningProfiles: {
           bundle_id => provisioning_profile_name
         }
       },
       output_directory: output_directory,
+      output_name: "BinarySizeTest-#{integration_method}-#{BINARY_SIZE_ANALYSIS_DEVICE}",
       include_bitcode: false,
       include_symbols: true,
       clean: false
@@ -1060,7 +1098,10 @@ platform :ios do
       UI.user_error!("IPA export completed but no IPA file found in lane context")
     end
 
-    archive_path
+    {
+      archive_path: archive_path,
+      ipa_path: ipa_path
+    }
   end
 
   desc "archive"

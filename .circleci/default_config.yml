@@ -1999,7 +1999,7 @@ jobs:
           command: bundle exec fastlane build_paywalls_tester_for_emerge
       - slack-notify-on-fail
 
-  emerge_binary_size_analysis:
+  binary_size_analysis:
     executor:
       name: macos-executor
     steps:
@@ -2017,8 +2017,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (LOCAL_SOURCE) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:LOCAL_SOURCE
+          name: Build and upload BinarySizeTest (LOCAL_SOURCE)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:LOCAL_SOURCE
 
       # CocoaPods
       - run:
@@ -2029,8 +2029,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (COCOAPODS) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:COCOAPODS
+          name: Build and upload BinarySizeTest (COCOAPODS)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:COCOAPODS
 
       # SPM
       - run:
@@ -2040,8 +2040,8 @@ jobs:
       - tuist-generate-workspace:
           query: "BinarySizeTest"
       - run:
-          name: Build BinarySizeTest (SPM) and upload to Emerge
-          command: bundle exec fastlane build_and_upload_emerge_binary_size_analysis integration_method:SPM
+          name: Build and upload BinarySizeTest (SPM)
+          command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:SPM
 
   record-and-upload-paywalls-v2-snapshots:
     description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository and/or Emerge"
@@ -2369,9 +2369,10 @@ workflows:
       - emerge_purchases_ui_snapshot_tests:
           context:
             - slack-secrets
-      - emerge_binary_size_analysis:
+      - binary_size_analysis:
           context:
             - slack-secrets
+            - sentry
       - build-tv-watch-mac-and-visionos:
           context:
             - slack-secrets
@@ -2543,7 +2544,7 @@ workflows:
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
-            - emerge_binary_size_analysis
+            - binary_size_analysis
             - build-tv-watch-mac-and-visionos
             - run-workflow-maestro-tests
             # Full Test Suite
@@ -2871,9 +2872,10 @@ workflows:
           dry_run: true
           context:
             - slack-secrets
-      - emerge_binary_size_analysis:
+      - binary_size_analysis:
           context:
             - slack-secrets
+            - sentry
       - lint:
           context:
             - slack-secrets
@@ -2931,7 +2933,7 @@ workflows:
             - api-tests
             - revenuecat-admob-tests
             - deploy-purchase-tester
-            - emerge_binary_size_analysis
+            - binary_size_analysis
 
       # =============================================================
       # Release tagging: only on release branches.

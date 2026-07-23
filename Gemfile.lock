@@ -251,6 +251,8 @@ GEM
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
     fastlane-plugin-emerge (0.10.8)
       faraday (~> 1.1)
+    fastlane-plugin-sentry (2.6.1)
+      os (~> 1.1, >= 1.1.4)
     fastlane-sirp (1.1.0)
     ffi (1.17.4)
     ffi (1.17.4-arm64-darwin)
@@ -470,6 +472,7 @@ DEPENDENCIES
   fastlane-plugin-create_xcframework!
   fastlane-plugin-emerge
   fastlane-plugin-revenuecat_internal!
+  fastlane-plugin-sentry
   nokogiri
   rest-client (= 2.1.0)
 
