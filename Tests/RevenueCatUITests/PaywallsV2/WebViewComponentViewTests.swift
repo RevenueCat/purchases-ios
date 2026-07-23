@@ -204,6 +204,11 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         XCTAssertFalse(session.channelOpen)
     }
 
+    func testConfigurationAllowsMediaPlaybackWithoutUserGesture() {
+        let configuration = WebViewRepresentable.makeConfiguration(session: nil)
+        XCTAssertTrue(configuration.mediaTypesRequiringUserActionForPlayback.isEmpty)
+    }
+
     func testProcessTerminationInvokesCallbackOncePerCall() {
         let coordinator = WebViewRepresentable.Coordinator(
             expectedOrigin: WebViewOrigin(string: "https://example.com")!
