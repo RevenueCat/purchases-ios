@@ -18,6 +18,7 @@ func checkDangerousSettingsAPI() {
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true)
     let _: DangerousSettings = DangerousSettings(useWorkflows: true)
     let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, useWorkflows: true)
+    let _: DangerousSettings = DangerousSettings(autoSyncPurchases: true, uiPreviewMode: true, useWorkflows: true)
     let settings: DangerousSettings = DangerousSettings(uiPreviewMode: true)
 
     let _: Bool = settings.autoSyncPurchases
