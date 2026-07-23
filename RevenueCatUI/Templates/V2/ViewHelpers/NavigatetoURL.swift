@@ -17,8 +17,7 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum Browser {
 
-    /// - Parameter completion: called with whether the URL was actually opened (or the in-app browser
-    ///   sheet presented). Not called for `.unknown`, since nothing is opened in that case.
+    /// - Parameter completion: whether the URL actually opened. Not called for `.unknown`.
     static func navigateTo(
         url: URL,
         method: PaywallComponent.ButtonComponent.URLMethod,
