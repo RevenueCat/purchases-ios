@@ -54,6 +54,31 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
         expect(fireCount.value) == 2
     }
 
+    func testOnWebCheckoutOpenedFiresEvenWhenClearedImmediatelyAfter() {
+        let handler: PurchaseHandler = .mock()
+        let fireCount: Atomic<Int> = .init(0)
+
+        let view = ProbeView(handler: handler) {
+            fireCount.modify { $0 += 1 }
+        }
+
+        let (window, _) = Self.host(view)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        expect(fireCount.value) == 0
+
+        // Mirrors openWebPaywallLink: signaling then immediately clearing/resetting in the same
+        // synchronous step, with no RunLoop spin in between. If the clear weren't deferred, this would
+        // coalesce away the SwiftUI render pass that delivers the signal, silently dropping the callback.
+        handler.signalWebCheckoutOpened()
+        handler.clearWebCheckoutOpened()
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+        expect(fireCount.value) == 1
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

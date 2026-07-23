@@ -264,7 +264,7 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
-        self.webCheckoutOpened = nil
+        self.deferredClearWebCheckoutOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -888,7 +888,17 @@ extension PurchaseHandler {
     /// spuriously observe a stale, already-handled signal from the paywall it replaced.
     @MainActor
     func clearWebCheckoutOpened() {
-        self.webCheckoutOpened = nil
+        self.deferredClearWebCheckoutOpened()
+    }
+
+    /// Clearing `webCheckoutOpened` runs a tick later than the calling dismiss/reset path: that path
+    /// is triggered from the same synchronous step that just set `webCheckoutOpened`, and clearing it
+    /// immediately can coalesce away the SwiftUI render pass that would have delivered the signal to
+    /// `onWebCheckoutOpened` observers, silently dropping the callback.
+    private func deferredClearWebCheckoutOpened() {
+        DispatchQueue.main.async { [weak self] in
+            self?.webCheckoutOpened = nil
+        }
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
