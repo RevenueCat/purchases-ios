@@ -130,6 +130,33 @@ final class WebViewComponentViewTests: TestCase {
         XCTAssertNil(viewModel.url)
         XCTAssertNil(viewModel.origin)
     }
+
+    func testViewModelIsRenderableGating() {
+        // Fully valid: visible, non-empty id, resolvable HTTPS origin.
+        XCTAssertTrue(
+            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "https://example.com"))
+                .isRenderable
+        )
+
+        // An empty component id must not render: the bridge keys every frame on it.
+        XCTAssertFalse(
+            WebViewComponentViewModel(component: .init(id: "", protocolVersion: 1, url: "https://example.com"))
+                .isRenderable
+        )
+
+        // Invalid URL (hence no origin) must not render.
+        XCTAssertFalse(
+            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "http://example.com"))
+                .isRenderable
+        )
+
+        // Intentionally-hidden components are not renderable.
+        XCTAssertFalse(
+            WebViewComponentViewModel(
+                component: .init(id: "web", visible: false, protocolVersion: 1, url: "https://example.com")
+            ).isRenderable
+        )
+    }
     #endif
 
     func testViewModelDefaultsToVisible() {
@@ -256,10 +283,10 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         XCTAssertEqual(calls, 0)
     }
 
-    // Note: the coordinator's `decidePolicyFor` is a thin delegation to
-    // `WebViewNavigationPolicy.policy(for:isMainFrame:expectedOrigin:)`, which is exhaustively
-    // covered (allow/cancel, origin normalization, nil URL) in WebViewNavigationPolicyTests.
-    // `WKNavigationAction`/`WKFrameInfo` cannot be constructed or subclassed for a unit test, so the
+    // Note: the coordinator's `decidePolicyFor` methods are thin delegations to `WebViewNavigationPolicy`
+    // (`policy(for:isMainFrame:expectedOrigin:)` for navigation actions, `isTerminalHTTPError(...)` for
+    // navigation responses), both exhaustively covered in WebViewNavigationPolicyTests. `WKNavigationAction`
+    // and `WKNavigationResponse` cannot be constructed or safely subclassed for a unit test, so the
     // delegation itself is not re-tested here.
 
 }

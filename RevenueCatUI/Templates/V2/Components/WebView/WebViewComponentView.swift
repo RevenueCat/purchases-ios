@@ -20,9 +20,10 @@ struct WebViewComponentView: View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
         #else
-        // Resolving the origin here (rather than deep in the session) is what lets the whole web view
-        // stay unrendered when the URL has no usable origin, instead of rendering an inert bridge.
-        if viewModel.visible, let url = viewModel.url, let origin = viewModel.origin {
+        // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
+        // can't work — no usable origin, or an empty component id the bridge would only reject on —
+        // instead of mounting an inert bridge. See `WebViewComponentViewModel.isRenderable`.
+        if viewModel.isRenderable, let url = viewModel.url, let origin = viewModel.origin {
             BridgedWebViewComponentView(
                 viewModel: viewModel,
                 url: url,
@@ -355,6 +356,29 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
         func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
             self.session?.resetForNewDocument()
+        }
+
+        // WebKit treats an HTTP 4xx/5xx as a *successful* navigation (the server replied, so the error
+        // body gets rendered) and does not call `didFail*`. This is the only place we can see the status
+        // code, so we inspect it here and tear the web view down on a main-frame error. We handle the
+        // failure inline rather than relying on `.cancel` surfacing in `didFail`, since cancelling shows
+        // up there as a cancellation that `handleLoadFailure` deliberately ignores.
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationResponse: WKNavigationResponse,
+            decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+        ) {
+            if let httpResponse = navigationResponse.response as? HTTPURLResponse,
+               WebViewNavigationPolicy.isTerminalHTTPError(
+                statusCode: httpResponse.statusCode,
+                isMainFrame: navigationResponse.isForMainFrame
+               ) {
+                Logger.error(Strings.paywall_web_view_http_error(statusCode: httpResponse.statusCode))
+                self.onLoadFailed?()
+                decisionHandler(.cancel)
+                return
+            }
+            decisionHandler(.allow)
         }
 
         func webView(
