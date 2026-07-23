@@ -884,11 +884,13 @@ extension PurchaseHandler {
     }
 
     /// Clears a pending web checkout signal without a full session reset. Used when an exit offer is
-    /// about to be presented reusing this same `PurchaseHandler`, so the exit offer's paywall doesn't
-    /// spuriously observe a stale, already-handled signal from the paywall it replaced.
+    /// about to be presented reusing this same `PurchaseHandler`. This must run synchronously (unlike
+    /// `resetForNewSession`'s deferred clear): the exit offer's paywall mounts in this same synchronous
+    /// step, and a deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale,
+    /// already-handled signal as if it were its own fresh one.
     @MainActor
     func clearWebCheckoutOpened() {
-        self.deferredClearWebCheckoutOpened()
+        self.webCheckoutOpened = nil
     }
 
     /// Clearing `webCheckoutOpened` runs a tick later than the calling dismiss/reset path: that path

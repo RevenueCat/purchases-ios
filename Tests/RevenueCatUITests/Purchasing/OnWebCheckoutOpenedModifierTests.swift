@@ -54,7 +54,7 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
         expect(fireCount.value) == 2
     }
 
-    func testOnWebCheckoutOpenedFiresEvenWhenClearedImmediatelyAfter() {
+    func testOnWebCheckoutOpenedFiresEvenWhenResetImmediatelyAfter() {
         let handler: PurchaseHandler = .mock()
         let fireCount: Atomic<Int> = .init(0)
 
@@ -70,13 +70,37 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
 
         expect(fireCount.value) == 0
 
-        // Mirrors openWebPaywallLink: signaling then immediately clearing/resetting in the same
-        // synchronous step, with no RunLoop spin in between. If the clear weren't deferred, this would
-        // coalesce away the SwiftUI render pass that delivers the signal, silently dropping the callback.
+        // Mirrors handleMainPaywallDismiss's no-exit-offer branch: signaling then immediately resetting
+        // in the same synchronous step, with no RunLoop spin in between. If the reset's clear weren't
+        // deferred, this would coalesce away the SwiftUI render pass that delivers the signal, silently
+        // dropping the callback.
         handler.signalWebCheckoutOpened()
-        handler.clearWebCheckoutOpened()
+        handler.resetForNewSession()
         RunLoop.main.run(until: Date().addingTimeInterval(0.3))
         expect(fireCount.value) == 1
+    }
+
+    func testOnWebCheckoutOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
+        // Regression test for the exit-offer reuse scenario: clearWebCheckoutOpened() must complete
+        // synchronously, before a new PaywallView (reusing this same handler) mounts and observes a
+        // stale, already-handled signal as if it were its own fresh one.
+        let handler: PurchaseHandler = .mock()
+        handler.signalWebCheckoutOpened()
+        handler.clearWebCheckoutOpened()
+
+        let fireCount: Atomic<Int> = .init(0)
+        let view = ProbeView(handler: handler) {
+            fireCount.modify { $0 += 1 }
+        }
+
+        let (window, _) = Self.host(view)
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
+        expect(fireCount.value) == 0
     }
 
 }
