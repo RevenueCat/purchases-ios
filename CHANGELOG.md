@@ -1,17 +1,12 @@
 ## 5.81.2
-## RevenueCat SDK
-### 🐞 Bugfixes
-* Rename workflow event names to singular (#7099) via Cesar de la Vega (@vegaro)
-
 ## RevenueCatUI SDK
 ### Paywallsv2
 #### 🐞 Bugfixes
 * Preserve background audio after videos close (#7197) via Cesar de la Vega (@vegaro)
-### Paywallv2
-#### 🐞 Bugfixes
 * Reset bottom sheet content identity when switching sheets (#7216) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
+* Rename workflow event names to singular (#7099) via Cesar de la Vega (@vegaro)
 * Add `DangerousSettings(autoSyncPurchases:uiPreviewMode:useWorkflows:)` init (#7276) via Cesar de la Vega (@vegaro)
 * Fix xcodeproj remove stale `PaywallWebViewAPI` references (#7277) via Cesar de la Vega (@vegaro)
 * Remove unused draft paywall components (#7271) via Rick (@rickvdl)
