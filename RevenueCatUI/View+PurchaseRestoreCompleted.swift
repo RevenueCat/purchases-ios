@@ -39,10 +39,8 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
-/// A closure invoked when the user taps a web checkout CTA and leaves the app to complete
-/// payment externally.
-/// - Note: This does **not** indicate that a purchase was completed; use `onPurchaseCompleted`
-///   for that.
+/// A closure invoked when the user taps a web checkout CTA and leaves the app to complete payment
+/// externally.
 public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
 
 /// A closure used to perform custom purchase logic implemented by your app.
@@ -250,11 +248,8 @@ extension View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
     }
 
-    /// Invokes the given closure when the user taps a web checkout CTA and is taken out of the
-    /// app to complete payment externally (e.g. via browser or in-app browser).
-    ///
-    /// This is distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled; they have
-    /// initiated a purchase flow outside of the app.
+    /// Invokes the given closure when the user taps a web checkout CTA and leaves the app to complete
+    /// payment externally. Distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled.
     ///
     /// Example:
     /// ```swift

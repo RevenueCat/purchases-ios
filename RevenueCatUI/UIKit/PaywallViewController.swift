@@ -725,9 +725,7 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
-    /// Notifies that the user tapped a web checkout CTA and has left the app to complete payment
-    /// externally. This is distinct from ``paywallViewControllerDidCancelPurchase(_:)``: the
-    /// user has not cancelled; they have initiated a purchase flow outside of the app.
+    /// Notifies that the user tapped a web checkout CTA and left the app to complete payment externally.
     @objc(paywallViewControllerDidOpenWebCheckout:)
     optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
 

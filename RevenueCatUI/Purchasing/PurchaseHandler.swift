@@ -111,9 +111,8 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
-    /// Set to a new UUID each time the user taps a web checkout CTA.
-    /// Used to propagate the ``WebCheckoutOpenedPreferenceKey`` so callers can distinguish
-    /// "web checkout opened" from a regular cancellation.
+    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
+    /// ``WebCheckoutOpenedPreferenceKey``.
     @Published
     fileprivate(set) var webCheckoutOpened: UUID?
 
@@ -863,9 +862,7 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
-    /// Signals that the user tapped a web checkout CTA and the paywall is about to be dismissed
-    /// to open the browser. Sets a new UUID on ``webCheckoutOpened`` so the
-    /// ``WebCheckoutOpenedPreferenceKey`` fires.
+    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
     @MainActor
     func signalWebCheckoutOpened() {
         self.webCheckoutOpened = UUID()
@@ -883,20 +880,18 @@ extension PurchaseHandler {
         self.activePaywallSessionID = nil
     }
 
-    /// Clears a pending web checkout signal without a full session reset. Used when an exit offer is
-    /// about to be presented reusing this same `PurchaseHandler`. This must run synchronously (unlike
-    /// `resetForNewSession`'s deferred clear): the exit offer's paywall mounts in this same synchronous
-    /// step, and a deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale,
-    /// already-handled signal as if it were its own fresh one.
+    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
+    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
+    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
+    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
+    /// its own fresh one.
     @MainActor
     func clearWebCheckoutOpened() {
         self.webCheckoutOpened = nil
     }
 
-    /// Clearing `webCheckoutOpened` runs a tick later than the calling dismiss/reset path: that path
-    /// is triggered from the same synchronous step that just set `webCheckoutOpened`, and clearing it
-    /// immediately can coalesce away the SwiftUI render pass that would have delivered the signal to
-    /// `onWebCheckoutOpened` observers, silently dropping the callback.
+    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
+    /// dismiss) still reaches its SwiftUI render pass before being cleared.
     private func deferredClearWebCheckoutOpened() {
         DispatchQueue.main.async { [weak self] in
             self?.webCheckoutOpened = nil
@@ -1226,8 +1221,6 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
 
 }
 
-/// Preference key emitted whenever the user taps a web checkout CTA.
-/// Each new UUID represents a distinct tap, allowing consecutive taps to both fire the callback.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
 

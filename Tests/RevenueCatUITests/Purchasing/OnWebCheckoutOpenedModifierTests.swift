@@ -18,9 +18,7 @@ import XCTest
 
 #if os(iOS)
 
-/// Verifies the `.onWebCheckoutOpened` modifier's `PreferenceKey` plumbing: that a
-/// `PurchaseHandler.signalWebCheckoutOpened()` call is propagated all the way to the handler
-/// closure, and that consecutive signals each fire it (not deduped as a single change).
+/// Verifies the `.onWebCheckoutOpened` modifier's `PreferenceKey` plumbing.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class OnWebCheckoutOpenedModifierTests: TestCase {
@@ -41,14 +39,12 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
 
         expect(fireCount.value) == 0
 
-        // Mutate the handler directly rather than simulating a button tap: this isolates the
-        // preference/modifier plumbing from gesture handling, matching the approach already used
-        // for other SwiftUI state propagation regressions (see TabsComponentDuplicateInstanceTests).
+        // Mutating the handler directly isolates the preference/modifier plumbing from gesture handling.
         handler.signalWebCheckoutOpened()
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         expect(fireCount.value) == 1
 
-        // A second, distinct tap must fire again rather than being treated as an identical value.
+        // Must fire again, not be deduped as an identical value.
         handler.signalWebCheckoutOpened()
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
         expect(fireCount.value) == 2
@@ -70,10 +66,7 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
 
         expect(fireCount.value) == 0
 
-        // Mirrors handleMainPaywallDismiss's no-exit-offer branch: signaling then immediately resetting
-        // in the same synchronous step, with no RunLoop spin in between. If the reset's clear weren't
-        // deferred, this would coalesce away the SwiftUI render pass that delivers the signal, silently
-        // dropping the callback.
+        // Mirrors handleMainPaywallDismiss: signal then immediately reset, no RunLoop spin in between.
         handler.signalWebCheckoutOpened()
         handler.resetForNewSession()
         RunLoop.main.run(until: Date().addingTimeInterval(0.3))
@@ -81,9 +74,8 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
     }
 
     func testOnWebCheckoutOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
-        // Regression test for the exit-offer reuse scenario: clearWebCheckoutOpened() must complete
-        // synchronously, before a new PaywallView (reusing this same handler) mounts and observes a
-        // stale, already-handled signal as if it were its own fresh one.
+        // clearWebCheckoutOpened() must complete synchronously so a new view reusing this handler
+        // (the exit offer) doesn't see the stale signal as its own fresh one.
         let handler: PurchaseHandler = .mock()
         handler.signalWebCheckoutOpened()
         handler.clearWebCheckoutOpened()

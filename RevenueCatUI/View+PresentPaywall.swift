@@ -752,9 +752,8 @@ private struct PresentingPaywallModifier: ViewModifier {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
         } else {
-            // The exit offer reuses this same purchaseHandler without a full session reset (its
-            // sessionPurchaseResult is still needed for exit-offer eligibility), so clear this one
-            // signal explicitly to avoid it firing again on the exit offer's paywall.
+            // Exit offer reuses purchaseHandler without a full reset (sessionPurchaseResult is
+            // still needed for eligibility), so clear this signal to avoid it firing again there.
             self.purchaseHandler.clearWebCheckoutOpened()
         }
     }
@@ -1064,9 +1063,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
             self.purchaseHandler.resetForNewSession()
             self.onDismiss?()
         } else {
-            // The exit offer reuses this same purchaseHandler without a full session reset (its
-            // sessionPurchaseResult is still needed for exit-offer eligibility), so clear this one
-            // signal explicitly to avoid it firing again on the exit offer's paywall.
+            // Exit offer reuses purchaseHandler without a full reset (sessionPurchaseResult is
+            // still needed for eligibility), so clear this signal to avoid it firing again there.
             self.purchaseHandler.clearWebCheckoutOpened()
         }
     }
