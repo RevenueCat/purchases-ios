@@ -30,6 +30,11 @@ final class WebViewComponentViewModel: Hashable {
         }
         return origin
     }()
+
+    /// Whether to mount the web view: visible, with a non-empty id and a URL that resolves an origin.
+    var isRenderable: Bool {
+        self.visible && !self.componentID.isEmpty && self.url != nil && self.origin != nil
+    }
     #endif
 
     init(component: PaywallComponent.WebViewComponent) {

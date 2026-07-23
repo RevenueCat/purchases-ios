@@ -115,6 +115,9 @@ enum Strings {
     case paywall_web_view_post_message_skipped(reason: String)
     case paywall_web_view_invalid_expected_origin(String)
     case paywall_web_view_content_process_terminated
+    case paywall_web_view_not_rendered(reason: String)
+    case paywall_web_view_load_failed(String)
+    case paywall_web_view_http_error(statusCode: Int)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -382,6 +385,13 @@ extension Strings: CustomStringConvertible {
                 "the web view cannot verify message provenance and will not be shown."
         case .paywall_web_view_content_process_terminated:
             return "Paywalls V2 web_view content process terminated. Removing the web view."
+        case .paywall_web_view_not_rendered(let reason):
+            return "Paywalls V2 web_view will not render: \(reason)"
+        case .paywall_web_view_load_failed(let error):
+            return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
+        case .paywall_web_view_http_error(let statusCode):
+            return "Paywalls V2 web_view failed to load and will be removed. " +
+                "The server responded with HTTP status code \(statusCode)."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
