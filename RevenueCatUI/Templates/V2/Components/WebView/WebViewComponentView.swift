@@ -197,7 +197,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     #endif
 
     @MainActor
-    private func makeWebView(context: Context) -> PlatformWebView {
+    static func makeConfiguration(session: WebViewSession?) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .nonPersistent()
         configuration.userContentController = WKUserContentController()
@@ -224,6 +224,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         )
         #endif
 
+        return configuration
+    }
+
+    @MainActor
+    private func makeWebView(context: Context) -> PlatformWebView {
+        let configuration = Self.makeConfiguration(session: session)
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
 
