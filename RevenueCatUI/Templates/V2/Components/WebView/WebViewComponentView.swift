@@ -20,9 +20,10 @@ struct WebViewComponentView: View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
         #else
-        // Resolving the origin here (rather than deep in the session) is what lets the whole web view
-        // stay unrendered when the URL has no usable origin, instead of rendering an inert bridge.
-        if viewModel.visible, let url = viewModel.url, let origin = viewModel.origin {
+        // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
+        // can't work — no usable origin, or an empty component id the bridge would only reject on —
+        // instead of mounting an inert bridge. See `WebViewComponentViewModel.isRenderable`.
+        if viewModel.isRenderable, let url = viewModel.url, let origin = viewModel.origin {
             BridgedWebViewComponentView(
                 viewModel: viewModel,
                 url: url,
