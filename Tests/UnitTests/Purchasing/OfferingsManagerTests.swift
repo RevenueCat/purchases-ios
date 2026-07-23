@@ -982,7 +982,6 @@ private extension OfferingsManagerTests {
                             metadata: offering.metadata,
                             paywallComponents: nil,
                             hasPaywallComponents: hasPaywallComponents,
-                            draftPaywallComponents: nil,
                             availablePackages: offering.packages.map { package in
                                 .init(
                                     identifier: package.identifier,

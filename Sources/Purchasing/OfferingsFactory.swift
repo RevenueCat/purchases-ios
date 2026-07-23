@@ -90,25 +90,12 @@ class OfferingsFactory {
             return nil
         }()
 
-        let paywallDraftComponents: Offering.PaywallComponents? = {
-            if shouldCreatePaywallComponents,
-               let uiConfig,
-               let paywallDraftComponents = offering.draftPaywallComponents {
-                return .init(
-                    uiConfig: uiConfig,
-                    data: paywallDraftComponents
-                )
-            }
-            return nil
-        }()
-
         return Offering(identifier: offering.identifier,
                         serverDescription: offering.description,
                         metadata: offering.metadata.mapValues(\.asAny),
                         paywall: offering.paywall,
                         paywallComponents: paywallComponents,
                         hasPaywallComponents: hasPaywallComponents,
-                        draftPaywallComponents: paywallDraftComponents,
                         availablePackages: availablePackages,
                         webCheckoutUrl: offering.webCheckoutUrl)
     }
@@ -174,7 +161,6 @@ private extension Offerings.Contents {
             let canCreatePaywallComponents = self.response.uiConfig != nil && offering.paywallComponents != nil
             offering.hasPaywallComponents = offering.hasPaywallComponents ?? canCreatePaywallComponents
             offering.paywallComponents = nil
-            offering.draftPaywallComponents = nil
             return offering
         }
         let response = OfferingsResponse(

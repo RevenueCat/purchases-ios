@@ -179,7 +179,6 @@ private extension Offering {
                         paywall: self.paywall,
                         paywallComponents: self.internalPaywallComponents,
                         hasPaywallComponents: self.hasPaywallComponents,
-                        draftPaywallComponents: self.draftPaywallComponents,
                         availablePackages: updatedPackages,
                         webCheckoutUrl: self.webCheckoutUrl
         )
