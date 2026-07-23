@@ -71,7 +71,8 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
 
     fileprivate final func createClient(
         _ systemInfo: SystemInfo,
-        operationDispatcher: OperationDispatcher = MockOperationDispatcher()
+        operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
+        apiSourceProvider: RemoteConfigSourceProviderType? = nil
     ) -> HTTPClient {
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
@@ -80,6 +81,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           dnsChecker: MockDNSChecker.self,
                           requestTimeout: defaultRequestTimeout,
                           operationDispatcher: operationDispatcher,
+                          apiSourceProvider: apiSourceProvider,
                           timeoutManager: timeoutManager)
     }
 }
@@ -112,6 +114,147 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         expect(hostCorrect.value) == true
+    }
+
+    func testUsesAPISourceHostFromProviderWhenSet() throws {
+        let apiSourceHost = "custom-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
+        )
+
+        let hostCorrect: Atomic<Bool> = false
+        stub(condition: isHost(apiSourceHost)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testDoesNotUseAPISourceHostWhenSettingDisabled() throws {
+        // `usesRemoteConfigAPISources` is disabled by default (`self.systemInfo`), so an injected provider
+        // must be ignored and requests target `serverHostURL`.
+        let client = self.createClient(
+            self.systemInfo,
+            apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
+        )
+
+        let hostCorrect: Atomic<Bool> = false
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        stub(condition: isHost(host)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testUsesServerHostURLWhenNoAPISourceProvider() throws {
+        // No provider injected: behavior is unchanged and requests target `serverHostURL`.
+        let hostCorrect: Atomic<Bool> = false
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        stub(condition: isHost(host)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testProxyURLTakesPrecedenceOverAPISource() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.rc-test.com"))
+        SystemInfo.proxyURL = proxyURL
+        defer { SystemInfo.proxyURL = nil }
+
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
+        )
+
+        let hostCorrect: Atomic<Bool> = false
+        stub(condition: isHost("proxy.rc-test.com")) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testOverriddenAPIBaseURLPinsHostAndBypassesAPISource() throws {
+        let overriddenHost = "pinned-api.rc-test.com"
+        SystemInfo.apiBaseURL = try XCTUnwrap(URL(string: "https://\(overriddenHost)"))
+        defer { SystemInfo.apiBaseURL = SystemInfo.defaultApiBaseURL }
+
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(host: "custom-api.rc-test.com")
+        )
+
+        let hostCorrect: Atomic<Bool> = false
+        stub(condition: isHost(overriddenHost)) { _ in
+            hostCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        waitUntil { completion in
+            client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(hostCorrect.value) == true
+    }
+
+    func testETagRetryTargetsTheSameAPISourceHost() throws {
+        let apiSourceHost = "custom-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(host: apiSourceHost)
+        )
+
+        // Count requests reaching the API source host. If the ETag refresh retry ignored the API source and
+        // fell back to the default host, this host would only be hit once (and the unstubbed default host
+        // request would not succeed).
+        let apiSourceRequests: Atomic<Int> = .init(0)
+        stub(condition: isHost(apiSourceHost)) { [eTagManager = self.eTagManager!] _ in
+            defer { apiSourceRequests.value += 1 }
+            // On the retry, let the ETag manager return a result so the request completes.
+            if apiSourceRequests.value > 0 {
+                eTagManager.shouldReturnResultFromBackend = true
+            }
+            return .emptySuccessResponse()
+        }
+
+        // First attempt: an ETag cache miss (nil result) forces a refresh retry.
+        self.eTagManager.shouldReturnResultFromBackend = false
+        self.eTagManager.stubbedHTTPResultFromCacheOrBackendResult = nil
+
+        let result: DataResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(apiSourceRequests.value) == 2
     }
 
     func testPassesHeaders() {
@@ -1163,7 +1306,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     func testRemoteConfigDoesNotUseETagCacheEvenIfResponseIncludesETagHeader() {
         let request = HTTPRequest(
-            method: .post(RemoteConfigRequest(appUserID: "app-user-id")),
+            method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
             path: HTTPRequest.Path.remoteConfig(domain: "app")
         )
         let headerPresent: Atomic<Bool?> = nil
@@ -4025,4 +4168,51 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         expect(self.timeoutManager.recordedResults).to(haveCount(1))
         expect(self.timeoutManager.recordedResults.first) == .successOnMainBackend
     }
+}
+
+extension HTTPClientTests {
+
+    /// A real `RemoteConfigSourceProvider` whose only API source is `https://<host>/`, so the resolved
+    /// base host is unambiguously provider-driven rather than the default `serverHostURL`.
+    fileprivate static func apiSourceProvider(host: String) -> RemoteConfigSourceProvider {
+        return RemoteConfigSourceProvider(topicStore: SingleAPISourceTopicStore(url: "https://\(host)/"))
+    }
+
+    /// A `MockSystemInfo` with the `usesRemoteConfigAPISources` dangerous setting enabled, so API source
+    /// host resolution is active. The setting is disabled by default, which would otherwise pin requests
+    /// to `serverHostURL` regardless of the injected provider.
+    fileprivate func systemInfoUsingAPISources() -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
+    }
+
+}
+
+/// A minimal `sources` topic store exposing a single API source, matching the backend topic shape.
+private final class SingleAPISourceTopicStore: RemoteConfigTopicStoreType {
+
+    private let url: String
+
+    init(url: String) {
+        self.url = url
+    }
+
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        guard topic == .sources else { return nil }
+        return ["api": RemoteConfiguration.ConfigItem(content: [
+            "sources": .array([
+                .object([
+                    "url": .string(self.url),
+                    "priority": .int(0),
+                    "weight": .int(1)
+                ])
+            ])
+        ])]
+    }
+
 }

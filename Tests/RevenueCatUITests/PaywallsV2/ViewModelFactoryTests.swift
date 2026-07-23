@@ -415,7 +415,7 @@ class ViewModelFactoryTests: TestCase {
                             heic: Self.sampleURL,
                             heicLowRes: Self.sampleURL
                         )),
-                        size: .init(width: .fill, height: .fit)
+                        size: .init(width: .fill, height: .fit(nil))
                     )
                 ),
                 .text(.init(text: "badge_text_lid", color: Self.black))
@@ -459,7 +459,7 @@ class ViewModelFactoryTests: TestCase {
                             heic: Self.sampleURL,
                             heicLowRes: Self.sampleURL
                         )),
-                        size: .init(width: .fill, height: .fit)
+                        size: .init(width: .fill, height: .fit(nil))
                     ))
                 ],
                 dimension: .zlayer(.top)
@@ -495,7 +495,7 @@ class ViewModelFactoryTests: TestCase {
                 .text(.init(text: "badge_text_lid", color: Self.black))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             background: .image(
                 .init(light: .init(
                     width: 1,
@@ -549,7 +549,7 @@ class ViewModelFactoryTests: TestCase {
                         heic: Self.sampleURL,
                         heicLowRes: Self.sampleURL
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ))
             ],
             dimension: .zlayer(.top)
@@ -590,7 +590,7 @@ class ViewModelFactoryTests: TestCase {
                         urlLowRes: nil,
                         checksumLowRes: nil
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ))
             ]),
             header: .init(stack: .init(components: [
@@ -630,7 +630,7 @@ class ViewModelFactoryTests: TestCase {
                         urlLowRes: nil,
                         checksumLowRes: nil
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 )),
                 .text(.init(text: "badge_text_lid", color: Self.black))
             ],
@@ -757,7 +757,7 @@ class ViewModelFactoryTests: TestCase {
                 .text(.init(text: "text_lid", color: Self.black))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let factory = ViewModelFactory()
@@ -790,7 +790,7 @@ class ViewModelFactoryTests: TestCase {
                 heic: Self.sampleURL,
                 heicLowRes: Self.sampleURL
             )),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let rootStack = PaywallComponent.StackComponent(
@@ -799,7 +799,7 @@ class ViewModelFactoryTests: TestCase {
                 .image(imageComponent)
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(

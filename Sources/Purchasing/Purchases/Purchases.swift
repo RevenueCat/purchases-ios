@@ -405,6 +405,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
+        let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
+        let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -418,7 +421,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            apiSourceProvider: apiSourceProvider
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -501,19 +505,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               appUserID: appUserID
         )
         let remoteConfigManager: RemoteConfigManagerType = {
-            guard systemInfo.remoteConfigEnabled else { return NoOpRemoteConfigManager() }
+            guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
 
-            let diskCache = RemoteConfigDiskCache()
             let blobStore = RemoteConfigBlobStore()
-            let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: sourceProvider
+                sourceProvider: apiSourceProvider
             )
 
             return RemoteConfigManager(
                 remoteConfigAPI: backend.remoteConfigAPI,
-                diskCache: diskCache,
+                diskCache: remoteConfigDiskCache,
                 blobStore: blobStore,
                 blobFetcher: blobFetcher,
                 currentUserProvider: identityManager,
@@ -577,8 +579,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
+        let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
+        let workflowsConfigProvider = WorkflowsConfigProvider(
+            manager: remoteConfigManager,
+            uiConfigProvider: uiConfigProvider
+        )
+
         let workflowManager = WorkflowManager(
-            workflowsConfigProvider: WorkflowsConfigProvider(manager: remoteConfigManager),
+            workflowsConfigProvider: workflowsConfigProvider,
             paywallCache: paywallCache,
             operationDispatcher: operationDispatcher
         )
@@ -592,6 +600,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 diagnosticsTracker: diagnosticsTracker,
                                                 remoteConfigManager: systemInfo.remoteConfigEnabled
                                                 ? remoteConfigManager
+                                                : nil,
+                                                uiConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? uiConfigProvider
+                                                : nil,
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
+                                                ? workflowManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -855,6 +869,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         super.init()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
+            guard let self else { return }
+            self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
+        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -1027,6 +1045,11 @@ public extension Purchases {
         return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
+    @_spi(Internal)
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
@@ -1067,7 +1090,10 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
             }
         }
     }
@@ -1102,7 +1128,7 @@ public extension Purchases {
                 return
             }
 
-            self.updateAllCaches {
+            self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
         }
@@ -1213,7 +1239,10 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                fetchContext: .identityChange,
+                isAppBackgrounded: isBackgrounded
+            )
         }
     }
 
@@ -2404,11 +2433,11 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
-    // Exposes the single workflows + remote config gate to RevenueCatUI, which can't see the
-    // ENABLE_REMOTE_CONFIG compile flag directly.
+    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
+    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
-        return self.systemInfo.remoteConfigEnabled
+        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
     }
 
     // swiftlint:disable missing_docs
@@ -2635,7 +2664,7 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false)
+        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
         self.dispatchSyncSubscriberAttributes()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
@@ -2700,7 +2729,11 @@ private extension Purchases {
             guard !isBackgrounded, let self = self else { return }
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-                self?.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
+                self?.updateAllCaches(
+                    isAppBackgrounded: isBackgrounded,
+                    fetchContext: .appStart,
+                    completion: nil
+                )
 
                 // Run the health check after all cache operations have been
                 // enqueued on the serial queue, so it doesn't block user-facing requests.
@@ -2736,7 +2769,7 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
+    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -2757,18 +2790,28 @@ private extension Purchases {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
 
-        self.remoteConfigManager.refreshRemoteConfigIfStale(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfigIfStale(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
-    func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
+    func updateAllCaches(
+        fetchContext: RemoteConfigFetchContext,
+        completion: ((Result<CustomerInfo, PublicError>) -> Void)?
+    ) {
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateAllCaches(isAppBackgrounded: isAppBackgrounded,
-                                 completion: completion)
+            self.updateAllCaches(
+                isAppBackgrounded: isAppBackgrounded,
+                fetchContext: fetchContext,
+                completion: completion
+            )
         }
     }
 
     func updateAllCaches(
         isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
@@ -2792,7 +2835,10 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-        self.remoteConfigManager.refreshRemoteConfig(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
     // Used when delegate is being set

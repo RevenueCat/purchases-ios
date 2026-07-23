@@ -41,6 +41,8 @@ if !includeTestDependencies {
     let xcodeDeploymentTargetOverrides: SettingsDictionary = [
         "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphoneos27*]": "15.0",
         "IPHONEOS_DEPLOYMENT_TARGET[sdk=iphonesimulator27*]": "15.0",
+        // Mac Catalyst derives its minimum from the iOS deployment target under the macOS SDK.
+        "IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx27*]": "15.0",
         "TVOS_DEPLOYMENT_TARGET[sdk=appletvos27*]": "15.0",
         "TVOS_DEPLOYMENT_TARGET[sdk=appletvsimulator27*]": "15.0",
         "WATCHOS_DEPLOYMENT_TARGET[sdk=watchos27*]": "9.0",

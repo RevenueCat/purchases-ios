@@ -109,6 +109,16 @@ enum Strings {
     case video_failed_to_set_audio_session_category(Error)
     case video_failed_to_cache(URL, Error)
 
+    // WebView
+    case paywall_web_view_message_rejected(reason: String)
+    case paywall_web_view_post_message_failed(String)
+    case paywall_web_view_post_message_skipped(reason: String)
+    case paywall_web_view_invalid_expected_origin(String)
+    case paywall_web_view_content_process_terminated
+    case paywall_web_view_not_rendered(reason: String)
+    case paywall_web_view_load_failed(String)
+    case paywall_web_view_http_error(statusCode: Int)
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -363,6 +373,25 @@ extension Strings: CustomStringConvertible {
             return "Failed to set audio session category: \(error)"
         case .video_failed_to_cache(let url, let error):
             return "Failed to cache video at \(url): \(error)"
+
+        case .paywall_web_view_message_rejected(let reason):
+            return "Paywalls V2 web_view message rejected: \(reason)"
+        case .paywall_web_view_post_message_failed(let error):
+            return "Paywalls V2 web_view postMessage failed: \(error)"
+        case .paywall_web_view_post_message_skipped(let reason):
+            return "Paywalls V2 web_view postMessage skipped: \(reason)"
+        case .paywall_web_view_invalid_expected_origin(let url):
+            return "Paywalls V2 web_view URL '\(url)' has no resolvable origin; " +
+                "the web view cannot verify message provenance and will not be shown."
+        case .paywall_web_view_content_process_terminated:
+            return "Paywalls V2 web_view content process terminated. Removing the web view."
+        case .paywall_web_view_not_rendered(let reason):
+            return "Paywalls V2 web_view will not render: \(reason)"
+        case .paywall_web_view_load_failed(let error):
+            return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
+        case .paywall_web_view_http_error(let statusCode):
+            return "Paywalls V2 web_view failed to load and will be removed. " +
+                "The server responded with HTTP status code \(statusCode)."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

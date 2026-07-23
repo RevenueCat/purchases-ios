@@ -42,6 +42,10 @@ extension Target {
                      deviceSDK: "watchos", simulatorSDK: "watchsimulator",
                      buildSetting: "WATCHOS_DEPLOYMENT_TARGET")
 
+        if let iOS = deploymentTargets.iOS, iOS.rc_isVersionBelow("15.0") {
+            overrides["IPHONEOS_DEPLOYMENT_TARGET[sdk=macosx27*]"] = "15.0"
+        }
+
         // macOS exposes a single SDK name (no separate simulator), matching the committed .xcodeproj.
         if let macOS = deploymentTargets.macOS, macOS.rc_isVersionBelow("12.0") {
             overrides["MACOSX_DEPLOYMENT_TARGET[sdk=macosx27*]"] = "12.0"

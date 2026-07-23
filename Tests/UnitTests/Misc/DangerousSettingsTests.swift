@@ -50,6 +50,13 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(uiPreviewMode: false)
     }
 
+    func testAutoSyncPurchasesAndUseWorkflowsCanBeSetIndependently() {
+        let settings = DangerousSettings(autoSyncPurchases: false, useWorkflows: true)
+
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.useWorkflows) == true
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)
@@ -59,6 +66,17 @@ final class DangerousSettingsTests: TestCase {
 
         expect(lhs) == rhs
         expect(lhs.hashValue) == rhs.hashValue
+    }
+
+    // MARK: - Internal settings
+
+    func testUsesRemoteConfigAPISourcesIsDisabledByDefault() {
+        expect(DangerousSettings.Internal.default.usesRemoteConfigAPISources) == false
+    }
+
+    func testUsesRemoteConfigAPISourcesCanBeEnabled() {
+        let internalSettings = DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+        expect(internalSettings.usesRemoteConfigAPISources) == true
     }
 
 }

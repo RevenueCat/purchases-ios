@@ -34,7 +34,10 @@ protocol PaywallCacheWarmingType: Sendable {
     func warmUpPaywallFontsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool
 
 #if !os(tvOS) // For Paywalls
 
@@ -63,7 +66,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedImages = false
     private var hasLoadedVideos = false
-    private var warmedWorkflowIDs: Set<String> = []
+    private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
+    private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
 
     init(
@@ -177,9 +181,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
-        guard !self.warmedWorkflowIDs.contains(workflow.id) else { return }
-        self.warmedWorkflowIDs.insert(workflow.id)
+    /// Pre-downloads every screen's images and low-resolution videos plus downloadable `ui_config` fonts.
+    ///
+    /// The workflow ID is recorded before downloads start so the presentation and background body-data paths cannot
+    /// enqueue duplicate work. Individual downloads are best-effort and do not fail workflow delivery.
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        guard !self.workflowIDsWithAssetPrewarmingStarted.contains(workflow.id) else { return }
+        self.workflowIDsWithAssetPrewarmingStarted.insert(workflow.id)
 
         // Intentionally prewarming all screens, not just those reachable from
         // `initialStepId`. This trades off potentially downloading assets for
@@ -194,7 +202,11 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         let imageURLs = Set(screens.flatMap(\.allImageURLs))
         let videoURLs = Set(screens.flatMap(\.allLowResVideoUrls))
         #if !os(tvOS)
-        let fonts = uiConfig.app.allDownloadableFonts
+        let fonts = uiConfig.app.allDownloadableFonts.filter {
+            // Background prewarming is best-effort once per shared font asset. Presentation-time font loading
+            // bypasses this set, so a failed prewarm can still be retried when the font is actually needed.
+            self.workflowFontAssetsWithPrewarmingAttempted.insert($0).inserted
+        }
         #endif
 
         await withTaskGroup(of: Void.self) { group in
@@ -222,6 +234,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             }
             #endif
         }
+    }
+
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+        return self.workflowIDsWithAssetPrewarmingStarted.contains(workflowID)
     }
 
 #if !os(tvOS)
@@ -336,7 +352,7 @@ private extension Offerings {
                 .all
                 .values
                 .lazy
-                .compactMap(\.paywallComponents)
+                .compactMap(\.internalPaywallComponents)
                 .flatMap(\.data.allLowResVideoUrls)
         )
     }
@@ -393,7 +409,7 @@ private extension Offerings {
                 .all
                 .values
                 .lazy
-                .compactMap(\.paywallComponents)
+                .compactMap(\.internalPaywallComponents)
                 .flatMap(\.data.allImageURLs)
         )
     }
@@ -414,7 +430,7 @@ private extension PaywallData.Configuration.Images {
 }
 
 /// Business logic object to easily manage the download of fonts.
-struct DownloadableFont: Sendable {
+struct DownloadableFont: Sendable, Hashable {
 
     /// The font name.
     let name: String

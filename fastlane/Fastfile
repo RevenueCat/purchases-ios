@@ -1143,6 +1143,8 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
+    # Which subdirectory of Examples/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
+    flow_subdir = options[:flow_subdir] || "e2e_tests"
     skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
@@ -1237,7 +1239,7 @@ platform :ios do
 
     success = false
     begin
-      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
 
       UI.message("Using flow directory: #{flow_dir}")
 
@@ -1821,6 +1823,24 @@ platform :ios do
   end
 
   desc "Run BackendIntegrationTests"
+  desc "Runs the remote config blob health monitor against the live backend (two projects)"
+  desc "Keys come from the environment (REVENUECAT_REMOTE_CONFIG_CDN_API_KEY / _INLINE_API_KEY);"
+  desc "each test skips if its key is unset, so no key is ever written into source."
+  lane :remote_config_production_tests do
+    scan(
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RemoteConfigProductionTests",
+      device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+      ensure_devices_found: true,
+      derived_data_path: "scan_derived_data",
+      output_types: 'junit',
+      result_bundle: true,
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/ios",
+      number_of_retries: 3
+    )
+  end
+
   lane :backend_integration_tests do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
