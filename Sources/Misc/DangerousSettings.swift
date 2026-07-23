@@ -152,23 +152,16 @@ import Foundation
     }
 
     /**
-     * Used to control auto-sync, UI preview mode, and RevenueCat Workflows (multipage paywalls)
-     * together. Internal RevenueCat use only; behavior may change without warning.
+     * Used to enable RevenueCat Workflows (multipage paywalls) while controlling auto-sync.
+     * Internal RevenueCat use only; behavior may change without warning.
      *
      * - Parameter autoSyncPurchases: whether the SDK observes the StoreKit queue and syncs purchases.
-     * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead of the
-     * products obtained from StoreKit. This is useful for testing or preview purposes.
      * - Parameter useWorkflows: if `true`, the SDK wires up the workflows endpoint so multipage
      * paywalls can be rendered.
      */
-    @_spi(Internal) public convenience init(
-        autoSyncPurchases: Bool = true,
-        uiPreviewMode: Bool = false,
-        useWorkflows: Bool = false
-    ) {
+    @_spi(Internal) public convenience init(autoSyncPurchases: Bool, useWorkflows: Bool) {
         self.init(autoSyncPurchases: autoSyncPurchases,
                   internalSettings: Internal.default,
-                  uiPreviewMode: uiPreviewMode,
                   useWorkflows: useWorkflows)
     }
 
