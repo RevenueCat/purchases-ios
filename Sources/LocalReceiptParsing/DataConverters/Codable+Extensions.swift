@@ -95,7 +95,12 @@ extension JSONDecoder {
         return formatter
     }()
 
-    static let `default`: JSONDecoder = {
+    static let `default`: JSONDecoder = JSONDecoder.makeDefault()
+
+    /// Returns a new decoder with the SDK's standard configuration.
+    ///
+    /// Use this instead of mutating ``default`` when a call site needs request-specific `userInfo`.
+    static func makeDefault() -> JSONDecoder {
         let decoder = JSONDecoder()
         decoder.keyDecodingStrategy = .convertFromSnakeCase
         decoder.dateDecodingStrategy = .custom { decoder in
@@ -114,6 +119,6 @@ extension JSONDecoder {
         }
 
         return decoder
-    }()
+    }
 
 }

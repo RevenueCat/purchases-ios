@@ -106,6 +106,7 @@ class MockDeviceCache: DeviceCache {
     var cacheOfferingsCount = 0
     var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
+    var clearInMemoryOfferingsCacheCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
@@ -113,6 +114,7 @@ class MockDeviceCache: DeviceCache {
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
     var latestCachedOfferingsContents: Offerings.Contents?
+    var latestCachedOfferingsFetchResult: OfferingsFetchResult?
     var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
@@ -121,16 +123,24 @@ class MockDeviceCache: DeviceCache {
 
     override func cache(
         offerings: Offerings,
-        diskContents: Offerings.Contents? = nil,
+        fetchResult: OfferingsFetchResult? = nil,
         preferredLocales: [String],
         appUserID: String
     ) {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
-        self.latestCachedOfferingsContents = diskContents ?? offerings.contents
+        self.latestCachedOfferingsContents = fetchResult?.contents ?? offerings.contents
+        self.latestCachedOfferingsFetchResult = fetchResult
+        self.stubbedOfferings = offerings
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
+        self.stubbedOfferings = offerings
+    }
+
+    override func clearInMemoryOfferingsCache() {
+        self.clearInMemoryOfferingsCacheCount += 1
+        self.stubbedOfferings = nil
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -143,11 +153,17 @@ class MockDeviceCache: DeviceCache {
 
     override func clearOfferingsCache(appUserID: String) {
         self.clearCachedOfferingsCount += 1
+        self.stubbedOfferings = nil
+        self.stubbedCachedOfferingsData = nil
     }
 
-    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+    override func cachedOfferingsContents(
+        appUserID: String,
+        decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents
+    ) -> Offerings.Contents? {
         if let stubbedCachedOfferingsData {
-            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+            let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
+            return try? decoder.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
         }
         return nil
     }

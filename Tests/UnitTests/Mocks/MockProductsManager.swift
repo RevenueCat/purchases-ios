@@ -15,6 +15,8 @@ class MockProductsManager: ProductsManager {
     var invokedProductsParametersList = [Set<String>]()
     var stubbedProductsCompletionResult: Result<Set<StoreProduct>, PurchasesError>?
     var productResultDelay: TimeInterval?
+    var shouldDeferProductsCompletion = false
+    private(set) var deferredProductsCompletions: [() -> Void] = []
 
     override func products(withIdentifiers identifiers: Set<String>,
                            completion: @escaping (Result<Set<StoreProduct>, PurchasesError>) -> Void) {
@@ -22,14 +24,9 @@ class MockProductsManager: ProductsManager {
         self.invokedProductsCount += 1
         self.invokedProductsParameters = identifiers
         self.invokedProductsParametersList.append(identifiers)
-        if let result = self.stubbedProductsCompletionResult {
-            if let delay = self.productResultDelay {
-                DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
-                    completion(result)
-                }
-            } else {
-                completion(result)
-            }
+        let result: Result<Set<StoreProduct>, PurchasesError>
+        if let stubbedResult = self.stubbedProductsCompletionResult {
+            result = stubbedResult
         } else {
             Logger.error("\(type(of: self)): no stubbed products, returning fake products for \(identifiers)")
 
@@ -46,8 +43,21 @@ class MockProductsManager: ProductsManager {
                 }
                 .map(StoreProduct.init(sk1Product:))
 
-            completion(.success(Set(products)))
+            result = .success(Set(products))
         }
+
+        let complete = { completion(result) }
+        if self.shouldDeferProductsCompletion {
+            self.deferredProductsCompletions.append(complete)
+        } else if let delay = self.productResultDelay {
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: complete)
+        } else {
+            complete()
+        }
+    }
+
+    func completeDeferredProductsRequest(at index: Int) {
+        self.deferredProductsCompletions[index]()
     }
 
     var invokedCacheProduct = false
@@ -105,6 +115,8 @@ class MockProductsManager: ProductsManager {
         self.invokedProductsParameters = nil
         self.invokedProductsParametersList = []
         self.stubbedProductsCompletionResult = nil
+        self.shouldDeferProductsCompletion = false
+        self.deferredProductsCompletions = []
         self.invokedCacheProduct = false
         self.invokedCacheProductCount = 0
         self.invokedCacheProductParameter = nil

@@ -436,6 +436,7 @@ extension BasePurchasesTests {
 
         override func getOfferings(appUserID: String,
                                    isAppBackgrounded: Bool,
+                                   decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
@@ -447,7 +448,7 @@ extension BasePurchasesTests {
                 return
             }
 
-            completion(.success(.mockContents))
+            completion(.success(.init(contents: .mockContents, rawResponseData: nil)))
         }
 
         var postOfferForSigningCalled = false

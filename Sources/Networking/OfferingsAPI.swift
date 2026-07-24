@@ -13,11 +13,16 @@
 
 import Foundation
 
+struct OfferingsFetchResult {
+    let contents: Offerings.Contents
+    let rawResponseData: Data?
+}
+
 class OfferingsAPI {
 
     typealias IntroEligibilityResponseHandler = ([String: IntroEligibility], BackendError?) -> Void
     typealias OfferSigningResponseHandler = Backend.ResponseHandler<PostOfferForSigningOperation.SigningData>
-    typealias OfferingsResponseHandler = Backend.ResponseHandler<Offerings.Contents>
+    typealias OfferingsResponseHandler = Backend.ResponseHandler<OfferingsFetchResult>
     typealias WebOfferingProductsResponseHandler = Backend.ResponseHandler<WebOfferingProductsResponse>
 
     private let offeringsCallbacksCache: CallbackCache<OfferingsCallback>
@@ -32,6 +37,7 @@ class OfferingsAPI {
 
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
+                      decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)
@@ -40,7 +46,11 @@ class OfferingsAPI {
             offeringsCallbackCache: self.offeringsCallbacksCache
         )
 
-        let offeringsCallback = OfferingsCallback(cacheKey: factory.cacheKey, completion: completion)
+        let offeringsCallback = OfferingsCallback(
+            cacheKey: factory.cacheKey,
+            decodingMode: decodingMode,
+            completion: completion
+        )
         let cacheStatus = self.offeringsCallbacksCache.add(offeringsCallback)
 
         if cacheStatus == .firstCallbackAddedToList {

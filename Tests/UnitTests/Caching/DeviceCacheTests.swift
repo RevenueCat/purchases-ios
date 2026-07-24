@@ -480,6 +480,81 @@ class DeviceCacheTests: TestCase {
         expect(cachedContents?.response.offerings.count) == offerings.contents.response.offerings.count
     }
 
+    func testRawNetworkResponseIsStoredInExistingCacheFormatAndDecodedUsingRequestedMode() throws {
+        let appUserID = "testUser"
+        let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        var rawObject = try XCTUnwrap(JSONSerialization.jsonObject(with: fixtureData) as? [String: Any])
+        rawObject["future_backend_field"] = ["preserved": true]
+        let responseData = try JSONSerialization.data(withJSONObject: rawObject)
+        let response = try OfferingsResponse.create(
+            with: responseData,
+            decodingMode: .withoutPaywallComponents
+        )
+        let contents = Offerings.Contents(
+            response: response,
+            httpResponseOriginalSource: .fallbackUrl
+        )
+
+        self.mockFileCache.stubSaveData(with: .success(.init(data: .init(), url: .mockFileLocation)))
+        self.deviceCache.cache(
+            offerings: .empty,
+            fetchResult: .init(contents: contents, rawResponseData: responseData),
+            preferredLocales: ["en-US"],
+            appUserID: appUserID
+        )
+
+        let cachedData = try XCTUnwrap(self.mockFileCache.saveDataInvocations.first?.data)
+        let cachedObject = try XCTUnwrap(JSONSerialization.jsonObject(with: cachedData) as? [String: Any])
+        expect(cachedObject["original_source"] as? String) == "fallback_url"
+        expect((cachedObject["future_backend_field"] as? [String: Bool])?["preserved"]) == true
+        let cachedOfferings = try XCTUnwrap(cachedObject["offerings"] as? [[String: Any]])
+        expect(cachedOfferings[safe: 1]?["draft_paywall_components"]).toNot(beNil())
+
+        let legacyDecoded = try JSONDecoder.default.decode(Offerings.Contents.self, from: cachedData)
+        expect(legacyDecoded.originalSource) == .fallbackUrl
+        expect(legacyDecoded.response.offerings.first?.paywallComponents).toNot(beNil())
+
+        self.mockFileCache.stubCachedContentExists(at: 0, with: true)
+        self.mockFileCache.stubCachedContentExists(at: 1, with: true)
+        self.mockFileCache.stubLoadFile(at: 0, with: .success(cachedData))
+        self.mockFileCache.stubLoadFile(at: 1, with: .success(cachedData))
+
+        let pruned = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: .withoutPaywallComponents
+        )
+        let full = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: .withPaywallComponents
+        )
+
+        expect(pruned?.originalSource) == .fallbackUrl
+        expect(pruned?.response.offerings.first?.paywallComponents).to(beNil())
+        expect(pruned?.response.offerings.first?.hasPaywallComponents) == true
+        expect(full?.originalSource) == .fallbackUrl
+        expect(full?.response.offerings.first?.paywallComponents).toNot(beNil())
+    }
+
+    func testInvalidRawResponseDoesNotOverwriteCacheWithPrunedContents() throws {
+        let response = try OfferingsResponse.create(
+            with: BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents"),
+            decodingMode: .withoutPaywallComponents
+        )
+        let contents = Offerings.Contents(
+            response: response,
+            httpResponseOriginalSource: .mainServer
+        )
+
+        self.deviceCache.cache(
+            offerings: .empty,
+            fetchResult: .init(contents: contents, rawResponseData: Data("[]".utf8)),
+            preferredLocales: ["en-US"],
+            appUserID: "testUser"
+        )
+
+        expect(self.mockFileCache.saveDataInvocations).to(beEmpty())
+    }
+
     func testOfferingsAreNeverSavedToUserDefaults() throws {
         let appUserID = "testUser"
         let offerings = try Self.createSampleOfferings()
