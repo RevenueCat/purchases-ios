@@ -205,6 +205,9 @@ private extension ETagManager {
     }
 
     private func oldETagDirectoryURL() -> URL? {
+        #if SDK_CONFIG_BENCHMARK
+        guard !DirectoryHelper.skipsLegacyDocumentsMigrations else { return nil }
+        #endif
         // swiftlint:disable:next avoid_using_directory_apis_directly
         guard let documentsURL = Self.fileManager.urls(
             for: .documentDirectory,

@@ -861,6 +861,9 @@ private extension DeviceCache {
 
     // swiftlint:disable avoid_using_directory_apis_directly
     private func oldDocumentsDirectoryURL() -> URL? {
+        #if SDK_CONFIG_BENCHMARK
+        guard !DirectoryHelper.skipsLegacyDocumentsMigrations else { return nil }
+        #endif
         let documentsDirectoryURL: URL?
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             documentsDirectoryURL = URL.documentsDirectory
