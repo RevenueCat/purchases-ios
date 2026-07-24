@@ -71,7 +71,7 @@ struct DefaultPaywallWarning: View {
         } label: {
             Label(self.didCopy ? "Copied" : "Copy error details",
                   systemImage: self.didCopy ? "checkmark" : "doc.on.doc")
-                .bold()
+                .font(.body.bold())
         }.buttonStyle(.bordered)
 
         if #available(watchOS 9.0, *) {
