@@ -96,6 +96,11 @@ struct APIKeyDashboardList: View {
     @State
     private var isShowingVariablesEditor = false
 
+    #if os(iOS)
+    @State
+    private var isShowingLocalPaywallOverrideEditor = false
+    #endif
+
     @State
     private var searchText = Constants.sandboxPaywallSearch
 
@@ -110,6 +115,16 @@ struct APIKeyDashboardList: View {
                     .toolbar {
                         ToolbarItem(placement: .automatic) {
                             HStack(spacing: 16) {
+                                #if os(iOS)
+                                Button {
+                                    isShowingLocalPaywallOverrideEditor = true
+                                } label: {
+                                    Image(systemName: LocalPaywallOfferingsOverrideStore.isActive
+                                          ? "doc.text.fill"
+                                          : "doc.text")
+                                }
+                                #endif
+
                                 Button {
                                     isShowingVariablesEditor = true
                                 } label: {
@@ -132,6 +147,16 @@ struct APIKeyDashboardList: View {
                     .sheet(isPresented: $isShowingVariablesEditor) {
                         CustomVariablesEditorView(variables: $customVariables)
                     }
+                    #if os(iOS)
+                    .sheet(isPresented: $isShowingLocalPaywallOverrideEditor) {
+                        LocalPaywallOverrideEditorView {
+                            Configuration.configure()
+                            Task {
+                                await fetchOfferings()
+                            }
+                        }
+                    }
+                    #endif
             }
             .task {
                 await fetchOfferings()

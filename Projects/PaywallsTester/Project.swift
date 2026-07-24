@@ -98,6 +98,15 @@ let schemes: [Scheme] = [
             )
         )
     ),
+    .scheme(
+        name: "PaywallsTesterTests",
+        shared: true,
+        buildAction: .buildAction(targets: ["PaywallsTesterTests"]),
+        testAction: .targets([
+            .testableTarget(target: .init(stringLiteral: "PaywallsTesterTests"))
+        ]),
+        runAction: .runAction(configuration: "Debug")
+    ),
     // hack to avoid having `PaywallsTester` visible in the scheme list (hidden: true)
     .scheme(
         name: "PaywallsTester",
@@ -123,7 +132,9 @@ if hasCustomStoreKit {
 let project = Project(
     name: "PaywallsTester",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + [
+        .package(path: .relativeToRoot("Tests/TestingApps/PaywallsTester/SnapshotTestingStub"))
+    ],
     settings: .appProject,
     targets: [
         .target(
@@ -145,6 +156,21 @@ let project = Project(
                 .storeKit
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        .target(
+            name: "PaywallsTesterTests",
+            destinations: [.iPhone, .iPad, .macCatalyst],
+            product: .unitTests,
+            bundleId: "com.revenuecat.PaywallsTesterTests",
+            deploymentTargets: allDeploymentTargets,
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterTests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallsTester"),
+                .external(name: "SnapshotTestingStub")
+            ]
         )
     ],
     schemes: schemes,
