@@ -91,6 +91,7 @@ extension BaseStoreKitIntegrationTests {
     static let group3MonthlyNoTrialProductID = "com.revenuecat.monthly.1.99.no_intro"
     static let group3YearlyTrialProductID = "com.revenuecat.annual.10.99.1_free_week"
     static let weeklyWith3DayTrial = "shortest_duration"
+    static let productIDWithBillingPlans = "com.revenuecat.sampleapp.monthly.12mocommitment"
 
     var currentOffering: Offering {
         get async throws {
