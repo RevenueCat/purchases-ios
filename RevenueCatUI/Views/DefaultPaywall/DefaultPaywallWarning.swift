@@ -14,9 +14,17 @@
 import RevenueCat
 import SwiftUI
 
+#if os(iOS) || os(visionOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct DefaultPaywallWarning: View {
     let warning: PaywallWarning
+
+    @State private var didCopy = false
 
     var body: some View {
         VStack(alignment: .center, spacing: 16) {
@@ -44,7 +52,57 @@ struct DefaultPaywallWarning: View {
                 }
             }
 
+            if let copyableText = warning.copyableText, Pasteboard.isAvailable {
+                self.copyButton(for: copyableText)
+            }
+
         }
         .multilineTextAlignment(.center)
     }
+
+    @ViewBuilder
+    private func copyButton(for text: String) -> some View {
+        let button = Button {
+            Pasteboard.copy(text)
+            withAnimation { self.didCopy = true }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                withAnimation { self.didCopy = false }
+            }
+        } label: {
+            Label(self.didCopy ? "Copied" : "Copy error details",
+                  systemImage: self.didCopy ? "checkmark" : "doc.on.doc")
+                .bold()
+        }.buttonStyle(.bordered)
+
+        if #available(watchOS 9.0, *) {
+            button.tint(.revenueCatBrandRed)
+        } else {
+            button.foregroundStyle(Color.revenueCatBrandRed)
+        }
+    }
+}
+
+/// Small cross-platform wrapper around the system pasteboard.
+///
+/// tvOS and watchOS don't provide a pasteboard, so `isAvailable` is `false` there and
+/// `copy(_:)` is a no-op. Callers should check `isAvailable` before offering copy affordances.
+enum Pasteboard {
+
+    static var isAvailable: Bool {
+        #if os(iOS) || os(visionOS) || os(macOS)
+        return true
+        #else
+        return false
+        #endif
+    }
+
+    static func copy(_ string: String) {
+        #if os(iOS) || os(visionOS)
+        UIPasteboard.general.string = string
+        #elseif os(macOS)
+        NSPasteboard.general.clearContents()
+        NSPasteboard.general.setString(string, forType: .string)
+        #endif
+    }
+
 }

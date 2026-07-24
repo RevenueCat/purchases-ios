@@ -235,7 +235,10 @@ struct PaywallsV2View: View {
                         ? "\(message.prefix(Self.maxFallbackErrorLength))…"
                         : message
                     self.defaultPaywallView(
-                        warning: .from(error: PaywallFallbackError.Display(description: displayMessage))
+                        warning: .from(error: PaywallFallbackError.Display(
+                            description: displayMessage,
+                            copyableText: message
+                        ))
                     )
                 } else {
                     switch self.paywallStateManager.state {
@@ -859,9 +862,11 @@ private struct PaywallFallbackError: Error, CustomStringConvertible {
     }
 
     /// A display-ready, possibly-truncated form of a `PaywallFallbackError`, surfaced through
-    /// `PaywallWarning`. The original error's `description` always stays complete.
-    struct Display: Error, CustomStringConvertible {
+    /// `PaywallWarning`. The original error's `description` always stays complete, and the full
+    /// message remains available via `copyableText` so it can be copied while debugging.
+    struct Display: Error, CustomStringConvertible, CopyableWarningError {
         let description: String
+        let copyableText: String
     }
 
 }

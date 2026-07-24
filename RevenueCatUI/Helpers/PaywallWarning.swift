@@ -130,4 +130,24 @@ enum PaywallWarning {
         }
         return .other(error)
     }
+
+    /// The complete, untruncated text for this warning that is worth copying, if any.
+    ///
+    /// `bodyText` may be capped to fit on screen, so this exposes the full content (e.g. a
+    /// verbose decoding error) so it can be copied to the pasteboard while debugging.
+    var copyableText: String? {
+        switch self {
+        case .other(let error):
+            return (error as? CopyableWarningError)?.copyableText
+        default:
+            return nil
+        }
+    }
+}
+
+/// Adopted by errors whose `bodyText` is truncated for display but that can provide a full,
+/// copyable representation.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+protocol CopyableWarningError {
+    var copyableText: String { get }
 }
