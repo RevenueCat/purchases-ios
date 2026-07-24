@@ -16,266 +16,399 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     private var dateProvider: MockCurrentDateProvider!
     private var manager: HTTPRequestTimeoutManager!
 
-    private static let defaultTimeout: TimeInterval = 60
+    // A custom `networkTimeout` distinct from every built-in tier constant (2, 5, 15, 30), so tests
+    // can prove the developer-provided value replaces the built-in base/flat tiers.
+    private static let customTimeout: TimeInterval = 42
+
+    private var customDateProvider: MockCurrentDateProvider!
+    private var customManager: HTTPRequestTimeoutManager!
+
+    private static let hostA = "a.example.com"
+    private static let hostB = "b.example.com"
 
     override func setUp() {
         self.dateProvider = MockCurrentDateProvider()
-        self.manager = .init(defaultTimeout: Self.defaultTimeout, dateProvider: self.dateProvider)
+        self.manager = .init(networkTimeout: .default, dateProvider: self.dateProvider)
+
+        self.customDateProvider = MockCurrentDateProvider()
+        self.customManager = .init(networkTimeout: .custom(Self.customTimeout),
+                                   dateProvider: self.customDateProvider)
+
         super.setUp()
     }
 
-    /// Tests that initially the default timeout for a main backend request support fallback is returned
-    /// when the request supports a fallback
-    func testDefaultTimeoutForPathWithFallback() {
+    private func timeout(host: String?,
+                         isFallbackHostRequest: Bool = false,
+                         endpointSupportsFallbackURLs: Bool = false,
+                         isProxied: Bool = false) -> TimeInterval {
+        return self.manager.timeout(host: host,
+                                    isFallbackHostRequest: isFallbackHostRequest,
+                                    endpointSupportsFallbackURLs: endpointSupportsFallbackURLs,
+                                    isProxied: isProxied)
+    }
+
+    private func customTimeout(host: String?,
+                               isFallbackHostRequest: Bool = false,
+                               endpointSupportsFallbackURLs: Bool = false,
+                               isProxied: Bool = false) -> TimeInterval {
+        return self.customManager.timeout(host: host,
+                                          isFallbackHostRequest: isFallbackHostRequest,
+                                          endpointSupportsFallbackURLs: endpointSupportsFallbackURLs,
+                                          isProxied: isProxied)
+    }
+
+    // MARK: - Base tiers (default)
+
+    func testMainSourceNoFallbackUsesBaseTimeout() {
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
         )
     }
 
-    /// Initially the default timeout should be returned for a request that is a fallback request
-    func testDefaultTimeoutForPathWithFallbackForFallbackRequest() {
+    func testMainSourceSupportingFallbackUsesBaseTimeout() {
         XCTAssertEqual(
-            manager.timeout(isFallback: true, fallbackAvailable: true),
-            Self.defaultTimeout
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
     }
 
-    /// For a path that does not support fallbacks the default timeout should be used initially
-    func testDefaultTimeoutForPathWithoutFallback() {
+    // MARK: - Reduced tiers after a recent timeout (default)
+
+    func testMainSourceNoFallbackUsesReducedTimeoutAfterTimeout() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: false),
-            Self.defaultTimeout
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
         )
     }
 
-    /// For a path that does not support fallbacks but is a fallback request the default
-    /// timeout should be used initially
-    func testDefaultTimeoutForPathWithoutFallbackForFallbackRequest() {
+    func testMainSourceSupportingFallbackUsesReducedTimeoutAfterTimeout() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
         XCTAssertEqual(
-            manager.timeout(isFallback: true, fallbackAvailable: false),
-            Self.defaultTimeout
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    /// For a request to a path on the main backend that supports fallbacks, after a succesful request
-    /// to the main backend (within the reset timeout interval) should use the reduced timeout
-    func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackend() {
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    // MARK: - Flat tiers (fallback-host and proxied, default)
 
+    func testFallbackHostRequestUsesFlatTimeout() {
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, isFallbackHostRequest: true, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.flat
         )
     }
 
-    /// For a request to a path on the main backend that supports fallbacks, after a succesful request
-    /// to the main backend after the reset timeout interval has elapsed
-    /// should use the default timeout for a main backend request that supports fallbacks
-    func testTimeoutForPathWithFallbackAfterFailedRequestToMainBackendShouldExpire() {
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
-
-        // expire time is 10m
-        dateProvider.advance(by: 2)
+    func testFallbackHostRequestUsesFlatTimeoutEvenAfterTimeout() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
 
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, isFallbackHostRequest: true, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.flat
+        )
+    }
+
+    func testProxiedRequestUsesFlatTimeout() {
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true, isProxied: true),
+            HTTPRequestTimeoutManager.Timeout.flat
+        )
+    }
+
+    func testProxiedRequestNeverConsultsMemory() {
+        // Even after a recorded timeout on the same host, a proxied request uses the flat timeout.
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true, isProxied: true),
+            HTTPRequestTimeoutManager.Timeout.flat
+        )
+    }
+
+    // MARK: - Per-host isolation
+
+    func testTimeoutOnOneHostDoesNotAffectAnotherHost() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+        XCTAssertEqual(
+            timeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
+        )
+    }
+
+    func testSuccessOnOneHostDoesNotResetAnotherHost() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+        manager.recordRequestResult(host: Self.hostB, .successOnMainBackend)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testMultipleHostsRetainIndependentReducedState() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+        manager.recordRequestResult(host: Self.hostB, .mainSourceTimedOut)
+
+        // Both hosts are reduced at the same time, each resolving to its own endpoint tier.
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+        XCTAssertEqual(
+            timeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testSuccessOnMainBackendClearsOnlyThatHostEntry() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
 
-        // expire time is 10m
+        manager.recordRequestResult(host: Self.hostA, .successOnMainBackend)
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
+        )
+    }
+
+    // MARK: - Per-host expiry
+
+    func testPerHostEntryDoesNotExpireBeforeResetInterval() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Advance by less than the 10-minute reset interval
+        dateProvider.advance(by: 9 * 60)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testPerHostEntryExpiresAfterResetInterval() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Advance past the 10-minute reset interval
         dateProvider.advance(by: 11 * 60)
 
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
     }
 
-    /// After a succesful request on the main backend the last timeout request date should be reset
-    func testSuccessOnMainBackendResetsTimeoutState() {
-        // Record timeout first
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
-        )
+    func testMultipleTimeoutsRefreshExpiryPerHost() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
 
-        // Record success - should reset timeout state
-        manager.recordRequestResult(.successOnMainBackend)
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
-        )
-    }
+        dateProvider.advance(by: 5 * 60)
 
-    /// Receving a `.other` After a timeout on the main backend should not change the state
-    func testOtherResultDoesNotChangeTimeoutState() {
-        // Record timeout first
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
-        )
+        // Second timeout refreshes the timestamp for this host
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
 
-        // Record .other - should not change state
-        manager.recordRequestResult(.other)
+        dateProvider.advance(by: 6 * 60)
+
+        // 11 minutes since the first timeout, but only 6 since the second: still reduced
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    /// Ensures that the timeout does not reset before the `timeoutResetInterval`
-    func testTimeoutDoesNotResetBeforeResetInterval() {
-        // Record timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    func testPerHostExpiryIsIndependent() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        dateProvider.advance(by: 5 * 60)
+        manager.recordRequestResult(host: Self.hostB, .mainSourceTimedOut)
+
+        // 6 more minutes: host A is 11 minutes old (expired), host B is 6 minutes old (still valid).
+        dateProvider.advance(by: 6 * 60)
+
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
-
-        // Advance time by less than reset interval (9 seconds, reset interval is 10)
-        dateProvider.advance(by: 9)
-
-        // Timeout should still be reduced
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
-        )
-    }
-
-    /// Ensures that the timeout does not reset if no timeout has occurred
-    func testTimeoutDoesNotResetIfNoTimeoutHasOccurred() {
-        // No timeout recorded
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
-        )
-
-        // Advance time by more than reset interval
-        dateProvider.advance(by: 11)
-
-        // Should still be default since no timeout occurred
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    /// Ensures that regardless of multiple calls going out after each other the state
-    /// is always up to date
-    func testMultipleTimeoutsUpdateTimeoutStateCorrectly() {
-        // First timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    func testHostBecomesReducedAgainAfterEntryExpiresAndTimesOutAgain() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Let the entry expire: back to base.
+        dateProvider.advance(by: 11 * 60)
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
 
-        // Advance time by 5 seconds
-        dateProvider.advance(by: 5)
-
-        // Second timeout - should update timestamp
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+        // A fresh timeout re-arms the reduced tier.
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
-        )
-
-        // Advance time by 5 seconds more (10 seconds total from first timeout, but only 5 from second)
-        dateProvider.advance(by: 5)
-
-        // Should still be reduced because last timeout was only 5 seconds ago
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    /// Ensures that a succes on the main backend after a timeout resets the timeout
-    /// right away
-    func testSuccessOnMainBackendResetsTimeoutEvenIfTimeoutOccurredRecently() {
-        // Record timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    // MARK: - Nil host
+
+    func testNilHostNeverUsesReducedTimeout() {
+        // Recording with a nil host is a no-op
+        manager.recordRequestResult(host: nil, .mainSourceTimedOut)
+
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: nil, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
-
-        // Advance time by only 1 second
-        dateProvider.advance(by: 1)
-
-        // Record success - should reset immediately regardless of time
-        manager.recordRequestResult(.successOnMainBackend)
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeout(host: nil, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
         )
     }
 
-    /// Ensures that multiple follow up requests all use the reduced timeout
-    /// after a timeout on the main backend when the request supports a fallback
-    func testTimeoutStatePersistsAcrossMultipleGetTimeoutCalls() {
-        // Record timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    // MARK: - Other result
 
-        // Multiple calls should all return reduced timeout
+    func testOtherResultDoesNotChangeState() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
+
+        manager.recordRequestResult(host: Self.hostA, .other)
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
-        )
-        XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    /// Ensures that fallback endpoints always use the default timeout even
-    /// after recording a timeout
-    func testFallbackRequestsAlwaysUseDefaultTimeoutRegardlessOfTimeoutState() {
-        // Record timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    // MARK: - Custom networkTimeout base tiers
 
-        // Fallback requests should always use default timeout
+    func testCustomMainSourceSupportingFallbackUsesCustomBaseTimeout() {
+        // Base tier for a fallback-supporting endpoint becomes the developer-provided timeout.
         XCTAssertEqual(
-            manager.timeout(isFallback: true, fallbackAvailable: true),
-            Self.defaultTimeout
-        )
-
-        // Even after success, fallback should still use default timeout
-        manager.recordRequestResult(.successOnMainBackend)
-        XCTAssertEqual(
-            manager.timeout(isFallback: true, fallbackAvailable: true),
-            Self.defaultTimeout
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
         )
     }
 
-    /// Ensures that endpoints without fallback support always use the default timeout
-    /// even after recording a timeout
-    func testEndpointsWithoutFallbackSupportAlwaysUseDefaultTimeout() {
-        // Initially
+    func testCustomMainSourceNoFallbackUsesCustomBaseTimeout() {
+        // Base tier for an endpoint without fallback support becomes the developer-provided timeout.
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: false),
-            Self.defaultTimeout
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            Self.customTimeout
         )
+    }
 
-        // Even after recording timeout
-        manager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+    // MARK: - Custom networkTimeout reduced tiers (unchanged by the custom value)
+
+    func testCustomMainSourceSupportingFallbackUsesFixedReducedTimeoutAfterTimeout() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // The reduced fail-fast tier stays fixed even with a custom timeout.
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: false),
-            Self.defaultTimeout
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
+    }
 
-        // After success
-        manager.recordRequestResult(.successOnMainBackend)
+    func testCustomMainSourceNoFallbackUsesFixedReducedTimeoutAfterTimeout() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // The reduced fail-fast tier stays fixed even with a custom timeout.
         XCTAssertEqual(
-            manager.timeout(isFallback: false, fallbackAvailable: false),
-            Self.defaultTimeout
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+    }
+
+    // MARK: - Custom networkTimeout flat tiers (fallback-host and proxied)
+
+    func testCustomFallbackHostRequestUsesCustomTimeout() {
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, isFallbackHostRequest: true, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
+        )
+    }
+
+    func testCustomFallbackHostRequestUsesCustomTimeoutEvenAfterTimeout() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, isFallbackHostRequest: true, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
+        )
+    }
+
+    func testCustomProxiedRequestUsesCustomTimeout() {
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true, isProxied: true),
+            Self.customTimeout
+        )
+    }
+
+    func testCustomProxiedRequestNeverConsultsMemory() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true, isProxied: true),
+            Self.customTimeout
+        )
+    }
+
+    // MARK: - Custom networkTimeout nil host
+
+    func testCustomNilHostNeverUsesReducedTimeout() {
+        customManager.recordRequestResult(host: nil, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            customTimeout(host: nil, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
+        )
+        XCTAssertEqual(
+            customTimeout(host: nil, endpointSupportsFallbackURLs: false),
+            Self.customTimeout
+        )
+    }
+
+    // MARK: - Custom networkTimeout per-host memory
+
+    func testCustomTimeoutOnOneHostDoesNotAffectAnotherHost() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Host A recently timed out: reduced fail-fast tier (fixed).
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+        // Host B is untouched: custom base timeout.
+        XCTAssertEqual(
+            customTimeout(host: Self.hostB, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
+        )
+    }
+
+    func testCustomPerHostEntryExpiresBackToCustomBaseTimeout() {
+        customManager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // Advance past the 10-minute reset interval: the entry expires and the base tier returns.
+        customDateProvider.advance(by: 11 * 60)
+
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
+            Self.customTimeout
         )
     }
 }

@@ -128,7 +128,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               eTagManager: eTagManager,
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
-                              requestTimeout: 30,
+                              networkTimeout: .custom(30),
                               operationDispatcher: OperationDispatcher(),
                               apiSourceProvider: nil)
         }

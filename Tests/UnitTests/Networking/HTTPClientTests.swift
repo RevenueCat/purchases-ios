@@ -79,7 +79,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
-                          requestTimeout: defaultRequestTimeout,
+                          networkTimeout: .custom(defaultRequestTimeout),
                           operationDispatcher: operationDispatcher,
                           apiSourceProvider: apiSourceProvider,
                           timeoutManager: timeoutManager)
@@ -91,7 +91,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
         self.timeoutManager = HTTPRequestTimeoutManager(
-            defaultTimeout: defaultRequestTimeout,
+            networkTimeout: .default,
             dateProvider: MockCurrentDateProvider()
         )
 
@@ -1430,23 +1430,26 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     // MARK: Dynamic timeout management
 
-    func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() {
+    func testRecordsSuccessOnMainBackendAfterSuccessfulRequestToMainBackend() throws {
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
-        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+        timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
         XCTAssertEqual(
             timeoutManager.timeout(
-                isFallback: false,
-                fallbackAvailable: true
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
             ),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
 
         stub(condition: isPath(request.path)) { request in
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
             )
             return .emptySuccessResponse()
         }
@@ -1455,12 +1458,15 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
+        // The successful main-source response cleared this host's timeout entry.
         XCTAssertEqual(
             timeoutManager.timeout(
-                isFallback: false,
-                fallbackAvailable: true
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
             ),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
     }
 
@@ -1471,10 +1477,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let url = try XCTUnwrap(request.path.url?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
 
-            // Main backend request should use the default for a main backend request supporting a fallback
+            // Main-source request supporting a fallback should use the base tier for that kind
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
             )
             return .timeoutResponse()
         }
@@ -1483,8 +1489,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
 
-            // Make sure it uses the default timeout because it's a fallback request
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            // Make sure it uses the flat timeout because it's a fallback-host request
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1493,14 +1499,18 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
     }
 
-    func testRecordsOtherResultWhenTimeoutOccursOnMainBackendWithEndpointNotSupportingFallback() {
+    func testRecordsTimeoutWhenTimeoutOccursOnMainSourceEndpointNotSupportingFallback() throws {
         let request = HTTPRequest(method: .get, path: .logIn)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
         // main request
         stub(condition: isPath(request.path)) { request in
 
-            // Main backend request should use the default since it doesn't support a fallback
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            // Main-source request to an endpoint without fallback support should use its base tier
+            XCTAssertEqual(
+                request.timeoutInterval,
+                HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+            )
             return .timeoutResponse()
         }
 
@@ -1508,28 +1518,41 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
-        // Make sure it uses the default timeout because it doesn't support fallback requests
-        XCTAssertEqual(timeoutManager.timeout(isFallback: false, fallbackAvailable: false), self.defaultRequestTimeout)
-
-        // Make sure it uses the default timeout for backend requests suppoting fallback
+        // The timeout is now recorded for this host even though the endpoint has no fallback support,
+        // so subsequent main-source requests to this host use the reduced tiers.
         XCTAssertEqual(
-            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: false,
+                isProxied: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
-    func testRecordsOtherResultWhenRequestFailsWithoutTimeout() {
+    func testRecordsOtherResultWhenRequestFailsWithoutTimeout() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
-        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+        timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
         // main request
         stub(condition: isPath(request.path)) { request in
 
-            // Main backend request should use the reduced timeout since it timed out before and supports fallback
+            // Main-source request should use the reduced timeout since it timed out before and supports fallback
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
             )
             return .notFoundRespoonse()
         }
@@ -1540,8 +1563,13 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         // Still reduced timeout because error was not a timeout
         XCTAssertEqual(
-            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
     }
 
@@ -1551,10 +1579,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // main request fails with server error (triggers fallback)
         let url = try XCTUnwrap(request.path.url?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
-            // Main backend request should use the default timeout for a request supporting fallback
+            // Main-source request should use the base tier for a request supporting fallback
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
             )
             return .serverDownResponse()
         }
@@ -1562,19 +1590,26 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // fallback request succeeds
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
-            // Fallback request should use the default timeout
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            // Fallback-host request should use the flat timeout
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
+
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
-        // Timeout should remain at mainBackendRequestSupportingFallback because .other doesn't change the timeout state
+        // Timeout should remain at the base tier because a non-timeout error doesn't record a timeout
         XCTAssertEqual(
-            timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
     }
 
@@ -1613,24 +1648,31 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             requestPath: MainBackendTimeoutRequestPath.second
         )
 
-        // The initial request to the main backend should use the value for a request
-        // to the main backend that supports fallback
+        let host = MainBackendTimeoutRequestPath.serverHostURL.host!
+
+        // The initial request to the main source should use the base tier for a request
+        // supporting fallback
         XCTAssertEqual(
-            self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
-            HTTPRequestTimeoutManager.Timeout.mainBackendRequestSupportingFallback.rawValue
+            self.timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
 
-        stub(condition: isHost(MainBackendTimeoutRequestPath.serverHostURL.host!)) { _ in
+        stub(condition: isHost(host)) { _ in
             return .timeoutResponse()
         }
 
         // Stub request to the fallback URL
         var fallbackCalled = false
         stub(condition: isAbsoluteURLString(firstRequest.path.fallbackUrls.first!.absoluteString)) { request in
-            // The fallback request should use the default timeout
+            // The fallback-host request should use the flat timeout
             XCTAssertEqual(
                 request.timeoutInterval,
-                self.defaultRequestTimeout
+                HTTPRequestTimeoutManager.Timeout.flat
             )
 
             fallbackCalled = true
@@ -1641,10 +1683,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Stub second request
         var secondRequestCalled = false
         stub(condition: isPath(secondRequest.path)) { request in
-            // The fallback request should use the default timeout
+            // The second request to the same (recently timed-out) host should use the reduced tier
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+                HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
             )
 
             secondRequestCalled = true
@@ -1654,11 +1696,16 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         await waitUntil { completion in
             self.client.perform(firstRequest) { (_: DataResponse) in
-                // A new request that supports fallback to the main backend
-                // should use the default timeout since previously a timeout was received
+                // A new main-source request to the same host should use the reduced tier since
+                // that host recently timed out
                 XCTAssertEqual(
-                    self.timeoutManager.timeout(isFallback: false, fallbackAvailable: true),
-                    HTTPRequestTimeoutManager.Timeout.reduced.rawValue
+                    self.timeoutManager.timeout(
+                        host: host,
+                        isFallbackHostRequest: false,
+                        endpointSupportsFallbackURLs: true,
+                        isProxied: false
+                    ),
+                    HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
                 )
 
                 // perform the second request after the first request has been finished
@@ -1694,7 +1741,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
             // With a proxy URL, the request should use the default timeout
             // because fallback URLs are disabled and the short timeout is only
             // useful when fallback can catch a timeout.
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -1717,15 +1764,15 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Recreate client so it picks up the proxy URL
         self.client = self.createClient()
 
-        // Simulate a previous timeout on the main backend
-        timeoutManager.recordRequestResult(.timeoutOnMainBackendForFallbackSupportedEndpoint)
+        // Simulate a previous timeout on the proxy host
+        timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
             // Even after a previous timeout, with a proxy URL set the request
-            // should use the default timeout, not the reduced 2s timeout.
-            XCTAssertEqual(request.timeoutInterval, self.defaultRequestTimeout)
+            // should use the flat timeout, not a reduced tier (proxied requests never consult the memory).
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .emptySuccessResponse()
         }
 
@@ -4084,14 +4131,14 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         // Assert that the correct event was recorded
         expect(self.timeoutManager.recordedResults).to(haveCount(2))
         expect(self.timeoutManager.recordedResults) == [
-            .timeoutOnMainBackendForFallbackSupportedEndpoint,
+            .mainSourceTimedOut,
             .other
         ]
     }
 
-    /// Verifies that when a timeout occurs on the main backend for an endpoint that does NOT support fallback,
-    /// the HTTPClient records the "other" event
-    func testRecordsOtherResultWhenTimeoutOccursOnEndpointWithoutFallbackSupport() {
+    /// Verifies that when a timeout occurs on the main source for an endpoint that does NOT support fallback,
+    /// the HTTPClient still records the timeout (the fallback-support condition was dropped)
+    func testRecordsMainSourceTimedOutWhenTimeoutOccursOnEndpointWithoutFallbackSupport() {
         let request = HTTPRequest(method: .get, path: .logIn)
 
         stub(condition: isPath(request.path)) { _ in
@@ -4102,9 +4149,9 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
             self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
-        // Assert that the "other" event was recorded
+        // Assert that the timeout event was recorded even though the endpoint has no fallback support
         expect(self.timeoutManager.recordedResults).to(haveCount(1))
-        expect(self.timeoutManager.recordedResults.first) == .other
+        expect(self.timeoutManager.recordedResults.first) == .mainSourceTimedOut
     }
 
     /// Verifies that when a request fails with a non-timeout error,
