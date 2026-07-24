@@ -16,6 +16,7 @@ import SafariServices
 import StoreKit
 import Swift
 import SwiftUI
+import UIKit.UIGestureRecognizerSubclass
 import UIKit
 import WebKit
 import _AVKit_SwiftUI
