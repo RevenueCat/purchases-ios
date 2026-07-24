@@ -17,8 +17,11 @@ import Foundation
 
     final class WebViewComponent: PaywallComponentBase {
 
-        /// Wire `type` value, kept as a `String` because `web_view` is not yet a `ComponentType` case.
-        let type: String
+        /// The host<->component bridge protocol version this SDK implements. A config declaring any
+        /// other version is treated as an unrecognized component and rendered via its `fallback`.
+        public static let supportedProtocolVersion: Int = 1
+
+        let type: ComponentType
         public let id: String
         public let name: String?
         public let visible: Bool?
@@ -30,6 +33,31 @@ import Foundation
 
         public let size: Size
 
+        /// Resolves a URL that is safe to use as a web view component entry point.
+        public static func validatedHTTPSURL(from urlString: String) -> URL? {
+            guard !urlString.contains("{{"),
+                  let url = URL(string: urlString),
+                  url.scheme?.lowercased() == "https",
+                  url.host?.isEmpty == false else {
+                return nil
+            }
+
+            return url
+        }
+
+        /// Describes why the decoded static configuration is invalid, if applicable.
+        var configurationValidationError: String? {
+            if self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "Web view component ID must not be blank."
+            }
+
+            guard Self.validatedHTTPSURL(from: self.url) != nil else {
+                return "Web view component URL must be a resolved HTTPS URL with a host."
+            }
+
+            return nil
+        }
+
         public init(
             id: String,
             name: String? = nil,
@@ -38,7 +66,7 @@ import Foundation
             url: String,
             size: Size = .init(width: .fill, height: .fit(nil))
         ) {
-            self.type = "web_view"
+            self.type = .webView
             self.id = id
             self.name = name
             self.visible = visible

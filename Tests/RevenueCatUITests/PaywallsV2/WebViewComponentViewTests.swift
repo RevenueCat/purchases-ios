@@ -11,8 +11,9 @@
 //
 //  Created by Antonio Pallares on 7/21/26.
 
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 // swiftlint:disable force_try
 
@@ -65,6 +66,53 @@ final class WebViewComponentViewTests: TestCase {
             )
             XCTAssertNil(invalid.url)
         }
+    }
+
+    func testViewModelFactoryBuildsWebViewViewModel() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+        }
+        """.utf8))
+
+        let uiConfigJSON = Data("""
+        {
+          "app": { "colors": {}, "fonts": {} },
+          "localizations": {},
+          "variable_config": {
+            "variable_compatibility_map": {},
+            "function_compatibility_map": {}
+          }
+        }
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
+
+        let result = try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
+            colorScheme: .light
+        )
+
+        guard case .webView(let built) = result else {
+            return XCTFail("Expected .webView view model")
+        }
+        XCTAssertEqual(built.componentID, "web")
+        XCTAssertEqual(built.url?.absoluteString, "https://example.com/index.html")
     }
 
     #if canImport(WebKit)

@@ -14,7 +14,7 @@ final class WebViewComponentViewModel: Hashable {
     let visible: Bool
     let componentID: String
 
-    lazy var url: URL? = Self.validatedHTTPSURL(from: self.urlString)
+    lazy var url: URL? = PaywallComponent.WebViewComponent.validatedHTTPSURL(from: self.urlString)
 
     #if canImport(WebKit)
     /// Canonical origin derived from ``url``. Because ``url`` is already validated as HTTPS with a
@@ -42,16 +42,6 @@ final class WebViewComponentViewModel: Hashable {
         self.size = component.size
         self.visible = component.visible ?? true
         self.componentID = component.id
-    }
-
-    private static func validatedHTTPSURL(from urlString: String) -> URL? {
-        guard !urlString.contains("{{"),
-              let url = URL(string: urlString),
-              url.scheme?.lowercased() == "https",
-              url.host?.isEmpty == false else {
-            return nil
-        }
-        return url
     }
 
     func hash(into hasher: inout Hasher) {

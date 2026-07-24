@@ -39,7 +39,7 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(minimal.size.width, .fill)
         XCTAssertEqual(minimal.size.height, .fit(nil))
         XCTAssertEqual(minimal.url, "https://example.com")
-        XCTAssertEqual(minimal.type, "web_view")
+        XCTAssertEqual(minimal.type, .webView)
     }
 
     func testDecodesExplicitFields() throws {
@@ -90,7 +90,7 @@ final class WebViewComponentTests: TestCase {
     }
 
     func testDecodesTemplateURLVerbatim() throws {
-        // Template placeholders in the URL are resolved elsewhere; decoding must preserve them as-is.
+        // Direct schema decoding is lossless; PaywallComponent applies the renderability gate.
         let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
         {
           "type": "web_view",
@@ -177,27 +177,208 @@ final class WebViewComponentTests: TestCase {
         )
     }
 
-    func testPaywallComponentTreatsWebViewAsUnknownAndUsesFallback() throws {
-        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+    // MARK: - Decoding through PaywallComponent (registered type + protocol_version gate)
+
+    #if canImport(WebKit) && !os(watchOS)
+    func testDecodesFullJSONThroughPaywallComponent() throws {
+        let full = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
         {
-            "type": "web_view",
-            "url": "https://example.com",
-            "fallback": \(Self.fallbackStackJSON)
+          "type": "web_view",
+          "id": "web",
+          "name": "Survey",
+          "visible": false,
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fixed", "value": 320 }, "height": { "type": "fit" } },
+          "unknown": true
         }
         """.utf8))
 
-        guard case .stack = decoded else {
-            return XCTFail("web_view should be unknown to PaywallComponent and fall back to the stack")
+        guard case .webView(let fullComponent) = full else {
+            return XCTFail("Expected web_view")
         }
+        XCTAssertEqual(fullComponent.id, "web")
+        XCTAssertEqual(fullComponent.name, "Survey")
+        XCTAssertEqual(fullComponent.visible, false)
+        XCTAssertEqual(fullComponent.protocolVersion, 1)
+        XCTAssertEqual(fullComponent.url, "https://example.com/index.html")
+        XCTAssertEqual(fullComponent.type, .webView)
     }
 
-    func testPaywallComponentWebViewWithoutFallbackThrows() {
+    func testSupportedProtocolVersionIgnoresFallback() throws {
+        // A supported version renders the web view even when a fallback is present.
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """.utf8))
+
+        guard case .webView(let component) = decoded else {
+            return XCTFail("Expected web_view, got \(decoded)")
+        }
+        XCTAssertEqual(component.url, "https://example.com/index.html")
+    }
+    #endif
+
+    func testUnsupportedProtocolVersionRendersFallbackThroughPaywallComponent() throws {
+        // A version this SDK cannot service is treated like an unrecognized component: the author's
+        // fallback is rendered instead of the web view.
+        try assertDecodesFallback("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+    }
+
+    func testUnsupportedProtocolVersionDoesNotRequireOtherWebViewFieldsToRenderFallback() throws {
+        try assertDecodesFallback("""
+        {
+          "type": "web_view",
+          "protocol_version": 2,
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+    }
+
+    #if canImport(WebKit) && !os(watchOS)
+    func testMissingOrMalformedProtocolVersionThrowsEvenWithFallback() {
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": "1",
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+    }
+
+    func testMalformedWebViewFieldsThrowEvenWithFallback() {
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+        assertDecodingThrows("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+    }
+
+    func testUnrenderableIDOrURLThrowsEvenWithFallback() {
+        for (id, url) in [
+            ("   ", "https://example.com/index.html"),
+            ("web", "http://example.com/index.html"),
+            ("web", "https:///missing-host"),
+            ("web", "https://example.com/{{ custom.path }}")
+        ] {
+            assertDecodingThrows("""
+            {
+              "type": "web_view",
+              "id": "\(id)",
+              "protocol_version": 1,
+              "url": "\(url)",
+              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+              "fallback": \(Self.fallbackStackJSON)
+            }
+            """)
+        }
+    }
+    #endif
+
+    func testUnsupportedPlatformRendersFallbackWithoutDecodingWebViewFields() throws {
+        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
+        try assertDecodesFallback("""
+        {
+          "type": "web_view",
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+        #endif
+    }
+
+    func testUnsupportedProtocolVersionWithoutFallbackThrows() {
+        // Missing `fallback` key surfaces as `keyNotFound`, which must be reported as a missing
+        // fallback rather than a failed fallback decode.
+        assertDecodingThrowsMissingFallback("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+        }
+        """)
+    }
+
+    func testUnsupportedProtocolVersionWithNullFallbackThrowsMissingFallback() {
+        // An explicit `null` fallback surfaces as `valueNotFound`, which must also be reported as a
+        // missing fallback rather than a failed fallback decode.
+        assertDecodingThrowsMissingFallback("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 2,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": null
+        }
+        """)
+    }
+
+    #if canImport(WebKit) && !os(watchOS)
+    func testUnrenderableConfigurationWithoutFallbackThrows() {
         XCTAssertThrowsError(
             try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
-            { "type": "web_view", "url": "https://example.com" }
+            {
+              "type": "web_view",
+              "id": "   ",
+              "protocol_version": 1,
+              "url": "http://example.com/index.html",
+              "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+            }
             """.utf8))
         )
     }
+    #endif
 
     func testDecodesFitLoadingDefaults() throws {
         let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
@@ -227,6 +408,83 @@ final class WebViewComponentTests: TestCase {
         "components": []
     }
     """
+
+    private func assertDecodesFallback(
+        _ json: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) throws {
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8))
+
+        guard case .stack = decoded else {
+            return XCTFail("Expected fallback stack, got \(decoded)", file: file, line: line)
+        }
+    }
+
+    private func assertDecodingThrows(
+        _ json: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8)),
+            file: file,
+            line: line
+        )
+    }
+
+    /// Asserts decoding throws a `dataCorrupted` error reporting an absent fallback, rather than a
+    /// failed fallback decode (which would indicate the wrong `catch` branch handled the error).
+    private func assertDecodingThrowsMissingFallback(
+        _ json: String,
+        file: StaticString = #filePath,
+        line: UInt = #line
+    ) {
+        XCTAssertThrowsError(
+            try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8)),
+            file: file,
+            line: line
+        ) { error in
+            guard case let DecodingError.dataCorrupted(context) = error else {
+                return XCTFail("Expected dataCorrupted, got \(error)", file: file, line: line)
+            }
+            XCTAssertTrue(
+                context.debugDescription.contains("without a fallback"),
+                "Unexpected error description: \(context.debugDescription)",
+                file: file,
+                line: line
+            )
+        }
+    }
+
+}
+
+#endif
+
+#if os(tvOS)
+
+@available(tvOS 15.0, *)
+final class WebViewComponentTVOSFallbackTests: TestCase {
+
+    func testRendersFallbackWithoutDecodingWebViewFields() throws {
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "fallback": {
+            "type": "stack",
+            "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+            "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+            "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+            "components": []
+          }
+        }
+        """.utf8))
+
+        guard case .stack = decoded else {
+            return XCTFail("Expected fallback stack, got \(decoded)")
+        }
+    }
 
 }
 
