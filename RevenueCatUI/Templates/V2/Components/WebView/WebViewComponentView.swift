@@ -286,9 +286,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         #endif
 
         #if os(iOS)
-        // Nested-scroll arbitration: let JS-panned content (maps, inner overflow scrollers) claim a
-        // drag from the enclosing paywall scroll. Installed before `load` so the document-start probe
-        // is present for the first navigation.
+        // Nested-scroll arbitration: let JS-panned content claim a drag from the enclosing paywall
+        // scroll. Installed before `load` so the document-start probe is present for the first
+        // navigation.
         self.installScrollGestureArbitration(on: webView)
         #endif
 

@@ -6,22 +6,17 @@
 //  Created by Antonio Pallares.
 //
 
-// A web_view component embedded in a scrollable paywall competes for vertical drags with the paywall
-// scroll. iOS resolves nested *native* scroll views on its own (the inner web scroll wins when it can
-// scroll), but content that pans via JavaScript — an SVG map with `touch-action: none`, an inner
-// `overflow: auto` list — is invisible to that arbitration, so a drag both pans the content *and*
-// scrolls the paywall ("double scroll").
-//
-// This mirrors purchases-android's approach: a document-start probe reports, per touch, whether the
-// touched element (or an ancestor) consumes the drag, and a custom recognizer on the web view claims
-// the gesture from the enclosing paywall scroll when it does. iOS-only: macOS/tvOS/watchOS use a
-// different (or no) scroll model.
+// A web_view component embedded in a scrollable paywall competes for drag gestures with the paywall
+// scroll — on whichever axis the paywall scrolls (vertical for a typical paywall, horizontal for a
+// paged/carousel container). iOS resolves nested *native* scroll views on its own (the inner web
+// scroll wins when it can scroll), but content that pans via JavaScript — an SVG map with
+// `touch-action: none`, an inner `overflow: auto` list — is invisible to that arbitration, so a drag
+// both pans the content *and* scrolls the paywall ("double scroll").
 
 #if os(iOS) && canImport(WebKit)
 
 import Foundation
 @_spi(Internal) import RevenueCat
-// Importing the subclass submodule re-exports UIKit and unlocks the settable `state` used below.
 import UIKit.UIGestureRecognizerSubclass
 import WebKit
 
@@ -75,8 +70,8 @@ enum WebViewGestureProbe {
 
 /// Whether the web view should claim the drag (else the paywall scroll keeps it). A content `own`
 /// verdict — an inner scroller or `touch-action` map native can't see — wins immediately; otherwise
-/// native root scrollability in the dominant drag direction decides. `direction > 0` means toward the
-/// end (down / trailing), matching Android's `canScroll*` convention.
+/// the web view's own scroll offsets in the dominant drag direction decide. `direction > 0` means
+/// toward the end of the content (scrolling down / trailing), as used by the `canScroll*` closures below.
 @available(iOS 15.0, *)
 // swiftlint:disable:next function_parameter_count
 func shouldWebViewOwnGesture(
@@ -174,8 +169,8 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
         didReceive message: WKScriptMessage
     ) {
         guard message.frameInfo.isMainFrame else { return }
-        let wantsGesture = (message.body as? String) == WebViewGestureProbe.verdictOwn
         guard !self.decided else { return }
+        let wantsGesture = (message.body as? String) == WebViewGestureProbe.verdictOwn
         self.contentWantsGesture = wantsGesture
         // An `own` verdict claims immediately, even within slop. `release` waits for movement so the
         // dominant-axis native-scroll check below can still decide.
