@@ -679,19 +679,41 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         let isAppBackgrounded: Bool
     }
 
-    var isDisabled = false
+    private let stateLock = Lock()
+    private var isDisabledStorage = false
+    private var isClosed = false
+    private var configGenerationStorage = 0
+
+    var isDisabled: Bool {
+        get {
+            return self.stateLock.perform {
+                self.isDisabledStorage
+            }
+        }
+        set {
+            self.stateLock.perform {
+                guard self.isDisabledStorage != newValue else { return }
+                self.isDisabledStorage = newValue
+                self.configGenerationStorage += 1
+            }
+        }
+    }
     var onRemoteConfigDisabled: (() -> Void)?
     var onConfigGenerationRead: (() -> Void)?
     var configGeneration: Int {
         get {
-            defer { self.onConfigGenerationRead?() }
-            return self.configGenerationStorage
+            let generation = self.stateLock.perform {
+                self.configGenerationStorage
+            }
+            self.onConfigGenerationRead?()
+            return generation
         }
         set {
-            self.configGenerationStorage = newValue
+            self.stateLock.perform {
+                self.configGenerationStorage = newValue
+            }
         }
     }
-    private var configGenerationStorage = 0
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
@@ -831,17 +853,25 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
     }
 
     func clearCache() {
-        self.configGeneration += 1
+        self.stateLock.perform {
+            self.configGenerationStorage += 1
+        }
         self.invokedClearCacheCount += 1
     }
 
     func clearCache(forAppUserID appUserID: String) {
-        self.configGeneration += 1
+        self.stateLock.perform {
+            self.configGenerationStorage += 1
+        }
         self.invokedClearCacheCount += 1
         self.invokedClearCacheAppUserIDs.append(appUserID)
     }
 
     func close() {
+        self.stateLock.perform {
+            self.isClosed = true
+            self.configGenerationStorage += 1
+        }
         self.invokedCloseCount += 1
     }
 

@@ -464,10 +464,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             localTransactionMetadataStore: localTransactionMetadataStore
         )
 
-        let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
-                                                                    operationDispatcher: operationDispatcher,
-                                                                    api: backend.offlineEntitlements,
-                                                                    systemInfo: systemInfo)
+        let offlineEntitlementsManager = OfflineEntitlementsManager(
+            deviceCache: deviceCache,
+            api: backend.offlineEntitlements,
+            systemInfo: systemInfo
+        )
 
         let customerInfoManager: CustomerInfoManager
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -869,6 +870,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         super.init()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.offlineEntitlementsManager.setProductEntitlementMappingTopicProvider(
+            ProductEntitlementMappingTopicProvider(manager: self.remoteConfigManager)
+        )
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
             guard let self else { return }
             self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
@@ -931,6 +935,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
+        self.offlineEntitlementsManager.close()
         self.remoteConfigManager.close()
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
@@ -2781,8 +2786,7 @@ private extension Purchases {
                                                                       isAppBackgrounded: isAppBackgrounded,
                                                                       completion: nil)
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: nil
+                isAppBackgrounded: isAppBackgrounded
             )
         }
 
@@ -2829,8 +2833,7 @@ private extension Purchases {
             }
 
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
-                isAppBackgrounded: isAppBackgrounded,
-                completion: nil
+                isAppBackgrounded: isAppBackgrounded
             )
         }
 
