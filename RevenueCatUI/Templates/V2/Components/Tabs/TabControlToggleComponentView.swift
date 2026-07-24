@@ -38,6 +38,9 @@ struct TabControlToggleComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.packageSelectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlToggleComponentViewModel
     private let onDismiss: () -> Void
 
@@ -60,6 +63,9 @@ struct TabControlToggleComponentView: View {
                     componentName: self.tabControlContext.name,
                     isOn: newValue
                 ))
+                if self.viewModel.component.hapticFeedbackEnabled ?? true {
+                    self.hapticFeedback()
+                }
             }
         )
     }
@@ -80,6 +86,13 @@ struct TabControlToggleComponentView: View {
                 )
             )
             .labelsHidden()
+            // Warm the haptics engine as the toggle appears, so the first toggle's
+            // render isn't stalled behind the one-time engine load.
+            .onAppear {
+                if self.viewModel.component.hapticFeedbackEnabled ?? true {
+                    self.hapticFeedback.prepare()
+                }
+            }
     }
 
     /// Computes the toggle's ON state based on the selected tab.

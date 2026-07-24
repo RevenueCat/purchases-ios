@@ -16,6 +16,10 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
+#if canImport(UIKit) && os(iOS)
+import UIKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallEventTracker: @unchecked Sendable {
     typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
@@ -255,5 +259,73 @@ extension EnvironmentValues {
     var componentInteractionLogger: ComponentInteractionLogger {
         get { self[ComponentInteractionLoggerKey.self] }
         set { self[ComponentInteractionLoggerKey.self] = newValue }
+    }
+}
+
+/// Fires a native selection-changed haptic when the user changes the selected package or tab
+/// on a Paywalls V2 screen. Wraps a closure (like `ComponentInteractionLogger`) so tests can
+/// inject a spy without touching real UIKit APIs.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PackageSelectionHapticFeedback {
+
+    private let action: () -> Void
+    private let prepareAction: () -> Void
+
+    init(
+        action: @escaping () -> Void = Self.defaultAction,
+        prepare: @escaping () -> Void = Self.defaultPrepare
+    ) {
+        self.action = action
+        self.prepareAction = prepare
+    }
+
+    func callAsFunction() {
+        self.action()
+    }
+
+    /// Warms up the haptics engine ahead of the first selection. The first haptic in a process
+    /// loads the underlying engine on the main thread, a one-time cost that does not decay.
+    /// Calling this on paywall appear pays it off the selection's critical path, so the first
+    /// tap's highlight render isn't stalled behind the engine load.
+    func prepare() {
+        self.prepareAction()
+    }
+
+    #if canImport(UIKit) && os(iOS)
+    // One shared generator kept warm across selections, instead of allocating and re-warming
+    // a fresh one on every tap.
+    private static let generator = UISelectionFeedbackGenerator()
+    #endif
+
+    private static func defaultAction() {
+        #if canImport(UIKit) && os(iOS)
+        Self.generator.selectionChanged()
+        // Keep the engine warm for the next selection.
+        Self.generator.prepare()
+        #endif
+    }
+
+    private static func defaultPrepare() {
+        #if canImport(UIKit) && os(iOS)
+        Self.generator.prepare()
+        #endif
+    }
+
+    // Once the deployment target reaches iOS 17, this can be replaced by the SwiftUI-native
+    // `.sensoryFeedback(.selection, trigger:)` modifier attached directly at each call site,
+    // dropping this imperative UIKit path.
+}
+
+/// `EnvironmentKey` for storing the paywall package/tab selection haptic feedback.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct PackageSelectionHapticFeedbackKey: EnvironmentKey {
+    static let defaultValue: PackageSelectionHapticFeedback = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var packageSelectionHapticFeedback: PackageSelectionHapticFeedback {
+        get { self[PackageSelectionHapticFeedbackKey.self] }
+        set { self[PackageSelectionHapticFeedbackKey.self] = newValue }
     }
 }

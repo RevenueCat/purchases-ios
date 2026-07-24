@@ -38,6 +38,9 @@ struct TabControlButtonComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
+    @Environment(\.packageSelectionHapticFeedback)
+    private var hapticFeedback
+
     private let viewModel: TabControlButtonComponentViewModel
     private let onDismiss: () -> Void
 
@@ -57,6 +60,14 @@ struct TabControlButtonComponentView: View {
 
             self.tabControlContext.selectedTabId = destinationTabId
             self.trackTabcomponentInteraction(originTabId: originTabId, destinationTabId: destinationTabId)
+
+            if Self.shouldTriggerHapticFeedback(
+                originTabId: originTabId,
+                destinationTabId: destinationTabId,
+                hapticFeedbackEnabled: self.viewModel.component.hapticFeedbackEnabled ?? true
+            ) {
+                self.hapticFeedback()
+            }
         } label: {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
@@ -64,7 +75,13 @@ struct TabControlButtonComponentView: View {
             )
             .environment(\.componentViewState, self.selectedState)
         }
-
+        // Warm the haptics engine as the tab control appears, so the first tab
+        // selection's render isn't stalled behind the one-time engine load.
+        .onAppear {
+            if self.viewModel.component.hapticFeedbackEnabled ?? true {
+                self.hapticFeedback.prepare()
+            }
+        }
     }
 
     private func trackTabcomponentInteraction(originTabId: String, destinationTabId: String) {
@@ -81,6 +98,14 @@ struct TabControlButtonComponentView: View {
                 defaultIndex: self.tabControlContext.defaultTabIndex
             )
         ))
+    }
+
+    static func shouldTriggerHapticFeedback(
+        originTabId: String,
+        destinationTabId: String,
+        hapticFeedbackEnabled: Bool
+    ) -> Bool {
+        return hapticFeedbackEnabled && originTabId != destinationTabId
     }
 
 }
