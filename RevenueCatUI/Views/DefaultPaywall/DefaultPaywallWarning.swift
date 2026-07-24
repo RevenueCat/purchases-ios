@@ -38,6 +38,13 @@ struct DefaultPaywallWarning: View {
                     .bold()
                 Text(warning.bodyText)
                     .font(.subheadline)
+
+                if let copyableText = warning.copyableText, Pasteboard.isAvailable {
+                    HStack {
+                        Spacer()
+                        self.copyButton(for: copyableText)
+                    }
+                }
             }
             if let url = warning.helpURL {
                 let link = Link(destination: url) {
@@ -52,33 +59,25 @@ struct DefaultPaywallWarning: View {
                 }
             }
 
-            if let copyableText = warning.copyableText, Pasteboard.isAvailable {
-                self.copyButton(for: copyableText)
-            }
-
         }
         .multilineTextAlignment(.center)
     }
 
     @ViewBuilder
     private func copyButton(for text: String) -> some View {
-        let button = Button {
+        Button {
             Pasteboard.copy(text)
             withAnimation { self.didCopy = true }
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 withAnimation { self.didCopy = false }
             }
         } label: {
-            Label(self.didCopy ? "Copied" : "Copy error details",
-                  systemImage: self.didCopy ? "checkmark" : "doc.on.doc")
-                .font(.body.bold())
-        }.buttonStyle(.bordered)
-
-        if #available(watchOS 9.0, *) {
-            button.tint(.revenueCatBrandRed)
-        } else {
-            button.foregroundStyle(Color.revenueCatBrandRed)
+            Image(systemName: self.didCopy ? "checkmark" : "doc.on.doc")
+                .imageScale(.medium)
+                .foregroundStyle(.secondary)
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(self.didCopy ? "Copied" : "Copy error details")
     }
 }
 
