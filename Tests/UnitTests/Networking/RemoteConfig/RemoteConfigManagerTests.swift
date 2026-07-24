@@ -359,6 +359,50 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
     }
 
+    func testAppRestartRefreshesAndAppliesUpdatedConfig() async throws {
+        // Feed committed config back into the read path so the manager serves what it persists.
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        // Simulate a prior run that persisted config vA.
+        let persistedManifest = "v1.1710000100.sources:etagA"
+        self.diskCache.stubbedRead = Self.persisted(manifest: persistedManifest)
+
+        // Restarting the app triggers an `.appStart` refresh that sends the persisted (vA) manifest
+        // for a delta sync, rather than reusing the cached config as-is.
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.fetchContext) == .appStart
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest) == persistedManifest
+
+        // The backend returns an updated config vB (new manifest + changed topic content).
+        let updatedManifest = "v1.1710000200.sources:etagB"
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "\(updatedManifest)",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://updated.revenuecat.com" }
+            }
+          }
+        }
+        """
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        // After the restart's refresh the manager is on vB: it commits the new version and now serves
+        // the updated topic, not the persisted vA.
+        expect(self.diskCache.invokedWriteParameter?.manifest) == updatedManifest
+        let maybeTopic = await self.manager.topic(.sources)
+        let topic = try XCTUnwrap(maybeTopic)
+        expect(topic["api"]?.content["url"]) == "https://updated.revenuecat.com"
+    }
+
     func testOverlappingRefreshesAreIgnoredUntilInFlightRefreshCompletes() {
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
