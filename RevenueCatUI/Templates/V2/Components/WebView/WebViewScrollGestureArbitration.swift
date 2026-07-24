@@ -46,8 +46,9 @@ enum WebViewGestureProbe {
         let source = """
         (function () {
           function consumesGesture(el) {
-            var node = el && el.nodeType === 1 ? el : (el ? el.parentElement : null);
-            for (var n = node; n && n.nodeType === 1; n = n.parentElement) {
+            var ELEMENT_NODE = Node.ELEMENT_NODE;
+            var node = el && el.nodeType === ELEMENT_NODE ? el : (el ? el.parentElement : null);
+            for (var n = node; n && n.nodeType === ELEMENT_NODE; n = n.parentElement) {
               var s = getComputedStyle(n);
               if (s.touchAction && s.touchAction !== 'auto' && s.touchAction !== 'manipulation') return true;
               if ((s.overflowY === 'auto' || s.overflowY === 'scroll') && n.scrollHeight > n.clientHeight) return true;
