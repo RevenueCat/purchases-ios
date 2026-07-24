@@ -12,6 +12,12 @@ let paywallsTesterDir = repoRoot
 if let apiKey = Environment.rcApiKey {
     let localXcconfig = repoRoot.appendingPathComponent("Local.xcconfig")
 
+    // Local.xcconfig is gitignored, so it doesn't exist on a fresh checkout. Create an empty
+    // one first so the key isn't silently dropped when TUIST_RC_API_KEY is set.
+    if !fileManager.fileExists(atPath: localXcconfig.path) {
+        try? "".write(to: localXcconfig, atomically: true, encoding: .utf8)
+    }
+
     if fileManager.fileExists(atPath: localXcconfig.path),
        var contents = try? String(contentsOf: localXcconfig, encoding: .utf8) {
         // Replace existing API key or add new one
