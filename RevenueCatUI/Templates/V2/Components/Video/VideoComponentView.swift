@@ -173,7 +173,7 @@ struct VideoComponentView: View {
                             )
                         }
                     }
-                    .applyMediaWidth(size: style.size)
+                    .applyMediaWidth(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
                     .applyIfLet(style.colorOverlay, apply: { view, colorOverlay in
                         view.overlay(
