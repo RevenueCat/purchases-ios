@@ -285,10 +285,30 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         }
         #endif
 
+        #if os(iOS)
+        // Nested-scroll arbitration: let JS-panned content (maps, inner overflow scrollers) claim a
+        // drag from the enclosing paywall scroll. Installed before `load` so the document-start probe
+        // is present for the first navigation.
+        self.installScrollGestureArbitration(on: webView)
+        #endif
+
         self.configureSession(for: webView)
         self.load(webView)
         return webView
     }
+
+    #if os(iOS)
+    @MainActor
+    private func installScrollGestureArbitration(on webView: PlatformWebView) {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: webView)
+        webView.addGestureRecognizer(recognizer)
+        webView.configuration.userContentController.add(
+            WeakScriptMessageHandler(recognizer),
+            name: WebViewGestureProbe.messageHandlerName
+        )
+        webView.configuration.userContentController.addUserScript(WebViewGestureProbe.userScript)
+    }
+    #endif
 
     @MainActor
     private func update(_ webView: PlatformWebView) {
@@ -324,6 +344,11 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         webView.configuration.userContentController.removeScriptMessageHandler(
             forName: WebViewEnvelope.messageHandlerName
         )
+        #if os(iOS)
+        webView.configuration.userContentController.removeScriptMessageHandler(
+            forName: WebViewGestureProbe.messageHandlerName
+        )
+        #endif
     }
 
     // `WKNavigationDelegate` is `@MainActor`-annotated in the SDK (its `WK_SWIFT_UI_ACTOR` attribute
