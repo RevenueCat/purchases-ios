@@ -270,7 +270,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         #else
         webView.isOpaque = false
         webView.backgroundColor = .clear
-        webView.scrollView.isScrollEnabled = false
+        webView.scrollView.isScrollEnabled = true
         webView.scrollView.bounces = false
         webView.scrollView.minimumZoomScale = 1
         webView.scrollView.maximumZoomScale = 1
