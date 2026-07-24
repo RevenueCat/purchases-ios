@@ -23,7 +23,7 @@ const JOBS = {
   "check-api-changes-revenuecat": ["slack-secrets-ios"],
   "check-api-changes-revenuecatui": ["slack-secrets-ios"],
   "docs-build": ["slack-secrets"],
-  "emerge_binary_size_analysis": ["slack-secrets"],
+  "binary_size_analysis": ["slack-secrets", "sentry"],
   "emerge_purchases_ui_snapshot_tests": ["slack-secrets"],
   "generate-swiftinterface": ["slack-secrets-ios"],
   "installation-tests-all-but-carthage": ["slack-secrets"],
