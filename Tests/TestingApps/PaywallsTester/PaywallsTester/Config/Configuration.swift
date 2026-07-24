@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 enum Configuration {
 
@@ -27,6 +27,7 @@ enum Configuration {
             with: .init(withAPIKey: Constants.apiKey)
                 .with(entitlementVerificationMode: .informational)
                 .with(diagnosticsEnabled: true)
+                .with(dangerousSettings: DangerousSettings(useWorkflows: true))
                 .with(purchasesAreCompletedBy: .revenueCat, storeKitVersion: .storeKit2)
         )
     }
