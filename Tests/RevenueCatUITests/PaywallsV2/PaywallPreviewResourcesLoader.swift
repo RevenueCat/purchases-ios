@@ -133,50 +133,139 @@ class PaywallPreviewResourcesLoader {
                 apiKey: "preview_api_key",
                 preferredLocalesProvider: .init(preferredLocaleOverride: nil)
             )
-            let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferings(from: [
-                "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Lifeime"
-                )),
-                "com.revenuecat.annual_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .year,
-                    localizedTitle: "Annual"
-                )),
-                "com.revenuecat.semester_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "6 Month"
-                )),
-                "com.revenuecat.quarterly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "3 Month"
-                )),
-                "com.revenuecat.bimonthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "2 Month"
-                )),
-                "com.revenuecat.monthly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .month,
-                    localizedTitle: "Monthly"
-                )),
-                "com.revenuecat.weekly_product": .init(sk1Product: PreviewMock.Product(
-                    price: 1.99,
-                    unit: .week,
-                    localizedTitle: "Weekly"
-                ))
-            ], contents: Offerings.Contents(response: offeringsResponseWithPackages,
-                                            httpResponseOriginalSource: .mainServer),
-                                                               loadedFromDiskCache: false)
+            // Mock products for the preview offerings. Prices, subscription periods, and
+            // the single introductory offer ($1.99 for 1 week) are kept in sync with the
+            // web/dashboard preview tables so the rendering-validation screenshots show the
+            // same products, prices, and offers across platforms.
+            let storeProductsByID = Self.previewStoreProductsByID()
+
+            let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferings(
+                from: storeProductsByID,
+                contents: Offerings.Contents(response: offeringsResponseWithPackages,
+                                             httpResponseOriginalSource: .mainServer),
+                loadedFromDiskCache: false
+            )
 
             result.merge(offerings!.all)
         }
 
         return result
+    }
+
+    // MARK: - Preview products
+
+    private static let previewLocale = Locale(identifier: "en_US")
+
+    /// A single introductory offer ($1.99 for 1 week) attached to every subscription.
+    /// Matches the offer values in the web/dashboard preview variable tables and makes
+    /// the products intro-offer eligible so offer-gated UI renders.
+    private static func introductoryOffer() -> TestStoreProductDiscount {
+        return TestStoreProductDiscount(
+            identifier: "intro_offer",
+            price: 1.99,
+            localizedPriceString: "$1.99",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .week),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+    }
+
+    private static func subscriptionProduct(
+        productIdentifier: String,
+        description: String,
+        price: Decimal,
+        localizedPriceString: String,
+        subscriptionPeriod: SubscriptionPeriod
+    ) -> StoreProduct {
+        return TestStoreProduct(
+            // Matches the web/dashboard `product.store_product_name` ("Pro Access").
+            localizedTitle: "Pro Access",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: localizedPriceString,
+            productIdentifier: productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: description,
+            subscriptionPeriod: subscriptionPeriod,
+            introductoryDiscount: introductoryOffer(),
+            locale: previewLocale
+        ).toStoreProduct()
+    }
+
+    /// Mock products keyed by both the base product identifier and the compound
+    /// "product:plan" identifier, so packages resolve whether or not packages.json
+    /// specifies a billing plan identifier.
+    private static func previewStoreProductsByID() -> [String: StoreProduct] {
+        let lifetime = TestStoreProduct(
+            localizedTitle: "Pro Access",
+            price: 119.99,
+            currencyCode: "USD",
+            localizedPriceString: "$119.99",
+            productIdentifier: "com.revenuecat.lifetime_product",
+            productType: .nonConsumable,
+            localizedDescription: "Lifetime",
+            locale: previewLocale
+        ).toStoreProduct()
+
+        let weekly = subscriptionProduct(
+            productIdentifier: "com.revenuecat.weekly_product",
+            description: "Weekly",
+            price: 2.99,
+            localizedPriceString: "$2.99",
+            subscriptionPeriod: .init(value: 1, unit: .week)
+        )
+        let monthly = subscriptionProduct(
+            productIdentifier: "com.revenuecat.monthly_product",
+            description: "Monthly",
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            subscriptionPeriod: .init(value: 1, unit: .month)
+        )
+        let bimonthly = subscriptionProduct(
+            productIdentifier: "com.revenuecat.bimonthly_product",
+            description: "2 Months",
+            price: 17.99,
+            localizedPriceString: "$17.99",
+            subscriptionPeriod: .init(value: 2, unit: .month)
+        )
+        let quarterly = subscriptionProduct(
+            productIdentifier: "com.revenuecat.quarterly_product",
+            description: "3 Months",
+            price: 24.99,
+            localizedPriceString: "$24.99",
+            subscriptionPeriod: .init(value: 3, unit: .month)
+        )
+        let semester = subscriptionProduct(
+            productIdentifier: "com.revenuecat.semester_product",
+            description: "6 Months",
+            price: 39.99,
+            localizedPriceString: "$39.99",
+            subscriptionPeriod: .init(value: 6, unit: .month)
+        )
+        let annual = subscriptionProduct(
+            productIdentifier: "com.revenuecat.annual_product",
+            description: "Annual",
+            price: 69.99,
+            localizedPriceString: "$69.99",
+            subscriptionPeriod: .init(value: 1, unit: .year)
+        )
+
+        return [
+            "com.revenuecat.lifetime_product": lifetime,
+            "com.revenuecat.weekly_product": weekly,
+            "com.revenuecat.weekly_product:p1w": weekly,
+            "com.revenuecat.monthly_product": monthly,
+            "com.revenuecat.monthly_product:p1m": monthly,
+            "com.revenuecat.bimonthly_product": bimonthly,
+            "com.revenuecat.bimonthly_product:p2m": bimonthly,
+            "com.revenuecat.quarterly_product": quarterly,
+            "com.revenuecat.quarterly_product:p3m": quarterly,
+            "com.revenuecat.semester_product": semester,
+            "com.revenuecat.semester_product:p6m": semester,
+            "com.revenuecat.annual_product": annual,
+            "com.revenuecat.annual_product:p1y": annual
+        ]
     }
 
 }
