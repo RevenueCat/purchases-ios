@@ -1,0 +1,62 @@
+name: New Public API Notification
+
+# Posts to #feed-sdk-new-api when a pull request that adds public API is ready for review.
+# `opened` covers pull requests that never were drafts, which don't emit ready_for_review.
+#
+# The push on main is the backstop: a pull request marked ready before its api/ baselines
+# were regenerated has nothing to report yet, and would otherwise never be announced.
+#
+# `synchronize` and `reopened` are here only so the tests below run on every push; the
+# notify job filters them out.
+on:
+  pull_request:
+    types: [opened, ready_for_review, synchronize, reopened]
+  push:
+    branches: [main]
+
+# Deny-all baseline: each job must declare its own `permissions:` block.
+permissions: {}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+
+      - name: Run api diff helper unit tests
+        run: ruby fastlane/api_diff_helper_test.rb
+
+  notify:
+    runs-on: ubuntu-latest
+    # Only when a pull request first becomes reviewable, or when something lands on main.
+    if: >-
+      github.event_name == 'push' ||
+      github.event.action == 'ready_for_review' ||
+      (github.event.action == 'opened' && github.event.pull_request.draft == false)
+    # Don't announce anything if the detection itself is broken.
+    needs: test
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          # The detection diffs the pull request against its merge base, so we need history.
+          fetch-depth: 0
+
+      - name: Notify new public API
+        env:
+          # Either secret works: an incoming webhook for the channel, or a bot token that is
+          # a member of it. Nothing is posted while both are unset.
+          SLACK_WEBHOOK_URL: ${{ secrets.SDK_NEW_API_SLACK_WEBHOOK_URL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SDK_NEW_API_SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: ${{ vars.SDK_NEW_API_SLACK_CHANNEL }}
+          BASE_SHA: ${{ github.event_name == 'push' && github.event.before || github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event_name == 'push' && github.sha || github.event.pull_request.head.sha }}
+          # Empty on push, which is what tells the script to report the API as landed.
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: ruby scripts/notify_new_public_api.rb
