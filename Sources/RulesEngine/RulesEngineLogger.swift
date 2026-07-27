@@ -17,14 +17,17 @@ protocol RulesEngineLogger: Sendable {
     func log(_ message: String)
 }
 
-/// Default logger for `RulesEngine.logger`.
-struct PrintLogger: RulesEngineLogger {
+extension RulesEngine {
 
-    func warn(_ message: String) {
-        print(message)
-    }
+    /// Default logger for `RulesEngine.logger`.
+    struct PrintLogger: RulesEngineLogger {
 
-    func log(_ message: String) {
-        print(message)
+        func warn(_ message: String) {
+            print(message)
+        }
+
+        func log(_ message: String) {
+            print(message)
+        }
     }
 }
