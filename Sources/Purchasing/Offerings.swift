@@ -219,7 +219,8 @@ extension Offerings {
         var response: OfferingsResponse
         var originalSource: Offerings.OriginalSource
 
-        init(response: OfferingsResponse, httpResponseOriginalSource: HTTPResponseOriginalSource) {
+        init(response: OfferingsResponse,
+             httpResponseOriginalSource: HTTPResponseOriginalSource) {
             self.response = response
             self.originalSource = Offerings.OriginalSource(httpResponseOriginalSource: httpResponseOriginalSource)
         }

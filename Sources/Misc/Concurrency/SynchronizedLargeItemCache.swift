@@ -60,12 +60,23 @@ internal final class SynchronizedLargeItemCache {
     /// Save a codable value to the cache
     @discardableResult
     func set<T: Encodable>(codable value: T, forKey key: String) -> Bool {
-        guard let fileURL = self.getFileURL(for: key) else {
+        guard self.getFileURL(for: key) != nil else {
             Logger.error(Strings.cache.cache_url_not_available)
             return false
         }
 
         guard let data = try? JSONEncoder.default.encode(value: value, logErrors: true) else {
+            return false
+        }
+
+        return self.set(data: data, forKey: key)
+    }
+
+    /// Save already-encoded data to the cache.
+    @discardableResult
+    func set(data: Data, forKey key: String) -> Bool {
+        guard let fileURL = self.getFileURL(for: key) else {
+            Logger.error(Strings.cache.cache_url_not_available)
             return false
         }
 
@@ -82,7 +93,7 @@ internal final class SynchronizedLargeItemCache {
 
     /// Load a codable value from the cache
     /// - Throws: If the file cannot be loaded or decoded
-    func value<T: Decodable>(forKey key: String) throws -> T? {
+    func value<T: Decodable>(forKey key: String, decoder: JSONDecoder) throws -> T? {
         guard let fileURL = self.getFileURL(for: key) else {
             return nil
         }
@@ -93,7 +104,7 @@ internal final class SynchronizedLargeItemCache {
             }
 
             let data = try cache.loadFile(at: fileURL)
-            return try JSONDecoder.default.decode(jsonData: data, logErrors: true)
+            return try decoder.decode(jsonData: data, logErrors: true)
         }
     }
 
