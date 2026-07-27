@@ -33,6 +33,8 @@ import Foundation
 
         public let size: Size
 
+        public let overrides: ComponentOverrides<PartialWebViewComponent>?
+
         /// Resolves a URL that is safe to use as a web view component entry point.
         public static func validatedHTTPSURL(from urlString: String) -> URL? {
             guard !urlString.contains("{{"),
@@ -64,7 +66,8 @@ import Foundation
             visible: Bool? = nil,
             protocolVersion: Int,
             url: String,
-            size: Size = .init(width: .fill, height: .fit(nil))
+            size: Size = .init(width: .fill, height: .fit(nil)),
+            overrides: ComponentOverrides<PartialWebViewComponent>? = nil
         ) {
             self.type = .webView
             self.id = id
@@ -73,6 +76,7 @@ import Foundation
             self.protocolVersion = protocolVersion
             self.url = url
             self.size = size
+            self.overrides = overrides
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -83,6 +87,7 @@ import Foundation
             hasher.combine(protocolVersion)
             hasher.combine(url)
             hasher.combine(size)
+            hasher.combine(overrides)
         }
 
         public static func == (lhs: WebViewComponent, rhs: WebViewComponent) -> Bool {
@@ -92,7 +97,26 @@ import Foundation
                 lhs.visible == rhs.visible &&
                 lhs.protocolVersion == rhs.protocolVersion &&
                 lhs.url == rhs.url &&
-                lhs.size == rhs.size
+                lhs.size == rhs.size &&
+                lhs.overrides == rhs.overrides
+        }
+
+    }
+
+    final class PartialWebViewComponent: PaywallPartialComponent {
+
+        public let visible: Bool?
+
+        public init(visible: Bool? = nil) {
+            self.visible = visible
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+        }
+
+        public static func == (lhs: PartialWebViewComponent, rhs: PartialWebViewComponent) -> Bool {
+            return lhs.visible == rhs.visible
         }
 
     }

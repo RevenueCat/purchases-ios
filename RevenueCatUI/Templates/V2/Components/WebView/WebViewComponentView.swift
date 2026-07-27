@@ -14,44 +14,88 @@ import WebKit
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebViewComponentView: View {
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     let viewModel: WebViewComponentViewModel
+
+    private var style: WebViewComponentStyle {
+        let currentPackage = self.packageContext.package
+        return self.viewModel.style(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: currentPackage),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: currentPackage),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults
+        )
+    }
 
     var body: some View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
         #else
+        let style = self.style
         // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
-        // instead of mounting an inert bridge. See `WebViewComponentViewModel.isRenderable`.
-        if viewModel.isRenderable, let url = viewModel.url, let origin = viewModel.origin {
+        // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
+        if style.isRenderable, let url = style.url, let origin = style.origin {
             BridgedWebViewComponentView(
-                viewModel: viewModel,
+                size: style.size,
                 url: url,
                 expectedOrigin: origin,
-                componentID: viewModel.componentID
+                componentID: style.componentID
             )
             .id(
-                "\(viewModel.urlString)-\(viewModel.componentID)-" +
-                "\(viewModel.size.width.isFit)-\(viewModel.size.height.isFit)"
+                "\(style.urlString)-\(style.componentID)-" +
+                "\(style.size.width.isFit)-\(style.size.height.isFit)"
             )
-        } else if viewModel.visible {
+        } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
             // this renders nothing, so surface why instead of leaving authors with a silent blank.
             Color.clear
                 .frame(width: 0, height: 0)
-                .onAppear { Logger.error(Strings.paywall_web_view_not_rendered(reason: self.nonRenderReason)) }
+                .onAppear {
+                    Logger.error(Strings.paywall_web_view_not_rendered(reason: Self.nonRenderReason(for: style)))
+                }
         }
         #endif
     }
 
     #if canImport(WebKit) && !os(watchOS)
-    private var nonRenderReason: String {
-        if viewModel.componentID.isEmpty {
+    private static func nonRenderReason(for style: WebViewComponentStyle) -> String {
+        if style.componentID.isEmpty {
             return "missing component id"
-        } else if viewModel.url == nil {
-            return "invalid or unsupported URL '\(viewModel.urlString)'"
+        } else if style.url == nil {
+            return "invalid or unsupported URL '\(style.urlString)'"
         } else {
-            return "URL '\(viewModel.urlString)' has no resolvable origin"
+            return "URL '\(style.urlString)' has no resolvable origin"
         }
     }
     #endif
@@ -88,7 +132,7 @@ private extension PaywallComponent.SizeConstraint {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct BridgedWebViewComponentView: View {
 
-    let viewModel: WebViewComponentViewModel
+    let size: PaywallComponent.Size
     let url: URL
     let expectedOrigin: WebViewOrigin
 
@@ -108,12 +152,12 @@ private struct BridgedWebViewComponentView: View {
     private var loadFailed = false
 
     init(
-        viewModel: WebViewComponentViewModel,
+        size: PaywallComponent.Size,
         url: URL,
         expectedOrigin: WebViewOrigin,
         componentID: String
     ) {
-        self.viewModel = viewModel
+        self.size = size
         self.url = url
         self.expectedOrigin = expectedOrigin
 
@@ -124,8 +168,8 @@ private struct BridgedWebViewComponentView: View {
                 componentID: componentID,
                 expectedOrigin: expectedOrigin,
                 fitAxes: (
-                    width: viewModel.size.width.isFit,
-                    height: viewModel.size.height.isFit
+                    width: size.width.isFit,
+                    height: size.height.isFit
                 ),
                 evaluateJavaScript: { _ in false },
                 currentURL: { nil }
@@ -160,7 +204,7 @@ private struct BridgedWebViewComponentView: View {
                     self.loadFailed = true
                 }
             )
-            .webViewSize(viewModel.size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
+            .webViewSize(size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
             // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
             // placeholder -> measured); never paint outside the component's box.
             .clipped()

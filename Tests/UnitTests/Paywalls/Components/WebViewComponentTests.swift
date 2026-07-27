@@ -398,6 +398,67 @@ final class WebViewComponentTests: TestCase {
         XCTAssertEqual(component.size.height, .fit(180))
     }
 
+    func testDecodesOverrides() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com/base",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "overrides": [
+            {
+              "conditions": [{ "type": "selected" }],
+              "properties": { "visible": false }
+            },
+            {
+              "conditions": [{ "type": "expanded" }],
+              "properties": { "visible": true }
+            }
+          ]
+        }
+        """.utf8))
+
+        let overrides = try XCTUnwrap(component.overrides)
+        XCTAssertEqual(overrides.count, 2)
+
+        XCTAssertEqual(overrides[0].conditions, [.selected])
+        XCTAssertEqual(overrides[0].properties.visible, false)
+
+        XCTAssertEqual(overrides[1].conditions, [.expanded])
+        XCTAssertEqual(overrides[1].properties.visible, true)
+    }
+
+    func testEncodeDecodeRoundTripPreservesOverrides() throws {
+        let component = PaywallComponent.WebViewComponent(
+            id: "web",
+            protocolVersion: 1,
+            url: "https://example.com/base",
+            overrides: [
+                .init(conditions: [.selected], properties: .init(visible: false)),
+                .init(conditions: [.expanded], properties: .init(visible: true))
+            ]
+        )
+
+        let data = try JSONEncoder.default.encode(component)
+        let decoded = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: data)
+        XCTAssertEqual(decoded, component)
+    }
+
+    func testDecodesWithoutOverrides() throws {
+        let component = try JSONDecoder.default.decode(PaywallComponent.WebViewComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+        }
+        """.utf8))
+
+        XCTAssertNil(component.overrides)
+    }
+
     private static let fallbackStackJSON = """
     {
         "type": "stack",
