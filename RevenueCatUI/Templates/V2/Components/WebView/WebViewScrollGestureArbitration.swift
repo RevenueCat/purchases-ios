@@ -91,6 +91,47 @@ func shouldWebViewOwnGesture(
     }
 }
 
+/// The recognizer's resolution for the current movement.
+enum WebViewGestureOutcome: Equatable {
+    /// The web view claims the drag (block the paywall scroll).
+    case own
+    /// Hand the drag to the paywall scroll.
+    case release
+    /// Not enough information yet — keep waiting for more movement or the probe verdict.
+    case pending
+}
+
+/// Resolves the current movement into an outcome. `own` follows ``shouldWebViewOwnGesture``. Otherwise
+/// we only `release` once the probe verdict has arrived (`webContentWantsGesture != nil`): while it is
+/// still `nil` a fast drag past slop stays `pending` rather than releasing, so a late `own` verdict on
+/// JS-panned content (which has no native root scroll to reveal it) isn't preempted by an early hand-off.
+@available(iOS 15.0, *)
+// swiftlint:disable:next function_parameter_count
+func webViewGestureOutcome(
+    totalDx: CGFloat,
+    totalDy: CGFloat,
+    touchSlop: CGFloat,
+    webContentWantsGesture: Bool?,
+    canScrollHorizontally: (_ direction: Int) -> Bool,
+    canScrollVertically: (_ direction: Int) -> Bool
+) -> WebViewGestureOutcome {
+    let owns = shouldWebViewOwnGesture(
+        totalDx: totalDx,
+        totalDy: totalDy,
+        touchSlop: touchSlop,
+        webContentWantsGesture: webContentWantsGesture,
+        canScrollHorizontally: canScrollHorizontally,
+        canScrollVertically: canScrollVertically
+    )
+    if owns { return .own }
+
+    let pastSlop = abs(totalDx) >= touchSlop || abs(totalDy) >= touchSlop
+    // A definitive `release` verdict (or a `nil` verdict that native scrollability already resolved)
+    // lets us hand off; a still-pending verdict must wait so JS-panned content can claim it.
+    if pastSlop && webContentWantsGesture != nil { return .release }
+    return .pending
+}
+
 // MARK: - Recognizer
 
 /// Installed on the web view; makes any *ancestor* paywall scroll view wait for it to fail (via
@@ -117,6 +158,9 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
     /// cleared once the gesture resolves or resets. Guards a second finger from re-initializing state
     /// mid-gesture, and a late/stale probe verdict from applying between gestures.
     var isTracking = false
+    /// The latest drag translation of the current sequence, kept so a probe verdict arriving after the
+    /// finger has already moved can be re-evaluated against where it is now.
+    var latestTranslation: CGSize = .zero
 
     init(webView: WKWebView) {
         self.webView = webView
@@ -143,6 +187,7 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
         guard !self.isTracking else { return }
         self.isTracking = true
         self.startLocation = location
+        self.latestTranslation = .zero
         self.contentWantsGesture = nil
         self.decided = false
     }
@@ -150,10 +195,11 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesMoved(touches, with: event)
         guard !self.decided, let location = touches.first?.location(in: self.view) else { return }
-        self.evaluate(
-            totalDx: location.x - self.startLocation.x,
-            totalDy: location.y - self.startLocation.y
+        self.latestTranslation = CGSize(
+            width: location.x - self.startLocation.x,
+            height: location.y - self.startLocation.y
         )
+        self.evaluate()
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
@@ -191,35 +237,39 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
     func applyProbeVerdict(isOwn: Bool) {
         guard self.isTracking, !self.decided else { return }
         self.contentWantsGesture = isOwn
-        // An `own` verdict claims immediately, even within slop. `release` waits for movement so the
-        // dominant-axis native-scroll check can still decide.
+        // An `own` verdict claims immediately, even within slop. A `release` verdict resolves the
+        // pending state, so re-evaluate against the latest movement to hand off promptly if the finger
+        // has already dragged past slop (a fast drag may have moved before the verdict landed).
         if isOwn {
             self.decided = true
             self.state = .began
+        } else {
+            self.evaluate()
         }
     }
 
     // MARK: Arbitration
 
-    private func evaluate(totalDx: CGFloat, totalDy: CGFloat) {
-        let owns = shouldWebViewOwnGesture(
-            totalDx: totalDx,
-            totalDy: totalDy,
+    func evaluate() {
+        switch webViewGestureOutcome(
+            totalDx: self.latestTranslation.width,
+            totalDy: self.latestTranslation.height,
             touchSlop: Self.touchSlop,
             webContentWantsGesture: self.contentWantsGesture,
             canScrollHorizontally: { [weak self] in self?.canScroll(horizontally: $0) ?? false },
             canScrollVertically: { [weak self] in self?.canScroll(vertically: $0) ?? false }
-        )
-
-        if owns {
+        ) {
+        case .own:
             self.decided = true
             self.state = .began
-        } else if abs(totalDx) >= Self.touchSlop || abs(totalDy) >= Self.touchSlop {
-            // Past slop and not owned: hand the drag to the paywall.
+        case .release:
             self.decided = true
             self.state = .failed
+        case .pending:
+            // Within slop, or past slop while the probe verdict is still pending: stay `.possible`,
+            // awaiting the verdict or more movement rather than releasing prematurely.
+            break
         }
-        // Within slop and not owned yet: stay `.possible`, awaiting a verdict or more movement.
     }
 
     private func canScroll(vertically direction: Int) -> Bool {

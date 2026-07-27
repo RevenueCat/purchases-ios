@@ -73,6 +73,34 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         XCTAssertFalse(shouldOwn(dx: 30, dy: -50, canScrollDown: false, canScrollLeft: true))
     }
 
+    // MARK: - Outcome resolution (pending vs release while the probe verdict is in flight)
+
+    func testOwnVerdictResolvesToOwnWithinTouchSlop() {
+        XCTAssertEqual(resolve(dx: 0, dy: 1, webContentWantsGesture: true), .own)
+    }
+
+    func testPendingVerdictPastSlopWithNativeScrollResolvesToOwn() {
+        XCTAssertEqual(resolve(dx: 0, dy: -50, webContentWantsGesture: nil, canScrollDown: true), .own)
+    }
+
+    func testPendingVerdictPastSlopWithoutNativeScrollStaysPending() {
+        // The race the recognizer must not lose: a fast drag on JS-panned content (no native root
+        // scroll) before the `own` verdict lands must wait, not release to the paywall.
+        XCTAssertEqual(resolve(dx: 0, dy: -50, webContentWantsGesture: nil, canScrollDown: false), .pending)
+    }
+
+    func testReleaseVerdictPastSlopWithoutNativeScrollResolvesToRelease() {
+        XCTAssertEqual(resolve(dx: 0, dy: -50, webContentWantsGesture: false, canScrollDown: false), .release)
+    }
+
+    func testWithinTouchSlopWithoutVerdictStaysPending() {
+        XCTAssertEqual(resolve(dx: 7, dy: -7, webContentWantsGesture: nil), .pending)
+    }
+
+    func testReleaseVerdictWithinTouchSlopStaysPending() {
+        XCTAssertEqual(resolve(dx: 3, dy: 3, webContentWantsGesture: false), .pending)
+    }
+
     // MARK: - Recognizer failure-requirement wiring
 
     @MainActor
@@ -209,6 +237,31 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         XCTAssertNil(recognizer.contentWantsGesture)
     }
 
+    @MainActor
+    func testFastDragPastSlopDoesNotReleaseWhileTheVerdictIsPending() {
+        // A default WKWebView has no scrollable content, so `canScroll` is false in every direction.
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: .zero)
+        recognizer.latestTranslation = CGSize(width: 0, height: -50) // fast flick up, well past slop
+
+        recognizer.evaluate()
+
+        XCTAssertFalse(recognizer.decided, "Must await the probe verdict instead of releasing early")
+        XCTAssertEqual(recognizer.state, .possible)
+    }
+
+    @MainActor
+    func testReleaseVerdictAfterAFastDragHandsOffToThePaywall() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: .zero)
+        recognizer.latestTranslation = CGSize(width: 0, height: -50)
+
+        recognizer.applyProbeVerdict(isOwn: false)
+
+        XCTAssertTrue(recognizer.decided)
+        XCTAssertEqual(recognizer.state, .failed)
+    }
+
     // MARK: - Probe user script
 
     @MainActor
@@ -248,6 +301,27 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
             touchSlop: self.slop,
             webContentWantsGesture: webContentWantsGesture,
             // direction > 0 == toward the end (right/bottom), < 0 == toward the start (left/top).
+            canScrollHorizontally: { direction in direction > 0 ? canScrollRight : canScrollLeft },
+            canScrollVertically: { direction in direction > 0 ? canScrollDown : canScrollUp }
+        )
+    }
+
+    // swiftlint:disable identifier_name
+    private func resolve(
+        dx: CGFloat,
+        dy: CGFloat,
+        webContentWantsGesture: Bool? = nil,
+        canScrollUp: Bool = false,
+        canScrollDown: Bool = false,
+        canScrollLeft: Bool = false,
+        canScrollRight: Bool = false
+    ) -> WebViewGestureOutcome {
+        // swiftlint:enable identifier_name
+        webViewGestureOutcome(
+            totalDx: dx,
+            totalDy: dy,
+            touchSlop: self.slop,
+            webContentWantsGesture: webContentWantsGesture,
             canScrollHorizontally: { direction in direction > 0 ? canScrollRight : canScrollLeft },
             canScrollVertically: { direction in direction > 0 ? canScrollDown : canScrollUp }
         )
