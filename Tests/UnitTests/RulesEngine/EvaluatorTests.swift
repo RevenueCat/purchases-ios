@@ -8,6 +8,8 @@ import XCTest
 
 @testable import RevenueCat
 
+private typealias Value = RulesEngine.Value
+
 final class EvaluatorTests: XCTestCase {
 
     // MARK: - Error paths

@@ -8,6 +8,9 @@ import XCTest
 
 @testable import RevenueCat
 
+private typealias Value = RulesEngine.Value
+private typealias StringArrayOperators = RulesEngine.StringArrayOperators
+
 final class StringArrayOperatorsTests: XCTestCase {
 
     // MARK: - merge

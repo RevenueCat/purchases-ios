@@ -15,7 +15,7 @@ import Foundation
 // → array → object) mirrors JSON's value space; integral floats such as
 // `1.0` may decode as the integer case, which is harmless here because the
 // engine bridges int/float in equality, comparison, and arithmetic.
-extension Value: Decodable {
+extension RulesEngine.Value: Decodable {
 
     /// Decodes a single JSON value into the engine's `Value` model, trying
     /// each JSON shape in turn (null, bool, integer, double, string, array,
@@ -33,9 +33,9 @@ extension Value: Decodable {
             self = .float(double)
         } else if let string = try? container.decode(String.self) {
             self = .string(string)
-        } else if let array = try? container.decode([Value].self) {
+        } else if let array = try? container.decode([RulesEngine.Value].self) {
             self = .array(array)
-        } else if let object = try? container.decode([String: Value].self) {
+        } else if let object = try? container.decode([String: RulesEngine.Value].self) {
             self = .object(object)
         } else {
             throw DecodingError.dataCorrupted(

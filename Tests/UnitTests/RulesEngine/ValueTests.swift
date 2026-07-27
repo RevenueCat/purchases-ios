@@ -8,6 +8,8 @@ import XCTest
 
 @testable import RevenueCat
 
+private typealias Value = RulesEngine.Value
+
 final class ValueTests: XCTestCase {
 
     // MARK: - JSON parsing (test helper)
@@ -73,35 +75,35 @@ final class ValueTests: XCTestCase {
     // MARK: - Loose equality
 
     func testLooseEqSameType() {
-        XCTAssertTrue(looseEq(.int(1), .int(1)))
-        XCTAssertFalse(looseEq(.int(1), .int(2)))
-        XCTAssertTrue(looseEq(.string("abc"), .string("abc")))
-        XCTAssertTrue(looseEq(.bool(true), .bool(true)))
+        XCTAssertTrue(RulesEngine.looseEq(.int(1), .int(1)))
+        XCTAssertFalse(RulesEngine.looseEq(.int(1), .int(2)))
+        XCTAssertTrue(RulesEngine.looseEq(.string("abc"), .string("abc")))
+        XCTAssertTrue(RulesEngine.looseEq(.bool(true), .bool(true)))
     }
 
     func testLooseEqIntVsFloat() {
-        XCTAssertTrue(looseEq(.int(1), .float(1.0)))
-        XCTAssertFalse(looseEq(.int(1), .float(1.5)))
+        XCTAssertTrue(RulesEngine.looseEq(.int(1), .float(1.0)))
+        XCTAssertFalse(RulesEngine.looseEq(.int(1), .float(1.5)))
     }
 
     func testLooseEqBoolVsNumber() {
-        XCTAssertTrue(looseEq(.bool(true), .int(1)))
-        XCTAssertTrue(looseEq(.bool(false), .int(0)))
-        XCTAssertTrue(looseEq(.bool(true), .float(1.0)))
-        XCTAssertFalse(looseEq(.bool(true), .int(2)))
+        XCTAssertTrue(RulesEngine.looseEq(.bool(true), .int(1)))
+        XCTAssertTrue(RulesEngine.looseEq(.bool(false), .int(0)))
+        XCTAssertTrue(RulesEngine.looseEq(.bool(true), .float(1.0)))
+        XCTAssertFalse(RulesEngine.looseEq(.bool(true), .int(2)))
     }
 
     func testLooseEqStringVsNumber() {
-        XCTAssertTrue(looseEq(.string("1"), .int(1)))
-        XCTAssertTrue(looseEq(.string("1.5"), .float(1.5)))
-        XCTAssertFalse(looseEq(.string("hello"), .int(0)))
+        XCTAssertTrue(RulesEngine.looseEq(.string("1"), .int(1)))
+        XCTAssertTrue(RulesEngine.looseEq(.string("1.5"), .float(1.5)))
+        XCTAssertFalse(RulesEngine.looseEq(.string("hello"), .int(0)))
     }
 
     func testLooseEqNullOnlyEqualsNull() {
-        XCTAssertTrue(looseEq(.null, .null))
-        XCTAssertFalse(looseEq(.null, .int(0)))
-        XCTAssertFalse(looseEq(.null, .bool(false)))
-        XCTAssertFalse(looseEq(.null, .string("")))
+        XCTAssertTrue(RulesEngine.looseEq(.null, .null))
+        XCTAssertFalse(RulesEngine.looseEq(.null, .int(0)))
+        XCTAssertFalse(RulesEngine.looseEq(.null, .bool(false)))
+        XCTAssertFalse(RulesEngine.looseEq(.null, .string("")))
     }
 
     func testLooseEqArrayVsArrayIsAlwaysFalse() {
@@ -109,24 +111,24 @@ final class ValueTests: XCTestCase {
         // `[1] == [1]` is `false`. Without reference identity, two
         // distinct array operands always compare unequal.
         XCTAssertFalse(
-            looseEq(
+            RulesEngine.looseEq(
                 .array([.int(1), .int(2)]),
                 .array([.int(1), .int(2)])
             )
         )
-        XCTAssertFalse(looseEq(.array([]), .array([])))
+        XCTAssertFalse(RulesEngine.looseEq(.array([]), .array([])))
     }
 
     func testLooseEqObjectVsObjectIsAlwaysFalse() {
         // Same reference-equality rule as arrays — `{a:1} == {a:1}` is
         // `false` in JS, regardless of structure.
         XCTAssertFalse(
-            looseEq(
+            RulesEngine.looseEq(
                 .object(["a": .int(1), "b": .string("x")]),
                 .object(["a": .int(1), "b": .string("x")])
             )
         )
-        XCTAssertFalse(looseEq(.object([:]), .object([:])))
+        XCTAssertFalse(RulesEngine.looseEq(.object([:]), .object([:])))
     }
 
     // MARK: - Loose equality: JS array/object stringify coercion
@@ -135,29 +137,29 @@ final class ValueTests: XCTestCase {
         // JS abstract equality: `Array.prototype.toString()` is invoked,
         // then the comparison falls through to string-vs-string.
         // Reference: `[1] == "1"` → true, `[1, 2] == "1,2"` → true.
-        XCTAssertTrue(looseEq(.array([.int(1)]), .string("1")))
-        XCTAssertTrue(looseEq(.string("1"), .array([.int(1)])))
-        XCTAssertTrue(looseEq(.array([.int(1), .int(2)]), .string("1,2")))
-        XCTAssertTrue(looseEq(.array([.string("a"), .string("b")]), .string("a,b")))
-        XCTAssertTrue(looseEq(.array([]), .string("")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.int(1)]), .string("1")))
+        XCTAssertTrue(RulesEngine.looseEq(.string("1"), .array([.int(1)])))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.int(1), .int(2)]), .string("1,2")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.string("a"), .string("b")]), .string("a,b")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([]), .string("")))
         // Non-matching content still compares unequal.
-        XCTAssertFalse(looseEq(.array([.int(1)]), .string("2")))
+        XCTAssertFalse(RulesEngine.looseEq(.array([.int(1)]), .string("2")))
     }
 
     func testLooseEqArrayElementsRenderJSNullAsEmptyString() {
         // `[null].toString()` is `""` (not `"null"`), and
         // `[null, 1].toString()` is `",1"`. The element-stringify rule
         // is JS-specific; pin it directly.
-        XCTAssertTrue(looseEq(.array([.null]), .string("")))
-        XCTAssertTrue(looseEq(.array([.null, .int(1)]), .string(",1")))
-        XCTAssertTrue(looseEq(.array([.null, .null]), .string(",")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.null]), .string("")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.null, .int(1)]), .string(",1")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.null, .null]), .string(",")))
     }
 
     func testLooseEqArrayRecursesIntoNestedArrays() {
         // `[[1, 2], 3].toString()` flattens to `"1,2,3"` — children
         // recurse through the same join.
         XCTAssertTrue(
-            looseEq(
+            RulesEngine.looseEq(
                 .array([.array([.int(1), .int(2)]), .int(3)]),
                 .string("1,2,3")
             )
@@ -168,12 +170,12 @@ final class ValueTests: XCTestCase {
         // After ToPrimitive, the recursion may hit the
         // string-vs-number numeric fallback. Reference:
         // `[1] == 1` → true, `[] == 0` → true, `[0] == false` → true.
-        XCTAssertTrue(looseEq(.array([.int(1)]), .int(1)))
-        XCTAssertTrue(looseEq(.array([]), .int(0)))
-        XCTAssertTrue(looseEq(.array([.int(0)]), .bool(false)))
-        XCTAssertTrue(looseEq(.array([.float(1.5)]), .float(1.5)))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.int(1)]), .int(1)))
+        XCTAssertTrue(RulesEngine.looseEq(.array([]), .int(0)))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.int(0)]), .bool(false)))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.float(1.5)]), .float(1.5)))
         // No spurious matches when the stringified array isn't numeric.
-        XCTAssertFalse(looseEq(.array([.string("hello")]), .int(0)))
+        XCTAssertFalse(RulesEngine.looseEq(.array([.string("hello")]), .int(0)))
     }
 
     func testLooseEqArrayRendersJSSpecificFloatsCorrectly() {
@@ -181,10 +183,10 @@ final class ValueTests: XCTestCase {
         // `String(Infinity)` is `"Infinity"`. These show up only via the
         // array stringify path — `==` against a bare `Double.nan` would
         // still be `false` because NaN isn't equal to itself.
-        XCTAssertTrue(looseEq(.array([.float(1.0)]), .string("1")))
-        XCTAssertTrue(looseEq(.array([.float(.nan)]), .string("NaN")))
-        XCTAssertTrue(looseEq(.array([.float(.infinity)]), .string("Infinity")))
-        XCTAssertTrue(looseEq(.array([.float(-.infinity)]), .string("-Infinity")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.float(1.0)]), .string("1")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.float(.nan)]), .string("NaN")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.float(.infinity)]), .string("Infinity")))
+        XCTAssertTrue(RulesEngine.looseEq(.array([.float(-.infinity)]), .string("-Infinity")))
     }
 
     func testLooseEqObjectCoercesToObjectObjectString() {
@@ -192,13 +194,13 @@ final class ValueTests: XCTestCase {
         // `"[object Object]"`, so any object compared against that
         // exact string is loosely equal.
         XCTAssertTrue(
-            looseEq(.object(["a": .int(1), "b": .int(2)]), .string("[object Object]"))
+            RulesEngine.looseEq(.object(["a": .int(1), "b": .int(2)]), .string("[object Object]"))
         )
         XCTAssertTrue(
-            looseEq(.string("[object Object]"), .object([:]))
+            RulesEngine.looseEq(.string("[object Object]"), .object([:]))
         )
         XCTAssertFalse(
-            looseEq(.object(["a": .int(1), "b": .int(2)]), .string("{a:1,b:2}"))
+            RulesEngine.looseEq(.object(["a": .int(1), "b": .int(2)]), .string("{a:1,b:2}"))
         )
     }
 
@@ -207,7 +209,7 @@ final class ValueTests: XCTestCase {
         // identity (false). Both ToPrimitive results are strings that
         // can't ever match (`"1,2"` vs `"[object Object]"`).
         XCTAssertFalse(
-            looseEq(
+            RulesEngine.looseEq(
                 .array([.int(1), .int(2)]),
                 .object(["a": .int(1), "b": .int(2)])
             )
@@ -217,21 +219,21 @@ final class ValueTests: XCTestCase {
     // MARK: - Strict equality
 
     func testStrictEqRequiresSameValueOrCompatibleNumeric() {
-        XCTAssertTrue(strictEq(.int(1), .int(1)))
-        XCTAssertTrue(strictEq(.int(1), .float(1.0))) // int/float bridge as one number type
-        XCTAssertFalse(strictEq(.int(1), .string("1")))
-        XCTAssertFalse(strictEq(.bool(true), .int(1)))
-        XCTAssertFalse(strictEq(.null, .bool(false)))
+        XCTAssertTrue(RulesEngine.strictEq(.int(1), .int(1)))
+        XCTAssertTrue(RulesEngine.strictEq(.int(1), .float(1.0))) // int/float bridge as one number type
+        XCTAssertFalse(RulesEngine.strictEq(.int(1), .string("1")))
+        XCTAssertFalse(RulesEngine.strictEq(.bool(true), .int(1)))
+        XCTAssertFalse(RulesEngine.strictEq(.null, .bool(false)))
     }
 
     func testStrictEqArraysAndObjectsAlwaysFalse() {
         // JS `===` for arrays/objects is reference identity — same
         // rationale as `looseEq`. Without references, distinct operands
         // always compare unequal.
-        XCTAssertFalse(strictEq(.array([.int(1)]), .array([.int(1)])))
-        XCTAssertFalse(strictEq(.array([]), .array([])))
-        XCTAssertFalse(strictEq(.object(["a": .int(1)]), .object(["a": .int(1)])))
-        XCTAssertFalse(strictEq(.object([:]), .object([:])))
+        XCTAssertFalse(RulesEngine.strictEq(.array([.int(1)]), .array([.int(1)])))
+        XCTAssertFalse(RulesEngine.strictEq(.array([]), .array([])))
+        XCTAssertFalse(RulesEngine.strictEq(.object(["a": .int(1)]), .object(["a": .int(1)])))
+        XCTAssertFalse(RulesEngine.strictEq(.object([:]), .object([:])))
     }
 
     // MARK: - NaN / Infinity edge cases
@@ -242,22 +244,22 @@ final class ValueTests: XCTestCase {
         // that introduce NaN through float coercion get the standard "NaN
         // poisons the comparison" behavior.
         XCTAssertFalse(Value.float(.nan).isTruthy)
-        XCTAssertFalse(looseEq(.float(.nan), .float(.nan)))
-        XCTAssertFalse(strictEq(.float(.nan), .float(.nan)))
-        XCTAssertFalse(looseEq(.float(.nan), .int(0)))
-        XCTAssertFalse(looseEq(.float(.nan), .float(0.0)))
+        XCTAssertFalse(RulesEngine.looseEq(.float(.nan), .float(.nan)))
+        XCTAssertFalse(RulesEngine.strictEq(.float(.nan), .float(.nan)))
+        XCTAssertFalse(RulesEngine.looseEq(.float(.nan), .int(0)))
+        XCTAssertFalse(RulesEngine.looseEq(.float(.nan), .float(0.0)))
     }
 
     func testInfinityIsTruthyAndComparesByIEEE754() {
         XCTAssertTrue(Value.float(.infinity).isTruthy)
         XCTAssertTrue(Value.float(-.infinity).isTruthy)
 
-        XCTAssertTrue(looseEq(.float(.infinity), .float(.infinity)))
-        XCTAssertTrue(strictEq(.float(.infinity), .float(.infinity)))
-        XCTAssertFalse(looseEq(.float(.infinity), .float(-.infinity)))
+        XCTAssertTrue(RulesEngine.looseEq(.float(.infinity), .float(.infinity)))
+        XCTAssertTrue(RulesEngine.strictEq(.float(.infinity), .float(.infinity)))
+        XCTAssertFalse(RulesEngine.looseEq(.float(.infinity), .float(-.infinity)))
 
         // Cross-type: +Infinity never numerically equals a finite int.
-        XCTAssertFalse(looseEq(.float(.infinity), .int(.max)))
+        XCTAssertFalse(RulesEngine.looseEq(.float(.infinity), .int(.max)))
     }
 
     // MARK: - asNumber (direct helper coverage)
@@ -295,43 +297,43 @@ final class ValueTests: XCTestCase {
     /// regression in the shared helper.
     func testJsParseFloatMatchesSpec() {
         // Numbers pass through without stringification.
-        XCTAssertEqual(jsParseFloat(.int(42)), 42.0)
-        XCTAssertEqual(jsParseFloat(.float(2.5)), 2.5)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.int(42)), 42.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.float(2.5)), 2.5)
 
         // Valid numeric strings, including scientific notation.
-        XCTAssertEqual(jsParseFloat(.string("2.5")), 2.5)
-        XCTAssertEqual(jsParseFloat(.string("1e3")), 1000.0)
-        XCTAssertEqual(jsParseFloat(.string("1.5e2")), 150.0)
-        XCTAssertEqual(jsParseFloat(.string("-2.5e-1")), -0.25)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("2.5")), 2.5)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("1e3")), 1000.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("1.5e2")), 150.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("-2.5e-1")), -0.25)
 
         // Leading whitespace and longest-prefix parsing.
-        XCTAssertEqual(jsParseFloat(.string("  7")), 7.0)
-        XCTAssertEqual(jsParseFloat(.string("3.14abc")), 3.14)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("  7")), 7.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("3.14abc")), 3.14)
 
         // Infinity literal (distinct from overflow).
-        XCTAssertEqual(jsParseFloat(.string("Infinity")), .infinity)
-        XCTAssertEqual(jsParseFloat(.string("-Infinity")), -.infinity)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("Infinity")), .infinity)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.string("-Infinity")), -.infinity)
 
         // Stringify-then-parse path for compounds.
-        XCTAssertEqual(jsParseFloat(.array([.int(1)])), 1.0)
-        XCTAssertEqual(jsParseFloat(.array([.int(1), .int(2)])), 1.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.array([.int(1)])), 1.0)
+        XCTAssertEqual(RulesEngine.jsParseFloat(.array([.int(1), .int(2)])), 1.0)
 
         // Non-numeric after stringify → NaN.
-        XCTAssertTrue(jsParseFloat(.null).isNaN)
-        XCTAssertTrue(jsParseFloat(.bool(true)).isNaN)
-        XCTAssertTrue(jsParseFloat(.string("")).isNaN)
-        XCTAssertTrue(jsParseFloat(.string("true")).isNaN)
-        XCTAssertTrue(jsParseFloat(.object([:])).isNaN)
-        XCTAssertTrue(jsParseFloat(.string("abc")).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.null).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.bool(true)).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.string("")).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.string("true")).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.object([:])).isNaN)
+        XCTAssertTrue(RulesEngine.jsParseFloat(.string("abc")).isNaN)
     }
 
     func testJsNumberStringFallsThroughToSwiftDoubleStringForOutOfInt64Range() {
         // Last whole number that still round-trips through Int64 — fast path,
         // matches JS (`String(1e18) === "1000000000000000000"`).
-        XCTAssertEqual(jsString(.float(1e18)), "1000000000000000000")
+        XCTAssertEqual(RulesEngine.jsString(.float(1e18)), "1000000000000000000")
 
         // Spec-divergence pin: see KDoc on jsNumberString. JS renders `1e19`
         // as `"10000000000000000000"`; Swift uses `"1e+19"`.
-        XCTAssertEqual(jsString(.float(1e19)), "1e+19")
+        XCTAssertEqual(RulesEngine.jsString(.float(1e19)), "1e+19")
     }
 }

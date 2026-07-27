@@ -8,6 +8,9 @@ import XCTest
 
 @testable import RevenueCat
 
+private typealias Value = RulesEngine.Value
+private typealias AccessorOperators = RulesEngine.AccessorOperators
+
 final class AccessorOperatorsTests: XCTestCase {
 
     private var logger: CapturingLogger!

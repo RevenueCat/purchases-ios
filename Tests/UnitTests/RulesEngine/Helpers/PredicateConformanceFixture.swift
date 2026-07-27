@@ -65,8 +65,8 @@ struct PredicateConformanceFixtureCase: Equatable, Decodable, Identifiable, Send
 
     let id: String
     let description: String?
-    let predicate: Value
-    let variables: [String: Value]
+    let predicate: RulesEngine.Value
+    let variables: [String: RulesEngine.Value]
     let expected: ExpectedOutcome
     let expectedWarnings: ExpectedWarnings?
     /// The exact, ordered list of messages the `log` channel must emit. An
