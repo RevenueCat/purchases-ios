@@ -7,6 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		1E30849C30178A2100236A34 /* SourceHealthChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E30849B30178A2100236A34 /* SourceHealthChecker.swift */; };
+		1E30849D30178A2100236A34 /* APISourceFailover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E30849A30178A2100236A34 /* APISourceFailover.swift */; };
+		1E3084A430178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */; };
+		1E3084A530178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */; };
+		1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3084A630178A9100236A34 /* APISourceFailoverTests.swift */; };
+		1E3084A930178A9100236A34 /* SourceHealthCheckerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E3084A730178A9100236A34 /* SourceHealthCheckerTests.swift */; };
 		02F84B23216242A7B8CDAB4A /* ErrorCode+Conformances.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61F92C8B490F4B78AC8B1AAF /* ErrorCode+Conformances.swift */; };
 		030890812D2B764D0069677B /* VariableHandlerV2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030890802D2B76450069677B /* VariableHandlerV2.swift */; };
 		030F918A2D55C1D20085103F /* LocaleFinder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 030F91892D55C1AB0085103F /* LocaleFinder.swift */; };
@@ -1533,6 +1539,11 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		1E30849A30178A2100236A34 /* APISourceFailover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APISourceFailover.swift; sourceTree = "<group>"; };
+		1E30849B30178A2100236A34 /* SourceHealthChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceHealthChecker.swift; sourceTree = "<group>"; };
+		1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSourceHealthChecker.swift; sourceTree = "<group>"; };
+		1E3084A630178A9100236A34 /* APISourceFailoverTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APISourceFailoverTests.swift; sourceTree = "<group>"; };
+		1E3084A730178A9100236A34 /* SourceHealthCheckerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SourceHealthCheckerTests.swift; sourceTree = "<group>"; };
 		019BA4A7731BC93FEC1A74FA /* PaywallScrollEnvironment.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = PaywallScrollEnvironment.swift; path = RevenueCatUI/Templates/V2/Layout/PaywallScrollEnvironment.swift; sourceTree = SOURCE_ROOT; };
 		030890802D2B76450069677B /* VariableHandlerV2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2.swift; sourceTree = "<group>"; };
 		030890832D2B77E20069677B /* VariableHandlerV2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VariableHandlerV2Tests.swift; sourceTree = "<group>"; };
@@ -4212,6 +4223,7 @@
 		2DDF41DD24F6F4F9005BC22D /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */,
 				900D27022F96929800D32EDF /* MockAdsAPI.swift */,
 				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
 				903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */,
@@ -4607,6 +4619,8 @@
 		35D832CB262A5B3400E60AC5 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				1E30849A30178A2100236A34 /* APISourceFailover.swift */,
+				1E30849B30178A2100236A34 /* SourceHealthChecker.swift */,
 				B34605A1279A6E380031CA74 /* Caching */,
 				B378156E285A978A000A7B93 /* HTTPClient */,
 				B34605AA279A6E380031CA74 /* Operations */,
@@ -4650,6 +4664,8 @@
 		35D832FE262FAD6900E60AC5 /* Networking */ = {
 			isa = PBXGroup;
 			children = (
+				1E3084A630178A9100236A34 /* APISourceFailoverTests.swift */,
+				1E3084A730178A9100236A34 /* SourceHealthCheckerTests.swift */,
 				75D9DE062D79FC0E0068554F /* Requests */,
 				5796A38427D6B83C00653165 /* Backend */,
 				5774F9BF2805EA1200997128 /* Responses */,
@@ -6985,6 +7001,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E3084A430178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */,
 				2D9C5ECA26F2805C0057FC45 /* ProductsManagerTests.swift in Sources */,
 				75A3B2B22F16B458001C4CA7 /* MockLargeItemCache.swift in Sources */,
 				3543914526F926D900E669DF /* SKProductSubscriptionDurationExtensions.swift in Sources */,
@@ -7124,6 +7141,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E30849C30178A2100236A34 /* SourceHealthChecker.swift in Sources */,
+				1E30849D30178A2100236A34 /* APISourceFailover.swift in Sources */,
 				2C9107E02CE2E33400189565 /* StoredFeatureEvent.swift in Sources */,
 				751192E02E39149200E583CC /* WebBillingAPI.swift in Sources */,
 				B3A36AAE26BC76340059EDEA /* CustomerInfoManager.swift in Sources */,
@@ -7615,6 +7634,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
+				1E3084A930178A9100236A34 /* SourceHealthCheckerTests.swift in Sources */,
+				1E3084A530178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */,
 				576C8A9227D27DDD0058FA6E /* SnapshotTesting+Extensions.swift in Sources */,
 				5791FBD2299184EF00F1FEDA /* MockAsyncSequence.swift in Sources */,
 				4FA4C9732A16D3AC007D2803 /* MockBackendConfiguration.swift in Sources */,

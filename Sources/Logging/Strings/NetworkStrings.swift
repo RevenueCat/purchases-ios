@@ -44,6 +44,11 @@ enum NetworkStrings {
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
     case retrying_request_with_fallback_path(httpMethod: String, path: String)
+    case retrying_request_with_next_api_source(httpMethod: String, path: String, host: String)
+    case api_source_healthy_despite_failure(host: String)
+    case skipping_malformed_api_source_url(url: String)
+    case api_source_health_check_completed(url: URL, statusCode: Int, isHealthy: Bool)
+    case api_source_health_check_failed_to_connect(url: URL, error: Error)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -124,6 +129,21 @@ extension NetworkStrings: LogMessage {
 
         case let .retrying_request_with_fallback_path(httpMethod, path):
             return "Retrying request using fallback host: \(httpMethod) \(path)"
+
+        case let .retrying_request_with_next_api_source(httpMethod, path, host):
+            return "Retrying request \(httpMethod) \(path) using next API source host \(host)"
+
+        case let .api_source_healthy_despite_failure(host):
+            return "API source \(host) is healthy despite the request failing; not failing over."
+
+        case let .skipping_malformed_api_source_url(url):
+            return "Skipping API source with malformed url \(url)"
+
+        case let .api_source_health_check_completed(url, statusCode, isHealthy):
+            return "Health check for \(url.absoluteString) returned \(statusCode) (healthy=\(isHealthy))"
+
+        case let .api_source_health_check_failed_to_connect(url, error):
+            return "Health check for \(url.absoluteString) failed to connect: \(error)"
 
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"

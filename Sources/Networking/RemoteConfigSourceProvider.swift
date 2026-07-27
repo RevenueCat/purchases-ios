@@ -86,6 +86,12 @@ extension RemoteConfigSourceProviderType {
 /// embedded default: they are only useful alongside a fetched config, which carries its own. Sources
 /// are deduped by url and ordered via `WeightedSourceSelector`.
 ///
+/// The api list additionally restarts on its own once `apiFailoverRestartInterval` has elapsed since
+/// it first advanced past the top, so the SDK periodically returns to the primary source (or re-arms
+/// an exhausted list) instead of sticking on a backup forever. During a persistent outage this
+/// retries the primary at most once per interval. Blob failover has no such timer: it is restarted
+/// per fetch cycle by its callers.
+///
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
@@ -105,8 +111,11 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         RemoteConfigSource(url: "https://api.rc-backup.com/", priority: 100_001, weight: 1)
     ]
 
+    private static let apiFailoverRestartInterval: TimeInterval = 600
+
     private let topicStore: RemoteConfigTopicStoreType?
     private let randomizer: WeightedSourceRandomizer?
+    private let dateProvider: DateProvider
     private let lock = Lock()
 
     /// Topic the current failovers were built from. `nil` means there is no sources topic (absent, or
@@ -115,12 +124,19 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private var api: SourceFailover
     private var blob: SourceFailover
 
+    /// When the api failover first advanced past the top of its list, or `nil` while it sits at the
+    /// top. Stamped on the first advance (not the latest) so a flapping source can't postpone the
+    /// periodic return to the primary indefinitely.
+    private var apiFailoverStartedAt: Date?
+
     init(
         topicStore: RemoteConfigTopicStoreType?,
-        randomizer: WeightedSourceRandomizer? = nil
+        randomizer: WeightedSourceRandomizer? = nil,
+        dateProvider: DateProvider = DateProvider()
     ) {
         self.topicStore = topicStore
         self.randomizer = randomizer
+        self.dateProvider = dateProvider
         self.api = SourceFailover(
             purpose: .api,
             sources: Self.dedupe(Self.sources(from: nil, for: .api)),
@@ -136,6 +152,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
         return self.lock.perform {
             self.rebuildIfNeeded()
+            self.restartAPIIfExpired()
             return self.failover(for: purpose).current
         }
     }
@@ -143,8 +160,12 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.lock.perform {
             // Rebuild happened, no need to report unhealthy
-            if !self.rebuildIfNeeded() {
-                self.failover(for: handle.purpose).reportUnhealthy(handle)
+            if self.rebuildIfNeeded() { return }
+            self.restartAPIIfExpired()
+
+            let advanced = self.failover(for: handle.purpose).reportUnhealthy(handle)
+            if advanced, handle.purpose == .api, self.apiFailoverStartedAt == nil {
+                self.apiFailoverStartedAt = self.dateProvider.now()
             }
         }
     }
@@ -154,6 +175,9 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             // Rebuild happened, no need to restart
             if !self.rebuildIfNeeded() {
                 self.failover(for: purpose).restart()
+                if purpose == .api {
+                    self.apiFailoverStartedAt = nil
+                }
             }
         }
     }
@@ -164,13 +188,30 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             if self.rebuildIfNeeded() {
                 return true
             }
+            self.restartAPIIfExpired()
 
             let failover = self.failover(for: purpose)
             guard failover.current == nil else { return false }
 
             failover.restart()
+            if purpose == .api {
+                self.apiFailoverStartedAt = nil
+            }
             return true
         }
+    }
+
+    /// Restarts the api failover once `apiFailoverRestartInterval` has elapsed since it first
+    /// advanced, so a backup (or an exhausted list) periodically retries the primary source. The
+    /// restart bumps the token, so handles from before it can no longer advance the list. Callers
+    /// must hold `lock`.
+    private func restartAPIIfExpired() {
+        guard let startedAt = self.apiFailoverStartedAt,
+              self.dateProvider.now().timeIntervalSince(startedAt) >= Self.apiFailoverRestartInterval else {
+            return
+        }
+        self.api.restart()
+        self.apiFailoverStartedAt = nil
     }
 
     private func failover(for purpose: RemoteConfigSourceHandle.Purpose) -> SourceFailover {
@@ -203,6 +244,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             initialToken: nextToken
         )
         self.sourcesTopic = topic
+        self.apiFailoverStartedAt = nil
         return true
     }
 
@@ -302,10 +344,13 @@ private final class SourceFailover {
         }
     }
 
-    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
-        guard handle.token == self.token else { return }
+    /// Advances past the handle's source, returning whether it did (stale reports are ignored).
+    @discardableResult
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) -> Bool {
+        guard handle.token == self.token else { return false }
         self.selector.advance()
         self.token += 1
+        return true
     }
 
     func restart() {
