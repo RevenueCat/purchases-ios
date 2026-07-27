@@ -266,6 +266,33 @@ internal extension HTTPClient {
         static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
     }
 
+    /// The API-source resolution state of a request, modeled as one value so an inconsistent
+    /// combination (e.g. a targeted source without an attempt count) is unrepresentable.
+    enum APISourceState {
+
+        /// Source resolution hasn't run yet for this logical request.
+        case unresolved
+
+        /// Resolution ran and API sources don't apply (setting disabled, proxy or overridden
+        /// base URL, endpoint fallback attempt, opted-out path, or an exhausted source list).
+        case noSource
+
+        /// The request targets `source`; `attemptCount` is the number of source attempts made
+        /// by this logical request so far (1 when a source is first resolved, +1 per failover).
+        case source(APISourceFailover.ResolvedSource, attemptCount: Int)
+
+        var source: APISourceFailover.ResolvedSource? {
+            guard case let .source(source, _) = self else { return nil }
+            return source
+        }
+
+        var attemptCount: Int {
+            guard case let .source(_, attemptCount) = self else { return 0 }
+            return attemptCount
+        }
+
+    }
+
     struct Request: CustomStringConvertible {
 
         var httpRequest: HTTPRequest
@@ -287,18 +314,9 @@ internal extension HTTPClient {
             return self.fallbackUrlIndex != nil
         }
 
-        /// The API source this request targets, if it resolved one. Carried on the request so a
-        /// failure can report the exact handle unhealthy, and so retries of any kind (ETag refresh,
-        /// status-code backoff) keep targeting the same host.
-        private(set) var apiSource: APISourceFailover.ResolvedSource?
-
-        /// Whether source resolution already ran for this logical request (distinguishes "not yet
-        /// resolved" from "resolved to no source").
-        private(set) var apiSourceResolved: Bool = false
-
-        /// Attempts made on API sources for this logical request: 1 when a source is first resolved,
-        /// +1 per failover to the next source.
-        private(set) var apiSourceAttemptCount: Int = 0
+        /// Carried on the request so a failure can report the exact handle unhealthy, and so
+        /// retries of any kind (ETag refresh, status-code backoff) keep targeting the same host.
+        private(set) var apiSourceState: APISourceState = .unresolved
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
@@ -345,20 +363,19 @@ internal extension HTTPClient {
         /// Resolves the API source once per logical request. Retries of any kind keep the carried
         /// source instead of re-resolving, so they deterministically target the same host.
         mutating func resolveAPISourceIfNeeded(with failover: APISourceFailoverType?) {
-            guard !self.apiSourceResolved else { return }
-            self.apiSourceResolved = true
-            guard let source = failover?.currentSource(for: self.httpRequest.path,
-                                                       isFallbackAttempt: self.isFallbackURLRequest) else {
-                return
+            guard case .unresolved = self.apiSourceState else { return }
+            if let source = failover?.currentSource(for: self.httpRequest.path,
+                                                    isFallbackAttempt: self.isFallbackURLRequest) {
+                self.apiSourceState = .source(source, attemptCount: 1)
+            } else {
+                self.apiSourceState = .noSource
             }
-            self.apiSource = source
-            self.apiSourceAttemptCount = 1
         }
 
         func requestWith(nextAPISource: APISourceFailover.ResolvedSource) -> Self {
             var copy = self
-            copy.apiSource = nextAPISource
-            copy.apiSourceAttemptCount += 1
+            copy.apiSourceState = .source(nextAPISource,
+                                          attemptCount: self.apiSourceState.attemptCount + 1)
             return copy
         }
 
@@ -371,7 +388,7 @@ internal extension HTTPClient {
             copy.fallbackUrlIndex = self.fallbackUrlIndex?.advanced(by: 1) ?? 0
             // The static fallback walk drops the API source: fallback attempts pin their own host and
             // must not re-enter source failover.
-            copy.apiSource = nil
+            copy.apiSourceState = .noSource
             guard copy.getCurrentRequestURL(proxyURL: nil, apiSourceURL: nil) != nil else {
                 // No more fallback hosts available
                 return nil
@@ -596,8 +613,8 @@ private extension HTTPClient {
                 // request targeting an API source may fail over to the next source, but only after the
                 // current source's health check fails. The decision is asynchronous: the serial pipeline
                 // stays stalled (as if the request were still in flight) until it completes.
-                if let source = request.apiSource,
-                   request.apiSourceAttemptCount < Self.maxAPISourceAttempts,
+                if let source = request.apiSourceState.source,
+                   request.apiSourceState.attemptCount < Self.maxAPISourceAttempts,
                    error.isAllowedToRetryWithFallbackHost,
                    let apiSourceFailover = self.apiSourceFailover {
                     let requestTimeoutResult = requestTimeoutResult
@@ -780,7 +797,7 @@ private extension HTTPClient {
     func convert(request: Request) -> URLRequest? {
         guard let requestURL = request.getCurrentRequestURL(
             proxyURL: SystemInfo.proxyURL,
-            apiSourceURL: request.apiSource?.url
+            apiSourceURL: request.apiSourceState.source?.url
         ) else {
             return nil
         }
