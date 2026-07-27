@@ -74,19 +74,29 @@ final class APISourceFailoverTests: TestCase {
     }
 
     func testCurrentSourceSkipsAndReportsSourcesWithMalformedURLs() {
-        let provider = RecordingSourceProvider(urls: ["", "https://b.revenuecat.com/"])
+        let provider = RecordingSourceProvider(urls: ["not a url", "https://b.revenuecat.com/"])
         let source = Self.failover(provider).currentSource(for: Self.eligiblePath, isFallbackAttempt: false)
 
         expect(source?.url) == URL(string: "https://b.revenuecat.com/")
-        expect(provider.unhealthyReports.value) == [""]
+        expect(provider.unhealthyReports.value) == ["not a url"]
+    }
+
+    func testCurrentSourceSkipsAndReportsSourcesWithSchemelessURLs() {
+        // `URL(string:)` parses these fine as relative URLs, so they need explicit rejection:
+        // a request built against a base without a scheme and host can only fail.
+        let provider = RecordingSourceProvider(urls: ["a.revenuecat.com/", "https://b.revenuecat.com/"])
+        let source = Self.failover(provider).currentSource(for: Self.eligiblePath, isFallbackAttempt: false)
+
+        expect(source?.url) == URL(string: "https://b.revenuecat.com/")
+        expect(provider.unhealthyReports.value) == ["a.revenuecat.com/"]
     }
 
     func testCurrentSourceIsNilWhenEverySourceURLIsMalformed() {
-        let provider = RecordingSourceProvider(urls: [""])
+        let provider = RecordingSourceProvider(urls: ["not a url", "a.revenuecat.com/"])
 
         expect(Self.failover(provider).currentSource(for: Self.eligiblePath, isFallbackAttempt: false))
             .to(beNil())
-        expect(provider.unhealthyReports.value) == [""]
+        expect(provider.unhealthyReports.value) == ["not a url", "a.revenuecat.com/"]
     }
 
     // MARK: - onRequestFailure
@@ -159,12 +169,7 @@ final class APISourceFailoverTests: TestCase {
         healthChecker: SourceHealthCheckerType = MockSourceHealthChecker()
     ) -> APISourceFailover {
         return APISourceFailover(
-            dangerousSettings: DangerousSettings(
-                autoSyncPurchases: true,
-                internalSettings: DangerousSettings.Internal(
-                    usesRemoteConfigAPISources: usesRemoteConfigAPISources
-                )
-            ),
+            usesRemoteConfigAPISources: usesRemoteConfigAPISources,
             sourceProvider: provider,
             healthChecker: healthChecker
         )

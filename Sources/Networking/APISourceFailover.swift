@@ -50,14 +50,16 @@ final class APISourceFailover: APISourceFailoverType {
 
     }
 
-    private let dangerousSettings: DangerousSettings
+    private let usesRemoteConfigAPISources: Bool
     private let sourceProvider: RemoteConfigSourceProviderType
     private let healthChecker: SourceHealthCheckerType
 
-    init(dangerousSettings: DangerousSettings,
+    /// - Parameter usesRemoteConfigAPISources: the `usesRemoteConfigAPISources` dangerous setting.
+    /// Taken as a plain value because the whole settings chain is immutable per SDK instance.
+    init(usesRemoteConfigAPISources: Bool,
          sourceProvider: RemoteConfigSourceProviderType,
          healthChecker: SourceHealthCheckerType) {
-        self.dangerousSettings = dangerousSettings
+        self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         self.sourceProvider = sourceProvider
         self.healthChecker = healthChecker
     }
@@ -69,7 +71,7 @@ final class APISourceFailover: APISourceFailoverType {
     /// fallback-host attempt, the path opts in via `usesAPISources`, and `SystemInfo.apiBaseURL`
     /// still holds its default (an override pins the host, e.g. in tests).
     func currentSource(for path: HTTPRequestPath, isFallbackAttempt: Bool) -> ResolvedSource? {
-        guard self.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+        guard self.usesRemoteConfigAPISources,
               SystemInfo.proxyURL == nil,
               !isFallbackAttempt,
               path.usesAPISources,
@@ -97,13 +99,25 @@ final class APISourceFailover: APISourceFailoverType {
     /// the default host. The walk ends when the provider runs out of sources.
     private func currentResolvedSource() -> ResolvedSource? {
         while let handle = self.sourceProvider.currentAPISource() {
-            if let url = URL(string: handle.url) {
+            if let url = Self.parseAbsoluteURL(handle.url) {
                 return ResolvedSource(handle: handle, url: url)
             }
             Logger.warn(Strings.network.skipping_malformed_api_source_url(url: handle.url))
             self.sourceProvider.reportUnhealthy(handle)
         }
         return nil
+    }
+
+    /// Parses `string` as an absolute base URL. `URL(string:)` alone is too lenient (on modern
+    /// Foundation almost any string parses, e.g. scheme-less hosts or relative paths), so a scheme
+    /// and a host are additionally required — anything less would build requests that can only fail.
+    private static func parseAbsoluteURL(_ string: String) -> URL? {
+        guard let url = URL(string: string),
+              url.scheme != nil,
+              url.host != nil else {
+            return nil
+        }
+        return url
     }
 
 }
