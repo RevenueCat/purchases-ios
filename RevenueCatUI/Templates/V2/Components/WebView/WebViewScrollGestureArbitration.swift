@@ -33,8 +33,8 @@ enum WebViewGestureProbe {
     static let verdictRelease = "release"
 
     /// Runs at document start in the main frame. On every `touchstart` it walks from the touched
-    /// element up its ancestors and posts `own` when one declares a non-default `touch-action`
-    /// (JS panning) or is an overflowing `auto`/`scroll` scroller — the per-element signals the
+    /// element up its ancestors and posts `own` when one declares `touch-action: none` (JS panning,
+    /// e.g. a map) or is an overflowing `auto`/`scroll` scroller — the per-element signals the
     /// native scroll-offset checks can't see — otherwise `release`. Passive, so it never blocks
     /// the page's own handling.
     static var userScript: WKUserScript {
@@ -45,7 +45,10 @@ enum WebViewGestureProbe {
             var node = el && el.nodeType === ELEMENT_NODE ? el : (el ? el.parentElement : null);
             for (var n = node; n && n.nodeType === ELEMENT_NODE; n = n.parentElement) {
               var s = getComputedStyle(n);
-              if (s.touchAction && s.touchAction !== 'auto' && s.touchAction !== 'manipulation') return true;
+              // Only `none` means the browser won't pan this element at all (JS owns every axis, e.g. a
+              // map). `pan-x`/`pan-y` still let the browser scroll natively on an axis — visible to the
+              // `canScroll*` checks — so claiming them would wrongly block the paywall at the scroll edge.
+              if (s.touchAction === 'none') return true;
               if ((s.overflowY === 'auto' || s.overflowY === 'scroll') && n.scrollHeight > n.clientHeight) return true;
               if ((s.overflowX === 'auto' || s.overflowX === 'scroll') && n.scrollWidth > n.clientWidth) return true;
             }

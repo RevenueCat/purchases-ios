@@ -282,6 +282,16 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         XCTAssertTrue(source.contains("'\(WebViewGestureProbe.verdictRelease)'"))
     }
 
+    @MainActor
+    func testProbeUserScriptOnlyClaimsTouchActionNone() {
+        let source = WebViewGestureProbe.userScript.source
+
+        // Only `none` should claim: `pan-x`/`pan-y` still scroll natively and must defer to the
+        // `canScroll*` checks, otherwise the paywall gets stuck at the web view's scroll edge.
+        XCTAssertTrue(source.contains("s.touchAction === 'none'"))
+        XCTAssertFalse(source.contains("!== 'manipulation'"))
+    }
+
     // MARK: - Helpers
 
     // swiftlint:disable identifier_name
