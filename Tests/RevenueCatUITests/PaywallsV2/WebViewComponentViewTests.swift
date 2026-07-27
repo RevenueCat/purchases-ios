@@ -278,6 +278,40 @@ final class WebViewComponentViewTests: TestCase {
         )
     }
 
+    // MARK: - Rule discarding
+
+    func testDiscardRulesStripsRuleBasedWebViewOverrides() {
+        // Rule-based overrides (here a selected-package rule) apply normally, but are stripped once the
+        // paywall discards rules because an unsupported condition was found somewhere.
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent> = [
+            .init(
+                extendedConditions: [.selectedPackage(operator: .in, packages: ["monthly"])],
+                properties: .init(visible: false)
+            )
+        ]
+
+        func visibleWhenMonthlySelected(discardRules: Bool) -> Bool {
+            Self.makeViewModel(
+                url: "https://example.com",
+                visible: true,
+                overrides: overrides,
+                discardRules: discardRules
+            ).style(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                selectedPackageId: "monthly",
+                customVariables: [:]
+            ).visible
+        }
+
+        // Honored: selecting the package hides the web view.
+        XCTAssertFalse(visibleWhenMonthlySelected(discardRules: false))
+        // Discarded: the rule is stripped, so the base (visible) value stands.
+        XCTAssertTrue(visibleWhenMonthlySelected(discardRules: true))
+    }
+
     // MARK: - Helpers
 
     private static func makeViewModel(
@@ -285,7 +319,8 @@ final class WebViewComponentViewTests: TestCase {
         url: String,
         visible: Bool? = nil,
         size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil)),
-        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent>? = nil
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent>? = nil,
+        discardRules: Bool = false
     ) -> WebViewComponentViewModel {
         WebViewComponentViewModel(
             component: .init(
@@ -296,7 +331,8 @@ final class WebViewComponentViewTests: TestCase {
                 size: size,
                 overrides: overrides
             ),
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            discardRules: discardRules
         )
     }
 
