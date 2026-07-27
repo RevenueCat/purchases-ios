@@ -341,7 +341,7 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    #if os(iOS) || VISION_OS
+    #if (os(iOS) && !targetEnvironment(macCatalyst)) || VISION_OS
 
     func presentCodeRedemptionSheet() {
         self.unimplemented()

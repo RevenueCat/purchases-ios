@@ -24,7 +24,10 @@ class PurchasesDiagnosticsTrackingTests: BasePurchasesTests {
         self.setupPurchases()
     }
 
-    #if os(iOS) || os(visionOS)
+    // `presentCodeRedemptionSheet()` is unavailable on Mac Catalyst (it's `@available(macCatalyst,
+    // unavailable)` and its wrapper isn't compiled there), so this test can't run on Catalyst even
+    // though `os(iOS)` is true for it.
+    #if (os(iOS) && !targetEnvironment(macCatalyst)) || os(visionOS)
     @available(iOS 15.0, *)
     @available(watchOS, unavailable)
     @available(tvOS, unavailable)

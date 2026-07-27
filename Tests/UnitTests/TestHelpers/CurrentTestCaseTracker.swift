@@ -56,6 +56,11 @@ extension CurrentTestCaseTracker {
         #elseif os(tvOS)
         let osVersionEquivalent = OSVersionEquivalent.current
         return "tvOS\(osVersionEquivalent.rawValue)/\(Self.sanitizedTestName)"
+        #elseif targetEnvironment(macCatalyst)
+        // Mac Catalyst produces different snapshots than iOS (e.g. `X-Is-Sandbox`), so it gets
+        // its own snapshot bucket instead of reusing the iOS ones.
+        let osVersionEquivalent = OSVersionEquivalent.current
+        return "mac-catalyst-\(osVersionEquivalent.rawValue)/\(Self.sanitizedTestName)"
         #else
         let osVersionEquivalent = OSVersionEquivalent.current
         return "iOS\(osVersionEquivalent.rawValue)/\(Self.sanitizedTestName)"
