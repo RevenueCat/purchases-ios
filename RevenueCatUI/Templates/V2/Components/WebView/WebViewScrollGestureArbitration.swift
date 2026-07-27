@@ -161,6 +161,10 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
     /// The latest drag translation of the current sequence, kept so a probe verdict arriving after the
     /// finger has already moved can be re-evaluated against where it is now.
     var latestTranslation: CGSize = .zero
+    /// The finger that started the sequence. Arbitration follows only this touch, so a secondary finger
+    /// moving, lifting, or being cancelled can't corrupt the deltas or end the gesture early. Weak: a
+    /// `UITouch` is owned by UIKit and reused, so it must never be retained past its sequence.
+    private weak var trackedTouch: UITouch?
 
     init(webView: WKWebView) {
         self.webView = webView
@@ -176,7 +180,10 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesBegan(touches, with: event)
-        self.beginSequence(at: touches.first?.location(in: self.view) ?? .zero)
+        // Only the first finger starts a sequence; a second finger landing mid-gesture is ignored.
+        guard !self.isTracking, let touch = touches.first else { return }
+        self.trackedTouch = touch
+        self.beginSequence(at: touch.location(in: self.view))
         // Stay `.possible`: the ancestor scroll (required to fail by us) waits until we resolve.
     }
 
@@ -194,7 +201,10 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesMoved(touches, with: event)
-        guard !self.decided, let location = touches.first?.location(in: self.view) else { return }
+        // Follow only the tracked finger, measured from its own start, so a second finger can't skew
+        // the deltas.
+        guard !self.decided, let touch = self.trackedTouch, touches.contains(touch) else { return }
+        let location = touch.location(in: self.view)
         self.latestTranslation = CGSize(
             width: location.x - self.startLocation.x,
             height: location.y - self.startLocation.y
@@ -204,17 +214,21 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesEnded(touches, with: event)
+        // Resolve only when the tracked finger lifts; a secondary finger lifting must not end the drag.
+        guard let touch = self.trackedTouch, touches.contains(touch) else { return }
         self.finish(with: self.state == .began || self.state == .changed ? .ended : .failed)
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
         super.touchesCancelled(touches, with: event)
+        guard let touch = self.trackedTouch, touches.contains(touch) else { return }
         self.finish(with: self.state == .began || self.state == .changed ? .cancelled : .failed)
     }
 
     override func reset() {
         super.reset()
         self.isTracking = false
+        self.trackedTouch = nil
         self.contentWantsGesture = nil
         self.decided = false
     }
