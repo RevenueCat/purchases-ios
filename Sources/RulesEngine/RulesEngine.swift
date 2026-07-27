@@ -27,6 +27,10 @@ extension RulesEngine {
         scopedLogger ?? loggerStorage.value
     }
 
+    // The rules engine deliberately owns its own logging abstraction (`RulesEngineLogger`) instead
+    // of routing through the SDK-wide logger. This keeps it self-contained so it can be extracted
+    // back into a standalone module as mechanically as it was folded in. If we commit to it living
+    // in core long-term, consider bridging this to the SDK's logging system instead.
     /// Replaces the module default logger. Intended to be called once during configure.
     static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
