@@ -40,18 +40,16 @@ final class WebViewComponentViewTests: TestCase {
 
     // MARK: - View model
 
-    func testViewModelURLValidation() {
-        let viewModel = WebViewComponentViewModel(
-            component: .init(
-                id: "web",
-                protocolVersion: 2,
+    func testStyleURLValidation() {
+        let style = Self.defaultStyle(
+            Self.makeViewModel(
                 url: "https://example.com/path",
                 size: .init(width: .fill, height: .fit(nil))
             )
         )
 
-        XCTAssertEqual(viewModel.url?.absoluteString, "https://example.com/path")
-        XCTAssertEqual(viewModel.componentID, "web")
+        XCTAssertEqual(style.url?.absoluteString, "https://example.com/path")
+        XCTAssertEqual(style.componentID, "web")
 
         for invalidURL in [
             "http://example.com",
@@ -60,93 +58,154 @@ final class WebViewComponentViewTests: TestCase {
             "https:///missing-host",
             "https://example.com/{{ custom.url }}"
         ] {
-            let invalid = WebViewComponentViewModel(
-                component: .init(id: "web", protocolVersion: 1, url: invalidURL)
-            )
+            let invalid = Self.defaultStyle(Self.makeViewModel(url: invalidURL))
             XCTAssertNil(invalid.url)
         }
     }
 
     #if canImport(WebKit)
-    func testViewModelResolvesOriginFromValidURL() {
-        let viewModel = WebViewComponentViewModel(
-            component: .init(id: "web", protocolVersion: 1, url: "https://example.com/path?q=1")
-        )
-        XCTAssertEqual(viewModel.origin?.value, "https://example.com")
+    func testStyleResolvesOriginFromValidURL() {
+        let style = Self.defaultStyle(Self.makeViewModel(url: "https://example.com/path?q=1"))
+        XCTAssertEqual(style.origin?.value, "https://example.com")
     }
 
-    func testViewModelHasNoOriginWhenURLIsInvalid() {
-        let viewModel = WebViewComponentViewModel(
-            component: .init(id: "web", protocolVersion: 1, url: "http://example.com")
-        )
-        XCTAssertNil(viewModel.url)
-        XCTAssertNil(viewModel.origin)
+    func testStyleHasNoOriginWhenURLIsInvalid() {
+        let style = Self.defaultStyle(Self.makeViewModel(url: "http://example.com"))
+        XCTAssertNil(style.url)
+        XCTAssertNil(style.origin)
     }
 
-    func testViewModelIsRenderableGating() {
+    func testStyleIsRenderableGating() {
         // Fully valid: visible, non-empty id, resolvable HTTPS origin.
-        XCTAssertTrue(
-            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "https://example.com"))
-                .isRenderable
-        )
+        XCTAssertTrue(Self.defaultStyle(Self.makeViewModel(url: "https://example.com")).isRenderable)
 
         // An empty component id must not render: the bridge keys every frame on it.
-        XCTAssertFalse(
-            WebViewComponentViewModel(component: .init(id: "", protocolVersion: 1, url: "https://example.com"))
-                .isRenderable
-        )
+        XCTAssertFalse(Self.defaultStyle(Self.makeViewModel(id: "", url: "https://example.com")).isRenderable)
 
         // Invalid URL (hence no origin) must not render.
-        XCTAssertFalse(
-            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "http://example.com"))
-                .isRenderable
-        )
+        XCTAssertFalse(Self.defaultStyle(Self.makeViewModel(url: "http://example.com")).isRenderable)
 
         // Intentionally-hidden components are not renderable.
         XCTAssertFalse(
-            WebViewComponentViewModel(
-                component: .init(id: "web", visible: false, protocolVersion: 1, url: "https://example.com")
-            ).isRenderable
+            Self.defaultStyle(Self.makeViewModel(url: "https://example.com", visible: false)).isRenderable
         )
     }
     #endif
 
-    func testViewModelDefaultsToVisible() {
-        XCTAssertTrue(
-            WebViewComponentViewModel(component: .init(id: "web", protocolVersion: 1, url: "https://example.com"))
-                .visible
-        )
-        XCTAssertFalse(
-            WebViewComponentViewModel(
-                component: .init(id: "web", visible: false, protocolVersion: 1, url: "https://example.com")
-            ).visible
-        )
+    func testStyleDefaultsToVisible() {
+        XCTAssertTrue(Self.defaultStyle(Self.makeViewModel(url: "https://example.com")).visible)
+        XCTAssertFalse(Self.defaultStyle(Self.makeViewModel(url: "https://example.com", visible: false)).visible)
     }
 
-    func testViewModelEqualityAndHashingConsidersRenderedState() {
-        func makeViewModel(
-            id: String = "web",
-            url: String = "https://example.com/path",
-            visible: Bool? = nil,
-            size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil))
-        ) -> WebViewComponentViewModel {
-            WebViewComponentViewModel(
-                component: .init(id: id, visible: visible, protocolVersion: 1, url: url, size: size)
-            )
-        }
+    // MARK: - Overrides
 
-        let base = makeViewModel()
+    func testStyleAppliesSelectedVisibilityOverride() {
+        let viewModel = Self.makeViewModel(
+            url: "https://example.com",
+            visible: false,
+            overrides: [
+                .init(conditions: [.selected], properties: .init(visible: true))
+            ]
+        )
+
+        // Default state keeps the base (hidden) value.
+        XCTAssertFalse(Self.defaultStyle(viewModel).visible)
+
+        // Selected state applies the override.
+        XCTAssertTrue(Self.defaultStyle(viewModel, state: .selected).visible)
+    }
+
+    func testStyleAppliesSizeClassVisibilityOverride() {
+        let viewModel = Self.makeViewModel(
+            url: "https://example.com",
+            visible: true,
+            overrides: [
+                .init(conditions: [.expanded], properties: .init(visible: false))
+            ]
+        )
+
+        // Compact keeps the base (visible) value; expanded hides it.
+        XCTAssertTrue(Self.defaultStyle(viewModel, condition: .compact).visible)
+        XCTAssertFalse(Self.defaultStyle(viewModel, condition: .expanded).visible)
+    }
+
+    func testStyleDoesNotOverrideURLOrSize() {
+        // Only `visible` is overridable: the resolved URL and size always come from the base component,
+        // regardless of the presentation context.
+        let viewModel = Self.makeViewModel(
+            url: "https://example.com/base",
+            size: .init(width: .fill, height: .fit(nil)),
+            overrides: [
+                .init(conditions: [.expanded], properties: .init(visible: false))
+            ]
+        )
+
+        let expanded = Self.defaultStyle(viewModel, condition: .expanded)
+        XCTAssertEqual(expanded.urlString, "https://example.com/base")
+        XCTAssertEqual(expanded.size.width, .fill)
+        XCTAssertEqual(expanded.size.height, .fit(nil))
+    }
+
+    func testViewModelEqualityAndHashingConsidersComponent() {
+        let base = Self.makeViewModel(url: "https://example.com/path")
 
         // Equal inputs produce equal (and identically hashing) view models.
-        let same = makeViewModel()
+        let same = Self.makeViewModel(url: "https://example.com/path")
         XCTAssertEqual(base, same)
         XCTAssertEqual(base.hashValue, same.hashValue)
 
-        // Any rendered-state difference breaks equality.
-        XCTAssertNotEqual(base, makeViewModel(id: "other"))
-        XCTAssertNotEqual(base, makeViewModel(url: "https://example.com/other"))
-        XCTAssertNotEqual(base, makeViewModel(visible: false))
-        XCTAssertNotEqual(base, makeViewModel(size: .init(width: .fixed(320), height: .fit(nil))))
+        // Any component difference breaks equality.
+        XCTAssertNotEqual(base, Self.makeViewModel(id: "other", url: "https://example.com/path"))
+        XCTAssertNotEqual(base, Self.makeViewModel(url: "https://example.com/other"))
+        XCTAssertNotEqual(base, Self.makeViewModel(url: "https://example.com/path", visible: false))
+        XCTAssertNotEqual(
+            base,
+            Self.makeViewModel(url: "https://example.com/path", size: .init(width: .fixed(320), height: .fit(nil)))
+        )
+        XCTAssertNotEqual(
+            base,
+            Self.makeViewModel(
+                url: "https://example.com/path",
+                overrides: [.init(conditions: [.selected], properties: .init(visible: false))]
+            )
+        )
+    }
+
+    // MARK: - Helpers
+
+    private static func makeViewModel(
+        id: String = "web",
+        url: String,
+        visible: Bool? = nil,
+        size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil)),
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent>? = nil
+    ) -> WebViewComponentViewModel {
+        WebViewComponentViewModel(
+            component: .init(
+                id: id,
+                visible: visible,
+                protocolVersion: 1,
+                url: url,
+                size: size,
+                overrides: overrides
+            ),
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+        )
+    }
+
+    private static func defaultStyle(
+        _ viewModel: WebViewComponentViewModel,
+        state: ComponentViewState = .default,
+        condition: ScreenCondition = .compact
+    ) -> WebViewComponentStyle {
+        viewModel.style(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
     }
 
 }
