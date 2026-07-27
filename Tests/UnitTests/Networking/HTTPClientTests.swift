@@ -78,7 +78,8 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         // The real `SourceHealthChecker` default keeps health probes visible to OHHTTPStubs; tests
         // that need a fixed health result inject a `MockSourceHealthChecker` instead.
         let apiSourceFailover = apiSourceProvider.map {
-            APISourceFailover(dangerousSettings: systemInfo.dangerousSettings,
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
                               sourceProvider: $0,
                               healthChecker: sourceHealthChecker)
         }

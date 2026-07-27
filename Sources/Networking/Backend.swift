@@ -44,7 +44,8 @@ class Backend {
         // health-check cache; the provider's handle tokens keep concurrent reports from
         // double-advancing the list.
         let apiSourceFailover = apiSourceProvider.map {
-            APISourceFailover(dangerousSettings: systemInfo.dangerousSettings,
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
                               sourceProvider: $0,
                               healthChecker: SourceHealthChecker())
         }
