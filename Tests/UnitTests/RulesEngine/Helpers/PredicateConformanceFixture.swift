@@ -6,7 +6,7 @@
 
 import Foundation
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 enum PredicateConformanceFixtureError: Error, CustomStringConvertible {
 
@@ -84,7 +84,7 @@ enum PredicateConformanceFixtureLoader {
     static func repoFixturesDirectoryURL() -> URL {
         URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent() // Helpers
-            .deletingLastPathComponent() // RulesEngineInternalTests
+            .deletingLastPathComponent() // RulesEngine
             .appendingPathComponent("PredicateFixtures", isDirectory: true)
     }
 

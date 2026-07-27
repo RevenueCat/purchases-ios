@@ -15,7 +15,7 @@
 import Foundation
 
 /// Namespace for the RevenueCat rules engine.
-public enum RulesEngine {}
+enum RulesEngine {}
 
 extension RulesEngine {
 
@@ -28,7 +28,7 @@ extension RulesEngine {
     }
 
     /// Replaces the module default logger. Intended to be called once during configure.
-    public static func setLogger(_ logger: RulesEngineLogger) {
+    static func setLogger(_ logger: RulesEngineLogger) {
         loggerStorage.value = logger
     }
 
