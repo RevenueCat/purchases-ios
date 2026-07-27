@@ -39,6 +39,28 @@ class SynchronizedLargeItemCacheTests: TestCase {
         XCTAssertEqual(mock.saveDataInvocations.count, 1)
     }
 
+    func testSetDataWritesBytesWithoutEncoding() {
+        let (mock, sut) = self.makeSystemUnderTest()
+        let data = Data([0x00, 0x01, 0xfe, 0xff])
+        mock.stubSaveData(with: .success(.init(data: data, url: baseDirectory)))
+
+        XCTAssertTrue(sut.set(data: data, forKey: "raw-key"))
+        XCTAssertEqual(mock.saveDataInvocations.first?.data, data)
+    }
+
+    func testSetCodableDoesNotEncodeWhenCacheDirectoryIsUnavailable() {
+        let mock = createAndTrackForMemoryLeak(MockSimpleCache(cacheDirectory: nil))
+        let sut = createAndTrackForMemoryLeak(
+            SynchronizedLargeItemCache(cache: mock, basePath: "unavailable-cache")
+        )
+        let value = EncodingProbe()
+
+        XCTAssertFalse(sut.set(codable: value, forKey: "key"))
+        XCTAssertFalse(value.wasEncoded)
+        XCTAssertTrue(mock.saveDataInvocations.isEmpty)
+        self.logger.verifyMessageWasLogged(Strings.cache.cache_url_not_available, level: .error)
+    }
+
     func testValueReturnsDecodedData() throws {
         let (mock, sut) = self.makeSystemUnderTest()
         let key = "value-key"
@@ -47,7 +69,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         mock.stubCachedContentExists(with: true)
         mock.stubLoadFile(with: .success(value.asData))
 
-        let cached: TestValue? = try sut.value(forKey: key)
+        let cached: TestValue? = try sut.value(forKey: key, decoder: .default)
 
         XCTAssertEqual(cached, value)
     }
@@ -58,7 +80,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
 
         // By default, cachedContentExists returns false
 
-        let cached: TestValue? = try? sut.value(forKey: key)
+        let cached: TestValue? = try? sut.value(forKey: key, decoder: .default)
 
         XCTAssertNil(cached)
     }
@@ -101,7 +123,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         // Return invalid JSON data that can't be decoded to TestValue
         mock.stubLoadFile(with: .success(Data("invalid json".utf8)))
 
-        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
+        XCTAssertThrowsError(try sut.value(forKey: key, decoder: .default) as TestValue?)
     }
 
     func testValueThrowsWhenLoadFileFails() throws {
@@ -111,7 +133,7 @@ class SynchronizedLargeItemCacheTests: TestCase {
         mock.stubCachedContentExists(with: true)
         mock.stubLoadFile(with: .failure(MockError()))
 
-        XCTAssertThrowsError(try sut.value(forKey: key) as TestValue?)
+        XCTAssertThrowsError(try sut.value(forKey: key, decoder: .default) as TestValue?)
     }
 
     // MARK: - Helpers
@@ -152,3 +174,11 @@ private struct TestValue: Codable, Equatable {
 }
 
 private struct MockError: Error { }
+
+private final class EncodingProbe: Encodable {
+    var wasEncoded = false
+
+    func encode(to encoder: Encoder) throws {
+        self.wasEncoded = true
+    }
+}
