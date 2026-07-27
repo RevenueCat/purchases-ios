@@ -12,6 +12,9 @@ import Testing
 
 @testable import RevenueCat
 
+private typealias Value = RulesEngine.Value
+private typealias Evaluator = RulesEngine.Evaluator
+
 enum PredicateConformanceRunner {
 
     /// Test-only numeric constants seeded into every fixture's variable

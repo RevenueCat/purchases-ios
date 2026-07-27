@@ -9,14 +9,14 @@ import Foundation
 /// Production JSON → `Value` parser. Converts the predicate JSON extracted
 /// from the SDK artifact into the engine's typed `Value` tree. Used by
 /// `RulesEngine.evaluate`; failures surface as `RulesEngine.EvaluationError.parse`.
-extension Value {
+extension RulesEngine.Value {
 
     /// Parse a JSON string into a `Value`. `JSONSerialization` returns
     /// numbers as `NSNumber`, so we use `CFNumber` type metadata to
     /// distinguish booleans from ints from doubles — without that, a JSON
     /// `true` and a JSON `1` both round-trip to `NSNumber` and lose their
     /// type intent.
-    static func fromJSONString(_ input: String) throws -> Value {
+    static func fromJSONString(_ input: String) throws -> RulesEngine.Value {
         guard let data = input.data(using: .utf8) else {
             throw RulesEngine.EvaluationError.parse(message: "non-UTF8 input")
         }
@@ -26,14 +26,14 @@ extension Value {
         } catch {
             throw RulesEngine.EvaluationError.parse(message: error.localizedDescription)
         }
-        return try Value.fromJSONObject(json)
+        return try Self.fromJSONObject(json)
     }
 
     /// Recursively convert a value produced by `JSONSerialization` (the
     /// `Any` is one of `NSNull`, `NSNumber`, `String`, `[Any]`, or
     /// `[String: Any]`). Throws `RulesEngine.EvaluationError.parse` if it
     /// encounters anything else.
-    static func fromJSONObject(_ object: Any) throws -> Value {
+    static func fromJSONObject(_ object: Any) throws -> RulesEngine.Value {
         if object is NSNull {
             return .null
         }
@@ -64,13 +64,13 @@ extension Value {
             return .string(string)
         }
         if let array = object as? [Any] {
-            return .array(try array.map(Value.fromJSONObject))
+            return .array(try array.map(Self.fromJSONObject))
         }
         if let dict = object as? [String: Any] {
-            var result: [String: Value] = [:]
+            var result: [String: RulesEngine.Value] = [:]
             result.reserveCapacity(dict.count)
             for (key, value) in dict {
-                result[key] = try Value.fromJSONObject(value)
+                result[key] = try Self.fromJSONObject(value)
             }
             return .object(result)
         }

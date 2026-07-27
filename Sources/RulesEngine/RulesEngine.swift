@@ -44,7 +44,7 @@ extension RulesEngine {
 private final class LoggerStorage: @unchecked Sendable {
 
     private let lock = NSLock()
-    private var current: RulesEngineLogger = PrintLogger()
+    private var current: RulesEngineLogger = RulesEngine.PrintLogger()
 
     var value: RulesEngineLogger {
         get {
