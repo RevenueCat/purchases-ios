@@ -15,6 +15,18 @@ import Foundation
 
 struct OfferingsResponse {
 
+    enum DecodingMode: Hashable, Sendable {
+        case withPaywallComponents
+        case withoutPaywallComponents
+    }
+
+    // The non-empty static key cannot fail construction.
+    // swiftlint:disable force_unwrapping
+    fileprivate static let decodingModeUserInfoKey = CodingUserInfoKey(
+        rawValue: "com.revenuecat.offerings-response-decoding-mode"
+    )!
+    // swiftlint:enable force_unwrapping
+
     struct Offering {
 
         // swiftlint:disable:next nesting
@@ -60,6 +72,16 @@ struct OfferingsResponse {
 
 extension OfferingsResponse {
 
+    static func create(with data: Data, decodingMode: DecodingMode) throws -> Self {
+        return try self.makeDecoder(decodingMode: decodingMode).decode(jsonData: data)
+    }
+
+    static func makeDecoder(decodingMode: DecodingMode) -> JSONDecoder {
+        let decoder = JSONDecoder.makeDefault()
+        decoder.userInfo[Self.decodingModeUserInfoKey] = decodingMode
+        return decoder
+    }
+
     var productIdentifiers: Set<String> {
         return Set(
             self.offerings
@@ -94,7 +116,65 @@ extension OfferingsResponse.Offering.Package {
 }
 
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
-extension OfferingsResponse.Offering: Codable, Equatable {}
+extension OfferingsResponse.Offering: Codable, Equatable {
+
+    private enum CodingKeys: String, CodingKey {
+        case identifier
+        case description
+        case packages
+        case paywall
+        case metadata
+        case paywallComponents
+        case hasPaywallComponents
+        case webCheckoutUrl
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.identifier = try container.decode(String.self, forKey: .identifier)
+        self.description = try container.decode(String.self, forKey: .description)
+        self.packages = try container.decode([Package].self, forKey: .packages)
+        self._paywall = container.decode(IgnoreDecodeErrors<PaywallData?>.self, forKey: .paywall)
+        self._metadata = try container.decode(
+            DefaultDecodable.EmptyDictionary<[String: AnyDecodable]>.self,
+            forKey: .metadata
+        )
+        self.webCheckoutUrl = try container.decodeIfPresent(URL.self, forKey: .webCheckoutUrl)
+
+        let explicitHasPaywallComponents = try container.decodeIfPresent(
+            Bool.self,
+            forKey: .hasPaywallComponents
+        )
+        let decodingMode = decoder.userInfo[OfferingsResponse.decodingModeUserInfoKey]
+            as? OfferingsResponse.DecodingMode ?? .withPaywallComponents
+        let inferredHasPaywallComponents = decodingMode == .withoutPaywallComponents
+            ? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
+            : nil
+
+        switch decodingMode {
+        case .withPaywallComponents:
+            self.paywallComponents = try container.decodeIfPresent(
+                PaywallComponentsData.self,
+                forKey: .paywallComponents
+            )
+
+        case .withoutPaywallComponents:
+            self.paywallComponents = nil
+        }
+
+        self.hasPaywallComponents = explicitHasPaywallComponents ?? inferredHasPaywallComponents
+    }
+
+    private static func hasNonNullValue(
+        in container: KeyedDecodingContainer<CodingKeys>,
+        forKey key: CodingKeys
+    ) -> Bool? {
+        guard container.contains(key) else { return nil }
+        return (try? container.decodeNil(forKey: key)) == false
+    }
+
+}
 extension OfferingsResponse.Placements: Codable, Equatable {}
 extension OfferingsResponse.Targeting: Codable, Equatable {}
 extension OfferingsResponse: Codable, Equatable {}

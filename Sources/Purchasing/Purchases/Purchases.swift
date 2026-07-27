@@ -871,7 +871,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
             guard let self else { return }
-            self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
+            self.offeringsManager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: self.appUserID)
         }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
