@@ -7,7 +7,7 @@
 import Foundation
 
 /// Logging facade for the rules engine.
-public protocol RulesEngineLogger: Sendable {
+protocol RulesEngineLogger: Sendable {
 
     /// Carries engine diagnostics (missing variables, unsupported
     /// operators, type mismatches).

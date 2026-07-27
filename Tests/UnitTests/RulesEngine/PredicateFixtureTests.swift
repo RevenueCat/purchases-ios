@@ -10,10 +10,10 @@
 
 import Testing
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 /// Runs in-repo JSON predicate fixtures checked into
-/// `Tests/RulesEngineInternalTests/PredicateFixtures/`.
+/// `Tests/UnitTests/RulesEngine/PredicateFixtures/`.
 @Suite("Rules Engine Predicate Fixtures", .serialized)
 struct PredicateFixtureTests {
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 /// Test-only logger that records warnings and `log`-channel messages
 /// separately for later assertion.
