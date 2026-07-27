@@ -144,6 +144,71 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         )
     }
 
+    // MARK: - Touch-sequence tracking (multi-touch + stale-verdict hardening)
+
+    @MainActor
+    func testBeginSequenceInitializesTrackingState() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+
+        recognizer.beginSequence(at: CGPoint(x: 4, y: 9))
+
+        XCTAssertTrue(recognizer.isTracking)
+        XCTAssertEqual(recognizer.startLocation, CGPoint(x: 4, y: 9))
+        XCTAssertFalse(recognizer.decided)
+    }
+
+    @MainActor
+    func testSecondFingerDoesNotResetAnOngoingSequence() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: CGPoint(x: 4, y: 9))
+        recognizer.decided = true // pretend a verdict already committed
+
+        recognizer.beginSequence(at: CGPoint(x: 40, y: 90)) // a second finger lands mid-gesture
+
+        XCTAssertTrue(recognizer.decided, "A mid-gesture second finger must not clear the decision")
+        XCTAssertEqual(
+            recognizer.startLocation,
+            CGPoint(x: 4, y: 9),
+            "startLocation must stay anchored to the first finger"
+        )
+    }
+
+    @MainActor
+    func testProbeVerdictIsIgnoredWhenNoSequenceIsBeingTracked() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+
+        recognizer.applyProbeVerdict(isOwn: true) // stale verdict arriving between gestures
+
+        XCTAssertEqual(recognizer.state, .possible)
+        XCTAssertFalse(recognizer.decided)
+        XCTAssertNil(recognizer.contentWantsGesture)
+    }
+
+    @MainActor
+    func testReleaseVerdictWhileTrackingRecordsWithoutClaiming() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: .zero)
+
+        recognizer.applyProbeVerdict(isOwn: false)
+
+        XCTAssertEqual(recognizer.contentWantsGesture, false)
+        XCTAssertFalse(recognizer.decided, "A release verdict defers to the movement/scroll check")
+        XCTAssertEqual(recognizer.state, .possible)
+    }
+
+    @MainActor
+    func testResetClearsTrackingSoLaterVerdictsAreIgnored() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: .zero)
+
+        recognizer.reset()
+        recognizer.applyProbeVerdict(isOwn: true)
+
+        XCTAssertFalse(recognizer.isTracking)
+        XCTAssertFalse(recognizer.decided)
+        XCTAssertNil(recognizer.contentWantsGesture)
+    }
+
     // MARK: - Probe user script
 
     @MainActor
