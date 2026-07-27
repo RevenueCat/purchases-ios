@@ -507,12 +507,11 @@ class DeviceCacheTests: TestCase {
         let cachedObject = try XCTUnwrap(JSONSerialization.jsonObject(with: cachedData) as? [String: Any])
         expect(cachedObject["original_source"] as? String) == "fallback_url"
         expect((cachedObject["future_backend_field"] as? [String: Bool])?["preserved"]) == true
-        let cachedOfferings = try XCTUnwrap(cachedObject["offerings"] as? [[String: Any]])
-        expect(cachedOfferings[safe: 1]?["draft_paywall_components"]).toNot(beNil())
 
-        let legacyDecoded = try JSONDecoder.default.decode(Offerings.Contents.self, from: cachedData)
-        expect(legacyDecoded.originalSource) == .fallbackUrl
-        expect(legacyDecoded.response.offerings.first?.paywallComponents).toNot(beNil())
+        let legacyDecoded = try JSONDecoder.default.decode(LegacyOfferingsCache.self, from: cachedData)
+        expect(legacyDecoded.originalSource) == "fallback_url"
+        expect(legacyDecoded.offerings.first?.paywallComponents?.id) == "pw_test_1"
+        expect(legacyDecoded.offerings.first?.paywallComponents?.revision) == 3
 
         self.mockFileCache.stubCachedContentExists(at: 0, with: true)
         self.mockFileCache.stubCachedContentExists(at: 1, with: true)
@@ -1273,6 +1272,48 @@ class DeviceCacheTests: TestCase {
         let finalOfferings = deviceCache.cachedOfferingsContents(appUserID: appUserID)
         expect(finalOfferings).toNot(beNil())
     }
+
+    func testMigratesPreviousSDKFullOfferingsCacheWithoutPruningStoredData() throws {
+        let appUserID = "previous-sdk-user"
+        let cacheData = try BaseHTTPResponseTest.data(for: "OfferingsCacheFromPreviousSDKFull")
+        let documentsURL = try XCTUnwrap(fileManager.urls(for: .documentDirectory, in: .userDomainMask).first)
+        let oldDirectoryURL = documentsURL.appendingPathComponent("RevenueCat")
+        let cacheKey = DeviceCache.CacheKey.offerings(appUserID).rawValue
+        let oldFileURL = oldDirectoryURL.appendingPathComponent(cacheKey)
+
+        try fileManager.createDirectory(
+            at: oldDirectoryURL,
+            withIntermediateDirectories: true,
+            attributes: nil
+        )
+        try cacheData.write(to: oldFileURL)
+
+        let deviceCache = DeviceCache(
+            systemInfo: self.systemInfo,
+            userDefaults: self.makeIsolatedUserDefaults(),
+            cache: fileManager
+        )
+
+        let prunedContents = try XCTUnwrap(
+            deviceCache.cachedOfferingsContents(
+                appUserID: appUserID,
+                decodingMode: .withoutPaywallComponents
+            )
+        )
+        expect(prunedContents.originalSource) == .fallbackUrl
+        expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
+        expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
+        XCTAssertFalse(fileManager.fileExists(atPath: oldFileURL.path))
+
+        let fullContents = try XCTUnwrap(
+            deviceCache.cachedOfferingsContents(
+                appUserID: appUserID,
+                decodingMode: .withPaywallComponents
+            )
+        )
+        expect(fullContents.originalSource) == .fallbackUrl
+        expect(fullContents.response.offerings.first?.paywallComponents?.id) == "pw_test_1"
+    }
 }
 
 private extension DeviceCacheTests {
@@ -1369,6 +1410,24 @@ private extension Offerings {
                                      httpResponseOriginalSource: .mainServer),
         loadedFromDiskCache: false
     )
+
+}
+
+/// Frozen subset of the pre-change cache model. This deliberately does not use
+/// `OfferingsResponse`, so writer and reader changes cannot make the compatibility test pass together.
+private struct LegacyOfferingsCache: Decodable {
+
+    struct Offering: Decodable {
+        let paywallComponents: PaywallComponents?
+    }
+
+    struct PaywallComponents: Decodable {
+        let id: String
+        let revision: Int
+    }
+
+    let offerings: [Offering]
+    let originalSource: String?
 
 }
 

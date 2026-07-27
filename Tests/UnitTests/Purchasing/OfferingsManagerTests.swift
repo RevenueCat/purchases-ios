@@ -1510,21 +1510,9 @@ extension OfferingsManagerTests {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(error)
 
-        let original = MockData.anyBackendOfferingsContents
-        var prunedOffering = try XCTUnwrap(original.response.offerings.first)
-        prunedOffering.hasPaywallComponents = true
-        prunedOffering.paywallComponents = nil
-        let prunedContents = Offerings.Contents(
-            response: .init(
-                currentOfferingId: original.response.currentOfferingId,
-                offerings: [prunedOffering],
-                placements: original.response.placements,
-                targeting: original.response.targeting,
-                uiConfig: original.response.uiConfig
-            ),
-            httpResponseOriginalSource: .mainServer
+        self.mockDeviceCache.stubbedCachedOfferingsData = try BaseHTTPResponseTest.data(
+            for: "OfferingsCacheFromPreviousSDKPruned"
         )
-        self.mockDeviceCache.stubbedCachedOfferingsData = try prunedContents.jsonEncodedData
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
@@ -1547,19 +1535,9 @@ extension OfferingsManagerTests {
         self.mockDeviceCache.stubbedOfferings = nil
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .failure(.networkError(.serverDown()))
 
-        let response: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
-        let uiConfig: UIConfig = try BaseHTTPResponseTest.decodeFixture("UIConfig")
-        let cachedContents = Offerings.Contents(
-            response: .init(
-                currentOfferingId: response.currentOfferingId,
-                offerings: response.offerings,
-                placements: response.placements,
-                targeting: response.targeting,
-                uiConfig: uiConfig
-            ),
-            httpResponseOriginalSource: .mainServer
+        self.mockDeviceCache.stubbedCachedOfferingsData = try BaseHTTPResponseTest.data(
+            for: "OfferingsCacheFromPreviousSDKFull"
         )
-        self.mockDeviceCache.stubbedCachedOfferingsData = try cachedContents.jsonEncodedData
 
         let result: Result<Offerings, OfferingsManager.Error>? = waitUntilValue { completed in
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
