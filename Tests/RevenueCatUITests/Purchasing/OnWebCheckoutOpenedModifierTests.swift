@@ -73,6 +73,24 @@ final class OnWebCheckoutOpenedModifierTests: TestCase {
         expect(fireCount.value) == 1
     }
 
+    func testResetForNewSessionDeferredClearDoesNotWipeANewerSignal() {
+        // Reproduces a reviewer-flagged scenario: resetForNewSession's deferred clear is still
+        // pending when the same handler is reused for a new session that signals again within the
+        // same tick. The stale clear (targeting the old UUID) must not wipe the newer one.
+        let handler: PurchaseHandler = .mock()
+
+        // Old session: signal, then dismiss (schedules a deferred clear for the old UUID).
+        handler.signalWebCheckoutOpened()
+        handler.resetForNewSession()
+        // New session immediately reuses the same handler and signals again, same tick.
+        handler.signalWebCheckoutOpened()
+        let newSessionID = handler.webCheckoutOpened
+
+        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
+
+        expect(handler.webCheckoutOpened) == newSessionID
+    }
+
     func testOnWebCheckoutOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
         // clearWebCheckoutOpened() must complete synchronously so a new view reusing this handler
         // (the exit offer) doesn't see the stale signal as its own fresh one.

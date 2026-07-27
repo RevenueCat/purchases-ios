@@ -891,10 +891,14 @@ extension PurchaseHandler {
     }
 
     /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
-    /// dismiss) still reaches its SwiftUI render pass before being cleared.
+    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
+    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
+    /// clear can't wipe out a signal it was never meant to touch.
     private func deferredClearWebCheckoutOpened() {
+        let pendingValue = self.webCheckoutOpened
         DispatchQueue.main.async { [weak self] in
-            self?.webCheckoutOpened = nil
+            guard let self, self.webCheckoutOpened == pendingValue else { return }
+            self.webCheckoutOpened = nil
         }
     }
 
