@@ -247,7 +247,18 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         recognizer.evaluate()
 
         XCTAssertFalse(recognizer.decided, "Must await the probe verdict instead of releasing early")
-        XCTAssertEqual(recognizer.state, .possible)
+        XCTAssertNil(recognizer.committedDecision)
+    }
+
+    @MainActor
+    func testOwnVerdictClaimsTheGesture() {
+        let recognizer = WebViewScrollOwnershipRecognizer(webView: WKWebView())
+        recognizer.beginSequence(at: .zero)
+
+        recognizer.applyProbeVerdict(isOwn: true)
+
+        XCTAssertTrue(recognizer.decided)
+        XCTAssertEqual(recognizer.committedDecision, .own)
     }
 
     @MainActor
@@ -259,7 +270,7 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         recognizer.applyProbeVerdict(isOwn: false)
 
         XCTAssertTrue(recognizer.decided)
-        XCTAssertEqual(recognizer.state, .failed)
+        XCTAssertEqual(recognizer.committedDecision, .release)
     }
 
     // MARK: - Probe user script
