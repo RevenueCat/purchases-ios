@@ -288,19 +288,26 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
 
     private func canScroll(vertically direction: Int) -> Bool {
         guard let scrollView = self.webView?.scrollView else { return false }
+        // `adjustedContentInset` widens the offset range (safe area, keyboard, WebKit adjustments): the
+        // resting top offset is `-inset.top` and the max bottom offset gains `inset.bottom`, so raw
+        // `0 ... contentSize - bounds` math would report "at the edge" while the view can still scroll.
+        let inset = scrollView.adjustedContentInset
         if direction > 0 {
-            return scrollView.contentOffset.y + scrollView.bounds.height < scrollView.contentSize.height - 0.5
+            let maxOffsetY = scrollView.contentSize.height + inset.bottom - scrollView.bounds.height
+            return scrollView.contentOffset.y < maxOffsetY - 0.5
         } else {
-            return scrollView.contentOffset.y > 0.5
+            return scrollView.contentOffset.y > -inset.top + 0.5
         }
     }
 
     private func canScroll(horizontally direction: Int) -> Bool {
         guard let scrollView = self.webView?.scrollView else { return false }
+        let inset = scrollView.adjustedContentInset
         if direction > 0 {
-            return scrollView.contentOffset.x + scrollView.bounds.width < scrollView.contentSize.width - 0.5
+            let maxOffsetX = scrollView.contentSize.width + inset.right - scrollView.bounds.width
+            return scrollView.contentOffset.x < maxOffsetX - 0.5
         } else {
-            return scrollView.contentOffset.x > 0.5
+            return scrollView.contentOffset.x > -inset.left + 0.5
         }
     }
 
