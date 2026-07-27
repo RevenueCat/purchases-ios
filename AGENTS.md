@@ -240,3 +240,9 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
+- **Prefer the tightest access control** — default to `private`; only widen to `internal`/`public`/`@_spi` when callers outside the current scope actually need it. Every reviewer-requested visibility reduction is a missed opportunity to get it right the first time.
+- **Avoid default parameter values on internal initializers** — they let callers silently omit arguments. Make every parameter explicit so the compiler catches missing values, especially when new parameters are added later.
+- **Don't add code that nothing in the PR uses** — unused types, methods, or properties that "will be needed later" should be introduced in the PR that actually uses them. This keeps PRs reviewable and avoids dead code.
+- **Don't write redundant `Codable` implementations** — if the synthesized `init(from:)` or `encode(to:)` does what you need, omit the manual version. Custom implementations that just repeat the default add maintenance cost.
+- **Avoid duplicating constants** — if a value already exists as a constant elsewhere, reference that single source of truth instead of defining a second copy. Duplicate literals are easy to miss when one copy changes.
+- **Route all log strings through `*Strings.swift`** — `Logger` calls in `Sources/` and `RevenueCatUI/` must use a `*Strings.swift` enum case, not inline string literals (enforced by the `no_hardcoded_logger_strings` SwiftLint rule). See `Sources/Logging/Strings/` and `RevenueCatUI/Data/Strings.swift` for the pattern.
