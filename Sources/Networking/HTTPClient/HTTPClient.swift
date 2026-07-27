@@ -684,6 +684,8 @@ private extension HTTPClient {
             return true
 
         case .sourceHealthy, .sourcesExhausted:
+            // Declining to switch sources doesn't disable the pre-existing static fallback: the
+            // request still failed, so endpoints with fallback hosts keep retrying there as before.
             return self.retryRequestWithNextFallbackHostIfNeeded(request: request, error: error)
                 || self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
         }
