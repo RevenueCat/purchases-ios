@@ -111,6 +111,65 @@ final class WebViewComponentViewTests: TestCase {
         XCTAssertEqual(Self.defaultStyle(built).url?.absoluteString, "https://example.com/index.html")
     }
 
+    func testViewModelFactoryPreservesOverrides() throws {
+        // End-to-end guard for the factory seam: overrides declared in JSON must survive decoding and
+        // the ViewModelFactory so they still resolve at render time. Injecting overrides directly into
+        // the view model (as the resolution tests do) would pass even if the factory dropped them.
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        {
+          "type": "web_view",
+          "id": "web",
+          "visible": true,
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "overrides": [
+            {
+              "conditions": [{ "type": "selected" }],
+              "properties": { "visible": false }
+            }
+          ]
+        }
+        """.utf8))
+
+        let uiConfigJSON = Data("""
+        {
+          "app": { "colors": {}, "fonts": {} },
+          "localizations": {},
+          "variable_config": {
+            "variable_compatibility_map": {},
+            "function_compatibility_map": {}
+          }
+        }
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
+
+        let result = try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
+            colorScheme: .light
+        )
+
+        guard case .webView(let built) = result else {
+            return XCTFail("Expected .webView view model")
+        }
+
+        // Default state keeps the base (visible) value; the selected override only applies when selected.
+        XCTAssertTrue(Self.defaultStyle(built).visible)
+        XCTAssertFalse(Self.defaultStyle(built, state: .selected).visible)
+    }
+
     #if canImport(WebKit)
     func testStyleResolvesOriginFromValidURL() {
         let style = Self.defaultStyle(Self.makeViewModel(url: "https://example.com/path?q=1"))
