@@ -32,14 +32,17 @@ enum WebViewGestureProbe {
     static let verdictOwn = "own"
     static let verdictRelease = "release"
 
-    /// Runs at document start in the main frame. On every `touchstart` it walks from the touched
-    /// element up its ancestors and posts `own` when one declares `touch-action: none` (JS panning,
-    /// e.g. a map) or is an overflowing `auto`/`scroll` scroller — the per-element signals the
-    /// native scroll-offset checks can't see — otherwise `release`. Passive, so it never blocks
-    /// the page's own handling.
+    /// Runs at document start in the main frame. On the first finger of a `touchstart` it walks from the
+    /// touched element up its ancestors and posts `own` when one declares `touch-action: none` (JS
+    /// panning, e.g. a map) or is an *inner* overflowing `auto`/`scroll` scroller — the per-element
+    /// signals the native scroll-offset checks can't see — otherwise `release`. The root scroller is
+    /// left to those native checks. Passive, so it never blocks the page's own handling.
     static var userScript: WKUserScript {
         let source = """
         (function () {
+          function isRootScroller(n) {
+            return n === document.scrollingElement || n === document.documentElement || n === document.body;
+          }
           function consumesGesture(el) {
             var ELEMENT_NODE = Node.ELEMENT_NODE;
             var node = el && el.nodeType === ELEMENT_NODE ? el : (el ? el.parentElement : null);
@@ -49,6 +52,10 @@ enum WebViewGestureProbe {
               // map). `pan-x`/`pan-y` still let the browser scroll natively on an axis — visible to the
               // `canScroll*` checks — so claiming them would wrongly block the paywall at the scroll edge.
               if (s.touchAction === 'none') return true;
+              // Skip the root scroller: it *is* the web view's scroll view, which the native `canScroll*`
+              // checks already track and hand off to the paywall at the edges. Only inner scrollers are
+              // invisible to them, so claiming the root here would trap the paywall at the content edge.
+              if (isRootScroller(n)) continue;
               if ((s.overflowY === 'auto' || s.overflowY === 'scroll') && n.scrollHeight > n.clientHeight) return true;
               if ((s.overflowX === 'auto' || s.overflowX === 'scroll') && n.scrollWidth > n.clientWidth) return true;
             }
@@ -60,6 +67,9 @@ enum WebViewGestureProbe {
             } catch (e) {}
           }
           document.addEventListener('touchstart', function (event) {
+            // Only the first finger of a sequence: the recognizer tracks the primary touch, so a second
+            // finger's verdict must not overwrite the primary's while the gesture is still undecided.
+            if (event.touches.length > 1) return;
             post(consumesGesture(event.target) ? '\(verdictOwn)' : '\(verdictRelease)');
           }, { passive: true, capture: true });
         })();

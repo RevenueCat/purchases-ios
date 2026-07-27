@@ -292,6 +292,19 @@ final class WebViewScrollGestureArbitrationTests: TestCase {
         XCTAssertFalse(source.contains("!== 'manipulation'"))
     }
 
+    @MainActor
+    func testProbeUserScriptSkipsTheRootScrollerAndSecondaryTouches() {
+        let source = WebViewGestureProbe.userScript.source
+
+        // The root scroller is the web view's own scroll view (tracked by `canScroll*`), so the probe
+        // must skip it and only claim inner scrollers.
+        XCTAssertTrue(source.contains("document.scrollingElement"))
+        XCTAssertTrue(source.contains("document.documentElement"))
+        XCTAssertTrue(source.contains("document.body"))
+        // Only the primary finger's verdict is posted so a second finger can't poison the decision.
+        XCTAssertTrue(source.contains("event.touches.length > 1"))
+    }
+
     // MARK: - Helpers
 
     // swiftlint:disable identifier_name
