@@ -221,15 +221,21 @@ struct PaywallsV2View: View {
         self._selectedPackageContext = .init(wrappedValue: selectedPackageContext)
     }
 
+    /// Maximum length of the fallback error message shown on screen, to avoid flooding it.
+    private static let maxFallbackErrorLength = 400
+
     public var body: some View {
         self.addPaywallModifiers(to:
             VStack(spacing: 0) {
                 if let errorInfo = self.paywallComponentsData.errorInfo, !errorInfo.isEmpty {
+                    // Cap the message for display so a verbose (or long list of) error(s) can't
+                    // flood the screen, adding an ellipsis to indicate that it was truncated.
+                    let message = PaywallFallbackError(errorInfo: errorInfo).description
+                    let displayMessage = message.count > Self.maxFallbackErrorLength
+                        ? "\(message.prefix(Self.maxFallbackErrorLength))…"
+                        : message
                     self.defaultPaywallView(
-                        warning: .from(error: PaywallFallbackError(
-                            // Trim up the error value to not flood the screen with too much content
-                            reason: String("\(errorInfo)".prefix(130))
-                        ))
+                        warning: .from(error: PaywallFallbackError.Display(description: displayMessage))
                     )
                 } else {
                     switch self.paywallStateManager.state {
@@ -834,8 +840,30 @@ extension PaywallsV2View {
 
 }
 
-private struct PaywallFallbackError: Error {
-    let reason: String
+private struct PaywallFallbackError: Error, CustomStringConvertible {
+
+    /// Per-field decoding errors, keyed by the name of the field that failed to decode.
+    let errorInfo: [String: PaywallComponentsData.EquatableError]?
+
+    /// The complete, untruncated error message. Callers that need to fit it into a
+    /// constrained space (e.g. the fallback paywall) are responsible for capping it.
+    var description: String {
+        guard let errorInfo, !errorInfo.isEmpty else {
+            return "Unknown error"
+        }
+
+        return errorInfo
+            .sorted { $0.key < $1.key }
+            .map { key, error in "\(key): \(error.description)" }
+            .joined(separator: "\n\n")
+    }
+
+    /// A display-ready, possibly-truncated form of a `PaywallFallbackError`, surfaced through
+    /// `PaywallWarning`. The original error's `description` always stays complete.
+    struct Display: Error, CustomStringConvertible {
+        let description: String
+    }
+
 }
 
 #endif
