@@ -6,7 +6,7 @@
 
 import Foundation
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 // Test-only `Decodable` conformance for `Value`. Production `Value` stays
 // free of any `Codable` dependency; this lives in the test target so the

@@ -24,17 +24,6 @@ if Environment.includeTestDependencies {
     projects.append("./Projects/AdMobIntegrationSample")
 }
 
-// `RulesEngineInternal` is intentionally never exposed as an SPM `.library` product or as an
-// `.external(name:)` target in any of our Tuist projects — it's only ever pulled in
-// transitively as an internal target of `RevenueCat`/`RevenueCatUI`. That means including
-// `./Projects/RulesEngineInternal` in every mode does NOT cause the "Multiple commands produce"
-// duplicate-framework error that would happen with `RevenueCat`/`RevenueCatUI`, because no
-// workspace project links the local Tuist `RulesEngineInternal.framework` and the SPM-resolved
-// transitive one into the same binary. Including it unconditionally lets developers run
-// `tuist generate RulesEngineInternal` (or pick the `RulesEngineInternal` scheme in the workspace) without
-// needing to set `TUIST_RC_XCODE_PROJECT=true`.
-projects.append("./Projects/RulesEngineInternal")
-
 // `RevenueCat` and `RevenueCatUI` ARE exposed as SPM library products consumed via
 // `.package(product:)` by the workspace projects. Including the local Tuist projects
 // alongside the SPM-resolved ones would produce two definitions of the same framework name

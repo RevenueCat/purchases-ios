@@ -13,7 +13,7 @@ extension RulesEngine {
     /// Note on missing variables: the evaluator does **not** raise an error
     /// for them — per the JSON Logic spec, they resolve to `null` and a warning
     /// is logged instead.
-    public enum EvaluationError: Error, Equatable {
+    enum EvaluationError: Error, Equatable {
 
         /// The predicate JSON could not be parsed.
         case parse(message: String)
@@ -34,7 +34,7 @@ extension RulesEngine {
 extension RulesEngine.EvaluationError: CustomStringConvertible {
 
     /// A human-readable description of the error.
-    public var description: String {
+    var description: String {
         switch self {
         case .parse(let message):
             return "failed to parse predicate JSON: \(message)"

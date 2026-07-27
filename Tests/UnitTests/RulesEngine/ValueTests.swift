@@ -6,7 +6,7 @@
 
 import XCTest
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 final class ValueTests: XCTestCase {
 

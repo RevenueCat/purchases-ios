@@ -10,7 +10,7 @@
 
 import Testing
 
-@testable import RulesEngineInternal
+@testable import RevenueCat
 
 enum PredicateConformanceRunner {
 

@@ -6,7 +6,7 @@
 
 import Foundation
 
-public extension RulesEngine {
+extension RulesEngine {
 
     /// Evaluates a JSON Logic predicate against a native variable scope.
     ///
