@@ -178,6 +178,10 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
     /// moving, lifting, or being cancelled can't corrupt the deltas or end the gesture early. Weak: a
     /// `UITouch` is owned by UIKit and reused, so it must never be retained past its sequence.
     private weak var trackedTouch: UITouch?
+    /// The arbitration commit for the current sequence (`own` -> `.began`, `release` -> `.failed`), `nil`
+    /// while undecided. Mirrors the intent behind `state`, which UIKit only honors on a recognizer inside
+    /// a live touch cycle — so `state` is unreliable to observe outside one (notably in tests).
+    private(set) var committedDecision: WebViewGestureOutcome?
 
     init(webView: WKWebView) {
         self.webView = webView
@@ -210,6 +214,7 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
         self.latestTranslation = .zero
         self.contentWantsGesture = nil
         self.decided = false
+        self.committedDecision = nil
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
@@ -244,6 +249,7 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
         self.trackedTouch = nil
         self.contentWantsGesture = nil
         self.decided = false
+        self.committedDecision = nil
     }
 
     // MARK: Verdict
@@ -268,8 +274,7 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
         // pending state, so re-evaluate against the latest movement to hand off promptly if the finger
         // has already dragged past slop (a fast drag may have moved before the verdict landed).
         if isOwn {
-            self.decided = true
-            self.state = .began
+            self.claimGesture()
         } else {
             self.evaluate()
         }
@@ -287,16 +292,30 @@ final class WebViewScrollOwnershipRecognizer: UIGestureRecognizer,
             canScrollVertically: { [weak self] in self?.canScroll(vertically: $0) ?? false }
         ) {
         case .own:
-            self.decided = true
-            self.state = .began
+            self.claimGesture()
         case .release:
-            self.decided = true
-            self.state = .failed
+            self.releaseGesture()
         case .pending:
             // Within slop, or past slop while the probe verdict is still pending: stay `.possible`,
             // awaiting the verdict or more movement rather than releasing prematurely.
             break
         }
+    }
+
+    /// The web view claims the drag: recognize (`.began`) so the required-to-fail ancestor scroll is
+    /// blocked for this sequence.
+    private func claimGesture() {
+        self.decided = true
+        self.committedDecision = .own
+        self.state = .began
+    }
+
+    /// Hand the drag to the paywall: fail so the ancestor scroll, which was required to fail by us, is
+    /// free to begin.
+    private func releaseGesture() {
+        self.decided = true
+        self.committedDecision = .release
+        self.state = .failed
     }
 
     private func canScroll(vertically direction: Int) -> Bool {
