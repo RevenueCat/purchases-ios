@@ -203,10 +203,15 @@ jobs:
         run: |
           PROJECT_SLUG="gh/RevenueCat/purchases-ios"
 
+          # Build the payload with jq rather than string interpolation: branch names come
+          # from the PR head ref and may contain characters that need JSON escaping.
+          BODY_JSON=$(jq -n --arg branch "$BRANCH" --arg jobs "$JOB_NAMES" \
+            '{branch: $branch, parameters: {requested_jobs: $jobs}}')
+
           RESPONSE=$(curl -s --max-time 15 -w "\n%{http_code}" -X POST \
             -H "Circle-Token: $CCI_TOKEN" \
             -H "Content-Type: application/json" \
-            -d "{\"branch\": \"$BRANCH\", \"parameters\": {\"requested_jobs\": \"$JOB_NAMES\"}}" \
+            -d "$BODY_JSON" \
             "https://circleci.com/api/v2/project/$PROJECT_SLUG/pipeline")
 
           HTTP_STATUS=$(echo "$RESPONSE" | tail -1)
