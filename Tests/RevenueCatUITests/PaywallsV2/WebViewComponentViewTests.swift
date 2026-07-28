@@ -65,57 +65,37 @@ final class WebViewComponentViewTests: TestCase {
     }
 
     func testViewModelFactoryBuildsWebViewViewModel() throws {
-        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        let result = try Self.viewModel(decodedFrom: """
         {
           "type": "web_view",
           "id": "web",
           "protocol_version": 1,
           "url": "https://example.com/index.html",
-          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } }
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
         }
-        """.utf8))
+        """)
 
-        let uiConfigJSON = Data("""
-        {
-          "app": { "colors": {}, "fonts": {} },
-          "localizations": {},
-          "variable_config": {
-            "variable_compatibility_map": {},
-            "function_compatibility_map": {}
-          }
-        }
-        """.utf8)
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
-
-        let result = try ViewModelFactory().toViewModel(
-            component: component,
-            packageValidator: PackageValidator(),
-            offering: .init(
-                identifier: "test_offering",
-                serverDescription: "Test Offering",
-                metadata: [:],
-                availablePackages: [],
-                webCheckoutUrl: nil
-            ),
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
-            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
-            colorScheme: .light
-        )
-
+        #if canImport(WebKit) && !os(watchOS)
         guard case .webView(let built) = result else {
             return XCTFail("Expected .webView view model")
         }
         XCTAssertEqual(built.componentID, "web")
         XCTAssertEqual(Self.defaultStyle(built).url?.absoluteString, "https://example.com/index.html")
+        #else
+        // Web views are unserviceable here, so decoding yields the author's fallback and the factory
+        // must build a view model for that instead.
+        guard case .stack = result else {
+            return XCTFail("Expected fallback .stack view model, got \(result)")
+        }
+        #endif
     }
 
     func testViewModelFactoryPreservesOverrides() throws {
         // End-to-end guard for the factory seam: overrides declared in JSON must survive decoding and
         // the ViewModelFactory so they still resolve at render time. Injecting overrides directly into
         // the view model (as the resolution tests do) would pass even if the factory dropped them.
-        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data("""
+        let result = try Self.viewModel(decodedFrom: """
         {
           "type": "web_view",
           "id": "web",
@@ -128,39 +108,12 @@ final class WebViewComponentViewTests: TestCase {
               "conditions": [{ "type": "selected" }],
               "properties": { "visible": false }
             }
-          ]
+          ],
+          "fallback": \(Self.fallbackStackJSON)
         }
-        """.utf8))
+        """)
 
-        let uiConfigJSON = Data("""
-        {
-          "app": { "colors": {}, "fonts": {} },
-          "localizations": {},
-          "variable_config": {
-            "variable_compatibility_map": {},
-            "function_compatibility_map": {}
-          }
-        }
-        """.utf8)
-        let decoder = JSONDecoder()
-        decoder.keyDecodingStrategy = .convertFromSnakeCase
-        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
-
-        let result = try ViewModelFactory().toViewModel(
-            component: component,
-            packageValidator: PackageValidator(),
-            offering: .init(
-                identifier: "test_offering",
-                serverDescription: "Test Offering",
-                metadata: [:],
-                availablePackages: [],
-                webCheckoutUrl: nil
-            ),
-            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
-            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
-            colorScheme: .light
-        )
-
+        #if canImport(WebKit) && !os(watchOS)
         guard case .webView(let built) = result else {
             return XCTFail("Expected .webView view model")
         }
@@ -168,6 +121,12 @@ final class WebViewComponentViewTests: TestCase {
         // Default state keeps the base (visible) value; the selected override only applies when selected.
         XCTAssertTrue(Self.defaultStyle(built).visible)
         XCTAssertFalse(Self.defaultStyle(built, state: .selected).visible)
+        #else
+        // The web view overrides are moot here: the author's fallback is rendered instead.
+        guard case .stack = result else {
+            return XCTFail("Expected fallback .stack view model, got \(result)")
+        }
+        #endif
     }
 
     #if canImport(WebKit)
@@ -313,6 +272,52 @@ final class WebViewComponentViewTests: TestCase {
     }
 
     // MARK: - Helpers
+
+    private static let fallbackStackJSON = """
+    {
+        "type": "stack",
+        "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+        "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "components": []
+    }
+    """
+
+    /// Decodes a component from `json` and runs it through the real `ViewModelFactory`, exercising the
+    /// full decode-to-view-model seam.
+    private static func viewModel(decodedFrom json: String) throws -> PaywallComponentViewModel {
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8))
+
+        let uiConfigJSON = Data("""
+        {
+          "app": { "colors": {}, "fonts": {} },
+          "localizations": {},
+          "variable_config": {
+            "variable_compatibility_map": {},
+            "function_compatibility_map": {}
+          }
+        }
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
+
+        return try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
+            colorScheme: .light
+        )
+    }
 
     private static func makeViewModel(
         id: String = "web",

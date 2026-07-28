@@ -12,6 +12,8 @@
 // Created by Andrés Boedo on 7/16/21.
 //
 
+// swiftlint:disable file_length
+
 import Foundation
 import StoreKit
 
@@ -87,7 +89,16 @@ internal typealias SK2BillingPlanType = StoreKit.Product.SubscriptionInfo.Billin
         }
     }
 
-    @objc public var localizedPriceString: String { self.product.localizedPriceString}
+    @objc public var localizedPriceString: String {
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *),
+           let installmentsInfo {
+            // This product represents a billing plan, so use the billing plan's
+            // total commitment price
+            return installmentsInfo.commitmentTotalDisplayPrice
+        } else {
+            return self.product.localizedPriceString
+        }
+    }
 
     @objc public var productIdentifier: String { self.product.productIdentifier }
 
