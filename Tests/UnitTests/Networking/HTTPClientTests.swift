@@ -520,6 +520,54 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(first.requests.value + second.requests.value) == 5
     }
 
+    func testRequestQueuedDuringAHealthCheckRunsAfterTheFailoverRetry() {
+        // While the probe is in flight the serial pipeline stays stalled, and the failover retry is
+        // requeued at the front: a request enqueued during the probe must run only after the retry.
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let endpointHits: Atomic<[String]> = .init([])
+
+        stub(condition: isHost(firstHost) && isPath(Self.healthCheckPath)) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: 503, headers: nil)
+                .responseTime(0.3)
+        }
+        stub(condition: isHost(firstHost) && !isPath(Self.healthCheckPath)) { request in
+            endpointHits.modify { $0.append("first:\(request.url?.path ?? "")") }
+            return .serverDownResponse()
+        }
+        stub(condition: isHost(secondHost) && !isPath(Self.healthCheckPath)) { request in
+            endpointHits.modify { $0.append("second:\(request.url?.path ?? "")") }
+            return .emptySuccessResponse()
+        }
+
+        let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
+        let queuedRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user").relativePath
+
+        let firstRequestCompleted: Atomic<Bool> = false
+        client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
+            firstRequestCompleted.value = true
+        }
+        // Enqueued while the first request's attempt/probe is in flight.
+        let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
+            client.perform(.init(method: .get, path: .getCustomerInfo(appUserID: "queued-user"))) {
+                completion($0)
+            }
+        }
+
+        expect(queuedResult).to(beSuccess())
+        expect(firstRequestCompleted.value) == true
+        expect(endpointHits.value) == [
+            "first:\(firstRequestPath)",
+            "second:\(firstRequestPath)",
+            "second:\(queuedRequestPath)"
+        ]
+    }
+
     func testPassesHeaders() {
         let headerPresent: Atomic<Bool> = false
 

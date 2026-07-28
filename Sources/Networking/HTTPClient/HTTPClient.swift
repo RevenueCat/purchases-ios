@@ -613,8 +613,8 @@ private extension HTTPClient {
                 // request targeting an API source may fail over to the next source, but only after the
                 // current source's health check fails. The decision is asynchronous: the serial pipeline
                 // stays stalled (as if the request were still in flight) until it completes.
-                if let source = request.apiSourceState.source,
-                   request.apiSourceState.attemptCount < Self.maxAPISourceAttempts,
+                if case let .source(source, attemptCount) = request.apiSourceState,
+                   attemptCount < Self.maxAPISourceAttempts,
                    error.isAllowedToRetryWithFallbackHost,
                    let apiSourceFailover = self.apiSourceFailover {
                     let requestTimeoutResult = requestTimeoutResult

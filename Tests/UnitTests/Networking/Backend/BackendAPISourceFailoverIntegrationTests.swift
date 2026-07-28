@@ -186,6 +186,46 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
         expect(sourceB.value).to(beEmpty())
     }
 
+    func testBothHTTPClientLanesShareTheSameFailover() {
+        // Backend builds one APISourceFailover for both the main HTTPClient and the dedicated
+        // remote-config lane: a failover triggered by one lane must advance the source list (and
+        // reuse the health-check verdict) for the other.
+        let sourceA = self.stubSource(host: Self.sourceAHost,
+                                      endpoint: { Self.response(500) },
+                                      health: { Self.response(503) })
+        let sourceB: Atomic<[String]> = .init([])
+        stub(condition: isHost(Self.sourceBHost)) { request in
+            let path = request.url?.path ?? ""
+            sourceB.modify { $0.append(path) }
+            if path.hasPrefix("/v1/config") {
+                return HTTPStubsResponse(data: Data(), statusCode: 204, headers: nil)
+            }
+            return Self.customerInfoResponse()
+        }
+        let backend = Self.createBackend(sources: [Self.sourceAHost, Self.sourceBHost])
+
+        // The main lane fails over A -> B.
+        let result = self.fetchCustomerInfo(backend)
+
+        expect(result).to(beSuccess())
+        expect(sourceA.value) == [Self.customerInfoPath, Self.healthPath]
+        expect(sourceB.value) == [Self.customerInfoPath]
+
+        // The remote-config lane starts directly on B: no request or probe ever reaches A again.
+        let configResult: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completion in
+            backend.remoteConfigAPI.getRemoteConfig(
+                request: .init(fetchContext: .appStart, appUserID: Self.appUserID),
+                isAppBackgrounded: false,
+                completion: completion
+            )
+        }
+
+        expect(configResult).to(beSuccess())
+        expect(sourceA.value) == [Self.customerInfoPath, Self.healthPath]
+        expect(sourceB.value.count) == 2
+        expect(sourceB.value.last).to(beginWith("/v1/config"))
+    }
+
     // MARK: - Helpers
 
     /// Wires the production stack: the `Backend` convenience init builds the real `HTTPClient`s, the
