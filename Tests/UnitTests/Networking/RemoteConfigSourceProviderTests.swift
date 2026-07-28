@@ -376,6 +376,8 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     // MARK: - API restart interval (TTL re-arm)
 
+    private static let restartInterval = RemoteConfigSourceProvider.apiFailoverRestartInterval
+
     func testAdvancedAPIListRestartsFromTheTopAfterTheRestartInterval() {
         let dateProvider = MockCurrentDateProvider()
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
@@ -383,7 +385,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
 
-        dateProvider.advance(by: 600)
+        dateProvider.advance(by: Self.restartInterval)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
     }
 
@@ -393,7 +395,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
 
-        dateProvider.advance(by: 599)
+        dateProvider.advance(by: Self.restartInterval - 1)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
 
@@ -405,7 +407,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> exhausted
         expect(provider.getCurrent(for: .api)).to(beNil())
 
-        dateProvider.advance(by: 599)
+        dateProvider.advance(by: Self.restartInterval - 1)
         expect(provider.getCurrent(for: .api)).to(beNil())
 
         dateProvider.advance(by: 1)
@@ -422,10 +424,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
-        dateProvider.advance(by: 500)
+        dateProvider.advance(by: Self.restartInterval - 100)
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> c, timer unchanged
 
-        dateProvider.advance(by: 100) // 600s since the first advance
+        dateProvider.advance(by: 100) // a full interval since the first advance
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
     }
 
@@ -437,7 +439,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let stale = provider.getCurrent(for: .api)
         expect(stale?.url) == Self.url("b")
 
-        dateProvider.advance(by: 600)
+        dateProvider.advance(by: Self.restartInterval)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
 
         // The pre-restart handle belongs to the previous cycle, so it must not advance the list.
@@ -450,11 +452,11 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
-        dateProvider.advance(by: 600)
+        dateProvider.advance(by: Self.restartInterval)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, new timer
-        dateProvider.advance(by: 599)
+        dateProvider.advance(by: Self.restartInterval - 1)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
 
         dateProvider.advance(by: 1)
@@ -466,11 +468,12 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
-        dateProvider.advance(by: 500)
+        dateProvider.advance(by: Self.restartInterval - 100)
         provider.restart(for: .api) // timer cleared
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, fresh timer
-        dateProvider.advance(by: 599) // over 600s since the ORIGINAL advance, under since the fresh one
+        // Over a full interval since the ORIGINAL advance, under since the fresh one.
+        dateProvider.advance(by: Self.restartInterval - 1)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
 
@@ -484,12 +487,12 @@ final class RemoteConfigSourceProviderTests: TestCase {
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
-        dateProvider.advance(by: 500)
+        dateProvider.advance(by: Self.restartInterval - 100)
 
         store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
         provider.reportUnhealthy(provider.getCurrent(for: .api)!) // x -> y, fresh timer
 
-        dateProvider.advance(by: 599)
+        dateProvider.advance(by: Self.restartInterval - 1)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("y")
 
         dateProvider.advance(by: 1)
@@ -505,7 +508,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .blob)!) // blob1 -> blob2
-        dateProvider.advance(by: 600)
+        dateProvider.advance(by: Self.restartInterval)
         expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob2")
     }
 
