@@ -50,6 +50,13 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(uiPreviewMode: false)
     }
 
+    func testAutoSyncPurchasesAndUseWorkflowsCanBeSetIndependently() {
+        let settings = DangerousSettings(autoSyncPurchases: false, useWorkflows: true)
+
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.useWorkflows) == true
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)

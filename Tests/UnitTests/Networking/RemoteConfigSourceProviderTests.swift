@@ -374,6 +374,141 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
     }
 
+    // MARK: - API restart interval (TTL re-arm)
+
+    func testAdvancedAPIListRestartsFromTheTopAfterTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        dateProvider.advance(by: 600)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testAdvancedAPIListKeepsItsPositionJustUnderTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+
+        dateProvider.advance(by: 599)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testExhaustedAPIListReArmsAfterTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> exhausted
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        dateProvider.advance(by: 599)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testTheRestartIntervalCountsFromTheFirstAdvanceNotTheLatest() {
+        // A flapping list must not postpone the periodic return to the primary: advancing again
+        // mid-interval does not reset the timer.
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider(
+            [Self.source("a"), Self.source("b"), Self.source("c")],
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: 500)
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> c, timer unchanged
+
+        dateProvider.advance(by: 100) // 600s since the first advance
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testHandleFromBeforeTheIntervalRestartIsStale() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        let stale = provider.getCurrent(for: .api)
+        expect(stale?.url) == Self.url("b")
+
+        dateProvider.advance(by: 600)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+
+        // The pre-restart handle belongs to the previous cycle, so it must not advance the list.
+        provider.reportUnhealthy(stale!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testANewFailoverCycleAfterAnIntervalRestartNeedsAFullIntervalAgain() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        dateProvider.advance(by: 600)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, new timer
+        dateProvider.advance(by: 599)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testExplicitRestartResetsTheIntervalTimer() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: 500)
+        provider.restart(for: .api) // timer cleared
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, fresh timer
+        dateProvider.advance(by: 599) // over 600s since the ORIGINAL advance, under since the fresh one
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testAChangedSourcesTopicResetsTheIntervalTimer() {
+        let dateProvider = MockCurrentDateProvider()
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(
+            topicStore: store,
+            randomizer: FakeRandomizer(0),
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: 500)
+
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // x -> y, fresh timer
+
+        dateProvider.advance(by: 599)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("y")
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+    }
+
+    func testBlobProgressIsUnaffectedByElapsedTime() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.provider(
+            api: [Self.source("api1")],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)],
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .blob)!) // blob1 -> blob2
+        dateProvider.advance(by: 600)
+        expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob2")
+    }
+
     // MARK: - Threading
 
     func testConcurrentReportsOfSameSourceAdvanceExactlyOnce() {
@@ -425,17 +560,22 @@ final class RemoteConfigSourceProviderTests: TestCase {
         return RemoteConfigSource(url: url(host), priority: priority, weight: weight)
     }
 
-    private static func apiProvider(_ sources: [RemoteConfigSource]) -> RemoteConfigSourceProvider {
-        return provider(api: sources, blob: [])
+    private static func apiProvider(
+        _ sources: [RemoteConfigSource],
+        dateProvider: DateProvider = DateProvider()
+    ) -> RemoteConfigSourceProvider {
+        return provider(api: sources, blob: [], dateProvider: dateProvider)
     }
 
     private static func provider(
         api: [RemoteConfigSource],
-        blob: [RemoteConfigSource]
+        blob: [RemoteConfigSource],
+        dateProvider: DateProvider = DateProvider()
     ) -> RemoteConfigSourceProvider {
         return RemoteConfigSourceProvider(
             topicStore: FakeTopicStore(sourcesTopic(api: api, blob: blob)),
-            randomizer: FakeRandomizer(0)
+            randomizer: FakeRandomizer(0),
+            dateProvider: dateProvider
         )
     }
 

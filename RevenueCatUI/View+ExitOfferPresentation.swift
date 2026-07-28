@@ -96,6 +96,7 @@ final class ExitOfferPresenter: ObservableObject {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
+@MainActor
 extension View {
 
     /// Sources the workflow exit offer onto the presenter. Apply to the main paywall view (keeps the
@@ -121,25 +122,36 @@ extension View {
         onDismiss: (() -> Void)?,
         @ViewBuilder makeExitOfferView: @escaping (Offering) -> ExitOfferView
     ) -> some View {
-        let handleDismiss: () -> Void = {
-            presenter.reset()
-            onDismiss?()
-        }
-
+        // Inline the dismiss closures (rather than a typed local) so they inherit the extension's
+        // @MainActor isolation and can call the presenter's main-actor methods on older toolchains.
         return Group {
             switch presentationMode {
             case .sheet:
-                self.sheet(item: presenter.presentedBinding, onDismiss: handleDismiss) { offering in
-                    makeExitOfferView(offering)
-                    #if targetEnvironment(macCatalyst) || os(macOS)
-                        .frame(minHeight: 667)
-                    #endif
-                }
+                self.sheet(
+                    item: presenter.presentedBinding,
+                    onDismiss: {
+                        presenter.reset()
+                        onDismiss?()
+                    },
+                    content: { offering in
+                        makeExitOfferView(offering)
+                        #if targetEnvironment(macCatalyst) || os(macOS)
+                            .frame(minHeight: 667)
+                        #endif
+                    }
+                )
             #if !os(macOS)
             case .fullScreen:
-                self.fullScreenCover(item: presenter.presentedBinding, onDismiss: handleDismiss) { offering in
-                    makeExitOfferView(offering)
-                }
+                self.fullScreenCover(
+                    item: presenter.presentedBinding,
+                    onDismiss: {
+                        presenter.reset()
+                        onDismiss?()
+                    },
+                    content: { offering in
+                        makeExitOfferView(offering)
+                    }
+                )
             #endif
             }
         }

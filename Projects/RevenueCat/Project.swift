@@ -73,7 +73,7 @@ let project = Project(
             ]
         )
 
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "RevenueCat",

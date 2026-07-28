@@ -161,7 +161,7 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
-    // MARK: - Abandonment (workflows_close)
+    // MARK: - Abandonment (workflow_close)
 
     func testAbandonmentEmitsCloseForCurrentStepWhenNotPurchased() throws {
         let workflow = try Self.makeWorkflow()
@@ -179,7 +179,7 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
     }
 
     func testAbandonmentStampsTerminalStepPosition() throws {
-        // workflows_close is not gated by step position; it just stamps it. On the terminal step
+        // workflow_close is not gated by step position; it just stamps it. On the terminal step
         // isLastStep is true (analytics decides downstream whether that counts as abandonment).
         let workflow = try Self.makeWorkflow()
         let coordinator = self.makeCoordinator(workflow: workflow)

@@ -582,9 +582,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
         let workflowsConfigProvider = WorkflowsConfigProvider(
             manager: remoteConfigManager,
-            uiConfigProvider: uiConfigProvider,
-            paywallCache: paywallCache,
-            operationDispatcher: operationDispatcher
+            uiConfigProvider: uiConfigProvider
         )
 
         let workflowManager = WorkflowManager(
@@ -606,8 +604,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 uiConfigProvider: systemInfo.remoteConfigEnabled
                                                 ? uiConfigProvider
                                                 : nil,
-                                                workflowsConfigProvider: systemInfo.remoteConfigEnabled
-                                                ? workflowsConfigProvider
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
+                                                ? workflowManager
                                                 : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
@@ -873,7 +871,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
             guard let self else { return }
-            self.offeringsManager.invalidateAndReFetchCachedOfferingsIfAppropiate(appUserID: self.appUserID)
+            self.offeringsManager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: self.appUserID)
         }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))

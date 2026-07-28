@@ -14,16 +14,23 @@ struct RcMaestroApp: App {
         }
 
         // Used in E2E tests
+        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init(
+                            // For `remoteConfigNetworkError`, route forced-error requests to an unreachable
+                            // host so they fail with a transport error (simulating no network), instead of
+                            // the default endpoint that returns a server error.
+                            serverErrorURL: forceServerErrorStrategy == .remoteConfigNetworkError
+                                ? URL(string: "http://127.0.0.1:1")!
+                                : ForceServerErrorStrategy.defaultServerErrorURL,
                             fakeResponseWithoutPerformingRequest: { request in
                                 // Simulate a 4xx on the /v1/config endpoint (its session kill-switch),
                                 // so we can exercise the classic-paywall fallback for workflow offerings.
-                                guard case .remoteConfigNotFound = Constants.forceServerErrorStrategy,
+                                guard case .remoteConfigNotFound = forceServerErrorStrategy,
                                       request.path.contains("config/"),
                                       let url = URL(string: "https://api.revenuecat.com"),
                                       let response = HTTPURLResponse(url: url,
@@ -35,7 +42,7 @@ struct RcMaestroApp: App {
                                 return (response, Data("{}".utf8))
                             },
                             shouldForceServerError: { request in
-                                switch Constants.forceServerErrorStrategy {
+                                switch forceServerErrorStrategy {
                                 case .never, .remoteConfigNotFound:
                                     return false
                                 case .primaryBackendDown:
@@ -46,6 +53,10 @@ struct RcMaestroApp: App {
                                         return false
                                     }
                                     return request.fallbackUrlIndex == nil
+                                case .remoteConfigNetworkError:
+                                    // No network for /v1/config only; offerings still resolve so a paywall
+                                    // is presentable and can degrade to the classic paywall.
+                                    return request.path.contains("config/")
                                 }
                             }
                         )

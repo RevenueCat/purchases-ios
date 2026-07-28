@@ -139,14 +139,15 @@ import Foundation
     }
 
     /**
-     * Used to enable RevenueCat Workflows (multipage paywalls). Internal RevenueCat use only;
-     * behavior may change without warning.
+     * Used to enable RevenueCat Workflows (multipage paywalls) while controlling auto-sync.
+     * Internal RevenueCat use only; behavior may change without warning.
      *
+     * - Parameter autoSyncPurchases: whether the SDK observes the StoreKit queue and syncs purchases.
      * - Parameter useWorkflows: if `true`, the SDK wires up the workflows endpoint so multipage
      * paywalls can be rendered.
      */
-    @_spi(Internal) public convenience init(useWorkflows: Bool) {
-        self.init(autoSyncPurchases: true,
+    @_spi(Internal) public convenience init(autoSyncPurchases: Bool = true, useWorkflows: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
                   internalSettings: Internal.default,
                   useWorkflows: useWorkflows)
     }
