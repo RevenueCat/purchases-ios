@@ -235,7 +235,6 @@ final class ApplyingWorkflowAttributionTests: TestCase {
 
     // The seam #7024 wires and the screen_type work removed: a workflow paywall step's impression event
     // must carry the workflow + step so the post-receipt body sends presented_workflow_id/step_id.
-    // The trace id rides along so the event can be joined to the workflow traversal.
     func testStampsWorkflowAndStepIdOnWorkflowStep() {
         let result = PaywallsV2View.applyingWorkflowAttribution(
             to: self.makeData(),

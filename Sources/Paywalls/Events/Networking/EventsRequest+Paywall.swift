@@ -68,8 +68,6 @@ extension FeatureEventsRequest.PaywallEvent {
         var placementIdentifier: String?
         var targetingRevision: Int?
         var targetingRuleId: String?
-        /// Workflow attribution, sent here and nowhere else. Mirrors Android's
-        /// `BackendEvent.PresentedOfferingContextData`.
         var workflowId: String?
         var traceId: String?
 

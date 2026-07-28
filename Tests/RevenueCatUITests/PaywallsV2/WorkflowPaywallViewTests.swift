@@ -1128,13 +1128,12 @@ extension WorkflowPaywallViewTests {
 
 }
 
-// MARK: - Trace id wiring (workflow events <-> paywall events)
+// MARK: - Trace id wiring
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
-    /// `PaywallsV2View`'s `traceId` is defaulted to `nil`, so dropping the argument in
-    /// `WorkflowPaywallView` compiles cleanly and silently ships `trace_id: null`.
+    /// `PaywallsV2View`'s `traceId` defaults to `nil`, so dropping the argument would compile silently.
     @MainActor
     func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
         let paywallEvents: Atomic<[PaywallEvent]> = .init([])
@@ -1155,7 +1154,6 @@ extension WorkflowPaywallViewTests {
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
-        // step_a is the workflow's `single_step_fallback_id`, so it is the step that reports paywall events.
         let context = try Self.makeContextStartingAt(stepId: "step_a")
 
         let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)

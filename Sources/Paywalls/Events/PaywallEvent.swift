@@ -157,7 +157,6 @@ extension PaywallEvent {
         var errorMessage: String?
         @_spi(Internal) public var workflowId: String?
         @_spi(Internal) public var stepId: String?
-        /// A single traversal of the workflow. Matches `trace_id` on ``WorkflowEvent``.
         @_spi(Internal) public var traceId: String?
 
         #if !os(tvOS) // For Paywalls V2
