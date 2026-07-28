@@ -367,7 +367,16 @@ final class RemoteConfigManagerTests: TestCase {
         }
         // Simulate a prior run that persisted config vA.
         let persistedManifest = "v1.1710000100.sources:etagA"
-        self.diskCache.stubbedRead = Self.persisted(manifest: persistedManifest)
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: persistedManifest,
+            topics: .init(entries: ["sources": ["api": .init(content: ["url": "https://cached.revenuecat.com"])]])
+        )
+
+        // The restart starts from the prior run's config: vA is served without needing a fetch.
+        let maybeCachedTopic = await self.manager.topic(.sources)
+        let cachedTopic = try XCTUnwrap(maybeCachedTopic)
+        expect(cachedTopic["api"]?.content["url"]) == "https://cached.revenuecat.com"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
 
         // Restarting the app triggers an `.appStart` refresh that sends the persisted (vA) manifest
         // for a delta sync, rather than reusing the cached config as-is.
