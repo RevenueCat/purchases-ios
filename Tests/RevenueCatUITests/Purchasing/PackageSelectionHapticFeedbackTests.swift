@@ -20,7 +20,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testCallAsFunctionInvokesTheInjectedAction() {
         var didFire = false
 
-        let feedback = PackageSelectionHapticFeedback { didFire = true }
+        let feedback = PackageSelectionHapticFeedback(action: { didFire = true })
         feedback()
 
         expect(didFire) == true
@@ -29,7 +29,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testCallAsFunctionInvokesTheActionExactlyOncePerCall() {
         var fireCount = 0
 
-        let feedback = PackageSelectionHapticFeedback { fireCount += 1 }
+        let feedback = PackageSelectionHapticFeedback(action: { fireCount += 1 })
         feedback()
         feedback()
         feedback()
