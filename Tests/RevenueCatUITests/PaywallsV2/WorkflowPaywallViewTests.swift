@@ -1128,6 +1128,73 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - Trace id wiring (workflow events <-> paywall events)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    /// Guards the one line that hands the coordinator's per-presentation trace id down to
+    /// `PaywallsV2View`. That argument is defaulted to `nil`, so dropping it compiles cleanly and
+    /// silently ships `trace_id: null` on every workflow paywall event. Both halves of the assertion
+    /// matter: a non-nil check alone would still pass if the two event streams drifted apart, which
+    /// is the failure that makes the analytics join return zero rows.
+    @MainActor
+    func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            paywallEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let purchaseHandler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        // step_a is the workflow's `single_step_fallback_id`, so it is the step that reports paywall events.
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        let stepStarted = try XCTUnwrap(workflowEvents.value.first { Self.isStepStarted($0) })
+
+        let paywallTraceId: String = try XCTUnwrap(impression.data.traceId, "paywall event carried no trace id")
+        let workflowTraceId: String = try XCTUnwrap(stepStarted.data.traceId, "workflow event carried no trace id")
+        expect(paywallTraceId) == workflowTraceId
+    }
+
+    private static func isImpression(_ event: PaywallEvent) -> Bool {
+        if case .impression = event { return true }
+        return false
+    }
+
+    private static func isStepStarted(_ event: WorkflowEvent) -> Bool {
+        if case .stepStarted = event { return true }
+        return false
+    }
+
+}
+
 // MARK: - Callback test helpers
 
 /// Mirrors the @StateObject role that PaywallView plays in production:

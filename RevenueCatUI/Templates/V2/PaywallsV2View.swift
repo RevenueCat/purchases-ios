@@ -458,10 +458,13 @@ struct PaywallsV2View: View {
         )
     }
 
-    /// Stamps workflow attribution onto a paywall event's data so the post-receipt body can send
-    /// `presented_workflow_id` / `presented_step_id` (#7024). Orthogonal to the `screen_type` gate
-    /// (``shouldTrackPaywallEvents`` decides whether the event fires at all); both are `nil` for
-    /// standalone paywalls. Mirrors Android's `PaywallEvent.Data.withCurrentWorkflowMetadata`.
+    /// Stamps workflow attribution onto a paywall event's data. `workflowId` / `stepId` are what the
+    /// post-receipt body sends as `presented_workflow_id` / `presented_step_id` (#7024). `traceId` is
+    /// *not* sent post-receipt: it exists only so the paywall event's own `presented_offering_context`
+    /// carries the same `trace_id` as the workflow events from this presentation, letting analytics join
+    /// the two streams. Orthogonal to the `screen_type` gate (``shouldTrackPaywallEvents`` decides
+    /// whether the event fires at all); all three are `nil` for standalone paywalls. Mirrors Android's
+    /// `PaywallEvent.Data.withCurrentWorkflowMetadata`.
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
         workflowId: String?,
