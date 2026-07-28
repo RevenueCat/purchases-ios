@@ -34,6 +34,7 @@ extension PurchaseHandler {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil,
         preferredLocaleOverride: String? = nil,
+        remoteConfigEnabled: Bool = false,
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = Just(
             (
                 transaction: nil,
@@ -61,6 +62,7 @@ extension PurchaseHandler {
             } customerInfo: {
                 return customerInfo
             }
+        purchases.remoteConfigEnabled = remoteConfigEnabled
         return self.init(
             purchases: purchases,
             performPurchase: performPurchase,

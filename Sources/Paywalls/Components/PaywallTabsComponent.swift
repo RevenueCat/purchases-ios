@@ -179,7 +179,7 @@ import Foundation
         public init(
             name: String? = nil,
             visible: Bool? = nil,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             padding: Padding = .zero,
             margin: Padding = .zero,
             background: Background? = nil,

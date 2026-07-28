@@ -52,19 +52,26 @@ protocol RemoteConfigSourceProviderType: AnyObject {
     /// The current healthy source for `purpose`, or `nil` once all of its sources are reported unhealthy.
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle?
 
+    /// The current healthy API base source, or `nil` once every API source has been reported unhealthy.
+    func currentAPISource() -> RemoteConfigSourceHandle?
+
     /// Falls back to the next source for the handle's purpose. No-op if `handle` is no longer current.
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle)
 
     /// Rewinds the given purpose to its first source, e.g. to start fresh on a new fetch cycle.
     func restart(for purpose: RemoteConfigSourceHandle.Purpose)
 
+    /// Rewinds the given purpose only if every known source for it has already been exhausted.
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool
+
 }
 
-/// Read-only access to a topic's persisted item index (metadata only — no blob bytes, no waiting).
-protocol RemoteConfigTopicStoreType: AnyObject {
+extension RemoteConfigSourceProviderType {
 
-    /// The saved items for `name`, or `nil` when the topic is unknown / nothing has been persisted yet.
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic?
+    func currentAPISource() -> RemoteConfigSourceHandle? {
+        return self.getCurrent(for: .api)
+    }
 
 }
 
@@ -79,10 +86,15 @@ protocol RemoteConfigTopicStoreType: AnyObject {
 /// embedded default: they are only useful alongside a fetched config, which carries its own. Sources
 /// are deduped by url and ordered via `WeightedSourceSelector`.
 ///
+/// The api list additionally restarts on its own once `apiFailoverRestartInterval` has elapsed since
+/// it first advanced past the top, so the SDK periodically returns to the primary source (or re-arms
+/// an exhausted list) instead of sticking on a backup forever. During a persistent outage this
+/// retries the primary at most once per interval. Blob failover has no such timer: it is restarted
+/// per fetch cycle by its callers.
+///
 /// - Note: Thread-safe.
 final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
 
-    private static let sourcesTopicName = "sources"
     private static let apiItem = "api"
     private static let blobItem = "blob"
     private static let sourcesKey = "sources"
@@ -99,8 +111,11 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         RemoteConfigSource(url: "https://api.rc-backup.com/", priority: 100_001, weight: 1)
     ]
 
-    private let topicStore: RemoteConfigTopicStoreType
+    private static let apiFailoverRestartInterval: TimeInterval = 600
+
+    private let topicStore: RemoteConfigTopicStoreType?
     private let randomizer: WeightedSourceRandomizer?
+    private let dateProvider: DateProvider
     private let lock = Lock()
 
     /// Topic the current failovers were built from. `nil` means there is no sources topic (absent, or
@@ -109,12 +124,19 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     private var api: SourceFailover
     private var blob: SourceFailover
 
+    /// When the api failover first advanced past the top of its list, or `nil` while it sits at the
+    /// top. Stamped on the first advance (not the latest) so a flapping source can't postpone the
+    /// periodic return to the primary indefinitely.
+    private var apiFailoverStartedAt: Date?
+
     init(
-        topicStore: RemoteConfigTopicStoreType,
-        randomizer: WeightedSourceRandomizer? = nil
+        topicStore: RemoteConfigTopicStoreType?,
+        randomizer: WeightedSourceRandomizer? = nil,
+        dateProvider: DateProvider = DateProvider()
     ) {
         self.topicStore = topicStore
         self.randomizer = randomizer
+        self.dateProvider = dateProvider
         self.api = SourceFailover(
             purpose: .api,
             sources: Self.dedupe(Self.sources(from: nil, for: .api)),
@@ -130,6 +152,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
         return self.lock.perform {
             self.rebuildIfNeeded()
+            self.restartAPIIfExpired()
             return self.failover(for: purpose).current
         }
     }
@@ -137,8 +160,12 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
         self.lock.perform {
             // Rebuild happened, no need to report unhealthy
-            if !self.rebuildIfNeeded() {
-                self.failover(for: handle.purpose).reportUnhealthy(handle)
+            if self.rebuildIfNeeded() { return }
+            self.restartAPIIfExpired()
+
+            let advanced = self.failover(for: handle.purpose).reportUnhealthy(handle)
+            if advanced, handle.purpose == .api, self.apiFailoverStartedAt == nil {
+                self.apiFailoverStartedAt = self.dateProvider.now()
             }
         }
     }
@@ -148,8 +175,43 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             // Rebuild happened, no need to restart
             if !self.rebuildIfNeeded() {
                 self.failover(for: purpose).restart()
+                if purpose == .api {
+                    self.apiFailoverStartedAt = nil
+                }
             }
         }
+    }
+
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
+        return self.lock.perform {
+            if self.rebuildIfNeeded() {
+                return true
+            }
+            self.restartAPIIfExpired()
+
+            let failover = self.failover(for: purpose)
+            guard failover.current == nil else { return false }
+
+            failover.restart()
+            if purpose == .api {
+                self.apiFailoverStartedAt = nil
+            }
+            return true
+        }
+    }
+
+    /// Restarts the api failover once `apiFailoverRestartInterval` has elapsed since it first
+    /// advanced, so a backup (or an exhausted list) periodically retries the primary source. The
+    /// restart bumps the token, so handles from before it can no longer advance the list. Callers
+    /// must hold `lock`.
+    private func restartAPIIfExpired() {
+        guard let startedAt = self.apiFailoverStartedAt,
+              self.dateProvider.now().timeIntervalSince(startedAt) >= Self.apiFailoverRestartInterval else {
+            return
+        }
+        self.api.restart()
+        self.apiFailoverStartedAt = nil
     }
 
     private func failover(for purpose: RemoteConfigSourceHandle.Purpose) -> SourceFailover {
@@ -163,7 +225,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
     /// rebuild happened. Callers must hold `lock`.
     @discardableResult
     private func rebuildIfNeeded() -> Bool {
-        let topic = self.topicStore.topic(Self.sourcesTopicName)
+        let topic = self.topicStore?.topic(.sources)
         guard topic != self.sourcesTopic else { return false }
 
         // Seed the new generation past any token the previous one could have handed out, so reports
@@ -182,6 +244,7 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
             initialToken: nextToken
         )
         self.sourcesTopic = topic
+        self.apiFailoverStartedAt = nil
         return true
     }
 
@@ -281,10 +344,13 @@ private final class SourceFailover {
         }
     }
 
-    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
-        guard handle.token == self.token else { return }
+    /// Advances past the handle's source, returning whether it did (stale reports are ignored).
+    @discardableResult
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) -> Bool {
+        guard handle.token == self.token else { return false }
         self.selector.advance()
         self.token += 1
+        return true
     }
 
     func restart() {

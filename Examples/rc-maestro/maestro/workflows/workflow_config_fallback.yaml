@@ -1,0 +1,36 @@
+# Opens a workflow offering (`default_workflows`) while forcing a 4xx on the /v1/config
+# endpoint (its session kill-switch). The SDK should fall back to the classic single-page
+# paywall (the workflow's last page) instead of the multipage workflow, and never crash.
+# The force_server_error_strategy launch argument is read by the Maestro app's Constants.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_config_fallback.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow offering falls back to the classic paywall on config failure
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        force_server_error_strategy: remote_config_not_found
+- assertVisible: "entitlement (pro): nil"
+# Wait for offerings to load before the button appears.
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# With /v1/config failing, the classic single-page paywall is shown directly.
+- extendedWaitUntil:
+    visible: "People Who Meditate Daily Sleep 40% Better"
+    timeout: 15000
+# The multipage workflow entry screen is never rendered in the fallback path.
+- assertNotVisible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+- takeScreenshot: "workflow_config_fallback - classic paywall"

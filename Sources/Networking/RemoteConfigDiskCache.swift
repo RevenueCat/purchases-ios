@@ -7,7 +7,15 @@
 
 import Foundation
 
-protocol RemoteConfigDiskCacheType: AnyObject {
+/// Read-only access to a topic's persisted item index (metadata only, no blob bytes or waiting).
+protocol RemoteConfigTopicStoreType: AnyObject {
+
+    /// The saved items for `topic`, or `nil` when nothing has been persisted yet.
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?
+
+}
+
+protocol RemoteConfigDiskCacheType: RemoteConfigTopicStoreType {
 
     func read() -> PersistedRemoteConfiguration?
 
@@ -65,6 +73,8 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private let cache: SynchronizedLargeItemCache
 
+    private let snapshot: Atomic<Snapshot> = .init(.notLoaded)
+
     init(
         cache: SynchronizedLargeItemCache = .init(
             cache: FileManager.default,
@@ -76,26 +86,66 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func read() -> PersistedRemoteConfiguration? {
+        return self.snapshot.modify { snapshot in
+            switch snapshot {
+            case .notLoaded:
+                let configuration = self.readFromDisk()
+                snapshot = .loaded(configuration)
+                return configuration
+            case .loaded(let configuration):
+                return configuration
+            }
+        }
+    }
+
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
+        return self.snapshot.modify { snapshot in
+            let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
+            if didWrite {
+                snapshot = .loaded(configuration)
+            } else {
+                Logger.error(Strings.remoteConfig.failedToWriteCache)
+            }
+
+            return didWrite
+        }
+    }
+
+    func clear() {
+        self.snapshot.modify { snapshot in
+            self.cache.clear()
+            snapshot = .loaded(nil)
+        }
+    }
+
+    private func readFromDisk() -> PersistedRemoteConfiguration? {
         do {
-            return try self.cache.value(forKey: Self.fileName)
+            return try self.cache.value(forKey: Self.fileName, decoder: .default)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil
         }
     }
 
-    @discardableResult
-    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
-        let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
-        if !didWrite {
-            Logger.error(Strings.remoteConfig.failedToWriteCache)
-        }
+}
 
-        return didWrite
+extension RemoteConfigDiskCache {
+
+    /// In-memory snapshot of the persisted configuration, so `read()` only hits disk once.
+    /// `.loaded(nil)` means we've already checked and nothing is persisted, avoiding repeated
+    /// disk reads while no configuration exists.
+    private enum Snapshot {
+        case notLoaded
+        case loaded(PersistedRemoteConfiguration?)
     }
 
-    func clear() {
-        self.cache.clear()
+}
+
+extension RemoteConfigDiskCache: RemoteConfigTopicStoreType {
+
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return self.read()?.topics.entries[topic.wireName]
     }
 
 }

@@ -27,6 +27,26 @@ struct RemoteConfigSignatureContextProvider: ResponseSignatureContextProvider {
 
 }
 
+/// Provides signature inputs for static JSON remote config fallback responses.
+///
+/// Fallback config signs the JSON response body directly. It does not include request body
+/// parameters because the fallback endpoint is a fallback `GET`.
+struct FallbackSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        guard let body else {
+            throw RCContainer.Parser.FormatError.missingBody
+        }
+
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return nil
+    }
+
+}
+
 private extension RemoteConfigSignatureContextProvider {
 
     /// Extracts the signed payload from a remote config RC Container response.

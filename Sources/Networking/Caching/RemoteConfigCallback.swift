@@ -13,3 +13,10 @@ struct RemoteConfigCallback: CacheKeyProviding {
     let completion: (Result<RemoteConfigFetchResult, BackendError>) -> Void
 
 }
+
+struct RemoteConfigFallbackCallback: CacheKeyProviding {
+
+    let cacheKey: String
+    let completion: (Result<RemoteConfigFallbackFetchResult, BackendError>) -> Void
+
+}

@@ -1,0 +1,33 @@
+# Opens the workflow paywall (offering `default_workflows`) and asserts the custom variable
+# `{{ custom.users_count }}` is replaced with its dashboard default value (50000), rather than
+# rendered literally.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_custom_variable_default.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow paywall renders the custom variable default value
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The `{{ custom.users_count }}` template is replaced with its default value (50000), not shown raw.
+# (Leading `.*` tolerates the leading space in the source string " {{ custom.users_count }} Users".)
+- extendedWaitUntil:
+    visible: ".*50000 Users"
+    timeout: 15000
+- assertNotVisible: ".*users_count"
+- takeScreenshot: "workflow_custom_variable_default"

@@ -31,4 +31,11 @@ final class MockRemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         self.restartedPurposes.append(purpose)
     }
 
+    private(set) var restartIfExhaustedPurposes: [RemoteConfigSourceHandle.Purpose] = []
+    var stubbedRestartIfExhaustedResult = false
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
+        self.restartIfExhaustedPurposes.append(purpose)
+        return self.stubbedRestartIfExhaustedResult
+    }
+
 }

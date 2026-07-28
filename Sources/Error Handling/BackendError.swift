@@ -285,6 +285,17 @@ extension BackendError {
 
         /// A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
         case customerInfoResponseParsing(error: NSError, json: String)
+
+        /// A workflow lookup found no matching item in the synced remote config.
+        case workflowNotFound(workflowId: String)
+
+        /// A workflow lookup found a matching item, but its body couldn't be decoded.
+        case workflowDecodingFailed(workflowId: String, error: NSError)
+
+        /// The offering has no workflow attached (no offeringId → workflowId mapping and the offering
+        /// id is not itself a workflow key). Distinct from ``workflowNotFound`` (a mapped workflow whose
+        /// item or blob failed to resolve) so callers can render the default paywall for this case only.
+        case offeringHasNoWorkflow(offeringId: String)
     }
 
 }
@@ -307,6 +318,12 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
             return "Unable to instantiate a CustomerInfoResponse, CustomerInfo in response was nil."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
+        case let .workflowNotFound(workflowId):
+            return "Workflow '\(workflowId)' not found in remote config."
+        case let .workflowDecodingFailed(workflowId, error):
+            return "Workflow '\(workflowId)' could not be decoded from remote config: \(error)."
+        case let .offeringHasNoWorkflow(offeringId):
+            return "Offering '\(offeringId)' has no workflow attached in remote config."
         }
     }
 
@@ -315,6 +332,44 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
 extension BackendError {
 
     typealias Source = ErrorSource
+
+}
+
+extension BackendError {
+
+    static func workflowNotFound(
+        workflowId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowNotFound(workflowId: workflowId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func workflowDecodingFailed(
+        workflowId: String,
+        error: NSError,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowDecodingFailed(workflowId: workflowId, error: error),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func offeringHasNoWorkflow(
+        offeringId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .offeringHasNoWorkflow(offeringId: offeringId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
 
 }
 

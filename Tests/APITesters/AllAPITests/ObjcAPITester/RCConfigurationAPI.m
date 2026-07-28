@@ -13,19 +13,21 @@
 
 + (void)checkAPI {
     RCConfigurationBuilder *builder = [RCConfiguration builderWithAPIKey:@""];
-    RCConfiguration *config __unused = [[[[[[[[[[[[[[builder withApiKey:@""]
-                                                   withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2]
-                                                  withUserDefaults:NSUserDefaults.standardUserDefaults]
-                                                 withAppUserID:@""]
-                                                withAppUserID:nil]
-                                               withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true]]
-                                              withNetworkTimeout:1]
-                                             withStoreKit1Timeout: 1]
-                                            withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
-                                           withUsesStoreKit2IfAvailable:false]
-                                          withStoreKitVersion:RCStoreKitVersion2]
-                                         withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]
-                                         withAutomaticDeviceIdentifierCollectionEnabled:true]
+    RCConfiguration *config __unused = [[[[[[[[[[[[[[[[builder withApiKey:@""]
+                                                      withPreferredUILocaleOverride:@"de_DE"]
+                                                     withPurchasesAreCompletedBy:RCPurchasesAreCompletedByRevenueCat storeKitVersion:RCStoreKitVersion2]
+                                                    withUserDefaults:NSUserDefaults.standardUserDefaults]
+                                                   withAppUserID:@""]
+                                                  withAppUserID:nil]
+                                                 withDangerousSettings:[[RCDangerousSettings alloc] initWithAutoSyncPurchases:true]]
+                                                withNetworkTimeout:1]
+                                               withStoreKit1Timeout: 1]
+                                              withPlatformInfo:[[RCPlatformInfo alloc] initWithFlavor:@"" version:@""]]
+                                             withUsesStoreKit2IfAvailable:false]
+                                            withStoreKitVersion:RCStoreKitVersion2]
+                                           withEntitlementVerificationMode:RCEntitlementVerificationModeInformational]
+                                           withAutomaticDeviceIdentifierCollectionEnabled:true]
+                                          withIAMEnabled: true]
                                         build];
 
     if (@available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.2, *)) {

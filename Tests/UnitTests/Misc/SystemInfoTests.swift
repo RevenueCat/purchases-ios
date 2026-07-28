@@ -185,6 +185,51 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.apiBaseURL) == customURL
     }
 
+    func testRemoteConfigEnabledViaDangerousSettings() {
+        let dangerousSettings = DangerousSettings(
+            autoSyncPurchases: true,
+            internalSettings: DangerousSettings.Internal.default,
+            useWorkflows: true
+        )
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    apiKey: "api_key",
+                                    dangerousSettings: dangerousSettings,
+                                    preferredLocalesProvider: .mock())
+        expect(systemInfo.remoteConfigEnabled) == true
+    }
+
+    func testRemoteConfigDisabledUnderCustomEntitlementComputationEvenWithWorkflows() {
+        let dangerousSettings = DangerousSettings(
+            autoSyncPurchases: true,
+            customEntitlementComputation: true,
+            internalSettings: DangerousSettings.Internal.default,
+            useWorkflows: true
+        )
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    apiKey: "api_key",
+                                    dangerousSettings: dangerousSettings,
+                                    preferredLocalesProvider: .mock())
+        expect(systemInfo.remoteConfigEnabled) == false
+    }
+
+    func testDangerousSettingsDifferingOnlyInUseWorkflowsAreNotEqual() {
+        // useWorkflows must participate in equality so reconfiguring with it toggled produces a
+        // new Purchases instance instead of returning the existing (deduped) one.
+        let withWorkflows = DangerousSettings(
+            autoSyncPurchases: true,
+            internalSettings: DangerousSettings.Internal.default,
+            useWorkflows: true
+        )
+        let withoutWorkflows = DangerousSettings(
+            autoSyncPurchases: true,
+            internalSettings: DangerousSettings.Internal.default,
+            useWorkflows: false
+        )
+        expect(withWorkflows) != withoutWorkflows
+    }
+
 }
 
 private extension SystemInfo {

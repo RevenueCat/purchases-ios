@@ -175,7 +175,6 @@ import Foundation
     public let singleStepFallbackId: String?
     public let steps: [String: WorkflowStep]
     public let screens: [String: WorkflowScreen]
-    public let uiConfig: UIConfig
     let contentMaxWidth: Int?
     let metadata: [String: AnyDecodable]?
 
@@ -187,7 +186,6 @@ import Foundation
         singleStepFallbackId: String?,
         steps: [String: WorkflowStep],
         screens: [String: WorkflowScreen],
-        uiConfig: UIConfig,
         contentMaxWidth: Int? = nil
     ) {
         self.id = id
@@ -196,9 +194,29 @@ import Foundation
         self.singleStepFallbackId = singleStepFallbackId
         self.steps = steps
         self.screens = screens
-        self.uiConfig = uiConfig
         self.contentMaxWidth = contentMaxWidth
         self.metadata = nil
+    }
+
+    /// Internal-only full initializer: unlike the public one above, this preserves `metadata`.
+    init(
+        id: String,
+        displayName: String,
+        initialStepId: String,
+        singleStepFallbackId: String?,
+        steps: [String: WorkflowStep],
+        screens: [String: WorkflowScreen],
+        contentMaxWidth: Int?,
+        metadata: [String: AnyDecodable]?
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.initialStepId = initialStepId
+        self.singleStepFallbackId = singleStepFallbackId
+        self.steps = steps
+        self.screens = screens
+        self.contentMaxWidth = contentMaxWidth
+        self.metadata = metadata
     }
 
 }
@@ -206,7 +224,15 @@ import Foundation
 @_spi(Internal) public struct WorkflowDataResult {
 
     public let workflow: PublishedWorkflow
+    public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
+
+}
+
+@_spi(Internal) public enum WorkflowError: Error, Equatable, Sendable {
+
+    /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
+    case uiConfigUnavailable(workflowId: String)
 
 }
 
@@ -266,42 +292,45 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
 
 }
 
-extension PublishedWorkflow: Codable, Equatable, Sendable {}
-extension WorkflowDataResult: Codable, Equatable, Sendable {}
+extension PublishedWorkflow: Codable, Equatable, Sendable {
 
-extension PublishedWorkflow: HTTPResponseBody {}
-
-// MARK: - List models
-
-@_spi(Internal) public struct WorkflowSummary {
-
-    public let id: String
-    public let displayName: String
-    public let offeringId: String?
-    public let prefetch: Bool
-
-}
-
-@_spi(Internal) public struct WorkflowsListResponse {
-
-    public let workflows: [WorkflowSummary]
-
-}
-
-// MARK: - Codable
-
-extension WorkflowSummary: Codable, Equatable, Sendable {
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case displayName
+        case initialStepId
+        case singleStepFallbackId
+        case steps
+        case screens
+        case contentMaxWidth
+        case metadata
+    }
 
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.id = try container.decode(String.self, forKey: .id)
         self.displayName = try container.decode(String.self, forKey: .displayName)
-        self.offeringId = try container.decodeIfPresent(String.self, forKey: .offeringId)
-        self.prefetch = try container.decodeIfPresent(Bool.self, forKey: .prefetch) ?? false
+        self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
+        self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
+        self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
+        self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
+        self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
+        self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.displayName, forKey: .displayName)
+        try container.encode(self.initialStepId, forKey: .initialStepId)
+        try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
+        try container.encode(self.steps, forKey: .steps)
+        try container.encode(self.screens, forKey: .screens)
+        try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
+        try container.encodeIfPresent(self.metadata, forKey: .metadata)
     }
 
 }
 
-extension WorkflowsListResponse: Codable, Equatable, Sendable {}
+extension WorkflowDataResult: Codable, Equatable, Sendable {}
 
-extension WorkflowsListResponse: HTTPResponseBody {}
+extension PublishedWorkflow: HTTPResponseBody {}

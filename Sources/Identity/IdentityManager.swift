@@ -31,8 +31,8 @@ class IdentityManager: CurrentUserProvider {
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
     private let attributeSyncing: AttributeSyncing
-    // Nil when the workflows endpoint is disabled, so no workflows state is touched on identity changes.
-    private let workflowsCache: WorkflowsCache?
+    // Weak because RemoteConfigManager keeps IdentityManager as its CurrentUserProvider.
+    weak var remoteConfigManager: RemoteConfigManagerType?
 
     private static let anonymousRegex = #"\$RCAnonymousID:([a-z0-9]{32})$"#
 
@@ -42,14 +42,12 @@ class IdentityManager: CurrentUserProvider {
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
         attributeSyncing: AttributeSyncing,
-        workflowsCache: WorkflowsCache?,
         appUserID: String?
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
         self.attributeSyncing = attributeSyncing
-        self.workflowsCache = workflowsCache
 
         let finalAppUserID: String
         if systemInfo.dangerousSettings.uiPreviewMode {
@@ -162,8 +160,8 @@ private extension IdentityManager {
 
         self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
             if case let .success((customerInfo, _)) = result {
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
-                self.workflowsCache?.clearCache()
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
                 self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
                                                                        newAppUserID: newAppUserID)
@@ -196,8 +194,9 @@ extension IdentityManager: @unchecked Sendable {}
 private extension IdentityManager {
 
     func resetCacheAndSave(newUserID: String) {
-        self.deviceCache.clearCaches(oldAppUserID: currentAppUserID, andSaveWithNewUserID: newUserID)
-        self.workflowsCache?.clearCache()
+        let oldAppUserID = self.currentAppUserID
+        self.remoteConfigManager?.clearCache(forAppUserID: newUserID)
+        self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newUserID)
         self.deviceCache.clearLatestNetworkAndAdvertisingIdsSent(appUserID: currentAppUserID)
         self.backend.clearHTTPClientCaches()
     }

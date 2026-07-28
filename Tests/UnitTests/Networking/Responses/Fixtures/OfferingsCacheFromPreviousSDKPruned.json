@@ -1,0 +1,17 @@
+{
+  "current_offering_id": "default",
+  "offerings": [
+    {
+      "description": "Offering with pruned paywall components",
+      "identifier": "paywall_components",
+      "packages": [
+        {
+          "identifier": "$rc_monthly",
+          "platform_product_identifier": "com.revenuecat.monthly_4.99.1_week_intro"
+        }
+      ],
+      "has_paywall_components": true
+    }
+  ],
+  "original_source": "fallback_url"
+}

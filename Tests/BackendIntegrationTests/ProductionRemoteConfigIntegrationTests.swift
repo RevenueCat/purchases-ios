@@ -25,15 +25,30 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
     private lazy var remoteConfigAPI = self.createRemoteConfigAPI()
     private lazy var appUserID = self.createAppUserID()
 
-    func fetchRemoteConfig(manifest: String? = nil) async throws -> RemoteConfigFetchResult {
+    func fetchRemoteConfig(
+        fetchContext: RemoteConfigFetchContext,
+        manifest: String? = nil
+    ) async throws -> RemoteConfigFetchResult {
         return try await withCheckedThrowingContinuation { continuation in
             self.remoteConfigAPI.getRemoteConfig(
                 request: .init(
+                    fetchContext: fetchContext,
                     appUserID: self.appUserID,
                     domain: Self.domain,
                     manifest: manifest,
                     prefetchedBlobs: []
                 ),
+                isAppBackgrounded: false
+            ) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    func fetchRemoteConfigFallback() async throws -> RemoteConfigFallbackFetchResult {
+        return try await withCheckedThrowingContinuation { continuation in
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: Self.domain,
                 isAppBackgrounded: false
             ) { result in
                 continuation.resume(with: result)
@@ -70,6 +85,12 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         expect(result.container).to(beNil())
     }
 
+    func verifyRemoteConfigFallbackResponse(_ result: RemoteConfigFallbackFetchResult) throws {
+        expect(result.verificationResult) == .verified
+
+        self.verifyRemoteConfiguration(result.configuration)
+    }
+
 }
 
 private extension BaseProductionRemoteConfigIntegrationTests {
@@ -104,7 +125,8 @@ private extension BaseProductionRemoteConfigIntegrationTests {
                 systemInfo: systemInfo
             ),
             offlineCustomerInfoCreator: nil,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil
         )
 
         return backend.remoteConfigAPI
@@ -119,19 +141,27 @@ final class ProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIn
     }
 
     func testCanFetchRemoteConfig() async throws {
-        let result = try await self.fetchRemoteConfig()
+        let result = try await self.fetchRemoteConfig(fetchContext: .appStart)
 
         _ = try self.verifyContainerResponse(result)
     }
 
     func testReplayingManifestReturnsNoContent() async throws {
         let configuration = try self.verifyContainerResponse(
-            try await self.fetchRemoteConfig()
+            try await self.fetchRemoteConfig(fetchContext: .appStart)
         )
 
-        let result = try await self.fetchRemoteConfig(manifest: configuration.manifest)
+        // A `.read` context lets the backend honor the refresh-interval fast path and return no content,
+        // whereas `.appStart` would force a full resolve and return the config again.
+        let result = try await self.fetchRemoteConfig(fetchContext: .read, manifest: configuration.manifest)
 
         self.verifyNoContentResponse(result)
+    }
+
+    func testCanFetchRemoteConfigFromFallbackURL() async throws {
+        let result = try await self.fetchRemoteConfigFallback()
+
+        try self.verifyRemoteConfigFallbackResponse(result)
     }
 
 }
@@ -143,19 +173,27 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
     }
 
     func testVerifiesSignedResponseWhenVerificationIsEnforced() async throws {
-        let result = try await self.fetchRemoteConfig()
+        let result = try await self.fetchRemoteConfig(fetchContext: .appStart)
 
         _ = try self.verifyContainerResponse(result)
     }
 
     func testVerifiesNoContentResponseWhenVerificationIsEnforced() async throws {
         let configuration = try self.verifyContainerResponse(
-            try await self.fetchRemoteConfig()
+            try await self.fetchRemoteConfig(fetchContext: .appStart)
         )
 
-        let result = try await self.fetchRemoteConfig(manifest: configuration.manifest)
+        // A `.read` context lets the backend honor the refresh-interval fast path and return no content,
+        // whereas `.appStart` would force a full resolve and return the config again.
+        let result = try await self.fetchRemoteConfig(fetchContext: .read, manifest: configuration.manifest)
 
         self.verifyNoContentResponse(result)
+    }
+
+    func testVerifiesFallbackResponseWhenVerificationIsEnforced() async throws {
+        let result = try await self.fetchRemoteConfigFallback()
+
+        try self.verifyRemoteConfigFallbackResponse(result)
     }
 
 }

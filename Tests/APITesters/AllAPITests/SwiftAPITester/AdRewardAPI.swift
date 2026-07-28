@@ -9,6 +9,7 @@ import Foundation
 var adReward: AdReward!
 var virtualCurrencyReward: VirtualCurrencyReward!
 var entitlementReward: EntitlementReward!
+var rewardVerificationResult: RewardVerificationResult!
 
 func checkAdRewardAPI() {
     let _: VirtualCurrencyReward? = adReward.virtualCurrency
@@ -26,4 +27,10 @@ func checkVirtualCurrencyRewardAPI() {
 func checkEntitlementRewardAPI() {
     let _: String = entitlementReward.identifier
     let _: Date = entitlementReward.expiresAt
+}
+
+func checkRewardVerificationResultAPI() {
+    let _: AdReward? = rewardVerificationResult.verifiedReward
+    let _: [AdReward] = rewardVerificationResult.moreRewards
+    let _: RewardVerificationResult = .failed
 }

@@ -26,8 +26,11 @@ class OfferingsManager {
     private let productsManager: ProductsManagerType
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let dateProvider: DateProvider
-    // Nil when the workflows endpoint is disabled, in which case offerings delivery is unchanged.
-    private let workflowManager: WorkflowManager?
+    // Nil when remote config is disabled, in which case offerings delivery is unchanged.
+    private let remoteConfigManager: RemoteConfigManagerType?
+    private let uiConfigProvider: UiConfigProvider?
+    private let workflowAssetPrewarmer: WorkflowAssetPrewarmingType?
+    private let offeringsCacheGeneration = Atomic(0)
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -37,7 +40,9 @@ class OfferingsManager {
          productsManager: ProductsManagerType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dateProvider: DateProvider = DateProvider(),
-         workflowManager: WorkflowManager? = nil) {
+         remoteConfigManager: RemoteConfigManagerType? = nil,
+         uiConfigProvider: UiConfigProvider? = nil,
+         workflowAssetPrewarmer: WorkflowAssetPrewarmingType? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
@@ -46,7 +51,9 @@ class OfferingsManager {
         self.productsManager = productsManager
         self.diagnosticsTracker = diagnosticsTracker
         self.dateProvider = dateProvider
-        self.workflowManager = workflowManager
+        self.remoteConfigManager = remoteConfigManager
+        self.uiConfigProvider = uiConfigProvider
+        self.workflowAssetPrewarmer = workflowAssetPrewarmer
     }
 
     func offerings(
@@ -60,63 +67,55 @@ class OfferingsManager {
         let startTime = self.dateProvider.now()
 
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            let trackingContext = OfferingsTrackingContext(trackDiagnostics: trackDiagnostics,
+                                                           startTime: startTime)
 
             guard !fetchCurrent && !self.systemInfo.dangerousSettings.uiPreviewMode else {
-                self.fetchFromNetwork(appUserID: appUserID,
-                                      fetchPolicy: fetchPolicy) { [weak self] result in
-                    self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                          startTime: startTime,
-                                                          cacheStatus: .notChecked,
-                                                          error: result.error,
-                                                          requestedProductIds: result.value?.requestedProductIds,
-                                                          notFoundProductIds: result.value?.notFoundProductIds)
-                    completion?(result.map(\.offerings))
-                }
+                self.fetchFromNetworkAndTrackResult(appUserID: appUserID,
+                                                    fetchPolicy: fetchPolicy,
+                                                    trackingContext: trackingContext,
+                                                    cacheStatus: .notChecked,
+                                                    completion: completion)
                 return
             }
 
             guard let memoryCachedOfferings = self.cachedOfferings else {
-                self.fetchFromNetwork(appUserID: appUserID,
-                                      fetchPolicy: fetchPolicy) { [weak self] result in
-                    self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                          startTime: startTime,
-                                                          cacheStatus: .notFound,
-                                                          error: result.error,
-                                                          requestedProductIds: result.value?.requestedProductIds,
-                                                          notFoundProductIds: result.value?.notFoundProductIds)
-                    completion?(result.map(\.offerings))
-                }
+                self.fetchFromNetworkAndTrackResult(appUserID: appUserID,
+                                                    fetchPolicy: fetchPolicy,
+                                                    trackingContext: trackingContext,
+                                                    cacheStatus: .notFound,
+                                                    completion: completion)
+                return
+            }
+
+            guard !self.shouldRefreshOfferingsWithPrunedComponents(memoryCachedOfferings) else {
+                self.fetchFromNetworkAndTrackResult(appUserID: appUserID,
+                                                    fetchPolicy: fetchPolicy,
+                                                    trackingContext: trackingContext,
+                                                    cacheStatus: .stale,
+                                                    completion: completion)
                 return
             }
 
             let cacheStatus = self.deviceCache.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
             Logger.debug(Strings.offering.vending_offerings_cache_from_memory)
-            self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackDiagnostics,
-                                                 startTime: startTime,
-                                                 cacheStatus: cacheStatus,
-                                                 error: nil,
-                                                 requestedProductIds: nil,
-                                                 notFoundProductIds: nil)
-
             if cacheStatus == .stale {
-                // Serve the cached offerings immediately and refresh in the background, preserving the
-                // existing "return fast, update later" behavior. The background update goes through the
-                // same workflows-aware delivery path, so it refreshes the workflows list too. Gating
-                // here as well would both block delivery and double-fetch the list.
-                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
+                // Refresh in the background; the readiness gate below must not delay it.
                 self.updateOfferingsCache(appUserID: appUserID,
                                           isAppBackgrounded: isAppBackgrounded,
                                           fetchPolicy: fetchPolicy,
                                           completion: nil)
-            } else {
-                // Fresh offerings (no background refresh coming): ensure the workflows list is fetched
-                // before delivering, so a caller resolving a workflow right after `getOfferings`
-                // succeeds isn't racing a list fetch from another in-flight call. This is a no-op when
-                // the list is already fresh, which it normally is on this path.
-                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
-                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(memoryCachedOfferings))
-                }
             }
+            // Cached offerings, stale ones included, wait for config readiness before
+            // delivery (a no-op once config has synced). A stale snapshot may be returned
+            // even if the background refresh finished first; that matches the stale-cache
+            // model, and the refresh still updates the cache for the next call.
+            self.deliverCachedOfferingsWhenConfigReady(appUserID: appUserID,
+                                                       offerings: memoryCachedOfferings,
+                                                       fetchPolicy: fetchPolicy,
+                                                       trackingContext: trackingContext,
+                                                       cacheStatus: cacheStatus,
+                                                       completion: completion)
         }
     }
 
@@ -132,14 +131,24 @@ class OfferingsManager {
     ) {
         // We keep track of preferred locales at the time of launching the request
         let preferredLocales = systemInfo.preferredLocales
-        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
+        // Snapshot the generation before the mode. If remote config disables between these reads,
+        // the request is conservatively treated as stale instead of allowing a pruned response into
+        // the new generation.
+        let cacheGeneration = self.offeringsCacheGeneration.value
+        let decodingMode = self.offeringsResponseDecodingMode
+        self.backend.offerings.getOfferings(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded,
+            decodingMode: decodingMode
+        ) { result in
             switch result {
-            case let .success(contents):
-                self.handleOfferingsBackendResult(with: contents,
+            case let .success(fetchResult):
+                self.handleOfferingsBackendResult(with: fetchResult,
                                                   appUserID: appUserID,
                                                   isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
+                                                  cacheGeneration: cacheGeneration,
                                                   completion: completion)
 
             case let .failure(backendError) where backendError.shouldFallBackToCache:
@@ -149,13 +158,20 @@ class OfferingsManager {
                                                   fetchPolicy: fetchPolicy) { offerings in
                     if let offerings = offerings {
                         Logger.warn(Strings.offering.error_fetching_offerings_using_disk_cache)
-                        // Deliver via the workflows path too, so an offerings backend failure that
-                        // falls back to disk still fetches the list (restoring the offeringId →
-                        // workflowId map / prefetches) instead of leaving it unresolved.
-                        self.deliverEnsuringWorkflowsList(appUserID: appUserID,
-                                                          isAppBackgrounded: isAppBackgrounded) {
-                            self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
-                        }
+                        // Deliver via the config-ready gate too, so an offerings backend failure that
+                        // falls back to disk still waits for remote config's first sync instead of
+                        // leaving workflow resolution unresolved.
+                        self.deliverWhenConfigReady(
+                            offerings: offerings.offerings,
+                            refreshIfNeeded: {
+                                self.fetchFromNetwork(appUserID: appUserID,
+                                                      fetchPolicy: fetchPolicy,
+                                                      completion: completion)
+                            },
+                            deliver: {
+                                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+                            }
+                        )
                     } else {
                         self.handleOfferingsUpdateError(.backendError(backendError),
                                                         completion: completion)
@@ -196,6 +212,20 @@ class OfferingsManager {
         }
     }
 
+    func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
+        self.offeringsCacheGeneration.modify { $0 += 1 }
+        let cachedOfferings = self.deviceCache.cachedOfferings
+
+        // Preserve the full response on disk so it can provide legacy paywall components if the network fails.
+        self.clearInMemoryOfferingsCache()
+
+        if cachedOfferings != nil {
+            self.offerings(appUserID: appUserID,
+                           fetchPolicy: .ignoreNotFoundProducts,
+                           trackDiagnostics: false) { @Sendable _ in }
+        }
+    }
+
 }
 
 private extension OfferingsManager {
@@ -215,12 +245,42 @@ private extension OfferingsManager {
         }
     }
 
+    func fetchFromNetworkAndTrackResult(
+        appUserID: String,
+        fetchPolicy: FetchPolicy,
+        trackingContext: OfferingsTrackingContext,
+        cacheStatus: CacheStatus,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
+        self.fetchFromNetwork(appUserID: appUserID,
+                              fetchPolicy: fetchPolicy) { [weak self] result in
+            self?.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackingContext.trackDiagnostics,
+                                                  startTime: trackingContext.startTime,
+                                                  cacheStatus: cacheStatus,
+                                                  error: result.error,
+                                                  requestedProductIds: result.value?.requestedProductIds,
+                                                  notFoundProductIds: result.value?.notFoundProductIds)
+            completion?(result.map(\.offerings))
+        }
+    }
+
     func fetchCachedOfferingsFromDisk(
         appUserID: String,
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let contents = self.deviceCache.cachedOfferingsContents(appUserID: appUserID) else {
+        guard let contents = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: self.offeringsResponseDecodingMode
+        ) else {
+            completion(nil)
+            return
+        }
+
+        // A workflows-mode response intentionally omits legacy component bodies. Once remote config disables,
+        // that disk entry cannot provide the backwards-compatible paywall, so require a full network response
+        // instead of repeatedly rebuilding and rejecting the same pruned offering.
+        guard !self.shouldRejectPrunedDiskContents(contents) else {
             completion(nil)
             return
         }
@@ -300,7 +360,8 @@ private extension OfferingsManager {
             if let createdOfferings = self.offeringsFactory.createOfferings(
                 from: productsByID,
                 contents: contents,
-                loadedFromDiskCache: loadedFromDiskCache
+                loadedFromDiskCache: loadedFromDiskCache,
+                shouldCreatePaywallComponents: self.shouldCreatePaywallComponents
             ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
@@ -313,28 +374,50 @@ private extension OfferingsManager {
 
     // swiftlint:disable:next function_parameter_count
     func handleOfferingsBackendResult(
-        with contents: Offerings.Contents,
+        with fetchResult: OfferingsFetchResult,
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
+        cacheGeneration: Int,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
+        let contents = fetchResult.contents
         self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
-                self.deviceCache.cache(offerings: offeringsResultData.offerings,
-                                       preferredLocales: preferredLocales,
-                                       appUserID: appUserID)
+                let didCache = self.offeringsCacheGeneration.modify { currentGeneration in
+                    guard currentGeneration == cacheGeneration else { return false }
 
-                // A fresh network offerings fetch forces the workflows list stale so the two refresh
-                // together, then delivers offerings only once the list (and its prefetches) finish.
-                self.workflowManager?.forceWorkflowsListCacheStale()
-                self.deliverEnsuringWorkflowsList(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) {
-                    self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offeringsResultData))
+                    self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                           fetchResult: fetchResult,
+                                           preferredLocales: preferredLocales,
+                                           appUserID: appUserID)
+                    return true
                 }
+
+                // Superseded background refreshes have nothing to deliver and must not mutate either cache.
+                guard didCache || completion != nil else { return }
+
+                // A background refresh (nil completion) only updates the cache; skip the
+                // readiness gate so it doesn't await (and decode) config for a no-op delivery.
+                guard let completion else { return }
+                // Delivers offerings only once remote config has synced at least once, so the
+                // `workflows` topic is available for resolving a workflow right after this call.
+                self.deliverWhenConfigReady(
+                    offerings: offeringsResultData.offerings,
+                    refreshIfNeeded: {
+                        self.fetchFromNetwork(appUserID: appUserID,
+                                              fetchPolicy: fetchPolicy,
+                                              completion: completion)
+                    },
+                    deliver: {
+                        self.dispatchCompletionOnMainThreadIfPossible(completion,
+                                                                      value: .success(offeringsResultData))
+                    }
+                )
 
             case let .failure(error):
                 self.handleOfferingsUpdateError(error, completion: completion)
@@ -387,20 +470,107 @@ private extension OfferingsManager {
         }
     }
 
-    /// Runs `deliver` after ensuring the workflows list is fetched, when the workflows endpoint is
-    /// enabled. `getWorkflowsList` no-ops when the list is fresh and always calls its completion, so
-    /// this never hangs. When the endpoint is disabled (`workflowManager` is nil), `deliver` runs
-    /// immediately, leaving offerings delivery unchanged.
-    private func deliverEnsuringWorkflowsList(appUserID: String,
-                                              isAppBackgrounded: Bool,
-                                              deliver: @escaping () -> Void) {
-        guard let workflowManager = self.workflowManager else {
+    /// Invokes `deliver` once the paywall config data `getOfferings` depends on is ready:
+    /// the `workflows` topic (with its prefetch-flagged blobs) and the `ui_config` body,
+    /// resolved concurrently. Both are best-effort (nil on failure, never throwing), so
+    /// delivery can never be stranded; when no manager is wired, `deliver` runs immediately.
+    private func deliverWhenConfigReady(
+        offerings: Offerings,
+        refreshIfNeeded: @escaping () -> Void,
+        deliver: @escaping () -> Void
+    ) {
+        guard let remoteConfigManager = self.remoteConfigManager else {
             deliver()
             return
         }
-        workflowManager.getWorkflowsList(appUserID: appUserID,
-                                         isAppBackgrounded: isAppBackgrounded,
-                                         onComplete: deliver)
+        Task {
+            let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
+            async let workflowBodyDataReady: Void = self.cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
+                remoteConfigManager: remoteConfigManager,
+                includingOfferingId: offerings.current?.identifier
+            )
+            async let uiConfigReady = uiConfigProvider.getUiConfig()
+            _ = await (workflowBodyDataReady, uiConfigReady)
+
+            if self.shouldRefreshOfferingsWithPrunedComponents(offerings) {
+                refreshIfNeeded()
+            } else {
+                deliver()
+            }
+        }
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    private func deliverCachedOfferingsWhenConfigReady(
+        appUserID: String,
+        offerings: Offerings,
+        fetchPolicy: FetchPolicy,
+        trackingContext: OfferingsTrackingContext,
+        cacheStatus: CacheStatus,
+        completion: (@MainActor @Sendable (Result<Offerings, Error>) -> Void)?
+    ) {
+        self.deliverWhenConfigReady(
+            offerings: offerings,
+            refreshIfNeeded: {
+                self.fetchFromNetworkAndTrackResult(appUserID: appUserID,
+                                                    fetchPolicy: fetchPolicy,
+                                                    trackingContext: trackingContext,
+                                                    cacheStatus: .stale,
+                                                    completion: completion)
+            },
+            deliver: {
+                // Track inside the gate so the recorded latency includes the readiness wait.
+                self.trackGetOfferingsResultIfNeeded(trackDiagnostics: trackingContext.trackDiagnostics,
+                                                     startTime: trackingContext.startTime,
+                                                     cacheStatus: cacheStatus,
+                                                     error: nil,
+                                                     requestedProductIds: nil,
+                                                     notFoundProductIds: nil)
+                self.dispatchCompletionOnMainThreadIfPossible(completion, value: .success(offerings))
+            }
+        )
+    }
+
+    private func cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
+        remoteConfigManager: RemoteConfigManagerType,
+        includingOfferingId: String?
+    ) async {
+        if let workflowAssetPrewarmer = self.workflowAssetPrewarmer {
+            await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
+                includingOfferingId: includingOfferingId
+            )
+        } else {
+            _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
+        }
+    }
+
+    /// Keep the offerings-provided components path when remote config is not active. When it is active,
+    /// workflows resolve paywall components from `/v1/config`, so retaining the offerings copy duplicates memory.
+    var shouldCreatePaywallComponents: Bool {
+        return self.remoteConfigManager?.isDisabled ?? true
+    }
+
+    var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
+        return self.shouldCreatePaywallComponents ? .withPaywallComponents : .withoutPaywallComponents
+    }
+
+    /// If remote config was disabled after a workflows-enabled offerings fetch, the in-memory offering
+    /// can still carry only the lightweight paywall marker, not the renderable components payload.
+    /// Refetch so the legacy offerings paywall fallback is restored for the disabled-RC path.
+    func shouldRefreshOfferingsWithPrunedComponents(_ offerings: Offerings) -> Bool {
+        guard self.remoteConfigManager?.isDisabled == true else { return false }
+
+        return offerings.all.values.contains { offering in
+            offering.hasPaywallComponents && offering.internalPaywallComponents == nil
+        }
+    }
+
+    private func shouldRejectPrunedDiskContents(_ contents: Offerings.Contents) -> Bool {
+        guard self.remoteConfigManager?.isDisabled == true else { return false }
+
+        return contents.response.offerings.contains { offering in
+            offering.hasPaywallComponents == true && offering.paywallComponents == nil
+        }
     }
 
     private func fetchProducts(
@@ -669,6 +839,11 @@ struct OfferingsResultData {
     let offerings: Offerings
     let requestedProductIds: Set<String>
     let notFoundProductIds: Set<String>
+}
+
+private struct OfferingsTrackingContext {
+    let trackDiagnostics: Bool
+    let startTime: Date
 }
 
 /// For UI Preview mode only.

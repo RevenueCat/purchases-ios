@@ -168,21 +168,17 @@ import Foundation
         let container = try decoder.container(keyedBy: CodingKeys.self)
         self.app = try container.decode(AppConfig.self, forKey: .app)
         self.localizations = try container.decode([String: [String: String]].self, forKey: .localizations)
-        self.variableConfig = try container.decodeIfPresent(
+        self.variableConfig = try container.decode(
             VariableConfig.self,
             forKey: .variableConfig
-        ) ?? VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        )
 
-        // Try to decode custom_variables with detailed error logging
-        do {
-            self.customVariables = try container.decodeIfPresent(
-                [String: CustomVariableDefinition].self,
-                forKey: .customVariables
-            ) ?? [:]
-        } catch {
-            Logger.error(Strings.offering.ui_config_custom_variables_decode_error(error: error))
-            self.customVariables = [:]
-        }
+        // `custom_variables` was added after the other fields, so the key may be absent from older responses; fall
+        // back to an empty dictionary in that case. If the key is present but malformed, fail like any other field.
+        self.customVariables = try container.decodeIfPresent(
+            [String: CustomVariableDefinition].self,
+            forKey: .customVariables
+        ) ?? [:]
 
         // Debug logging for custom variables
         let hasCustomVariablesKey = container.contains(.customVariables)
@@ -195,9 +191,27 @@ import Foundation
 
 }
 
+extension UIConfig {
+
+    /// Empty configuration used by tests and platform stubs.
+    static let empty = UIConfig(
+        app: AppConfig(colors: [:], fonts: [:]),
+        localizations: [:],
+        variableConfig: VariableConfig(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+    )
+
+}
+
 #else
 
 @_spi(Internal) public struct UIConfig: Codable, Equatable, Sendable {
+
+}
+
+extension UIConfig {
+
+    /// Empty configuration used by tests and platform stubs.
+    static let empty = UIConfig()
 
 }
 

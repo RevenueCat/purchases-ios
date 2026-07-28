@@ -132,8 +132,8 @@ internal extension RewardVerification {
                     transactionID: clientTransactionID
                 ))
                 switch status {
-                case .verified(let reward):
-                    return .finished(.verified(reward))
+                case let .verified(reward, moreRewards):
+                    return .finished(.verified(reward: reward, moreRewards: moreRewards))
                 case let .failed(reason, message):
                     Logger.warn(AdsStrings.poll_backend_rejected(
                         reason: reason,

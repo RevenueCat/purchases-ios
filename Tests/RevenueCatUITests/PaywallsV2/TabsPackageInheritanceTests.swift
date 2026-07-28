@@ -769,6 +769,30 @@ final class TabsPackageInheritanceTests: TestCase {
         ) == false
     }
 
+    // MARK: - Stale onChange invocations (pre-iOS 17)
+    //
+    // Only the nil semantics are pinned here: getting them wrong would either re-open the
+    // iOS 16 tab-switch overwrite or break within-tab deselection. The tab-switch behavior
+    // itself is covered end-to-end by TabsComponentDuplicateInstanceTests.
+
+    func testNotStaleChangeWhenBothNil() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: nil
+            )
+        ) == false
+    }
+
+    func testStaleChangeWhenObservedPackageClearedButCapturedContextStillHoldsOne() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: self.tabPackageC
+            )
+        ) == true
+    }
+
     func testTabPackageParentPropagationDoesNotSuppressWhenParentNil() {
         expect(
             TabPackageParentPropagation.shouldSuppressNotifyingParent(

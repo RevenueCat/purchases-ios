@@ -371,7 +371,7 @@ struct BadgePreviews: View {
                         .text(PaywallComponent.TextComponent(
                             text: "text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit),
+                            size: .init(width: .fit(nil), height: .fit(nil)),
                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                         ))
                     ],
@@ -392,7 +392,7 @@ struct BadgePreviews: View {
                                     text: "text_2",
                                     fontWeight: .bold,
                                     color: .init(light: .hex("#000000")),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     fontSize: 13
                                 ))
                             ],

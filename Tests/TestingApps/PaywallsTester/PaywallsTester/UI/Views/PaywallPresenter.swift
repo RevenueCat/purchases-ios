@@ -93,10 +93,7 @@ struct PaywallPresenter: View {
             fatalError()
 
         case .workflow:
-            PaywallView(configuration: .init(
-                content: .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
-                purchaseHandler: .default()
-            ))
+            PaywallView(offeringIdentifier: offering.identifier)
 
         case .presentWorkflow:
             fatalError()

@@ -41,7 +41,7 @@ final class VideoComponentViewTests: TestCase {
 
     func testCalculateMaxWidthClampsNegativeInitialFullscreenFillWidth() {
         let style = Self.makeStyle(
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fitMode: .fill,
             padding: .init(top: 0, bottom: 0, leading: 20, trailing: 20),
             margin: .init(top: 0, bottom: 0, leading: 20, trailing: 20)
@@ -84,7 +84,7 @@ private extension VideoComponentViewTests {
                     checksumLowRes: nil
                 )
             ),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fitMode: .fill
         )
         let viewModel = VideoComponentViewModel(
@@ -112,7 +112,7 @@ private extension VideoComponentViewTests {
 #endif
 
     static func makeStyle(
-        size: PaywallComponent.Size = .init(width: .fill, height: .fit),
+        size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil)),
         fitMode: PaywallComponent.FitMode = .fit,
         padding: PaywallComponent.Padding? = nil,
         margin: PaywallComponent.Padding? = nil,

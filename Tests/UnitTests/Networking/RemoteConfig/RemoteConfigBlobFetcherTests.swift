@@ -7,6 +7,8 @@
 
 import Foundation
 import Nimble
+import OHHTTPStubs
+import OHHTTPStubsSwift
 @testable import RevenueCat
 import XCTest
 
@@ -31,6 +33,7 @@ final class RemoteConfigBlobFetcherTests: TestCase {
     }
 
     override func tearDownWithError() throws {
+        HTTPStubs.removeAllStubs()
         self.downloader.cancelAll()
         self.fetcher = nil
         self.sourceProvider = nil
@@ -141,7 +144,51 @@ final class RemoteConfigBlobFetcherTests: TestCase {
 
         let result = await task.value
         expect(result) == false
+        expect(self.downloader.requestedRefs) == [ref]
         expect(self.blobStore.invokedWriteCount) == 0
+    }
+
+    func testEnsureDownloadedRestartsExhaustedSourcesForNewRequest() async {
+        let failingRef = Self.ref(for: "failing".asData)
+        let recoveryPayload = "recovery".asData
+        let recoveryRef = Self.ref(for: recoveryPayload)
+
+        let failing = Task { await self.fetcher.ensureDownloaded(ref: failingRef) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: failingRef, with: .failure(TestError()))
+
+        let failingResult = await failing.value
+        expect(failingResult) == false
+
+        let recovery = Task { await self.fetcher.ensureDownloaded(ref: recoveryRef) }
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: recoveryRef, with: .success(recoveryPayload))
+
+        let recoveryResult = await recovery.value
+        expect(recoveryResult) == true
+        expect(self.downloader.requestedRefs) == [failingRef, recoveryRef]
+        expect(self.blobStore.invokedWriteParameters?.data) == recoveryPayload
+    }
+
+    func testPrefetchRestartsExhaustedSourcesForNewRequest() async {
+        let failingRef = Self.ref(for: "failing".asData)
+        let recoveryPayload = "prefetch recovery".asData
+        let recoveryRef = Self.ref(for: recoveryPayload)
+
+        let failing = Task { await self.fetcher.ensureDownloaded(ref: failingRef) }
+        await self.downloader.waitForRequestCount(1)
+        self.downloader.complete(ref: failingRef, with: .failure(TestError()))
+
+        let failingResult = await failing.value
+        expect(failingResult) == false
+
+        self.fetcher.prefetch(refs: [recoveryRef])
+        await self.downloader.waitForRequestCount(2)
+        self.downloader.complete(ref: recoveryRef, with: .success(recoveryPayload))
+        await self.waitForScheduledTaskToReachFetcher()
+
+        expect(self.downloader.requestedRefs) == [failingRef, recoveryRef]
+        expect(self.blobStore.invokedWriteParameters?.data) == recoveryPayload
     }
 
     func testNetworkFailureRetriesNextSource() async {
@@ -170,6 +217,39 @@ final class RemoteConfigBlobFetcherTests: TestCase {
             Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref),
             Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
         ]
+        expect(self.blobStore.invokedWriteParameters?.data) == payload
+    }
+
+    func testRealDownloaderUsesFiveSecondTimeoutAndRetriesNextSourceAfterTimeout() async {
+        let payload = "timeout fallback payload".asData
+        let ref = Self.ref(for: payload)
+        let primaryURL = Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+        let backupURL = Self.backupTemplateURL.replacingOccurrences(of: Self.placeholder, with: ref)
+
+        stub(condition: isAbsoluteURLString(primaryURL)) { _ in
+            return HTTPStubsResponse(error: URLError(.timedOut))
+        }
+        stub(condition: isAbsoluteURLString(backupURL)) { _ in
+            return HTTPStubsResponse(
+                data: payload,
+                statusCode: Int32(HTTPStatusCode.success.rawValue),
+                headers: nil
+            )
+        }
+
+        self.sourceProvider = Self.sourceProvider(urls: [
+            Self.templateURL,
+            Self.backupTemplateURL
+        ])
+        self.fetcher = RemoteConfigBlobFetcher(
+            blobStore: self.blobStore,
+            sourceProvider: self.sourceProvider,
+            downloader: URLSessionRemoteConfigBlobDownloader()
+        )
+
+        let result = await self.fetcher.ensureDownloaded(ref: ref)
+
+        expect(result) == true
         expect(self.blobStore.invokedWriteParameters?.data) == payload
     }
 
@@ -422,8 +502,8 @@ private final class BlobFetcherSourceTopicStore: RemoteConfigTopicStoreType {
         self.sourcesTopic = sourcesTopic
     }
 
-    func topic(_ name: String) -> RemoteConfiguration.ConfigTopic? {
-        return name == "sources" ? self.sourcesTopic : nil
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return topic == .sources ? self.sourcesTopic : nil
     }
 
 }

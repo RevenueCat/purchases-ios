@@ -93,10 +93,25 @@ class SystemInfo {
         return self._isSandbox
     }
 
-    /// Whether the paywall workflows endpoint is enabled, driven by the `-EnableWorkflowsEndpoint`
-    /// launch argument. Temporary gate while workflows are being rolled out.
-    var workflowsEndpointEnabled: Bool {
-        return ProcessInfo.processInfo.arguments.contains("-EnableWorkflowsEndpoint")
+    /// Whether remote config lifecycle wiring is enabled. Temporary gate while remote config is being
+    /// rolled out. Paywall workflows read entirely through remote config, so this is also the single
+    /// gate for workflows: there's no separate workflows switch, since the two ship together.
+    ///
+    /// Enabled either programmatically via the internal `DangerousSettings.useWorkflows` flag (used by
+    /// hybrid SDKs, which can't set a compilation condition at runtime) or by the `ENABLE_REMOTE_CONFIG`
+    /// compilation condition. Always disabled under custom entitlement computation.
+    var remoteConfigEnabled: Bool {
+        guard !self.dangerousSettings.customEntitlementComputation else { return false }
+
+        if self.dangerousSettings.useWorkflows {
+            return true
+        }
+
+        #if ENABLE_REMOTE_CONFIG
+        return true
+        #else
+        return false
+        #endif
     }
 
     var isDebugBuild: Bool {
@@ -112,7 +127,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.81.0-SNAPSHOT"
+        return "5.82.0-SNAPSHOT"
     }
 
     static var installationMethod: String {

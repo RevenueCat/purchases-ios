@@ -40,6 +40,17 @@ jobs:
           WORKFLOW_NAME="run-all-tests"
           APPROVAL_JOB_NAME="approve-full-tests"
 
+          # This repo uses CircleCI dynamic config: on push, a setup workflow runs
+          # first and generates a continuation config. The 'run-all-tests' workflow
+          # (and its 'approve-full-tests' hold job) only appears in the pipeline once
+          # setup finishes. If someone comments '@RCGitBot please test' while setup is
+          # still running, the workflow/approval job isn't there yet. So we poll for it
+          # instead of failing immediately.
+          # Keep total polling under ~1 minute: 4 attempts with 15s between them = ~45s
+          # of waiting (plus request time).
+          MAX_ATTEMPTS=4
+          SLEEP_SECONDS=15
+
           # 1. Get the most recent pipeline for this branch
           PIPELINE_ID=$(curl -s --max-time 15 -G \
             -H "Circle-Token: $CCI_TOKEN" \
@@ -53,42 +64,58 @@ jobs:
           fi
           echo "Found pipeline: $PIPELINE_ID"
 
-          # 2. Find the run-all-tests workflow in that pipeline
-          WORKFLOW_ID=$(curl -s --max-time 15 \
-            -H "Circle-Token: $CCI_TOKEN" \
-            "https://circleci.com/api/v2/pipeline/$PIPELINE_ID/workflow" \
-            | jq -r --arg name "$WORKFLOW_NAME" '.items[] | select(.name == $name) | .id')
+          # 2. Poll for the run-all-tests workflow and its approval job. Both may be
+          # missing while the setup workflow is still generating the continuation config.
+          WORKFLOW_ID=""
+          APPROVAL_REQUEST_ID=""
+          for ((attempt=1; attempt<=MAX_ATTEMPTS; attempt++)); do
+            WORKFLOW_ID=$(curl -s --max-time 15 \
+              -H "Circle-Token: $CCI_TOKEN" \
+              "https://circleci.com/api/v2/pipeline/$PIPELINE_ID/workflow" \
+              | jq -r --arg name "$WORKFLOW_NAME" '.items[] | select(.name == $name) | .id')
+
+            if [[ -n "$WORKFLOW_ID" && "$WORKFLOW_ID" != "null" ]]; then
+              echo "Found workflow: $WORKFLOW_ID"
+
+              JOBS_RESPONSE=$(curl -s --max-time 15 \
+                -H "Circle-Token: $CCI_TOKEN" \
+                "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/job")
+
+              JOB_STATUS=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
+                '.items[] | select(.name == $name and .type == "approval") | .status')
+
+              if [[ "$JOB_STATUS" == "success" ]]; then
+                echo "Hold job '$APPROVAL_JOB_NAME' was already approved"
+                exit 0
+              fi
+
+              APPROVAL_REQUEST_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
+                '.items[] | select(.name == $name and .type == "approval") | .approval_request_id')
+
+              if [[ -n "$APPROVAL_REQUEST_ID" && "$APPROVAL_REQUEST_ID" != "null" ]]; then
+                break
+              fi
+            fi
+
+            if [[ "$attempt" -lt "$MAX_ATTEMPTS" ]]; then
+              echo "Attempt $attempt/$MAX_ATTEMPTS: '$WORKFLOW_NAME' workflow / '$APPROVAL_JOB_NAME' job not ready yet (setup may still be running). Retrying in ${SLEEP_SECONDS}s..."
+              sleep "$SLEEP_SECONDS"
+            fi
+          done
 
           if [[ -z "$WORKFLOW_ID" || "$WORKFLOW_ID" == "null" ]]; then
-            echo "::error::No '$WORKFLOW_NAME' workflow found in pipeline $PIPELINE_ID"
+            echo "::error::No '$WORKFLOW_NAME' workflow found in pipeline $PIPELINE_ID after $MAX_ATTEMPTS attempts"
             exit 1
           fi
-          echo "Found workflow: $WORKFLOW_ID"
-
-          # 3. Find the approve-full-tests approval job
-          JOBS_RESPONSE=$(curl -s --max-time 15 \
-            -H "Circle-Token: $CCI_TOKEN" \
-            "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/job")
-
-          JOB_STATUS=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
-            '.items[] | select(.name == $name and .type == "approval") | .status')
-
-          if [[ "$JOB_STATUS" == "success" ]]; then
-            echo "Hold job '$APPROVAL_JOB_NAME' was already approved"
-            exit 0
-          fi
-
-          APPROVAL_REQUEST_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg name "$APPROVAL_JOB_NAME" \
-            '.items[] | select(.name == $name and .type == "approval") | .approval_request_id')
 
           if [[ -z "$APPROVAL_REQUEST_ID" || "$APPROVAL_REQUEST_ID" == "null" ]]; then
-            echo "::error::Approval job '$APPROVAL_JOB_NAME' not found in workflow $WORKFLOW_ID"
+            echo "::error::Approval job '$APPROVAL_JOB_NAME' not found in workflow $WORKFLOW_ID after $MAX_ATTEMPTS attempts"
             exit 1
           fi
 
           echo "Found approval request: $APPROVAL_REQUEST_ID"
 
-          # 4. Approve it
+          # 3. Approve it
           HTTP_STATUS=$(curl -s --max-time 15 -o /dev/null -w "%{http_code}" -X POST \
             -H "Circle-Token: $CCI_TOKEN" \
             "https://circleci.com/api/v2/workflow/$WORKFLOW_ID/approve/$APPROVAL_REQUEST_ID")

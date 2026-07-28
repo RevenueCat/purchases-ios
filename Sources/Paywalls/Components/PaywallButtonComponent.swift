@@ -196,7 +196,8 @@ import Foundation
             case customerCenter
             case offerCode
             case privacyPolicy(urlLid: String, method: URLMethod)
-            case sheet(sheet: Sheet)
+            // A nil sheet renders the button with a no-op tap.
+            case sheet(sheet: Sheet?)
             case terms(urlLid: String, method: URLMethod)
             case webPaywallLink(urlLid: String, method: URLMethod)
             case url(urlLid: String, method: URLMethod)
@@ -246,8 +247,7 @@ import Foundation
                 case "offer_code":
                     self = .offerCode
                 case "sheet":
-                    let sheet = try container.decode(Sheet.self, forKey: .sheet)
-                    self = .sheet(sheet: sheet)
+                    self = .sheet(sheet: try container.decodeIfPresent(Sheet.self, forKey: .sheet))
                 case "terms":
                     let urlPayload = try container.decode(URLPayload.self, forKey: .url)
                     self = .terms(urlLid: urlPayload.urlLid, method: urlPayload.method)

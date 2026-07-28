@@ -102,7 +102,7 @@ private enum ButtonWithSheetPreview {
             .package(package)
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )
@@ -152,7 +152,10 @@ private enum ButtonWithSheetPreview {
                                                                         fontWeight: .bold,
                                                                         color: .init(light: .hex("#ffffff")),
                                                                         backgroundColor: nil,
-                                                                        size: .init(width: .fit, height: .fit),
+                                                                        size: .init(
+                                                                            width: .fit(nil),
+                                                                            height: .fit(nil)
+                                                                        ),
                                                                         padding: .init(top: 20,
                                                                                        bottom: 20,
                                                                                        leading: 20,
@@ -160,18 +163,18 @@ private enum ButtonWithSheetPreview {
                                                                     ))
                                                                 ],
                                                                 dimension: .horizontal(.center, .start),
-                                                                size: .init(width: .fit, height: .fit),
+                                                                size: .init(width: .fit(nil), height: .fit(nil)),
                                                                 shape: .rectangle(nil)
                                                             )
                                                         )
                                                     ],
                                                     dimension: .horizontal(.center, .start),
-                                                    size: .init(width: .fit, height: .fit),
+                                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                                     shape: .rectangle(nil)
                                                 )))
                                             ],
                                             dimension: .horizontal(.center, .start),
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .rectangle(nil)
                                         )
                                     ),
@@ -192,7 +195,7 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .inAppCheckout,
@@ -214,7 +217,7 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
@@ -236,7 +239,7 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
@@ -258,7 +261,7 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
@@ -282,7 +285,7 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
@@ -292,14 +295,14 @@ private enum ButtonWithSheetPreview {
                                         name: nil
                                     ))
                                 ],
-                                size: .init(width: .fill, height: .fit),
+                                size: .init(width: .fill, height: .fit(nil)),
                                 background: .color(.init(light: .hex("#2b43bf"))),
                                 padding: .init(top: 0, bottom: 30, leading: 20, trailing: 20),
                                 shape: .rectangle(nil),
                                 overflow: .default
                              ),
                              backgroundBlur: true,
-                             size: .init(width: .fill, height: .fit)
+                             size: .init(width: .fill, height: .fit(nil))
                             )
             )),
         stack: .init(
@@ -332,7 +335,7 @@ private enum ButtonWithSheetPreview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
@@ -340,14 +343,14 @@ private enum ButtonWithSheetPreview {
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -388,7 +391,7 @@ private enum ButtonWithSheetPreview {
                                  detailTextLid: "monthly_desc",
                                  isSelectedByDefault: true))
         ],
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         overflow: .default
     )
 

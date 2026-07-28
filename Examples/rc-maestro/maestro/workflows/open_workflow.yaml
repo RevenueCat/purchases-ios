@@ -1,0 +1,58 @@
+# Opens a workflow paywall (offering `default_workflows`), navigates all three screens via the
+# "Continue" button, and purchases on the last one, then asserts the entitlement unlocks.
+# Local-only for now (not under e2e_tests/, so the CI lane does not run it).
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/open_workflow.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Navigate a workflow paywall to purchase
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+- assertVisible: "entitlement (pro): nil"
+# Wait for offerings to load before the button appears.
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# Screen 1
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- takeScreenshot: "open_workflow - screen 1"
+- tapOn:
+    text: "Continue"
+
+# Screen 2
+- extendedWaitUntil:
+    visible: "Most People Feel Calmer After Just 3 Sessions"
+    timeout: 15000
+- takeScreenshot: "open_workflow - screen 2"
+- tapOn:
+    text: "Continue"
+
+# Paywall screen (Yearly is preselected); the last Continue starts the purchase.
+- extendedWaitUntil:
+    visible: "People Who Meditate Daily Sleep 40% Better"
+    timeout: 15000
+- takeScreenshot: "open_workflow - paywall screen"
+- tapOn:
+    text: "Continue"
+
+- runFlow:
+    file: ../utils/confirm_purchase.yaml
+    env:
+      SCREENSHOT_PREFIX: open_workflow
+
+- assertVisible: "entitlement (pro): active"
+- takeScreenshot: "open_workflow - unlocked entitlement"

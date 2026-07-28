@@ -23,6 +23,41 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
+    func testRemoteConfigFeatureOffUsesNoOpManager() {
+        self.setupPurchases()
+
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 0
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 0
+    }
+
+    func testRemoteConfigFeatureOnRefreshesDuringLifecycleCacheUpdates() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        self.setupPurchases()
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount).toEventually(equal(1))
+
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 1
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 1
+    }
+
+    func testRemoteConfigIsNoOpInCustomEntitlementsComputationMode() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+
+        self.initializePurchasesInstance(appUserId: Self.appUserID)
+
+        self.notificationCenter.fireNotifications()
+        self.purchases.logOut(completion: nil)
+        self.purchases.internalSwitchUser(to: "new-user")
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 0
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 0
+    }
+
     #if !os(watchOS)
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
         expect {
