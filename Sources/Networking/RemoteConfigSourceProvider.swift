@@ -111,7 +111,8 @@ final class RemoteConfigSourceProvider: RemoteConfigSourceProviderType {
         RemoteConfigSource(url: "https://api.rc-backup.com/", priority: 100_001, weight: 1)
     ]
 
-    private static let apiFailoverRestartInterval: TimeInterval = 600
+    // Visible for tests.
+    static let apiFailoverRestartInterval: TimeInterval = 2 * 60 * 60
 
     private let topicStore: RemoteConfigTopicStoreType?
     private let randomizer: WeightedSourceRandomizer?
