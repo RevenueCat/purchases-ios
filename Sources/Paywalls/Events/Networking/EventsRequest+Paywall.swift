@@ -68,21 +68,33 @@ extension FeatureEventsRequest.PaywallEvent {
         var placementIdentifier: String?
         var targetingRevision: Int?
         var targetingRuleId: String?
+        /// Workflow attribution. Sent inside `presented_offering_context` (and only there) so paywall
+        /// events can be joined to the workflow that presented them. Mirrors Android's
+        /// `BackendEvent.PresentedOfferingContextData.workflowID`.
+        var workflowId: String?
+        /// The workflow traversal this paywall event belongs to. Pairs with `trace_id` on workflow events.
+        var traceId: String?
 
         /// Returns `nil` if all fields are `nil`.
         init?(
             placementIdentifier: String?,
             targetingRevision: Int?,
-            targetingRuleId: String?
+            targetingRuleId: String?,
+            workflowId: String?,
+            traceId: String?
         ) {
             guard placementIdentifier != nil ||
                     targetingRevision != nil ||
-                    targetingRuleId != nil else {
+                    targetingRuleId != nil ||
+                    workflowId != nil ||
+                    traceId != nil else {
                 return nil
             }
             self.placementIdentifier = placementIdentifier
             self.targetingRevision = targetingRevision
             self.targetingRuleId = targetingRuleId
+            self.workflowId = workflowId
+            self.traceId = traceId
         }
 
     }
@@ -116,6 +128,7 @@ extension FeatureEventsRequest.PaywallEvent {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_body_length
     private init(decodedPaywallEvent: PaywallEvent, appUserID: String) {
         let creationData = decodedPaywallEvent.creationData
         let data = decodedPaywallEvent.data
@@ -139,7 +152,9 @@ extension FeatureEventsRequest.PaywallEvent {
             presentedOfferingContext: PresentedOfferingContextData(
                 placementIdentifier: data.placementIdentifier,
                 targetingRevision: data.targetingRevision,
-                targetingRuleId: data.targetingRuleId
+                targetingRuleId: data.targetingRuleId,
+                workflowId: data.workflowId,
+                traceId: data.traceId
             ),
             exitOfferType: exitOfferData?.exitOfferType,
             exitOfferingID: exitOfferData?.exitOfferingIdentifier,
