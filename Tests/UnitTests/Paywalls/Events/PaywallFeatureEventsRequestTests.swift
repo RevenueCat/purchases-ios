@@ -364,8 +364,7 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(context.traceId) == "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
     }
 
-    // The context initializer used to return nil unless placement or targeting was present. Workflow
-    // paywalls typically have neither, so without the relaxed guard both new fields silently vanish.
+    // The context used to be nil unless placement or targeting was set, which workflow paywalls rarely are.
     func testWorkflowAttributionSurvivesWithoutPlacementOrTargeting() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
@@ -389,7 +388,6 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(json).to(contain("\"trace_id\" : \"3F2504E0-4F89-11D3-9A0C-0305E82C3301\""))
     }
 
-    // Neither field is sent top-level; both live only inside presented_offering_context.
     func testWorkflowAttributionIsNotSentAtTopLevel() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
@@ -403,7 +401,6 @@ class PaywallFeatureEventsRequestTests: TestCase {
 
         expect(topLevel.keys.contains("workflow_id")) == false
         expect(topLevel.keys.contains("trace_id")) == false
-        // Sanity: the values are present somewhere in the payload, just not at the top level.
         expect(json).to(contain("wf_abc123"))
     }
 

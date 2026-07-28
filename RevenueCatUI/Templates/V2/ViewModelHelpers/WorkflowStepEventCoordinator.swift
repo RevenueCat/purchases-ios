@@ -27,8 +27,7 @@ final class WorkflowStepEventCoordinator {
     private var hasTrackedTerminalCompletion = false
     private var hasTrackedAbandonment = false
 
-    /// The trace id for this presentation, identical to the one on every workflow event this coordinator
-    /// emits. Read by ``WorkflowPaywallView`` to attribute paywall events to the same traversal.
+    /// Same id this coordinator stamps on its workflow events, so paywall events can share it.
     var traceId: String { self.tracker.traceId }
 
     init(workflow: PublishedWorkflow, traceId: String, sink: @escaping (WorkflowEvent) -> Void) {

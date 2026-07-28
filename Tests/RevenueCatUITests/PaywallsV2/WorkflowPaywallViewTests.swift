@@ -1133,11 +1133,8 @@ extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
-    /// Guards the one line that hands the coordinator's per-presentation trace id down to
-    /// `PaywallsV2View`. That argument is defaulted to `nil`, so dropping it compiles cleanly and
-    /// silently ships `trace_id: null` on every workflow paywall event. Both halves of the assertion
-    /// matter: a non-nil check alone would still pass if the two event streams drifted apart, which
-    /// is the failure that makes the analytics join return zero rows.
+    /// `PaywallsV2View`'s `traceId` is defaulted to `nil`, so dropping the argument in
+    /// `WorkflowPaywallView` compiles cleanly and silently ships `trace_id: null`.
     @MainActor
     func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
         let paywallEvents: Atomic<[PaywallEvent]> = .init([])

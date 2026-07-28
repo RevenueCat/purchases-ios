@@ -101,8 +101,6 @@ struct PaywallsV2View: View {
     /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
     private let workflowId: String?
     private let stepId: String?
-    /// The workflow traversal this page belongs to, stamped onto paywall events as `trace_id`. `nil` for
-    /// standalone paywalls.
     private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
@@ -458,12 +456,9 @@ struct PaywallsV2View: View {
         )
     }
 
-    /// Stamps workflow attribution onto a paywall event's data. `workflowId` / `stepId` are what the
-    /// post-receipt body sends as `presented_workflow_id` / `presented_step_id` (#7024). `traceId` is
-    /// *not* sent post-receipt: it exists only so the paywall event's own `presented_offering_context`
-    /// carries the same `trace_id` as the workflow events from this presentation, letting analytics join
-    /// the two streams. Orthogonal to the `screen_type` gate (``shouldTrackPaywallEvents`` decides
-    /// whether the event fires at all); all three are `nil` for standalone paywalls. Mirrors Android's
+    /// Stamps workflow attribution onto a paywall event's data: `workflowId` / `stepId` for the
+    /// post-receipt body (#7024), `traceId` for the event's own `presented_offering_context`. Orthogonal
+    /// to the `screen_type` gate; all are `nil` for standalone paywalls. Mirrors Android's
     /// `PaywallEvent.Data.withCurrentWorkflowMetadata`.
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
