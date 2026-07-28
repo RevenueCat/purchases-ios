@@ -286,11 +286,6 @@ internal extension HTTPClient {
             return source
         }
 
-        var attemptCount: Int {
-            guard case let .source(_, attemptCount) = self else { return 0 }
-            return attemptCount
-        }
-
     }
 
     struct Request: CustomStringConvertible {
@@ -372,10 +367,15 @@ internal extension HTTPClient {
             }
         }
 
+        /// Only meaningful on a request that is already targeting a source (a failover decision can
+        /// only come from one); the previous attempt count carries over and increments.
         func requestWith(nextAPISource: APISourceFailover.ResolvedSource) -> Self {
+            guard case let .source(_, attemptCount) = self.apiSourceState else {
+                assertionFailure("Retrying on a next API source requires a current one")
+                return self
+            }
             var copy = self
-            copy.apiSourceState = .source(nextAPISource,
-                                          attemptCount: self.apiSourceState.attemptCount + 1)
+            copy.apiSourceState = .source(nextAPISource, attemptCount: attemptCount + 1)
             return copy
         }
 
