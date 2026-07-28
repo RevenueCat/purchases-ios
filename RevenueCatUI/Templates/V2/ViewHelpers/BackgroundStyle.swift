@@ -111,6 +111,9 @@ fileprivate extension View {
                     }
                 }
                 .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
+                // The mask clips drawing only, so a "fill" image overflowing its container would
+                // still swallow taps on the components it overlaps.
+                .allowsHitTesting(false)
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {
@@ -129,6 +132,8 @@ fileprivate extension View {
                     }
                 }
                 .ignoresSafeAreaIfNeeded(edges: ignoresSafeAreaEdges)
+                // Same reason as the image background above.
+                .allowsHitTesting(false)
             }
         }
     }
