@@ -7,6 +7,8 @@
 
 import Foundation
 import RevenueCat
+// If Swift's strict concurrency checking is enabled you'll need to import Combine.
+//import Combine
 
 /*
  The class we'll use to publish CustomerInfo data to our Magic Weather app.
