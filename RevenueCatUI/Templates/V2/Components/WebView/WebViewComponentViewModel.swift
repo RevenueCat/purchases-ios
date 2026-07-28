@@ -120,22 +120,12 @@ struct WebViewComponentStyle: Equatable {
         self.size = size
         self.visible = visible
 
-        let resolvedURL = Self.validatedHTTPSURL(from: urlString)
+        let resolvedURL = PaywallComponent.WebViewComponent.validatedHTTPSURL(from: urlString)
         self.url = resolvedURL
 
         #if canImport(WebKit)
         self.origin = resolvedURL.flatMap { WebViewOrigin(url: $0) }
         #endif
-    }
-
-    private static func validatedHTTPSURL(from urlString: String) -> URL? {
-        guard !urlString.contains("{{"),
-              let url = URL(string: urlString),
-              url.scheme?.lowercased() == "https",
-              url.host?.isEmpty == false else {
-            return nil
-        }
-        return url
     }
 
 }

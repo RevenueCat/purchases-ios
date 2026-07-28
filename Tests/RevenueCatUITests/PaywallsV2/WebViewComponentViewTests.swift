@@ -11,8 +11,9 @@
 //
 //  Created by Antonio Pallares on 7/21/26.
 
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 // swiftlint:disable force_try
 
@@ -61,6 +62,71 @@ final class WebViewComponentViewTests: TestCase {
             let invalid = Self.defaultStyle(Self.makeViewModel(url: invalidURL))
             XCTAssertNil(invalid.url)
         }
+    }
+
+    func testViewModelFactoryBuildsWebViewViewModel() throws {
+        let result = try Self.viewModel(decodedFrom: """
+        {
+          "type": "web_view",
+          "id": "web",
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+
+        #if canImport(WebKit) && !os(watchOS)
+        guard case .webView(let built) = result else {
+            return XCTFail("Expected .webView view model")
+        }
+        XCTAssertEqual(built.componentID, "web")
+        XCTAssertEqual(Self.defaultStyle(built).url?.absoluteString, "https://example.com/index.html")
+        #else
+        // Web views are unserviceable here, so decoding yields the author's fallback and the factory
+        // must build a view model for that instead.
+        guard case .stack = result else {
+            return XCTFail("Expected fallback .stack view model, got \(result)")
+        }
+        #endif
+    }
+
+    func testViewModelFactoryPreservesOverrides() throws {
+        // End-to-end guard for the factory seam: overrides declared in JSON must survive decoding and
+        // the ViewModelFactory so they still resolve at render time. Injecting overrides directly into
+        // the view model (as the resolution tests do) would pass even if the factory dropped them.
+        let result = try Self.viewModel(decodedFrom: """
+        {
+          "type": "web_view",
+          "id": "web",
+          "visible": true,
+          "protocol_version": 1,
+          "url": "https://example.com/index.html",
+          "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+          "overrides": [
+            {
+              "conditions": [{ "type": "selected" }],
+              "properties": { "visible": false }
+            }
+          ],
+          "fallback": \(Self.fallbackStackJSON)
+        }
+        """)
+
+        #if canImport(WebKit) && !os(watchOS)
+        guard case .webView(let built) = result else {
+            return XCTFail("Expected .webView view model")
+        }
+
+        // Default state keeps the base (visible) value; the selected override only applies when selected.
+        XCTAssertTrue(Self.defaultStyle(built).visible)
+        XCTAssertFalse(Self.defaultStyle(built, state: .selected).visible)
+        #else
+        // The web view overrides are moot here: the author's fallback is rendered instead.
+        guard case .stack = result else {
+            return XCTFail("Expected fallback .stack view model, got \(result)")
+        }
+        #endif
     }
 
     #if canImport(WebKit)
@@ -171,14 +237,95 @@ final class WebViewComponentViewTests: TestCase {
         )
     }
 
+    // MARK: - Rule discarding
+
+    func testDiscardRulesStripsRuleBasedWebViewOverrides() {
+        // Rule-based overrides (here a selected-package rule) apply normally, but are stripped once the
+        // paywall discards rules because an unsupported condition was found somewhere.
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent> = [
+            .init(
+                extendedConditions: [.selectedPackage(operator: .in, packages: ["monthly"])],
+                properties: .init(visible: false)
+            )
+        ]
+
+        func visibleWhenMonthlySelected(discardRules: Bool) -> Bool {
+            Self.makeViewModel(
+                url: "https://example.com",
+                visible: true,
+                overrides: overrides,
+                discardRules: discardRules
+            ).style(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                selectedPackageId: "monthly",
+                customVariables: [:]
+            ).visible
+        }
+
+        // Honored: selecting the package hides the web view.
+        XCTAssertFalse(visibleWhenMonthlySelected(discardRules: false))
+        // Discarded: the rule is stripped, so the base (visible) value stands.
+        XCTAssertTrue(visibleWhenMonthlySelected(discardRules: true))
+    }
+
     // MARK: - Helpers
+
+    private static let fallbackStackJSON = """
+    {
+        "type": "stack",
+        "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+        "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "components": []
+    }
+    """
+
+    /// Decodes a component from `json` and runs it through the real `ViewModelFactory`, exercising the
+    /// full decode-to-view-model seam.
+    private static func viewModel(decodedFrom json: String) throws -> PaywallComponentViewModel {
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8))
+
+        let uiConfigJSON = Data("""
+        {
+          "app": { "colors": {}, "fonts": {} },
+          "localizations": {},
+          "variable_config": {
+            "variable_compatibility_map": {},
+            "function_compatibility_map": {}
+          }
+        }
+        """.utf8)
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        let uiConfig = try decoder.decode(UIConfig.self, from: uiConfigJSON)
+
+        return try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
+            colorScheme: .light
+        )
+    }
 
     private static func makeViewModel(
         id: String = "web",
         url: String,
         visible: Bool? = nil,
         size: PaywallComponent.Size = .init(width: .fill, height: .fit(nil)),
-        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent>? = nil
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialWebViewComponent>? = nil,
+        discardRules: Bool = false
     ) -> WebViewComponentViewModel {
         WebViewComponentViewModel(
             component: .init(
@@ -189,7 +336,8 @@ final class WebViewComponentViewTests: TestCase {
                 size: size,
                 overrides: overrides
             ),
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            discardRules: discardRules
         )
     }
 

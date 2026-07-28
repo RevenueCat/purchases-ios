@@ -513,6 +513,14 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .webView(let component):
+            return .webView(
+                WebViewComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
+                )
+            )
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")
