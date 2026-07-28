@@ -130,7 +130,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               diagnosticsTracker: nil,
                               requestTimeout: 30,
                               operationDispatcher: OperationDispatcher(),
-                              apiSourceProvider: nil)
+                              apiSourceFailover: nil)
         }
 
         func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
