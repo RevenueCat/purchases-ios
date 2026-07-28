@@ -64,6 +64,21 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    // The coordinator's exposed trace id must be the same one it stamps on workflow events; if the
+    // passthrough ever returned a fresh UUID, paywall and workflow events would carry different trace
+    // ids and the Snowflake join would silently return nothing. `freshTraceId` proves the passthrough
+    // surfaces the *generated* id rather than a hardcoded test value.
+    func testTraceIdMatchesTheTraceIdStampedOnEmittedWorkflowEvents() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow, freshTraceId: true)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+
+        let data = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(coordinator.traceId) == data.traceId
+    }
+
     // MARK: - Forward / back transitions
 
     func testForwardTransitionEmitsCompletedThenStartedInOrder() throws {

@@ -101,6 +101,9 @@ struct PaywallsV2View: View {
     /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
     private let workflowId: String?
     private let stepId: String?
+    /// The workflow traversal this page belongs to, stamped onto paywall events as `trace_id`. `nil` for
+    /// standalone paywalls.
+    private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
@@ -143,6 +146,7 @@ struct PaywallsV2View: View {
         workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil,
+        traceId: String? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
         let uiConfigProvider = UIConfigProvider(
@@ -166,6 +170,7 @@ struct PaywallsV2View: View {
         self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
+        self.traceId = traceId
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -460,11 +465,13 @@ struct PaywallsV2View: View {
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
         workflowId: String?,
-        stepId: String?
+        stepId: String?,
+        traceId: String?
     ) -> PaywallEvent.Data {
         var data = data
         data.workflowId = workflowId
         data.stepId = stepId
+        data.traceId = traceId
         return data
     }
 
@@ -552,7 +559,12 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        return Self.applyingWorkflowAttribution(to: data, workflowId: self.workflowId, stepId: self.stepId)
+        return Self.applyingWorkflowAttribution(
+            to: data,
+            workflowId: self.workflowId,
+            stepId: self.stepId,
+            traceId: self.traceId
+        )
     }
 
 }

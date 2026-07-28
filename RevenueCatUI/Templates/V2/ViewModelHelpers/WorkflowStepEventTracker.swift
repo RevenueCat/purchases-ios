@@ -32,7 +32,9 @@ struct WorkflowStepEventTracker {
     }
 
     private let workflow: PublishedWorkflow
-    private let traceId: String
+    /// Not private: ``WorkflowStepEventCoordinator`` re-exposes this so the same trace id can be stamped
+    /// onto paywall events, which is what makes the two event streams joinable.
+    let traceId: String
     private let sink: (WorkflowEvent) -> Void
 
     init(

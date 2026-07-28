@@ -235,15 +235,18 @@ final class ApplyingWorkflowAttributionTests: TestCase {
 
     // The seam #7024 wires and the screen_type work removed: a workflow paywall step's impression event
     // must carry the workflow + step so the post-receipt body sends presented_workflow_id/step_id.
+    // The trace id rides along so the event can be joined to the workflow traversal.
     func testStampsWorkflowAndStepIdOnWorkflowStep() {
         let result = PaywallsV2View.applyingWorkflowAttribution(
             to: self.makeData(),
             workflowId: "wf_test",
-            stepId: "step_1"
+            stepId: "step_1",
+            traceId: "trace_1"
         )
 
         expect(result.workflowId) == "wf_test"
         expect(result.stepId) == "step_1"
+        expect(result.traceId) == "trace_1"
     }
 
     // Standalone paywalls (and untagged steps with no IDs) carry no attribution, so the post-receipt
@@ -252,11 +255,13 @@ final class ApplyingWorkflowAttributionTests: TestCase {
         let result = PaywallsV2View.applyingWorkflowAttribution(
             to: self.makeData(workflowId: "stale", stepId: "stale"),
             workflowId: nil,
-            stepId: nil
+            stepId: nil,
+            traceId: nil
         )
 
         expect(result.workflowId).to(beNil())
         expect(result.stepId).to(beNil())
+        expect(result.traceId).to(beNil())
     }
 
 }
