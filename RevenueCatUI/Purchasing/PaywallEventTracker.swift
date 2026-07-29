@@ -16,10 +16,6 @@ import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-#if canImport(UIKit) && os(iOS)
-import UIKit
-#endif
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallEventTracker: @unchecked Sendable {
     typealias EventDispatcher = @Sendable (@Sendable @escaping () async -> Void) -> Void
