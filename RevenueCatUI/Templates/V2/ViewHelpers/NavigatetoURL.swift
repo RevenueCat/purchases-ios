@@ -17,13 +17,11 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum Browser {
 
-    /// - Parameter completion: whether the URL actually opened; called with `false` for `.unknown`.
     static func navigateTo(
         url: URL,
         method: PaywallComponent.ButtonComponent.URLMethod,
         openURL: OpenURLAction,
-        inAppBrowserURL: Binding<URL?>,
-        completion: ((Bool) -> Void)? = nil
+        inAppBrowserURL: Binding<URL?>
     ) {
         switch method {
         case .inAppBrowser:
@@ -36,17 +34,14 @@ enum Browser {
                 } else {
                     Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
                 }
-                completion?(success)
             }
 #else
             inAppBrowserURL.wrappedValue = url
-            completion?(true)
 #endif
         case .externalBrowser:
 #if os(watchOS)
             // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
             openURL(url)
-            completion?(true)
 #else
             openURL(url) { success in
                 if success {
@@ -54,14 +49,12 @@ enum Browser {
                 } else {
                     Logger.error(Strings.failed_to_open_url_external_browser(url.absoluteString))
                 }
-                completion?(success)
             }
 #endif
         case .deepLink:
 #if os(watchOS)
             // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
             openURL(url)
-            completion?(true)
 #else
             openURL(url) { success in
                 if success {
@@ -69,11 +62,10 @@ enum Browser {
                 } else {
                     Logger.error(Strings.failed_to_open_url_deep_link(url.absoluteString))
                 }
-                completion?(success)
             }
 #endif
         case .unknown:
-            completion?(false)
+            break
         }
     }
 

@@ -189,14 +189,12 @@ struct PurchaseButtonComponentView: View {
         Browser.navigateTo(url: url,
                            method: method,
                            openURL: self.openURL,
-                           inAppBrowserURL: self.$inAppBrowserURL) { opened in
-            guard opened else { return }
+                           inAppBrowserURL: self.$inAppBrowserURL)
 
-            self.purchaseHandler.signalWebCheckoutOpened()
+        self.purchaseHandler.signalWebCheckoutOpened()
 
-            if launchWebCheckout.autoDismiss {
-                self.onDismiss()
-            }
+        if launchWebCheckout.autoDismiss {
+            self.onDismiss()
         }
     }
 
