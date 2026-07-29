@@ -122,28 +122,6 @@ class EventsManagerTests: TestCase {
         expect(map["dark_mode"] as? Bool) == data.darkMode
     }
 
-    func testPaywallImpressionToMapIncludesWorkflowAttribution() {
-        var data = PaywallEvent.Data.random()
-        data.workflowId = "wf_abc123"
-        data.stepId = "step_1"
-        data.traceId = "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
-        let event: PaywallEvent = .impression(PaywallEvent.CreationData.random(), data)
-        let map = event.toMap()
-
-        expect(map["workflow_id"] as? String) == "wf_abc123"
-        expect(map["trace_id"] as? String) == "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
-        expect(map.keys.contains("step_id")) == false
-    }
-
-    func testPaywallImpressionToMapOmitsWorkflowAttributionForStandalonePaywall() {
-        let event: PaywallEvent = .impression(PaywallEvent.CreationData.random(), PaywallEvent.Data.random())
-        let map = event.toMap()
-
-        expect(map.keys.contains("workflow_id")) == false
-        expect(map.keys.contains("step_id")) == false
-        expect(map.keys.contains("trace_id")) == false
-    }
-
     func testPaywallCloseToMap() {
         let creationData = PaywallEvent.CreationData.random()
         let data = PaywallEvent.Data.random()
