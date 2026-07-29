@@ -18,9 +18,11 @@ enum WorkflowScreenMapper {
 
     static func toPaywallComponents(
         screen: WorkflowScreen,
-        uiConfig: UIConfig
+        uiConfig: UIConfig,
+        paywallId: String? = nil
     ) -> Offering.PaywallComponents {
         let data = PaywallComponentsData(
+            id: paywallId,
             templateName: screen.templateName,
             assetBaseURL: screen.assetBaseURL,
             componentsConfig: screen.componentsConfig,
@@ -30,6 +32,12 @@ enum WorkflowScreenMapper {
             exitOffers: screen.exitOffers
         )
         return .init(uiConfig: uiConfig, data: data)
+    }
+
+    /// A paywall is always one of a workflow's screens, so the step's offering is the one whose paywall
+    /// id we need. Mirrors Android's `offering.paywall?.id ?: offering.paywallComponents?.data?.id`.
+    static func paywallId(from offering: Offering) -> String? {
+        offering.paywall?.id ?? offering.internalPaywallComponents?.data.id
     }
 
 }

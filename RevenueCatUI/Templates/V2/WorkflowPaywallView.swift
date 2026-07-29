@@ -705,7 +705,8 @@ struct WorkflowPaywallView: View {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: context.uiConfig
+            uiConfig: context.uiConfig,
+            paywallId: WorkflowScreenMapper.paywallId(from: offering)
         )
 
         return .init(

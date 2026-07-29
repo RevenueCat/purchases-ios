@@ -83,6 +83,72 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.exitOffers).to(beNil())
     }
 
+    func testCarriesThePaywallIdItWasGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: uiConfig,
+            paywallId: "paywall_123"
+        )
+
+        expect(result.data.id) == "paywall_123"
+    }
+
+    func testIdIsNilWhenNotGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.id).to(beNil())
+    }
+
+    // Workflow paywalls are Paywalls V2, so this is the branch that fires in production.
+    func testPaywallIdFallsBackToTheComponentsIdWhenThereIsNoV1Paywall() throws {
+        let offering = try Self.makeOffering(paywall: nil, componentsPaywallId: "components_id")
+
+        expect(WorkflowScreenMapper.paywallId(from: offering)) == "components_id"
+    }
+
+    func testPaywallIdPrefersTheV1PaywallId() throws {
+        var paywall = TestData.paywallWithIntroOffer
+        paywall.id = "v1_id"
+        let offering = try Self.makeOffering(paywall: paywall, componentsPaywallId: "components_id")
+
+        expect(WorkflowScreenMapper.paywallId(from: offering)) == "v1_id"
+    }
+
+    func testPaywallIdIsNilWhenTheOfferingHasNoPaywall() throws {
+        let offering = try Self.makeOffering(paywall: nil, componentsPaywallId: nil)
+
+        expect(WorkflowScreenMapper.paywallId(from: offering)).to(beNil())
+    }
+
+    private static func makeOffering(
+        paywall: PaywallData?,
+        componentsPaywallId: String?
+    ) throws -> Offering {
+        let offering = Offering(
+            identifier: "offering_id",
+            serverDescription: "Test",
+            metadata: [:],
+            paywall: paywall,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+
+        guard let componentsPaywallId else { return offering }
+
+        let components = WorkflowScreenMapper.toPaywallComponents(
+            screen: try Self.makeScreen(),
+            uiConfig: try Self.makeUIConfig(),
+            paywallId: componentsPaywallId
+        )
+        return offering.withPaywallComponents(components)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
