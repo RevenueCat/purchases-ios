@@ -91,6 +91,36 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
         self.verifyRemoteConfiguration(result.configuration)
     }
 
+    func createRemoteConfigManager(storageRootURL: URL) throws -> RemoteConfigManager {
+        let directoryType = DirectoryHelper.DirectoryType.applicationSupport(overrideURL: storageRootURL)
+        let cacheBasePath = "\(RemoteConfigDiskCache.basePath)-\(UUID().uuidString)"
+        let synchronizedCache = SynchronizedLargeItemCache(
+            cache: FileManager.default,
+            basePath: cacheBasePath,
+            directoryType: directoryType
+        )
+        let cacheDirectoryURL = try XCTUnwrap(DirectoryHelper.baseUrl(for: directoryType))
+            .appendingPathComponent(cacheBasePath, isDirectory: true)
+        let diskCache = RemoteConfigDiskCache(cache: synchronizedCache)
+        let blobStore = RemoteConfigBlobStore(
+            fileManager: .default,
+            directoryURL: cacheDirectoryURL.appendingPathComponent("blobs", isDirectory: true)
+        )
+        let sourceProvider = RemoteConfigSourceProvider(topicStore: diskCache)
+        let blobFetcher = RemoteConfigBlobFetcher(
+            blobStore: blobStore,
+            sourceProvider: sourceProvider
+        )
+
+        return RemoteConfigManager(
+            remoteConfigAPI: self.remoteConfigAPI,
+            diskCache: diskCache,
+            blobStore: blobStore,
+            blobFetcher: blobFetcher,
+            currentUserProvider: ProductionRemoteConfigCurrentUserProvider(appUserID: self.appUserID)
+        )
+    }
+
 }
 
 private extension BaseProductionRemoteConfigIntegrationTests {
@@ -164,6 +194,24 @@ final class ProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIn
         try self.verifyRemoteConfigFallbackResponse(result)
     }
 
+    func testFetchesProductEntitlementMappingThroughRemoteConfig() async throws {
+        let storageRootURL = FileManager.default.temporaryDirectory
+            .appendingPathComponent("ProductionRemoteConfigIntegrationTests-\(UUID().uuidString)", isDirectory: true)
+        defer { try? FileManager.default.removeItem(at: storageRootURL) }
+
+        let manager = try self.createRemoteConfigManager(storageRootURL: storageRootURL)
+        defer { manager.close() }
+
+        let provider = ProductEntitlementMappingTopicProvider(manager: manager)
+        let response = await provider.getProductEntitlementMapping()
+        let mapping = try XCTUnwrap(response)
+
+        expect(mapping.products["com.revenuecat.monthly_4.99.1_week_intro"]?.entitlements) == ["premium"]
+        expect(mapping.products["lifetime"]?.entitlements) == ["premium"]
+        expect(mapping.products["com.revenuecat.intro_test.monthly.1_week_intro"]?.entitlements ?? []).to(beEmpty())
+        expect(mapping.products["consumable.10_coins"]?.entitlements ?? []).to(beEmpty())
+    }
+
 }
 
 final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemoteConfigIntegrationTests {
@@ -195,5 +243,14 @@ final class EnforcedProductionRemoteConfigIntegrationTests: BaseProductionRemote
 
         try self.verifyRemoteConfigFallbackResponse(result)
     }
+
+}
+
+private struct ProductionRemoteConfigCurrentUserProvider: CurrentUserProvider {
+
+    let appUserID: String
+
+    var currentAppUserID: String { self.appUserID }
+    var currentUserIsAnonymous: Bool { false }
 
 }

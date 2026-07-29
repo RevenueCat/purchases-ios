@@ -101,6 +101,44 @@ class OfflineEntitlementsManagerAvailableTests: BaseOfflineEntitlementsManagerTe
         expect(self.mockProductEntitlementMappingTopicProvider.invokedGetProductEntitlementMappingCount) == 1
     }
 
+    func testValidEmptyRemoteConfigMappingCachesAndSkipsLegacyEndpoint() async throws {
+        let remoteConfigManager = MockRemoteConfigManager()
+        let mapping = ProductEntitlementMappingResponse(products: [:])
+        remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = [
+            "default": try JSONEncoder.default.encode(mapping)
+        ]
+        self.manager.setProductEntitlementMappingTopicProvider(
+            ProductEntitlementMappingTopicProvider(manager: remoteConfigManager)
+        )
+        self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
+
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
+
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping).toEventually(equal(.empty))
+        expect(remoteConfigManager.invokedBlobDataParameters.count) == 1
+        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == false
+    }
+
+    func testEmptyRemoteConfigBlobFallsBackToLegacyEndpoint() async {
+        let remoteConfigManager = MockRemoteConfigManager()
+        remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = ["default": Data()]
+        self.manager.setProductEntitlementMappingTopicProvider(
+            ProductEntitlementMappingTopicProvider(manager: remoteConfigManager)
+        )
+        let legacyMapping: ProductEntitlementMappingResponse = .init(products: [
+            "legacy": .init(identifier: "legacy", entitlements: ["pro"])
+        ])
+        self.mockDeviceCache.stubbedIsProductEntitlementMappingCacheStale = true
+        self.mockOfflineEntitlements.stubbedGetProductEntitlementMappingResult = .success(legacyMapping)
+
+        self.manager.updateProductsEntitlementsCacheIfStale(isAppBackgrounded: false)
+
+        await expect(self.mockDeviceCache.cachedProductEntitlementMapping)
+            .toEventually(equal(legacyMapping.toMapping()))
+        expect(remoteConfigManager.invokedBlobDataParameters.count) == 1
+        expect(self.mockOfflineEntitlements.invokedGetProductEntitlementMapping) == true
+    }
+
     func testConcurrentUpdatesShareOneRemoteConfigTask() async {
         let mapping: ProductEntitlementMappingResponse = .init(products: [
             "a": .init(identifier: "a", entitlements: ["pro"])
@@ -266,6 +304,27 @@ final class EntitlementMappingTopicProviderTests: TestCase {
     func testReturnsNilWhenBlobCannotBeDecoded() async {
         self.remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = [
             "default": "{ invalid json".asData
+        ]
+
+        let result = await self.provider.getProductEntitlementMapping()
+
+        expect(result).to(beNil())
+    }
+
+    func testReturnsEmptyMappingWhenBlobContainsValidEmptyMapping() async throws {
+        let mapping = ProductEntitlementMappingResponse(products: [:])
+        self.remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = [
+            "default": try JSONEncoder.default.encode(mapping)
+        ]
+
+        let result = await self.provider.getProductEntitlementMapping()
+
+        expect(result) == mapping
+    }
+
+    func testReturnsNilWhenBlobIsMissingMappingEnvelope() async {
+        self.remoteConfigManager.stubbedBlobData[.productEntitlementMapping] = [
+            "default": "{}".asData
         ]
 
         let result = await self.provider.getProductEntitlementMapping()
