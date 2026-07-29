@@ -376,16 +376,12 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(context.targetingRuleId).to(beNil())
     }
 
-    func testWorkflowAttributionUsesSnakeCaseKeysOnTheWire() throws {
+    func testImpressionEventWithWorkflowAttribution() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        let encoded = try JSONEncoder.prettyPrinted.encode(requestEvent)
-        let json = try XCTUnwrap(String(data: encoded, encoding: .utf8))
-
-        expect(json).to(contain("\"workflow_id\" : \"wf_abc123\""))
-        expect(json).to(contain("\"trace_id\" : \"3F2504E0-4F89-11D3-9A0C-0305E82C3301\""))
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testWorkflowAttributionIsNotSentAtTopLevel() throws {
