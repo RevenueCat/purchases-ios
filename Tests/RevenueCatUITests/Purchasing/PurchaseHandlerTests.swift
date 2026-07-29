@@ -101,6 +101,31 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.restoredCustomerInfo).to(beNil())
     }
 
+    @MainActor
+    func testSignalWebCheckoutOpenedSetsANewUUID() async throws {
+        let handler: PurchaseHandler = .mock()
+        expect(handler.webCheckoutOpened).to(beNil())
+
+        handler.signalWebCheckoutOpened()
+        let firstID = handler.webCheckoutOpened
+        expect(firstID).toNot(beNil())
+
+        handler.signalWebCheckoutOpened()
+        expect(handler.webCheckoutOpened).toNot(equal(firstID))
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsWebCheckoutOpened() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalWebCheckoutOpened()
+        expect(handler.webCheckoutOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+
+        // Cleared a tick later (see `deferredClearWebCheckoutOpened`), not synchronously.
+        await expect(handler.webCheckoutOpened).toEventually(beNil())
+    }
+
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 

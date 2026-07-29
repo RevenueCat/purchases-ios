@@ -39,6 +39,10 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
+/// A closure invoked when the user taps a web checkout CTA and leaves the app to complete payment
+/// externally.
+public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
+
 /// A closure used to perform custom purchase logic implemented by your app.
 /// - Parameters:
 ///   - package: The package to be purchased.
@@ -242,6 +246,22 @@ extension View {
         _ handler: @escaping PurchaseCancelledHandler
     ) -> some View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
+    }
+
+    /// Invokes the given closure when the user taps a web checkout CTA and leaves the app to complete
+    /// payment externally. Distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onWebCheckoutOpened {
+    ///         print("User left to complete web checkout")
+    ///     }
+    /// ```
+    public func onWebCheckoutOpened(
+        _ handler: @escaping WebCheckoutOpenedHandler
+    ) -> some View {
+        return self.modifier(OnWebCheckoutOpenedModifier(handler: handler))
     }
 
     /// Invokes the given closure when a restore begins.
@@ -507,6 +527,22 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
         content
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
+                    self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnWebCheckoutOpenedModifier: ViewModifier {
+
+    let handler: WebCheckoutOpenedHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(WebCheckoutOpenedPreferenceKey.self) { id in
+                if id != nil {
                     self.handler()
                 }
             }

@@ -907,6 +907,23 @@ extension WorkflowPaywallViewTests {
     }
 
     @MainActor
+    func testOnWebCheckoutOpenedFiredInWorkflow() throws {
+        // PaywallsV2View must publish WebCheckoutOpenedPreferenceKey like the other preferences, or
+        // this never fires for V2 full-screen paywalls, the only surface with web checkout buttons.
+        let purchaseHandler: PurchaseHandler = .mock()
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+        var fireCount = 0
+
+        _ = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .onWebCheckoutOpened { fireCount += 1 }
+            .addToHierarchy()
+
+        purchaseHandler.signalWebCheckoutOpened()
+
+        expect(fireCount).toEventually(equal(1))
+    }
+
+    @MainActor
     func testOnPurchaseCancelledFiredInWorkflow() throws {
         let purchaseHandler: PurchaseHandler = .cancelling()
         let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
@@ -1129,6 +1146,172 @@ extension WorkflowPaywallViewTests {
         }
 
         expect(error).toEventually(matchError(Self.failureError))
+    }
+
+}
+
+// MARK: - Trace id wiring
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    /// `PaywallsV2View`'s `traceId` defaults to `nil`, so dropping the argument would compile silently.
+    @MainActor
+    func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        let stepStarted = try XCTUnwrap(workflowEvents.value.first { Self.isStepStarted($0) })
+
+        let paywallTraceId: String = try XCTUnwrap(impression.data.traceId, "paywall event carried no trace id")
+        let workflowTraceId: String = try XCTUnwrap(stepStarted.data.traceId, "workflow event carried no trace id")
+        expect(paywallTraceId) == workflowTraceId
+    }
+
+    /// Re-entering a step mints a fresh paywall session and fires a second `paywall_viewed`
+    /// (`PaywallsV2View.onChangeOf(isActiveWorkflowPage)`). The trace id identifies the presentation, not
+    /// the visit, so it has to survive that. Driven at the `PaywallsV2View` seam because the page's
+    /// activation is the only part of navigation reachable without simulating a tap.
+    @MainActor
+    func testReenteringAWorkflowPageKeepsTheTraceIdOnTheSecondImpression() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let (_, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+        let screen = try XCTUnwrap(context.workflow.screens["screen_a"])
+        let activation = WorkflowPageActivation(isActive: true)
+
+        let dispose = try WorkflowPageActivationHost(
+            activation: activation,
+            paywallComponents: WorkflowScreenMapper.toPaywallComponents(
+                screen: screen,
+                uiConfig: context.uiConfig
+            ),
+            offering: context.initialOffering,
+            purchaseHandler: purchaseHandler,
+            traceId: Self.reentryTraceId
+        ).addToHierarchy()
+
+        defer { dispose() }
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(1),
+            timeout: .seconds(3)
+        )
+
+        // Navigate away and back. The page stays mounted, it just stops being the current step.
+        // The render pass in between is required, otherwise both flips coalesce into no change at all.
+        activation.isActive = false
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        activation.isActive = true
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(2),
+            timeout: .seconds(3)
+        )
+
+        let impressions = Self.impressionData(in: paywallEvents.value)
+        expect(impressions.map(\.traceId)) == [Self.reentryTraceId, Self.reentryTraceId]
+
+        let firstVisit = try XCTUnwrap(impressions.first)
+        let secondVisit = try XCTUnwrap(impressions.dropFirst().first)
+        expect(firstVisit.sessionIdentifier) != secondVisit.sessionIdentifier
+    }
+
+    private static let reentryTraceId = "trace_reentry"
+
+    private static func isImpression(_ event: PaywallEvent) -> Bool {
+        if case .impression = event { return true }
+        return false
+    }
+
+    private static func isStepStarted(_ event: WorkflowEvent) -> Bool {
+        if case .stepStarted = event { return true }
+        return false
+    }
+
+    private static func impressionData(in events: [PaywallEvent]) -> [PaywallEvent.Data] {
+        return events.filter { Self.isImpression($0) }.map(\.data)
+    }
+
+    private static func makeEventRecordingPurchaseHandler(
+        paywallEvents: Atomic<[PaywallEvent]>
+    ) -> (MockPurchases, PurchaseHandler) {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            paywallEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let purchaseHandler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        return (purchases, purchaseHandler)
+    }
+
+}
+
+/// Lets a test flip a workflow page between current and not-current, the signal
+/// `WorkflowPaywallView` feeds `PaywallsV2View` on every navigation.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class WorkflowPageActivation: ObservableObject {
+
+    @Published var isActive: Bool
+
+    init(isActive: Bool) {
+        self.isActive = isActive
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageActivationHost: View {
+
+    @ObservedObject var activation: WorkflowPageActivation
+    let paywallComponents: Offering.PaywallComponents
+    let offering: Offering
+    let purchaseHandler: PurchaseHandler
+    let traceId: String
+
+    var body: some View {
+        PaywallsV2View(
+            paywallComponents: self.paywallComponents,
+            offering: self.offering,
+            purchaseHandler: self.purchaseHandler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            onDismiss: {},
+            failedToLoadFont: { _ in },
+            colorScheme: .light,
+            isActiveWorkflowPage: self.activation.isActive,
+            workflowScreenType: [WorkflowScreenType.paywall],
+            workflowId: "wf_non_initial_test",
+            stepId: "step_a",
+            traceId: self.traceId
+        )
     }
 
 }
