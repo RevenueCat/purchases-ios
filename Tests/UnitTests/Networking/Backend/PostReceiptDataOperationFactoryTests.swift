@@ -487,6 +487,69 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         expect(paywall["step_id"]).to(beNil())
     }
 
+    // trace_id rides inside the nested paywall object, unlike workflow_id/step_id: the backend's
+    // post-receipt body model forbids unknown top-level keys, so a `presented_trace_id` sibling would
+    // fail the whole request, while the nested paywall model ignores keys it does not know yet.
+    // Encoded with JSONEncoder.default because that is what production uses — a bare JSONEncoder()
+    // skips convertToSnakeCase and would report `traceId` instead.
+    func testTraceIdIsSentInsideTheNestedPaywallObject() throws {
+        let json = try self.encodedBody(forPaywall: Self.paywallData(traceId: "trace-456"))
+
+        let paywall = try XCTUnwrap(json["paywall"] as? [String: Any])
+        expect(paywall["trace_id"] as? String) == "trace-456"
+
+        expect(json["trace_id"]).to(beNil())
+        expect(json["presented_trace_id"]).to(beNil())
+    }
+
+    func testTraceIdIsOmittedWhenThePaywallHasNone() throws {
+        let json = try self.encodedBody(forPaywall: Self.paywallData(traceId: nil))
+
+        let paywall = try XCTUnwrap(json["paywall"] as? [String: Any])
+        expect(paywall.keys.contains("trace_id")) == false
+    }
+
+    private static func paywallData(traceId: String?) -> PaywallEvent.Data {
+        return .init(
+            paywallIdentifier: "paywall-abc",
+            offeringIdentifier: "offering-1",
+            paywallRevision: 1,
+            sessionID: UUID(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            workflowId: "workflow-xyz",
+            stepId: "step-123",
+            traceId: traceId
+        )
+    }
+
+    private func encodedBody(forPaywall paywallData: PaywallEvent.Data) throws -> [String: Any] {
+        let transactionData = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            presentedPaywall: .impression(.init(), paywallData),
+            unsyncedAttributes: nil,
+            storeCountry: nil
+        )
+
+        let postData = PostReceiptDataOperation.PostData(
+            transactionData: transactionData,
+            postReceiptSource: .init(isRestore: false, initiationSource: .purchase),
+            appUserID: self.appUserID,
+            productData: nil,
+            receipt: self.receipt,
+            observerMode: false,
+            purchaseCompletedBy: .revenueCat,
+            testReceiptIdentifier: nil,
+            appTransaction: nil,
+            transactionId: nil,
+            containsAttributionData: false
+        )
+
+        let data = try JSONEncoder.default.encode(postData)
+        return try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    }
+
     func testPresentedWorkflowIdAndStepIdAreAbsentWhenNoPaywall() throws {
         let transactionData = PurchasedTransactionData(
             presentedOfferingContext: nil,
@@ -573,7 +636,8 @@ class PostReceiptDataOperationFactoryTests: TestCase {
             localeIdentifier: "en_US",
             darkMode: false,
             workflowId: "workflow-xyz",
-            stepId: "step-123"
+            stepId: "step-123",
+            traceId: "trace-456"
         )
 
         let config = self.createConfig()

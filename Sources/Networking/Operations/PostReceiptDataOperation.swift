@@ -178,6 +178,11 @@ extension PostReceiptDataOperation {
         var workflowId: String?
         var stepId: String?
 
+        /// Unlike `workflowId`/`stepId`, this rides inside the nested `paywall` object: the backend's
+        /// post-receipt body model rejects unknown top-level keys, so a `presented_trace_id` sibling
+        /// would fail the request until the backend adds it.
+        var traceId: String?
+
     }
 
     struct AppliedTargetingRule {
@@ -244,7 +249,8 @@ private extension PurchasedTransactionData {
                      localeIdentifier: paywall.data.localeIdentifier,
                      source: paywall.data.source,
                      workflowId: paywall.data.workflowId,
-                     stepId: paywall.data.stepId)
+                     stepId: paywall.data.stepId,
+                     traceId: paywall.data.traceId)
     }
 }
 
@@ -371,6 +377,7 @@ extension PostReceiptDataOperation.Paywall: Codable {
         case darkMode
         case localeIdentifier = "locale"
         case source
+        case traceId
 
     }
 }
