@@ -239,13 +239,11 @@ final class ApplyingWorkflowAttributionTests: TestCase {
         let result = PaywallsV2View.applyingWorkflowAttribution(
             to: self.makeData(),
             workflowId: "wf_test",
-            stepId: "step_1",
-            traceId: "trace_1"
+            stepId: "step_1"
         )
 
         expect(result.workflowId) == "wf_test"
         expect(result.stepId) == "step_1"
-        expect(result.traceId) == "trace_1"
     }
 
     // Standalone paywalls (and untagged steps with no IDs) carry no attribution, so the post-receipt
@@ -254,13 +252,11 @@ final class ApplyingWorkflowAttributionTests: TestCase {
         let result = PaywallsV2View.applyingWorkflowAttribution(
             to: self.makeData(workflowId: "stale", stepId: "stale"),
             workflowId: nil,
-            stepId: nil,
-            traceId: nil
+            stepId: nil
         )
 
         expect(result.workflowId).to(beNil())
         expect(result.stepId).to(beNil())
-        expect(result.traceId).to(beNil())
     }
 
 }
