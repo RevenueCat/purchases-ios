@@ -3,6 +3,15 @@
 
 require 'minitest/autorun'
 require 'tmpdir'
+
+# Mock Fastlane::UI for testing
+module Fastlane
+  module UI
+    def self.error(message); end
+    def self.success(message); end
+  end
+end
+
 require_relative 'api_diff_helper'
 
 class ApiDiffHelperTest < Minitest::Test
@@ -136,6 +145,76 @@ class ApiDiffHelperTest < Minitest::Test
       end
 
       refute invoked, "the tool must not run when an input file is missing"
+    end
+  end
+
+  # --- Failure output ---
+
+  def test_identical_files_succeed_without_running_the_tool
+    Dir.mktmpdir do |dir|
+      old_file = File.join(dir, "old.swiftinterface")
+      new_file = File.join(dir, "new.swiftinterface")
+      File.write(old_file, "public func a()\n")
+      File.write(new_file, "public func a()\n")
+
+      invoked = false
+      result = ApiDiffHelper.run_api_diff(
+        old_file, new_file, "RevenueCat iOS",
+        runner: ->(*_command) { invoked = true; ADDITIONS_OUTPUT }
+      )
+
+      assert result[:success]
+      assert_nil result[:diff]
+      refute invoked, "no need to explain a difference that does not exist"
+    end
+  end
+
+  def test_differing_files_report_the_tool_output
+    with_interface_files do |old_file, new_file|
+      result = ApiDiffHelper.run_api_diff(
+        old_file, new_file, "RevenueCat iOS",
+        runner: ->(*_command) { ADDITIONS_OUTPUT }
+      )
+
+      refute result[:success]
+      assert_equal "RevenueCat iOS", result[:platform]
+      assert_includes result[:diff], "4 public changes detected"
+    end
+  end
+
+  # Baselines routinely differ only in the compiler-version comment. Saying so beats
+  # printing a report that lists nothing.
+  def test_differing_files_with_no_api_change_explain_why
+    with_interface_files do |old_file, new_file|
+      result = ApiDiffHelper.run_api_diff(
+        old_file, new_file, "RevenueCat iOS",
+        runner: ->(*_command) { NO_CHANGES_OUTPUT }
+      )
+
+      refute result[:success]
+      assert_includes result[:diff], "without any public API change"
+    end
+  end
+
+  def test_tool_failure_is_surfaced_and_still_fails
+    with_interface_files do |old_file, new_file|
+      result = ApiDiffHelper.run_api_diff(
+        old_file, new_file, "RevenueCat iOS",
+        runner: ->(*_command) { "" }
+      )
+
+      refute result[:success]
+      assert_includes result[:diff], "public-api-diff failed"
+      assert_includes result[:diff], "no output"
+    end
+  end
+
+  def test_missing_baseline_keeps_its_existing_wording
+    with_interface_files do |_old_file, new_file, dir|
+      result = ApiDiffHelper.run_api_diff(File.join(dir, "gone.swiftinterface"), new_file, "RevenueCat iOS")
+
+      refute result[:success]
+      assert_equal "Baseline file missing", result[:diff]
     end
   end
 end

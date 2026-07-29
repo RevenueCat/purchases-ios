@@ -130,7 +130,7 @@ module ApiDiffHelper
     end
   end
 
-  def run_api_diff(old_file, new_file, platform_name)
+  def run_api_diff(old_file, new_file, platform_name, tool: "public-api-diff", runner: nil)
     result = {
       platform: platform_name,
       success: false,
@@ -152,9 +152,29 @@ module ApiDiffHelper
     if FileUtils.identical?(old_file, new_file)
       Fastlane::UI.success("✅ No API changes for #{platform_name}")
       result[:success] = true
-    else
-      Fastlane::UI.error("❌ API changes detected for #{platform_name}")
-      result[:diff] = `diff -u "#{old_file}" "#{new_file}"`.encode('UTF-8', invalid: :replace, undef: :replace)
+      return result
+    end
+
+    Fastlane::UI.error("❌ API changes detected for #{platform_name}")
+
+    begin
+      report = public_api_diff_report(
+        tool: tool,
+        old_file: old_file,
+        new_file: new_file,
+        target_name: platform_name,
+        runner: runner
+      )
+
+      result[:diff] = if api_changes_reported?(report)
+                        report
+                      else
+                        "The baselines differ from the generated interface without any public API change " \
+                        "(the compiler version comment, for example). Regenerate them."
+                      end
+    rescue StandardError => e
+      # The check has already failed on bytes; surface why the explanation is missing.
+      result[:diff] = "public-api-diff failed: #{e.message}"
     end
 
     result
