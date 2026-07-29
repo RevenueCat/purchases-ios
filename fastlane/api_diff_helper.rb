@@ -160,6 +160,41 @@ module ApiDiffHelper
     result
   end
 
+  # Pinned deliberately: the orb command defaults to 0.10.1, the release whose
+  # SwiftInterfaceChangeConsolidator bug reported "no changes detected" for files that
+  # differed. Fixed upstream in 0.11.0.
+  PUBLIC_API_DIFF_VERSION = "0.12.0".freeze
+
+  NO_CHANGES_MARKER = "✅ No changes detected".freeze
+
+  CHANGES_HEADER_PATTERN = /^#\s.*\d+ public changes detected/.freeze
+
+  def validate_api_diff_inputs!(old_file, new_file)
+    [old_file, new_file].each do |path|
+      raise "Interface file not found: #{path}" unless File.exist?(path)
+      raise "Interface file is empty: #{path}" if File.size(path).zero?
+    end
+
+    nil
+  end
+
+  # public-api-diff exits 0 for changes, for no changes, and even for a missing input file,
+  # so its report is the only signal we have. Silence means the tool did not run, which is
+  # not the same as the API being unchanged.
+  def validate_api_diff_output!(output, old_file, new_file)
+    report = output.to_s.strip
+
+    raise "public-api-diff produced no output comparing #{old_file} to #{new_file}" if report.empty?
+    return nil if report.include?(NO_CHANGES_MARKER)
+    return nil if CHANGES_HEADER_PATTERN.match?(report)
+
+    raise "Unrecognized public-api-diff output comparing #{old_file} to #{new_file}: #{report.lines.first.to_s.strip}"
+  end
+
+  def api_changes_reported?(output)
+    !output.to_s.include?(NO_CHANGES_MARKER)
+  end
+
   def print_failure_summary(failed_platforms)
     Fastlane::UI.error("=" * 60)
     Fastlane::UI.error("API CHANGES DETECTED")
