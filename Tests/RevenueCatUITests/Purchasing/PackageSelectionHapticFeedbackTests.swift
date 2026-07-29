@@ -20,7 +20,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testCallAsFunctionInvokesTheInjectedAction() {
         var didFire = false
 
-        let feedback = PackageSelectionHapticFeedback(action: { didFire = true })
+        let feedback = SelectionHapticFeedback(action: { didFire = true })
         feedback()
 
         expect(didFire) == true
@@ -29,7 +29,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testCallAsFunctionInvokesTheActionExactlyOncePerCall() {
         var fireCount = 0
 
-        let feedback = PackageSelectionHapticFeedback(action: { fireCount += 1 })
+        let feedback = SelectionHapticFeedback(action: { fireCount += 1 })
         feedback()
         feedback()
         feedback()
@@ -40,7 +40,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testPrepareInvokesTheInjectedPrepareAction() {
         var didPrepare = false
 
-        let feedback = PackageSelectionHapticFeedback(action: {}, prepare: { didPrepare = true })
+        let feedback = SelectionHapticFeedback(action: {}, prepare: { didPrepare = true })
         feedback.prepare()
 
         expect(didPrepare) == true
@@ -49,7 +49,7 @@ class PackageSelectionHapticFeedbackTests: TestCase {
     func testPrepareDoesNotInvokeTheFireAction() {
         var didFire = false
 
-        let feedback = PackageSelectionHapticFeedback(action: { didFire = true }, prepare: {})
+        let feedback = SelectionHapticFeedback(action: { didFire = true }, prepare: {})
         feedback.prepare()
 
         expect(didFire) == false
