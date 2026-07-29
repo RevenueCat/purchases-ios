@@ -460,20 +460,21 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
         let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        self.dateProvider.advance(by: 100)
         await self.refresh(with: container)
 
         self.dateProvider.advance(by: 123)
         self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
-        await self.waitForStoredRefreshTime(123_000)
+        await self.waitForStoredRefreshTime(223_000)
 
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(3)
 
         expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
-        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "0"
-        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "123000"
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "100000"
+        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "223000"
     }
 
     func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
