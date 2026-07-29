@@ -21,6 +21,7 @@ struct HTTPRequest {
     var method: Method
     var path: HTTPRequestPath
     /// Headers that are specific to this request.
+    /// These override default and path headers, and their final values are included when computing header signatures.
     let additionalHeaders: Headers
     /// If present, this will be used by the server to compute a checksum of the response signed with a private key.
     var nonce: Data?

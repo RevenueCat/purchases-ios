@@ -385,4 +385,25 @@ class HTTPRequestTests: TestCase {
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
         expect(headers["Accept-Encoding"]).to(beNil())
     }
+
+    func testHeaderSignatureUsesAdditionalHeaderOverride() {
+        let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
+        let request = HTTPRequest(
+            method: .get,
+            path: .getCustomerInfo(appUserID: "user"),
+            additionalHeaders: [sandboxHeader: "false"]
+        )
+
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [sandboxHeader: "true"],
+            verificationMode: Signing.verificationMode(with: .informational),
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        let expectedHash = HTTPRequest.signingParameterHash(["false"])
+        expect(headers[sandboxHeader]) == "false"
+        expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
+            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+    }
 }

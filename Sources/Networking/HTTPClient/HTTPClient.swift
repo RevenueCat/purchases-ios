@@ -1062,7 +1062,7 @@ extension HTTPRequest {
         if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
-                with: defaultHeaders,
+                with: result,
                 path: self.path
             )
 
