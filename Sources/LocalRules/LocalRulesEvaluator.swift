@@ -99,8 +99,8 @@ final class LocalRulesEvaluator: Sendable {
     func matchesAny<Rule: LocalRule>(in rules: [Rule]) async -> Bool {
         if case .matched = await self.match(in: rules) {
             return true
-        } else {
-            return false
         }
+
+        return false
     }
 }
