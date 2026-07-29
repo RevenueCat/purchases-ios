@@ -725,6 +725,10 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that the user tapped a web checkout CTA and left the app to complete payment externally.
+    @objc(paywallViewControllerDidOpenWebCheckout:)
+    optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -824,6 +828,10 @@ private extension PaywallViewController {
             purchaseCancelled: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            },
+            webCheckoutOpened: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
             },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
@@ -956,6 +964,7 @@ private struct PaywallContainerView: View {
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
+    let webCheckoutOpened: WebCheckoutOpenedHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -976,6 +985,7 @@ private struct PaywallContainerView: View {
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)

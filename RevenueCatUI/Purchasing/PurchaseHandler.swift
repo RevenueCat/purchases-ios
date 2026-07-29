@@ -111,6 +111,11 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
+    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
+    /// ``WebCheckoutOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var webCheckoutOpened: UUID?
+
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
@@ -250,6 +255,7 @@ final class PurchaseHandler: ObservableObject {
     /// per-session completion signal) to avoid stale values triggering handlers. The handler is held as a
     /// `@StateObject` by the presenting modifier and reused across present/dismiss cycles, so without this
     /// a prior session's restore would leak into the next one.
+    @MainActor
     func resetForNewSession() {
         if let sessionID = self.activePaywallSessionID {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
@@ -258,6 +264,7 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
+        self.deferredClearWebCheckoutOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -856,6 +863,12 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
+    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalWebCheckoutOpened() {
+        self.webCheckoutOpened = UUID()
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
@@ -866,6 +879,29 @@ extension PurchaseHandler {
     /// current: it reports no impression, and a purchase there must not attribute to the prior step.
     func clearActivePaywallSession() {
         self.activePaywallSessionID = nil
+    }
+
+    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
+    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
+    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
+    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
+    /// its own fresh one.
+    @MainActor
+    func clearWebCheckoutOpened() {
+        self.webCheckoutOpened = nil
+    }
+
+    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
+    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
+    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
+    /// clear can't wipe out a signal it was never meant to touch.
+    @MainActor
+    private func deferredClearWebCheckoutOpened() {
+        let pendingValue = self.webCheckoutOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.webCheckoutOpened == pendingValue else { return }
+            self.webCheckoutOpened = nil
+        }
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
@@ -1186,6 +1222,17 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
     static var defaultValue: NSError?
 
     static func reduce(value: inout NSError?, nextValue: () -> NSError?) {
+        value = nextValue()
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: UUID?
+
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
         value = nextValue()
     }
 
