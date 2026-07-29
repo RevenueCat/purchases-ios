@@ -255,6 +255,7 @@ final class PurchaseHandler: ObservableObject {
     /// per-session completion signal) to avoid stale values triggering handlers. The handler is held as a
     /// `@StateObject` by the presenting modifier and reused across present/dismiss cycles, so without this
     /// a prior session's restore would leak into the next one.
+    @MainActor
     func resetForNewSession() {
         if let sessionID = self.activePaywallSessionID {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
@@ -894,6 +895,7 @@ extension PurchaseHandler {
     /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
     /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
     /// clear can't wipe out a signal it was never meant to touch.
+    @MainActor
     private func deferredClearWebCheckoutOpened() {
         let pendingValue = self.webCheckoutOpened
         DispatchQueue.main.async { [weak self] in
