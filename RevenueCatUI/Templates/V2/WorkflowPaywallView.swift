@@ -467,7 +467,6 @@ struct WorkflowPaywallView: View {
             // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
             workflowId: self.context.workflow.id,
             stepId: page.stepId,
-            traceId: self.stepEventCoordinator.traceId,
             isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
