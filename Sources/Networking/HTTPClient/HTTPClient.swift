@@ -201,7 +201,7 @@ extension HTTPClient {
         case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
-        case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case lastRefreshTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
@@ -1049,6 +1049,7 @@ extension HTTPRequest {
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
         result += self.path.additionalHeaders
+        result += self.additionalHeaders
 
         if self.path.authenticated {
             result += authHeaders
@@ -1061,7 +1062,7 @@ extension HTTPRequest {
         if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
-                with: defaultHeaders,
+                with: result,
                 path: self.path
             )
 

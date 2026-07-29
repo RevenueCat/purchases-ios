@@ -1181,7 +1181,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         stub(condition: isPath(request.path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            expect(request.allHTTPHeaderFields?[ETagManager.lastRefreshTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,
@@ -1214,7 +1214,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         stub(condition: isPath(path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            expect(request.allHTTPHeaderFields?[ETagManager.lastRefreshTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(

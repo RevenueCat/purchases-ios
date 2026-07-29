@@ -52,6 +52,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
     let domain: String
     let manifest: String?
     let prefetchedBlobs: [String]
+    let lastRefreshTime: Date?
 
     private enum CodingKeys: String, CodingKey {
         case fetchContext
@@ -65,13 +66,15 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         appUserID: String,
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String? = nil,
-        prefetchedBlobs: [String] = []
+        prefetchedBlobs: [String] = [],
+        lastRefreshTime: Date? = nil
     ) {
         self.fetchContext = fetchContext
         self.appUserID = appUserID
         self.domain = domain
         self.manifest = manifest
         self.prefetchedBlobs = prefetchedBlobs
+        self.lastRefreshTime = lastRefreshTime
     }
 
     var cacheKey: String {
@@ -79,8 +82,17 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
             "app_user_id=\(self.appUserID)",
             "domain=\(self.domain)",
             "manifest=\(self.manifest ?? "")",
-            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))"
+            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))",
+            "last_refresh_time=\(self.lastRefreshTime?.millisecondsSince1970.description ?? "")"
         ].joined(separator: "|")
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        guard let lastRefreshTime else { return [:] }
+
+        return [
+            HTTPClient.RequestHeader.lastRefreshTime.rawValue: lastRefreshTime.millisecondsSince1970.description
+        ]
     }
 
     func encode(to encoder: Encoder) throws {
@@ -99,6 +111,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         self.domain = RemoteConfiguration.defaultDomain
         self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
         self.prefetchedBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? []
+        self.lastRefreshTime = nil
     }
 
 }
@@ -111,7 +124,8 @@ private extension GetRemoteConfigOperation {
     func getRemoteConfig(completion: @escaping () -> Void) {
         let request = HTTPRequest(
             method: .post(self.request),
-            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain)
+            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain),
+            additionalHeaders: self.request.additionalHeaders
         )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
