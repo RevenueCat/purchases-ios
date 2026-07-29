@@ -131,8 +131,8 @@ class EventsManagerTests: TestCase {
         let map = event.toMap()
 
         expect(map["workflow_id"] as? String) == "wf_abc123"
-        expect(map["step_id"] as? String) == "step_1"
         expect(map["trace_id"] as? String) == "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
+        expect(map.keys.contains("step_id")) == false
     }
 
     func testPaywallImpressionToMapOmitsWorkflowAttributionForStandalonePaywall() {
