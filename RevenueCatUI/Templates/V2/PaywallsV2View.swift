@@ -96,11 +96,12 @@ struct PaywallsV2View: View {
     /// The workflow step's `screen_type` classification, used to gate impression reporting. `nil` for
     /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
     private let workflowScreenType: [String]?
-    /// Workflow attribution for the impression event (`presented_workflow_id` / `presented_step_id` in
-    /// the post-receipt body, see #7024). Orthogonal to `workflowScreenType`: gating decides whether the
-    /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
+    /// Workflow attribution, `nil` for standalone paywalls. `workflowId` / `stepId` go to the post-receipt
+    /// body as `presented_workflow_id` / `presented_step_id` (#7024); `traceId` goes to the paywall event's
+    /// `presented_offering_context`. Orthogonal to `workflowScreenType`, which gates whether events fire.
     private let workflowId: String?
     private let stepId: String?
+    private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
@@ -143,6 +144,7 @@ struct PaywallsV2View: View {
         workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil,
+        traceId: String? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
         let uiConfigProvider = UIConfigProvider(
@@ -166,6 +168,7 @@ struct PaywallsV2View: View {
         self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
+        self.traceId = traceId
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -453,18 +456,20 @@ struct PaywallsV2View: View {
         )
     }
 
-    /// Stamps workflow attribution onto a paywall event's data so the post-receipt body can send
-    /// `presented_workflow_id` / `presented_step_id` (#7024). Orthogonal to the `screen_type` gate
-    /// (``shouldTrackPaywallEvents`` decides whether the event fires at all); both are `nil` for
-    /// standalone paywalls. Mirrors Android's `PaywallEvent.Data.withCurrentWorkflowMetadata`.
+    /// Stamps workflow attribution onto a paywall event's data: `workflowId` / `stepId` for the
+    /// post-receipt body (#7024), `traceId` for the event's own `presented_offering_context`. Orthogonal
+    /// to the `screen_type` gate; all are `nil` for standalone paywalls. Mirrors Android's
+    /// `PaywallEvent.Data.withCurrentWorkflowMetadata`.
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
         workflowId: String?,
-        stepId: String?
+        stepId: String?,
+        traceId: String?
     ) -> PaywallEvent.Data {
         var data = data
         data.workflowId = workflowId
         data.stepId = stepId
+        data.traceId = traceId
         return data
     }
 
@@ -552,7 +557,12 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        return Self.applyingWorkflowAttribution(to: data, workflowId: self.workflowId, stepId: self.stepId)
+        return Self.applyingWorkflowAttribution(
+            to: data,
+            workflowId: self.workflowId,
+            stepId: self.stepId,
+            traceId: self.traceId
+        )
     }
 
 }
