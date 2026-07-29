@@ -93,11 +93,23 @@ private extension PaywallEvent {
             "dark_mode": self.data.darkMode
         ]
 
+        self.data.mergeWorkflowAttribution(into: &result)
+
         if let interaction = self.componentInteractionData {
             interaction.mergeIntoPaywallFeatureMap(&result)
         }
 
         return result
+    }
+
+}
+
+private extension PaywallEvent.Data {
+
+    func mergeWorkflowAttribution(into result: inout [String: Any]) {
+        if let workflowId = self.workflowId { result["workflow_id"] = workflowId }
+        if let stepId = self.stepId { result["step_id"] = stepId }
+        if let traceId = self.traceId { result["trace_id"] = traceId }
     }
 
 }
