@@ -83,6 +83,7 @@
 		164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		166BA79A2F84022400BB46C9 /* PaywallEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */; };
+		89757FBD45670C3452AC0509 /* SelectionHapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 390EF015ED9989A93F4EE3E5 /* SelectionHapticFeedback.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
 		1696D7313007FC5100E6E8C0 /* SizeConstraintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1696D72B3007FC4800E6E8C0 /* SizeConstraintTests.swift */; };
 		1696D7333007FC8F00E6E8C0 /* SizeConstraints.json in Resources */ = {isa = PBXBuildFile; fileRef = 1696D7323007FC8900E6E8C0 /* SizeConstraints.json */; };
@@ -1625,6 +1626,7 @@
 		164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPlayerLayerUIView.swift; sourceTree = "<group>"; };
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTracker.swift; sourceTree = "<group>"; };
+		390EF015ED9989A93F4EE3E5 /* SelectionHapticFeedback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionHapticFeedback.swift; sourceTree = "<group>"; };
 		166BA7A02F84028600BB46C9 /* ControlInteractionLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlInteractionLoggerTests.swift; sourceTree = "<group>"; };
 		1F73FB16F7644A5CBD7FB08A /* PackageSelectionHapticFeedbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageSelectionHapticFeedbackTests.swift; sourceTree = "<group>"; };
 		166BA7A12F84028600BB46C9 /* PaywallEventTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTrackerTests.swift; sourceTree = "<group>"; };
@@ -5680,6 +5682,7 @@
 			isa = PBXGroup;
 			children = (
 				166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */,
+				390EF015ED9989A93F4EE3E5 /* SelectionHapticFeedback.swift */,
 				887A5FED2C1D037000E1A461 /* MockPurchases.swift */,
 				887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
@@ -8305,6 +8308,7 @@
 				5798C9412DF1985700F44400 /* SemanticVersion.swift in Sources */,
 				5798C9422DF1985700F44400 /* ButtonStyles.swift in Sources */,
 				166BA79A2F84022400BB46C9 /* PaywallEventTracker.swift in Sources */,
+				89757FBD45670C3452AC0509 /* SelectionHapticFeedback.swift in Sources */,
 				5798C9432DF1985700F44400 /* CustomerCenterView+Actions.swift in Sources */,
 				5798C9442DF1985700F44400 /* PromotionalOfferViewModel.swift in Sources */,
 				16C7FA352F4F3D740061BD5A /* DualColorImageGenerator.swift in Sources */,

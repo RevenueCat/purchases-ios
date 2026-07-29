@@ -70,6 +70,57 @@ final class PackageComponentViewTests: TestCase {
         )
     }
 
+    func testInjectedHapticFeedbackPreparesOnAppearWhenEnabled() throws {
+        let package = TestData.monthlyPackage
+        let component = PaywallComponent.PackageComponent(
+            packageID: package.identifier,
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: Self.makePackageStack(label: "Monthly")
+        )
+
+        let viewModel = try Self.makeViewModel(component: component, package: package)
+        var prepareCount = 0
+        let spy = SelectionHapticFeedback(action: {}, prepare: { prepareCount += 1 })
+
+        let (window, _) = Self.host(Self.hostable(viewModel: viewModel, package: package, spy: spy))
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertGreaterThanOrEqual(
+            prepareCount, 1,
+            "The haptic feedback injected via the environment should be prepared on appear when enabled."
+        )
+    }
+
+    func testInjectedHapticFeedbackDoesNotPrepareWhenDisabled() throws {
+        let package = TestData.monthlyPackage
+        let component = PaywallComponent.PackageComponent(
+            packageID: package.identifier,
+            isSelectedByDefault: false,
+            applePromoOfferProductCode: nil,
+            stack: Self.makePackageStack(label: "Monthly"),
+            hapticFeedbackEnabled: false
+        )
+
+        let viewModel = try Self.makeViewModel(component: component, package: package)
+        var prepareCount = 0
+        let spy = SelectionHapticFeedback(action: {}, prepare: { prepareCount += 1 })
+
+        let (window, _) = Self.host(Self.hostable(viewModel: viewModel, package: package, spy: spy))
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertEqual(
+            prepareCount, 0,
+            "Haptic feedback should not be prepared when the package has it disabled."
+        )
+    }
+
     func testHapticFeedbackEnabledDefaultsToTrueWhenComponentOmitsIt() throws {
         let package = TestData.monthlyPackage
         let component = PaywallComponent.PackageComponent(
@@ -198,6 +249,34 @@ private extension PackageComponentViewTests {
                 )
             ]
         )
+    }
+
+    static func hostable(
+        viewModel: PackageComponentViewModel,
+        package: Package,
+        spy: SelectionHapticFeedback
+    ) -> some View {
+        let packageContext = PackageContext(
+            package: package,
+            variableContext: .init(packages: [package])
+        )
+        return PackageComponentView(viewModel: viewModel, onDismiss: {})
+            .environmentObject(
+                IntroOfferEligibilityContext(
+                    introEligibilityChecker: BaseSnapshotTest.eligibleChecker
+                )
+            )
+            .environmentObject(
+                PaywallPromoOfferCache(
+                    subscriptionHistoryTracker: SubscriptionHistoryTracker()
+                )
+            )
+            .environmentObject(packageContext)
+            .environment(\.selectedPackageId, package.identifier)
+            .environment(\.screenCondition, .compact)
+            .environment(\.componentViewState, .default)
+            .environment(\.safeAreaInsets, EdgeInsets())
+            .environment(\.selectionHapticFeedback, spy)
     }
 
     static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
