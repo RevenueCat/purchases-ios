@@ -625,7 +625,7 @@ extension PurchaseHandler {
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
             uiConfig: uiConfig,
-            paywallId: WorkflowScreenMapper.paywallId(from: baseOffering)
+            paywallId: screenID
         )
 
         let initialOffering = baseOffering.withPaywallComponents(paywallComponents)

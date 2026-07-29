@@ -16,6 +16,9 @@
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 enum WorkflowScreenMapper {
 
+    /// `paywallId` is the screen's key in `workflow.screens`, which is the paywall's own id. It cannot be
+    /// read off the offering: workflows imply remote config is active, and that prunes the offering's
+    /// paywall components payload (see `OfferingsManager.shouldCreatePaywallComponents`).
     static func toPaywallComponents(
         screen: WorkflowScreen,
         uiConfig: UIConfig,
@@ -32,12 +35,6 @@ enum WorkflowScreenMapper {
             exitOffers: screen.exitOffers
         )
         return .init(uiConfig: uiConfig, data: data)
-    }
-
-    /// A paywall is always one of a workflow's screens, so the step's offering is the one whose paywall
-    /// id we need. Mirrors Android's `offering.paywall?.id ?: offering.paywallComponents?.data?.id`.
-    static func paywallId(from offering: Offering) -> String? {
-        offering.paywall?.id ?? offering.internalPaywallComponents?.data.id
     }
 
 }

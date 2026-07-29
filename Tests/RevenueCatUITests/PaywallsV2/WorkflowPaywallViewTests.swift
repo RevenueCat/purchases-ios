@@ -1010,13 +1010,16 @@ extension WorkflowPaywallViewTests {
 
 }
 
-// MARK: - Paywall impression event carries the offering's paywall id
+// MARK: - Paywall impression event carries the screen's paywall id
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
+    // The offering here carries no paywall and no paywall components, which is what production looks
+    // like: workflows imply remote config is active, and that prunes the offering's components payload.
+    // The id has to come from the step's screen key instead.
     @MainActor
-    func testPaywallImpressionCarriesThePaywallIdFromTheOffering() throws {
+    func testPaywallImpressionCarriesThePaywallIdFromTheScreen() throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
         let purchases = MockPurchases(
             purchase: { _, _, _ in
@@ -1030,7 +1033,7 @@ extension WorkflowPaywallViewTests {
             purchases: purchases,
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
-        let context = try Self.makeContextStartingAt(stepId: "step_a", paywallId: "offering_paywall_id")
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
 
         let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
             .addToHierarchy()
@@ -1046,7 +1049,7 @@ extension WorkflowPaywallViewTests {
             return false
         }))
 
-        expect(impressionEvent.data.paywallIdentifier) == "offering_paywall_id"
+        expect(impressionEvent.data.paywallIdentifier) == "screen_a"
     }
 
 }
@@ -1382,7 +1385,7 @@ private extension WorkflowPaywallViewTests {
 
     /// Creates a two-step workflow (step_a, step_b) with initial_step_id set to stepId.
     /// Use this to exercise callbacks from a non-initial step without requiring navigation.
-    static func makeContextStartingAt(stepId: String, paywallId: String? = nil) throws -> WorkflowContext {
+    static func makeContextStartingAt(stepId: String) throws -> WorkflowContext {
         let offeringId = "offering_test"
         let workflowJSON = """
         {
@@ -1411,16 +1414,11 @@ private extension WorkflowPaywallViewTests {
             makePackage(identifier: TestData.annualPackage.identifier, offeringId: offeringId),
             makePackage(identifier: TestData.monthlyPackage.identifier, offeringId: offeringId)
         ]
-        var paywall: PaywallData?
-        if let paywallId {
-            paywall = TestData.paywallWithIntroOffer
-            paywall?.id = paywallId
-        }
         let offering = Offering(
             identifier: offeringId,
             serverDescription: "Test",
             metadata: [:],
-            paywall: paywall,
+            paywall: nil,
             availablePackages: packages,
             webCheckoutUrl: nil
         )
