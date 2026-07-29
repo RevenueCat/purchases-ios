@@ -33,19 +33,22 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let activeTopics: [String]
     let prefetchBlobs: [String]
     let topics: RemoteConfiguration.Topics
+    let lastRefreshTimeMilliseconds: UInt64?
 
     init(
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topics: RemoteConfiguration.Topics = .init()
+        topics: RemoteConfiguration.Topics = .init(),
+        lastRefreshTimeMilliseconds: UInt64? = nil
     ) {
         self.domain = domain
         self.manifest = manifest
         self.activeTopics = activeTopics
         self.prefetchBlobs = prefetchBlobs
         self.topics = topics
+        self.lastRefreshTimeMilliseconds = lastRefreshTimeMilliseconds
     }
 
     init(from decoder: Decoder) throws {
@@ -55,7 +58,11 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
             manifest: try container.decode(String.self, forKey: .manifest),
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
-            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init()
+            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init(),
+            lastRefreshTimeMilliseconds: try container.decodeIfPresent(
+                UInt64.self,
+                forKey: .lastRefreshTimeMilliseconds
+            )
         )
     }
 
@@ -65,6 +72,22 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         case activeTopics
         case prefetchBlobs
         case topics
+        case lastRefreshTimeMilliseconds
+    }
+
+}
+
+extension PersistedRemoteConfiguration {
+
+    func withLastRefreshTime(_ date: Date) -> Self {
+        return .init(
+            domain: self.domain,
+            manifest: self.manifest,
+            activeTopics: self.activeTopics,
+            prefetchBlobs: self.prefetchBlobs,
+            topics: self.topics,
+            lastRefreshTimeMilliseconds: date.millisecondsSince1970
+        )
     }
 
 }

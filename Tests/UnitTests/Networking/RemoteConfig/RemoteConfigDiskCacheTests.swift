@@ -73,13 +73,15 @@ final class RemoteConfigDiskCacheTests: TestCase {
             "product_entitlement_mapping": ["default": .init(blobRef: "pemBlob")]
         ])
         let prefetchBlobs = ["blobRefA", "pemBlob"]
+        let lastRefreshTimeMilliseconds: UInt64 = 1_785_309_842_000
 
         self.cache.write(PersistedRemoteConfiguration(
             domain: "app",
             manifest: manifest,
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
-            topics: topics
+            topics: topics,
+            lastRefreshTimeMilliseconds: lastRefreshTimeMilliseconds
         ))
         let read = try XCTUnwrap(self.makeCache().read())
 
@@ -88,6 +90,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.activeTopics) == activeTopics
         expect(read.prefetchBlobs) == prefetchBlobs
         expect(read.topics) == topics
+        expect(read.lastRefreshTimeMilliseconds) == lastRefreshTimeMilliseconds
     }
 
     func testInlineOnlyTopicsPersistWithContent() throws {

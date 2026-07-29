@@ -171,6 +171,27 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
     }
 
+    func testGetRemoteConfigSendsLastRefreshTimeWithoutETag() {
+        self.mockSuccessfulResponse()
+        let lastRefreshTime = Date(timeIntervalSince1970: 1_785_309_842)
+        let request = RemoteConfigRequest(
+            fetchContext: .appStart,
+            appUserID: Self.appUserID,
+            lastRefreshTime: lastRefreshTime
+        )
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: request,
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
+        expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            == UInt64(lastRefreshTime.timeIntervalSince1970).description
+    }
+
     func testGetRemoteConfigFallbackDoesNotSendSignatureRequestHeaders() {
         self.mockSuccessfulFallbackResponse()
 

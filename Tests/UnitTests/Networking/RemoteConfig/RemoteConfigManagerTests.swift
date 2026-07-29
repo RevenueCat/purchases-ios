@@ -342,12 +342,14 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testSubsequentRunReplaysPersistedManifest() throws {
         let persistedManifest = "v1.1710000100.sources:etag1"
+        let lastRefreshTime = Date(timeIntervalSince1970: 1_785_309_842)
         self.blobStore.stubbedContainsRefs = ["prefetchedBlob"]
         self.diskCache.stubbedRead = Self.persisted(
             domain: "custom",
             manifest: persistedManifest,
             prefetchBlobs: ["prefetchedBlob"],
-            topics: .init()
+            topics: .init(),
+            lastRefreshTimeMilliseconds: lastRefreshTime.millisecondsSince1970
         )
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: true)
@@ -356,7 +358,26 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.domain) == "custom"
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.manifest) == persistedManifest
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.prefetchedBlobs) == ["prefetchedBlob"]
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime) == lastRefreshTime
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
+    }
+
+    func testNoContentResponsePersistsAndSendsSuccessfulPollTime() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 1_000
+        )
+        self.dateProvider.advance(by: 123)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 123_000
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime)
+            == Date(timeIntervalSince1970: 123)
     }
 
     func testAppRestartRefreshesAndAppliesUpdatedConfig() async throws {
@@ -1332,6 +1353,7 @@ final class RemoteConfigManagerTests: TestCase {
 
     func testContainerResponsePersistsServerManifestAndChangedTopics() throws {
         self.diskCache.stubbedRead = nil
+        self.dateProvider.advance(by: 123)
         let response = """
         {
           "domain": "app",
@@ -1358,6 +1380,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedWriteParameter?.activeTopics) == ["sources"]
         expect(self.diskCache.invokedWriteParameter?.prefetchBlobs) == ["newBlob"]
         expect(Self.blobRefsByTopic(from: self.diskCache.invokedWriteParameter?.topics)) == ["sources": ["newBlob"]]
+        expect(self.diskCache.invokedWriteParameter?.lastRefreshTimeMilliseconds) == 123_000
     }
 
     func testContainerResponseDecodesCompressedConfigElement() throws {
@@ -1519,7 +1542,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(item?.content["priority"]) == 100
     }
 
-    func testNoContentResponseWithPersistedCacheLeavesCacheUntouched() {
+    func testNoContentResponseWithPersistedCacheUpdatesOnlyRefreshTime() {
         let previous = Self.persisted(
             domain: "app",
             manifest: "v1.1710000100.sources:etag1",
@@ -1528,11 +1551,15 @@ final class RemoteConfigManagerTests: TestCase {
             topics: .init(entries: ["sources": ["default": .init(blobRef: "sourceBlob")]])
         )
         self.diskCache.stubbedRead = previous
+        self.dateProvider.advance(by: 123)
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        expect(self.diskCache.invokedWriteCount) == 0
+        expect(self.diskCache.invokedWriteCount) == 1
+        expect(self.diskCache.invokedWriteParameter) == previous.withLastRefreshTime(
+            Date(timeIntervalSince1970: 123)
+        )
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
@@ -2784,14 +2811,16 @@ private extension RemoteConfigManagerTests {
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topics: RemoteConfiguration.Topics = .init()
+        topics: RemoteConfiguration.Topics = .init(),
+        lastRefreshTimeMilliseconds: UInt64? = nil
     ) -> PersistedRemoteConfiguration {
         return PersistedRemoteConfiguration(
             domain: domain,
             manifest: manifest,
             activeTopics: activeTopics,
             prefetchBlobs: prefetchBlobs,
-            topics: topics
+            topics: topics,
+            lastRefreshTimeMilliseconds: lastRefreshTimeMilliseconds
         )
     }
 

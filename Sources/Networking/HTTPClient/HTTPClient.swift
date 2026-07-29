@@ -1049,6 +1049,7 @@ extension HTTPRequest {
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
         result += self.path.additionalHeaders
+        result += self.requestBody?.additionalHeaders ?? [:]
 
         if self.path.authenticated {
             result += authHeaders
