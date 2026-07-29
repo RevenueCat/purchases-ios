@@ -37,7 +37,7 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(providers: [provider], date: date)
 
-        let identifier = await evaluator.firstMatch(in: [
+        let result = await evaluator.match(in: [
             TestLocalRule(
                 id: TestRuleID.doesNotMatch,
                 predicate: #"{"==":[{"var":"device.launch_count"},2]}"#
@@ -52,7 +52,7 @@ struct LocalRulesEvaluatorTests {
             )
         ])
 
-        #expect(identifier == .matches)
+        #expect(result == .matched(.matches))
         #expect(await provider.invocationCount == 1)
         #expect(await provider.receivedDates == [date])
     }
@@ -69,15 +69,15 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(providers: [provider])
 
-        let first = await evaluator.firstMatch(in: [
+        let first = await evaluator.match(in: [
             TestLocalRule(id: "first", predicate: #"{"==":[{"var":"session.count"},1]}"#)
         ])
-        let second = await evaluator.firstMatch(in: [
+        let second = await evaluator.match(in: [
             TestLocalRule(id: "second", predicate: #"{"==":[{"var":"session.count"},2]}"#)
         ])
 
-        #expect(first == "first")
-        #expect(second == "second")
+        #expect(first == .matched("first"))
+        #expect(second == .matched("second"))
         #expect(await provider.invocationCount == 2)
     }
 
@@ -96,7 +96,7 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(providers: [device, session], date: date)
 
-        _ = await evaluator.firstMatch(in: [
+        _ = await evaluator.match(in: [
             TestLocalRule(id: "test", predicate: "true")
         ])
 
@@ -168,27 +168,32 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func providerFailureReturnsNoIdentifier() async {
+    func providerFailureIsIndeterminate() async {
         let evaluator = Self.evaluator(providers: [
             FailingRulesVariableProvider(identifier: "broken", namespace: .session)
         ])
 
-        let identifier = await evaluator.firstMatch(in: [
+        let result = await evaluator.match(in: [
             TestLocalRule(id: "test", predicate: "true")
         ])
-        #expect(identifier == nil)
+
+        guard case .indeterminate(.variableResolution(.providerFailed(let identifier, _))) = result else {
+            Issue.record("Expected an indeterminate provider failure, got \(result)")
+            return
+        }
+        #expect(identifier == "broken")
     }
 
     @Test
     func invalidRuleDoesNotPreventLaterRuleFromMatching() async {
         let evaluator = Self.evaluator(providers: [])
 
-        let identifier = await evaluator.firstMatch(in: [
+        let result = await evaluator.match(in: [
             TestLocalRule(id: "invalid", predicate: "{not-json"),
             TestLocalRule(id: "valid", predicate: "true")
         ])
 
-        #expect(identifier == "valid")
+        #expect(result == .matched("valid"))
     }
 
     @Test
@@ -204,13 +209,19 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func unsupportedOperatorReturnsNoIdentifier() async {
+    func unsupportedOperatorIsIndeterminate() async {
         let evaluator = Self.evaluator(providers: [])
 
-        let identifier = await evaluator.firstMatch(in: [
+        let result = await evaluator.match(in: [
             TestLocalRule(id: "unsupported", predicate: #"{"future_operator":[]}"#)
         ])
-        #expect(identifier == nil)
+
+        #expect(result == .indeterminate(
+            .predicateEvaluation(
+                ruleIndex: 0,
+                error: .unsupportedOperator(name: "future_operator")
+            )
+        ))
     }
 
     @Test
@@ -223,14 +234,14 @@ struct LocalRulesEvaluatorTests {
             )
         ])
 
-        let identifier = await evaluator.firstMatch(in: [
+        let result = await evaluator.match(in: [
             TestLocalRule(
                 id: "missing-is-null",
                 predicate: #"{"==":[{"var":"device.unknown"},null]}"#
             )
         ])
 
-        #expect(identifier == "missing-is-null")
+        #expect(result == .matched("missing-is-null"))
     }
 
     @Test
@@ -242,9 +253,31 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(providers: [provider])
 
-        let identifier: String? = await evaluator.firstMatch(in: [TestLocalRule<String>]())
-        #expect(identifier == nil)
+        let result = await evaluator.match(in: [TestLocalRule<String>]())
+        #expect(result == .notMatched)
         #expect(await provider.invocationCount == 0)
+    }
+
+    @Test
+    func successfulFalseRulesReturnNotMatched() async {
+        let evaluator = Self.evaluator(providers: [])
+
+        let result = await evaluator.match(in: [
+            TestLocalRule(id: "false", predicate: "false")
+        ])
+
+        #expect(result == .notMatched)
+    }
+
+    @Test
+    func matchesAnyTreatsIndeterminateAsNoMatch() async {
+        let evaluator = Self.evaluator(providers: [])
+
+        let matches = await evaluator.matchesAny(in: [
+            TestLocalRule(id: "invalid", predicate: "{not-json")
+        ])
+
+        #expect(!matches)
     }
 }
 
