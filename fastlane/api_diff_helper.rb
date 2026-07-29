@@ -1,6 +1,8 @@
 # Helper module for API diff functionality
 # Used by generate_swiftinterface and check_api_changes lanes
 
+require 'fileutils'
+
 module ApiDiffHelper
   MODULES = ["RevenueCat", "RevenueCatUI"].freeze
 
@@ -169,8 +171,8 @@ module ApiDiffHelper
       result[:diff] = if api_changes_reported?(report)
                         report
                       else
-                        "The baselines differ from the generated interface without any public API change " \
-                        "(the compiler version comment, for example). Regenerate them."
+                        "public-api-diff reported no public API changes, but the baseline file differs " \
+                        "from the generated interface at the byte level. Regenerate the baselines."
                       end
     rescue StandardError => e
       # The check has already failed on bytes; surface why the explanation is missing.
@@ -187,7 +189,7 @@ module ApiDiffHelper
 
   NO_CHANGES_MARKER = "✅ No changes detected".freeze
 
-  CHANGES_HEADER_PATTERN = /^#\s.*\d+ public changes detected/.freeze
+  CHANGES_HEADER_PATTERN = /^#\s.*\d+ public changes? detected/.freeze
 
   def validate_api_diff_inputs!(old_file, new_file)
     [old_file, new_file].each do |path|
@@ -202,7 +204,7 @@ module ApiDiffHelper
   # so its report is the only signal we have. Silence means the tool did not run, which is
   # not the same as the API being unchanged.
   def validate_api_diff_output!(output, old_file, new_file)
-    report = output.to_s.strip
+    report = output.to_s.encode("UTF-8", invalid: :replace, undef: :replace).strip
 
     raise "public-api-diff produced no output comparing #{old_file} to #{new_file}" if report.empty?
     return nil if report.include?(NO_CHANGES_MARKER)
@@ -219,13 +221,30 @@ module ApiDiffHelper
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)
 
-    runner ||= ->(*command) { Fastlane::Actions.sh(*command, log: false) }
+    runner ||= lambda do |*command|
+      captured_output = nil
+      begin
+        Fastlane::Actions.sh(
+          *command,
+          log: false,
+          error_callback: ->(sh_output) { captured_output = sh_output }
+        )
+      rescue StandardError => e
+        # log: false keeps the raw report out of the CI log. If fastlane still raises
+        # (rather than routing through error_callback), fold the captured output back in
+        # so the failure is not just a bare exit status.
+        raise "#{e.message}\n#{captured_output}".strip
+      end
+    end
     output = runner.call(
       tool, "swift-interface",
       "--old", old_file,
       "--new", new_file,
       "--target-name", target_name
     )
+    # Sanitize before this string flows any further: it gets substring-matched and
+    # stored in the result, not just validated, and invalid bytes would raise there too.
+    output = output.to_s.encode("UTF-8", invalid: :replace, undef: :replace)
 
     validate_api_diff_output!(output, old_file, new_file)
     output
