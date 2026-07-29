@@ -16,9 +16,6 @@ import Foundation
 /// The content of an `HTTPRequest` for `HTTPRequest.Method.post`
 protocol HTTPRequestBody: Encodable {
 
-    /// Headers that are specific to this request body.
-    var additionalHeaders: HTTPRequest.Headers { get }
-
     /// The keys and values that will be included in the signature.
     /// - Note: this is not `[String: String]` because we need to preserve ordering.
     var contentForSignature: [(key: String, value: String?)] { get }
@@ -26,10 +23,6 @@ protocol HTTPRequestBody: Encodable {
 }
 
 extension HTTPRequestBody {
-
-    var additionalHeaders: HTTPRequest.Headers {
-        return [:]
-    }
 
     // Default implementation for endpoints which don't support signing.
     var contentForSignature: [(key: String, value: String?)] {

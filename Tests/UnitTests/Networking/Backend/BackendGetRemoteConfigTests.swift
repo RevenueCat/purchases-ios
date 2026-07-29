@@ -188,8 +188,8 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
-        expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue])
-            == UInt64(lastRefreshTime.timeIntervalSince1970).description
+        expect(self.httpClient.calls.first?.headers["X-RC-Last-Refresh-Time"])
+            == lastRefreshTime.millisecondsSince1970.description
     }
 
     func testGetRemoteConfigFallbackDoesNotSendSignatureRequestHeaders() {

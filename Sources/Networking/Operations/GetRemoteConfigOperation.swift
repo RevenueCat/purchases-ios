@@ -91,7 +91,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         guard let lastRefreshTime else { return [:] }
 
         return [
-            "X-RC-Last-Refresh-Time": UInt64(lastRefreshTime.timeIntervalSince1970).description
+            "X-RC-Last-Refresh-Time": lastRefreshTime.millisecondsSince1970.description
         ]
     }
 
@@ -124,7 +124,8 @@ private extension GetRemoteConfigOperation {
     func getRemoteConfig(completion: @escaping () -> Void) {
         let request = HTTPRequest(
             method: .post(self.request),
-            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain)
+            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain),
+            additionalHeaders: self.request.additionalHeaders
         )
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in

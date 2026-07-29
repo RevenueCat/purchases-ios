@@ -455,7 +455,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         expect(self.remoteConfigCalls.first?.headers["X-RC-Last-Refresh-Time"]).to(beNil())
         expect(self.remoteConfigCalls.last?.headers["X-RC-Last-Refresh-Time"])
-            == (storedRefreshTime / 1_000).description
+            == storedRefreshTime.description
     }
 
     func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
@@ -473,7 +473,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         expect(self.remoteConfigCalls[0].headers["X-RC-Last-Refresh-Time"]).to(beNil())
         expect(self.remoteConfigCalls[1].headers["X-RC-Last-Refresh-Time"]) == "0"
-        expect(self.remoteConfigCalls[2].headers["X-RC-Last-Refresh-Time"]) == "123"
+        expect(self.remoteConfigCalls[2].headers["X-RC-Last-Refresh-Time"]) == "123000"
     }
 
     func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
