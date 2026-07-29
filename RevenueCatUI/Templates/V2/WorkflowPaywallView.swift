@@ -188,25 +188,22 @@ private extension WorkflowPageTransitionState.Direction {
 
 }
 
-/// Screen-bounds geometry for workflow page transitions.
-///
-/// The `GeometryReader` driving the transitions is laid out inside the safe area, so the clip mask
-/// and the distance a page slides both come from `screenWidth`: they have to agree, or a mask wider
-/// than the slide distance leaves the off-screen page showing in the safe-area strips, and a
-/// narrower one clips the page short of the screen edge.
+/// Screen bounds for workflow page transitions. The `GeometryReader` behind them sits inside the
+/// safe area, so the clip mask and the slide distance both come from `screenWidth`. They have to
+/// match: a wider mask shows the off-screen page, a narrower one cuts the page off early.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowTransitionGeometry {
 
     let size: CGSize
     let safeAreaInsets: EdgeInsets
 
-    /// Wider than `size.width`, which is only the safe-area box the pages are laid out in.
+    /// The whole screen. `size.width` is only the safe-area box the pages lay out in.
     var screenWidth: CGFloat {
         return self.size.width + self.safeAreaInsets.leading + self.safeAreaInsets.trailing
     }
 
-    /// Grows a mask from the safe-area bounds out to the screen bounds. Per-edge rather than a frame
-    /// plus offset, so it holds for asymmetric insets and right-to-left.
+    /// Grows a mask from the safe-area box out to the whole screen. One value per edge, so it also
+    /// works when the insets differ side to side, and in right-to-left layouts.
     var maskPadding: EdgeInsets {
         return EdgeInsets(
             top: -self.safeAreaInsets.top,
@@ -320,20 +317,16 @@ struct WorkflowPaywallView: View {
                 size: proxy.size,
                 safeAreaInsets: proxy.safeAreaInsets
             )
-            // Hoisted out of the ForEach: comparing two headers walks their whole stack subtree, and
-            // that comparison is otherwise repeated per mounted page on every animation frame.
-            let headerTransition = self.headerTransition
-
             ZStack {
                 // Render every seen page keyed by its stable per-step snapshot ID so SwiftUI
                 // preserves each subtree's identity (and the state it owns) across navigation.
                 // The current and outgoing pages animate; the rest stay mounted but hidden
                 // off-screen, non-interactive.
                 ForEach(self.seenPages) { page in
-                    self.seenPageView(for: page, geometry: geometry, headerTransition: headerTransition)
+                    self.seenPageView(for: page, geometry: geometry)
                 }
 
-                self.workflowHeaderOverlay(geometry: geometry, headerTransition: headerTransition)
+                self.workflowHeaderOverlay(geometry: geometry)
                     .zIndex(2)
 
                 if self.transitionState.currentPage == nil {
@@ -436,17 +429,14 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func shouldRenderWorkflowHeaderOverlay(
-        headerTransition: WorkflowHeaderTransition
-    ) -> Bool {
-        return self.transitionState.isTransitioning && headerTransition.shouldRenderOverlay
+    private var shouldRenderWorkflowHeaderOverlay: Bool {
+        return self.transitionState.isTransitioning && self.headerTransition.shouldRenderOverlay
     }
 
     @ViewBuilder
     private func seenPageView(
         for page: RenderedPage,
-        geometry: WorkflowTransitionGeometry,
-        headerTransition: WorkflowHeaderTransition
+        geometry: WorkflowTransitionGeometry
     ) -> some View {
         // current and outgoing animate; every other seen page stays mounted but hidden off-screen
         // so its state is preserved until the user returns to it.
@@ -472,15 +462,13 @@ struct WorkflowPaywallView: View {
                             ? 0
                             : self.transitionState.headerButtonOpacity(
                                 for: transitionRole,
-                                headerTransition: headerTransition
+                                headerTransition: self.headerTransition
                             ),
                         // Hidden pages are not part of the animation; only the current/outgoing
                         // pair should see the transition flag so they don't react to it off-screen.
                         isTransitioning: isHidden ? false : self.transitionState.isTransitioning
                     ),
-                    pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay(
-                        headerTransition: headerTransition
-                    )
+                    pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
                 )
             )
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -528,11 +516,8 @@ struct WorkflowPaywallView: View {
     }
 
     @ViewBuilder
-    private func workflowHeaderOverlay(
-        geometry: WorkflowTransitionGeometry,
-        headerTransition: WorkflowHeaderTransition
-    ) -> some View {
-        if self.shouldRenderWorkflowHeaderOverlay(headerTransition: headerTransition) {
+    private func workflowHeaderOverlay(geometry: WorkflowTransitionGeometry) -> some View {
+        if self.shouldRenderWorkflowHeaderOverlay {
             ZStack(alignment: .top) {
                 ForEach(self.displayedPages) { displayedPage in
                     if displayedPage.page.headerComponent != nil {
@@ -550,7 +535,7 @@ struct WorkflowPaywallView: View {
                             horizontalSizeClass: self.horizontalSizeClass,
                             headerOpacity: self.transitionState.headerButtonOpacity(
                                 for: displayedPage.role,
-                                headerTransition: headerTransition
+                                headerTransition: self.headerTransition
                             )
                         )
                         .zIndex(displayedPage.role == .current ? 1 : 0)
@@ -643,7 +628,7 @@ struct WorkflowPaywallView: View {
         return hasPurchasedInSession || hasCompletedWorkflowInSession
     }
 
-    /// Horizontal offset for a page during a transition. Hidden (parked) pages never slide.
+    /// How far a page moves sideways during a transition. Pages kept off-screen never move.
     static func pageOffset<Page>(
         isHidden: Bool,
         role: WorkflowPageTransitionState<Page>.PageRole,
@@ -1040,9 +1025,8 @@ struct RenderedPagePackageInput {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
-    // Clips transitions to the screen while still letting page backgrounds render into the safe
-    // areas: a plain `.clipped()` would trim that overflow and expose the presenting view, because
-    // this GeometryReader is laid out inside the safe-area bounds.
+    // Clips transitions to the screen, but still lets page backgrounds paint into the safe areas. A
+    // plain `.clipped()` would cut those off and show whatever is behind the paywall.
     func transitionClipMask(geometry: WorkflowTransitionGeometry) -> some View {
         self.mask {
             Rectangle()

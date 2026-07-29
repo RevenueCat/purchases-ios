@@ -1423,35 +1423,34 @@ private extension WorkflowPaywallViewTests {
 
 #if canImport(UIKit)
 
-/// A workflow paywall must paint to the horizontal screen edges in landscape, where the device
-/// reports non-zero leading/trailing safe area insets (both are 0 in portrait). Rendering the same
-/// screen through `PaywallsV2View` directly acts as the control.
+/// A workflow paywall must paint all the way to the screen edges in landscape, where the device
+/// reports left and right safe area insets (both are 0 in portrait). The same screen rendered
+/// without the workflow container is the control.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WorkflowLandscapeSafeAreaTests: TestCase {
 
-    /// iPhone 14 Pro Max landscape: 932x430pt, with a 21pt home indicator inset.
+    /// iPhone 14 Pro Max in landscape: 932x430pt.
     fileprivate enum Landscape {
         static let size = CGSize(width: 932, height: 430)
-        /// Both sides inset, as reported when the device symmetrizes the sensor housing.
+        /// Both sides inset by the same amount.
         static let symmetricSafeArea = UIEdgeInsets(top: 0, left: 59, bottom: 21, right: 59)
-        /// Only the sensor-housing side inset. Covered because a mask that merely widens and
-        /// centers passes the symmetric case while still clipping half the inset here.
+        /// Only one side inset. A mask that just widens and centres passes the symmetric case but
+        /// still cuts off half the inset here.
         static let asymmetricSafeArea = UIEdgeInsets(top: 0, left: 59, bottom: 21, right: 0)
-        /// Non-zero top and bottom, to cover the vertical half of the mask growth.
+        /// Top and bottom insets, to cover the vertical half of the mask.
         static let verticalSafeArea = UIEdgeInsets(top: 59, left: 0, bottom: 34, right: 0)
     }
 
     /// The fixture screen's root background: `#220000ff`.
     fileprivate static let backgroundColor = PixelColor(red: 0x22, green: 0x00, blue: 0x00)
 
-    /// The nested component fixture's own background: `#002200ff`, distinct from the root so the
-    /// edge samples prove the component's background is what reached the edge.
+    /// The nested stack's own background. Different from the root, so the edge samples show which
+    /// of the two reached the edge.
     fileprivate static let nestedBackgroundColor = PixelColor(red: 0x00, green: 0x22, blue: 0x00)
 
-    /// Sliding by only `size.width` leaves the off-screen page overlapping the clip mask, which shows
-    /// it as a sliver in the horizontal safe-area strips for the length of the animation. Covers both
-    /// roles and both directions: each is a separate call into the same production offset path. The
-    /// animation itself is covered by the `open_workflow` / `navigate_workflow_back` Maestro flows.
+    /// Sliding by only `size.width` leaves part of the off-screen page inside the clip mask, so a
+    /// strip of the wrong page shows at the edge while the animation runs. Both roles and both
+    /// directions, since each is a separate call into the same offset code.
     func testTransitionedPageSlidesFarEnoughToClearTheClipMask() {
         let directions: [WorkflowPageTransitionState<String>.Direction] = [.forward, .back]
 
@@ -1493,8 +1492,7 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         }
     }
 
-    /// Ties the two coordinate spaces together: the safe-area box the pages are laid out in, plus the
-    /// insets, must come back to the physical screen width that the mask spans.
+    /// The safe-area box the pages lay out in, plus the insets, must add back up to the screen.
     func testTransitionWidthIsTheFullScreenWidth() {
         for safeArea in [Landscape.symmetricSafeArea, Landscape.asymmetricSafeArea] {
             expect(Self.geometry(safeArea: safeArea).screenWidth) == Landscape.size.width
@@ -1534,9 +1532,8 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// A mid-animation frame: the page carries `isTransitioning`, which used to restrict background
-    /// safe-area expansion to `.vertical` and left the horizontal strips unpainted for the length of
-    /// every landscape transition.
+    /// A frame from the middle of an animation. The page carries `isTransitioning`, which used to
+    /// stop backgrounds painting sideways into the safe areas for as long as a transition ran.
     @MainActor
     func testWorkflowPageBackgroundReachesHorizontalScreenEdgesWhileTransitioning() throws {
         try Self.expectBackgroundAtEdges(
@@ -1546,10 +1543,9 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// `BackgroundStyleModifier` is shared with component-level views (stacks, text, badges), not
-    /// just the page root, so pin a nested component background too: it must reach the horizontal
-    /// edges mid-transition exactly as it does at rest, otherwise the paywall pops when the
-    /// animation starts and ends.
+    /// `BackgroundStyleModifier` is also used by stacks, text and badges, not just the page root. A
+    /// nested background has to reach the edge mid-animation the same way it does at rest, or the
+    /// paywall jumps when the animation starts and stops.
     @MainActor
     func testComponentBackgroundReachesHorizontalScreenEdgesWhileTransitioning() throws {
         try Self.expectBackgroundAtEdges(
@@ -1564,9 +1560,8 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// `transitionClipMask` grows the mask on all four edges, and the vertical half of that is
-    /// pre-existing behavior the rewrite to per-edge padding had to preserve. The other tests use a
-    /// zero top inset and sample the middle row, so they would not notice a vertical regression.
+    /// The mask grows on all four edges. The other tests use a zero top inset and sample the middle
+    /// row, so they would not catch a mistake in the top or bottom growth.
     @MainActor
     func testWorkflowPageBackgroundReachesVerticalScreenEdges() throws {
         try Self.expectBackgroundAtEdges(
@@ -1576,8 +1571,8 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// Control: the same screen without the workflow container, so a difference in the tests above
-    /// belongs to the container rather than to the V2 renderer.
+    /// Control: the same screen without the workflow container, so any difference above belongs to
+    /// the container.
     @MainActor
     func testLegacyPaywallBackgroundReachesHorizontalScreenEdgesInLandscape() throws {
         try Self.expectBackgroundAtEdges(
@@ -1604,9 +1599,8 @@ private extension WorkflowLandscapeSafeAreaTests {
         }
     }
 
-    /// Samples the two opposite edges of `axis` at the cross-axis midpoint. Both must be the
-    /// paywall's background: anything else means it was clipped to, or laid out inside, the safe
-    /// area, exposing whatever is presenting it.
+    /// Samples both edges along `axis`, halfway along the other one. Both have to be the paywall's
+    /// background; anything else means it stopped at the safe area and the view behind shows.
     static func expectBackgroundAtEdges(
         of image: UIImage,
         axis: Axis,
@@ -1637,9 +1631,9 @@ private extension WorkflowLandscapeSafeAreaTests {
         }
     }
 
-    /// Models what the production `GeometryReader` reports: `size` is the safe-area box, not the
-    /// screen, so the insets have to come off it. Building this with the full screen size would
-    /// inflate `screenWidth` past the device and validate a slide distance no device asks for.
+    /// Matches what the real `GeometryReader` reports: `size` is the safe-area box, not the screen,
+    /// so the insets come off it. Using the full screen size here would make `screenWidth` bigger
+    /// than any real device.
     static func geometry(safeArea: UIEdgeInsets) -> WorkflowTransitionGeometry {
         return .init(
             size: CGSize(
@@ -1655,8 +1649,7 @@ private extension WorkflowLandscapeSafeAreaTests {
         )
     }
 
-    /// The fixture screen rendered without the workflow container, optionally carrying the workflow
-    /// transition flag so a mid-animation frame can be sampled.
+    /// The fixture screen without the workflow container, optionally with the transition flag set.
     @MainActor
     static func renderScreenInLandscape(
         isTransitioning: Bool,
@@ -1714,8 +1707,8 @@ private extension WorkflowLandscapeSafeAreaTests {
         )
     }
 
-    /// Hosts `view` in a landscape-sized window carrying the given safe area insets and rasterizes
-    /// it at scale 1 so pixel coordinates map to points.
+    /// Puts `view` in a landscape-sized window with the given safe area insets and draws it at
+    /// scale 1, so one pixel is one point.
     @MainActor
     static func renderInLandscape(
         _ view: some View,
@@ -1726,8 +1719,8 @@ private extension WorkflowLandscapeSafeAreaTests {
 
         let controller = UIHostingController(rootView: view)
         controller.additionalSafeAreaInsets = safeArea
-        // A white host stands in for the presenting surface, so any region the paywall fails to
-        // cover reads as white rather than as an ambiguous transparent pixel.
+        // White stands in for whatever would be behind the paywall, so anything it fails to cover
+        // reads as white instead of as a see-through pixel.
         controller.view.backgroundColor = .white
 
         // This target has no host application, so there is no scene to attach to. That is fine for
@@ -1754,8 +1747,8 @@ private extension WorkflowLandscapeSafeAreaTests {
             }
         }
 
-        // Pump the runloop until the paywall has drawn, rather than sleeping a fixed interval:
-        // state resolution and layout usually settle in a few frames.
+        // Run the loop until the paywall has drawn instead of sleeping a fixed time: it usually
+        // settles in a few frames.
         var image = render()
         let deadline = Date().addingTimeInterval(2)
         while Date() < deadline,
@@ -1774,12 +1767,12 @@ private extension WorkflowLandscapeSafeAreaTests {
         return image
     }
 
-    /// Matches the screen id `makeContext` gives the workflow's initial step.
+    /// The screen id `makeContext` gives the workflow's first step.
     static let landscapeScreenId = "screen_initial"
     static let landscapeOfferingId = "offering_test"
 
-    /// The landscape fixture: a workflow whose initial screen is `screenJSON`, defaulting to the
-    /// flat `#220000ff` fill/fill stack that makes edge pixels trivial to sample.
+    /// A workflow whose first screen is `screenJSON`, defaulting to a flat `#220000ff` stack that
+    /// fills the screen, so edge pixels are easy to check.
     static func makeLandscapeContext(screenJSON: String? = nil) throws -> WorkflowContext {
         return try WorkflowPaywallViewTests.makeContext(
             singleStepFallbackId: nil,
@@ -1787,8 +1780,8 @@ private extension WorkflowLandscapeSafeAreaTests {
         )
     }
 
-    /// The flat fixture plus a fill/fill child stack carrying its own `#002200ff` background, so the
-    /// sampled edges belong to a component background rather than the page root.
+    /// The flat fixture plus a child stack that fills the screen and has its own background, so the
+    /// sampled edges come from a component rather than the page root.
     static func nestedComponentBackgroundScreenJSON() -> String {
         let childStack = """
         {
@@ -1827,7 +1820,7 @@ private struct PixelColor: Equatable, CustomStringConvertible {
 
 }
 
-/// Reads back the raw pixels of a rendered image so individual coordinates can be asserted on.
+/// Reads the raw pixels of a rendered image so single coordinates can be checked.
 private struct PixelSampler {
 
     let width: Int
