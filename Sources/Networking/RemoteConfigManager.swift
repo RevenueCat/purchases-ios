@@ -259,6 +259,7 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         let epoch: Int
         let requestAppUserID: String
         let fetchContext: RemoteConfigFetchContext
+        let lastRefreshedAt: Date?
     }
 
     /// Runs blocking committed-state reads away from the caller's executor.
@@ -458,7 +459,8 @@ private extension RemoteConfigManager {
             return .init(
                 epoch: self.epoch,
                 requestAppUserID: requestAppUserID,
-                fetchContext: self.fetchContextForRefresh(fetchContext)
+                fetchContext: self.fetchContextForRefresh(fetchContext),
+                lastRefreshedAt: self.lastRefreshedAt
             )
         }
     }
@@ -492,20 +494,28 @@ private extension RemoteConfigManager {
             return .init(
                 epoch: self.epoch,
                 requestAppUserID: requestAppUserID,
-                fetchContext: self.fetchContextForRefresh(fetchContext)
+                fetchContext: self.fetchContextForRefresh(fetchContext),
+                lastRefreshedAt: self.lastRefreshedAt
             )
         }
     }
 
     func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
+        // A refresh time is only meaningful when there is a persisted configuration to associate it with.
+        let lastRefreshTime: Date?
+        if let persisted {
+            lastRefreshTime = requestContext.lastRefreshedAt ?? persisted.lastRefreshTime
+        } else {
+            lastRefreshTime = nil
+        }
         let request = RemoteConfigRequest(
             fetchContext: requestContext.fetchContext,
             appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted),
-            lastRefreshTime: self.lastRefreshTime(from: persisted)
+            lastRefreshTime: lastRefreshTime
         )
 
         Logger.verbose(Strings.remoteConfig.refreshing(
@@ -766,18 +776,6 @@ private extension RemoteConfigManager {
     func markRefreshed(at date: Date) {
         self.hasCommittedInitialConfig = true
         self.lastRefreshedAt = date
-    }
-
-    func lastRefreshTime(from persisted: PersistedRemoteConfiguration?) -> Date? {
-        return self.lock.perform {
-            guard let persisted else { return nil }
-            if let lastRefreshedAt = self.lastRefreshedAt {
-                return lastRefreshedAt
-            }
-            guard let milliseconds = persisted.lastRefreshTimeMilliseconds else { return nil }
-
-            return Date(millisecondsSince1970: milliseconds)
-        }
     }
 
     /// Waits for committed config state to become available for read APIs.

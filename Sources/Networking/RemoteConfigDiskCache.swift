@@ -79,6 +79,10 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 
 extension PersistedRemoteConfiguration {
 
+    var lastRefreshTime: Date? {
+        return self.lastRefreshTimeMilliseconds.map(Date.init(millisecondsSince1970:))
+    }
+
     func withLastRefreshTime(_ date: Date) -> Self {
         var copy = self
         copy.lastRefreshTimeMilliseconds = date.millisecondsSince1970
