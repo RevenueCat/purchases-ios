@@ -195,6 +195,22 @@ module ApiDiffHelper
     !output.to_s.include?(NO_CHANGES_MARKER)
   end
 
+  # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
+  def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
+    validate_api_diff_inputs!(old_file, new_file)
+
+    runner ||= ->(*command) { Fastlane::Actions.sh(*command, log: false) }
+    output = runner.call(
+      tool, "swift-interface",
+      "--old", old_file,
+      "--new", new_file,
+      "--target-name", target_name
+    )
+
+    validate_api_diff_output!(output, old_file, new_file)
+    output
+  end
+
   def print_failure_summary(failed_platforms)
     Fastlane::UI.error("=" * 60)
     Fastlane::UI.error("API CHANGES DETECTED")

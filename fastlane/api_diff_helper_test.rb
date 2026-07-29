@@ -80,4 +80,62 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.api_changes_reported?(ADDITIONS_OUTPUT)
     assert ApiDiffHelper.api_changes_reported?(MODIFICATIONS_OUTPUT)
   end
+
+  # --- Tool invocation ---
+
+  def test_report_passes_expected_arguments_to_the_tool
+    with_interface_files do |old_file, new_file|
+      received = nil
+      runner = ->(*command) { received = command; ADDITIONS_OUTPUT }
+
+      report = ApiDiffHelper.public_api_diff_report(
+        tool: "public-api-diff",
+        old_file: old_file,
+        new_file: new_file,
+        target_name: "RevenueCat",
+        runner: runner
+      )
+
+      assert_equal ADDITIONS_OUTPUT, report
+      assert_equal [
+        "public-api-diff", "swift-interface",
+        "--old", old_file,
+        "--new", new_file,
+        "--target-name", "RevenueCat"
+      ], received
+    end
+  end
+
+  def test_report_raises_when_the_tool_prints_nothing
+    with_interface_files do |old_file, new_file|
+      runner = ->(*_command) { "" }
+
+      error = assert_raises(RuntimeError) do
+        ApiDiffHelper.public_api_diff_report(
+          tool: "public-api-diff", old_file: old_file, new_file: new_file,
+          target_name: "RevenueCat", runner: runner
+        )
+      end
+      assert_match(/no output/, error.message)
+    end
+  end
+
+  def test_report_validates_inputs_before_invoking_the_tool
+    with_interface_files do |_old_file, new_file, dir|
+      invoked = false
+      runner = ->(*_command) { invoked = true; ADDITIONS_OUTPUT }
+
+      assert_raises(RuntimeError) do
+        ApiDiffHelper.public_api_diff_report(
+          tool: "public-api-diff",
+          old_file: File.join(dir, "gone.swiftinterface"),
+          new_file: new_file,
+          target_name: "RevenueCat",
+          runner: runner
+        )
+      end
+
+      refute invoked, "the tool must not run when an input file is missing"
+    end
+  end
 end
