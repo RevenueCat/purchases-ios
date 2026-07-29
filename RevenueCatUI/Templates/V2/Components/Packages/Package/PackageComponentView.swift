@@ -118,7 +118,7 @@ struct PackageSelectorIfNeeded: ViewModifier {
     private var componentInteractionLogger
     @Environment(\.planSelectionDefaultPackage)
     private var planSelectionDefaultPackage
-    @Environment(\.packageSelectionHapticFeedback)
+    @Environment(\.selectionHapticFeedback)
     private var hapticFeedback
 
     let packageContext: PackageContext
@@ -160,8 +160,6 @@ struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
-            // Warm the haptics engine as the selectable package appears, so the first
-            // selection's highlight isn't stalled behind the one-time engine load.
             .onAppear {
                 if hapticFeedbackEnabled {
                     self.hapticFeedback.prepare()
