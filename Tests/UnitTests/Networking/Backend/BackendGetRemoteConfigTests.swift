@@ -168,7 +168,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
-        expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
+        expect(self.httpClient.calls.first?.headers[ETagManager.lastRefreshTimeRequestHeader.rawValue]).to(beNil())
     }
 
     func testGetRemoteConfigSendsLastRefreshTimeWithoutETag() {
@@ -188,7 +188,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
-        expect(self.httpClient.calls.first?.headers["X-RC-Last-Refresh-Time"])
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
             == lastRefreshTime.millisecondsSince1970.description
     }
 
@@ -206,6 +206,19 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
+    }
+
+    func testGetRemoteConfigFallbackDoesNotSendLastRefreshTimeHeader() {
+        self.mockSuccessfulFallbackResponse()
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: "app",
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
     }
 
     func testGetRemoteConfigDoesNotSendSignatureVerificationHeaders() {

@@ -33,7 +33,7 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let activeTopics: [String]
     let prefetchBlobs: [String]
     let topics: RemoteConfiguration.Topics
-    let lastRefreshTimeMilliseconds: UInt64?
+    private(set) var lastRefreshTimeMilliseconds: UInt64?
 
     init(
         domain: String = RemoteConfiguration.defaultDomain,
@@ -80,14 +80,10 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 extension PersistedRemoteConfiguration {
 
     func withLastRefreshTime(_ date: Date) -> Self {
-        return .init(
-            domain: self.domain,
-            manifest: self.manifest,
-            activeTopics: self.activeTopics,
-            prefetchBlobs: self.prefetchBlobs,
-            topics: self.topics,
-            lastRefreshTimeMilliseconds: date.millisecondsSince1970
-        )
+        var copy = self
+        copy.lastRefreshTimeMilliseconds = date.millisecondsSince1970
+
+        return copy
     }
 
 }

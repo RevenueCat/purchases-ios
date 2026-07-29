@@ -440,7 +440,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
 
-        expect(self.remoteConfigCalls.first?.headers["X-RC-Last-Refresh-Time"]).to(beNil())
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
     }
 
     func testRequestSendsLastRefreshTimeHeaderAfterSuccessfulConfigIsStored() async throws {
@@ -453,8 +453,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
 
-        expect(self.remoteConfigCalls.first?.headers["X-RC-Last-Refresh-Time"]).to(beNil())
-        expect(self.remoteConfigCalls.last?.headers["X-RC-Last-Refresh-Time"])
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls.last?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
             == storedRefreshTime.description
     }
 
@@ -471,9 +471,9 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(3)
 
-        expect(self.remoteConfigCalls[0].headers["X-RC-Last-Refresh-Time"]).to(beNil())
-        expect(self.remoteConfigCalls[1].headers["X-RC-Last-Refresh-Time"]) == "0"
-        expect(self.remoteConfigCalls[2].headers["X-RC-Last-Refresh-Time"]) == "123000"
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "0"
+        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "123000"
     }
 
     func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
@@ -488,8 +488,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
 
-        expect(self.remoteConfigCalls[0].headers["X-RC-Last-Refresh-Time"]).to(beNil())
-        expect(self.remoteConfigCalls[1].headers["X-RC-Last-Refresh-Time"]).to(beNil())
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
     }
 
     func testInformationalFailedVerificationStillPersistsResponse() async throws {

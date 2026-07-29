@@ -770,10 +770,11 @@ private extension RemoteConfigManager {
 
     func lastRefreshTime(from persisted: PersistedRemoteConfiguration?) -> Date? {
         return self.lock.perform {
+            guard let persisted else { return nil }
             if let lastRefreshedAt = self.lastRefreshedAt {
                 return lastRefreshedAt
             }
-            guard let milliseconds = persisted?.lastRefreshTimeMilliseconds else { return nil }
+            guard let milliseconds = persisted.lastRefreshTimeMilliseconds else { return nil }
 
             return Date(millisecondsSince1970: milliseconds)
         }

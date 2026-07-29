@@ -93,6 +93,26 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(read.lastRefreshTimeMilliseconds) == lastRefreshTimeMilliseconds
     }
 
+    func testWithLastRefreshTimeOnlyUpdatesLastRefreshTime() {
+        let original = PersistedRemoteConfiguration(
+            domain: "custom-domain",
+            manifest: "v1.1710000100.sources:etag1",
+            activeTopics: ["sources"],
+            prefetchBlobs: ["blobRefA"],
+            topics: .init(entries: ["sources": ["default": .init(blobRef: "blobRefA")]]),
+            lastRefreshTimeMilliseconds: 1_000
+        )
+
+        let updated = original.withLastRefreshTime(Date(millisecondsSince1970: 123_000))
+
+        expect(updated.domain) == original.domain
+        expect(updated.manifest) == original.manifest
+        expect(updated.activeTopics) == original.activeTopics
+        expect(updated.prefetchBlobs) == original.prefetchBlobs
+        expect(updated.topics) == original.topics
+        expect(updated.lastRefreshTimeMilliseconds) == 123_000
+    }
+
     func testInlineOnlyTopicsPersistWithContent() throws {
         let manifest = "v1.1710000100.sources:etag1"
         let inlineItem = RemoteConfiguration.ConfigItem(
@@ -209,7 +229,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
         expect(self.cache.read()).to(beNil())
     }
 
-    func testReadDefaultsMissingTopicsToEmpty() throws {
+    func testReadDefaultsMissingOptionalFields() throws {
         try FileManager.default.createDirectory(
             at: self.fileURL.deletingLastPathComponent(),
             withIntermediateDirectories: true,
@@ -225,6 +245,7 @@ final class RemoteConfigDiskCacheTests: TestCase {
 
         expect(read.manifest) == "v1.1710000100.sources:etag1"
         expect(read.topics.entries).to(beEmpty())
+        expect(read.lastRefreshTimeMilliseconds).to(beNil())
     }
 
     func testReadIgnoresUnknownFields() throws {

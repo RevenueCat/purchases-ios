@@ -91,7 +91,7 @@ struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
         guard let lastRefreshTime else { return [:] }
 
         return [
-            "X-RC-Last-Refresh-Time": lastRefreshTime.millisecondsSince1970.description
+            HTTPClient.RequestHeader.lastRefreshTime.rawValue: lastRefreshTime.millisecondsSince1970.description
         ]
     }
 

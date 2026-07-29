@@ -201,7 +201,7 @@ extension HTTPClient {
         case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
-        case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case lastRefreshTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"

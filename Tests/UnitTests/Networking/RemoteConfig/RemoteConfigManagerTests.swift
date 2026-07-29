@@ -362,6 +362,24 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.isAppBackgrounded) == true
     }
 
+    func testClearCacheDropsLastRefreshTime() {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            lastRefreshTimeMilliseconds: 123_000
+        )
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime)
+            == Date(timeIntervalSince1970: 123)
+
+        self.manager.clearCache(forAppUserID: "new-user")
+        self.currentUserProvider.mockAppUserID = "new-user"
+        self.diskCache.stubbedRead = nil
+        self.manager.refreshRemoteConfig(fetchContext: .identityChange, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime).to(beNil())
+    }
+
     func testNoContentResponsePersistsAndSendsSuccessfulPollTime() {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1",
@@ -1565,7 +1583,7 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobFetcher.invokedPrefetchCount) == 0
     }
 
-    func testNoContentResponseWithNoPersistedCacheLeavesCacheUntouched() {
+    func testNoContentResponseWithNoPersistedCacheDoesNotSendRefreshTime() {
         self.diskCache.stubbedRead = nil
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
@@ -1575,6 +1593,10 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigParameters?.request.lastRefreshTime).to(beNil())
     }
 
     func testBackendErrorLeavesCacheUntouched() {
