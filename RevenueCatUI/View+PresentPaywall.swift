@@ -105,8 +105,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
-        webCheckoutOpened: WebCheckoutOpenedHandler? = nil
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             requiredEntitlementIdentifier: requiredEntitlementIdentifier,
@@ -122,8 +122,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            onDismiss: onDismiss,
-            webCheckoutOpened: webCheckoutOpened
+            webCheckoutOpened: webCheckoutOpened,
+            onDismiss: onDismiss
         )
     }
 
@@ -161,8 +161,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
-        webCheckoutOpened: WebCheckoutOpenedHandler? = nil
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             offering: offering,
@@ -182,8 +182,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            onDismiss: onDismiss,
-            webCheckoutOpened: webCheckoutOpened
+            webCheckoutOpened: webCheckoutOpened,
+            onDismiss: onDismiss
         )
     }
 
@@ -242,8 +242,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
-        webCheckoutOpened: WebCheckoutOpenedHandler? = nil
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             offering: offering,
@@ -260,8 +260,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            onDismiss: onDismiss,
             webCheckoutOpened: webCheckoutOpened,
+            onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
                     throw PaywallError.purchasesNotConfigured
@@ -323,8 +323,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
-        webCheckoutOpened: WebCheckoutOpenedHandler? = nil
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
             offering: offering,
@@ -339,8 +339,8 @@ extension View {
             restoreCompleted: restoreCompleted,
             purchaseFailure: purchaseFailure,
             restoreFailure: restoreFailure,
-            onDismiss: onDismiss,
             webCheckoutOpened: webCheckoutOpened,
+            onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
                     throw PaywallError.purchasesNotConfigured
@@ -367,8 +367,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
         return self
@@ -429,9 +429,9 @@ extension View {
     ///   - restoreCompleted: Called when a restore completes successfully.
     ///   - purchaseFailure: Called when a purchase fails.
     ///   - restoreFailure: Called when a restore fails.
-    ///   - onDismiss: Called when the paywall (and any exit offer) is fully dismissed.
     ///   - webCheckoutOpened: Called when the user taps a web checkout CTA and leaves the app to
     ///     complete payment externally.
+    ///   - onDismiss: Called when the paywall (and any exit offer) is fully dismissed.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -447,8 +447,8 @@ extension View {
         restoreCompleted: PurchaseOrRestoreCompletedHandler? = nil,
         purchaseFailure: PurchaseFailureHandler? = nil,
         restoreFailure: PurchaseFailureHandler? = nil,
-        onDismiss: (() -> Void)? = nil,
-        webCheckoutOpened: WebCheckoutOpenedHandler? = nil
+        webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
+        onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.modifier(PresentingPaywallBindingModifier(
             offering: offering,

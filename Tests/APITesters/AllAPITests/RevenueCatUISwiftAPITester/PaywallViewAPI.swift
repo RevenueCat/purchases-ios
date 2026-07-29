@@ -185,8 +185,8 @@ struct App: View {
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
-                                    onDismiss: nil,
-                                    webCheckoutOpened: self.webCheckoutOpened)
+                                    webCheckoutOpened: self.webCheckoutOpened,
+                                    onDismiss: nil)
     }
 
     @ViewBuilder
@@ -304,8 +304,8 @@ struct App: View {
                                     restoreCompleted: nil,
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
-                                    onDismiss: nil,
-                                    webCheckoutOpened: self.webCheckoutOpened)
+                                    webCheckoutOpened: self.webCheckoutOpened,
+                                    onDismiss: nil)
     }
 
     @State private var offeringBinding: Offering?
@@ -352,8 +352,8 @@ struct App: View {
                             restoreCompleted: nil,
                             purchaseFailure: nil,
                             restoreFailure: nil,
-                            onDismiss: nil,
-                            webCheckoutOpened: nil)
+                            webCheckoutOpened: nil,
+                            onDismiss: nil)
             .presentPaywall(offering: self.$offeringBinding,
                             webCheckoutOpened: self.webCheckoutOpened)
             .presentPaywall(offering: self.$offeringBinding,
