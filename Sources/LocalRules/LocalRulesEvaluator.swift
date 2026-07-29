@@ -24,9 +24,25 @@ protocol LocalRule: Sendable {
     var predicate: String { get }
 }
 
+/// The outcome of evaluating an ordered collection of local rules.
+enum LocalRulesEvaluationResult<ID: Sendable>: Sendable {
+
+    case matched(ID)
+    case notMatched
+    case indeterminate(LocalRulesEvaluationError)
+}
+
+extension LocalRulesEvaluationResult: Equatable where ID: Equatable {}
+
+/// A failure that prevented local rules from producing a definitive non-match.
+enum LocalRulesEvaluationError: Error, Equatable, Sendable {
+
+    case variableResolution(RulesVariableResolutionError)
+    case predicateEvaluation(ruleIndex: Int, error: RulesEngine.EvaluationError)
+    case unexpected(message: String)
+}
+
 /// Evaluates rules against fresh, locally collected variables.
-///
-/// Evaluation returns no identifier when a snapshot cannot be collected or no valid rule matches.
 final class LocalRulesEvaluator: Sendable {
 
     private let variableResolver: RulesVariableResolver
@@ -41,29 +57,50 @@ final class LocalRulesEvaluator: Sendable {
         )
     }
 
-    /// Returns the first matching rule identifier, using one snapshot for the full call.
+    /// Returns the first matching rule, using one snapshot for the full call.
     ///
-    /// For example, rules `[("a", false), ("b", true)]` return `"b"`.
-    func firstMatch<Rule: LocalRule>(in rules: [Rule]) async -> Rule.ID? {
-        guard !rules.isEmpty,
-              let snapshot = try? await self.variableResolver.snapshot() else {
-            return nil
+    /// For example, rules `[("a", false), ("b", true)]` return `.matched("b")`.
+    func match<Rule: LocalRule>(in rules: [Rule]) async -> LocalRulesEvaluationResult<Rule.ID> {
+        guard !rules.isEmpty else {
+            return .notMatched
         }
 
-        for rule in rules {
-            if case .success(true) = RulesEngine.evaluate(
+        let snapshot: RulesVariableSnapshot
+        do {
+            snapshot = try await self.variableResolver.snapshot()
+        } catch let error as RulesVariableResolutionError {
+            return .indeterminate(.variableResolution(error))
+        } catch {
+            return .indeterminate(.unexpected(message: String(describing: error)))
+        }
+
+        var firstEvaluationError: LocalRulesEvaluationError?
+
+        for (index, rule) in rules.enumerated() {
+            switch RulesEngine.evaluate(
                 predicate: rule.predicate,
                 variables: snapshot.values
             ) {
-                return rule.id
+            case .success(true):
+                return .matched(rule.id)
+            case .success(false):
+                continue
+            case .failure(let error):
+                if firstEvaluationError == nil {
+                    firstEvaluationError = .predicateEvaluation(ruleIndex: index, error: error)
+                }
             }
         }
 
-        return nil
+        return firstEvaluationError.map(LocalRulesEvaluationResult.indeterminate) ?? .notMatched
     }
 
-    /// Returns whether any rule matches, using one snapshot and stopping at the first match.
+    /// Returns whether any rule matches, treating an indeterminate result as no match.
     func matchesAny<Rule: LocalRule>(in rules: [Rule]) async -> Bool {
-        await self.firstMatch(in: rules) != nil
+        if case .matched = await self.match(in: rules) {
+            return true
+        } else {
+            return false
+        }
     }
 }
