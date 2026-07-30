@@ -34,7 +34,7 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
-    private let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    let requestTimeoutManager: HTTPRequestTimeoutManagerType
     private let apiSourceFailover: APISourceFailoverType?
 
     private let retryBackoffIntervals: [TimeInterval] = [
@@ -53,11 +53,11 @@ class HTTPClient {
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
-         networkTimeout: NetworkTimeout = .default,
+         networkTimeout: NetworkTimeout,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
          apiSourceFailover: APISourceFailoverType?,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+         timeoutManager: HTTPRequestTimeoutManagerType
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
@@ -78,10 +78,7 @@ class HTTPClient {
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
         self.apiSourceFailover = apiSourceFailover
-        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
-            networkTimeout: networkTimeout,
-            dateProvider: dateProvider
-        )
+        self.requestTimeoutManager = timeoutManager
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`

@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol HTTPRequestTimeoutManagerType {
+protocol HTTPRequestTimeoutManagerType: AnyObject {
 
     /// Determines the timeout to be used by an HTTP request attempt.
     ///
@@ -17,10 +17,11 @@ protocol HTTPRequestTimeoutManagerType {
     ///   - isFallbackHostRequest: Whether this attempt targets a fallback host.
     ///   - endpointSupportsFallbackURLs: Whether the endpoint has fallback-URL support.
     ///   - isProxied: Whether a proxy URL is set.
-    ///   - reTieredTimeoutsEnabled: Whether this caller opts into the re-tiered no-fallback fail-fast
-    ///     timeouts. Main-API requests opt in only when remote-config API sources are enabled (so the
-    ///     default configuration keeps its legacy timeout), while blob-source downloads always opt in.
-    ///     It has no effect on the fallback-supported, fallback-host, or proxied tiers.
+    ///   - reTieredTimeoutsEnabled: Whether this caller opts into the re-tiered timeouts. Main-API
+    ///     requests opt in only when remote-config API sources are enabled (so the default configuration
+    ///     keeps its legacy timeouts), while blob-source downloads always opt in. Callers that opt out get
+    ///     the legacy flat timeout for the no-fallback, fallback-host and proxied tiers; only the
+    ///     fallback-supported tiers are the same either way.
     ///     This parameter should be removed once the `usesRemoteConfigAPISources` dangerous setting is
     ///     removed and the re-tiered timeouts become the only behavior.
     /// - Returns: The timeout interval in seconds.
@@ -67,7 +68,8 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         /// Main-source request to an endpoint with fallback-URL support, when the source recently timed out.
         static let mainSourceSupportingFallbackReduced: TimeInterval = 2
 
-        /// Fallback-host and proxied requests (flat, never reduced).
+        /// Fallback-host and proxied requests (flat, never reduced). Callers that opt out of the
+        /// re-tiered timeouts get `legacyFlatTimeout` for these instead.
         static let flat: TimeInterval = 30
     }
 
@@ -84,7 +86,7 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     private let lock = Lock()
 
     init(
-        networkTimeout: NetworkTimeout = .default,
+        networkTimeout: NetworkTimeout,
         dateProvider: DateProvider = .init()
     ) {
         self.networkTimeout = networkTimeout
@@ -98,14 +100,14 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
                  reTieredTimeoutsEnabled: Bool) -> TimeInterval {
         // Fallback-host and proxied requests use a flat timeout and never consult the per-host memory.
         guard !isFallbackHostRequest, !isProxied else {
-            return self.baseTimeout(default: Timeout.flat)
+            return reTieredTimeoutsEnabled ? self.baseTimeout(default: Timeout.flat) : self.legacyFlatTimeout
         }
 
         // The re-tiered no-fallback fail-fast timeouts only apply to callers that opt in. Otherwise the
         // no-fallback tiers fall back to the legacy flat network timeout so the default configuration's
         // behavior stays unchanged.
         guard reTieredTimeoutsEnabled || endpointSupportsFallbackURLs else {
-            return self.networkTimeout.timeoutInterval
+            return self.legacyFlatTimeout
         }
 
         let sourceRecentlyTimedOut = host.map { self.hasRecentTimeout(forHost: $0) } ?? false
@@ -125,6 +127,14 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         case .default: return defaultValue
         case let .custom(value): return value
         }
+    }
+
+    /// The single flat timeout used for every request kind other than the fallback-supported tiers before
+    /// the re-tiered timeouts existed. Callers that opt out of the re-tiered timeouts keep getting it, so
+    /// their behavior stays unchanged.
+    /// This should be removed along with the `reTieredTimeoutsEnabled` parameter.
+    private var legacyFlatTimeout: TimeInterval {
+        return self.networkTimeout.timeoutInterval
     }
 
     func recordRequestResult(host: String?, _ result: RequestResult) {

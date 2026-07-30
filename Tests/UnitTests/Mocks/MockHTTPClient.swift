@@ -97,7 +97,8 @@ class MockHTTPClient: HTTPClient {
                    dnsChecker: dnsChecker,
                    networkTimeout: networkTimeout,
                    operationDispatcher: MockOperationDispatcher(),
-                   apiSourceFailover: nil)
+                   apiSourceFailover: nil,
+                   timeoutManager: HTTPRequestTimeoutManager(networkTimeout: networkTimeout))
     }
 
     /// Disables snapshot testing for this mock HTTP client.

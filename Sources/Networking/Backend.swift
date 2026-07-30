@@ -49,13 +49,17 @@ class Backend {
                               sourceProvider: $0,
                               healthChecker: SourceHealthChecker())
         }
+        // Shared by both HTTPClients so a timeout one of them sees on a host fast-fails the other's next
+        // request to that same host, and a success on either clears it for both.
+        let timeoutManager = HTTPRequestTimeoutManager(networkTimeout: httpClientTimeout)
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     networkTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
-                                    apiSourceFailover: apiSourceFailover)
+                                    apiSourceFailover: apiSourceFailover,
+                                    timeoutManager: timeoutManager)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
@@ -67,8 +71,9 @@ class Backend {
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
                                                diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout,
-                                               apiSourceFailover: apiSourceFailover),
+                                               networkTimeout: httpClientTimeout,
+                                               apiSourceFailover: apiSourceFailover,
+                                               timeoutManager: timeoutManager),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -303,20 +308,23 @@ extension Backend {
 
 private extension HTTPClient {
 
+    // swiftlint:disable:next function_parameter_count
     static func dedicatedRemoteConfig(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        requestTimeout: TimeInterval,
-        apiSourceFailover: APISourceFailoverType?
+        networkTimeout: NetworkTimeout,
+        apiSourceFailover: APISourceFailoverType?,
+        timeoutManager: HTTPRequestTimeoutManagerType
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
-                   requestTimeout: requestTimeout,
+                   networkTimeout: networkTimeout,
                    operationDispatcher: OperationDispatcher.default,
-                   apiSourceFailover: apiSourceFailover)
+                   apiSourceFailover: apiSourceFailover,
+                   timeoutManager: timeoutManager)
     }
 
 }
@@ -327,6 +335,12 @@ extension Backend {
 
     var networkTimeout: TimeInterval {
         return self.config.httpClient.timeout
+    }
+
+    /// How many distinct timeout managers the backend's `HTTPClient`s use. Both are expected to share one.
+    var distinctHTTPClientTimeoutManagerCount: Int {
+        return Set([ObjectIdentifier(self.config.httpClient.requestTimeoutManager),
+                    ObjectIdentifier(self.remoteConfigAPI.httpClient.requestTimeoutManager)]).count
     }
 
     var offlineCustomerInfoEnabled: Bool {

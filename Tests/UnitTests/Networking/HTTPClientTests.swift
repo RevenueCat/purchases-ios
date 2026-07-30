@@ -1802,13 +1802,35 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
 
-            // Make sure it uses the flat timeout because it's a fallback-host request
-            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            // API sources are disabled here, so the fallback-host request keeps the legacy flat timeout
+            XCTAssertEqual(request.timeoutInterval, Configuration.networkTimeoutDefault)
             return .emptySuccessResponse()
         }
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+    }
+
+    /// With API sources enabled, fallback-host requests move to the re-tiered flat timeout instead of the
+    /// legacy network timeout.
+    func testUsesReTieredFlatTimeoutForFallbackHostRequestWhenAPISourcesEnabled() throws {
+        let client = self.createClient(self.systemInfoUsingAPISources())
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { _ in
+            return .timeoutResponse()
+        }
+
+        let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
+        stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            client.perform(request) { (_: DataResponse) in completion() }
         }
     }
 
@@ -1936,8 +1958,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // fallback request succeeds
         let fallbackUrl = try XCTUnwrap(request.path.fallbackUrls.first?.absoluteString)
         stub(condition: isAbsoluteURLString(fallbackUrl)) { request in
-            // Fallback-host request should use the flat timeout
-            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            // API sources are disabled here, so the fallback-host request keeps the legacy flat timeout
+            XCTAssertEqual(request.timeoutInterval, Configuration.networkTimeoutDefault)
             return .emptySuccessResponse()
         }
 
@@ -2017,10 +2039,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         // Stub request to the fallback URL
         var fallbackCalled = false
         stub(condition: isAbsoluteURLString(firstRequest.path.fallbackUrls.first!.absoluteString)) { request in
-            // The fallback-host request should use the flat timeout
+            // API sources are disabled here, so the fallback-host request keeps the legacy flat timeout
             XCTAssertEqual(
                 request.timeoutInterval,
-                HTTPRequestTimeoutManager.Timeout.flat
+                Configuration.networkTimeoutDefault
             )
 
             fallbackCalled = true
@@ -2087,10 +2109,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
-            // With a proxy URL, the request should use the default timeout
-            // because fallback URLs are disabled and the short timeout is only
-            // useful when fallback can catch a timeout.
-            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            // With a proxy URL, the request should use a flat timeout because fallback URLs are
+            // disabled and the short timeout is only useful when fallback can catch a timeout.
+            // API sources are disabled here, so that flat timeout is the legacy one.
+            XCTAssertEqual(request.timeoutInterval, Configuration.networkTimeoutDefault)
             return .emptySuccessResponse()
         }
 
@@ -2119,14 +2141,40 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         stub(condition: isHost("proxy.revenuecat.com")) { request in
-            // Even after a previous timeout, with a proxy URL set the request
-            // should use the flat timeout, not a reduced tier (proxied requests never consult the memory).
-            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            // Even after a previous timeout, with a proxy URL set the request should use a flat timeout,
+            // not a reduced tier (proxied requests never consult the memory).
+            XCTAssertEqual(request.timeoutInterval, Configuration.networkTimeoutDefault)
             return .emptySuccessResponse()
         }
 
         waitUntil { completion in
             self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+    }
+
+    /// With API sources enabled, proxied requests move to the re-tiered flat timeout instead of the
+    /// legacy network timeout, and still never consult the per-host memory.
+    func testUsesReTieredFlatTimeoutForProxiedRequestWhenAPISourcesEnabled() throws {
+        let proxyURL = try XCTUnwrap(URL(string: "https://proxy.revenuecat.com"))
+        SystemInfo.proxyURL = proxyURL
+
+        defer {
+            SystemInfo.proxyURL = nil
+        }
+
+        let client = self.createClient(self.systemInfoUsingAPISources())
+
+        timeoutManager.recordRequestResult(host: "proxy.revenuecat.com", .mainSourceTimedOut)
+
+        let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
+
+        stub(condition: isHost("proxy.revenuecat.com")) { request in
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            client.perform(request) { (_: DataResponse) in completion() }
         }
     }
 

@@ -456,6 +456,48 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         )
     }
 
+    func testFallbackHostRequestUsesLegacyTimeoutWhenReTieredTimeoutsDisabled() {
+        XCTAssertEqual(
+            timeout(host: Self.hostA, isFallbackHostRequest: true, reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+    }
+
+    func testProxiedRequestUsesLegacyTimeoutWhenReTieredTimeoutsDisabled() {
+        XCTAssertEqual(
+            timeout(host: Self.hostA,
+                    endpointSupportsFallbackURLs: true,
+                    isProxied: true,
+                    reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+    }
+
+    func testCustomFlatTiersUseCustomTimeoutWhenReTieredTimeoutsDisabled() {
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, isFallbackHostRequest: true, reTieredTimeoutsEnabled: false),
+            Self.customTimeout
+        )
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, isProxied: true, reTieredTimeoutsEnabled: false),
+            Self.customTimeout
+        )
+    }
+
+    func testFlatTiersStayLegacyAfterTimeoutWhenReTieredTimeoutsDisabled() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // The flat tiers never consult the per-host memory, whether re-tiered timeouts are on or off.
+        XCTAssertEqual(
+            timeout(host: Self.hostA, isFallbackHostRequest: true, reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+        XCTAssertEqual(
+            timeout(host: Self.hostA, isProxied: true, reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+    }
+
     func testNoFallbackUsesReTieredTimeoutWhenEnabled() {
         // Blob-source downloads opt into the re-tiered tiers regardless of the API-sources setting.
         XCTAssertEqual(

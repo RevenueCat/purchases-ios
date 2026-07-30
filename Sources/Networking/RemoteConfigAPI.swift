@@ -85,6 +85,16 @@ class RemoteConfigAPI: RemoteConfigAPIType {
 
 }
 
+// MARK: - Testing extensions
+
+extension RemoteConfigAPI {
+
+    var httpClient: HTTPClient {
+        return self.backendConfig.httpClient
+    }
+
+}
+
 struct RemoteConfigFetchResult {
 
     /// `nil` represents a successful `204 No Content` response. Malformed or undecodable

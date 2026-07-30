@@ -130,7 +130,8 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               diagnosticsTracker: nil,
                               requestTimeout: 30,
                               operationDispatcher: OperationDispatcher(),
-                              apiSourceFailover: nil)
+                              apiSourceFailover: nil,
+                              timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)))
         }
 
         func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
@@ -181,6 +182,24 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
         expect(configResult).to(beSuccess())
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
+    }
+
+    /// Both lanes talk to the same hosts, so a timeout either of them sees must fast-fail the other.
+    func testBothLanesShareOneRequestTimeoutManager() {
+        let systemInfo = MockSystemInfo(finishTransactions: true)
+        let backend = Backend(
+            systemInfo: systemInfo,
+            httpClientTimeout: .default,
+            eTagManager: MockETagManager(),
+            operationDispatcher: OperationDispatcher(),
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil
+        )
+
+        expect(backend.distinctHTTPClientTimeoutManagerCount) == 1
     }
 
 }
