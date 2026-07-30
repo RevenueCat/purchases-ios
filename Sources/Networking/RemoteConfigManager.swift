@@ -298,10 +298,15 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// ID over the provider value, so a request is either created for the cleared identity or treated as stale later.
     private var identityBoundAppUserID: String?
 
-    /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
+    /// Client-clock time when this process last completed a successful `200` or `204` refresh.
+    ///
+    /// This is memory-only and is compared with `dateProvider.now()` to decide when the local cache is stale.
     private var lastRefreshedAt: Date?
 
-    /// In-memory attempt marker used to avoid hammering the endpoint when a stale refresh keeps failing.
+    /// Client-clock time when this process last attempted a stale-gated refresh.
+    ///
+    /// This is memory-only and drives the local retry cooldown. The configuration stores its main-server request
+    /// time separately for refresh requests.
     private var lastRefreshAttemptAt: Date?
 
     /// Read callers waiting for the current refresh to finish before rereading committed config state.
@@ -499,13 +504,13 @@ private extension RemoteConfigManager {
 
     func startRefresh(isAppBackgrounded: Bool, requestContext: RefreshRequestContext) {
         let persisted = self.diskCache.read()
-        // The header replays only server-provided time; `lastRefreshedAt` uses the client clock for local staleness.
         let request = RemoteConfigRequest(
             fetchContext: requestContext.fetchContext,
             appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
             prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted),
+            // Replay the persisted main-server request date.
             lastRefreshTime: persisted?.lastRefreshTime
         )
 
@@ -599,6 +604,7 @@ private extension RemoteConfigManager {
 
             self.lock.perform {
                 guard self.epoch == requestEpoch else { return }
+                // Prefer this response's main-server request date, carrying forward the persisted value as needed.
                 let lastRefreshTime = fetchResult.requestDate ?? previous?.lastRefreshTime
                 let didPersist = self.persist(
                     container: container,
@@ -691,7 +697,7 @@ private extension RemoteConfigManager {
 
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
-            // The fallback may use a different host, so its request time must not replace the main API's time.
+            // Keep the persisted refresh time associated with main API responses.
             let didPersist = self.persist(
                 container: nil,
                 previous: previous,
@@ -759,16 +765,18 @@ private extension RemoteConfigManager {
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
-            // Missing server time leaves the previously persisted value untouched.
+            // A response request date advances the persisted main-server time.
             if let previous, let requestDate {
                 self.diskCache.write(previous.withLastRefreshTime(requestDate))
             }
+            // Local staleness starts when this response lands, independently of the server timestamp above.
             self.markRefreshed(at: self.dateProvider.now())
         }
     }
 
-    /// Records a landed refresh: stamps the refresh time and marks the session's initial config as committed, so
-    /// later refreshes stop being forced to `.appStart`. Must be called within `lock`.
+    /// Records a landed refresh using the client clock and marks the session's initial config as committed, so later
+    /// refreshes stop being forced to `.appStart`. This timestamp drives local staleness; the main-server request
+    /// timestamp is persisted separately. Must be called within `lock`.
     func markRefreshed(at date: Date) {
         self.hasCommittedInitialConfig = true
         self.lastRefreshedAt = date

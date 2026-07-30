@@ -449,14 +449,13 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container, requestDate: serverRequestTime)
 
-        let storedRefreshTime = try XCTUnwrap(self.diskCache.read()?.lastRefreshTimeMilliseconds)
         self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
 
         expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
         expect(self.remoteConfigCalls.last?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
-            == storedRefreshTime.description
+            == serverRequestTime.millisecondsSince1970.description
     }
 
     func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
