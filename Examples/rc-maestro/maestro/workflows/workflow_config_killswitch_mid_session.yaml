@@ -3,12 +3,10 @@
 # workflow_config_fallback.yaml. It used to render the SDK's generic default paywall instead, because an
 # offering the app already held had its paywall components pruned with nothing left to render.
 #
-# Two things this flow has to work around:
-#   - Launch arguments only reach a fresh process, so the kill switch is armed through the app's
-#     rcmaestro:// deep link to keep the session (and its warm caches) alive.
-#   - The config refresh on foreground is stale-gated to 5 minutes, so returning to the app is not
-#     enough to provoke a /v1/config request in a flow this short. syncAttributesAndOfferingsIfNeeded
-#     refreshes config unconditionally, so the flow triggers it through a deep link too.
+# The kill switch is armed and the refresh driven through in-app controls (see the `e2e_controls` launch
+# argument) rather than a relaunch or a deep link: a relaunch would reset the session this scenario needs
+# to keep, and opening a URL makes iOS put a confirmation dialog on screen that then blocks every
+# following flow in this directory.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_config_killswitch_mid_session.yaml
@@ -32,6 +30,7 @@ env:
     arguments:
         e2e_test_flow: open_workflow
         offering_id: "${OFFERING_ID}"
+        e2e_controls: true
 # Wait for offerings to load before the button appears.
 - extendedWaitUntil:
     visible: "Present Paywall"
@@ -65,16 +64,20 @@ env:
     timeout: 15000
 
 # Arm the kill switch, then leave and come back. Arming before backgrounding keeps this deterministic:
-# no config request happens in between, so the refresh below is guaranteed to see the new strategy.
-- openLink: "rcmaestro://force-server-error-strategy?value=remote_config_killswitch"
+# no config request happens in between, so the refresh below is guaranteed to see it.
+- tapOn:
+    text: "Force Config Killswitch"
 - pressKey: home
 - launchApp:
     stopApp: false
 
-# Provoke the config request that returns the kill switch, and give it time to land.
-- openLink: "rcmaestro://sync-attributes-and-offerings"
-- waitForAnimationToEnd:
-    timeout: 5000
+# Drives the config request that returns the kill switch. The counter only advances once the kill switch
+# has landed and the offering has been reloaded, so waiting on it removes the need for a sleep here.
+- tapOn:
+    text: "Sync Attributes And Offerings"
+- extendedWaitUntil:
+    visible: "completed syncs: 1"
+    timeout: 30000
 
 - tapOn:
     text: "Present Paywall"

@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import RevenueCatUI
 
 extension E2ETestFlowView {
@@ -18,6 +18,13 @@ extension E2ETestFlowView {
         /// `offering_id` launch argument.
         static var offeringIdentifier: String {
             return UserDefaults.standard.string(forKey: "offering_id") ?? Self.defaultOfferingIdentifier
+        }
+
+        /// Whether to show the controls E2E tests use to change SDK state without relaunching, which
+        /// would reset it. Off unless the `e2e_controls` launch argument is set, so that the flows which
+        /// don't need them see this screen unchanged.
+        static var showsE2EControls: Bool {
+            return UserDefaults.standard.bool(forKey: "e2e_controls")
         }
 
         /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
@@ -38,6 +45,7 @@ extension E2ETestFlowView {
 
         @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
+        @State private var completedSyncCount = 0
 
         var body: some View {
             VStack {
@@ -62,6 +70,10 @@ extension E2ETestFlowView {
                 }
 
                 EntitlementView(identifier: "pro")
+
+                if Self.showsE2EControls {
+                    self.e2eControls
+                }
             }
             .task {
                 do {
@@ -76,6 +88,41 @@ extension E2ETestFlowView {
                 }
             }
             .multilineTextAlignment(.center)
+        }
+
+        @ViewBuilder
+        private var e2eControls: some View {
+            Button("Force Config Killswitch") {
+                ForceServerErrorStrategyStore.update(to: .remoteConfigKillswitch)
+            }
+
+            // Config is only refreshed on foreground when its cache is stale, which no flow waits out, so
+            // tests drive the refresh through this instead.
+            Button("Sync Attributes And Offerings") {
+                Task { await self.syncAndReloadOffering() }
+            }
+
+            Text("completed syncs: \(self.completedSyncCount)")
+        }
+
+        /// Syncs, then waits for the kill switch to land before reloading the offering: the config request
+        /// runs concurrently with the sync's own offerings fetch, so the offerings it hands back can still
+        /// carry the paywall components that config is about to prune.
+        @MainActor
+        private func syncAndReloadOffering() async {
+            _ = try? await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
+
+            let deadline = Date().addingTimeInterval(10)
+            while Purchases.shared.remoteConfigEnabled, Date() < deadline {
+                try? await Task.sleep(nanoseconds: 100_000_000)
+            }
+
+            if let offerings = try? await Purchases.shared.offerings(),
+               let offering = offerings.offering(identifier: Self.offeringIdentifier) {
+                self.offeringsState = .loaded(offering)
+            }
+
+            self.completedSyncCount += 1
         }
 
         enum OfferingError: LocalizedError {

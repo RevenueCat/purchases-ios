@@ -14,7 +14,7 @@ struct RcMaestroApp: App {
         }
 
         // Used in E2E tests. The strategy is read on every request rather than captured here, so that
-        // tests can change it mid-session through `MaestroDeepLink`.
+        // tests can change it mid-session through `ForceServerErrorStrategyStore`.
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
@@ -59,21 +59,11 @@ struct RcMaestroApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Group {
-                switch e2eTestFlow {
-                case .some(let flow):
-                    flow.view
-                case nil:
-                    ContentView()
-                }
-            }
-            .onOpenURL { url in
-                guard let deepLink = MaestroDeepLink(url: url) else {
-                    print("Maestro: ignoring unrecognized deep link '\(url)'")
-                    return
-                }
-
-                deepLink.apply()
+            switch e2eTestFlow {
+            case .some(let flow):
+                flow.view
+            case nil:
+                ContentView()
             }
         }
     }
