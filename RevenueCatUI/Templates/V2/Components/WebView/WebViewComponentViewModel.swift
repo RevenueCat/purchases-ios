@@ -17,6 +17,13 @@ final class WebViewComponentViewModel: Hashable {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
+    #if !os(watchOS) && canImport(WebKit)
+    /// Shared by every SwiftUI rendering of this logical component. `ViewThatFits` can construct the
+    /// component in more than one candidate subtree, but those subtrees already share this view model.
+    @MainActor
+    private var webViewInstance: WebViewInstance?
+    #endif
+
     init(
         component: PaywallComponent.WebViewComponent,
         uiConfigProvider: UIConfigProvider,
@@ -27,6 +34,30 @@ final class WebViewComponentViewModel: Hashable {
         self.uiConfigProvider = uiConfigProvider
         self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
+
+    #if !os(watchOS) && canImport(WebKit)
+    @MainActor
+    func webViewInstance(expectedOrigin: WebViewOrigin) -> WebViewInstance {
+        if let webViewInstance = self.webViewInstance {
+            guard webViewInstance.isUnusable else {
+                return webViewInstance
+            }
+
+            // Preserve the pre-cache recovery behavior: a later SwiftUI rendering gets a fresh
+            // attempt rather than inheriting a terminated process or terminal navigation failure.
+            webViewInstance.tearDown()
+        }
+
+        let webViewInstance = WebViewInstance(
+            componentID: self.component.id,
+            expectedOrigin: expectedOrigin,
+            fitsWidth: self.component.size.width.isFit,
+            fitsHeight: self.component.size.height.isFit
+        )
+        self.webViewInstance = webViewInstance
+        return webViewInstance
+    }
+    #endif
 
     /// Resolves the component's rendered properties for the current presentation context, applying any
     /// matching overrides on top of the base component values.
@@ -72,6 +103,18 @@ final class WebViewComponentViewModel: Hashable {
     static func == (lhs: WebViewComponentViewModel, rhs: WebViewComponentViewModel) -> Bool {
         lhs.component == rhs.component
     }
+}
+
+private extension PaywallComponent.SizeConstraint {
+
+    var isFit: Bool {
+        if case .fit = self {
+            return true
+        }
+
+        return false
+    }
+
 }
 
 extension PresentedWebViewPartial: PresentedPartial {

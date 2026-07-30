@@ -41,9 +41,6 @@ struct WebViewComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
-    @Environment(\.paywallPresentationID)
-    private var paywallPresentationID
-
     let viewModel: WebViewComponentViewModel
 
     private var style: WebViewComponentStyle {
@@ -69,19 +66,10 @@ struct WebViewComponentView: View {
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
         // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
         if style.isRenderable, let url = style.url, let origin = style.origin {
-            BridgedWebViewComponentView(
+            HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                expectedOrigin: origin,
-                componentID: style.componentID,
-                presentationID: self.paywallPresentationID
-            )
-            // Must stay in step with `WebViewInstanceKey`: a change that gives the component a new
-            // cached web view has to give it a new subtree too.
-            .id(
-                "\(self.paywallPresentationID?.uuidString ?? "-")-" +
-                "\(style.urlString)-\(style.componentID)-" +
-                "\(style.size.width.isFit)-\(style.size.height.isFit)"
+                instance: self.viewModel.webViewInstance(expectedOrigin: origin)
             )
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
@@ -122,71 +110,10 @@ enum WebViewSizing {
 
 }
 
-private extension PaywallComponent.SizeConstraint {
-
-    var isFit: Bool {
-        if case .fit = self {
-            return true
-        }
-
-        return false
-    }
-
-}
-
 #if canImport(WebKit) && !os(watchOS)
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct BridgedWebViewComponentView: View {
-
-    let size: PaywallComponent.Size
-    let url: URL
-    let expectedOrigin: WebViewOrigin
-
-    /// Keeps the shared ``WebViewInstance`` alive for as long as this subtree exists. The web view,
-    /// its bridge session and its measured size live on the instance rather than in `@State` here,
-    /// because this subtree is rebuilt whenever the enclosing `ViewThatFits` re-picks a candidate.
-    @StateObject
-    private var lease: WebViewInstanceLease
-
-    init(
-        size: PaywallComponent.Size,
-        url: URL,
-        expectedOrigin: WebViewOrigin,
-        componentID: String,
-        presentationID: UUID?
-    ) {
-        self.size = size
-        self.url = url
-        self.expectedOrigin = expectedOrigin
-
-        self._lease = StateObject(
-            wrappedValue: WebViewInstanceLease(
-                key: .init(
-                    presentationID: presentationID,
-                    componentID: componentID,
-                    url: url,
-                    fitsWidth: size.width.isFit,
-                    fitsHeight: size.height.isFit
-                ),
-                expectedOrigin: expectedOrigin
-            )
-        )
-    }
-
-    var body: some View {
-        HostedWebViewComponentView(
-            size: self.size,
-            url: self.url,
-            instance: self.lease.instance
-        )
-    }
-
-}
-
-/// Renders whatever the shared instance currently holds. Split out from
-/// ``BridgedWebViewComponentView`` so the instance can be observed with `@ObservedObject` while the
-/// lease that owns it stays a `@StateObject`.
+/// Renders the instance owned by the component view model. Every duplicate `ViewThatFits` subtree
+/// receives the same view model, so bridge state and the loaded document survive candidate changes.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct HostedWebViewComponentView: View {
 
@@ -239,16 +166,15 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         self.instance.navigationDelegate {
             let coordinator = Coordinator(expectedOrigin: self.expectedOrigin)
             coordinator.session = self.instance.session
-            coordinator.onProcessTerminated = { [instance] in instance.markProcessTerminated() }
-            coordinator.onLoadFailed = { [instance] in instance.markLoadFailed() }
+            coordinator.onProcessTerminated = { [weak instance] in instance?.markProcessTerminated() }
+            coordinator.onLoadFailed = { [weak instance] in instance?.markLoadFailed() }
             return coordinator
         }
     }
 
     // Deliberately no `dismantle*` implementation: a discarded subtree is usually just a
     // `ViewThatFits` candidate losing the layout, and tearing the web view down there is what caused
-    // the component to blank out and reload. Teardown belongs to the lease count instead, in
-    // `WebViewInstanceCache.release(key:)`.
+    // the component to blank out and reload. The component view model owns the web view instead.
     #if os(macOS)
     func makeNSView(context: Context) -> WebViewHostView {
         self.makeHost(context: context)
@@ -278,9 +204,12 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         }
 
         let instance = self.instance
-        host.onMoveToWindow = { [weak host] in
-            guard let host else { return }
-            instance.attachWebView(to: host)
+        host.onMoveToWindow = { [weak instance] host in
+            if host.window == nil {
+                instance?.hostDidLeaveWindow(host)
+            } else {
+                instance?.hostDidEnterWindow(host)
+            }
         }
 
         return host
@@ -291,7 +220,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         // `didMoveToWindow` covers the usual path; this catches a host that SwiftUI reuses after it
         // is already in a window.
         if host.window != nil {
-            self.instance.attachWebView(to: host)
+            self.instance.updateHost(host)
         }
     }
 
