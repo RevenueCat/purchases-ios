@@ -759,7 +759,8 @@ private extension HTTPClient {
                 // might be empty if called immediately after `Product.purchase()`.
                 // This introduces a delay to simulate a real API request, and avoid that race condition.
 
-                Logger.warn(Strings.network.api_request_faking_error_response(request.httpRequest))
+                Logger.warn(Strings.network.api_request_faking_response(request.httpRequest,
+                                                                        statusCode: fakeResponse.statusCode))
                 DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
                     self.handle(urlResponse: fakeResponse,
                                 request: request,
@@ -771,7 +772,8 @@ private extension HTTPClient {
                 return
 
             case let .serverErrorURL(serverErrorURL):
-                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
+                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest,
+                                                                             serverErrorURL: serverErrorURL))
                 finalURLRequest = URLRequest(url: serverErrorURL)
 
             case .performRequest:
