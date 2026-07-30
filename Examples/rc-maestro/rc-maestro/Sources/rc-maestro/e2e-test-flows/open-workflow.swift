@@ -22,9 +22,10 @@ extension E2ETestFlowView {
 
         /// Whether to show the controls E2E tests use to change SDK state without relaunching, which
         /// would reset it. Off unless the `e2e_controls` launch argument is set, so that the flows which
-        /// don't need them see this screen unchanged.
+        /// don't need them see this screen unchanged. Any value turns them on: Maestro only forwards
+        /// launch arguments whose value is a string, so the flow has to pass `"true"` quoted anyway.
         static var showsE2EControls: Bool {
-            return UserDefaults.standard.bool(forKey: "e2e_controls")
+            return UserDefaults.standard.object(forKey: "e2e_controls") != nil
         }
 
         /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when

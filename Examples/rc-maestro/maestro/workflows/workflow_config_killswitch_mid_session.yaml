@@ -30,7 +30,7 @@ env:
     arguments:
         e2e_test_flow: open_workflow
         offering_id: "${OFFERING_ID}"
-        e2e_controls: true
+        e2e_controls: "true"
 # Wait for offerings to load before the button appears.
 - extendedWaitUntil:
     visible: "Present Paywall"
