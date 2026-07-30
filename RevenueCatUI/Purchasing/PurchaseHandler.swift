@@ -382,8 +382,8 @@ extension PurchaseHandler {
     }
 #endif
 
-    // Exposes the gate so tests can cover both states deterministically without depending on
-    // ENABLE_REMOTE_CONFIG being compiled in for the test target.
+    // Exposes the gate so tests can cover both states deterministically, without having to configure
+    // the SDK in the mode (custom entitlement computation) or kill-switch state that disables it.
     func cachedInitialOffering(
         for content: PaywallViewConfiguration.Content,
         remoteConfigEnabled: Bool

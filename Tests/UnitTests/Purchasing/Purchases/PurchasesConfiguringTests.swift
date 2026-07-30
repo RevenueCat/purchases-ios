@@ -23,17 +23,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
-    func testRemoteConfigFeatureOffUsesNoOpManager() {
-        self.setupPurchases()
-
-        self.notificationCenter.fireNotifications()
-
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 0
-        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 0
-    }
-
-    func testRemoteConfigFeatureOnRefreshesDuringLifecycleCacheUpdates() {
-        self.systemInfo.stubbedRemoteConfigEnabled = true
+    func testRemoteConfigRefreshesDuringLifecycleCacheUpdatesByDefault() {
         self.setupPurchases()
 
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount).toEventually(equal(1))

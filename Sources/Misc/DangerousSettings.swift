@@ -60,7 +60,6 @@ import Foundation
         let autoSyncPurchases: Bool
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
-        let useWorkflows: Bool
     }
 
     internal let storage: Storage
@@ -81,11 +80,6 @@ import Foundation
      * products obtained from StoreKit. This is useful for testing or preview purposes.
      */
     @_spi(Internal) public var uiPreviewMode: Bool { self.storage.uiPreviewMode }
-
-    /**
-     * Enables RevenueCat Workflows (multipage paywalls). Internal RevenueCat use only.
-     */
-    @_spi(Internal) public var useWorkflows: Bool { self.storage.useWorkflows }
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -138,31 +132,15 @@ import Foundation
         self.init(autoSyncPurchases: false, internalSettings: Internal.default, uiPreviewMode: uiPreviewMode)
     }
 
-    /**
-     * Used to enable RevenueCat Workflows (multipage paywalls) while controlling auto-sync.
-     * Internal RevenueCat use only; behavior may change without warning.
-     *
-     * - Parameter autoSyncPurchases: whether the SDK observes the StoreKit queue and syncs purchases.
-     * - Parameter useWorkflows: if `true`, the SDK wires up the workflows endpoint so multipage
-     * paywalls can be rendered.
-     */
-    @_spi(Internal) public convenience init(autoSyncPurchases: Bool = true, useWorkflows: Bool) {
-        self.init(autoSyncPurchases: autoSyncPurchases,
-                  internalSettings: Internal.default,
-                  useWorkflows: useWorkflows)
-    }
-
     /// Designated initializer
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false,
-                  useWorkflows: Bool = false) {
+                  uiPreviewMode: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
-            customEntitlementComputation: customEntitlementComputation,
-            useWorkflows: useWorkflows
+            customEntitlementComputation: customEntitlementComputation
         )
         self.internalSettings = internalSettings
     }
