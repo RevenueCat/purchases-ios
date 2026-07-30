@@ -74,6 +74,30 @@ class TokenAPI {
         }
     }
 
+    func revokeAccessTokens(for appUserID: String, completion: @escaping (BackendError?) -> Void) {
+        if let refreshToken = tokenManager.currentAccessToken {
+            let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
+                                                                    appUserID: appUserID)
+
+            let factory = TokenRevocationOperation.createFactory(configuration: config,
+                                                                 refreshToken: refreshToken,
+                                                                 appUserID: appUserID,
+                                                                 callbackCache: self.revokeCallbacksCache)
+
+            let revokeCallback = TokenRevokeCallback(cacheKey: factory.cacheKey) { error in
+                if error == nil {
+                    self.tokenManager.
+                }
+                completion(error)
+            }
+            let cacheStatus = self.revokeCallbacksCache.add(revokeCallback)
+
+            self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        } else {
+            completion(nil)
+        }
+    }
+
 }
 
 // @unchecked because:

@@ -77,8 +77,8 @@ class TokenManager {
     }
 
     var currentAuthenticationMethod: AuthenticationMethod? {
-        guard let currentAccessToken else { return nil }
-        guard let jwt = try? JWT(from: currentAccessToken) else { return nil }
+        guard let currentIDToken else { return nil }
+        guard let jwt = try? JWT(from: currentIDToken) else { return nil }
         guard let amr = jwt.amr?.first else { return nil }
         return AuthenticationMethod(amr: amr)
     }

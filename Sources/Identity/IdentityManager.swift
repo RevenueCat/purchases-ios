@@ -128,6 +128,19 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
+    func revokeCurrentAccessToken(completion: @escaping (PurchasesError?) -> Void) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
+            completion(ErrorUtils.unsupportedInUIPreviewModeError())
+            return
+        }
+        
+        if self.backend.token.enabled {
+            self.performAccessTokenRevocation(for: self.currentAppUserID, completion: completion)
+        } else {
+            completion(nil)
+        }
+    }
+
     func switchUser(to newAppUserID: String) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID &&
               newAppUserID != Self.uiPreviewModeAppUserID else {
@@ -211,6 +224,12 @@ private extension IdentityManager {
             case .failure(let error):
                 completion(.failure(error))
             }
+        }
+    }
+
+    func performAccessTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
+        self.backend.token.revokeAccessTokens(for: appUserID) { error in
+            completion(error?.asPurchasesError)
         }
     }
 

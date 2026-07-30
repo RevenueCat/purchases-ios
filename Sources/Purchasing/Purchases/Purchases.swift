@@ -1037,9 +1037,6 @@ public extension Purchases {
     @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
 
     @_spi(Experimental)
-    var isAuthenticated: Bool { self.tokenManager.hasCurrentAccessToken }
-
-    @_spi(Experimental)
     var authenticationMethod: AuthenticationMethod? { self.tokenManager.currentAuthenticationMethod }
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
@@ -1199,6 +1196,22 @@ public extension Purchases {
 
     func logOut() async throws -> CustomerInfo {
         return try await logOutAsync()
+    }
+
+    @_spi(Experimental)
+    func _revokeCurrentAccessToken(completion: ((PublicError?) -> Void)?) {
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            completion?(NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
+            return
+       }
+
+        self.identityManager.revokeCurrentAccessToken { error in
+            if let completion = completion {
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(error?.asPublicError)
+                }
+            }
+        }
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
