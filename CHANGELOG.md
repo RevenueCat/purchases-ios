@@ -10,7 +10,7 @@
 ### Paywallv2
 #### ✨ New Features
 * feat(paywalls-v2): add haptic feedback on package/tab selection (#7167) via Facundo Menzella (@facumenzella)
-* feat(paywalls): Support Custom components (#7233) via Jacob Rakidzich (@JZDesign)
+* feat(paywalls-v2): Support Custom components (#7233) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
 * Revert "feat: send workflow attribution on paywall events" (#7313) via Cesar de la Vega (@vegaro)
