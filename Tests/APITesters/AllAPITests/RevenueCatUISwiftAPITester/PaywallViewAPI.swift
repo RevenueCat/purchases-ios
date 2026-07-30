@@ -22,6 +22,7 @@ struct App: View {
     private var purchaseCompleted: PurchaseCompletedHandler = { (_: StoreTransaction?, _: CustomerInfo) in }
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var webCheckoutOpened: WebCheckoutOpenedHandler = { () in }
+    private var urlOpened: UrlOpenedHandler = { (_: String) in }
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
@@ -186,6 +187,7 @@ struct App: View {
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
                                     webCheckoutOpened: self.webCheckoutOpened,
+                                    urlOpened: self.urlOpened,
                                     onDismiss: nil)
     }
 
@@ -305,6 +307,7 @@ struct App: View {
                                     purchaseFailure: nil,
                                     restoreFailure: nil,
                                     webCheckoutOpened: self.webCheckoutOpened,
+                                    urlOpened: self.urlOpened,
                                     onDismiss: nil)
     }
 
@@ -353,9 +356,12 @@ struct App: View {
                             purchaseFailure: nil,
                             restoreFailure: nil,
                             webCheckoutOpened: nil,
+                            urlOpened: nil,
                             onDismiss: nil)
             .presentPaywall(offering: self.$offeringBinding,
                             webCheckoutOpened: self.webCheckoutOpened)
+            .presentPaywall(offering: self.$offeringBinding,
+                            urlOpened: self.urlOpened)
             .presentPaywall(offering: self.$offeringBinding,
                             fonts: self.fonts,
                             presentationMode: .sheet,
@@ -800,6 +806,7 @@ struct App: View {
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
             .onWebCheckoutOpened(self.webCheckoutOpened)
+            .onUrlOpened(self.urlOpened)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
             .onRequestedDismissal(self.requestedDismissal)

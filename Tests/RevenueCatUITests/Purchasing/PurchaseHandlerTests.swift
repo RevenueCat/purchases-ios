@@ -126,6 +126,42 @@ class PurchaseHandlerTests: TestCase {
         await expect(handler.webCheckoutOpened).toEventually(beNil())
     }
 
+    @MainActor
+    func testSignalUrlOpenedSetsANewSignalForTheSameURL() async throws {
+        let handler: PurchaseHandler = .mock()
+        expect(handler.urlOpened).to(beNil())
+
+        handler.signalUrlOpened("https://revenuecat.com/terms")
+        let firstSignal = handler.urlOpened
+        expect(firstSignal?.url) == "https://revenuecat.com/terms"
+
+        handler.signalUrlOpened("https://revenuecat.com/terms")
+        expect(handler.urlOpened?.url) == "https://revenuecat.com/terms"
+        expect(handler.urlOpened).toNot(equal(firstSignal))
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsUrlOpened() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalUrlOpened("https://revenuecat.com/terms")
+        expect(handler.urlOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+
+        // Cleared a tick later (see `deferredClearUrlOpened`), not synchronously.
+        await expect(handler.urlOpened).toEventually(beNil())
+    }
+
+    @MainActor
+    func testClearUrlOpenedClearsSynchronously() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalUrlOpened("https://revenuecat.com/terms")
+
+        handler.clearUrlOpened()
+
+        expect(handler.urlOpened).to(beNil())
+    }
+
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
 

@@ -55,6 +55,9 @@ struct PaywallPresenter: View {
                 .onRestoreFailure({ error in
                     print("Paywall Handler - onRestoreFailure")
                 })
+                .onUrlOpened({ url in
+                    print("Paywall Handler - onUrlOpened: \(url)")
+                })
 
 #if !os(watchOS)
 #if !os(macOS)

@@ -281,6 +281,9 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environment(\.urlOpenedNotifier, UrlOpenedNotifier { [purchaseHandler] url in
+            purchaseHandler.signalUrlOpened(url)
+        })
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
@@ -394,6 +397,8 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.restoreError as NSError?)
             .preference(key: WebCheckoutOpenedPreferenceKey.self,
                         value: self.purchaseHandler.webCheckoutOpened)
+            .preference(key: UrlOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.urlOpened)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear {
                 // Standalone closes on disappear. A workflow page closes here only if it is still the

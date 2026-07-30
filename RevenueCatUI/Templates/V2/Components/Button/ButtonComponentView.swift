@@ -55,6 +55,7 @@ struct ButtonComponentView: View {
     private var selectedPackageId
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
@@ -243,7 +244,8 @@ struct ButtonComponentView: View {
             Browser.navigateTo(url: url,
                                method: method,
                                openURL: self.openURL,
-                               inAppBrowserURL: self.$inAppBrowserURL)
+                               inAppBrowserURL: self.$inAppBrowserURL,
+                               onUrlOpened: self.urlOpenedNotifier.callAsFunction)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
