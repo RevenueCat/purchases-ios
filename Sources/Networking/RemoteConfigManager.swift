@@ -780,6 +780,7 @@ private extension RemoteConfigManager {
     func markRefreshed(at date: Date) {
         self.hasCommittedInitialConfig = true
         self.lastRefreshedAt = date
+        self.lastRefreshAttemptAt = nil
     }
 
     /// Waits for committed config state to become available for read APIs.
