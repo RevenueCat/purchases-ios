@@ -25,12 +25,9 @@ final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
     private let remoteConfigFake = RemoteConfigKillSwitchFake()
 
     override func setUp() async throws {
-        self.forceServerErrorStrategy = ForceServerErrorStrategy(
-            fakeResponseWithoutPerformingRequest: { [remoteConfigFake] request in
-                remoteConfigFake.response(for: request)
-            },
-            shouldForceServerError: { _ in false }
-        )
+        self.forceServerErrorStrategy = ForceServerErrorStrategy { [remoteConfigFake] request in
+            remoteConfigFake.action(for: request)
+        }
 
         try await super.setUp()
     }
@@ -70,36 +67,36 @@ private final class RemoteConfigKillSwitchFake: @unchecked Sendable {
 
     var disableRemoteConfig = false
 
-    func response(for request: HTTPClient.Request) -> (HTTPURLResponse, Data)? {
+    func action(for request: HTTPClient.Request) -> ForceServerErrorStrategy.Action {
         guard case HTTPRequest.Path.remoteConfig = request.httpRequest.path else {
-            return nil
+            return .performRequest
         }
 
         if self.disableRemoteConfig {
-            return self.response(
+            return self.fakeResponse(
                 statusCode: 400,
                 data: Data(#"{"code":7000,"message":"remote config disabled for test"}"#.utf8),
                 request: request
             )
         } else {
-            return self.response(statusCode: 204, data: Data(), request: request)
+            return self.fakeResponse(statusCode: 204, data: Data(), request: request)
         }
     }
 
-    private func response(
+    private func fakeResponse(
         statusCode: Int,
         data: Data,
         request: HTTPClient.Request
-    ) -> (HTTPURLResponse, Data)? {
+    ) -> ForceServerErrorStrategy.Action {
         guard let url = request.httpRequest.path.url,
               let response = HTTPURLResponse(url: url,
                                              statusCode: statusCode,
                                              httpVersion: nil,
                                              headerFields: nil) else {
-            return nil
+            return .performRequest
         }
 
-        return (response, data)
+        return .fakeResponse(response, data)
     }
 
 }

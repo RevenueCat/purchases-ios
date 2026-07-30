@@ -27,6 +27,8 @@ final class WorkflowStepEventCoordinator {
     private var hasTrackedTerminalCompletion = false
     private var hasTrackedAbandonment = false
 
+    var traceId: String { self.tracker.traceId }
+
     init(workflow: PublishedWorkflow, traceId: String, sink: @escaping (WorkflowEvent) -> Void) {
         self.tracker = WorkflowStepEventTracker(workflow: workflow, traceId: traceId, sink: sink)
     }
