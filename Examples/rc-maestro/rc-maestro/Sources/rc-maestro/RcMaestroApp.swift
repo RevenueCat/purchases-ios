@@ -25,18 +25,11 @@ struct RcMaestroApp: App {
                             case .never:
                                 return .performRequest
 
-                            case .remoteConfigNotFound:
-                                // Simulate a 4xx on the /v1/config endpoint (its session kill-switch),
+                            case .remoteConfigKillswitch:
+                                // Let the backend serve the real kill-switch response for this request only,
                                 // so we can exercise the classic-paywall fallback for workflow offerings.
-                                guard request.path.contains("config/"),
-                                      let url = URL(string: "https://api.revenuecat.com"),
-                                      let response = HTTPURLResponse(url: url,
-                                                                     statusCode: 404,
-                                                                     httpVersion: nil,
-                                                                     headerFields: nil) else {
-                                    return .performRequest
-                                }
-                                return .fakeResponse(response, Data("{}".utf8))
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .appendQueryItems([URLQueryItem(name: "force_killswitch", value: "true")])
 
                             case .primaryBackendDown:
                                 // Remote config uses a separate request path whose primary URL is already

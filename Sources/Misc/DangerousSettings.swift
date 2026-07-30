@@ -199,7 +199,13 @@ struct ForceServerErrorStrategy {
         case fakeResponse(HTTPURLResponse, Data)
 
         /// The request is performed against this URL instead of its original one.
+        ///
+        /// - Warning: the original method, headers and body are dropped. Use `appendQueryItems` when the
+        /// backend needs to receive the request as the SDK built it.
         case serverErrorURL(URL)
+
+        /// The request is performed as usual, with these query items appended to its URL.
+        case appendQueryItems([URLQueryItem])
 
         /// The request is performed as usual, without interception.
         case performRequest

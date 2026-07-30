@@ -64,6 +64,7 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    // `freshTraceId` proves the passthrough surfaces the generated id, not a hardcoded test value.
     func testTraceIdMatchesTheTraceIdStampedOnEmittedWorkflowEvents() throws {
         let workflow = try Self.makeWorkflow()
         let coordinator = self.makeCoordinator(workflow: workflow, freshTraceId: true)

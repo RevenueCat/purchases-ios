@@ -1202,6 +1202,57 @@ extension WorkflowPaywallViewTests {
         expect(impression.data.paywallIdentifier) == "screen_a"
     }
 
+    /// Re-entering a step mints a fresh paywall session and fires a second `paywall_viewed`
+    /// (`PaywallsV2View.onChangeOf(isActiveWorkflowPage)`). The trace id identifies the presentation, not
+    /// the visit, so it has to survive that. Driven at the `PaywallsV2View` seam because the page's
+    /// activation is the only part of navigation reachable without simulating a tap.
+    @MainActor
+    func testReenteringAWorkflowPageKeepsTheTraceIdOnTheSecondImpression() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let (_, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+        let screen = try XCTUnwrap(context.workflow.screens["screen_a"])
+        let activation = WorkflowPageActivation(isActive: true)
+
+        let dispose = try WorkflowPageActivationHost(
+            activation: activation,
+            paywallComponents: WorkflowScreenMapper.toPaywallComponents(
+                screen: screen,
+                uiConfig: context.uiConfig
+            ),
+            offering: context.initialOffering,
+            purchaseHandler: purchaseHandler,
+            traceId: Self.reentryTraceId
+        ).addToHierarchy()
+
+        defer { dispose() }
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(1),
+            timeout: .seconds(3)
+        )
+
+        // Navigate away and back. The page stays mounted, it just stops being the current step.
+        // The render pass in between is required, otherwise both flips coalesce into no change at all.
+        activation.isActive = false
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        activation.isActive = true
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(2),
+            timeout: .seconds(3)
+        )
+
+        let impressions = Self.impressionData(in: paywallEvents.value)
+        expect(impressions.map(\.traceId)) == [Self.reentryTraceId, Self.reentryTraceId]
+
+        let firstVisit = try XCTUnwrap(impressions.first)
+        let secondVisit = try XCTUnwrap(impressions.dropFirst().first)
+        expect(firstVisit.sessionIdentifier) != secondVisit.sessionIdentifier
+    }
+
+    private static let reentryTraceId = "trace_reentry"
+
     private static func isImpression(_ event: PaywallEvent) -> Bool {
         if case .impression = event { return true }
         return false
@@ -1210,6 +1261,10 @@ extension WorkflowPaywallViewTests {
     private static func isStepStarted(_ event: WorkflowEvent) -> Bool {
         if case .stepStarted = event { return true }
         return false
+    }
+
+    private static func impressionData(in events: [PaywallEvent]) -> [PaywallEvent.Data] {
+        return events.filter { Self.isImpression($0) }.map(\.data)
     }
 
     private static func makeEventRecordingPurchaseHandler(
@@ -1229,6 +1284,48 @@ extension WorkflowPaywallViewTests {
             eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
         )
         return (purchases, purchaseHandler)
+    }
+
+}
+
+/// Lets a test flip a workflow page between current and not-current, the signal
+/// `WorkflowPaywallView` feeds `PaywallsV2View` on every navigation.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class WorkflowPageActivation: ObservableObject {
+
+    @Published var isActive: Bool
+
+    init(isActive: Bool) {
+        self.isActive = isActive
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageActivationHost: View {
+
+    @ObservedObject var activation: WorkflowPageActivation
+    let paywallComponents: Offering.PaywallComponents
+    let offering: Offering
+    let purchaseHandler: PurchaseHandler
+    let traceId: String
+
+    var body: some View {
+        PaywallsV2View(
+            paywallComponents: self.paywallComponents,
+            offering: self.offering,
+            purchaseHandler: self.purchaseHandler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            onDismiss: {},
+            failedToLoadFont: { _ in },
+            colorScheme: .light,
+            isActiveWorkflowPage: self.activation.isActive,
+            workflowScreenType: [WorkflowScreenType.paywall],
+            workflowId: "wf_non_initial_test",
+            stepId: "step_a",
+            traceId: self.traceId
+        )
     }
 
 }
