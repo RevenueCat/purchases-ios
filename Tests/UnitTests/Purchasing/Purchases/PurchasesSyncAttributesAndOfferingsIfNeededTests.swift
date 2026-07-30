@@ -55,6 +55,7 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
     }
 
     func testRefreshesRemoteConfig() throws {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
         try self.stubOfferings()
 
@@ -72,6 +73,7 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
     }
 
     func testDoesNotRefreshRemoteConfigWhenRateLimitIsReached() throws {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
         try self.stubOfferings()
 
@@ -84,6 +86,7 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         }
 
         let refreshCountBeforeRateLimitedSync = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+        expect(refreshCountBeforeRateLimitedSync) >= Self.rateLimitMaxCalls
 
         waitUntil { completed in
             self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { _, _ in
