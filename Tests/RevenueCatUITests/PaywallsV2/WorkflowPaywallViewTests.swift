@@ -1145,6 +1145,74 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - Trace id wiring
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    /// `PaywallsV2View`'s `traceId` defaults to `nil`, so dropping the argument would compile silently.
+    @MainActor
+    func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        let stepStarted = try XCTUnwrap(workflowEvents.value.first { Self.isStepStarted($0) })
+
+        let paywallTraceId = try XCTUnwrap(impression.data.traceId, "paywall event carried no trace id")
+        let workflowTraceId = try XCTUnwrap(stepStarted.data.traceId, "workflow event carried no trace id")
+        expect(paywallTraceId) == workflowTraceId
+    }
+
+    private static func isImpression(_ event: PaywallEvent) -> Bool {
+        if case .impression = event { return true }
+        return false
+    }
+
+    private static func isStepStarted(_ event: WorkflowEvent) -> Bool {
+        if case .stepStarted = event { return true }
+        return false
+    }
+
+    private static func makeEventRecordingPurchaseHandler(
+        paywallEvents: Atomic<[PaywallEvent]>
+    ) -> (MockPurchases, PurchaseHandler) {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            paywallEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let purchaseHandler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        return (purchases, purchaseHandler)
+    }
+
+}
+
 // MARK: - Callback test helpers
 
 /// Mirrors the @StateObject role that PaywallView plays in production:
