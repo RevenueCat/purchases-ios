@@ -522,6 +522,7 @@ extension SwiftUICore.View {
   @_Concurrency.MainActor @preconcurrency public func onPurchaseCancelled(_ handler: @escaping RevenueCatUI.PurchaseCancelledHandler) -> some SwiftUICore.View
   
   @_Concurrency.MainActor @preconcurrency public func onWebCheckoutOpened(_ handler: @escaping RevenueCatUI.WebCheckoutOpenedHandler) -> some SwiftUICore.View
+  
   @_Concurrency.MainActor @preconcurrency public func onUrlOpened(_ handler: @escaping RevenueCatUI.UrlOpenedHandler) -> some SwiftUICore.View
   
   @_Concurrency.MainActor @preconcurrency public func onRestoreStarted(_ handler: @escaping RevenueCatUI.RestoreStartedHandler) -> some SwiftUICore.View
