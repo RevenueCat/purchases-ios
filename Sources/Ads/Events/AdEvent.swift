@@ -619,6 +619,9 @@ internal enum AdEvent: Equatable, Codable, Sendable {
     /// Server-side verification terminally failed.
     case rewardFailedToVerify(CreationData, AdRewardFailedToVerify)
 
+    /// A single reward was granted following successful verification.
+    case rewardGranted(CreationData, AdRewardGranted)
+
 }
 
 extension AdEvent {
@@ -657,6 +660,7 @@ extension AdEvent {
         case let .rewardEarnedUnverified(creationData, _): return creationData
         case let .rewardVerified(creationData, _): return creationData
         case let .rewardFailedToVerify(creationData, _): return creationData
+        case let .rewardGranted(creationData, _): return creationData
         }
     }
 
@@ -679,6 +683,8 @@ extension AdEvent {
             return verified
         case let .rewardFailedToVerify(_, failedToVerify):
             return failedToVerify
+        case let .rewardGranted(_, granted):
+            return granted
         }
     }
 
@@ -686,7 +692,7 @@ extension AdEvent {
     internal var revenueData: AdRevenue? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened,
-             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
         case let .revenue(_, revenueData):
             return revenueData
@@ -697,7 +703,7 @@ extension AdEvent {
     internal var rewardEarnedUnverifiedData: AdRewardEarnedUnverified? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardVerified, .rewardFailedToVerify:
+             .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
         case let .rewardEarnedUnverified(_, data):
             return data
@@ -708,7 +714,7 @@ extension AdEvent {
     internal var rewardVerifiedData: AdRewardVerified? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardFailedToVerify:
+             .rewardEarnedUnverified, .rewardFailedToVerify, .rewardGranted:
             return nil
         case let .rewardVerified(_, data):
             return data
@@ -719,9 +725,20 @@ extension AdEvent {
     internal var rewardFailedToVerifyData: AdRewardFailedToVerify? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardVerified:
+             .rewardEarnedUnverified, .rewardVerified, .rewardGranted:
             return nil
         case let .rewardFailedToVerify(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the underlying ``AdRewardGranted`` for reward-granted events.
+    internal var rewardGrantedData: AdRewardGranted? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
+            return nil
+        case let .rewardGranted(_, data):
             return data
         }
     }
@@ -742,7 +759,7 @@ extension AdEvent {
         case let .failedToLoad(_, data):
             return data.mediatorErrorCode?.intValue
         case .loaded, .displayed, .opened, .revenue,
-             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
         }
     }

@@ -110,6 +110,14 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testRewardGrantedEvent() throws {
+        let event = AdEvent.rewardGranted(Self.eventCreationData, Self.rewardGrantedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
@@ -447,6 +455,16 @@ private extension AdFeatureEventsRequestTests {
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
         failureReason: .timeout
+    )
+
+    static let rewardGrantedData: AdRewardGranted = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .virtualCurrency(code: "GOLD", amount: 100)
     )
 
     static let userID = "test-user-id"
