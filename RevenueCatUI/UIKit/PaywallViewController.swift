@@ -841,7 +841,9 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
             },
-            urlOpened: self.createUrlOpenedHandler(),
+            urlOpened: { [weak self] url in
+                self?.notifyDelegateUrlOpened(url)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -878,11 +880,10 @@ private extension PaywallViewController {
         return controller
     }
 
-    private func createUrlOpenedHandler() -> UrlOpenedHandler {
-        return { [weak self] url in
-            guard let self else { return }
-            self.delegate?.paywallViewController?(self, didOpenUrl: url)
-        }
+    /// Extracted from the `urlOpened` handler so that closure needs no `guard`, keeping
+    /// `createHostingController`'s cyclomatic complexity within the linter's limit.
+    private func notifyDelegateUrlOpened(_ url: String) {
+        self.delegate?.paywallViewController?(self, didOpenUrl: url)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
