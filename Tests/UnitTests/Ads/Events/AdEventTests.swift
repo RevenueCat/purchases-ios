@@ -453,6 +453,56 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
+    // MARK: - AdRewardGranted Equality
+
+    func testAdRewardGrantedEqualityWithDifferentReward() {
+        let event1 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let event2 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 200)
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdRewardGrantedEqualityWithSameProperties() {
+        let event1 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let event2 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        expect(event1) == event2
+    }
+
     // MARK: - Codable round-trip
 
     func testAdRewardEarnedUnverifiedCodableRoundTrip() throws {
@@ -508,6 +558,23 @@ class AdEventTests: TestCase {
         expect(decoded) == original
     }
 
+    func testAdRewardGrantedCodableRoundTrip() throws {
+        let original = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(AdRewardGranted.self, from: data)
+
+        expect(decoded) == original
+    }
+
 }
 
 // MARK: - AdRewardVerified Decoder Fallbacks
@@ -544,6 +611,49 @@ extension AdEventTests {
 
     func testAdRewardVerifiedDecodingVirtualCurrencyWithNonPositiveAmountFallsBackToUnsupported() throws {
         let decoded = try decodeAdRewardVerified(
+            rewardFields: """
+            "reward_type": "virtual_currency", "reward_currency_code": "GOLD", "reward_currency_amount": 0
+            """
+        )
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+}
+
+// MARK: - AdRewardGranted Decoder Fallbacks
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension AdEventTests {
+
+    private func decodeAdRewardGranted(rewardFields: String) throws -> AdRewardGranted {
+        let json = """
+        {
+            "network_name": "AdMob",
+            "mediator_name": { "raw_value": "AdMob" },
+            "ad_format": { "raw_value": "rewarded" },
+            "placement": "home_screen",
+            "ad_unit_id": "ca-app-pub-123",
+            "impression_id": "impression-123",
+            \(rewardFields)
+        }
+        """
+        return try JSONDecoder.default.decode(AdRewardGranted.self, from: Data(json.utf8))
+    }
+
+    func testAdRewardGrantedDecodingUnknownRewardKindFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(rewardFields: "\"reward_type\": \"future_reward_kind\"")
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardGrantedDecodingVirtualCurrencyWithMissingAmountFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(
+            rewardFields: "\"reward_type\": \"virtual_currency\", \"reward_currency_code\": \"GOLD\""
+        )
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardGrantedDecodingVirtualCurrencyWithNonPositiveAmountFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(
             rewardFields: """
             "reward_type": "virtual_currency", "reward_currency_code": "GOLD", "reward_currency_amount": 0
             """

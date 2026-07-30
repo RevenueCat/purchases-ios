@@ -89,6 +89,7 @@ extension AdEventsRequest.AdEventRequest {
         case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_unverified"
         case rewardVerified = "rc_ads_ad_reward_sdk_verified"
         case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
+        case rewardGranted = "rc_ads_ad_reward_sdk_granted"
 
     }
 
@@ -124,9 +125,11 @@ extension AdEventsRequest.AdEventRequest {
                 rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
                 rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
                 rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
-                rewardType: adEvent.rewardVerifiedData?.reward.kindRawValue,
-                rewardCurrencyCode: adEvent.rewardVerifiedData?.reward.virtualCurrency?.code,
-                rewardCurrencyAmount: adEvent.rewardVerifiedData?.reward.virtualCurrency?.amount,
+                rewardType: (adEvent.rewardVerifiedData?.reward ?? adEvent.rewardGrantedData?.reward)?.kindRawValue,
+                rewardCurrencyCode: (adEvent.rewardVerifiedData?.reward ??
+                                     adEvent.rewardGrantedData?.reward)?.virtualCurrency?.code,
+                rewardCurrencyAmount: (adEvent.rewardVerifiedData?.reward ??
+                                       adEvent.rewardGrantedData?.reward)?.virtualCurrency?.amount,
                 failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
@@ -152,6 +155,7 @@ private extension AdEvent {
         case .rewardEarnedUnverified: return .rewardEarnedUnverified
         case .rewardVerified: return .rewardVerified
         case .rewardFailedToVerify: return .rewardFailedToVerify
+        case .rewardGranted: return .rewardGranted
         }
 
     }

@@ -276,6 +276,39 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.failureReason) == .backendError
     }
 
+    func testTrackAdRewardGrantedStoresEvent() async throws {
+        let data = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        self.purchases.adTracker.trackAdRewardGranted(data, captureMethod: .adapter)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardGranted(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardGranted but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.reward.kindRawValue) == "virtual_currency"
+        expect(eventData.reward.virtualCurrency?.code) == "GOLD"
+        expect(eventData.reward.virtualCurrency?.amount) == 100
+    }
+
     // MARK: - Capture method
 
     func testPublicTrackingAPIStampsManualCaptureMethod() async throws {

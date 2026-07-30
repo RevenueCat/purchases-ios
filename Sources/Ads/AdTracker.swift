@@ -259,4 +259,17 @@ public final class AdTracker: NSObject {
         }
     }
 
+    /**
+     Tracks a single reward grant resulting from successful server-side verification.
+
+     - Parameter data: The reward-granted event data
+     */
+    @_spi(Internal) public func trackAdRewardGranted(_ data: AdRewardGranted,
+                                                     captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.rewardGranted(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
+    }
+
 }

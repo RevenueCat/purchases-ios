@@ -158,6 +158,95 @@ extension AdRewardVerified: Codable {
 
 }
 
+/// Data for a single reward grant resulting from a verified rewarded ad.
+@_spi(Internal) public struct AdRewardGranted: AdImpressionEventData, Equatable, Sendable {
+
+    // swiftlint:disable missing_docs
+    public let networkName: String?
+    public let mediatorName: MediatorName
+    public let adFormat: AdFormat
+    public let placement: String?
+    public let adUnitId: String
+    public let impressionId: String
+
+    /// The granted reward payload. Never ``AdReward/noReward``.
+    public let reward: AdReward
+
+    public init(
+        networkName: String?,
+        mediatorName: MediatorName,
+        adFormat: AdFormat,
+        placement: String?,
+        adUnitId: String,
+        impressionId: String,
+        reward: AdReward
+    ) {
+        self.networkName = networkName
+        self.mediatorName = mediatorName
+        self.adFormat = adFormat
+        self.placement = placement
+        self.adUnitId = adUnitId
+        self.impressionId = impressionId
+        self.reward = reward
+    }
+    // swiftlint:enable missing_docs
+
+}
+
+extension AdRewardGranted: Codable {
+
+    /// ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` / `rewardCurrencyAmount`
+    /// fields, matching ``AdRewardVerified``'s wire shape.
+    private enum CodingKeys: String, CodingKey {
+        case networkName
+        case mediatorName
+        case adFormat
+        case placement
+        case adUnitId
+        case impressionId
+        case rewardType
+        case rewardCurrencyCode
+        case rewardCurrencyAmount
+    }
+
+    // swiftlint:disable:next missing_docs
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encodeIfPresent(self.networkName, forKey: .networkName)
+        try container.encode(self.mediatorName, forKey: .mediatorName)
+        try container.encode(self.adFormat, forKey: .adFormat)
+        try container.encodeIfPresent(self.placement, forKey: .placement)
+        try container.encode(self.adUnitId, forKey: .adUnitId)
+        try container.encode(self.impressionId, forKey: .impressionId)
+        try self.reward.encode(
+            into: &container,
+            typeKey: .rewardType,
+            codeKey: .rewardCurrencyCode,
+            amountKey: .rewardCurrencyAmount
+        )
+    }
+
+    // swiftlint:disable:next missing_docs
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.init(
+            networkName: try container.decodeIfPresent(String.self, forKey: .networkName),
+            mediatorName: try container.decode(MediatorName.self, forKey: .mediatorName),
+            adFormat: try container.decode(AdFormat.self, forKey: .adFormat),
+            placement: try container.decodeIfPresent(String.self, forKey: .placement),
+            adUnitId: try container.decode(String.self, forKey: .adUnitId),
+            impressionId: try container.decode(String.self, forKey: .impressionId),
+            reward: try AdReward.decode(
+                from: container,
+                typeKey: .rewardType,
+                codeKey: .rewardCurrencyCode,
+                amountKey: .rewardCurrencyAmount
+            )
+        )
+    }
+
+}
+
 /// Data for the moment backend reward verification terminally fails.
 @_spi(Internal) public struct AdRewardFailedToVerify: AdImpressionEventData, Codable, Equatable, Sendable {
 
