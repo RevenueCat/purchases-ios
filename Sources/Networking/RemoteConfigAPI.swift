@@ -91,10 +91,12 @@ struct RemoteConfigFetchResult {
     /// container bytes should fail before this result is created.
     let container: RemoteConfigContainer?
     let verificationResult: VerificationResult
+    let requestDate: Date?
 
     init(response: VerifiedHTTPResponse<RemoteConfigContainer?>) {
         self.container = response.body
         self.verificationResult = response.verificationResult
+        self.requestDate = response.requestDate
     }
 
 }
