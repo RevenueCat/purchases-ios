@@ -1039,6 +1039,9 @@ public extension Purchases {
     @_spi(Experimental)
     var isAuthenticated: Bool { self.tokenManager.hasCurrentAccessToken }
 
+    @_spi(Experimental)
+    var authenticationMethod: AuthenticationMethod? { self.tokenManager.currentAuthenticationMethod }
+
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
     }

@@ -25,7 +25,7 @@ public final class ExternalToken: NSObject {
     }
 
     @objc public static func signInWithApple(_ identityToken: Data) -> ExternalToken {
-        ExternalToken(token: .siwa(identityToken))
+        ExternalToken(token: .signInWithApple(identityToken))
     }
 
     @objc public static func facebook(_ idToken: Data) -> ExternalToken {
@@ -49,20 +49,54 @@ public final class ExternalToken: NSObject {
 
 }
 
+@_spi(Experimental)
+@objc(RCAuthenticationMethod)
+public enum AuthenticationMethod: Int {
+    case anonymous
+    case oidc
+    case google
+    case signInWithApple
+    case facebook
+    case firebase
+
+    internal init?(amr: String) {
+        switch amr {
+        case "anonymous": self = .anonymous
+        case "oidc": self = .oidc
+        case "google": self = .google
+        case "apple": self = .signInWithApple
+        case "facebook": self = .facebook
+        case "firebase": self = .firebase
+        default: return nil
+        }
+    }
+}
+
 internal enum ExternalAuthToken: Hashable {
     case anonymous(String?)
     case oidc(Data)
     case google(Data)
-    case siwa(Data)
+    case signInWithApple(Data)
     case facebook(Data, String?)
     case firebase(Data)
+
+    var authenticationMethod: AuthenticationMethod {
+        switch self {
+        case .anonymous: return .anonymous
+        case .oidc: return .oidc
+        case .google: return .google
+        case .signInWithApple: return .signInWithApple
+        case .facebook: return .facebook
+        case .firebase: return .firebase
+        }
+    }
 
     internal var cacheIdentifier: String {
         switch self {
         case .anonymous(let id): return "anon-\(id ?? "NULL")"
         case .oidc(let data): return "oidc-\(data.hashString)"
         case .google(let data): return "google-\(data.hashString)"
-        case .siwa(let data): return "siwa-\(data.hashString)"
+        case .signInWithApple(let data): return "siwa-\(data.hashString)"
         case .facebook(let data, _): return "fb-\(data.hashString)"
         case .firebase(let data): return "firebase-\(data.hashString)"
         }
@@ -73,7 +107,7 @@ internal enum ExternalAuthToken: Hashable {
         case .anonymous: return true
         case .oidc(let data): return data.isEmpty == false
         case .google(let data): return data.isEmpty == false
-        case .siwa(let data): return data.isEmpty == false
+        case .signInWithApple(let data): return data.isEmpty == false
         case .facebook(let data, _): return data.isEmpty == false
         case .firebase(let data): return data.isEmpty == false
         }

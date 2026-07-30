@@ -86,7 +86,7 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousAMR = tokenManager.currentAMR == "anonymous"
+        lazy var isAnonymousAMR = tokenManager.currentTokenKind == .anonymous
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousAMR
     }
@@ -202,7 +202,7 @@ private extension IdentityManager {
                                                                        newAppUserID: newAppUserID)
 
                 self.customerInfoManager.customerInfo(appUserID: newAppUserID,
-                                                      fetchPolicy: .fetchCurrent,
+                                                      fetchPolicy: .cachedOrFetched,
                                                       completion: { result in
 
                     let mapped = result.map { (info: $0, created: false) }

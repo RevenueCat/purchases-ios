@@ -76,10 +76,11 @@ class TokenManager {
         }
     }
 
-    var currentAMR: String? {
+    var currentAuthenticationMethod: AuthenticationMethod? {
         guard let currentAccessToken else { return nil }
         guard let jwt = try? JWT(from: currentAccessToken) else { return nil }
-        return jwt.amr?.first
+        guard let amr = jwt.amr?.first else { return nil }
+        return AuthenticationMethod(amr: amr)
     }
 
     func saveTokens(refreshToken: String?, accessToken: String, idToken: String?, for userID: String) {
