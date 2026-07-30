@@ -1152,9 +1152,6 @@ public extension Purchases {
 
         self.syncSubscriberAttributes(completion: {
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                // Offerings are refetched here so that targeting is applied with the latest attributes, and
-                // for workflows the paywall components come from remote config rather than the offerings
-                // response, so config has to be refreshed too for the offerings to be renderable.
                 self.remoteConfigManager.refreshRemoteConfig(
                     fetchContext: .read,
                     isAppBackgrounded: isAppBackgrounded
