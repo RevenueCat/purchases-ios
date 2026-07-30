@@ -2879,7 +2879,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response).to(beSuccess())
     }
 
-    func testforceServerErrorStrategyAlwaysFalseCallsTheOriginalPath() throws {
+    func testforceServerErrorStrategyPerformingRequestCallsTheOriginalPath() throws {
         let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
@@ -2905,7 +2905,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in
-                        return false
+                        return .performRequest
                     })
                 ),
                 preferredLocalesProvider: .mock()

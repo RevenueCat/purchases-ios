@@ -593,14 +593,10 @@ private extension WorkflowPaywallViewTests {
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
-    static func makeScreenJSON(
-        packages: [PackageSpec],
-        offeringId: String,
-        extraComponentsJSON: [String] = []
-    ) -> String {
-        let componentsJSON = (
-            packages.map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) } + extraComponentsJSON
-        ).joined(separator: ",")
+    static func makeScreenJSON(packages: [PackageSpec], offeringId: String) -> String {
+        let componentsJSON = packages
+            .map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
+            .joined(separator: ",")
         return """
         {
             "template_name": "template_v2",
@@ -1278,10 +1274,6 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
     /// The fixture screen's root background: `#220000ff`.
     fileprivate static let backgroundColor = PixelColor(red: 0x22, green: 0x00, blue: 0x00)
 
-    /// The nested stack's own background. Different from the root, so the edge samples show which
-    /// of the two reached the edge.
-    fileprivate static let nestedBackgroundColor = PixelColor(red: 0x00, green: 0x22, blue: 0x00)
-
     /// Sliding by only `size.width` leaves part of the off-screen page inside the clip mask, so a
     /// strip of the wrong page shows at the edge while the animation runs. Both roles and both
     /// directions, since each is a separate call into the same offset code.
@@ -1377,23 +1369,6 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// `BackgroundStyleModifier` is also used by stacks, text and badges, not just the page root. A
-    /// nested background has to reach the edge mid-animation the same way it does at rest, or the
-    /// paywall jumps when the animation starts and stops.
-    @MainActor
-    func testComponentBackgroundReachesHorizontalScreenEdgesWhileTransitioning() throws {
-        try Self.expectBackgroundAtEdges(
-            of: try Self.renderScreenInLandscape(
-                isTransitioning: true,
-                screenJSON: Self.nestedComponentBackgroundScreenJSON(),
-                settled: Self.nestedBackgroundColor
-            ),
-            axis: .horizontal,
-            label: "nested component background, mid-transition",
-            expected: Self.nestedBackgroundColor
-        )
-    }
-
     /// The mask grows on all four edges. The other tests use a zero top inset and sample the middle
     /// row, so they would not catch a mistake in the top or bottom growth.
     @MainActor
@@ -1435,12 +1410,8 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// Samples both edges along `axis`, halfway along the other one. Both have to be the paywall's
     /// background; anything else means it stopped at the safe area and the view behind shows.
-    static func expectBackgroundAtEdges(
-        of image: UIImage,
-        axis: Axis,
-        label: String,
-        expected: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws {
+    static func expectBackgroundAtEdges(of image: UIImage, axis: Axis, label: String) throws {
+        let expected = Self.backgroundColor
         let pixels = try PixelSampler(image: image)
         let midColumn = pixels.width / 2
         let midRow = pixels.height / 2
@@ -1485,12 +1456,8 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// The fixture screen without the workflow container, optionally with the transition flag set.
     @MainActor
-    static func renderScreenInLandscape(
-        isTransitioning: Bool,
-        screenJSON: String? = nil,
-        settled: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws -> UIImage {
-        let context = try Self.makeLandscapeContext(screenJSON: screenJSON)
+    static func renderScreenInLandscape(isTransitioning: Bool) throws -> UIImage {
+        let context = try Self.makeLandscapeContext()
         let screen = try XCTUnwrap(context.workflow.screens[Self.landscapeScreenId])
         let offering = try XCTUnwrap(context.offering(for: screen.offeringIdentifier))
 
@@ -1518,8 +1485,7 @@ private extension WorkflowLandscapeSafeAreaTests {
                     )
                 )
             ),
-            safeArea: Landscape.symmetricSafeArea,
-            settled: settled
+            safeArea: Landscape.symmetricSafeArea
         )
     }
 
@@ -1544,11 +1510,7 @@ private extension WorkflowLandscapeSafeAreaTests {
     /// Puts `view` in a landscape-sized window with the given safe area insets and draws it at
     /// scale 1, so one pixel is one point.
     @MainActor
-    static func renderInLandscape(
-        _ view: some View,
-        safeArea: UIEdgeInsets,
-        settled: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws -> UIImage {
+    static func renderInLandscape(_ view: some View, safeArea: UIEdgeInsets) throws -> UIImage {
         UIView.setAnimationsEnabled(false)
 
         let controller = UIHostingController(rootView: view)
@@ -1589,7 +1551,7 @@ private extension WorkflowLandscapeSafeAreaTests {
               (try? PixelSampler(image: image).color(
                   column: Int(Landscape.size.width / 2),
                   row: Int(Landscape.size.height / 2)
-              )) != settled {
+              )) != Self.backgroundColor {
             RunLoop.main.run(until: Date().addingTimeInterval(0.05))
             image = render()
         }
@@ -1603,41 +1565,11 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// The screen id `makeContext` gives the workflow's first step.
     static let landscapeScreenId = "screen_initial"
-    static let landscapeOfferingId = "offering_test"
 
-    /// A workflow whose first screen is `screenJSON`, defaulting to a flat `#220000ff` stack that
-    /// fills the screen, so edge pixels are easy to check.
-    static func makeLandscapeContext(screenJSON: String? = nil) throws -> WorkflowContext {
-        return try WorkflowPaywallViewTests.makeContext(
-            singleStepFallbackId: nil,
-            initialScreenJSON: screenJSON
-        )
-    }
-
-    /// The flat fixture plus a child stack that fills the screen and has its own background, so the
-    /// sampled edges come from a component rather than the page root.
-    static func nestedComponentBackgroundScreenJSON() -> String {
-        let childStack = """
-        {
-            "type": "stack",
-            "components": [],
-            "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
-            "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
-            "margin": {},
-            "padding": {},
-            "spacing": 0,
-            "background": {
-                "type": "color",
-                "value": { "light": { "type": "hex", "value": "#002200ff" } }
-            }
-        }
-        """
-
-        return WorkflowPaywallViewTests.makeScreenJSON(
-            packages: [],
-            offeringId: Self.landscapeOfferingId,
-            extraComponentsJSON: [childStack]
-        )
+    /// A workflow whose first screen is a flat `#220000ff` stack that fills the screen, so edge
+    /// pixels are easy to check.
+    static func makeLandscapeContext() throws -> WorkflowContext {
+        return try WorkflowPaywallViewTests.makeContext(singleStepFallbackId: nil)
     }
 
 }

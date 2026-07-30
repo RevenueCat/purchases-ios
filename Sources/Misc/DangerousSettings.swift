@@ -193,8 +193,7 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
     /// `nil` means no server errors are forced.
     ///
-    /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
-    /// which returns a 502 status code with a HTML response body.
+    /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
@@ -215,29 +214,30 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
 struct ForceServerErrorStrategy {
 
+    /// What the `HTTPClient` does with a request.
+    enum Action {
+
+        /// The request is not performed, and this response is returned instead.
+        case fakeResponse(HTTPURLResponse, Data)
+
+        /// The request is performed against this URL instead of its original one.
+        case serverErrorURL(URL)
+
+        /// The request is performed as usual, without interception.
+        case performRequest
+
+        /// Routes the request to `ForceServerErrorStrategy.defaultServerErrorURL`.
+        static var defaultServerError: Self {
+            return .serverErrorURL(ForceServerErrorStrategy.defaultServerErrorURL)
+        }
+
+    }
+
+    /// Returns a 502 status code with an HTML response body.
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
-    let serverErrorURL: URL
-
-    /// If this returns a non-nil pair of `(HTTPURLResponse, Data)`, the `HTTPClient` will not perform the request
-    /// and will just return the fake response.
-    ///
-    /// Takes precedence over `shouldForceServerError`.
-    let fakeResponseWithoutPerformingRequest: (HTTPClient.Request) -> (HTTPURLResponse, Data)?
-
-    /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
-    let shouldForceServerError: (HTTPClient.Request) -> Bool
-
-    init(
-        serverErrorURL: URL = Self.defaultServerErrorURL,
-        fakeResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> (HTTPURLResponse, Data)? = { _ in nil },
-        shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
-    ) {
-        self.serverErrorURL = serverErrorURL
-        self.fakeResponseWithoutPerformingRequest = fakeResponseWithoutPerformingRequest
-        self.shouldForceServerError = shouldForceServerError
-    }
+    let action: (HTTPClient.Request) -> Action
 
 }
 
