@@ -55,6 +55,7 @@ struct ButtonComponentView: View {
     private var selectedPackageId
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
@@ -118,7 +119,11 @@ struct ButtonComponentView: View {
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-                SafariView(url: self.inAppBrowserURL!)
+                let url = self.inAppBrowserURL!
+                SafariView(url: url)
+                    // Reported here rather than when the URL is assigned, so the listener only hears about
+                    // in-app browser opens that actually made it on screen.
+                    .onAppear { self.urlOpenedNotifier(url) }
             }
             #if os(iOS)
             .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
@@ -243,7 +248,8 @@ struct ButtonComponentView: View {
             Browser.navigateTo(url: url,
                                method: method,
                                openURL: self.openURL,
-                               inAppBrowserURL: self.$inAppBrowserURL)
+                               inAppBrowserURL: self.$inAppBrowserURL,
+                               onURLOpened: self.urlOpenedNotifier.callAsFunction)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
