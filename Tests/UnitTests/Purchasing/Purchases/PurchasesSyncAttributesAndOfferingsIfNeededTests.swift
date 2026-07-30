@@ -100,8 +100,8 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
     private func stubOfferings() throws {
         self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
             try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
-                                                               contents: .mockContents,
-                                                               loadedFromDiskCache: false))
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
         )
     }
 }
