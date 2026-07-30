@@ -72,6 +72,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
 
     func verifyContainerResponse(_ result: RemoteConfigFetchResult) throws -> RemoteConfiguration {
         expect(result.verificationResult) == .verified
+        expect(result.requestDate).toNot(beNil())
 
         let container = try XCTUnwrap(result.container)
         let configuration = try self.remoteConfiguration(from: container)
@@ -82,6 +83,7 @@ class BaseProductionRemoteConfigIntegrationTests: BaseBackendIntegrationTests {
 
     func verifyNoContentResponse(_ result: RemoteConfigFetchResult) {
         expect(result.verificationResult) == .verified
+        expect(result.requestDate).toNot(beNil())
         expect(result.container).to(beNil())
     }
 
