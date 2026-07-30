@@ -281,7 +281,6 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-        .environment(\.paywallPresentationID, self.paywallSessionID)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
@@ -642,24 +641,6 @@ extension EnvironmentValues {
         get { self[SafeAreaInsetsKey.self] }
         set { self[SafeAreaInsetsKey.self] = newValue }
     }
-}
-
-private struct PaywallPresentationIDKey: EnvironmentKey {
-    static let defaultValue: UUID? = nil
-}
-
-extension EnvironmentValues {
-
-    /// Identifies one presentation of a paywall, so components caching state outside the SwiftUI tree
-    /// can scope it to a single presentation instead of sharing it process-wide.
-    ///
-    /// Carries ``PaywallsV2View``'s `paywallSessionID`, which is minted per presentation and re-minted
-    /// when a workflow step is re-entered. `nil` outside a Paywalls V2 presentation.
-    var paywallPresentationID: UUID? {
-        get { self[PaywallPresentationIDKey.self] }
-        set { self[PaywallPresentationIDKey.self] = newValue }
-    }
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

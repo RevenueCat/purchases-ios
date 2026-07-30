@@ -1,5 +1,5 @@
 //
-//  WebViewInstanceCache.swift
+//  WebViewInstance.swift
 //  RevenueCat
 //
 //  Created by Antonio Pallares on 30/7/26.
@@ -13,31 +13,12 @@ import SwiftUI
 
 import WebKit
 
-/// Identity of a cached web view. Two components that agree on all of these can share one loaded
-/// document; a change to any of them means a different bridge and a different navigation, so the
-/// cached instance must be discarded rather than reused.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct WebViewInstanceKey: Hashable {
-
-    /// Scopes the key to one paywall presentation. Without it, the same paywall shown twice at once
-    /// (multi-window, or a paywall presented over another) would resolve to a single web view that the
-    /// two hosts would take turns re-parenting, leaving one of them blank.
-    let presentationID: UUID?
-    let componentID: String
-    let url: URL
-    let fitsWidth: Bool
-    let fitsHeight: Bool
-
-}
-
 /// The live web view behind a `web_view` component: the `WKWebView` itself, its bridge session, and
 /// the sizing/failure state derived from them.
 ///
-/// This deliberately outlives the SwiftUI subtree that displays it. `ViewThatFits` (used by the root
-/// stack when it fills its container) instantiates *every* candidate to measure it, and swaps
-/// candidates whenever a fit-axis child reports a new size. Holding this state in `@State`/
-/// `@StateObject` meant each of those events built a brand new `WKWebView` and reloaded the page
-/// from the network, which showed up as the component blanking out and coming back.
+/// Owned by ``WebViewComponentViewModel``, which is already shared by every duplicate `ViewThatFits`
+/// subtree for the component. This therefore outlives candidate changes without requiring a separate
+/// process-wide cache or presentation identity.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class WebViewInstance: ObservableObject {
@@ -53,9 +34,6 @@ final class WebViewInstance: ObservableObject {
     @Published private(set) var processTerminated = false
     @Published private(set) var loadFailed = false
 
-    /// `true` once this instance can no longer show anything. Neither a terminated web content process
-    /// nor a terminal load failure recovers in place, so the cache replaces the instance rather than
-    /// handing a new subtree something already dead.
     var isUnusable: Bool {
         self.processTerminated || self.loadFailed
     }
@@ -67,13 +45,22 @@ final class WebViewInstance: ObservableObject {
     /// claim alive.
     private weak var attachedHost: WebViewHostView?
 
-    init(key: WebViewInstanceKey, expectedOrigin: WebViewOrigin) {
+    /// A host that entered a window while the current host was still mounted. Remembering it lets the
+    /// current host complete the handoff when it leaves instead of stranding the web view off-screen.
+    private weak var pendingHost: WebViewHostView?
+
+    init(
+        componentID: String,
+        expectedOrigin: WebViewOrigin,
+        fitsWidth: Bool,
+        fitsHeight: Bool
+    ) {
         // `evaluateJavaScript`/`currentURL` are rebound to the live web view in `webView(creatingWith:)`;
         // the no-op defaults only cover the window before it is created.
         self.session = WebViewSession(
-            componentID: key.componentID,
+            componentID: componentID,
             expectedOrigin: expectedOrigin,
-            fitAxes: (width: key.fitsWidth, height: key.fitsHeight),
+            fitAxes: (width: fitsWidth, height: fitsHeight),
             evaluateJavaScript: { _ in false },
             currentURL: { nil }
         )
@@ -142,11 +129,10 @@ final class WebViewInstance: ObservableObject {
     /// screen. A `ViewThatFits` swap replaces the container but not the web view, so re-parenting
     /// here is what keeps the loaded document alive across the swap.
     ///
-    /// Callers only claim from a host that has reached a window, and in practice a `ViewThatFits`
-    /// candidate that lost the layout never does. If two hosts ever did claim at once, the first keeps
-    /// the web view until it leaves its window: alternating between them on every update pass would
-    /// force a re-parent and a layout each time, which is the flicker this type exists to avoid.
-    func attachWebView(to host: WebViewHostView) {
+    /// If another host is still displaying the web view, remember this request until that host leaves
+    /// its window. This avoids both repeated re-parenting during overlapping SwiftUI updates and a
+    /// missed handoff when the incoming host enters before the outgoing host leaves.
+    func hostDidEnterWindow(_ host: WebViewHostView) {
         guard let webView = self.webView else {
             return
         }
@@ -155,6 +141,43 @@ final class WebViewInstance: ObservableObject {
            attachedHost !== host,
            attachedHost.window != nil,
            webView.superview === attachedHost {
+            self.pendingHost = host
+            return
+        }
+
+        self.pendingHost = nil
+        self.attachWebView(to: host)
+    }
+
+    func hostDidLeaveWindow(_ host: WebViewHostView) {
+        if self.pendingHost === host {
+            self.pendingHost = nil
+        }
+
+        guard self.attachedHost === host else {
+            return
+        }
+
+        self.attachedHost = nil
+
+        if let pendingHost = self.pendingHost, pendingHost.window != nil {
+            self.pendingHost = nil
+            self.attachWebView(to: pendingHost)
+        }
+    }
+
+    /// Reasserts attachment for a host SwiftUI updated after it was already in a window. Unlike
+    /// ``hostDidEnterWindow(_:)``, updates from another mounted candidate do not compete for ownership.
+    func updateHost(_ host: WebViewHostView) {
+        guard self.attachedHost == nil || self.attachedHost === host else {
+            return
+        }
+
+        self.attachWebView(to: host)
+    }
+
+    private func attachWebView(to host: WebViewHostView) {
+        guard let webView = self.webView else {
             return
         }
 
@@ -175,12 +198,12 @@ final class WebViewInstance: ObservableObject {
         ])
     }
 
-    /// Releases the web view and its message handlers. Called only once no SwiftUI subtree holds a
-    /// lease on this instance, so an unmounted `ViewThatFits` candidate can never tear down a web
-    /// view another candidate is still showing.
+    /// Releases the web view and its message handlers before the view model replaces an unusable
+    /// instance. Healthy instances otherwise live for the lifetime of their component view model.
     func tearDown() {
         self.navigationDelegateObject = nil
         self.attachedHost = nil
+        self.pendingHost = nil
 
         guard let webView = self.webView else {
             return
@@ -202,84 +225,6 @@ final class WebViewInstance: ObservableObject {
 
 }
 
-/// Keeps one ``WebViewInstance`` alive per identity for as long as at least one SwiftUI subtree is
-/// displaying it.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-final class WebViewInstanceCache {
-
-    static let shared = WebViewInstanceCache()
-
-    private var instances: [WebViewInstanceKey: WebViewInstance] = [:]
-    private var leaseCounts: [WebViewInstanceKey: Int] = [:]
-
-    func acquire(key: WebViewInstanceKey, expectedOrigin: WebViewOrigin) -> WebViewInstance {
-        self.leaseCounts[key, default: 0] += 1
-
-        if let instance = self.instances[key] {
-            guard instance.isUnusable else {
-                return instance
-            }
-
-            // Give the incoming subtree a working instance instead of a dead one. This restores the
-            // behavior from before the cache existed, where every subtree built its own web view and a
-            // rebuild was therefore a fresh attempt. Leases still holding the evicted instance go on
-            // rendering nothing, which is already what they were doing.
-            instance.tearDown()
-            self.instances.removeValue(forKey: key)
-        }
-
-        let instance = WebViewInstance(key: key, expectedOrigin: expectedOrigin)
-        self.instances[key] = instance
-        return instance
-    }
-
-    func release(key: WebViewInstanceKey) {
-        guard let count = self.leaseCounts[key] else {
-            return
-        }
-
-        guard count > 1 else {
-            self.leaseCounts.removeValue(forKey: key)
-            self.instances.removeValue(forKey: key)?.tearDown()
-            return
-        }
-
-        self.leaseCounts[key] = count - 1
-    }
-
-}
-
-/// Ties a ``WebViewInstance`` lease to the lifetime of one SwiftUI subtree.
-///
-/// Held as a `@StateObject`, so SwiftUI creates one per mounted subtree (including each
-/// `ViewThatFits` candidate) and deallocates it when that subtree goes away. The instance itself is
-/// only torn down once the last lease is gone.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-final class WebViewInstanceLease: ObservableObject {
-
-    let instance: WebViewInstance
-
-    private let key: WebViewInstanceKey
-
-    init(key: WebViewInstanceKey, expectedOrigin: WebViewOrigin) {
-        self.key = key
-        self.instance = WebViewInstanceCache.shared.acquire(key: key, expectedOrigin: expectedOrigin)
-    }
-
-    deinit {
-        // `deinit` is not main-actor isolated, so hop rather than assume. Releasing a tick late is
-        // safe: a replacement subtree always acquires before the outgoing lease is deallocated, so
-        // the count never reaches zero while the component is still on screen.
-        let key = self.key
-        Task { @MainActor in
-            WebViewInstanceCache.shared.release(key: key)
-        }
-    }
-
-}
-
 /// SwiftUI-owned container that the shared `WKWebView` is re-parented into.
 ///
 /// The representable hands SwiftUI one of these rather than the web view itself, so that tearing
@@ -288,13 +233,11 @@ final class WebViewInstanceLease: ObservableObject {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewHostView: NSView {
 
-    var onMoveToWindow: (() -> Void)?
+    var onMoveToWindow: ((WebViewHostView) -> Void)?
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
-        if self.window != nil {
-            self.onMoveToWindow?()
-        }
+        self.onMoveToWindow?(self)
     }
 
 }
@@ -302,13 +245,11 @@ final class WebViewHostView: NSView {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewHostView: UIView {
 
-    var onMoveToWindow: (() -> Void)?
+    var onMoveToWindow: ((WebViewHostView) -> Void)?
 
     override func didMoveToWindow() {
         super.didMoveToWindow()
-        if self.window != nil {
-            self.onMoveToWindow?()
-        }
+        self.onMoveToWindow?(self)
     }
 
 }
