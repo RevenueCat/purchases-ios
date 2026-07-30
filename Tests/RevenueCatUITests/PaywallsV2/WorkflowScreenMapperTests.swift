@@ -83,6 +83,28 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.exitOffers).to(beNil())
     }
 
+    func testCarriesThePaywallIdItWasGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: uiConfig,
+            paywallId: "paywall_123"
+        )
+
+        expect(result.data.id) == "paywall_123"
+    }
+
+    func testIdIsNilWhenNotGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.id).to(beNil())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

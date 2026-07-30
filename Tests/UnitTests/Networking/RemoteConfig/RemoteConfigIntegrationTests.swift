@@ -445,36 +445,42 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     func testRequestSendsLastRefreshTimeHeaderAfterSuccessfulConfigIsStored() async throws {
         let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let serverRequestTime = Date(timeIntervalSince1970: 50)
 
-        await self.refresh(with: container)
+        await self.refresh(with: container, requestDate: serverRequestTime)
 
-        let storedRefreshTime = try XCTUnwrap(self.diskCache.read()?.lastRefreshTimeMilliseconds)
         self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
 
         expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
         expect(self.remoteConfigCalls.last?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
-            == storedRefreshTime.description
+            == serverRequestTime.millisecondsSince1970.description
     }
 
     func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
         let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let firstServerRequestTime = Date(timeIntervalSince1970: 50)
         self.dateProvider.advance(by: 100)
-        await self.refresh(with: container)
+        await self.refresh(with: container, requestDate: firstServerRequestTime)
 
+        let secondServerRequestTime = Date(timeIntervalSince1970: 75)
         self.dateProvider.advance(by: 123)
-        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+        self.mockRemoteConfigResponse(
+            statusCode: .noContent,
+            body: Data(),
+            requestDate: secondServerRequestTime
+        )
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(2)
-        await self.waitForStoredRefreshTime(223_000)
+        await self.waitForStoredRefreshTime(75_000)
 
         self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(3)
 
         expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
-        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "100000"
-        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "223000"
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "50000"
+        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "75000"
     }
 
     func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
@@ -657,9 +663,14 @@ private extension RemoteConfigIntegrationTests {
 
     func refresh(
         with body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil
     ) async {
-        self.mockRemoteConfigResponse(body: body, verificationResult: verificationResult)
+        self.mockRemoteConfigResponse(
+            body: body,
+            verificationResult: verificationResult,
+            requestDate: requestDate
+        )
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
@@ -685,11 +696,21 @@ private extension RemoteConfigIntegrationTests {
     func mockRemoteConfigResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil
     ) {
+        let responseHeaders: HTTPResponse.Headers = [
+            HTTPClient.ResponseHeader.requestDate.rawValue:
+                requestDate?.millisecondsSince1970.description
+        ].compactMapValues { $0 }
         self.httpClient.mock(
             requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
-            response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
+            response: .init(
+                statusCode: statusCode,
+                body: body,
+                responseHeaders: responseHeaders,
+                verificationResult: verificationResult
+            )
         )
     }
 
