@@ -264,12 +264,12 @@ class CustomerInfoManager {
             return
         }
 
-        guard !self.isStalerThanCache(customerInfo: customerInfo, appUserID: appUserID) else {
-            Logger.debug(Strings.customerInfo.not_caching_staler_customer_info)
-            return
-        }
-
         if customerInfo.shouldCache {
+            guard !self.isStalerThanCache(customerInfo: customerInfo, appUserID: appUserID) else {
+                Logger.debug(Strings.customerInfo.not_caching_staler_customer_info)
+                return
+            }
+
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
@@ -289,6 +289,9 @@ class CustomerInfoManager {
     /// With ``UnsyncedTransactionsWaitPolicy/doNotWait``, receipt posts run on their own lane, so a
     /// `GET /subscribers` response can land after a fresher `POST /receipts` one. Dropping the staler
     /// of the two keeps the cache from going back to a pre-purchase state.
+    ///
+    /// Only meaningful for cacheable (server issued) `CustomerInfo`: their `requestDate` comes from the
+    /// backend, while a device computed one uses the device's clock, so the two aren't comparable.
     private func isStalerThanCache(customerInfo: CustomerInfo, appUserID: String) -> Bool {
         guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait,
               let cachedCustomerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else {

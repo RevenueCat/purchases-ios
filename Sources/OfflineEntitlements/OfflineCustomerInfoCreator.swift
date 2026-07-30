@@ -81,8 +81,11 @@ class OfflineCustomerInfoCreator {
         self.creator = creator
     }
 
+    /// - Parameter trackingOfflineEntitlementsMode: whether to report entering offline entitlements mode
+    /// through diagnostics. `false` when computing on device was a deliberate choice rather than a
+    /// fallback for an unreachable backend.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    func create(for userID: String) async throws -> CustomerInfo {
+    func create(for userID: String, trackingOfflineEntitlementsMode: Bool = true) async throws -> CustomerInfo {
         do {
             Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
@@ -95,7 +98,9 @@ class OfflineCustomerInfoCreator {
 
             let offlineCustomerInfo = creator(products, mapping, userID)
 
-            self.tracker?.trackEnteredOfflineEntitlementsMode()
+            if trackingOfflineEntitlementsMode {
+                self.tracker?.trackEnteredOfflineEntitlementsMode()
+            }
 
             Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
                 products, offlineCustomerInfo.entitlements
@@ -126,7 +131,9 @@ class OfflineCustomerInfoCreator {
                 errorMessage = error.localizedDescription
             }
 
-            self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
+            if trackingOfflineEntitlementsMode {
+                self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
+            }
             throw error
         }
     }

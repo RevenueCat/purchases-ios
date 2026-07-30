@@ -246,6 +246,9 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         ) { [poster = self.mockTransactionPoster!] in
             poster.invokedHandlePurchasedTransaction.value
         }
+
+        // Otherwise the continuation behind the held post is never resumed.
+        self.mockTransactionPoster.releaseHeldCompletions()
     }
 
     func testDoNotWaitPostsEveryUnsyncedTransactionInTheBackground() async throws {
@@ -342,6 +345,19 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
 
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testDoNotWaitStillClearsCacheForDeviceComputedCustomerInfoOlderThanTheCachedOne() throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+        // `mockCustomerInfo2`'s request date (2020) is newer than `mockCustomerInfo`'s (2018), but a
+        // device computed request date comes from the device's clock, so it can't be compared to it.
+        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
+
+        let deviceComputed = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
+        manager.cache(customerInfo: deviceComputed, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.invokedClearCustomerInfoCache) == true
+        self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }
 
     func testWaitCachesCustomerInfoRegardlessOfRequestDate() throws {

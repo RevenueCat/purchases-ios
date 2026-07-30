@@ -85,7 +85,9 @@ class OfflineEntitlementsManager {
             throw Error.notAvailable
         }
 
-        return try await customerInfoCreator.create(for: appUserID)
+        // Not an offline entitlements fallback: the app asked for device side computation, so it
+        // shouldn't show up as the SDK entering offline mode.
+        return try await customerInfoCreator.create(for: appUserID, trackingOfflineEntitlementsMode: false)
     }
 
     // We diable offline entitlements for the Test Store since there's no store where to store the client's purchases
