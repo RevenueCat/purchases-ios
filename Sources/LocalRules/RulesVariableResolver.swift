@@ -50,9 +50,13 @@ struct RulesVariableResolver: Sendable {
         var values: [String: RulesEngine.Value] = [:]
 
         for provider in self.providers {
+            try Task.checkCancellation()
+
             let providerValues: [String: RulesVariableValue]
             do {
                 providerValues = try await provider.variables(at: date)
+            } catch let error as CancellationError {
+                throw error
             } catch {
                 throw RulesVariableResolutionError.providerFailed(
                     identifier: provider.identifier,
@@ -79,6 +83,8 @@ struct RulesVariableResolver: Sendable {
 
             values[namespace] = .object(namespaceValues)
         }
+
+        try Task.checkCancellation()
 
         return RulesVariableSnapshot(values: values, evaluationDate: date)
     }

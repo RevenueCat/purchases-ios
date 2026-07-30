@@ -24,22 +24,10 @@ protocol LocalRule: Sendable {
     var predicate: String { get }
 }
 
-/// The outcome of evaluating an ordered collection of local rules.
-enum LocalRulesEvaluationResult<ID: Sendable>: Sendable {
-
-    case matched(ID)
-    case notMatched
-    case indeterminate(LocalRulesEvaluationError)
-}
-
-extension LocalRulesEvaluationResult: Equatable where ID: Equatable {}
-
-/// A failure that prevented local rules from producing a definitive non-match.
+/// A predicate failure that prevented local rules from producing a definitive non-match.
 enum LocalRulesEvaluationError: Error, Equatable, Sendable {
 
-    case variableResolution(RulesVariableResolutionError)
     case predicateEvaluation(ruleIndex: Int, error: RulesEngine.EvaluationError)
-    case unexpected(message: String)
 }
 
 /// Evaluates rules against fresh, locally collected variables.
@@ -57,22 +45,15 @@ final class LocalRulesEvaluator: Sendable {
         )
     }
 
-    /// Returns the first matching rule, using one snapshot for the full call.
+    /// Returns the first matching rule identifier, using one snapshot for the full call.
     ///
-    /// For example, rules `[("a", false), ("b", true)]` return `.matched("b")`.
-    func match<Rule: LocalRule>(in rules: [Rule]) async -> LocalRulesEvaluationResult<Rule.ID> {
+    /// For example, rules `[("a", false), ("b", true)]` return `"b"`.
+    func match<Rule: LocalRule>(in rules: [Rule]) async throws -> Rule.ID? {
         guard !rules.isEmpty else {
-            return .notMatched
+            return nil
         }
 
-        let snapshot: RulesVariableSnapshot
-        do {
-            snapshot = try await self.variableResolver.snapshot()
-        } catch let error as RulesVariableResolutionError {
-            return .indeterminate(.variableResolution(error))
-        } catch {
-            return .indeterminate(.unexpected(message: String(describing: error)))
-        }
+        let snapshot = try await self.variableResolver.snapshot()
 
         var firstEvaluationError: LocalRulesEvaluationError?
 
@@ -82,7 +63,7 @@ final class LocalRulesEvaluator: Sendable {
                 variables: snapshot.values
             ) {
             case .success(true):
-                return .matched(rule.id)
+                return rule.id
             case .success(false):
                 continue
             case .failure(let error):
@@ -92,15 +73,15 @@ final class LocalRulesEvaluator: Sendable {
             }
         }
 
-        return firstEvaluationError.map(LocalRulesEvaluationResult.indeterminate) ?? .notMatched
-    }
-
-    /// Returns whether any rule matches, treating an indeterminate result as no match.
-    func matchesAny<Rule: LocalRule>(in rules: [Rule]) async -> Bool {
-        if case .matched = await self.match(in: rules) {
-            return true
+        if let firstEvaluationError {
+            throw firstEvaluationError
         }
 
-        return false
+        return nil
+    }
+
+    /// Returns whether any rule matches.
+    func matchesAny<Rule: LocalRule>(in rules: [Rule]) async throws -> Bool {
+        try await self.match(in: rules) != nil
     }
 }
