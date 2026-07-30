@@ -2185,7 +2185,6 @@ extension RevenueCat.Purchases {
   public static let paywallImageDownloadSession: Foundation.URLSession
 }
 extension RevenueCat.Purchases {
-  @objc final public func overridePreferredUILocale(_ locale: Swift.String?)
 }
 extension RevenueCat.Purchases {
   @discardableResult
