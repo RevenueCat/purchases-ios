@@ -281,6 +281,9 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        // Scopes component state cached outside the SwiftUI tree (currently `web_view`) to this
+        // presentation, so two simultaneous presentations of the same paywall don't share it.
+        .environment(\.paywallPresentationID, self.paywallSessionID)
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)

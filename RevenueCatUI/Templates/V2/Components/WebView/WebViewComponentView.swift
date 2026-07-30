@@ -41,6 +41,9 @@ struct WebViewComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallPresentationID)
+    private var paywallPresentationID
+
     let viewModel: WebViewComponentViewModel
 
     private var style: WebViewComponentStyle {
@@ -70,9 +73,13 @@ struct WebViewComponentView: View {
                 size: style.size,
                 url: url,
                 expectedOrigin: origin,
-                componentID: style.componentID
+                componentID: style.componentID,
+                presentationID: self.paywallPresentationID
             )
+            // Must stay in step with `WebViewInstanceKey`: a change that gives the component a new
+            // cached web view has to give it a new subtree too.
             .id(
+                "\(self.paywallPresentationID?.uuidString ?? "-")-" +
                 "\(style.urlString)-\(style.componentID)-" +
                 "\(style.size.width.isFit)-\(style.size.height.isFit)"
             )
@@ -146,7 +153,8 @@ private struct BridgedWebViewComponentView: View {
         size: PaywallComponent.Size,
         url: URL,
         expectedOrigin: WebViewOrigin,
-        componentID: String
+        componentID: String,
+        presentationID: UUID?
     ) {
         self.size = size
         self.url = url
@@ -155,6 +163,7 @@ private struct BridgedWebViewComponentView: View {
         self._lease = StateObject(
             wrappedValue: WebViewInstanceLease(
                 key: .init(
+                    presentationID: presentationID,
                     componentID: componentID,
                     url: url,
                     fitsWidth: size.width.isFit,
