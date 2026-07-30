@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import RevenueCat
 
 /// Deep links E2E tests use to change the app's behaviour without restarting it.
 ///
@@ -16,6 +17,12 @@ enum MaestroDeepLink {
 
     /// `rcmaestro://force-server-error-strategy?value=remote_config_killswitch`
     case forceServerErrorStrategy(Constants.ForceServerErrorStrategy)
+
+    /// `rcmaestro://sync-attributes-and-offerings`
+    ///
+    /// The only way a test can provoke a `/v1/config` request mid-session: the refresh on foreground is
+    /// stale-gated to 5 minutes, which no flow is going to wait out.
+    case syncAttributesAndOfferings
 
     static let scheme = "rcmaestro"
 
@@ -33,6 +40,9 @@ enum MaestroDeepLink {
             }
             self = .forceServerErrorStrategy(strategy)
 
+        case "sync-attributes-and-offerings":
+            self = .syncAttributesAndOfferings
+
         default:
             return nil
         }
@@ -43,6 +53,10 @@ enum MaestroDeepLink {
         case .forceServerErrorStrategy(let strategy):
             print("Maestro: forcing server error strategy '\(strategy.rawValue)'")
             ForceServerErrorStrategyStore.update(to: strategy)
+
+        case .syncAttributesAndOfferings:
+            print("Maestro: syncing attributes and offerings")
+            Purchases.shared.syncAttributesAndOfferingsIfNeeded { _, _ in }
         }
     }
 

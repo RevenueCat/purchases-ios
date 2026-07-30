@@ -1,0 +1,90 @@
+# The /v1/config kill switch tripping MID-SESSION must degrade a workflow offering to the classic
+# single-page paywall (the workflow's last page), the same way a cold launch does in
+# workflow_config_fallback.yaml. It used to render the SDK's generic default paywall instead, because an
+# offering the app already held had its paywall components pruned with nothing left to render.
+#
+# Two things this flow has to work around:
+#   - Launch arguments only reach a fresh process, so the kill switch is armed through the app's
+#     rcmaestro:// deep link to keep the session (and its warm caches) alive.
+#   - The config refresh on foreground is stale-gated to 5 minutes, so returning to the app is not
+#     enough to provoke a /v1/config request in a flow this short. syncAttributesAndOfferingsIfNeeded
+#     refreshes config unconditionally, so the flow triggers it through a deep link too.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_config_killswitch_mid_session.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow offering falls back to the classic paywall when the config kill switch trips mid-session
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+  # TODO: point these at the dedicated multipage offering for this scenario, and its page texts, once
+  # the offering is decided. They default to `default_workflows` so the flow is runnable meanwhile.
+  OFFERING_ID: ${MAESTRO_OFFERING_ID || 'default_workflows'}
+  FIRST_PAGE: ${MAESTRO_FIRST_PAGE || 'Start Your Free Week And Reclaim 30+ Minutes Daily'}
+  SECOND_PAGE: ${MAESTRO_SECOND_PAGE || 'Most People Feel Calmer After Just 3 Sessions'}
+  LAST_PAGE: ${MAESTRO_LAST_PAGE || 'People Who Meditate Daily Sleep 40% Better'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow
+        offering_id: "${OFFERING_ID}"
+# Wait for offerings to load before the button appears.
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 20000
+- tapOn:
+    text: "Present Paywall"
+
+# The multipage workflow renders normally while config is healthy.
+- extendedWaitUntil:
+    visible: "${FIRST_PAGE}"
+    timeout: 15000
+- takeScreenshot: "workflow_config_killswitch_mid_session - first page"
+- tapOn:
+    text: "Continue"
+- extendedWaitUntil:
+    visible: "${SECOND_PAGE}"
+    timeout: 15000
+- tapOn:
+    text: "Continue"
+- extendedWaitUntil:
+    visible: "${LAST_PAGE}"
+    timeout: 15000
+- takeScreenshot: "workflow_config_killswitch_mid_session - last page"
+
+# Back to the launcher: the close control is an unlabeled icon, tapped by coordinate (top-left on the
+# last page, as in workflow_exit_offer_on_last_page.yaml).
+- tapOn:
+    point: "8%,11%"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+
+# Arm the kill switch, then leave and come back. Arming before backgrounding keeps this deterministic:
+# no config request happens in between, so the refresh below is guaranteed to see the new strategy.
+- openLink: "rcmaestro://force-server-error-strategy?value=remote_config_killswitch"
+- pressKey: home
+- launchApp:
+    stopApp: false
+
+# Provoke the config request that returns the kill switch, and give it time to land.
+- openLink: "rcmaestro://sync-attributes-and-offerings"
+- waitForAnimationToEnd:
+    timeout: 5000
+
+- tapOn:
+    text: "Present Paywall"
+
+# The workflow degrades to its last page (the classic single-page paywall)...
+- extendedWaitUntil:
+    visible: "${LAST_PAGE}"
+    timeout: 15000
+# ...not to the multipage workflow, and not to the SDK's generic default paywall ("No Paywall
+# configured" is its DEBUG warning), which is what this scenario used to render.
+- assertNotVisible: "${FIRST_PAGE}"
+- assertNotVisible: "No Paywall configured"
+- takeScreenshot: "workflow_config_killswitch_mid_session - classic paywall"
