@@ -84,7 +84,7 @@ private extension TokenLogInOperation {
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
                                 linkToID: nil)
-        case .siwa(let token):
+        case .signInWithApple(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
@@ -145,7 +145,8 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
 
     private let callbackCache: CallbackCache<TokenRevokeCallback>
     private let configuration: UserSpecificConfiguration
-    private let refreshToken: String
+    private let token: String
+    private let tokenTypeHint: String
     private let appUserID: String
 
     static func createFactory(
@@ -157,7 +158,26 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
         return .init({
             .init(
                 configuration: configuration,
-                refreshToken: refreshToken,
+                token: refreshToken,
+                tokenTypeHint: "refresh_token",
+                appUserID: appUserID,
+                callbackCache: callbackCache,
+                cacheKey: $0
+            ) },
+                     individualizedCacheKeyPart: appUserID)
+    }
+
+    static func createFactory(
+        configuration: UserSpecificConfiguration,
+        accessToken: String,
+        appUserID: String,
+        callbackCache: CallbackCache<TokenRevokeCallback>
+    ) -> CacheableNetworkOperationFactory<TokenRevocationOperation> {
+        return .init({
+            .init(
+                configuration: configuration,
+                token: accessToken,
+                tokenTypeHint: "access_token",
                 appUserID: appUserID,
                 callbackCache: callbackCache,
                 cacheKey: $0
@@ -167,13 +187,15 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
 
     private init(
         configuration: UserSpecificConfiguration,
-        refreshToken: String,
+        token: String,
+        tokenTypeHint: String,
         appUserID: String,
         callbackCache: CallbackCache<TokenRevokeCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
-        self.refreshToken = refreshToken
+        self.token = token
+        self.tokenTypeHint = tokenTypeHint
         self.appUserID = appUserID
         self.callbackCache = callbackCache
 
@@ -181,7 +203,7 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
     }
 
     override func begin(completion: @escaping () -> Void) {
-        guard self.refreshToken.isNotEmpty else {
+        guard self.token.isNotEmpty else {
             self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
                 callback.completion(BackendError.missingAppUserID())
             }
@@ -190,7 +212,7 @@ final class TokenRevocationOperation: CacheableNetworkOperation, @unchecked Send
             return
         }
 
-        let body = Body(token: refreshToken, tokenTypeHint: "refresh_token")
+        let body = Body(token: token, tokenTypeHint: tokenTypeHint)
 
         let request = HTTPRequest(method: .post(body), path: .tokenLogOut)
 
