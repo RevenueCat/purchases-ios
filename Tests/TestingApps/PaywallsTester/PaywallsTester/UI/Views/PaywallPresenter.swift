@@ -97,6 +97,9 @@ struct PaywallPresenter: View {
 
         case .workflow:
             PaywallView(offeringIdentifier: offering.identifier)
+                .onUrlOpened({ url in
+                    print("Paywall Handler - onUrlOpened: \(url)")
+                })
 
         case .presentWorkflow:
             fatalError()
