@@ -273,6 +273,7 @@ class CustomerInfoManager {
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
+                self.recordCachedRequestDate(of: customerInfo, appUserID: appUserID)
             } catch {
                 Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
             }
@@ -284,24 +285,30 @@ class CustomerInfoManager {
         self.sendUpdateIfChanged(customerInfo: customerInfo)
     }
 
-    /// Whether `customerInfo` is older than what's already cached.
-    ///
+    private func recordCachedRequestDate(of customerInfo: CustomerInfo, appUserID: String) {
+        guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait else { return }
+
+        self.modifyData { $0.lastCachedRequestDateByAppUserID[appUserID] = customerInfo.requestDate }
+    }
+
     /// With ``UnsyncedTransactionsWaitPolicy/doNotWait``, receipt posts run on their own lane, so a
     /// `GET /subscribers` response can land after a fresher `POST /receipts` one. Dropping the staler
     /// of the two keeps the cache from going back to a pre-purchase state.
     ///
-    /// Only meaningful for cacheable (server issued) `CustomerInfo`: their `requestDate` comes from the
+    /// Gated on the policy so apps that didn't opt in keep their existing cache behavior, and only
+    /// meaningful for cacheable (server issued) `CustomerInfo`: their `requestDate` comes from the
     /// backend, while a device computed one uses the device's clock, so the two aren't comparable.
     private func isStalerThanCache(customerInfo: CustomerInfo, appUserID: String) -> Bool {
         guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait,
-              let cachedCustomerInfo = try? self.cachedCustomerInfo(appUserID: appUserID) else {
+              let lastCachedRequestDate = self.data.value.lastCachedRequestDateByAppUserID[appUserID] else {
             return false
         }
 
-        return customerInfo.requestDate < cachedCustomerInfo.requestDate
+        return customerInfo.requestDate < lastCachedRequestDate
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
+        self.modifyData { $0.lastCachedRequestDateByAppUserID.removeValue(forKey: appUserID) }
         self.deviceCache.clearCustomerInfoCache(appUserID: appUserID)
     }
 
@@ -437,7 +444,6 @@ private extension CustomerInfoManager {
 
     }
 
-    // swiftlint:disable:next function_body_length
     private func getCustomerInfoData(appUserID: String,
                                      isAppBackgrounded: Bool,
                                      completion: @escaping @Sendable (CustomerInfoDataResult) -> Void) {
@@ -451,78 +457,48 @@ private extension CustomerInfoManager {
             _ = Task<Void, Never> {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
-                if let transactionToPost = transactions.first {
-                    let transactionData = PurchasedTransactionData(
-                        presentedOfferingContext: nil,
-                        unsyncedAttributes: [:],
-                        storeCountry: await Storefront.currentStorefront?.countryCode
-                    )
-
-                    if let offlineCustomerInfo = await self.customerInfoSkippingTransactionPost(appUserID: appUserID) {
-                        Logger.debug(
-                            Strings.customerInfo.not_waiting_for_unsynced_transactions(transactions)
-                        )
-
-                        Task.detached(priority: .background) {
-                            await self.postTransactionsAndCacheResult(
-                                transactions,
-                                transactionData,
-                                appUserID: appUserID
-                            )
-                        }
-
-                        completion(CustomerInfoDataResult(result: .success(offlineCustomerInfo),
-                                                          hadUnsyncedPurchasesBefore: true,
-                                                          usedOfflineEntitlements: true))
-                        return
-                    }
-
-                    Logger.debug(
-                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
-                    )
-
-                    // Post everything but the first transaction in the background
-                    // in parallel so they can be de-duped
-                    let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
-                    Task.detached(priority: .background) {
-                        await self.postTransactions(
-                            otherTransactionsToPostInParalel,
-                            transactionData,
-                            postReceiptSource: Self.sourceForUnfinishedTransaction,
-                            appUserID: appUserID
-                        )
-                    }
-
-                    // Return the result of posting the first transaction.
-                    // The posted receipt will include the content of every other transaction
-                    // so we don't need to wait for those.
-                    let result = await self.transactionPoster.handlePurchasedTransaction(
-                        transactionToPost,
-                        data: transactionData,
-                        postReceiptSource: Self.sourceForUnfinishedTransaction,
-                        currentUserID: appUserID
-                    )
-                    switch result {
-                    case .success:
-                        completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
-                    case .failure(let error):
-                        // If posting the unfinished transaction fails, fall back to fetching
-                        // CustomerInfo directly so observers are still notified instead of
-                        // being silently skipped.
-                        Logger.warn(
-                            // swiftlint:disable:next line_length
-                            Strings.customerInfo.posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error)
-                        )
-                        self.requestCustomerInfo(appUserID: appUserID,
-                                                 isAppBackgrounded: isAppBackgrounded) { fallbackResult in
-                            completion(CustomerInfoDataResult(result: fallbackResult,
-                                                              hadUnsyncedPurchasesBefore: true))
-                        }
-                    }
-                } else {
+                guard !transactions.isEmpty else {
                     self.requestCustomerInfo(appUserID: appUserID,
                                              isAppBackgrounded: isAppBackgrounded) { result in
                         completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: false))
+                    }
+                    return
+                }
+
+                if let offlineCustomerInfo = await self.customerInfoSkippingTransactionPost(appUserID: appUserID) {
+                    Logger.debug(Strings.customerInfo.not_waiting_for_unsynced_transactions(transactions))
+
+                    Task.detached(priority: .background) {
+                        let result = await self.postTransactions(transactions, appUserID: appUserID)
+                        self.cacheResultOfPostingUnsyncedTransactions(result, appUserID: appUserID)
+                    }
+
+                    completion(CustomerInfoDataResult(result: .success(offlineCustomerInfo),
+                                                      hadUnsyncedPurchasesBefore: true,
+                                                      usedOfflineEntitlements: true))
+                    return
+                }
+
+                Logger.debug(
+                    Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
+                )
+
+                let result = await self.postTransactions(transactions, appUserID: appUserID)
+                switch result {
+                case .success:
+                    completion(CustomerInfoDataResult(result: result, hadUnsyncedPurchasesBefore: true))
+                case .failure(let error):
+                    // If posting the unfinished transaction fails, fall back to fetching
+                    // CustomerInfo directly so observers are still notified instead of
+                    // being silently skipped.
+                    Logger.warn(
+                        // swiftlint:disable:next line_length
+                        Strings.customerInfo.posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error)
+                    )
+                    self.requestCustomerInfo(appUserID: appUserID,
+                                             isAppBackgrounded: isAppBackgrounded) { fallbackResult in
+                        completion(CustomerInfoDataResult(result: fallbackResult,
+                                                          hadUnsyncedPurchasesBefore: true))
                     }
                 }
             }
@@ -599,9 +575,8 @@ private extension CustomerInfoManager {
         }
     }
 
-    /// `CustomerInfo` computed on the device, for apps that configured
-    /// ``UnsyncedTransactionsWaitPolicy/doNotWait``. `nil` when the app didn't opt in, or when
-    /// computing it isn't possible, in which case the caller waits for the transactions to be posted.
+    /// `nil` when the app didn't configure ``UnsyncedTransactionsWaitPolicy/doNotWait``, or when
+    /// computing on the device isn't possible, in which case the caller waits for the posts.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     private func customerInfoSkippingTransactionPost(appUserID: String) async -> CustomerInfo? {
         guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait,
@@ -617,61 +592,64 @@ private extension CustomerInfoManager {
         }
     }
 
-    /// Posts all `transactions` and caches the resulting `CustomerInfo`, notifying observers.
-    /// Used when the caller was already given a `CustomerInfo` and isn't waiting for these posts.
+    /// Posts every transaction in `transactions`, returning the result of posting the first one. The
+    /// rest are posted in the background in parallel so they can be de-duped: the posted receipt
+    /// includes the content of every other transaction, so there's nothing to wait for.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private func postTransactionsAndCacheResult(
+    private func postTransactions(
         _ transactions: [StoreTransaction],
-        _ data: PurchasedTransactionData,
         appUserID: String
-    ) async {
-        guard let transactionToPost = transactions.first else { return }
+    ) async -> Result<CustomerInfo, BackendError> {
+        let data = PurchasedTransactionData(
+            presentedOfferingContext: nil,
+            unsyncedAttributes: [:],
+            storeCountry: await Storefront.currentStorefront?.countryCode
+        )
 
         let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
         Task.detached(priority: .background) {
-            await self.postTransactions(
-                otherTransactionsToPostInParalel,
-                data,
-                postReceiptSource: Self.sourceForUnfinishedTransaction,
-                appUserID: appUserID
-            )
+            await withTaskGroup(of: Void.self) { group in
+                for transaction in otherTransactionsToPostInParalel {
+                    group.addTask {
+                        _ = await self.post(transaction, data, appUserID: appUserID)
+                    }
+                }
+            }
         }
 
-        let result = await self.transactionPoster.handlePurchasedTransaction(
-            transactionToPost,
+        guard let transactionToPost = transactions.first else {
+            return .failure(.missingTransactionProductIdentifier())
+        }
+
+        return await self.post(transactionToPost, data, appUserID: appUserID)
+    }
+
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func post(
+        _ transaction: StoreTransaction,
+        _ data: PurchasedTransactionData,
+        appUserID: String
+    ) async -> Result<CustomerInfo, BackendError> {
+        return await self.transactionPoster.handlePurchasedTransaction(
+            transaction,
             data: data,
             postReceiptSource: Self.sourceForUnfinishedTransaction,
             currentUserID: appUserID
         )
+    }
 
+    /// Caches the `CustomerInfo` from posts the caller isn't waiting for, notifying observers.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func cacheResultOfPostingUnsyncedTransactions(
+        _ result: Result<CustomerInfo, BackendError>,
+        appUserID: String
+    ) {
         switch result {
         case let .success(customerInfo):
             self.cache(customerInfo: customerInfo, appUserID: appUserID)
             Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
         case let .failure(error):
             Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
-        }
-    }
-
-    /// Posts all `transactions` in parallel.
-    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    private func postTransactions(
-        _ transactions: [StoreTransaction],
-        _ data: PurchasedTransactionData,
-        postReceiptSource: PostReceiptSource,
-        appUserID: String
-    ) async {
-        await withTaskGroup(of: Void.self) { group in
-            for transaction in transactions {
-                group.addTask {
-                    _ = await self.transactionPoster.handlePurchasedTransaction(
-                        transaction,
-                        data: data,
-                        postReceiptSource: postReceiptSource,
-                        currentUserID: appUserID
-                    )
-                }
-            }
         }
     }
 
@@ -780,6 +758,9 @@ private extension CustomerInfoManager {
     struct Data {
 
         var lastSentCustomerInfo: CustomerInfo?
+        /// `requestDate` of the last `CustomerInfo` written to the cache, by app user ID. Avoids
+        /// decoding the cached one to compare request dates on every write.
+        var lastCachedRequestDateByAppUserID: [String: Date]
         /// Observers keyed by a monotonically increasing identifier.
         /// This allows cancelling observations by deleting them from this dictionary.
         /// These observers are used both for ``Purchases/customerInfoStream`` and
@@ -788,6 +769,7 @@ private extension CustomerInfoManager {
 
         init() {
             self.lastSentCustomerInfo = nil
+            self.lastCachedRequestDateByAppUserID = [:]
             self.customerInfoObserversByIdentifier = [:]
         }
 

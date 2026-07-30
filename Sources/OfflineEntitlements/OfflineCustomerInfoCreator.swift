@@ -86,6 +86,8 @@ class OfflineCustomerInfoCreator {
     /// fallback for an unreachable backend.
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func create(for userID: String, trackingOfflineEntitlementsMode: Bool = true) async throws -> CustomerInfo {
+        let tracker = trackingOfflineEntitlementsMode ? self.tracker : nil
+
         do {
             Logger.info(Strings.offlineEntitlements.computing_offline_customer_info)
 
@@ -98,9 +100,7 @@ class OfflineCustomerInfoCreator {
 
             let offlineCustomerInfo = creator(products, mapping, userID)
 
-            if trackingOfflineEntitlementsMode {
-                self.tracker?.trackEnteredOfflineEntitlementsMode()
-            }
+            tracker?.trackEnteredOfflineEntitlementsMode()
 
             Logger.info(Strings.offlineEntitlements.computed_offline_customer_info(
                 products, offlineCustomerInfo.entitlements
@@ -131,9 +131,7 @@ class OfflineCustomerInfoCreator {
                 errorMessage = error.localizedDescription
             }
 
-            if trackingOfflineEntitlementsMode {
-                self.tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
-            }
+            tracker?.trackErrorEnteringOfflineEntitlementsMode(reason: reason, errorMessage: errorMessage)
             throw error
         }
     }

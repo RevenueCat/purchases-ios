@@ -327,31 +327,41 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
     // MARK: - Cache ordering
 
-    func testDoNotWaitDoesNotCacheCustomerInfoOlderThanTheCachedOne() throws {
+    func testDoNotWaitDoesNotCacheCustomerInfoOlderThanTheCachedOne() {
         let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
         // `mockCustomerInfo2`'s request date (2020) is newer than `mockCustomerInfo`'s (2018).
+        manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
+
+        manager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_staler_customer_info, level: .debug)
+    }
+
+    func testDoNotWaitCachesCustomerInfoNewerThanTheCachedOne() {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+        manager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
+
+        manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 2
+    }
+
+    func testDoNotWaitCachesCustomerInfoOlderThanACachedOneFromAPreviousSession() throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+        // Nothing was written in this session, so there's no post-vs-read race to protect against.
         self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
 
         manager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
 
-        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
-        self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_staler_customer_info, level: .debug)
-    }
-
-    func testDoNotWaitCachesCustomerInfoNewerThanTheCachedOne() throws {
-        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
-        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo.jsonEncodedData
-
-        manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
-
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
-    func testDoNotWaitStillClearsCacheForDeviceComputedCustomerInfoOlderThanTheCachedOne() throws {
+    func testDoNotWaitStillClearsCacheForDeviceComputedCustomerInfoOlderThanTheCachedOne() {
         let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
         // `mockCustomerInfo2`'s request date (2020) is newer than `mockCustomerInfo`'s (2018), but a
         // device computed request date comes from the device's clock, so it can't be compared to it.
-        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
+        manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
 
         let deviceComputed = self.mockCustomerInfo.copy(with: .verifiedOnDevice, httpResponseOriginalSource: nil)
         manager.cache(customerInfo: deviceComputed, appUserID: Self.userID)
@@ -360,12 +370,12 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_offline_customer_info, level: .debug)
     }
 
-    func testWaitCachesCustomerInfoRegardlessOfRequestDate() throws {
-        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
+    func testWaitCachesCustomerInfoRegardlessOfRequestDate() {
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
 
         self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
 
-        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 2
     }
 
 }

@@ -23,13 +23,19 @@ final class CustomerAPI {
     Backend.ResponseHandler<IsPurchaseAllowedByRestoreBehaviorResponse>
 
     private let backendConfig: BackendConfiguration
+    /// Configuration receipt posts run on. Its own `HTTPClient` and `OperationQueue` when the app opted
+    /// out of waiting for unsynced transactions, otherwise the shared `backendConfig`.
+    private let receiptPostBackendConfig: BackendConfiguration
     private let customerInfoCallbackCache: CallbackCache<CustomerInfoCallback>
     private let isPurchaseAllowedByRestoreBehaviorCallbacksCache:
     CallbackCache<IsPurchaseAllowedByRestoreBehaviorCallback>
     private let attributionFetcher: AttributionFetcher
 
-    init(backendConfig: BackendConfiguration, attributionFetcher: AttributionFetcher) {
+    init(backendConfig: BackendConfiguration,
+         receiptPostBackendConfig: BackendConfiguration? = nil,
+         attributionFetcher: AttributionFetcher) {
         self.backendConfig = backendConfig
+        self.receiptPostBackendConfig = receiptPostBackendConfig ?? backendConfig
         self.attributionFetcher = attributionFetcher
         self.customerInfoCallbackCache = CallbackCache<CustomerInfoCallback>()
         self.isPurchaseAllowedByRestoreBehaviorCallbacksCache =
@@ -54,9 +60,9 @@ final class CustomerAPI {
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
                                             source: factory.operationType,
                                             completion: completion)
-        // Reusing an in-flight receipt post ties this request's latency to it, which apps that
-        // configured `.doNotWait` explicitly opted out of.
-        let cacheStatus = self.backendConfig.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
+        // Reusing an in-flight receipt post would tie this request's latency to it, which is exactly
+        // what the dedicated receipt post lane exists to avoid.
+        let cacheStatus = self.postsReceiptsOnDedicatedLane
             ? self.customerInfoCallbackCache.add(callback)
             : self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
         self.backendConfig.addCacheableOperation(with: factory,
@@ -150,9 +156,8 @@ final class CustomerAPI {
             subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 
-        let lane = self.backendConfig.receiptPostLane
         let config = NetworkOperation.UserSpecificConfiguration(
-            httpClient: lane?.httpClient ?? self.backendConfig.httpClient,
+            httpClient: self.receiptPostBackendConfig.httpClient,
             appUserID: appUserID
         )
 
@@ -188,8 +193,14 @@ final class CustomerAPI {
 
         let cacheStatus = customerInfoCallbackCache.add(callbackObject)
 
-        let queue = lane?.operationQueue ?? self.backendConfig.operationQueue
-        queue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        self.receiptPostBackendConfig.operationQueue.addCacheableOperation(
+            with: factory,
+            cacheStatus: cacheStatus
+        )
+    }
+
+    private var postsReceiptsOnDedicatedLane: Bool {
+        return self.receiptPostBackendConfig !== self.backendConfig
     }
 
 }

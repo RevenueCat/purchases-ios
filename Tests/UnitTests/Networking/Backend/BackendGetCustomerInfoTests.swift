@@ -33,14 +33,26 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
-    func testDoesNotReuseInFlightReceiptPostWhenNotWaitingForUnsyncedTransactions() {
-        self.createDependencies(unsyncedTransactionsWaitPolicy: .doNotWait)
+    func testDoesNotReuseInFlightReceiptPostWhenPostsRunOnTheirOwnLane() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.createDependencies(unsyncedTransactionsWaitPolicy: .doNotWait,
+                                receiptPostLaneClient: laneClient)
         self.mockInFlightReceiptPostAndCustomerInfo()
+        laneClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            delay: .milliseconds(50))
+        )
 
         self.postReceipt()
         self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
 
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        // The customer info request is performed instead of riding the in-flight receipt post.
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls.first?.request.path.relativePath)
+            == HTTPRequest.Path.getCustomerInfo(appUserID: Self.userID).relativePath
     }
 
     func testCachesCustomerGetsForSameCustomer() {
@@ -226,22 +238,6 @@ private extension BackendGetCustomerInfoTests {
             requestPath: .getCustomerInfo(appUserID: Self.userID),
             response: .init(statusCode: .success, response: Self.validCustomerResponse)
         )
-    }
-
-    func postReceipt() {
-        self.backend.post(receipt: .receipt("a receipt".asData),
-                          productData: nil,
-                          transactionData: .init(presentedOfferingContext: nil,
-                                                 unsyncedAttributes: nil,
-                                                 storeCountry: nil),
-                          postReceiptSource: .init(isRestore: false, initiationSource: .queue),
-                          observerMode: false,
-                          originalPurchaseCompletedBy: nil,
-                          appTransaction: nil,
-                          associatedTransactionId: nil,
-                          appUserID: Self.userID,
-                          containsAttributionData: false,
-                          completion: { _ in })
     }
 
 }

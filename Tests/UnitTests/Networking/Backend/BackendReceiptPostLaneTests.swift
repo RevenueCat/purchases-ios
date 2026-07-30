@@ -25,14 +25,13 @@ final class BackendReceiptPostLaneTests: BaseBackendTests {
     }
 
     func testReceiptPostRunsOnDedicatedLaneNotSharedClient() {
-        let laneClient = self.createClient(#file)
-        let backend = self.makeBackend(receiptPostLaneClient: laneClient)
+        let laneClient = self.createReceiptPostLane()
 
         laneClient.mock(requestPath: .postReceiptData,
                         response: .init(statusCode: .success, response: Self.validCustomerResponse))
 
         waitUntil { completed in
-            self.postReceipt(to: backend) { _ in completed() }
+            self.postReceipt { _ in completed() }
         }
 
         expect(laneClient.calls).to(haveCount(1))
@@ -40,27 +39,25 @@ final class BackendReceiptPostLaneTests: BaseBackendTests {
     }
 
     func testReceiptPostUsesSharedClientWhenNoLaneProvided() {
-        let backend = self.makeBackend(receiptPostLaneClient: nil)
-
+        self.httpClient.disableSnapshotTesting()
         self.httpClient.mock(requestPath: .postReceiptData,
                              response: .init(statusCode: .success, response: Self.validCustomerResponse))
 
         waitUntil { completed in
-            self.postReceipt(to: backend) { _ in completed() }
+            self.postReceipt { _ in completed() }
         }
 
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
     func testCustomerInfoRequestStaysOnSharedClientWhenReceiptPostsHaveALane() {
-        let laneClient = self.createClient(#file)
-        let backend = self.makeBackend(receiptPostLaneClient: laneClient)
+        let laneClient = self.createReceiptPostLane()
 
         self.httpClient.mock(requestPath: .getCustomerInfo(appUserID: Self.userID),
                              response: .init(statusCode: .success, response: Self.validCustomerResponse))
 
         waitUntil { completed in
-            backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in completed() }
+            self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in completed() }
         }
 
         expect(self.httpClient.calls).to(haveCount(1))
@@ -71,45 +68,16 @@ final class BackendReceiptPostLaneTests: BaseBackendTests {
 
 private extension BackendReceiptPostLaneTests {
 
-    func makeBackend(receiptPostLaneClient: MockHTTPClient?) -> Backend {
+    /// Rebuilds the dependencies with a dedicated receipt post lane, returning its client.
+    func createReceiptPostLane() -> MockHTTPClient {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+
+        self.createDependencies(unsyncedTransactionsWaitPolicy: .doNotWait,
+                                receiptPostLaneClient: laneClient)
         self.httpClient.disableSnapshotTesting()
-        receiptPostLaneClient?.disableSnapshotTesting()
 
-        let lane = receiptPostLaneClient.map {
-            BackendConfiguration.Lane(httpClient: $0,
-                                      operationQueue: Backend.QueueProvider.createReceiptPostQueue())
-        }
-
-        let config = BackendConfiguration(
-            httpClient: self.httpClient,
-            operationDispatcher: self.operationDispatcher,
-            operationQueue: Backend.QueueProvider.createBackendQueue(),
-            diagnosticsQueue: Backend.QueueProvider.createDiagnosticsQueue(),
-            systemInfo: self.systemInfo,
-            offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
-            dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate),
-            receiptPostLane: lane
-        )
-
-        return Backend(backendConfig: config,
-                       attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
-                                                              systemInfo: self.systemInfo))
-    }
-
-    func postReceipt(to backend: Backend, completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
-        backend.post(receipt: .receipt("a receipt".asData),
-                     productData: nil,
-                     transactionData: .init(presentedOfferingContext: nil,
-                                            unsyncedAttributes: nil,
-                                            storeCountry: nil),
-                     postReceiptSource: .init(isRestore: false, initiationSource: .queue),
-                     observerMode: false,
-                     originalPurchaseCompletedBy: nil,
-                     appTransaction: nil,
-                     associatedTransactionId: nil,
-                     appUserID: Self.userID,
-                     containsAttributionData: false,
-                     completion: completion)
+        return laneClient
     }
 
 }

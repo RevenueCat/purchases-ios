@@ -28,6 +28,7 @@ class Backend {
     let remoteConfigAPI: RemoteConfigAPI
 
     private let config: BackendConfiguration
+    private let receiptPostConfig: BackendConfiguration?
 
     convenience init(
         systemInfo: SystemInfo,
@@ -56,27 +57,31 @@ class Backend {
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
                                     apiSourceFailover: apiSourceFailover)
-        // Apps that opted out of waiting for unsynced transactions get a dedicated lane for receipt
-        // posts. Both serializers have to be separate (queue and `HTTPClient`), otherwise the post
-        // still blocks reads through `HTTPClient.currentSerialRequest`.
-        let receiptPostLane: BackendConfiguration.Lane? =
-            systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
-            ? .init(httpClient: .dedicatedLane(systemInfo: systemInfo,
-                                               eTagManager: eTagManager,
-                                               diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout,
-                                               apiSourceFailover: apiSourceFailover),
-                    operationQueue: QueueProvider.createReceiptPostQueue())
-            : nil
-
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-                                          dateProvider: dateProvider,
-                                          receiptPostLane: receiptPostLane)
+                                          dateProvider: dateProvider)
+
+        // Apps that opted out of waiting for unsynced transactions get a dedicated lane for receipt
+        // posts. Both serializers have to be separate (queue and `HTTPClient`), otherwise the post
+        // still blocks reads through `HTTPClient.currentSerialRequest`.
+        let receiptPostConfig: BackendConfiguration? =
+            systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
+            ? BackendConfiguration(httpClient: .dedicatedLane(systemInfo: systemInfo,
+                                                              eTagManager: eTagManager,
+                                                              diagnosticsTracker: diagnosticsTracker,
+                                                              requestTimeout: httpClientTimeout,
+                                                              apiSourceFailover: apiSourceFailover),
+                                   operationDispatcher: operationDispatcher,
+                                   operationQueue: QueueProvider.createReceiptPostQueue(),
+                                   diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+                                   systemInfo: systemInfo,
+                                   offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                                   dateProvider: dateProvider)
+            : nil
         let remoteConfigConfig = BackendConfiguration(
             httpClient: .dedicatedLane(systemInfo: systemInfo,
                                        eTagManager: eTagManager,
@@ -91,13 +96,17 @@ class Backend {
             dateProvider: dateProvider)
         self.init(backendConfig: config,
                   remoteConfigBackendConfig: remoteConfigConfig,
+                  receiptPostBackendConfig: receiptPostConfig,
                   attributionFetcher: attributionFetcher)
     }
 
     convenience init(backendConfig: BackendConfiguration,
                      remoteConfigBackendConfig: BackendConfiguration? = nil,
+                     receiptPostBackendConfig: BackendConfiguration? = nil,
                      attributionFetcher: AttributionFetcher) {
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let customer = CustomerAPI(backendConfig: backendConfig,
+                                   receiptPostBackendConfig: receiptPostBackendConfig,
+                                   attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
         let webBilling = WebBillingAPI(backendConfig: backendConfig)
@@ -120,7 +129,8 @@ class Backend {
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
                   adsAPI: adsAPI,
-                  remoteConfigAPI: remoteConfigAPI)
+                  remoteConfigAPI: remoteConfigAPI,
+                  receiptPostBackendConfig: receiptPostBackendConfig)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -134,8 +144,10 @@ class Backend {
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
-                  remoteConfigAPI: RemoteConfigAPI) {
+                  remoteConfigAPI: RemoteConfigAPI,
+                  receiptPostBackendConfig: BackendConfiguration? = nil) {
         self.config = backendConfig
+        self.receiptPostConfig = receiptPostBackendConfig
 
         self.customer = customerAPI
         self.identity = identityAPI
@@ -152,6 +164,7 @@ class Backend {
 
     func clearHTTPClientCaches() {
         self.config.clearCache()
+        self.receiptPostConfig?.clearCache()
     }
 
     func post(attributionData: [String: Any],

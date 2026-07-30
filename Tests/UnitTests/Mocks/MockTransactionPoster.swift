@@ -48,13 +48,7 @@ final class MockTransactionPoster: TransactionPosterType {
     private let heldCompletions: Atomic<[CustomerAPI.CustomerInfoResponseHandler]> = .init([])
 
     func releaseHeldCompletions() {
-        let completions = self.heldCompletions.modify { held -> [CustomerAPI.CustomerInfoResponseHandler] in
-            let completions = held
-            held = []
-            return completions
-        }
-
-        for completion in completions {
+        for completion in self.heldCompletions.getAndSet([]) {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(self.stubbedHandlePurchasedTransactionResult.value)
             }
