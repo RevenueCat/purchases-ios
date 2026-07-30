@@ -20,6 +20,13 @@ let project = Project(
                         "UIColorName": "",
                         "UIImageName": "",
                     ],
+                    // Lets E2E tests change the app's behaviour mid-session, see `MaestroDeepLink`.
+                    "CFBundleURLTypes": [
+                        [
+                            "CFBundleURLName": "com.revenuecat.maestro.ios",
+                            "CFBundleURLSchemes": ["rcmaestro"],
+                        ],
+                    ],
                     "REVENUECAT_API_KEY": "$(REVENUECAT_API_KEY)",
                     "REVENUECAT_PROXY_URL_SCHEME": "$(REVENUECAT_PROXY_URL_SCHEME)",
                     "REVENUECAT_PROXY_URL_HOST": "$(REVENUECAT_PROXY_URL_HOST)",

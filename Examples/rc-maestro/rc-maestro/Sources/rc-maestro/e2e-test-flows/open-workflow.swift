@@ -12,7 +12,13 @@ import RevenueCatUI
 extension E2ETestFlowView {
     struct OpenWorkflow: View {
 
-        static let offeringIdentifier = "default_workflows"
+        static let defaultOfferingIdentifier = "default_workflows"
+
+        /// The offering this flow renders. E2E tests can point it at a different one with the
+        /// `offering_id` launch argument.
+        static var offeringIdentifier: String {
+            return UserDefaults.standard.string(forKey: "offering_id") ?? Self.defaultOfferingIdentifier
+        }
 
         /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
         /// `custom_users_count` is not provided, so the workflow renders the dashboard default value.

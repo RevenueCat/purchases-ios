@@ -13,15 +13,15 @@ struct RcMaestroApp: App {
             SystemInfo.apiBaseURL = apiBaseURL
         }
 
-        // Used in E2E tests
-        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
+        // Used in E2E tests. The strategy is read on every request rather than captured here, so that
+        // tests can change it mid-session through `MaestroDeepLink`.
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init { request in
-                            switch forceServerErrorStrategy {
+                            switch ForceServerErrorStrategyStore.current {
                             case .never:
                                 return .performRequest
 
@@ -59,11 +59,21 @@ struct RcMaestroApp: App {
 
     var body: some Scene {
         WindowGroup {
-            switch e2eTestFlow {
-            case .some(let flow):
-                flow.view
-            case nil:
-                ContentView()
+            Group {
+                switch e2eTestFlow {
+                case .some(let flow):
+                    flow.view
+                case nil:
+                    ContentView()
+                }
+            }
+            .onOpenURL { url in
+                guard let deepLink = MaestroDeepLink(url: url) else {
+                    print("Maestro: ignoring unrecognized deep link '\(url)'")
+                    return
+                }
+
+                deepLink.apply()
             }
         }
     }
