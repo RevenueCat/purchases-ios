@@ -354,15 +354,12 @@ class PaywallFeatureEventsRequestTests: TestCase {
 
     // MARK: - Workflow Attribution Tests
 
-    func testImpressionEventCarriesWorkflowAttributionInPresentedOfferingContext() throws {
+    func testImpressionEventWithWorkflowAttribution() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
-        let context = try XCTUnwrap(requestEvent.presentedOfferingContext)
-        expect(context.paywallId) == "test_paywall_id_1"
-        expect(context.workflowId) == "wf_abc123"
-        expect(context.traceId) == "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
+        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     // The context used to be nil unless placement or targeting was set, which workflow paywalls rarely are.
@@ -375,14 +372,6 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(context.placementIdentifier).to(beNil())
         expect(context.targetingRevision).to(beNil())
         expect(context.targetingRuleId).to(beNil())
-    }
-
-    func testImpressionEventWithWorkflowAttribution() throws {
-        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
-        let storedEvent = try Self.createStoredFeatureEvent(from: event)
-        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
     func testWorkflowAttributionIsNotSentAtTopLevel() throws {

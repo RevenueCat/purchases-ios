@@ -97,8 +97,8 @@ struct PaywallsV2View: View {
     /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
     private let workflowScreenType: [String]?
     /// Workflow attribution, `nil` for standalone paywalls. `workflowId` / `stepId` go to the post-receipt
-    /// body as `presented_workflow_id` / `presented_step_id` (#7024); `traceId` goes to the nested `paywall`
-    /// object (#7311) and to the paywall event's `presented_offering_context`. Orthogonal to
+    /// body as `presented_workflow_id` / `presented_step_id`; `traceId` goes to the nested `paywall`
+    /// object and to the paywall event's `presented_offering_context`. Orthogonal to
     /// `workflowScreenType`, which gates whether events fire.
     private let workflowId: String?
     private let stepId: String?
@@ -460,8 +460,8 @@ struct PaywallsV2View: View {
     }
 
     /// Stamps workflow attribution onto a paywall event's data: `workflowId` / `stepId` for the
-    /// post-receipt body (#7024), `traceId` for the post-receipt `paywall` object (#7311) and the
-    /// event's own `presented_offering_context`. Orthogonal to the `screen_type` gate; all are `nil`
+    /// post-receipt body, `traceId` for the post-receipt `paywall` object and the event's own
+    /// `presented_offering_context`. Orthogonal to the `screen_type` gate; all are `nil`
     /// for standalone paywalls.
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
