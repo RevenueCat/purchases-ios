@@ -17,11 +17,18 @@ protocol HTTPRequestTimeoutManagerType {
     ///   - isFallbackHostRequest: Whether this attempt targets a fallback host.
     ///   - endpointSupportsFallbackURLs: Whether the endpoint has fallback-URL support.
     ///   - isProxied: Whether a proxy URL is set.
+    ///   - reTieredTimeoutsEnabled: Whether this caller opts into the re-tiered no-fallback fail-fast
+    ///     timeouts. Main-API requests opt in only when remote-config API sources are enabled (so the
+    ///     default configuration keeps its legacy timeout), while blob-source downloads always opt in.
+    ///     It has no effect on the fallback-supported, fallback-host, or proxied tiers.
+    ///     This parameter should be removed once the `usesRemoteConfigAPISources` dangerous setting is
+    ///     removed and the re-tiered timeouts become the only behavior.
     /// - Returns: The timeout interval in seconds.
     func timeout(host: String?,
                  isFallbackHostRequest: Bool,
                  endpointSupportsFallbackURLs: Bool,
-                 isProxied: Bool) -> TimeInterval
+                 isProxied: Bool,
+                 reTieredTimeoutsEnabled: Bool) -> TimeInterval
 
     /// Updates the internal state in response to the result of an HTTP request attempt.
     ///
@@ -87,10 +94,18 @@ class HTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     func timeout(host: String?,
                  isFallbackHostRequest: Bool,
                  endpointSupportsFallbackURLs: Bool,
-                 isProxied: Bool) -> TimeInterval {
+                 isProxied: Bool,
+                 reTieredTimeoutsEnabled: Bool) -> TimeInterval {
         // Fallback-host and proxied requests use a flat timeout and never consult the per-host memory.
         guard !isFallbackHostRequest, !isProxied else {
             return self.baseTimeout(default: Timeout.flat)
+        }
+
+        // The re-tiered no-fallback fail-fast timeouts only apply to callers that opt in. Otherwise the
+        // no-fallback tiers fall back to the legacy flat network timeout so the default configuration's
+        // behavior stays unchanged.
+        guard reTieredTimeoutsEnabled || endpointSupportsFallbackURLs else {
+            return self.networkTimeout.timeoutInterval
         }
 
         let sourceRecentlyTimedOut = host.map { self.hasRecentTimeout(forHost: $0) } ?? false

@@ -40,21 +40,25 @@ class HTTPRequestTimeoutManagerTests: TestCase {
     private func timeout(host: String?,
                          isFallbackHostRequest: Bool = false,
                          endpointSupportsFallbackURLs: Bool = false,
-                         isProxied: Bool = false) -> TimeInterval {
+                         isProxied: Bool = false,
+                         reTieredTimeoutsEnabled: Bool = true) -> TimeInterval {
         return self.manager.timeout(host: host,
                                     isFallbackHostRequest: isFallbackHostRequest,
                                     endpointSupportsFallbackURLs: endpointSupportsFallbackURLs,
-                                    isProxied: isProxied)
+                                    isProxied: isProxied,
+                                    reTieredTimeoutsEnabled: reTieredTimeoutsEnabled)
     }
 
     private func customTimeout(host: String?,
                                isFallbackHostRequest: Bool = false,
                                endpointSupportsFallbackURLs: Bool = false,
-                               isProxied: Bool = false) -> TimeInterval {
+                               isProxied: Bool = false,
+                               reTieredTimeoutsEnabled: Bool = true) -> TimeInterval {
         return self.customManager.timeout(host: host,
                                           isFallbackHostRequest: isFallbackHostRequest,
                                           endpointSupportsFallbackURLs: endpointSupportsFallbackURLs,
-                                          isProxied: isProxied)
+                                          isProxied: isProxied,
+                                          reTieredTimeoutsEnabled: reTieredTimeoutsEnabled)
     }
 
     // MARK: - Base tiers (default)
@@ -409,6 +413,61 @@ class HTTPRequestTimeoutManagerTests: TestCase {
         XCTAssertEqual(
             customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: true),
             Self.customTimeout
+        )
+    }
+
+    // MARK: - Re-tiered timeouts disabled (e.g. main-API requests with API sources off)
+
+    func testNoFallbackUsesLegacyTimeoutWhenReTieredTimeoutsDisabled() {
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false, reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+    }
+
+    func testNoFallbackStaysLegacyAfterTimeoutWhenReTieredTimeoutsDisabled() {
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        // The no-fallback tier never reduces when re-tiered timeouts are disabled.
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false, reTieredTimeoutsEnabled: false),
+            Configuration.networkTimeoutDefault
+        )
+    }
+
+    func testCustomNoFallbackUsesCustomTimeoutWhenReTieredTimeoutsDisabled() {
+        XCTAssertEqual(
+            customTimeout(host: Self.hostA, endpointSupportsFallbackURLs: false, reTieredTimeoutsEnabled: false),
+            Self.customTimeout
+        )
+    }
+
+    func testFallbackSupportingTiersAreUnaffectedByReTieredFlag() {
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true, reTieredTimeoutsEnabled: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
+        )
+
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: true, reTieredTimeoutsEnabled: false),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testNoFallbackUsesReTieredTimeoutWhenEnabled() {
+        // Blob-source downloads opt into the re-tiered tiers regardless of the API-sources setting.
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false, reTieredTimeoutsEnabled: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        )
+
+        manager.recordRequestResult(host: Self.hostA, .mainSourceTimedOut)
+
+        XCTAssertEqual(
+            timeout(host: Self.hostA, endpointSupportsFallbackURLs: false, reTieredTimeoutsEnabled: true),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
         )
     }
 }

@@ -1752,7 +1752,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
@@ -1775,7 +1776,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
@@ -1811,6 +1813,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
     }
 
     func testRecordsTimeoutWhenTimeoutOccursOnMainSourceEndpointNotSupportingFallback() throws {
+        // The broadened no-fallback fail-fast tiers and recording only apply when API sources are enabled.
+        let client = self.createClient(self.systemInfoUsingAPISources())
         let request = HTTPRequest(method: .get, path: .logIn)
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
 
@@ -1826,7 +1830,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         }
 
         waitUntil { completion in
-            self.client.perform(request) { (_: DataResponse) in completion() }
+            client.perform(request) { (_: DataResponse) in completion() }
         }
 
         // The timeout is now recorded for this host even though the endpoint has no fallback support,
@@ -1836,7 +1840,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: false,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
         )
@@ -1845,9 +1850,38 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
+        )
+    }
+
+    func testKeepsLegacyTimeoutForNoFallbackEndpointWhenAPISourcesDisabled() throws {
+        // API sources are disabled by default, so a no-fallback endpoint keeps the legacy flat timeout
+        // and its timeout does not arm the per-host fail-fast memory.
+        let request = HTTPRequest(method: .get, path: .logIn)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+
+        stub(condition: isPath(request.path)) { request in
+            XCTAssertEqual(request.timeoutInterval, Configuration.networkTimeoutDefault)
+            return .timeoutResponse()
+        }
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // The host was not armed: a subsequent main-source request stays on the base tier.
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: true,
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
     }
 
@@ -1878,7 +1912,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
         )
@@ -1918,7 +1953,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
@@ -1968,7 +2004,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 host: host,
                 isFallbackHostRequest: false,
                 endpointSupportsFallbackURLs: true,
-                isProxied: false
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
             ),
             HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallback
         )
@@ -2014,7 +2051,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                         host: host,
                         isFallbackHostRequest: false,
                         endpointSupportsFallbackURLs: true,
-                        isProxied: false
+                        isProxied: false,
+                        reTieredTimeoutsEnabled: true
                     ),
                     HTTPRequestTimeoutManager.Timeout.mainSourceSupportingFallbackReduced
                 )
@@ -4448,8 +4486,35 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
     }
 
     /// Verifies that when a timeout occurs on the main source for an endpoint that does NOT support fallback,
-    /// the HTTPClient still records the timeout (the fallback-support condition was dropped)
+    /// the HTTPClient records the timeout when API sources are enabled (the fallback-support condition
+    /// is dropped in that mode).
     func testRecordsMainSourceTimedOutWhenTimeoutOccursOnEndpointWithoutFallbackSupport() {
+        let systemInfoUsingAPISources = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
+        let client = self.createClient(systemInfoUsingAPISources)
+        let request = HTTPRequest(method: .get, path: .logIn)
+
+        stub(condition: isPath(request.path)) { _ in
+            return .timeoutResponse()
+        }
+
+        waitUntil { completion in
+            client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // Assert that the timeout event was recorded even though the endpoint has no fallback support
+        expect(self.timeoutManager.recordedResults).to(haveCount(1))
+        expect(self.timeoutManager.recordedResults.first) == .mainSourceTimedOut
+    }
+
+    /// Verifies that with API sources disabled (the default), a timeout on a no-fallback endpoint does
+    /// not arm the per-host memory, preserving the legacy behavior.
+    func testDoesNotRecordMainSourceTimedOutForNoFallbackEndpointWhenAPISourcesDisabled() {
         let request = HTTPRequest(method: .get, path: .logIn)
 
         stub(condition: isPath(request.path)) { _ in
@@ -4460,9 +4525,8 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
             self.client.perform(request) { (_: DataResponse) in completion() }
         }
 
-        // Assert that the timeout event was recorded even though the endpoint has no fallback support
         expect(self.timeoutManager.recordedResults).to(haveCount(1))
-        expect(self.timeoutManager.recordedResults.first) == .mainSourceTimedOut
+        expect(self.timeoutManager.recordedResults.first) == .other
     }
 
     /// Verifies that when a request fails with a non-timeout error,

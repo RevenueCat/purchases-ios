@@ -19,6 +19,7 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     private(set) var lastTimeoutIsFallbackHostRequest: Bool?
     private(set) var lastTimeoutEndpointSupportsFallbackURLs: Bool?
     private(set) var lastTimeoutIsProxied: Bool?
+    private(set) var lastTimeoutReTieredTimeoutsEnabled: Bool?
 
     init(defaultTimeout: TimeInterval) {
         self.defaultTimeout = defaultTimeout
@@ -30,12 +31,14 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
     func timeout(host: String?,
                  isFallbackHostRequest: Bool,
                  endpointSupportsFallbackURLs: Bool,
-                 isProxied: Bool) -> TimeInterval {
+                 isProxied: Bool,
+                 reTieredTimeoutsEnabled: Bool) -> TimeInterval {
         timeoutCallCount += 1
         lastTimeoutHost = host
         lastTimeoutIsFallbackHostRequest = isFallbackHostRequest
         lastTimeoutEndpointSupportsFallbackURLs = endpointSupportsFallbackURLs
         lastTimeoutIsProxied = isProxied
+        lastTimeoutReTieredTimeoutsEnabled = reTieredTimeoutsEnabled
         return timeoutToReturn
     }
 
@@ -52,6 +55,7 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
         lastTimeoutIsFallbackHostRequest = nil
         lastTimeoutEndpointSupportsFallbackURLs = nil
         lastTimeoutIsProxied = nil
+        lastTimeoutReTieredTimeoutsEnabled = nil
         timeoutToReturn = defaultTimeout
     }
 }
