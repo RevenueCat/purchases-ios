@@ -29,7 +29,7 @@ env:
     visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
     timeout: 15000
 - tapOn:
-    text: "Continue"
+    text: "Continue 1/3"
 
 # Screen 2
 - extendedWaitUntil:

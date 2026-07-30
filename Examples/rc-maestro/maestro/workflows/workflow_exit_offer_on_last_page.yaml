@@ -21,11 +21,11 @@ env:
 - extendedWaitUntil:
     visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
     timeout: 15000
-- tapOn: { text: "Continue" }
+- tapOn: { text: "Continue 1/3" }
 - extendedWaitUntil:
     visible: "Most People Feel Calmer After Just 3 Sessions"
     timeout: 15000
-- tapOn: { text: "Continue" }
+- tapOn: { text: "Continue 2/3" }
 - extendedWaitUntil:
     visible: "People Who Meditate Daily Sleep 40% Better"
     timeout: 15000
