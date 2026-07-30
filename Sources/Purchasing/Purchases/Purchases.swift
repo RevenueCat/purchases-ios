@@ -1793,10 +1793,13 @@ extension Purchases {
     /// Polls the backend until reward verification completes or the attempt budget is exhausted.
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
-    /// ``generateRewardVerificationToken(impressionId:)``.
+    /// ``generateRewardVerificationToken(impressionId:)``. Pass `trackingMetadata` to have the SDK
+    /// automatically track the reward events as verification progresses
+    ///
     /// Refreshes local reward state before returning verified rewards.
     @_spi(Experimental) public func pollRewardVerification(
-        clientTransactionID: String
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
         await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
