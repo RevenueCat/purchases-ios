@@ -10,6 +10,7 @@
 ### Paywallv2
 #### ✨ New Features
 * feat(paywalls-v2): add haptic feedback on package/tab selection (#7167) via Facundo Menzella (@facumenzella)
+* feat(paywalls-v2): Support Custom components (#7233) via Jacob Rakidzich (@JZDesign)
 
 ### 🔄 Other Changes
 * Revert "feat: send workflow attribution on paywall events" (#7313) via Cesar de la Vega (@vegaro)
@@ -17,7 +18,6 @@
 * feat: send workflow attribution on paywall events (#7304) via Cesar de la Vega (@vegaro)
 * feat(paywalls): apply hero top-inset treatment to full-width web_view (#7300) via Antonio Pallares (@ajpallares)
 * test(remote-config): cover app restart refreshing and applying updated config (#7254) via Facundo Menzella (@facumenzella)
-* feat(paywalls): enable web_view component (7/7) (#7233) via Jacob Rakidzich (@JZDesign)
 * feat(remote-config): health-check-gated API source failover in HTTPClient (#7294) via Toni Rico (@tonidero)
 
 ## 5.81.3
