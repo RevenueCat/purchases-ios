@@ -408,7 +408,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
-        let requestTimeoutManager = HTTPRequestTimeoutManager()
+        // One instance for every request kind that consults the per-host fail-fast memory: both backend
+        // HTTPClients and the blob downloader.
+        let requestTimeoutManager = HTTPRequestTimeoutManager(networkTimeout: networkTimeout)
 
         let backend = Backend(
             systemInfo: systemInfo,
@@ -2603,6 +2605,12 @@ internal extension Purchases {
 
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
+    }
+
+    /// The timeout the shared request timeout manager hands out for a request that can't be reduced by the
+    /// per-host memory, which is the configured network timeout whenever the developer customized it.
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.backend.requestTimeoutManagerBaseTimeout
     }
 
     var storeKitTimeout: TimeInterval {

@@ -251,7 +251,8 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
             diagnosticsTracker: nil,
             apiSourceProvider: RemoteConfigSourceProvider(
                 topicStore: APISourceTopicStore(urls: sources.map { "https://\($0)/" })
-            )
+            ),
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
         )
     }
 

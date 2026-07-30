@@ -144,6 +144,41 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
         }
     }
 
+    // MARK: - Session configuration
+
+    /// `URLRequest.timeoutInterval` only bounds the gap between bytes, so the session needs a resource
+    /// timeout to keep a trickling source from holding an attempt open forever.
+    func testSessionCapsTheWholeDownloadAtTheBaseTimeout() {
+        let manager = HTTPRequestTimeoutManager(networkTimeout: .default)
+        let configuration = URLSessionRemoteConfigBlobDownloader.sessionConfiguration(
+            timeoutCeiling: HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        )
+
+        expect(configuration.timeoutIntervalForResource) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        expect(configuration.timeoutIntervalForRequest) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        // Blobs are cached by `RemoteConfigBlobStore`, so an HTTP cache would just duplicate them.
+        expect(configuration.urlCache).to(beNil())
+
+        // The ceiling the production initializer picks is the manager's base tier: no host memory can widen
+        // a blob attempt past it.
+        expect(manager.timeout(host: nil,
+                               isFallbackHostRequest: false,
+                               endpointSupportsFallbackURLs: false,
+                               isProxied: false,
+                               reTieredTimeoutsEnabled: true)) == HTTPRequestTimeoutManager.Timeout
+            .mainSourceNoFallback
+    }
+
+    func testSessionCeilingHonorsACustomNetworkTimeout() {
+        let manager = HTTPRequestTimeoutManager(networkTimeout: .custom(42))
+
+        expect(manager.timeout(host: nil,
+                               isFallbackHostRequest: false,
+                               endpointSupportsFallbackURLs: false,
+                               isProxied: false,
+                               reTieredTimeoutsEnabled: true)) == 42
+    }
+
     // MARK: - Per-source memory (shared no-fallback tier)
 
     func testFreshBlobSourceUsesNoFallbackBaseTimeout() async throws {
@@ -243,7 +278,9 @@ private extension RemoteConfigBlobDownloaderTests {
 
     /// A downloader backed by a real (shared-behaviour) timeout manager so tests can exercise the per-host tiers.
     func downloader(dateProvider: DateProvider) -> URLSessionRemoteConfigBlobDownloader {
-        return self.downloader(timeoutManager: HTTPRequestTimeoutManager(dateProvider: dateProvider))
+        return self.downloader(
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default, dateProvider: dateProvider)
+        )
     }
 
     /// Stubs the mock protocol to answer every request with the given status code.
