@@ -100,27 +100,26 @@ extension E2ETestFlowView {
             // Config is only refreshed on foreground when its cache is stale, which no flow waits out, so
             // tests drive the refresh through this instead.
             Button("Sync Attributes And Offerings") {
-                Task { await self.syncAndReloadOffering() }
+                Task { await self.syncAndWaitForKillSwitch() }
             }
 
             Text("completed syncs: \(self.completedSyncCount)")
         }
 
-        /// Syncs, then waits for the kill switch to land before reloading the offering: the config request
-        /// runs concurrently with the sync's own offerings fetch, so the offerings it hands back can still
-        /// carry the paywall components that config is about to prune.
+        /// Drives the config request that returns the kill switch, then waits for it to land so the flow
+        /// doesn't have to sleep.
+        ///
+        /// The offering this screen already holds is deliberately left in place: the scenario under test is a
+        /// paywall presented with an offering the app captured while remote config was still enabled, and
+        /// re-reading offerings here would hand back one whose components have been restored, which renders
+        /// fine either way.
         @MainActor
-        private func syncAndReloadOffering() async {
+        private func syncAndWaitForKillSwitch() async {
             _ = try? await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 
             let deadline = Date().addingTimeInterval(10)
             while Purchases.shared.remoteConfigEnabled, Date() < deadline {
                 try? await Task.sleep(nanoseconds: 100_000_000)
-            }
-
-            if let offerings = try? await Purchases.shared.offerings(),
-               let offering = offerings.offering(identifier: Self.offeringIdentifier) {
-                self.offeringsState = .loaded(offering)
             }
 
             self.completedSyncCount += 1

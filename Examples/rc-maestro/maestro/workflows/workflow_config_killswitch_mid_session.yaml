@@ -71,8 +71,9 @@ env:
 - launchApp:
     stopApp: false
 
-# Drives the config request that returns the kill switch. The counter only advances once the kill switch
-# has landed and the offering has been reloaded, so waiting on it removes the need for a sleep here.
+# Drives the config request that returns the kill switch. The counter only advances once the kill switch has
+# landed, so waiting on it removes the need for a sleep here. Note that the offering this screen holds is
+# deliberately not reloaded: presenting the one captured before the kill switch is the scenario under test.
 - tapOn:
     text: "Sync Attributes And Offerings"
 - extendedWaitUntil:
