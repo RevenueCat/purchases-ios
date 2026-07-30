@@ -16,29 +16,29 @@ public final class ExternalToken: NSObject {
         ExternalToken(token: .anonymous(appUserID))
     }
 
-    @objc public static func oidc(_ token: Data) -> ExternalToken {
-        ExternalToken(token: .oidc(token))
-    }
-
-    @objc public static func google(_ token: Data) -> ExternalToken {
-        ExternalToken(token: .google(token))
-    }
+//    @objc public static func oidc(_ token: Data) -> ExternalToken {
+//        ExternalToken(token: .oidc(token))
+//    }
+//
+//    @objc public static func google(_ token: Data) -> ExternalToken {
+//        ExternalToken(token: .google(token))
+//    }
 
     @objc public static func signInWithApple(_ identityToken: Data) -> ExternalToken {
         ExternalToken(token: .signInWithApple(identityToken))
     }
 
-    @objc public static func facebook(_ idToken: Data) -> ExternalToken {
-        ExternalToken(token: .facebook(idToken, nil))
-    }
-
-    @objc public static func facebook(idToken: Data, email: String) -> ExternalToken {
-        ExternalToken(token: .facebook(idToken, email))
-    }
-
-    @objc public static func firebase(_ token: Data) -> ExternalToken {
-        ExternalToken(token: .firebase(token))
-    }
+//    @objc public static func facebook(_ idToken: Data) -> ExternalToken {
+//        ExternalToken(token: .facebook(idToken, nil))
+//    }
+//
+//    @objc public static func facebook(idToken: Data, email: String) -> ExternalToken {
+//        ExternalToken(token: .facebook(idToken, email))
+//    }
+//
+//    @objc public static func firebase(_ token: Data) -> ExternalToken {
+//        ExternalToken(token: .firebase(token))
+//    }
 
     internal let authToken: ExternalAuthToken
 
