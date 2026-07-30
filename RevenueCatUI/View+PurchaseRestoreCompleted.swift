@@ -44,7 +44,7 @@ public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
 
 /// A closure invoked when the paywall successfully opened a URL.
-public typealias UrlOpenedHandler = @MainActor @Sendable (_ url: String) -> Void
+public typealias URLOpenedHandler = @MainActor @Sendable (_ url: URL) -> Void
 
 /// A closure used to perform custom purchase logic implemented by your app.
 /// - Parameters:
@@ -276,14 +276,14 @@ extension View {
     /// Example:
     /// ```swift
     ///  PaywallView()
-    ///     .onUrlOpened { url in
+    ///     .onURLOpened { url in
     ///         print("Opened URL: \(url)")
     ///     }
     /// ```
-    public func onUrlOpened(
-        _ handler: @escaping UrlOpenedHandler
+    public func onURLOpened(
+        _ handler: @escaping URLOpenedHandler
     ) -> some View {
-        return self.modifier(OnUrlOpenedModifier(handler: handler))
+        return self.modifier(OnURLOpenedModifier(handler: handler))
     }
 
     /// Invokes the given closure when a restore begins.
@@ -573,13 +573,13 @@ private struct OnWebCheckoutOpenedModifier: ViewModifier {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct OnUrlOpenedModifier: ViewModifier {
+private struct OnURLOpenedModifier: ViewModifier {
 
-    let handler: UrlOpenedHandler
+    let handler: URLOpenedHandler
 
     func body(content: Content) -> some View {
         content
-            .onPreferenceChange(UrlOpenedPreferenceKey.self) { signal in
+            .onPreferenceChange(URLOpenedPreferenceKey.self) { signal in
                 if let signal {
                     self.handler(signal.url)
                 }

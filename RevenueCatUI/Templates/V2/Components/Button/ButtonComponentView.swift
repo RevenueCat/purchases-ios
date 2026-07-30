@@ -119,7 +119,11 @@ struct ButtonComponentView: View {
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-                SafariView(url: self.inAppBrowserURL!)
+                let url = self.inAppBrowserURL!
+                SafariView(url: url)
+                    // Reported here rather than when the URL is assigned, so the listener only hears about
+                    // in-app browser opens that actually made it on screen.
+                    .onAppear { self.urlOpenedNotifier(url) }
             }
             #if os(iOS)
             .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
@@ -245,7 +249,7 @@ struct ButtonComponentView: View {
                                method: method,
                                openURL: self.openURL,
                                inAppBrowserURL: self.$inAppBrowserURL,
-                               onUrlOpened: self.urlOpenedNotifier.callAsFunction)
+                               onURLOpened: self.urlOpenedNotifier.callAsFunction)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):

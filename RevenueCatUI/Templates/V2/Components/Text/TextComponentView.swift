@@ -172,11 +172,11 @@ private struct NonLocalizedMarkdownText: View {
 #if os(watchOS)
                         // watchOS doesn't report whether opening succeeded, so we notify right away.
                         self.parentOpenURL(url)
-                        self.urlOpenedNotifier(url.absoluteString)
+                        self.urlOpenedNotifier(url)
 #else
                         self.parentOpenURL(url) { success in
                             if success {
-                                self.urlOpenedNotifier(url.absoluteString)
+                                self.urlOpenedNotifier(url)
                             }
                         }
 #endif

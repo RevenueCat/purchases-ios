@@ -281,8 +281,8 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
-        .environment(\.urlOpenedNotifier, UrlOpenedNotifier { [purchaseHandler] url in
-            purchaseHandler.signalUrlOpened(url)
+        .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
+            purchaseHandler.signalURLOpened(url)
         })
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
@@ -397,7 +397,7 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.restoreError as NSError?)
             .preference(key: WebCheckoutOpenedPreferenceKey.self,
                         value: self.purchaseHandler.webCheckoutOpened)
-            .preference(key: UrlOpenedPreferenceKey.self,
+            .preference(key: URLOpenedPreferenceKey.self,
                         value: self.purchaseHandler.urlOpened)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear {

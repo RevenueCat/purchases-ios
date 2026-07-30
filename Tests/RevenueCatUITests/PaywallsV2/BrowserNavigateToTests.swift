@@ -16,8 +16,6 @@ import Nimble
 import SwiftUI
 import XCTest
 
-#if os(iOS)
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class BrowserNavigateToTests: TestCase {
@@ -25,43 +23,78 @@ final class BrowserNavigateToTests: TestCase {
     private static let url = URL(string: "https://revenuecat.com/terms")!
 
     func testExternalBrowserNotifiesWhenOpenSucceeds() {
-        let opened = self.navigateTo(method: .externalBrowser, openSucceeds: true)
+        let result = self.navigateTo(method: .externalBrowser, openSucceeds: true)
 
-        expect(opened.urls) == [Self.url.absoluteString]
-        expect(opened.inAppBrowserURL).to(beNil())
-    }
-
-    func testExternalBrowserDoesNotNotifyWhenOpenFails() {
-        let opened = self.navigateTo(method: .externalBrowser, openSucceeds: false)
-
-        expect(opened.urls).to(beEmpty())
+        expect(result.urls) == [Self.url]
+        expect(result.inAppBrowserURL).to(beNil())
     }
 
     func testDeepLinkNotifiesWhenOpenSucceeds() {
-        let opened = self.navigateTo(method: .deepLink, openSucceeds: true)
+        let result = self.navigateTo(method: .deepLink, openSucceeds: true)
 
-        expect(opened.urls) == [Self.url.absoluteString]
+        expect(result.urls) == [Self.url]
+        expect(result.inAppBrowserURL).to(beNil())
+    }
+
+#if os(watchOS)
+
+    // watchOS has no `openURL` completion handler, so there is no result to gate the notification on.
+
+    func testExternalBrowserNotifiesWithoutWaitingForTheResultOnWatchOS() {
+        expect(self.navigateTo(method: .externalBrowser, openSucceeds: false).urls) == [Self.url]
+    }
+
+    func testDeepLinkNotifiesWithoutWaitingForTheResultOnWatchOS() {
+        expect(self.navigateTo(method: .deepLink, openSucceeds: false).urls) == [Self.url]
+    }
+
+#else
+
+    func testExternalBrowserDoesNotNotifyWhenOpenFails() {
+        expect(self.navigateTo(method: .externalBrowser, openSucceeds: false).urls).to(beEmpty())
     }
 
     func testDeepLinkDoesNotNotifyWhenOpenFails() {
-        let opened = self.navigateTo(method: .deepLink, openSucceeds: false)
-
-        expect(opened.urls).to(beEmpty())
+        expect(self.navigateTo(method: .deepLink, openSucceeds: false).urls).to(beEmpty())
     }
 
-    func testInAppBrowserNotifiesAndPresentsTheBrowser() {
-        // The in-app browser is presented as a sheet instead of being handed to `openURL`.
-        let opened = self.navigateTo(method: .inAppBrowser, openSucceeds: false)
+#endif
 
-        expect(opened.urls) == [Self.url.absoluteString]
-        expect(opened.inAppBrowserURL) == Self.url
+#if os(tvOS)
+
+    // There's no SafariServices on tvOS, so the in-app browser falls back to an external browser.
+
+    func testInAppBrowserFallsBackToTheExternalBrowserOnTvOS() {
+        let result = self.navigateTo(method: .inAppBrowser, openSucceeds: true)
+
+        expect(result.urls) == [Self.url]
+        expect(result.inAppBrowserURL).to(beNil())
     }
+
+    func testInAppBrowserFallbackDoesNotNotifyWhenOpenFailsOnTvOS() {
+        expect(self.navigateTo(method: .inAppBrowser, openSucceeds: false).urls).to(beEmpty())
+    }
+
+#else
+
+    func testInAppBrowserRequestsTheBrowserWithoutNotifying() {
+        // Assigning the binding doesn't mean a browser appeared: the sheet doesn't present if one is already up,
+        // if the paywall is dismissed in the same runloop, or on platforms without `SafariServices`. The view that
+        // presents the browser reports the open instead (see `ButtonComponentView`), which no unit test can drive
+        // without a real sheet presentation — it's covered manually in PaywallsTester.
+        let result = self.navigateTo(method: .inAppBrowser, openSucceeds: true)
+
+        expect(result.urls).to(beEmpty())
+        expect(result.inAppBrowserURL) == Self.url
+    }
+
+#endif
 
     func testUnknownMethodDoesNotNotify() {
-        let opened = self.navigateTo(method: .unknown, openSucceeds: true)
+        let result = self.navigateTo(method: .unknown, openSucceeds: true)
 
-        expect(opened.urls).to(beEmpty())
-        expect(opened.inAppBrowserURL).to(beNil())
+        expect(result.urls).to(beEmpty())
+        expect(result.inAppBrowserURL).to(beNil())
     }
 
 }
@@ -70,7 +103,7 @@ final class BrowserNavigateToTests: TestCase {
 private extension BrowserNavigateToTests {
 
     struct Result {
-        var urls: [String]
+        var urls: [URL]
         var inAppBrowserURL: URL?
     }
 
@@ -78,7 +111,7 @@ private extension BrowserNavigateToTests {
         method: PaywallComponent.ButtonComponent.URLMethod,
         openSucceeds: Bool
     ) -> Result {
-        let urls: Atomic<[String]> = .init([])
+        let urls: Atomic<[URL]> = .init([])
         let inAppBrowserURL: Atomic<URL?> = .init(nil)
 
         Browser.navigateTo(
@@ -87,7 +120,7 @@ private extension BrowserNavigateToTests {
             openURL: OpenURLAction { _ in openSucceeds ? .handled : .discarded },
             inAppBrowserURL: Binding(get: { inAppBrowserURL.value },
                                      set: { inAppBrowserURL.value = $0 }),
-            onUrlOpened: { url in urls.modify { $0.append(url) } }
+            onURLOpened: { url in urls.modify { $0.append(url) } }
         )
 
         // `openURL`'s completion handler is invoked asynchronously on the main queue.
@@ -97,5 +130,3 @@ private extension BrowserNavigateToTests {
     }
 
 }
-
-#endif

@@ -314,7 +314,7 @@ struct APIKeyDashboardList: View {
                 .presentPaywallIfNeededModifier(offering: $offeringToPresent)
                 .presentPaywall(offering: $presentPaywallOffering,
                                 urlOpened: { url in
-                                    print("Paywall Handler - onUrlOpened: \(url)")
+                                    print("Paywall Handler - onURLOpened: \(url)")
                                 },
                                 onDismiss: { })
                 // Uses offeringIdentifier content so workflow context resolves correctly.
@@ -398,8 +398,8 @@ struct APIKeyDashboardList: View {
         .environment(\.workflowExitOfferOfferingBinding, self.$workflowExitOfferOffering)
         #endif
         .customPaywallVariables(self.customVariables)
-        .onUrlOpened { url in
-            print("Paywall Handler - onUrlOpened: \(url)")
+        .onURLOpened { url in
+            print("Paywall Handler - onURLOpened: \(url)")
         }
         .onAppear {
             self.isLoadingPaywall = false
@@ -514,7 +514,7 @@ private struct PresentPaywallIfNeededModifier: ViewModifier {
             content.presentPaywallIfNeeded(offering: offering,
                                          shouldDisplay: { _ in true },
                                          urlOpened: { url in
-                                             print("Paywall Handler - onUrlOpened: \(url)")
+                                             print("Paywall Handler - onURLOpened: \(url)")
                                          },
                                          onDismiss: { self.offering = nil })
         } else {

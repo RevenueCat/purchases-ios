@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  OnUrlOpenedModifierTests.swift
+//  OnURLOpenedModifierTests.swift
 //
 
 import Nimble
@@ -18,19 +18,19 @@ import XCTest
 
 #if os(iOS)
 
-/// Verifies the `.onUrlOpened` modifier's `PreferenceKey` plumbing.
+/// Verifies the `.onURLOpened` modifier's `PreferenceKey` plumbing.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-final class OnUrlOpenedModifierTests: TestCase {
+final class OnURLOpenedModifierTests: TestCase {
 
-    private static let url = "https://revenuecat.com/terms"
+    private static let url = URL(string: "https://revenuecat.com/terms")!
 
-    func testOnUrlOpenedReceivesTheOpenedUrl() {
+    func testOnURLOpenedReceivesTheOpenedURL() {
         let handler: PurchaseHandler = .mock()
-        let openedUrls: Atomic<[String]> = .init([])
+        let openedURLs: Atomic<[URL]> = .init([])
 
         let view = ProbeView(handler: handler) { url in
-            openedUrls.modify { $0.append(url) }
+            openedURLs.modify { $0.append(url) }
         }
 
         let (window, _) = Self.host(view)
@@ -39,20 +39,20 @@ final class OnUrlOpenedModifierTests: TestCase {
             window.rootViewController = nil
         }
 
-        expect(openedUrls.value).to(beEmpty())
+        expect(openedURLs.value).to(beEmpty())
 
         // Mutating the handler directly isolates the preference/modifier plumbing from gesture handling.
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(openedUrls.value) == [Self.url]
+        expect(openedURLs.value) == [Self.url]
     }
 
-    func testOnUrlOpenedFiresAgainForTheSameUrl() {
+    func testOnURLOpenedFiresAgainForTheSameURL() {
         let handler: PurchaseHandler = .mock()
-        let openedUrls: Atomic<[String]> = .init([])
+        let openedURLs: Atomic<[URL]> = .init([])
 
         let view = ProbeView(handler: handler) { url in
-            openedUrls.modify { $0.append(url) }
+            openedURLs.modify { $0.append(url) }
         }
 
         let (window, _) = Self.host(view)
@@ -61,22 +61,22 @@ final class OnUrlOpenedModifierTests: TestCase {
             window.rootViewController = nil
         }
 
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
 
         // Must fire again, not be deduped as an identical value.
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
 
-        expect(openedUrls.value) == [Self.url, Self.url]
+        expect(openedURLs.value) == [Self.url, Self.url]
     }
 
-    func testOnUrlOpenedFiresEvenWhenResetImmediatelyAfter() {
+    func testOnURLOpenedFiresEvenWhenResetImmediatelyAfter() {
         let handler: PurchaseHandler = .mock()
-        let openedUrls: Atomic<[String]> = .init([])
+        let openedURLs: Atomic<[URL]> = .init([])
 
         let view = ProbeView(handler: handler) { url in
-            openedUrls.modify { $0.append(url) }
+            openedURLs.modify { $0.append(url) }
         }
 
         let (window, _) = Self.host(view)
@@ -86,10 +86,10 @@ final class OnUrlOpenedModifierTests: TestCase {
         }
 
         // Mirrors handleMainPaywallDismiss: signal then immediately reset, no RunLoop spin in between.
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         handler.resetForNewSession()
         RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-        expect(openedUrls.value) == [Self.url]
+        expect(openedURLs.value) == [Self.url]
     }
 
     func testResetForNewSessionDeferredClearDoesNotWipeANewerSignal() {
@@ -97,10 +97,10 @@ final class OnUrlOpenedModifierTests: TestCase {
         // session that signals again within the same tick. The stale clear must not wipe the newer signal.
         let handler: PurchaseHandler = .mock()
 
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         handler.resetForNewSession()
         // New session immediately reuses the same handler and signals again, same tick.
-        handler.signalUrlOpened(Self.url)
+        handler.signalURLOpened(Self.url)
         let newSessionSignal = handler.urlOpened
 
         RunLoop.main.run(until: Date().addingTimeInterval(0.3))
@@ -108,16 +108,16 @@ final class OnUrlOpenedModifierTests: TestCase {
         expect(handler.urlOpened) == newSessionSignal
     }
 
-    func testOnUrlOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
-        // clearUrlOpened() must complete synchronously so a new view reusing this handler
+    func testOnURLOpenedDoesNotFireOnNewViewAfterExitOfferClear() {
+        // clearURLOpened() must complete synchronously so a new view reusing this handler
         // (the exit offer) doesn't see the stale signal as its own fresh one.
         let handler: PurchaseHandler = .mock()
-        handler.signalUrlOpened(Self.url)
-        handler.clearUrlOpened()
+        handler.signalURLOpened(Self.url)
+        handler.clearURLOpened()
 
-        let openedUrls: Atomic<[String]> = .init([])
+        let openedURLs: Atomic<[URL]> = .init([])
         let view = ProbeView(handler: handler) { url in
-            openedUrls.modify { $0.append(url) }
+            openedURLs.modify { $0.append(url) }
         }
 
         let (window, _) = Self.host(view)
@@ -127,7 +127,7 @@ final class OnUrlOpenedModifierTests: TestCase {
         }
 
         RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(openedUrls.value).to(beEmpty())
+        expect(openedURLs.value).to(beEmpty())
     }
 
 }
@@ -136,18 +136,18 @@ final class OnUrlOpenedModifierTests: TestCase {
 private struct ProbeView: View {
 
     @ObservedObject var handler: PurchaseHandler
-    let onUrlOpened: UrlOpenedHandler
+    let onURLOpened: URLOpenedHandler
 
     var body: some View {
         Color.clear
-            .preference(key: UrlOpenedPreferenceKey.self, value: self.handler.urlOpened)
-            .onUrlOpened(self.onUrlOpened)
+            .preference(key: URLOpenedPreferenceKey.self, value: self.handler.urlOpened)
+            .onURLOpened(self.onURLOpened)
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension OnUrlOpenedModifierTests {
+private extension OnURLOpenedModifierTests {
 
     static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
         let controller = UIHostingController(rootView: view.frame(width: 100, height: 100))

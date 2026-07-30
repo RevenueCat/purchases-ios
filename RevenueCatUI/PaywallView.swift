@@ -555,7 +555,7 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.restoreError as NSError?)
             .preference(key: WebCheckoutOpenedPreferenceKey.self,
                         value: self.purchaseHandler.webCheckoutOpened)
-            .preference(key: UrlOpenedPreferenceKey.self,
+            .preference(key: URLOpenedPreferenceKey.self,
                         value: self.purchaseHandler.urlOpened)
     }
 

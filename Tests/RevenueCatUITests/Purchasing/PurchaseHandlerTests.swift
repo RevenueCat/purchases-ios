@@ -23,6 +23,8 @@ import XCTest
 @MainActor
 class PurchaseHandlerTests: TestCase {
 
+    private static let urlOpenedURL = URL(string: "https://revenuecat.com/terms")!
+
     private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
 
     lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
@@ -127,37 +129,37 @@ class PurchaseHandlerTests: TestCase {
     }
 
     @MainActor
-    func testSignalUrlOpenedSetsANewSignalForTheSameURL() async throws {
+    func testSignalURLOpenedSetsANewSignalForTheSameURL() async throws {
         let handler: PurchaseHandler = .mock()
         expect(handler.urlOpened).to(beNil())
 
-        handler.signalUrlOpened("https://revenuecat.com/terms")
+        handler.signalURLOpened(Self.urlOpenedURL)
         let firstSignal = handler.urlOpened
-        expect(firstSignal?.url) == "https://revenuecat.com/terms"
+        expect(firstSignal?.url) == Self.urlOpenedURL
 
-        handler.signalUrlOpened("https://revenuecat.com/terms")
-        expect(handler.urlOpened?.url) == "https://revenuecat.com/terms"
+        handler.signalURLOpened(Self.urlOpenedURL)
+        expect(handler.urlOpened?.url) == Self.urlOpenedURL
         expect(handler.urlOpened).toNot(equal(firstSignal))
     }
 
     @MainActor
-    func testResetForNewSessionClearsUrlOpened() async throws {
+    func testResetForNewSessionClearsURLOpened() async throws {
         let handler: PurchaseHandler = .mock()
-        handler.signalUrlOpened("https://revenuecat.com/terms")
+        handler.signalURLOpened(Self.urlOpenedURL)
         expect(handler.urlOpened).toNot(beNil())
 
         handler.resetForNewSession()
 
-        // Cleared a tick later (see `deferredClearUrlOpened`), not synchronously.
+        // Cleared a tick later (see `deferredClearURLOpened`), not synchronously.
         await expect(handler.urlOpened).toEventually(beNil())
     }
 
     @MainActor
-    func testClearUrlOpenedClearsSynchronously() async throws {
+    func testClearURLOpenedClearsSynchronously() async throws {
         let handler: PurchaseHandler = .mock()
-        handler.signalUrlOpened("https://revenuecat.com/terms")
+        handler.signalURLOpened(Self.urlOpenedURL)
 
-        handler.clearUrlOpened()
+        handler.clearURLOpened()
 
         expect(handler.urlOpened).to(beNil())
     }

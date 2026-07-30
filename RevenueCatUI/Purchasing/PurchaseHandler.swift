@@ -117,9 +117,9 @@ final class PurchaseHandler: ObservableObject {
     fileprivate(set) var webCheckoutOpened: UUID?
 
     /// Set to a new signal each time the paywall successfully opened a URL, propagated via
-    /// ``UrlOpenedPreferenceKey``.
+    /// ``URLOpenedPreferenceKey``.
     @Published
-    fileprivate(set) var urlOpened: UrlOpenedSignal?
+    fileprivate(set) var urlOpened: URLOpenedSignal?
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -270,7 +270,7 @@ final class PurchaseHandler: ObservableObject {
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
         self.deferredClearWebCheckoutOpened()
-        self.deferredClearUrlOpened()
+        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -875,9 +875,9 @@ extension PurchaseHandler {
         self.webCheckoutOpened = UUID()
     }
 
-    /// Sets a new signal on ``urlOpened`` so ``UrlOpenedPreferenceKey`` fires.
+    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
     @MainActor
-    func signalUrlOpened(_ url: String) {
+    func signalURLOpened(_ url: URL) {
         self.urlOpened = .init(id: UUID(), url: url)
     }
 
@@ -906,7 +906,7 @@ extension PurchaseHandler {
     /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
     /// `clearWebCheckoutOpened`.
     @MainActor
-    func clearUrlOpened() {
+    func clearURLOpened() {
         self.urlOpened = nil
     }
 
@@ -925,7 +925,7 @@ extension PurchaseHandler {
 
     /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
     @MainActor
-    private func deferredClearUrlOpened() {
+    private func deferredClearURLOpened() {
         let pendingValue = self.urlOpened
         DispatchQueue.main.async { [weak self] in
             guard let self, self.urlOpened == pendingValue else { return }
@@ -1269,19 +1269,19 @@ struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
 
 /// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
 /// consecutive opens of the same URL.
-struct UrlOpenedSignal: Equatable {
+struct URLOpenedSignal: Equatable {
 
     let id: UUID
-    let url: String
+    let url: URL
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct UrlOpenedPreferenceKey: PreferenceKey {
+struct URLOpenedPreferenceKey: PreferenceKey {
 
-    static var defaultValue: UrlOpenedSignal?
+    static var defaultValue: URLOpenedSignal?
 
-    static func reduce(value: inout UrlOpenedSignal?, nextValue: () -> UrlOpenedSignal?) {
+    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
         value = nextValue()
     }
 
@@ -1345,30 +1345,30 @@ extension EnvironmentValues {
 }
 
 /// Lightweight wrapper so views can report opened URLs without depending on the full `PurchaseHandler`.
-struct UrlOpenedNotifier {
+struct URLOpenedNotifier {
 
-    private let action: (String) -> Void
+    private let action: (URL) -> Void
 
-    init(action: @escaping (String) -> Void = { _ in }) {
+    init(action: @escaping (URL) -> Void = { _ in }) {
         self.action = action
     }
 
-    func callAsFunction(_ url: String) {
+    func callAsFunction(_ url: URL) {
         self.action(url)
     }
 
 }
 
 /// `EnvironmentKey` for storing the notifier for URLs opened from the paywall.
-struct UrlOpenedNotifierKey: EnvironmentKey {
-    static let defaultValue: UrlOpenedNotifier = .init()
+struct URLOpenedNotifierKey: EnvironmentKey {
+    static let defaultValue: URLOpenedNotifier = .init()
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
-    var urlOpenedNotifier: UrlOpenedNotifier {
-        get { self[UrlOpenedNotifierKey.self] }
-        set { self[UrlOpenedNotifierKey.self] = newValue }
+    var urlOpenedNotifier: URLOpenedNotifier {
+        get { self[URLOpenedNotifierKey.self] }
+        set { self[URLOpenedNotifierKey.self] = newValue }
     }
 }
 
