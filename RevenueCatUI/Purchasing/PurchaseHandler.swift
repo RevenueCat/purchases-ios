@@ -116,6 +116,11 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var webCheckoutOpened: UUID?
 
+    /// Set to a new signal each time the paywall successfully opened a URL, propagated via
+    /// ``URLOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var urlOpened: URLOpenedSignal?
+
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
@@ -265,6 +270,7 @@ final class PurchaseHandler: ObservableObject {
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
         self.deferredClearWebCheckoutOpened()
+        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -870,6 +876,12 @@ extension PurchaseHandler {
         self.webCheckoutOpened = UUID()
     }
 
+    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalURLOpened(_ url: URL) {
+        self.urlOpened = .init(id: UUID(), url: url)
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
@@ -892,6 +904,13 @@ extension PurchaseHandler {
         self.webCheckoutOpened = nil
     }
 
+    /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
+    /// `clearWebCheckoutOpened`.
+    @MainActor
+    func clearURLOpened() {
+        self.urlOpened = nil
+    }
+
     /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
     /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
     /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
@@ -902,6 +921,16 @@ extension PurchaseHandler {
         DispatchQueue.main.async { [weak self] in
             guard let self, self.webCheckoutOpened == pendingValue else { return }
             self.webCheckoutOpened = nil
+        }
+    }
+
+    /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
+    @MainActor
+    private func deferredClearURLOpened() {
+        let pendingValue = self.urlOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.urlOpened == pendingValue else { return }
+            self.urlOpened = nil
         }
     }
 
@@ -1239,6 +1268,26 @@ struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
 
 }
 
+/// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
+/// consecutive opens of the same URL.
+struct URLOpenedSignal: Equatable {
+
+    let id: UUID
+    let url: URL
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct URLOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: URLOpenedSignal?
+
+    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
+        value = nextValue()
+    }
+
+}
+
 // MARK: Environment keys
 
 /// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
@@ -1293,6 +1342,34 @@ extension EnvironmentValues {
     var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction? {
         get { self[OfferCodeRedemptionInitiatedActionKey.self] }
         set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// Lightweight wrapper so views can report opened URLs without depending on the full `PurchaseHandler`.
+struct URLOpenedNotifier {
+
+    private let action: (URL) -> Void
+
+    init(action: @escaping (URL) -> Void = { _ in }) {
+        self.action = action
+    }
+
+    func callAsFunction(_ url: URL) {
+        self.action(url)
+    }
+
+}
+
+/// `EnvironmentKey` for storing the notifier for URLs opened from the paywall.
+struct URLOpenedNotifierKey: EnvironmentKey {
+    static let defaultValue: URLOpenedNotifier = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var urlOpenedNotifier: URLOpenedNotifier {
+        get { self[URLOpenedNotifierKey.self] }
+        set { self[URLOpenedNotifierKey.self] = newValue }
     }
 }
 
