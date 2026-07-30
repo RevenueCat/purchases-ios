@@ -42,6 +42,25 @@ final class MockTransactionPoster: TransactionPosterType {
         )
     }
 
+    /// When `true`, completions are stored in `heldCompletions` instead of being invoked, so tests can
+    /// assert on behavior while a post is still in flight. Release them with `releaseHeldCompletions`.
+    let holdsCompletions: Atomic<Bool> = false
+    private let heldCompletions: Atomic<[CustomerAPI.CustomerInfoResponseHandler]> = .init([])
+
+    func releaseHeldCompletions() {
+        let completions = self.heldCompletions.modify { held -> [CustomerAPI.CustomerInfoResponseHandler] in
+            let completions = held
+            held = []
+            return completions
+        }
+
+        for completion in completions {
+            self.operationDispatcher.dispatchOnMainActor {
+                completion(self.stubbedHandlePurchasedTransactionResult.value)
+            }
+        }
+    }
+
     func handlePurchasedTransaction(
         _ transaction: StoreTransactionType,
         data: PurchasedTransactionData,
@@ -61,6 +80,11 @@ final class MockTransactionPoster: TransactionPosterType {
         self.invokedHandlePurchasedTransactionParameters.value = (transaction, data, postReceiptSource, currentUserID)
         self.invokedHandlePurchasedTransactionParameterList.modify {
             $0.append((transaction, data, postReceiptSource))
+        }
+
+        guard !self.holdsCompletions.value else {
+            self.heldCompletions.modify { $0.append(completion) }
+            return
         }
 
         self.operationDispatcher.dispatchOnMainActor { [result = result()] in

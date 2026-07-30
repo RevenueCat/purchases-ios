@@ -430,14 +430,33 @@ private extension CustomerInfoManager {
                 let transactions = await self.transactionFetcher.unfinishedVerifiedTransactions
 
                 if let transactionToPost = transactions.first {
-                    Logger.debug(
-                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
-                    )
-
                     let transactionData = PurchasedTransactionData(
                         presentedOfferingContext: nil,
                         unsyncedAttributes: [:],
                         storeCountry: await Storefront.currentStorefront?.countryCode
+                    )
+
+                    if let offlineCustomerInfo = await self.customerInfoSkippingTransactionPost(appUserID: appUserID) {
+                        Logger.debug(
+                            Strings.customerInfo.not_waiting_for_unsynced_transactions(transactions)
+                        )
+
+                        Task.detached(priority: .background) {
+                            await self.postTransactionsAndCacheResult(
+                                transactions,
+                                transactionData,
+                                appUserID: appUserID
+                            )
+                        }
+
+                        completion(CustomerInfoDataResult(result: .success(offlineCustomerInfo),
+                                                          hadUnsyncedPurchasesBefore: true,
+                                                          usedOfflineEntitlements: true))
+                        return
+                    }
+
+                    Logger.debug(
+                        Strings.customerInfo.posting_transactions_in_lieu_of_fetching_customerinfo(transactions)
                     )
 
                     // Post everything but the first transaction in the background
@@ -555,6 +574,60 @@ private extension CustomerInfoManager {
             self.operationDispatcher.dispatchOnMainActor {
                 completion(CustomerInfoDataResult(result: .success(customerInfo)))
             }
+        }
+    }
+
+    /// `CustomerInfo` computed on the device, for apps that configured
+    /// ``UnsyncedTransactionsWaitPolicy/doNotWait``. `nil` when the app didn't opt in, or when
+    /// computing it isn't possible, in which case the caller waits for the transactions to be posted.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func customerInfoSkippingTransactionPost(appUserID: String) async -> CustomerInfo? {
+        guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait,
+              self.offlineEntitlementsManager.shouldComputeOfflineCustomerInfo(appUserID: appUserID) else {
+            return nil
+        }
+
+        do {
+            return try await self.offlineEntitlementsManager.computeOfflineCustomerInfo(appUserID: appUserID)
+        } catch {
+            Logger.warn(Strings.customerInfo.computing_customerinfo_without_waiting_failed(error))
+            return nil
+        }
+    }
+
+    /// Posts all `transactions` and caches the resulting `CustomerInfo`, notifying observers.
+    /// Used when the caller was already given a `CustomerInfo` and isn't waiting for these posts.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    private func postTransactionsAndCacheResult(
+        _ transactions: [StoreTransaction],
+        _ data: PurchasedTransactionData,
+        appUserID: String
+    ) async {
+        guard let transactionToPost = transactions.first else { return }
+
+        let otherTransactionsToPostInParalel = Array(transactions.dropFirst())
+        Task.detached(priority: .background) {
+            await self.postTransactions(
+                otherTransactionsToPostInParalel,
+                data,
+                postReceiptSource: Self.sourceForUnfinishedTransaction,
+                appUserID: appUserID
+            )
+        }
+
+        let result = await self.transactionPoster.handlePurchasedTransaction(
+            transactionToPost,
+            data: data,
+            postReceiptSource: Self.sourceForUnfinishedTransaction,
+            currentUserID: appUserID
+        )
+
+        switch result {
+        case let .success(customerInfo):
+            self.cache(customerInfo: customerInfo, appUserID: appUserID)
+            Logger.rcSuccess(Strings.customerInfo.customerinfo_updated_from_network)
+        case let .failure(error):
+            Logger.warn(Strings.customerInfo.customerinfo_updated_from_network_error(error))
         }
     }
 

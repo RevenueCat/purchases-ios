@@ -54,7 +54,11 @@ final class CustomerAPI {
         let callback = CustomerInfoCallback(cacheKey: factory.cacheKey,
                                             source: factory.operationType,
                                             completion: completion)
-        let cacheStatus = self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
+        // Reusing an in-flight receipt post ties this request's latency to it, which apps that
+        // configured `.doNotWait` explicitly opted out of.
+        let cacheStatus = self.backendConfig.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
+            ? self.customerInfoCallbackCache.add(callback)
+            : self.customerInfoCallbackCache.addOrAppendToPostReceiptDataOperation(callback: callback)
         self.backendConfig.addCacheableOperation(with: factory,
                                                  delay: .default(forBackgroundedApp: isAppBackgrounded),
                                                  cacheStatus: cacheStatus)

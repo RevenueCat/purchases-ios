@@ -61,6 +61,7 @@ import Foundation
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
+        let unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy
     }
 
     internal let storage: Storage
@@ -84,6 +85,9 @@ import Foundation
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
+    var unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy {
+        self.storage.unsyncedTransactionsWaitPolicy
+    }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -101,7 +105,8 @@ import Foundation
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
             diagnosticsEnabled: builder.diagnosticsEnabled,
-            iamEnabled: builder.iamEnabled
+            iamEnabled: builder.iamEnabled,
+            unsyncedTransactionsWaitPolicy: builder.unsyncedTransactionsWaitPolicy
         )
     }
 
@@ -154,6 +159,7 @@ import Foundation
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var iamEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
+        private(set) var unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait
 
         /// The preferred locale for the requests.
         ///
@@ -268,6 +274,19 @@ import Foundation
         /// Set `platformInfo`.
         @objc public func with(platformInfo: Purchases.PlatformInfo) -> Builder {
             self.platformInfo = platformInfo
+            return self
+        }
+
+        /// Set ``UnsyncedTransactionsWaitPolicy``.
+        ///
+        /// Defaults to ``UnsyncedTransactionsWaitPolicy/wait``. Use
+        /// ``UnsyncedTransactionsWaitPolicy/doNotWait`` if your app gates a screen on
+        /// ``Purchases/customerInfo(fetchPolicy:)`` and you'd rather have a device computed
+        /// ``CustomerInfo`` immediately than wait for unsynced transactions to be posted.
+        @objc public func with(
+            unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy
+        ) -> Builder {
+            self.unsyncedTransactionsWaitPolicy = unsyncedTransactionsWaitPolicy
             return self
         }
 

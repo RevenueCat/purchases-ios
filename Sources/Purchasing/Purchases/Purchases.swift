@@ -346,6 +346,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
+                     unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait,
                      currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
@@ -368,7 +369,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             apiKeyValidationResult: apiKeyValidationResult,
             responseVerificationMode: responseVerificationMode,
             dangerousSettings: dangerousSettings,
-            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale)
+            preferredLocalesProvider: PreferredLocalesProvider(preferredLocaleOverride: preferredLocale),
+            unsyncedTransactionsWaitPolicy: unsyncedTransactionsWaitPolicy
         )
 
         apiKeyValidationResult.checkForSimulatedStoreAPIKeyInRelease(systemInfo: systemInfo, apiKey: apiKey)
@@ -408,19 +410,21 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
+        let offlineCustomerInfoCreator: OfflineCustomerInfoCreator? = .createIfAvailable(
+            with: purchasedProductsFetcher,
+            productEntitlementMappingFetcher: deviceCache,
+            tracker: diagnosticsTracker,
+            observerMode: observerMode,
+            customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
+        )
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
             operationDispatcher: operationDispatcher,
             attributionFetcher: attributionFetcher,
-            offlineCustomerInfoCreator: .createIfAvailable(
-                with: purchasedProductsFetcher,
-                productEntitlementMappingFetcher: deviceCache,
-                tracker: diagnosticsTracker,
-                observerMode: observerMode,
-                customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
-            ),
+            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
             diagnosticsTracker: diagnosticsTracker,
             apiSourceProvider: apiSourceProvider
         )
@@ -467,7 +471,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let offlineEntitlementsManager = OfflineEntitlementsManager(deviceCache: deviceCache,
                                                                     operationDispatcher: operationDispatcher,
                                                                     api: backend.offlineEntitlements,
-                                                                    systemInfo: systemInfo)
+                                                                    systemInfo: systemInfo,
+                                                                    customerInfoCreator: offlineCustomerInfoCreator)
 
         let customerInfoManager: CustomerInfoManager
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -1929,6 +1934,7 @@ public extension Purchases {
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
                 iamEnabled: configuration.iamEnabled,
+                unsyncedTransactionsWaitPolicy: configuration.unsyncedTransactionsWaitPolicy,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration

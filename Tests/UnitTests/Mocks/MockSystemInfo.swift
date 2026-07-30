@@ -30,7 +30,8 @@ class MockSystemInfo: SystemInfo {
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      dangerousSettings: DangerousSettings,
                      clock: ClockType = TestClock(),
-                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock(),
+                     unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait) {
         self.init(platformInfo: platformInfo,
                   finishTransactions: finishTransactions,
                   bundle: bundle,
@@ -41,7 +42,8 @@ class MockSystemInfo: SystemInfo {
                   dangerousSettings: dangerousSettings,
                   isAppBackgrounded: false,
                   clock: clock,
-                  preferredLocalesProvider: preferredLocalesProvider)
+                  preferredLocalesProvider: preferredLocalesProvider,
+                  unsyncedTransactionsWaitPolicy: unsyncedTransactionsWaitPolicy)
     }
 
     convenience init(platformInfo: Purchases.PlatformInfo? = nil,
@@ -54,7 +56,8 @@ class MockSystemInfo: SystemInfo {
                      apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
                      responseVerificationMode: Signing.ResponseVerificationMode = .disabled,
                      clock: ClockType = TestClock(),
-                     preferredLocalesProvider: PreferredLocalesProvider = .mock()) {
+                     preferredLocalesProvider: PreferredLocalesProvider = .mock(),
+                     unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait) {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: customEntitlementsComputation,
@@ -72,7 +75,8 @@ class MockSystemInfo: SystemInfo {
                   responseVerificationMode: responseVerificationMode,
                   dangerousSettings: dangerousSettings,
                   clock: clock,
-                  preferredLocalesProvider: preferredLocalesProvider)
+                  preferredLocalesProvider: preferredLocalesProvider,
+                  unsyncedTransactionsWaitPolicy: unsyncedTransactionsWaitPolicy)
     }
 
     override var isAppBackgroundedState: Bool {

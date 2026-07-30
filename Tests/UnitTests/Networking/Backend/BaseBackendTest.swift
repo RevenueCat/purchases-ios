@@ -49,7 +49,8 @@ class BaseBackendTests: TestCase {
     }
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil,
-                                  localesProvider: PreferredLocalesProvider = .mock()) {
+                                  localesProvider: PreferredLocalesProvider = .mock(),
+                                  unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait) {
         // Need to force StoreKit 1 because we use iOS 13 snapshots
         // for watchOS tests which contain StoreKit 1 headers
         #if os(watchOS)
@@ -66,7 +67,8 @@ class BaseBackendTests: TestCase {
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,
-            preferredLocalesProvider: localesProvider
+            preferredLocalesProvider: localesProvider,
+            unsyncedTransactionsWaitPolicy: unsyncedTransactionsWaitPolicy
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()

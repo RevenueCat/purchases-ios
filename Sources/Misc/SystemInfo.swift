@@ -56,6 +56,7 @@ class SystemInfo {
     let responseVerificationMode: Signing.ResponseVerificationMode
     let dangerousSettings: DangerousSettings
     let clock: ClockType
+    let unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy
     private let preferredLocalesProvider: PreferredLocalesProvider
 
     var finishTransactions: Bool {
@@ -234,7 +235,8 @@ class SystemInfo {
          dangerousSettings: DangerousSettings? = nil,
          isAppBackgrounded: Bool? = nil,
          clock: ClockType = Clock.default,
-         preferredLocalesProvider: PreferredLocalesProvider) {
+         preferredLocalesProvider: PreferredLocalesProvider,
+         unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait) {
         self.platformFlavor = platformInfo?.flavor ?? "native"
         self.platformFlavorVersion = platformInfo?.version
         self._bundle = .init(bundle)
@@ -251,6 +253,7 @@ class SystemInfo {
         self.dangerousSettings = dangerousSettings ?? DangerousSettings()
         self.clock = clock
         self.preferredLocalesProvider = preferredLocalesProvider
+        self.unsyncedTransactionsWaitPolicy = unsyncedTransactionsWaitPolicy
 
         if isAppBackgrounded == nil {
             self.isApplicationBackgrounded { isAppBackgrounded in

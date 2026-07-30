@@ -204,6 +204,121 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         }
     }
 
+    // MARK: - UnsyncedTransactionsWaitPolicy
+
+    func testDoesNotComputeCustomerInfoOnDeviceByDefault() async throws {
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                               isAppBackgrounded: false)
+
+        expect(info) === self.mockCustomerInfo
+        expect(self.mockOfflineEntitlementsManager.invokedComputeOfflineCustomerInfo) == false
+    }
+
+    func testDoNotWaitReturnsCustomerInfoComputedOnDeviceWhilePostIsInFlight() async throws {
+        let transaction = Self.createTransaction()
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [transaction]
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
+        // The post never completes, so a result can only come from computing it on the device.
+        self.mockTransactionPoster.holdsCompletions.value = true
+
+        let info = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+
+        expect(info) === self.mockCustomerInfo2
+        expect(self.mockBackend.invokedGetSubscriberData) == false
+
+        self.logger.verifyMessageWasLogged(
+            Strings.customerInfo.not_waiting_for_unsynced_transactions([transaction]),
+            level: .debug
+        )
+
+        try await asyncWait(
+            description: "Unsynced transactions should still be posted in the background"
+        ) { [poster = self.mockTransactionPoster!] in
+            poster.invokedHandlePurchasedTransaction.value
+        }
+    }
+
+    func testDoNotWaitPostsEveryUnsyncedTransactionInTheBackground() async throws {
+        let transactions = [
+            Self.createTransaction(),
+            Self.createTransaction(),
+            Self.createTransaction()
+        ]
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        _ = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+
+        try await asyncWait { [poster = self.mockTransactionPoster!] in
+            poster.allHandledTransactions == Set(transactions)
+        }
+    }
+
+    func testDoNotWaitCachesCustomerInfoOncePostFinishes() async throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+        self.mockTransactionPoster.holdsCompletions.value = true
+
+        _ = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+
+        try await asyncWait(description: "The transaction should be posted") { [poster = self.mockTransactionPoster!] in
+            poster.invokedHandlePurchasedTransaction.value
+        }
+
+        let countBeforePostFinishes = self.mockDeviceCache.cacheCustomerInfoCount
+        self.mockTransactionPoster.releaseHeldCompletions()
+
+        try await asyncWait(
+            description: "CustomerInfo from the post should be cached once it finishes"
+        ) { [cache = self.mockDeviceCache!] in
+            cache.cacheCustomerInfoCount > countBeforePostFinishes
+        }
+    }
+
+    func testDoNotWaitWaitsForPostWhenComputingOnDeviceFails() async throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .failure(.notAvailable)
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        let info = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+
+        expect(info) === self.mockCustomerInfo
+        expect(self.mockOfflineEntitlementsManager.invokedComputeOfflineCustomerInfo) == true
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+    }
+
+    func testDoNotWaitWaitsForPostWhenComputingOnDeviceIsNotPossible() async throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = false
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+
+        let info = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
+
+        expect(info) === self.mockCustomerInfo
+        expect(self.mockOfflineEntitlementsManager.invokedComputeOfflineCustomerInfo) == false
+    }
+
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -214,5 +329,18 @@ private extension CustomerInfoManagerPostReceiptTests {
     }
 
     static let userID: String = "user"
+
+    func createCustomerInfoManager(waitPolicy: UnsyncedTransactionsWaitPolicy) -> CustomerInfoManager {
+        return CustomerInfoManager(
+            offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            deviceCache: self.mockDeviceCache,
+            backend: self.mockBackend,
+            transactionFetcher: self.mockTransationFetcher,
+            transactionPoster: self.mockTransactionPoster,
+            systemInfo: MockSystemInfo(finishTransactions: true,
+                                       unsyncedTransactionsWaitPolicy: waitPolicy)
+        )
+    }
 
 }
