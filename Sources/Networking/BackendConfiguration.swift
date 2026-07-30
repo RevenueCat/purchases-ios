@@ -24,14 +24,27 @@ class BackendConfiguration {
     let systemInfo: SystemInfo
     let offlineCustomerInfoCreator: OfflineCustomerInfoCreator?
 
+    /// Dedicated lane for `POST /receipts`, so a slow receipt post doesn't head-of-line block reads on
+    /// the shared serial pipe. `nil` keeps receipt posts on the shared `httpClient` / `operationQueue`.
+    let receiptPostLane: Lane?
+
+    struct Lane {
+
+        let httpClient: HTTPClient
+        let operationQueue: OperationQueue
+
+    }
+
     init(httpClient: HTTPClient,
          operationDispatcher: OperationDispatcher,
          operationQueue: OperationQueue,
          diagnosticsQueue: OperationQueue,
          systemInfo: SystemInfo,
          offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
-         dateProvider: DateProvider = DateProvider()) {
+         dateProvider: DateProvider = DateProvider(),
+         receiptPostLane: Lane? = nil) {
         self.httpClient = httpClient
+        self.receiptPostLane = receiptPostLane
         self.operationDispatcher = operationDispatcher
         self.operationQueue = operationQueue
         self.diagnosticsQueue = diagnosticsQueue

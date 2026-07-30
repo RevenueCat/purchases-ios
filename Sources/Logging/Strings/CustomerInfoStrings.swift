@@ -25,6 +25,7 @@ enum CustomerInfoStrings {
     case no_cached_customerinfo
     case cached_customerinfo_incompatible_schema
     case not_caching_offline_customer_info
+    case not_caching_staler_customer_info
     case customerinfo_stale_updating_in_background
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
@@ -62,6 +63,8 @@ extension CustomerInfoStrings: LogMessage {
             return "Cached CustomerInfo has incompatible schema."
         case .not_caching_offline_customer_info:
             return "CustomerInfo was computed offline. Won't be stored in cache."
+        case .not_caching_staler_customer_info:
+            return "Received CustomerInfo is older than the cached one. Won't be stored in cache."
         case .customerinfo_stale_updating_in_background:
             return "CustomerInfo cache is stale, updating from network in background."
         case .customerinfo_stale_updating_in_foreground:

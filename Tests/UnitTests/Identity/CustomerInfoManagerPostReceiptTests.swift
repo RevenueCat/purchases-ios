@@ -212,8 +212,10 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
 
-        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
-                                                                               isAppBackgrounded: false)
+        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(
+            appUserID: Self.userID,
+            isAppBackgrounded: false
+        )
 
         expect(info) === self.mockCustomerInfo
         expect(self.mockOfflineEntitlementsManager.invokedComputeOfflineCustomerInfo) == false
@@ -271,8 +273,9 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
         self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
         self.mockOfflineEntitlementsManager.stubbedShouldComputeOfflineCustomerInfo = true
-        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo2)
-        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo)
+        // The post's `CustomerInfo` is the newer one, as it would be in practice.
+        self.mockOfflineEntitlementsManager.stubbedComputeOfflineCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .success(self.mockCustomerInfo2)
         self.mockTransactionPoster.holdsCompletions.value = true
 
         _ = try await manager.fetchAndCacheCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false)
@@ -317,6 +320,36 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
 
         expect(info) === self.mockCustomerInfo
         expect(self.mockOfflineEntitlementsManager.invokedComputeOfflineCustomerInfo) == false
+    }
+
+    // MARK: - Cache ordering
+
+    func testDoNotWaitDoesNotCacheCustomerInfoOlderThanTheCachedOne() throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+        // `mockCustomerInfo2`'s request date (2020) is newer than `mockCustomerInfo`'s (2018).
+        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
+
+        manager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 0
+        self.logger.verifyMessageWasLogged(Strings.customerInfo.not_caching_staler_customer_info, level: .debug)
+    }
+
+    func testDoNotWaitCachesCustomerInfoNewerThanTheCachedOne() throws {
+        let manager = self.createCustomerInfoManager(waitPolicy: .doNotWait)
+        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo.jsonEncodedData
+
+        manager.cache(customerInfo: self.mockCustomerInfo2, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
+    }
+
+    func testWaitCachesCustomerInfoRegardlessOfRequestDate() throws {
+        self.mockDeviceCache.cachedCustomerInfo[Self.userID] = try self.mockCustomerInfo2.jsonEncodedData
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.userID)
+
+        expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
 }

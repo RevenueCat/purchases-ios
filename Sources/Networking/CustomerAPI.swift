@@ -150,8 +150,11 @@ final class CustomerAPI {
             subscriberAttributesToPost?[consentStatus.key] = consentStatus
         }
 
-        let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
-                                                                appUserID: appUserID)
+        let lane = self.backendConfig.receiptPostLane
+        let config = NetworkOperation.UserSpecificConfiguration(
+            httpClient: lane?.httpClient ?? self.backendConfig.httpClient,
+            appUserID: appUserID
+        )
 
         let postData = PostReceiptDataOperation.PostData(
             transactionData: transactionData.withAttributesToPost(subscriberAttributesToPost),
@@ -185,7 +188,8 @@ final class CustomerAPI {
 
         let cacheStatus = customerInfoCallbackCache.add(callbackObject)
 
-        self.backendConfig.operationQueue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
+        let queue = lane?.operationQueue ?? self.backendConfig.operationQueue
+        queue.addCacheableOperation(with: factory, cacheStatus: cacheStatus)
     }
 
 }

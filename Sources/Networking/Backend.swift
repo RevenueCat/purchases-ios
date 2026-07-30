@@ -56,19 +56,33 @@ class Backend {
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
                                     apiSourceFailover: apiSourceFailover)
+        // Apps that opted out of waiting for unsynced transactions get a dedicated lane for receipt
+        // posts. Both serializers have to be separate (queue and `HTTPClient`), otherwise the post
+        // still blocks reads through `HTTPClient.currentSerialRequest`.
+        let receiptPostLane: BackendConfiguration.Lane? =
+            systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
+            ? .init(httpClient: .dedicatedLane(systemInfo: systemInfo,
+                                               eTagManager: eTagManager,
+                                               diagnosticsTracker: diagnosticsTracker,
+                                               requestTimeout: httpClientTimeout,
+                                               apiSourceFailover: apiSourceFailover),
+                    operationQueue: QueueProvider.createReceiptPostQueue())
+            : nil
+
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
                                           diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-                                          dateProvider: dateProvider)
+                                          dateProvider: dateProvider,
+                                          receiptPostLane: receiptPostLane)
         let remoteConfigConfig = BackendConfiguration(
-            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
-                                               eTagManager: eTagManager,
-                                               diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout,
-                                               apiSourceFailover: apiSourceFailover),
+            httpClient: .dedicatedLane(systemInfo: systemInfo,
+                                       eTagManager: eTagManager,
+                                       diagnosticsTracker: diagnosticsTracker,
+                                       requestTimeout: httpClientTimeout,
+                                       apiSourceFailover: apiSourceFailover),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -290,6 +304,15 @@ extension Backend {
             return operationQueue
         }
 
+        static func createReceiptPostQueue() -> OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "RC Receipt Post Queue"
+            // Serial, so receipt posts keep their existing ordering and de-duping among themselves.
+            // Only post-vs-read concurrency changes.
+            operationQueue.maxConcurrentOperationCount = 1
+            return operationQueue
+        }
+
         static func createRemoteConfigQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Remote Config Queue"
@@ -303,7 +326,7 @@ extension Backend {
 
 private extension HTTPClient {
 
-    static func dedicatedRemoteConfig(
+    static func dedicatedLane(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
