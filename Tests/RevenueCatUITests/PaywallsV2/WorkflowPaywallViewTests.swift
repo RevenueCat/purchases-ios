@@ -1182,6 +1182,25 @@ extension WorkflowPaywallViewTests {
         expect(paywallTraceId) == workflowTraceId
     }
 
+    @MainActor
+    func testPaywallImpressionCarriesThePaywallIdFromTheScreen() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let (_, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        expect(impression.data.paywallIdentifier) == "screen_a"
+    }
+
     private static func isImpression(_ event: PaywallEvent) -> Bool {
         if case .impression = event { return true }
         return false
