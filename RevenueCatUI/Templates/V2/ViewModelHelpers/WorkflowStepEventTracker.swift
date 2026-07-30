@@ -32,7 +32,7 @@ struct WorkflowStepEventTracker {
     }
 
     private let workflow: PublishedWorkflow
-    private let traceId: String
+    let traceId: String
     private let sink: (WorkflowEvent) -> Void
 
     init(

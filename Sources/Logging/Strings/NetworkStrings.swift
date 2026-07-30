@@ -56,8 +56,9 @@ enum NetworkStrings {
     case request_handled_by_load_shedder(HTTPRequestPath)
 
     #if DEBUG
-    case api_request_forcing_server_error(HTTPRequest)
-    case api_request_faking_error_response(HTTPRequest)
+    case api_request_forcing_server_error(HTTPRequest, serverErrorURL: URL)
+    case api_request_faking_response(HTTPRequest, statusCode: Int)
+    case api_request_appending_query_items(HTTPRequest, queryItems: [URLQueryItem])
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
     case api_request_response_both_fallback_and_load_shedder(HTTPRequest)
@@ -169,11 +170,17 @@ extension NetworkStrings: LogMessage {
             return "Request \(httpMethod) \(path) failed all \(retryCount) retries."
 
         #if DEBUG
-        case let .api_request_forcing_server_error(request):
-            return "Forcing server error for request \(request.description)"
+        case let .api_request_forcing_server_error(request, serverErrorURL):
+            return "Forcing server error for request \(request.description) " +
+            "by routing it to \(serverErrorURL.absoluteString)"
 
-        case let .api_request_faking_error_response(request):
-            return "Faking error response for request \(request.description)"
+        case let .api_request_faking_response(request, statusCode):
+            return "Faking response with status code \(statusCode) " +
+            "for request \(request.description)"
+
+        case let .api_request_appending_query_items(request, queryItems):
+            let query = queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
+            return "Appending query items '\(query)' to request \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"

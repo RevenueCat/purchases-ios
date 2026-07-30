@@ -33,6 +33,9 @@
           "offering_id" : "offering_1",
           "paywall_id" : "test_paywall_id_1",
           "paywall_revision" : 5,
+          "presented_offering_context" : {
+            "paywall_id" : "test_paywall_id_1"
+          },
           "session_id" : "98CC0F1D-7665-4093-9624-1D7308FFF4DB",
           "timestamp" : 1694029328000,
           "type" : "paywall_impression",
@@ -47,6 +50,9 @@
           "offering_id" : "offering_2",
           "paywall_id" : "test_paywall_id_2",
           "paywall_revision" : 3,
+          "presented_offering_context" : {
+            "paywall_id" : "test_paywall_id_2"
+          },
           "session_id" : "10CC0F1D-7665-4093-9624-1D7308FFF4DB",
           "timestamp" : 1694022321000,
           "type" : "paywall_close",

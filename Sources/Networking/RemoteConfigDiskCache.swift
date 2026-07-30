@@ -33,6 +33,10 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let activeTopics: [String]
     let prefetchBlobs: [String]
     let topics: RemoteConfiguration.Topics
+
+    /// The most recent `X-RevenueCat-Request-Time` supplied by the main API, stored as epoch milliseconds.
+    ///
+    /// This value is replayed as `X-RC-Last-Refresh-Time` on the next config request.
     private(set) var lastRefreshTimeMilliseconds: UInt64?
 
     init(
@@ -79,10 +83,12 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 
 extension PersistedRemoteConfiguration {
 
+    /// The persisted main-server request time in the `Date` representation used by the request layer.
     var lastRefreshTime: Date? {
         return self.lastRefreshTimeMilliseconds.map(Date.init(millisecondsSince1970:))
     }
 
+    /// Returns a copy whose replayed refresh time is updated from a successful main-server response.
     func withLastRefreshTime(_ date: Date) -> Self {
         var copy = self
         copy.lastRefreshTimeMilliseconds = date.millisecondsSince1970

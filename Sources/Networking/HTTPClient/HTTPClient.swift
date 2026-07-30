@@ -752,30 +752,19 @@ private extension HTTPClient {
 
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
-
-            if let (fakeResponse, fakeData) = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
-
-                // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
-                // might be empty if called immediately after `Product.purchase()`.
-                // This introduces a delay to simulate a real API request, and avoid that race condition.
-
-                Logger.warn(Strings.network.api_request_faking_error_response(request.httpRequest))
-                DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
-                    self.handle(urlResponse: fakeResponse,
-                                request: request,
-                                urlRequest: urlRequest,
-                                data: fakeData,
-                                error: nil,
-                                requestStartTime: requestStartTime)
-                }
-                return
+        if let (fakeResponse, fakeData) = self.applyForceServerErrorStrategy(to: &finalURLRequest, request: request) {
+            // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+            // might be empty if called immediately after `Product.purchase()`.
+            // This introduces a delay to simulate a real API request, and avoid that race condition.
+            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
+                self.handle(urlResponse: fakeResponse,
+                            request: request,
+                            urlRequest: urlRequest,
+                            data: fakeData,
+                            error: nil,
+                            requestStartTime: requestStartTime)
             }
-
-            if forceErrorStrategy.shouldForceServerError(request) {
-                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-                finalURLRequest = URLRequest(url: forceErrorStrategy.serverErrorURL)
-            }
+            return
         }
         #endif
 
@@ -795,6 +784,42 @@ private extension HTTPClient {
         }
         task.resume()
     }
+
+    #if DEBUG
+    /// Applies `forceServerErrorStrategy`, if configured, to `urlRequest`.
+    /// - Returns: the response to return without performing the request, if the strategy fakes one.
+    func applyForceServerErrorStrategy(
+        to urlRequest: inout URLRequest,
+        request: Request
+    ) -> (HTTPURLResponse, Data)? {
+        guard let strategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy else {
+            return nil
+        }
+
+        switch strategy.action(request) {
+        case let .fakeResponse(fakeResponse, fakeData):
+            Logger.warn(Strings.network.api_request_faking_response(request.httpRequest,
+                                                                    statusCode: fakeResponse.statusCode))
+            return (fakeResponse, fakeData)
+
+        case let .serverErrorURL(serverErrorURL):
+            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest,
+                                                                         serverErrorURL: serverErrorURL))
+            urlRequest = URLRequest(url: serverErrorURL)
+
+        case let .appendQueryItems(queryItems):
+            Logger.warn(Strings.network.api_request_appending_query_items(request.httpRequest, queryItems: queryItems))
+            if let url = urlRequest.url?.appendingQueryItems(queryItems) {
+                urlRequest.url = url
+            }
+
+        case .performRequest:
+            break
+        }
+
+        return nil
+    }
+    #endif
 
     func convert(request: Request) -> URLRequest? {
         guard let requestURL = request.getCurrentRequestURL(
@@ -1226,3 +1251,20 @@ private extension HTTPResponse where Body == Data {
     }
 
 }
+
+#if DEBUG
+
+private extension URL {
+
+    /// Returns this URL with `queryItems` added to the ones it already contains, if any.
+    func appendingQueryItems(_ queryItems: [URLQueryItem]) -> URL? {
+        // Request URLs are relative to a base URL, so the base needs resolving to keep the host.
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: true) else { return nil }
+
+        components.queryItems = (components.queryItems ?? []) + queryItems
+        return components.url
+    }
+
+}
+
+#endif
