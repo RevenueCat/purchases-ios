@@ -1,5 +1,5 @@
 # The /v1/config kill switch tripping MID-SESSION must degrade a workflow offering to the classic
-# single-page paywall (the workflow's last page), the same way a cold launch does in
+# single-page paywall (the workflow's last screen), the same way a cold launch does in
 # workflow_config_fallback.yaml. It used to render the SDK's generic default paywall instead, because an
 # offering the app already held had its paywall components pruned with nothing left to render.
 #
@@ -15,12 +15,6 @@ appId: com.revenuecat.maestro.ios
 name: Workflow offering falls back to the classic paywall when the config kill switch trips mid-session
 env:
   MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
-  # TODO: point these at the dedicated multipage offering for this scenario, and its page texts, once
-  # the offering is decided. They default to `default_workflows` so the flow is runnable meanwhile.
-  OFFERING_ID: ${MAESTRO_OFFERING_ID || 'default_workflows'}
-  FIRST_PAGE: ${MAESTRO_FIRST_PAGE || 'Start Your Free Week And Reclaim 30+ Minutes Daily'}
-  SECOND_PAGE: ${MAESTRO_SECOND_PAGE || 'Most People Feel Calmer After Just 3 Sessions'}
-  LAST_PAGE: ${MAESTRO_LAST_PAGE || 'People Who Meditate Daily Sleep 40% Better'}
 
 ---
 - clearState
@@ -29,7 +23,6 @@ env:
 - launchApp:
     arguments:
         e2e_test_flow: open_workflow
-        offering_id: "${OFFERING_ID}"
         e2e_controls: "true"
 # Wait for offerings to load before the button appears.
 - extendedWaitUntil:
@@ -38,25 +31,26 @@ env:
 - tapOn:
     text: "Present Paywall"
 
-# The multipage workflow renders normally while config is healthy.
+# All three screens of the workflow render while config is healthy. Each screen is identified by the counter
+# on its Continue button; the third one starts the purchase, so it is only asserted, never tapped.
 - extendedWaitUntil:
-    visible: "${FIRST_PAGE}"
+    visible: "Continue 1/3"
     timeout: 15000
-- takeScreenshot: "workflow_config_killswitch_mid_session - first page"
+- takeScreenshot: "workflow_config_killswitch_mid_session - screen 1"
 - tapOn:
-    text: "Continue"
+    text: "Continue 1/3"
 - extendedWaitUntil:
-    visible: "${SECOND_PAGE}"
+    visible: "Continue 2/3"
     timeout: 15000
 - tapOn:
-    text: "Continue"
+    text: "Continue 2/3"
 - extendedWaitUntil:
-    visible: "${LAST_PAGE}"
+    visible: "Continue 3/3"
     timeout: 15000
-- takeScreenshot: "workflow_config_killswitch_mid_session - last page"
+- takeScreenshot: "workflow_config_killswitch_mid_session - screen 3"
 
 # Back to the launcher: the close control is an unlabeled icon, tapped by coordinate (top-left on the
-# last page, as in workflow_exit_offer_on_last_page.yaml).
+# last screen, as in workflow_exit_offer_on_last_page.yaml).
 - tapOn:
     point: "8%,11%"
 - extendedWaitUntil:
@@ -83,12 +77,12 @@ env:
 - tapOn:
     text: "Present Paywall"
 
-# The workflow degrades to its last page (the classic single-page paywall)...
+# Only the workflow's last screen is left, on its own, as the classic single-page paywall...
 - extendedWaitUntil:
-    visible: "${LAST_PAGE}"
+    visible: "Continue 3/3"
     timeout: 15000
-# ...not to the multipage workflow, and not to the SDK's generic default paywall ("No Paywall
-# configured" is its DEBUG warning), which is what this scenario used to render.
-- assertNotVisible: "${FIRST_PAGE}"
+# ...so the multipage workflow is gone, and so is the SDK's generic default paywall ("No Paywall configured"
+# is its DEBUG warning), which is what this scenario used to render.
+- assertNotVisible: "Continue 1/3"
 - assertNotVisible: "No Paywall configured"
 - takeScreenshot: "workflow_config_killswitch_mid_session - classic paywall"

@@ -12,13 +12,7 @@ import RevenueCatUI
 extension E2ETestFlowView {
     struct OpenWorkflow: View {
 
-        static let defaultOfferingIdentifier = "default_workflows"
-
-        /// The offering this flow renders. E2E tests can point it at a different one with the
-        /// `offering_id` launch argument.
-        static var offeringIdentifier: String {
-            return UserDefaults.standard.string(forKey: "offering_id") ?? Self.defaultOfferingIdentifier
-        }
+        static let offeringIdentifier = "default_workflows"
 
         /// Whether to show the controls E2E tests use to change SDK state without relaunching, which
         /// would reset it. Off unless the `e2e_controls` launch argument is set, so that the flows which
