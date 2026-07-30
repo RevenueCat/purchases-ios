@@ -503,9 +503,10 @@ struct WorkflowPaywallView: View {
             // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
             // single-step-fallback rule.
             workflowScreenType: page.screenType,
-            // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
+            // Workflow purchase attribution, orthogonal to the screen_type gate.
             workflowId: self.context.workflow.id,
             stepId: page.stepId,
+            traceId: self.stepEventCoordinator.traceId,
             isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
@@ -757,7 +758,8 @@ struct WorkflowPaywallView: View {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: context.uiConfig
+            uiConfig: context.uiConfig,
+            paywallId: screenId
         )
 
         return .init(

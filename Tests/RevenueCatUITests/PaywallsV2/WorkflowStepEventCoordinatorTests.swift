@@ -64,6 +64,17 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    func testTraceIdMatchesTheTraceIdStampedOnEmittedWorkflowEvents() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow, freshTraceId: true)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+
+        let data = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(coordinator.traceId) == data.traceId
+    }
+
     // MARK: - Forward / back transitions
 
     func testForwardTransitionEmitsCompletedThenStartedInOrder() throws {
