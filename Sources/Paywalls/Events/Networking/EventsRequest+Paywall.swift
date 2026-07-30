@@ -72,10 +72,7 @@ extension FeatureEventsRequest.PaywallEvent {
         var workflowId: String?
         var traceId: String?
 
-        /// Returns `nil` unless there is placement, targeting or workflow attribution to report.
-        /// `paywallId` deliberately does not keep the object alive on its own: it is set on essentially
-        /// every paywall event, so including it in the guard would attach a context to standalone paywall
-        /// events that carry `nil` today. It already has its own top-level field and Snowflake column.
+        /// Returns `nil` if all fields are `nil`.
         init?(
             placementIdentifier: String?,
             targetingRevision: Int?,
@@ -87,6 +84,7 @@ extension FeatureEventsRequest.PaywallEvent {
             guard placementIdentifier != nil ||
                     targetingRevision != nil ||
                     targetingRuleId != nil ||
+                    paywallId != nil ||
                     workflowId != nil ||
                     traceId != nil else {
                 return nil

@@ -401,8 +401,32 @@ class PaywallFeatureEventsRequestTests: TestCase {
         expect(json).to(contain("wf_abc123"))
     }
 
-    func testStandalonePaywallEventStillHasNoPresentedOfferingContext() throws {
+    // Matches purchases-android, where `paywallId` also keeps the context alive on its own.
+    func testStandalonePaywallEventCarriesPaywallIdInPresentedOfferingContext() throws {
         let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        let context = try XCTUnwrap(requestEvent.presentedOfferingContext)
+        expect(context.paywallId) == Self.eventData.paywallIdentifier
+        expect(context.placementIdentifier).to(beNil())
+        expect(context.targetingRevision).to(beNil())
+        expect(context.targetingRuleId).to(beNil())
+        expect(context.workflowId).to(beNil())
+        expect(context.traceId).to(beNil())
+    }
+
+    func testPaywallEventWithoutPaywallIdHasNoPresentedOfferingContext() throws {
+        let data = PaywallEvent.Data(
+            paywallIdentifier: nil,
+            offeringIdentifier: "offering",
+            paywallRevision: 0,
+            sessionID: Self.eventData.sessionIdentifier,
+            displayMode: .fullScreen,
+            localeIdentifier: "es_ES",
+            darkMode: true
+        )
+        let event = PaywallEvent.impression(Self.eventCreationData, data)
         let storedEvent = try Self.createStoredFeatureEvent(from: event)
         let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
 
