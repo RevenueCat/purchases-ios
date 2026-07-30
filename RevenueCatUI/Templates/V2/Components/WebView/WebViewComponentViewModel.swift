@@ -18,8 +18,6 @@ final class WebViewComponentViewModel: Hashable {
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
     #if !os(watchOS) && canImport(WebKit)
-    /// Shared by every SwiftUI rendering of this logical component. `ViewThatFits` can construct the
-    /// component in more than one candidate subtree, but those subtrees already share this view model.
     @MainActor
     private var webViewInstance: WebViewInstance?
     #endif
@@ -43,8 +41,6 @@ final class WebViewComponentViewModel: Hashable {
                 return webViewInstance
             }
 
-            // Preserve the pre-cache recovery behavior: a later SwiftUI rendering gets a fresh
-            // attempt rather than inheriting a terminated process or terminal navigation failure.
             webViewInstance.tearDown()
         }
 

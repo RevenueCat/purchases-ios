@@ -29,8 +29,6 @@ import UIKit
 @MainActor
 final class WebViewInstanceTests: TestCase {
 
-    /// `ViewThatFits` duplicates view values, not the component view model. The shared view model is
-    /// therefore the natural owner for the loaded document and bridge state.
     func testOneViewModelReturnsTheSameInstanceToDuplicateRenderings() {
         let viewModel = Self.makeViewModel()
 
@@ -40,8 +38,6 @@ final class WebViewInstanceTests: TestCase {
         XCTAssertTrue(first === second)
     }
 
-    /// Separate paywall constructions create separate view-model trees, so simultaneous presentations
-    /// cannot re-parent the same web view between their windows.
     func testSeparateViewModelsOwnSeparateInstances() {
         let first = Self.makeViewModel().webViewInstance(expectedOrigin: Self.origin)
         let second = Self.makeViewModel().webViewInstance(expectedOrigin: Self.origin)
@@ -152,13 +148,10 @@ final class WebViewInstanceTests: TestCase {
 
 }
 
-/// Covers which host owns the shared web view. Two `ViewThatFits` candidates can be mounted at once, so
-/// the rule matters: without it they could take turns re-parenting the web view on every update pass.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class WebViewInstanceHostAttachmentTests: TestCase {
 
-    /// Nothing else retains a window, and a host's `window` goes nil the moment its window is released.
     private var windows: [AnyObject] = []
 
     override func tearDown() {

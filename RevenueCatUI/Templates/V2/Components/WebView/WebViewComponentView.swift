@@ -112,8 +112,6 @@ enum WebViewSizing {
 
 #if canImport(WebKit) && !os(watchOS)
 
-/// Renders the instance owned by the component view model. Every duplicate `ViewThatFits` subtree
-/// receives the same view model, so bridge state and the loaded document survive candidate changes.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct HostedWebViewComponentView: View {
 
@@ -193,8 +191,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
     #endif
 
-    /// Builds the SwiftUI-owned container. The web view itself is created at most once per instance
-    /// and re-parented into whichever container is currently on screen.
     @MainActor
     private func makeHost(context: Context) -> WebViewHostView {
         let host = WebViewHostView()
@@ -217,8 +213,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     @MainActor
     private func update(_ host: WebViewHostView) {
-        // `didMoveToWindow` covers the usual path; this catches a host that SwiftUI reuses after it
-        // is already in a window.
         if host.window != nil {
             self.instance.updateHost(host)
         }

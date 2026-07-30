@@ -13,21 +13,13 @@ import SwiftUI
 
 import WebKit
 
-/// The live web view behind a `web_view` component: the `WKWebView` itself, its bridge session, and
-/// the sizing/failure state derived from them.
-///
-/// Owned by ``WebViewComponentViewModel``, which is already shared by every duplicate `ViewThatFits`
-/// subtree for the component. This therefore outlives candidate changes without requiring a separate
-/// process-wide cache or presentation identity.
+/// The live web view behind a `web_view` component, owned by ``WebViewComponentViewModel``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class WebViewInstance: ObservableObject {
 
     let session: WebViewSession
 
-    /// Last size reported by the content, per axis. `nil` until the content reports one (and again
-    /// after a new document commits), which is when the component falls back to its declared
-    /// `fit` default.
     @Published private(set) var measuredWidth: CGFloat?
     @Published private(set) var measuredHeight: CGFloat?
 
@@ -41,8 +33,6 @@ final class WebViewInstance: ObservableObject {
     private var webView: PlatformWebView?
     private var navigationDelegateObject: AnyObject?
 
-    /// The host currently displaying the web view, if any. Weak so a discarded host doesn't keep its
-    /// claim alive.
     private weak var attachedHost: WebViewHostView?
 
     /// A host that entered a window while the current host was still mounted. Remembering it lets the
@@ -79,8 +69,6 @@ final class WebViewInstance: ObservableObject {
         }
     }
 
-    /// The navigation delegate for this component, creating it on first use. Retained here because
-    /// `WKWebView.navigationDelegate` is a weak reference.
     func navigationDelegate<Delegate: AnyObject>(creating factory: () -> Delegate) -> Delegate {
         if let existing = self.navigationDelegateObject as? Delegate {
             return existing
@@ -91,9 +79,6 @@ final class WebViewInstance: ObservableObject {
         return created
     }
 
-    /// The web view for this component, creating and loading it on first use.
-    ///
-    /// `factory` is only invoked once per instance, no matter how many SwiftUI hosts ask for it.
     func webView(creatingWith factory: () -> PlatformWebView) -> PlatformWebView {
         if let webView = self.webView {
             return webView
@@ -125,13 +110,6 @@ final class WebViewInstance: ObservableObject {
         self.loadFailed = true
     }
 
-    /// Moves the web view into `host`, which is the SwiftUI-owned container that is currently on
-    /// screen. A `ViewThatFits` swap replaces the container but not the web view, so re-parenting
-    /// here is what keeps the loaded document alive across the swap.
-    ///
-    /// If another host is still displaying the web view, remember this request until that host leaves
-    /// its window. This avoids both repeated re-parenting during overlapping SwiftUI updates and a
-    /// missed handoff when the incoming host enters before the outgoing host leaves.
     func hostDidEnterWindow(_ host: WebViewHostView) {
         guard let webView = self.webView else {
             return
@@ -198,8 +176,6 @@ final class WebViewInstance: ObservableObject {
         ])
     }
 
-    /// Releases the web view and its message handlers before the view model replaces an unusable
-    /// instance. Healthy instances otherwise live for the lifetime of their component view model.
     func tearDown() {
         self.navigationDelegateObject = nil
         self.attachedHost = nil
@@ -226,9 +202,6 @@ final class WebViewInstance: ObservableObject {
 }
 
 /// SwiftUI-owned container that the shared `WKWebView` is re-parented into.
-///
-/// The representable hands SwiftUI one of these rather than the web view itself, so that tearing
-/// down a subtree only discards the container.
 #if os(macOS)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebViewHostView: NSView {
