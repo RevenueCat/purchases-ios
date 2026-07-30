@@ -1151,7 +1151,13 @@ public extension Purchases {
         }
 
         self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .read,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            }
         })
     }
 
