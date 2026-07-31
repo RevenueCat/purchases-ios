@@ -560,8 +560,8 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
-        // The memory tracks how fast a host answers, so a non-error response clears the entry even when
-        // parsing or verifying that response fails afterwards.
+        // The requestTimeoutManager tracks how fast a host answers, so a non-error response clears the
+        // entry even when parsing or verifying that response fails afterwards.
         if !request.targetsFallbackHost,
            (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
             requestTimeoutResult = .successOnMainBackend
