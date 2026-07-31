@@ -253,7 +253,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            failureReason: .backendError
+            failureReason: .backendError(reason: nil)
         )
 
         self.purchases.adTracker.trackAdRewardFailedToVerify(data, captureMethod: .adapter)
@@ -273,7 +273,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
-        expect(eventData.failureReason) == .backendError
+        expect(eventData.failureReason) == .backendError(reason: nil)
     }
 
     func testTrackAdRewardGrantedStoresEvent() async throws {

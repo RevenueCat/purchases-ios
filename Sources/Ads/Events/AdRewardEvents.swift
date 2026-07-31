@@ -14,19 +14,48 @@
 import Foundation
 
 /// Type representing the reason a rewarded-ad verification failed.
-@_spi(Internal) public enum AdRewardFailureReason: String, Codable, Sendable {
+@_spi(Internal) public enum AdRewardFailureReason: Codable, Hashable, Sendable {
 
     /// Verification did not complete within the allowed polling window.
     case timeout
 
     /// Verification failed due to a network-level error.
-    case networkError = "network_error"
+    case networkError
 
-    /// The backend declined to verify the reward.
-    case backendError = "backend_error"
+    /// The backend declined to verify the reward. `reason` is the backend's own decline code
+    /// when it reported one, and is what gets sent for this case.
+    case backendError(reason: String?)
 
     /// Verification failed for an unspecified reason.
     case unknown
+
+    // swiftlint:disable missing_docs
+    public var rawValue: String {
+        switch self {
+        case .timeout: return "timeout"
+        case .networkError: return "network_error"
+        case .backendError(let reason): return reason ?? "backend_error"
+        case .unknown: return "unknown"
+        }
+    }
+
+    /// Encoded as a bare string. An unrecognized value decodes as a backend decline carrying
+    /// that code, which is the only way one can arise.
+    public init(from decoder: Decoder) throws {
+        switch try decoder.singleValueContainer().decode(String.self) {
+        case "timeout": self = .timeout
+        case "network_error": self = .networkError
+        case "unknown": self = .unknown
+        case "backend_error": self = .backendError(reason: nil)
+        case let reason: self = .backendError(reason: reason)
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        try container.encode(self.rawValue)
+    }
+    // swiftlint:enable missing_docs
 
 }
 
