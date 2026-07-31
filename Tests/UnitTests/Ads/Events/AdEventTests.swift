@@ -453,6 +453,17 @@ class AdEventTests: TestCase {
         expect(event1) == event2
     }
 
+    // MARK: - AdRewardFailureReason Wire Values
+
+    func testAdRewardFailureReasonWireValuesMatchTheBackendContract() {
+        expect(AdRewardFailureReason.timeout.rawValue) == "timeout"
+        expect(AdRewardFailureReason.networkError.rawValue) == "network_error"
+        expect(AdRewardFailureReason.noRewardRule.rawValue) == "no_reward_rule"
+        expect(AdRewardFailureReason.unknownVirtualCurrencyCode.rawValue) == "unknown_virtual_currency_code"
+        expect(AdRewardFailureReason.backendError.rawValue) == "backend_error"
+        expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
+    }
+
     // MARK: - AdRewardGranted Equality
 
     func testAdRewardGrantedEqualityWithDifferentReward() {
