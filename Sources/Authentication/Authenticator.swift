@@ -7,6 +7,12 @@
 
 import Foundation
 
+@_spi(Experimental)
+@objc(RCPurchasesAuthenticatorDelegate)
+public protocol AuthenticatorDelegate: NSObjectProtocol {
+    func authenticatorDidEncounterError(_ error: PublicError)
+}
+
 internal protocol InternalAuthenticatorDelegate: AnyObject {
     func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?)
     func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
@@ -21,6 +27,8 @@ public final class Authenticator: NSObject {
     private let operationDispatcher: OperationDispatcher
     private let systemInfo: SystemInfo
     internal weak var internalDelegate: InternalAuthenticatorDelegate?
+
+    public weak var delegate: AuthenticatorDelegate?
 
     internal init(backend: Backend, identityManager: IdentityManager, operationDispatcher: OperationDispatcher, systemInfo: SystemInfo, internalDelegate: InternalAuthenticatorDelegate? = nil) {
         self.backend = backend
@@ -63,47 +71,12 @@ public final class Authenticator: NSObject {
 
     @objc(logInUsingToken:completion:)
     public func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
-        guard self.backend.token.enabled else {
-            let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
-            completion(nil, error.asPublicError)
-            return
-        }
-
-        self.identityManager.logIn(externalToken: token) { result in
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.error?.asPublicError)
-            }
-
-            guard case .success = result else {
-                return
-            }
-
-            self.internalDelegate?.authenticatorDidLogIn(info: result.value?.info,
-                                                         error: result.error?.asPublicError)
-        }
+        self.logIn(using: token, userInitiated: true, completion: completion)
     }
 
     @objc
     public func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
-            return
-       }
-
-        self.identityManager.logOut { error in
-            guard error == nil else {
-                if let completion = completion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(nil, error?.asPublicError)
-                    }
-                }
-                return
-            }
-
-            self.internalDelegate?.authenticatorDidChangeIdentity { result in
-                completion?(result.value, result.error)
-            }
-        }
+        self.logOut(userInitiated: true, completion: completion)
     }
 
     public func _revokeCurrentAccessToken(completion: ((PublicError?) -> Void)?) {
@@ -165,6 +138,70 @@ public final class Authenticator: NSObject {
                 let result: Result<Void, Error> = error.map { .failure($0) } ?? .success(())
                 continuation.resume(with: result)
             })
+        }
+    }
+
+    // MARK: - Internals
+
+    internal func logIn(using token: ExternalToken,
+                        userInitiated: Bool,
+                        completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
+        guard self.backend.token.enabled else {
+            let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
+            completion(nil, error.asPublicError)
+            if userInitiated == false { self.reportAuthenticationError(error.asPublicError) }
+            return
+        }
+
+        self.identityManager.logIn(externalToken: token) { result in
+            self.operationDispatcher.dispatchOnMainThread {
+                completion(result.value?.info, result.error?.asPublicError)
+            }
+
+            switch result {
+            case .success(let result):
+                self.internalDelegate?.authenticatorDidLogIn(info: result.info,
+                                                             error: nil)
+            case .failure(let error):
+                if userInitiated == false {
+                    self.reportAuthenticationError(error.asPublicError)
+                }
+            }
+
+        }
+
+    }
+
+    internal func logOut(userInitiated: Bool, completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
+            let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError
+            completion?(nil, error)
+            if userInitiated == false { self.reportAuthenticationError(error) }
+            return
+       }
+
+        self.identityManager.logOut { error in
+            if let error {
+                if let completion = completion {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(nil, error.asPublicError)
+                    }
+                }
+                if userInitiated == false {
+                    self.reportAuthenticationError(error.asPublicError)
+                }
+            } else {
+                self.internalDelegate?.authenticatorDidChangeIdentity { result in
+                    completion?(result.value, result.error)
+                }
+            }
+        }
+    }
+
+    internal func reportAuthenticationError(_ error: PublicError) {
+        guard let delegate else { return }
+        self.operationDispatcher.dispatchOnMainThread {
+            delegate.authenticatorDidEncounterError(error)
         }
     }
 
