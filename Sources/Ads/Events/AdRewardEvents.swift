@@ -28,6 +28,9 @@ import Foundation
     /// The backend rejected the reward because of an unrecognized virtual currency code.
     case unknownVirtualCurrencyCode = "unknown_virtual_currency_code"
 
+    /// The backend rejected the reward because the app lacks access to ad rewards.
+    case noAccess = "no_access"
+
     /// The backend explicitly declined to verify the reward for a reason not listed above.
     case backendError = "backend_error"
 

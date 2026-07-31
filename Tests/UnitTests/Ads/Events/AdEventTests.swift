@@ -460,6 +460,7 @@ class AdEventTests: TestCase {
         expect(AdRewardFailureReason.networkError.rawValue) == "network_error"
         expect(AdRewardFailureReason.noRewardRule.rawValue) == "no_reward_rule"
         expect(AdRewardFailureReason.unknownVirtualCurrencyCode.rawValue) == "unknown_virtual_currency_code"
+        expect(AdRewardFailureReason.noAccess.rawValue) == "no_access"
         expect(AdRewardFailureReason.backendError.rawValue) == "backend_error"
         expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
     }
