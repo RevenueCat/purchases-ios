@@ -352,6 +352,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        guard !self.isDisabled else {
+            Logger.debug(Strings.remoteConfig.refreshSkippedDisabled)
+            return
+        }
+
         let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfNeeded(
             fetchContext: fetchContext,
@@ -362,6 +367,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        guard !self.isDisabled else {
+            Logger.debug(Strings.remoteConfig.refreshSkippedDisabled)
+            return
+        }
+
         let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfStale(
             fetchContext: fetchContext,
@@ -739,7 +749,11 @@ private extension RemoteConfigManager {
             self.onRemoteConfigDisabled?()
         }
 
-        Logger.error(Strings.remoteConfig.refreshFailed(error))
+        if shouldDisableRefresh && error.isRemoteConfigDisablingClientError {
+            Logger.error(Strings.remoteConfig.disablingRefresh(error))
+        } else {
+            Logger.error(Strings.remoteConfig.refreshFailed(error))
+        }
     }
 
     func disableRefreshIfNeeded(for error: BackendError) -> Bool {

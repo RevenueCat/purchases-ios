@@ -1791,10 +1791,11 @@ final class RemoteConfigManagerTests: TestCase {
         self.diskCache.stubbedRead = Self.persisted(
             manifest: "v1.1710000100.sources:etag1"
         )
+        let error = Self.backendError(statusCode: .invalidRequest)
 
         expect(self.manager.isDisabled) == false
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .invalidRequest)))
+        self.remoteConfigAPI.complete(with: .failure(error))
         expect(self.manager.isDisabled) == true
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
@@ -1804,6 +1805,18 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.blobStore.invokedWriteCount) == 0
         expect(self.blobStore.invokedRetainOnlyCount) == 0
         expect(self.blobFetcher.invokedPrefetchCount) == 0
+        self.logger.verifyMessageWasLogged(
+            "Disabling remote config for this session after receiving a 4xx response. Error: \(error)",
+            level: .error
+        )
+        self.logger.verifyMessageWasLogged(
+            "Remote config is disabled for this session (4xx). Skipping refresh.",
+            level: .debug
+        )
+        self.logger.verifyMessageWasNotLogged(
+            "Remote config refresh failed. Keeping cached configuration. Error: \(error)",
+            level: .error
+        )
     }
 
     func testFourHundredResponseNotifiesWhenRemoteConfigIsDisabled() {
@@ -1831,14 +1844,20 @@ final class RemoteConfigManagerTests: TestCase {
     }
 
     func testServerErrorDoesNotDisableRemoteConfig() {
+        let error = Self.backendError(statusCode: .internalServerError)
+
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
-        self.remoteConfigAPI.complete(with: .failure(Self.backendError(statusCode: .internalServerError)))
-        self.remoteConfigAPI.completeFallback(with: .failure(Self.backendError(statusCode: .internalServerError)))
+        self.remoteConfigAPI.complete(with: .failure(error))
+        self.remoteConfigAPI.completeFallback(with: .failure(error))
         expect(self.manager.isDisabled) == false
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
         expect(self.diskCache.invokedReadCount) == 2
+        self.logger.verifyMessageWasLogged(
+            "Remote config refresh failed. Keeping cached configuration. Error: \(error)",
+            level: .error
+        )
     }
 
     func testFallbackClientErrorDisablesRemoteConfig() {
