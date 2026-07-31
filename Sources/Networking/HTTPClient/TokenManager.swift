@@ -128,7 +128,7 @@ class TokenManager {
         // we can only refresh if we have a refresh token
         guard let currentRefreshToken else { return nil }
 
-        let body = TokenRefreshOperation.Body(grantType: "refresh_token", refreshToken: currentRefreshToken)
+        let body = TokenRefreshOperation.Body(refreshToken: currentRefreshToken)
         let request = HTTPRequest(method: .post(body), path: .tokenRefresh, isRetryable: false)
 
         return request

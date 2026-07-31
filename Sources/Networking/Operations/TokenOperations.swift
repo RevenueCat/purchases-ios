@@ -327,7 +327,7 @@ enum TokenRefreshOperation {
             case refreshToken = "refresh_token"
         }
 
-        let grantType: String
+        var grantType = "refresh_token"
         let refreshToken: String
 
         var contentForSignature: [(key: String, value: String?)] {
