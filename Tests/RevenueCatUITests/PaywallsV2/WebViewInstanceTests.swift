@@ -109,6 +109,36 @@ final class WebViewInstanceTests: TestCase {
         XCTAssertFalse(replacement.isUnusable)
     }
 
+    // MARK: - Ownership
+
+    /// The view model is the only owner, and the navigation delegate is stored *on* the instance, so a
+    /// strong capture in `makeCoordinator` would keep the instance and its web view alive for the
+    /// lifetime of the process.
+    func testDroppingTheViewModelReleasesTheInstanceAndItsWebView() throws {
+        weak var instance: WebViewInstance?
+        weak var webView: WKWebView?
+
+        try autoreleasepool {
+            let viewModel = Self.makeViewModel()
+            let owned = try XCTUnwrap(viewModel.webViewInstance())
+            let ownedWebView = owned.webView { WKWebView(frame: .zero) }
+            // Built through the real representable so the coordinator's captures are the shipping ones.
+            _ = WebViewRepresentable(url: Self.url, instance: owned).makeCoordinator()
+
+            instance = owned
+            webView = ownedWebView
+        }
+
+        XCTAssertNil(instance)
+
+        // WebKit defers the web view's own dealloc past the end of the pool by a runloop turn.
+        let deadline = Date().addingTimeInterval(2)
+        while webView != nil, Date() < deadline {
+            RunLoop.current.run(until: Date().addingTimeInterval(0.01))
+        }
+        XCTAssertNil(webView)
+    }
+
     // MARK: - Shared sub-objects
 
     func testNavigationDelegateIsCreatedOnlyOnce() {
@@ -129,6 +159,7 @@ final class WebViewInstanceTests: TestCase {
     // MARK: - Helpers
 
     private static let origin = WebViewOrigin(string: "https://example.com")!
+    private static let url = URL(string: "https://example.com/index.html")!
 
     private static func makeViewModel(url: String = "https://example.com/index.html") -> WebViewComponentViewModel {
         return WebViewComponentViewModel(
