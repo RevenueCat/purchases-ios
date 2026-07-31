@@ -1,20 +1,25 @@
+## RevenueCat SDK
+### Remote-config
+#### 🐞 Bugfixes
+* Refresh remote config when syncing attributes and offerings (#7323) via Antonio Pallares (@ajpallares)
+
 ## RevenueCatUI SDK
 ### ✨ New Features
-* Add onWebCheckoutOpened to paywall listener surfaces (#7260) via Álvaro Brey (@AlvaroBrey)
-### 🐞 Bugfixes
-* fix(paywalls): stop media backgrounds from swallowing taps (#7297) via Facundo Menzella (@facumenzella)
-### Paywallsv2
-#### 🐞 Bugfixes
-* fix(paywalls): workflow paywalls to the screen edges in landscape (#7310) via Facundo Menzella (@facumenzella)
+* feat: add onURLOpened to paywall listener surfaces (#7320) via Toni Rico (@tonidero)
 ### Paywallv2
 #### ✨ New Features
-* feat(paywalls-v2): add haptic feedback on package/tab selection (#7167) via Facundo Menzella (@facumenzella)
+* Enable support for multipage paywalls (#7327) via Facundo Menzella (@facumenzella)
+### Paywallsv2
+#### 🐞 Bugfixes
+* Send `paywall_id` and `trace_id` on post receipt (#7311) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Revert "feat: send workflow attribution on paywall events" (#7313) via Cesar de la Vega (@vegaro)
-* feat(remote-config): send X-RC-Last-Refresh-Time on config requests (#7308) via Rick (@rickvdl)
-* feat: send workflow attribution on paywall events (#7304) via Cesar de la Vega (@vegaro)
-* feat(paywalls): apply hero top-inset treatment to full-width web_view (#7300) via Antonio Pallares (@ajpallares)
-* test(remote-config): cover app restart refreshing and applying updated config (#7254) via Facundo Menzella (@facumenzella)
-* feat(paywalls): enable web_view component (7/7) (#7233) via Jacob Rakidzich (@JZDesign)
-* feat(remote-config): health-check-gated API source failover in HTTPClient (#7294) via Toni Rico (@tonidero)
+* fix(remote-config): clear last attempt timestamp for cooldown after successful response (#7328) via Rick (@rickvdl)
+* fix(maestro): tap the relabeled Continue buttons in the workflow flows (#7332) via Antonio Pallares (@ajpallares)
+* chore: align 5.82.0 changelog entry for #7233 with release notes (#7326) via Antonio Pallares (@ajpallares)
+* feat(remote-config): force the config kill-switch via query param in E2E tests (#7317) via Antonio Pallares (@ajpallares)
+* Send `paywall_id`, `workflow_id` and `trace_id` on paywall events (#7322) via Cesar de la Vega (@vegaro)
+* Re-resolve pruned offerings when the config kill switch trips (#7321) via Antonio Pallares (@ajpallares)
+* feat(remote-config): use the server clock for X-RC-Last-Refresh-Time (#7314) via Rick (@rickvdl)
+* test(paywalls): drop the nested background landscape test (#7319) via Facundo Menzella (@facumenzella)
+* refactor: model ForceServerErrorStrategy interception as a single Action enum (#7315) via Antonio Pallares (@ajpallares)
