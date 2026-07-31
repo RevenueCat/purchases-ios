@@ -114,13 +114,13 @@ Records Paywall template screenshots once and distributes them to the provided t
 
 Records screenshots for paywalls
 
-### ios build_paywalls_tester_for_emerge
+### ios build_and_upload_paywalls_tester_snapshots
 
 ```sh
-[bundle exec] fastlane ios build_paywalls_tester_for_emerge
+[bundle exec] fastlane ios build_and_upload_paywalls_tester_snapshots
 ```
 
-Build the Paywalls Test app for Emerge Snapshots
+Build PaywallsTester Preview snapshots and upload to Emerge and Sentry
 
 ### ios record_and_upload_v1_snapshots
 
@@ -145,14 +145,6 @@ Upload V1 template snapshots to Emerge using BYOS
 ```
 
 Upload V1 template snapshots to Sentry
-
-### ios build_paywalls_tester_for_emerge_ios
-
-```sh
-[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
-```
-
-
 
 ### ios test_ios
 
