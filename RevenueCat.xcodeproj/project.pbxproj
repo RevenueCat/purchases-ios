@@ -1321,6 +1321,7 @@
 		D07F64990C2DD742698ED810 /* PredicateConformanceFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9988F3464C8BB896E3FE78 /* PredicateConformanceFixture.swift */; };
 		D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08C42672FD995C20035A009 /* RewardVerificationToken.swift */; };
 		D0D83AE85FF3400EA30B0BDE /* TabsComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */; };
+		475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */; };
 		D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2779D02050D28BF369658 /* WebViewComponentView.swift */; };
@@ -3034,6 +3035,7 @@
 		D01244182FD02FC30043B43B /* RewardVerificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResult.swift; sourceTree = "<group>"; };
 		D04D812C75F9E42B66D11A37 /* PredicateConformanceRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceRunner.swift; sourceTree = "<group>"; };
 		D08C42672FD995C20035A009 /* RewardVerificationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationToken.swift; sourceTree = "<group>"; };
+		9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdTrackingMetadata.swift; sourceTree = "<group>"; };
 		D0A2779D02050D28BF369658 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentTests.swift; sourceTree = "<group>"; };
@@ -6237,6 +6239,7 @@
 			isa = PBXGroup;
 			children = (
 				D08C42672FD995C20035A009 /* RewardVerificationToken.swift */,
+				9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */,
 				D01244152FD02FC30043B43B /* Outcome.swift */,
 				D01244162FD02FC30043B43B /* Poller.swift */,
 				D01244172FD02FC30043B43B /* RewardVerification.swift */,
@@ -7637,6 +7640,7 @@
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
 				D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */,
+				475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */,
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
