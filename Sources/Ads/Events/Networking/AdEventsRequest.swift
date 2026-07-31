@@ -86,7 +86,7 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
-        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_unverified"
+        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_earned"
         case rewardVerified = "rc_ads_ad_reward_sdk_verified"
         case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
         case rewardGranted = "rc_ads_ad_reward_sdk_granted"
@@ -195,7 +195,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case rewardType
         case rewardCurrencyCode
         case rewardCurrencyAmount
-        case failureReason
+        case failureReason = "reward_failure_reason"
 
     }
 
