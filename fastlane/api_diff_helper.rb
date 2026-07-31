@@ -324,6 +324,53 @@ module ApiDiffHelper
     TYPE_DECLARATION.match(declaration.to_s.lines.first.to_s)&.captures&.first
   end
 
+  # The report says what changed and inside which type, but never what kind of type that is,
+  # so the generated interface is the source of truth for enum versus protocol.
+  def enclosing_type_kind(interface_path, type_name)
+    name = type_name.to_s.split(".").last
+    return nil if name.nil? || name.empty?
+
+    contents = File.read(interface_path)
+    return :enum if contents.match?(/\benum\s+#{Regexp.escape(name)}\b/)
+    return :protocol if contents.match?(/\bprotocol\s+#{Regexp.escape(name)}\b/)
+
+    nil
+  end
+
+  def breaking_changes(report, interface_path)
+    changes = parse_report(report)
+    new_type_names = changes.select { |change| change.kind == :added && change.owner.nil? }
+                            .map { |change| declaration_type_name(change.declaration) }
+                            .compact
+
+    changes.each_with_object([]) do |change, breaks|
+      first_line = change.declaration.to_s.lines.first.to_s.strip
+
+      case change.kind
+      when :removed
+        breaks << { reason: :removed, owner: change.owner, declaration: first_line }
+      when :modified
+        next if modification_attribute_only?(change.declaration)
+
+        breaks << { reason: :modified, owner: change.owner, declaration: first_line }
+      when :added
+        # A wholly new declaration breaks nothing, and neither does a member of a type this
+        # same report introduces.
+        next if change.owner.nil?
+        next if new_type_names.include?(change.owner.split(".").last)
+
+        case enclosing_type_kind(interface_path, change.owner)
+        when :enum
+          breaks << { reason: :enum_case, owner: change.owner, declaration: first_line } if first_line.start_with?("case ")
+        when :protocol
+          next if change.declaration.include?("optional ")
+
+          breaks << { reason: :protocol_requirement, owner: change.owner, declaration: first_line }
+        end
+      end
+    end
+  end
+
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)

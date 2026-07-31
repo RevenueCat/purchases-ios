@@ -668,6 +668,118 @@ class ApiDiffHelperTest < Minitest::Test
     refute_match(/this fence has no kind/, change.declaration)
   end
 
+  # --- Break rules ---
+
+  def with_interface_containing(text)
+    Dir.mktmpdir do |dir|
+      path = File.join(dir, "RevenueCat.swiftinterface")
+      File.write(path, text)
+      yield path
+    end
+  end
+
+  def test_enclosing_type_kind_classifies_from_the_interface
+    with_interface_containing("public enum PaywallEvent : Swift.Codable {\n}\npublic protocol Delegate {\n}\n") do |path|
+      assert_equal :enum, ApiDiffHelper.enclosing_type_kind(path, "PaywallEvent")
+      assert_equal :protocol, ApiDiffHelper.enclosing_type_kind(path, "Delegate")
+      # Dotted owners resolve on their last component.
+      assert_equal :enum, ApiDiffHelper.enclosing_type_kind(path, "RevenueCat.PaywallEvent")
+      assert_nil ApiDiffHelper.enclosing_type_kind(path, "SomeStruct")
+    end
+  end
+
+  def test_case_added_to_an_existing_enum_is_a_break
+    with_interface_containing("public enum PaywallEvent : Swift.Codable {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(ENUM_CASE_REPORT, path)
+
+      assert_equal 1, breaks.count, "the brand new enum must not be flagged"
+      assert_equal :enum_case, breaks.first[:reason]
+      assert_equal "PaywallEvent", breaks.first[:owner]
+    end
+  end
+
+  # The new enum's own cases are inside its declaration block, not separate member changes.
+  def test_a_brand_new_enum_is_not_a_break
+    report = <<~REPORT
+      # 👀 1 public change detected
+
+      ---
+      ## `RevenueCat`
+      #### ❇️ Added
+      ```swift
+      public enum BrandNew : Swift.Int {
+        case first
+      }
+      ```
+    REPORT
+
+    with_interface_containing("public enum BrandNew : Swift.Int {\n}\n") do |path|
+      assert_empty ApiDiffHelper.breaking_changes(report, path)
+    end
+  end
+
+  def test_removal_is_a_break
+    with_interface_containing("public func other()\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(SINGLE_REMOVAL_OUTPUT, path)
+
+      assert_equal [:removed], breaks.map { |b| b[:reason] }
+    end
+  end
+
+  def test_attribute_only_modification_is_not_a_break
+    with_interface_containing("public class Builder {\n}\n") do |path|
+      assert_empty ApiDiffHelper.breaking_changes(MODIFIED_REPORT, path)
+    end
+  end
+
+  def test_signature_change_is_a_break
+    report = <<~REPORT
+      # ⚠️ 1 public change detected ⚠️
+
+      ---
+      ## `RevenueCat`
+      ### `Purchases`
+      #### 🔀 Modified
+      ```swift
+      // From
+      public func f(a: Swift.Int)
+
+      // To
+      public func f(a: Swift.String)
+
+      /**
+      Changes:
+      - Changed parameter type
+      */
+      ```
+    REPORT
+
+    with_interface_containing("public class Purchases {\n}\n") do |path|
+      assert_equal [:modified], ApiDiffHelper.breaking_changes(report, path).map { |b| b[:reason] }
+    end
+  end
+
+  def test_protocol_requirement_rules
+    interface = "public protocol PurchasesDelegate {\n}\n"
+    required = <<~REPORT
+      # 👀 1 public change detected
+
+      ---
+      ## `RevenueCat`
+      ### `PurchasesDelegate`
+      #### ❇️ Added
+      ```swift
+      func purchases(_ purchases: RevenueCat.Purchases)
+      ```
+    REPORT
+    optional = required.sub("func purchases", "@objc optional func purchases")
+
+    with_interface_containing(interface) do |path|
+      assert_equal [:protocol_requirement], ApiDiffHelper.breaking_changes(required, path).map { |b| b[:reason] }
+      assert_empty ApiDiffHelper.breaking_changes(optional, path)
+    end
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
