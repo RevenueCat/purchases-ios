@@ -8,8 +8,20 @@ require 'yaml'
 # Mock Fastlane::UI for testing
 module Fastlane
   module UI
-    def self.error(message); end
+    class << self
+      attr_accessor :messages
+    end
+    self.messages = []
+
+    def self.error(message)
+      messages << message
+    end
+
     def self.success(message); end
+
+    def self.important(message)
+      messages << message
+    end
   end
 
   # Mock Fastlane::Actions.sh, used only when the default runner (runner: nil) is exercised.
@@ -50,6 +62,10 @@ class ApiDiffHelperTest < Minitest::Test
                           "\n---\n## `RevenueCat`\n#### ❌ Removed\n```swift\n" \
                           "public func apiDiffHelperFixtureSingleRemoval() -> Swift.Int\n```\n" \
                           "\n---\n**Analyzed targets:** RevenueCat\n".freeze
+
+  def setup
+    Fastlane::UI.messages = []
+  end
 
   def with_interface_files
     Dir.mktmpdir do |dir|
@@ -876,6 +892,53 @@ class ApiDiffHelperTest < Minitest::Test
     with_interface_containing(interface) do |path|
       assert_equal [:protocol_requirement], ApiDiffHelper.breaking_changes(report, path).map { |b| b[:reason] }
     end
+  end
+
+  # --- The gate ---
+
+  def test_gate_blocks_on_breaks_without_the_label
+    breaks = [{ reason: :removed, owner: nil, declaration: "public func gone()" }]
+
+    assert ApiDiffHelper.gate_blocked?(breaks, [])
+    assert ApiDiffHelper.gate_blocked?(breaks, ["pr:other", "pr:RevenueCatUI"])
+  end
+
+  def test_label_makes_the_gate_report_only
+    breaks = [{ reason: :removed, owner: nil, declaration: "public func gone()" }]
+
+    refute ApiDiffHelper.gate_blocked?(breaks, [ApiDiffHelper::BREAKING_CHANGE_LABEL])
+    assert_equal "pr:breaking-api", ApiDiffHelper::BREAKING_CHANGE_LABEL
+  end
+
+  def test_gate_passes_when_nothing_is_breaking
+    refute ApiDiffHelper.gate_blocked?([], [])
+  end
+
+  def test_print_breaking_summary_is_a_noop_when_nothing_is_breaking
+    assert_nil ApiDiffHelper.print_breaking_summary([], [])
+    assert_empty Fastlane::UI.messages
+  end
+
+  def test_print_breaking_summary_without_the_label_tells_you_to_add_it
+    breaks = [{ reason: :removed, owner: nil, declaration: "public func gone()" }]
+
+    ApiDiffHelper.print_breaking_summary(breaks, [])
+
+    joined = Fastlane::UI.messages.join("\n")
+    assert_includes joined, "removed: public func gone()"
+    assert_includes joined, "Add the #{ApiDiffHelper::BREAKING_CHANGE_LABEL} label"
+    refute_includes joined, "Reported only"
+  end
+
+  def test_print_breaking_summary_with_the_label_reports_only
+    breaks = [{ reason: :enum_case, owner: "Foo", declaration: "case bar" }]
+
+    ApiDiffHelper.print_breaking_summary(breaks, [ApiDiffHelper::BREAKING_CHANGE_LABEL])
+
+    joined = Fastlane::UI.messages.join("\n")
+    assert_includes joined, "case added to an existing enum in Foo: case bar"
+    assert_includes joined, "Reported only"
+    refute_includes joined, "Add the #{ApiDiffHelper::BREAKING_CHANGE_LABEL} label"
   end
 
   private

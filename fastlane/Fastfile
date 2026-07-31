@@ -739,6 +739,25 @@ platform :ios do
     pr_number
   end
 
+  # Labels come from the PR, so a local run or a non-PR build simply has none.
+  private_lane :pr_labels_for_api_gate do
+    pr_number = detect_pr_number
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+
+    if pr_number.nil? || token.nil? || token.empty?
+      UI.message("No PR context, treating the API gate as unlabelled")
+      []
+    else
+      response = github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'GET',
+        path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
+      )
+      (response[:json]["labels"] || []).map { |label| label["name"] }
+    end
+  end
+
   private_lane :send_to_emerge do |options|
     pr_number = detect_pr_number
 
@@ -2442,6 +2461,42 @@ platform :ios do
       UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     else
       UI.success("✅ No API changes detected")
+    end
+
+    # Second comparison: what this PR changes relative to main. The freshness loop above
+    # cannot answer that, because regenerating the baselines makes its diff empty.
+    runner = ->(*command) { sh(*command, log: false) }
+    merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
+    UI.message("Comparing against the merge base #{merge_base}")
+
+    labels = pr_labels_for_api_gate
+    all_breaks = []
+
+    schemes.each do |scheme|
+      base_dir = File.join(ApiDiffHelper::MERGE_BASE_SWIFTINTERFACE_DIR, scheme)
+      ApiDiffHelper.extract_baselines_at(merge_base, base_dir, scheme, runner: runner)
+      prefix = ApiDiffHelper.api_file_prefix(scheme)
+
+      ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+        old_file = File.join(base_dir, "#{prefix}-api#{platform[:suffix]}.swiftinterface")
+        new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}.swiftinterface"
+        next unless File.exist?(new_file)
+
+        report = ApiDiffHelper.public_api_diff_report(
+          tool: "public-api-diff",
+          old_file: old_file,
+          new_file: new_file,
+          target_name: "#{scheme} #{platform[:name]}"
+        )
+        all_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
+      end
+    end
+
+    all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
+    ApiDiffHelper.print_breaking_summary(all_breaks, labels)
+
+    if ApiDiffHelper.gate_blocked?(all_breaks, labels)
+      UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
     end
   end
 

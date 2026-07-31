@@ -397,6 +397,44 @@ module ApiDiffHelper
     end
   end
 
+  BREAKING_CHANGE_LABEL = "pr:breaking-api".freeze
+
+  BREAK_REASONS = {
+    removed: "removed",
+    enum_case: "case added to an existing enum",
+    protocol_requirement: "requirement added to an existing protocol",
+    modified: "signature changed"
+  }.freeze
+
+  def gate_blocked?(breaks, labels)
+    return false if breaks.empty?
+
+    !Array(labels).include?(BREAKING_CHANGE_LABEL)
+  end
+
+  def print_breaking_summary(breaks, labels)
+    return nil if breaks.empty?
+
+    Fastlane::UI.error("=" * 60)
+    Fastlane::UI.error("POTENTIAL BREAKING API CHANGES")
+    Fastlane::UI.error("=" * 60)
+
+    breaks.each do |change|
+      owner = change[:owner] ? " in #{change[:owner]}" : ""
+      Fastlane::UI.error("#{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: #{change[:declaration]}")
+    end
+
+    Fastlane::UI.error("")
+    if gate_blocked?(breaks, labels)
+      Fastlane::UI.error("Add the #{BREAKING_CHANGE_LABEL} label if these changes are intentional.")
+    else
+      Fastlane::UI.important("Reported only: the #{BREAKING_CHANGE_LABEL} label is present.")
+    end
+    Fastlane::UI.error("=" * 60)
+
+    nil
+  end
+
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)
