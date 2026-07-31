@@ -7,10 +7,9 @@
 ## RevenueCatUI SDK
 ### ✨ New Features
 * feat: add onURLOpened to paywall listener surfaces (#7320) via Toni Rico (@tonidero)
-### Paywallv2
+### Paywallsv2
 #### ✨ New Features
 * Enable support for multipage paywalls (#7327) via Facundo Menzella (@facumenzella)
-### Paywallsv2
 #### 🐞 Bugfixes
 * Send `paywall_id` and `trace_id` on post receipt (#7311) via Cesar de la Vega (@vegaro)
 
