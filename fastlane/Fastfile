@@ -228,11 +228,12 @@ platform :ios do
     )
   end
 
-  desc "Records Paywall template screenshots once and distributes them to the provided target_repository_path and/or Emerge"
+  desc "Records Paywall template screenshots once and distributes them to the provided target_repository_path, Emerge, and/or Sentry"
   lane :record_and_upload_v2_snapshots do |options|
     provided_target_repository_path = options[:target_repository_path].to_s.strip
     upload_to_emerge = options[:upload_to_emerge].to_s == "true"
-    UI.user_error!("At least one of target_repository_path or upload_to_emerge must be provided.") if provided_target_repository_path.empty? && !upload_to_emerge
+    upload_to_sentry = options[:upload_to_sentry].to_s == "true"
+    UI.user_error!("At least one of target_repository_path, upload_to_emerge, or upload_to_sentry must be provided.") if provided_target_repository_path.empty? && !upload_to_emerge && !upload_to_sentry
 
     this_commit_hash = sh("git", "rev-parse", "HEAD").strip
 
@@ -279,6 +280,7 @@ platform :ios do
       end
 
       upload_paywall_template_screenshots_to_emerge(platform: platform, output_dir: output_dir) if upload_to_emerge
+      upload_paywall_template_screenshots_to_sentry(platform: platform, output_dir: output_dir) if upload_to_sentry
     end
 
     if target_repository_path
@@ -309,6 +311,24 @@ platform :ios do
       name: "Paywall Rendering Validation (#{platform})",
       id: "com.revenuecat.paywall-rendering-validation.#{platform}",
       images_path: "#{output_dir}/images"
+    )
+  end
+
+  private_lane :upload_paywall_template_screenshots_to_sentry do |options|
+    platform = options[:platform] || UI.user_error!("No platform provided")
+    output_dir = options[:output_dir] || UI.user_error!("No output_dir provided")
+    images_path = "#{output_dir}/images"
+    pngs = Dir.glob("#{images_path}/**/*.png")
+    UI.user_error!("No paywall rendering PNGs found in #{images_path}") if pngs.empty?
+    UI.message("Found #{pngs.count} #{platform} paywall rendering images to upload to Sentry")
+
+    sentry_upload_snapshots(
+      sentry_snapshot_vcs_args.merge(
+        org_slug: SENTRY_ORG_SLUG,
+        project_slug: SENTRY_PROJECT_SLUG,
+        path: images_path,
+        app_id: "com.revenuecat.paywall-rendering-validation.#{platform}"
+      )
     )
   end
 
