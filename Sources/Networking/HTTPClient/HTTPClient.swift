@@ -306,6 +306,13 @@ internal extension HTTPClient {
             return self.fallbackUrlIndex != nil
         }
 
+        /// Whether the attempt is aimed at a fallback host, either because the fallback walk moved it
+        /// there or because the path targets one on its own. Such attempts get the flat fallback
+        /// timeout and never take part in the main source's per-host fail-fast memory.
+        var targetsFallbackHost: Bool {
+            return self.isFallbackURLRequest || self.httpRequest.path.isFallbackHostPath
+        }
+
         /// Carried on the request so a failure can report the exact handle unhealthy, and so
         /// retries of any kind (ETag refresh, status-code backoff) keep targeting the same host.
         private(set) var apiSourceState: APISourceState = .unresolved
@@ -781,7 +788,7 @@ private extension HTTPClient {
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
             host: finalURLRequest.url?.host,
-            isFallbackHostRequest: request.isFallbackURLRequest,
+            isFallbackHostRequest: request.targetsFallbackHost,
             endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
             isProxied: SystemInfo.proxyURL != nil,
             // The re-tiered fail-fast timeouts for main-API requests only apply when API sources are
