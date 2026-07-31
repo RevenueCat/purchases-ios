@@ -60,13 +60,13 @@ env:
 - tapOn:
     text: "Force Config Killswitch"
 
-# Drives the config request that returns the kill switch. The counter only advances once the kill switch has
+# Drives the config request that returns the kill switch. The label only appears once the kill switch has
 # landed, so waiting on it removes the need for a sleep here. Note that the offering this screen holds is
 # deliberately not reloaded: presenting the one captured before the kill switch is the scenario under test.
 - tapOn:
     text: "Sync Attributes And Offerings"
 - extendedWaitUntil:
-    visible: "completed syncs: 1"
+    visible: "config killswitch: on"
     timeout: 30000
 
 - tapOn:

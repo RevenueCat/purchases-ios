@@ -32,7 +32,7 @@ extension E2ETestFlowView {
 
         @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
-        @State private var completedSyncCount = 0
+        @State private var killSwitchOn = false
 
         var body: some View {
             VStack {
@@ -75,8 +75,7 @@ extension E2ETestFlowView {
             .multilineTextAlignment(.center)
         }
 
-        /// Controls E2E tests use to change SDK state without relaunching, which would reset it. Always
-        /// shown: the flows that don't need them simply don't tap them.
+        /// Controls E2E tests use to change SDK state without relaunching, which would reset it.
         @ViewBuilder
         private var e2eControls: some View {
             Button("Force Config Killswitch") {
@@ -89,7 +88,9 @@ extension E2ETestFlowView {
                 Task { await self.syncAndWaitForKillSwitch() }
             }
 
-            Text("completed syncs: \(self.completedSyncCount)")
+            if self.killSwitchOn {
+                Text("config killswitch: on")
+            }
         }
 
         /// Drives the config request that returns the kill switch, then waits for it to land so the flow
@@ -105,13 +106,13 @@ extension E2ETestFlowView {
 
             let deadline = Date().addingTimeInterval(10)
             while Purchases.shared.remoteConfigEnabled {
-                // Leaving the counter untouched makes the flow waiting on it fail here rather than later,
-                // on a paywall assertion that can't say why the kill switch never landed.
+                // Returning without reporting makes the flow waiting on the label fail here rather than
+                // later, on a paywall assertion that can't say why the kill switch never landed.
                 guard Date() < deadline else { return }
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
 
-            self.completedSyncCount += 1
+            self.killSwitchOn = true
         }
 
         enum OfferingError: LocalizedError {
