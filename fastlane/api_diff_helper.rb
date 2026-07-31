@@ -324,17 +324,39 @@ module ApiDiffHelper
     TYPE_DECLARATION.match(declaration.to_s.lines.first.to_s)&.captures&.first
   end
 
+  # Strips `//` line comments and the contents of double-quoted string literals so prose
+  # (e.g. an `@available(*, deprecated, message: "the enum Foo pattern...")` string) can't
+  # masquerade as a declaration. Strings are neutralized first so a `//` inside one (a URL in
+  # a deprecation message, say) isn't mistaken for a comment opener. String bodies are not
+  # allowed to cross a newline, so an unbalanced quote can't swallow real declarations that
+  # follow it. Block comments (`/* */`) are deliberately out of scope: real .swiftinterface
+  # output doesn't use them, and we're not writing a Swift parser.
+  def strip_comments_and_strings(contents)
+    contents.gsub(/"(?:\\.|[^"\\\n])*"/, '""').gsub(%r{//[^\n]*}, '')
+  end
+
   # The report says what changed and inside which type, but never what kind of type that is,
   # so the generated interface is the source of truth for enum versus protocol.
   def enclosing_type_kind(interface_path, type_name)
     name = type_name.to_s.split(".").last
     return nil if name.nil? || name.empty?
 
-    contents = File.read(interface_path)
+    contents = strip_comments_and_strings(File.read(interface_path))
     return :enum if contents.match?(/\benum\s+#{Regexp.escape(name)}\b/)
     return :protocol if contents.match?(/\bprotocol\s+#{Regexp.escape(name)}\b/)
 
     nil
+  end
+
+  # Matches `optional` only when it functions as a declaration modifier immediately preceding
+  # the requirement's keyword (optionally after attributes like `@objc`), not merely anywhere
+  # in the text, e.g. a parameter literally named `optional` or a doc comment mentioning it.
+  # Failing to recognize a real `optional` modifier here would over-report, not under-report,
+  # which is the safe direction for this gate.
+  PROTOCOL_OPTIONAL_MODIFIER = /^\s*(?:@\w+(?:\([^)]*\))?\s*)*optional\s+(?:func|var|subscript|init)\b/.freeze
+
+  def protocol_requirement_optional?(declaration)
+    PROTOCOL_OPTIONAL_MODIFIER.match?(strip_comments_and_strings(declaration.to_s))
   end
 
   def breaking_changes(report, interface_path)
@@ -354,16 +376,20 @@ module ApiDiffHelper
 
         breaks << { reason: :modified, owner: change.owner, declaration: first_line }
       when :added
-        # A wholly new declaration breaks nothing, and neither does a member of a type this
-        # same report introduces.
+        # A wholly new declaration breaks nothing, and neither does a member reported under a
+        # type this same report introduces: match the owner in full, not by last component,
+        # since a same-basename but differently-owned type (e.g. `Other.Config` alongside a
+        # new top-level `Config`) must still be evaluated below. A nested member of a new type
+        # reported with a dotted owner falls through to evaluation too; that only over-reports
+        # (never under-reports), which `pr:breaking-api` exists to override.
         next if change.owner.nil?
-        next if new_type_names.include?(change.owner.split(".").last)
+        next if new_type_names.include?(change.owner)
 
         case enclosing_type_kind(interface_path, change.owner)
         when :enum
           breaks << { reason: :enum_case, owner: change.owner, declaration: first_line } if first_line.start_with?("case ")
         when :protocol
-          next if change.declaration.include?("optional ")
+          next if protocol_requirement_optional?(change.declaration)
 
           breaks << { reason: :protocol_requirement, owner: change.owner, declaration: first_line }
         end

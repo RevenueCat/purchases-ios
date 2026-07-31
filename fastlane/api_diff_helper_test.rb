@@ -780,6 +780,104 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # Finding 1: a member of a differently-owned type must not be excluded just because it
+  # shares a basename with a wholly new type introduced elsewhere in the same report.
+  def test_member_of_a_differently_owned_type_sharing_a_new_types_basename_is_still_a_break
+    report = <<~REPORT
+      # 👀 2 public changes detected
+
+      ---
+      ## `RevenueCat`
+      #### ❇️ Added
+      ```swift
+      public enum Config : Swift.Int {
+        case first
+      }
+      ```
+      ### `Other.Config`
+      #### ❇️ Added
+      ```swift
+      case second
+      ```
+    REPORT
+
+    with_interface_containing("public enum Config : Swift.Int {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(report, path)
+
+      assert_equal [:enum_case], breaks.map { |b| b[:reason] }
+      assert_equal ["Other.Config"], breaks.map { |b| b[:owner] }
+    end
+  end
+
+  # Finding 1 (guard-alive): a member reported under a type this same report introduces,
+  # under that type's own (undotted) name, must still be excluded. This is the only
+  # existing-suite scenario the new_type_names guard actually changes the outcome for, so
+  # it's what a mutation check (deleting the guard line) needs to catch.
+  # This report shape (a `###` section for a type also reported wholly new) is synthetic,
+  # constructed to reach the guard; parse_report's own docstring says the real tool doesn't
+  # emit it. It is not captured from an actual public-api-diff run.
+  def test_member_reported_separately_for_the_same_new_type_is_not_a_break
+    report = <<~REPORT
+      # 👀 2 public changes detected
+
+      ---
+      ## `RevenueCat`
+      #### ❇️ Added
+      ```swift
+      public enum BrandNewEnum : Swift.Int {
+        case first
+      }
+      ```
+      ### `BrandNewEnum`
+      #### ❇️ Added
+      ```swift
+      case second
+      ```
+    REPORT
+
+    with_interface_containing("public enum BrandNewEnum : Swift.Int {\n}\n") do |path|
+      assert_empty ApiDiffHelper.breaking_changes(report, path)
+    end
+  end
+
+  # Finding 2: classification must ignore prose. A real .swiftinterface preserves
+  # @available(..., message: "...") strings verbatim, so a struct whose name happens to
+  # appear inside one, or in a preceding // comment, must not be misclassified as an enum.
+  def test_enclosing_type_kind_ignores_comments_and_string_literals
+    interface = <<~SWIFT
+      // Following the enum Foo pattern, this is actually a struct.
+      @available(*, deprecated, message: "the enum Foo pattern is deprecated")
+      public struct Foo {
+      }
+    SWIFT
+
+    with_interface_containing(interface) do |path|
+      assert_nil ApiDiffHelper.enclosing_type_kind(path, "Foo")
+    end
+  end
+
+  # Finding 3: `optional` must be recognised only as a modifier immediately preceding the
+  # requirement's keyword. A bare substring test would be fooled by a parameter literally
+  # named `optional`, silently exempting a real (non-optional) requirement from the gate.
+  def test_protocol_requirement_with_parameter_named_optional_is_still_a_break
+    interface = "public protocol PurchasesDelegate {\n}\n"
+    report = <<~REPORT
+      # 👀 1 public change detected
+
+      ---
+      ## `RevenueCat`
+      ### `PurchasesDelegate`
+      #### ❇️ Added
+      ```swift
+      func purchases(optional flag: Swift.Bool)
+      ```
+    REPORT
+
+    with_interface_containing(interface) do |path|
+      assert_equal [:protocol_requirement], ApiDiffHelper.breaking_changes(report, path).map { |b| b[:reason] }
+    end
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
