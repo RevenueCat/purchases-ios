@@ -40,8 +40,6 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
 
     static func sessionConfiguration(timeoutCeiling: TimeInterval) -> URLSessionConfiguration {
         let configuration = URLSessionConfiguration.default
-        // `URLRequest.timeoutInterval` only bounds the gap between bytes, so a source trickling data would
-        // keep an attempt alive indefinitely without a resource timeout capping the whole download.
         configuration.timeoutIntervalForRequest = timeoutCeiling
         configuration.timeoutIntervalForResource = timeoutCeiling
         // Blobs are content-addressed and cached by `RemoteConfigBlobStore`, so an HTTP cache would only
@@ -98,9 +96,7 @@ private extension HTTPRequestTimeoutManagerType {
 
     /// The timeout for a blob-source download attempt against `host`.
     ///
-    /// Blob sources have no fallback URLs and are never proxied, and they always opt into the re-tiered
-    /// fail-fast timeouts independently of the `usesRemoteConfigAPISources` setting, which only gates
-    /// main-API requests.
+    /// Blob sources have no fallback URLs and are never proxied.
     func blobDownloadTimeout(host: String?) -> TimeInterval {
         return self.timeout(host: host,
                             isFallbackHostRequest: false,
