@@ -1907,6 +1907,103 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         )
     }
 
+    func testRemoteConfigFallbackPathUsesFlatTimeoutAndDoesNotArmMemory() throws {
+        // The domain layer aims this path at a fallback host, so even with API sources enabled it must
+        // get the flat fallback tier rather than the aggressive main-source tiers.
+        let client = self.createClient(self.systemInfoUsingAPISources())
+        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
+        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { request in
+            XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
+            return .timeoutResponse()
+        }
+
+        waitUntil { completion in
+            client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // A timeout against a fallback host says nothing about the main source, so the host stays on
+        // its base tier.
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: false,
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        )
+    }
+
+    func testRemoteConfigFallbackSuccessDoesNotClearMainSourceMemory() throws {
+        let client = self.createClient(self.systemInfoUsingAPISources())
+        let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
+        let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
+
+        timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
+
+        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        stub(condition: isAbsoluteURLString(url)) { _ in
+            return .emptySuccessResponse()
+        }
+
+        waitUntil { completion in
+            client.perform(request) { (_: DataResponse) in completion() }
+        }
+
+        // A fallback-host response is no evidence that the main source recovered, so the recorded
+        // timeout must survive it.
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: false,
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+    }
+
+    func testClearsMainSourceMemoryWhenASuccessfulResponseFailsToDecode() throws {
+        struct CustomResponse: Decodable, HTTPResponseBody {
+            let data: String
+        }
+
+        let request = HTTPRequest(method: .get, path: .mockPath)
+        let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+
+        timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
+
+        stub(condition: isPath(request.path)) { _ in
+            HTTPStubsResponse(data: "{this is not JSON.csdsd".asData, statusCode: .success, headers: nil)
+        }
+
+        let result = waitUntilValue { completion in
+            self.client.perform(request) { (response: VerifiedHTTPResponse<CustomResponse>.Result) in
+                completion(response)
+            }
+        }
+
+        expect(result).to(beFailure())
+
+        // The host answered in time and only its payload was unusable, so its entry is cleared and the
+        // next request goes back to the base tier.
+        XCTAssertEqual(
+            timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: false,
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallback
+        )
+    }
+
     func testRecordsOtherResultWhenRequestFailsWithoutTimeout() throws {
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
         let host = try XCTUnwrap(SystemInfo.apiBaseURL.host)

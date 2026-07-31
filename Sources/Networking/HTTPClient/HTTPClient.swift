@@ -560,6 +560,13 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
+        // The memory tracks how fast a host answers, so a non-error response clears the entry even when
+        // parsing or verifying that response fails afterwards.
+        if !request.targetsFallbackHost,
+           (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
+            requestTimeoutResult = .successOnMainBackend
+        }
+
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
 
@@ -575,11 +582,6 @@ private extension HTTPClient {
 
                 if response.isLoadShedder {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
-                }
-
-                // Record successful response from the main backend
-                if !request.isFallbackURLRequest {
-                    requestTimeoutResult = .successOnMainBackend
                 }
 
                 self.finish(request: request,
