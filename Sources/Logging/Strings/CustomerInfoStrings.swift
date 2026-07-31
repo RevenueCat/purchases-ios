@@ -34,6 +34,7 @@ enum CustomerInfoStrings {
     case posting_transactions_in_lieu_of_fetching_customerinfo([StoreTransaction])
     case posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(BackendError)
     case not_waiting_for_unsynced_transactions([StoreTransaction])
+    case fetching_without_waiting_for_unsynced_transactions([StoreTransaction])
     case computing_customerinfo_without_waiting_failed(Error)
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
@@ -88,6 +89,9 @@ extension CustomerInfoStrings: LogMessage {
         case let .posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error):
             return "Posting receipt for unfinished transaction failed " +
             "(\(error.localizedDescription)); falling back to fetching CustomerInfo."
+        case let .fetching_without_waiting_for_unsynced_transactions(transactions):
+            return "Found \(transactions.count) unsynced transactions. Fetching CustomerInfo and posting " +
+            "them in the background, as configured by UnsyncedTransactionsWaitPolicy.doNotWait."
         case let .not_waiting_for_unsynced_transactions(transactions):
             return "Found \(transactions.count) unsynced transactions. Computing CustomerInfo on device " +
             "and posting them in the background, as configured by UnsyncedTransactionsWaitPolicy.doNotWait."
