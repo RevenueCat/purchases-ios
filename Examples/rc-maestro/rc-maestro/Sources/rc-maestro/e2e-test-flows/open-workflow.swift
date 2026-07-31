@@ -32,7 +32,7 @@ extension E2ETestFlowView {
 
         @State private var offeringsState: GetOfferingsState = .loading
         @State private var presentPaywall = false
-        @State private var killSwitchOn = false
+        @State private var configEndpointKillSwitchOn = false
 
         var body: some View {
             VStack {
@@ -88,7 +88,7 @@ extension E2ETestFlowView {
                 Task { await self.syncAndWaitForKillSwitch() }
             }
 
-            if self.killSwitchOn {
+            if self.configEndpointKillSwitchOn {
                 Text("config killswitch: on")
             }
         }
@@ -112,7 +112,7 @@ extension E2ETestFlowView {
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
 
-            self.killSwitchOn = true
+            self.configEndpointKillSwitchOn = true
         }
 
         enum OfferingError: LocalizedError {
