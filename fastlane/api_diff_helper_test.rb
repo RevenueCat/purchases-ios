@@ -500,6 +500,173 @@ class ApiDiffHelperTest < Minitest::Test
     assert_nil ApiDiffHelper.declaration_type_name("public func notAType()")
   end
 
+  # Coverage for the three defensive guards: owner/kind reset on target heading,
+  # kind reset on type heading, and the elsif check on fence open.
+
+  # Fixture with two target sections: first has a nested member, second has target-level change.
+  # Tests that owner = nil is reset when a new ## target heading appears.
+  TWO_TARGETS_REPORT = <<~REPORT.freeze
+    # 👀 2 public changes detected
+    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `OldType`
+    #### ❇️ Added
+    ```swift
+    case memberOfOldType
+    ```
+
+    ---
+    ## `RevenueCatUI`
+    #### ❇️ Added
+    ```swift
+    public enum NewTypeInUI: Swift.String {
+      case value
+    }
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat, RevenueCatUI
+  REPORT
+
+  def test_parse_report_resets_owner_on_new_target_heading
+    changes = ApiDiffHelper.parse_report(TWO_TARGETS_REPORT)
+
+    assert_equal 2, changes.count
+    first, second = changes
+
+    # First change is nested under OldType, has an owner
+    assert_equal :added, first.kind
+    assert_equal "OldType", first.owner
+    assert_match(/memberOfOldType/, first.declaration)
+
+    # Second change is target-level (no preceding type section), owner should be nil
+    # This would fail if `owner = nil` was removed from the target heading branch
+    assert_equal :added, second.kind
+    assert_nil second.owner, "target-level changes must have owner=nil"
+    assert_match(/NewTypeInUI/, second.declaration)
+  end
+
+  # Fixture with a fenced block before any kind heading (orphaned block, should be ignored).
+  # Tests that elsif kind prevents a block from being opened/buffered before a kind is set.
+  ORPHANED_BLOCK_REPORT = <<~REPORT.freeze
+    # 👀 2 public changes detected
+    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `SomeType`
+    ```swift
+    this fence appears before any kind heading and should be ignored
+    ```
+    #### ❇️ Added
+    ```swift
+    public func validChange()
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  def test_parse_report_ignores_fences_before_kind_heading
+    changes = ApiDiffHelper.parse_report(ORPHANED_BLOCK_REPORT)
+
+    # Should only parse one change (the one after the kind heading).
+    # The orphaned block before the kind should be ignored.
+    # This would fail if `elsif kind` became `else` (fence open check would buffer prematurely)
+    assert_equal 1, changes.count
+    change = changes.first
+
+    assert_equal :added, change.kind
+    assert_equal "SomeType", change.owner
+    assert_match(/validChange/, change.declaration)
+    refute_match(/this fence appears/, change.declaration)
+  end
+
+  # Fixture where a type section is followed directly by another type section (no kind between them).
+  # Tests that kind = nil is reset when a new ### type heading appears.
+  CONSECUTIVE_TYPES_REPORT = <<~REPORT.freeze
+    # 👀 2 public changes detected
+    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `FirstType`
+    #### ❇️ Added
+    ```swift
+    case firstMember
+    ```
+    ### `SecondType`
+    #### ❇️ Added
+    ```swift
+    case secondMember
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  def test_parse_report_resets_kind_on_new_type_heading
+    changes = ApiDiffHelper.parse_report(CONSECUTIVE_TYPES_REPORT)
+
+    assert_equal 2, changes.count
+    first, second = changes
+
+    # First change under FirstType
+    assert_equal :added, first.kind
+    assert_equal "FirstType", first.owner
+    assert_match(/firstMember/, first.declaration)
+
+    # Second change under SecondType should have its own kind set by the #### heading.
+    # If `kind = nil` was removed from the type heading branch, the second change would
+    # incorrectly inherit :added from the previous section and the test would still pass.
+    # This test alone cannot catch that, but combined with test_parse_report_ignores_fences_before_kind_heading,
+    # it reinforces the pattern.
+    assert_equal :added, second.kind
+    assert_equal "SecondType", second.owner
+    assert_match(/secondMember/, second.declaration)
+  end
+
+  # Fixture where a type section is NOT followed by a kind heading before a fence.
+  # This tests that kind = nil is reset on type heading; without it, an orphaned fence
+  # in the second type would inherit the previous section's kind.
+  TYPE_WITHOUT_KIND_REPORT = <<~REPORT.freeze
+    # 👀 2 public changes detected
+    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `TypeWithKind`
+    #### ❇️ Added
+    ```swift
+    case validMember
+    ```
+    ### `TypeWithoutKind`
+    ```swift
+    this fence has no kind heading and should be ignored
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  def test_parse_report_does_not_inherit_kind_across_type_sections
+    changes = ApiDiffHelper.parse_report(TYPE_WITHOUT_KIND_REPORT)
+
+    # Should only parse one change (the one with an explicit kind heading).
+    # The fence in TypeWithoutKind should be ignored because kind is nil.
+    # This would fail if `kind = nil` was removed from the type heading branch,
+    # because then the orphaned fence would inherit :added from the previous section.
+    assert_equal 1, changes.count
+    change = changes.first
+
+    assert_equal :added, change.kind
+    assert_equal "TypeWithKind", change.owner
+    assert_match(/validMember/, change.declaration)
+    refute_match(/this fence has no kind/, change.declaration)
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
