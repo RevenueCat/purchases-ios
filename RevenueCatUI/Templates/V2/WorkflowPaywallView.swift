@@ -244,9 +244,10 @@ struct WorkflowPaywallView: View {
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
-    /// (this view, and with it the `@StateObject`, is torn down). Seeded empty for now —
-    /// workflow-root `state` declarations arrive with the workflow wire-format follow-up.
-    @StateObject private var stateStore = PaywallStateStore()
+    /// (this view, and with it the `@StateObject`, is torn down). Seeded in `init` from every
+    /// screen's declarations, because `PaywallsV2View` suppresses its own store while a workflow
+    /// injects one: an unseeded store leaves every `state_condition` override permanently unmatched.
+    @StateObject private var stateStore: PaywallStateStore
     // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
@@ -282,6 +283,9 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        self._stateStore = .init(
+            wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
+        )
         self._promoOfferCacheOwner = .init(wrappedValue: PromoOfferCacheOwner(
             cache: promoOfferCache ?? PaywallPromoOfferCache(
                 subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -309,6 +313,22 @@ struct WorkflowPaywallView: View {
         )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
         self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
+    }
+
+    /// Every screen's declarations merged into one map, so a key declared on a later screen is
+    /// already seeded when the user navigates to it. Screens are visited in id order and the first
+    /// declaration of a key wins, matching `registerDeclarations`' non-overwriting semantics; the
+    /// sort only makes the outcome deterministic if two screens declare the same key differently.
+    static func mergedStateDeclarations(
+        in workflow: PublishedWorkflow
+    ) -> [String: PaywallComponent.StateDeclaration] {
+        var merged: [String: PaywallComponent.StateDeclaration] = [:]
+        for (_, screen) in workflow.screens.sorted(by: { $0.key < $1.key }) {
+            for (key, declaration) in screen.stateDeclarations ?? [:] where merged[key] == nil {
+                merged[key] = declaration
+            }
+        }
+        return merged
     }
 
     var body: some View {

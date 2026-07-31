@@ -474,6 +474,51 @@ extension WorkflowPaywallViewTests {
         expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
     }
 
+    // MARK: - State declarations
+
+    /// Every screen reads through the workflow store (`PaywallsV2View` suppresses its own while a
+    /// workflow injects one) and it is seeded once per presentation, so a key declared on a screen
+    /// the user has not reached yet must already be in the merge.
+    func testMergedStateDeclarationsCollectsKeysFromEveryScreen() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: Self.screenJSON(stateDeclarations: """
+            { "on_initial": { "type": "boolean", "default": true } }
+            """),
+            terminalScreenJSON: Self.screenJSON(stateDeclarations: """
+            { "on_terminal": { "type": "string", "default": "annual" } }
+            """)
+        )
+
+        let merged = WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)
+
+        expect(merged.keys).to(contain("on_initial", "on_terminal"))
+        expect(merged["on_terminal"]?.defaultValue) == .string("annual")
+    }
+
+    func testMergedStateDeclarationsKeepsFirstDeclarationOfADuplicateKey() throws {
+        // Screens merge in id order, so `screen_initial` is seen before `screen_terminal`.
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: Self.screenJSON(stateDeclarations: """
+            { "shared": { "type": "string", "default": "from_initial" } }
+            """),
+            terminalScreenJSON: Self.screenJSON(stateDeclarations: """
+            { "shared": { "type": "string", "default": "from_terminal" } }
+            """)
+        )
+
+        let merged = WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)
+
+        expect(merged["shared"]?.defaultValue) == .string("from_initial")
+    }
+
+    func testMergedStateDeclarationsIsEmptyWhenNoScreenDeclaresState() throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+
+        expect(WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)).to(beEmpty())
+    }
+
 }
 
 // MARK: - Helpers for workflowPackageContext tests
@@ -591,6 +636,16 @@ private extension WorkflowPaywallViewTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+    }
+
+    /// A default screen with a `state_declarations` map spliced in, mirroring
+    /// `makeContextWithExitOffer`'s approach of appending a key to the generated screen JSON.
+    static func screenJSON(stateDeclarations: String) -> String {
+        let baseJSON = makeScreenJSON(packages: [], offeringId: "offering_test")
+        return String(baseJSON.dropLast()) + """
+        , "state_declarations": \(stateDeclarations)
+        }
+        """
     }
 
     static func makeScreenJSON(packages: [PackageSpec], offeringId: String) -> String {
