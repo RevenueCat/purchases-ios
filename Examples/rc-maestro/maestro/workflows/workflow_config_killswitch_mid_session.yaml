@@ -55,13 +55,10 @@ env:
     visible: "Present Paywall"
     timeout: 15000
 
-# Arm the kill switch, then leave and come back. Arming before backgrounding keeps this deterministic:
-# no config request happens in between, so the refresh below is guaranteed to see it.
+# Arm the kill switch. Nothing requests config between here and the refresh below, so that refresh is
+# guaranteed to be the one that trips it.
 - tapOn:
     text: "Force Config Killswitch"
-- pressKey: home
-- launchApp:
-    stopApp: false
 
 # Drives the config request that returns the kill switch. The counter only advances once the kill switch has
 # landed, so waiting on it removes the need for a sleep here. Note that the offering this screen holds is
