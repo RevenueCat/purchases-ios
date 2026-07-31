@@ -1975,7 +1975,7 @@ jobs:
           command: bundle exec fastlane deploy_rct_tester dry_run:<< parameters.dry_run >>
       - slack-notify-on-fail
 
-  emerge_purchases_ui_snapshot_tests:
+  purchases_ui_snapshot_tests:
     executor:
       name: macos-executor
     steps:
@@ -1985,8 +1985,8 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - run:
-          name: Build Paywalls Tester
-          command: bundle exec fastlane build_paywalls_tester_for_emerge
+          name: Build and upload PaywallsTester snapshots
+          command: bundle exec fastlane build_and_upload_paywalls_tester_snapshots
       - slack-notify-on-fail
 
   binary_size_analysis:
@@ -2359,9 +2359,10 @@ workflows:
       - run-revenuecat-ui-ios-26:
           context:
             - slack-secrets
-      - emerge_purchases_ui_snapshot_tests:
+      - purchases_ui_snapshot_tests:
           context:
             - slack-secrets
+            - sentry
       - binary_size_analysis:
           context:
             - slack-secrets
@@ -2539,7 +2540,7 @@ workflows:
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
+            - purchases_ui_snapshot_tests
             - binary_size_analysis
             - build-tv-watch-mac-and-visionos
             - run-workflow-maestro-tests
@@ -2890,9 +2891,10 @@ workflows:
       - run-revenuecat-ui-ios-26:
           context:
             - slack-secrets
-      - emerge_purchases_ui_snapshot_tests:
+      - purchases_ui_snapshot_tests:
           context:
             - slack-secrets
+            - sentry
 
       # =============================================================
       # All tests gate for release branches
@@ -2907,7 +2909,7 @@ workflows:
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
+            - purchases_ui_snapshot_tests
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
             - backend-integration-tests-custom-entitlements

@@ -67,6 +67,7 @@ BINARY_SIZE_ANALYSIS_CONFIGURATION = 'Release'
 SENTRY_ORG_SLUG = 'revenuecat'
 SENTRY_PROJECT_SLUG = 'purchases-ios'
 PAYWALLS_V1_SNAPSHOTS_APP_ID = 'com.revenuecat.PaywallsTester.v1-snapshots'
+PAYWALLS_PREVIEW_SNAPSHOTS_APP_ID = 'com.revenuecat.PaywallsTester'
 
 platform :ios do
   before_all do
@@ -516,9 +517,9 @@ platform :ios do
     output_dir
   end
 
-  desc "Build the Paywalls Test app for Emerge Snapshots"
-  lane :build_paywalls_tester_for_emerge do |options|
-    build_paywalls_tester_for_emerge_ios(options)
+  desc "Build PaywallsTester Preview snapshots and upload to Emerge and Sentry"
+  lane :build_and_upload_paywalls_tester_snapshots do |options|
+    build_and_upload_paywalls_tester_snapshots_ios(options)
     # November 2025: Emerge snapshots for these platforms are flaky, disabling for now.
     # build_paywalls_tester_for_emerge_mac(platform: "mac-catalyst-scaled-to-match-ipad")
     # build_paywalls_tester_for_emerge_mac(platform: "mac-native")
@@ -657,15 +658,46 @@ platform :ios do
     sh(*args)
   end
 
-  lane :build_paywalls_tester_for_emerge_ios do |options|
+  private_lane :build_and_upload_paywalls_tester_snapshots_ios do |options|
+    output_dir = File.expand_path("test_output/paywalls-tester-previews")
+    result_bundle_path = "#{output_dir}/PaywallsTesterPreviews.xcresult"
+    image_output_dir = "#{output_dir}/images"
+
+    FileUtils.rm_rf(output_dir)
+    FileUtils.mkdir_p(output_dir)
+
     scan(
       workspace: "Tests/TestingApps/PaywallsTester/PaywallsTester.xcworkspace",
       scheme: "PaywallsTester - Live Config",
-      build_for_testing: true,
+      device: ENV['DEVICE'] || "iPhone 16",
+      result_bundle: true,
+      result_bundle_path: result_bundle_path,
+      output_directory: output_dir,
+      output_types: "junit",
+      output_files: "tests.xml",
+      parallel_testing: false,
     )
 
     send_to_emerge(
-        app_id_suffix: ""
+      app_id_suffix: ""
+    )
+
+    extract_xcresult_attachments(
+      xcresult_path: result_bundle_path,
+      output_dir: image_output_dir
+    )
+
+    pngs = Dir.glob("#{image_output_dir}/**/*.png", File::FNM_CASEFOLD)
+    UI.user_error!("No Preview snapshot PNGs found in #{result_bundle_path}") if pngs.empty?
+    UI.message("Found #{pngs.count} Preview snapshot images to upload to Sentry")
+
+    sentry_upload_snapshots(
+      sentry_snapshot_vcs_args.merge(
+        org_slug: SENTRY_ORG_SLUG,
+        project_slug: SENTRY_PROJECT_SLUG,
+        path: image_output_dir,
+        app_id: PAYWALLS_PREVIEW_SNAPSHOTS_APP_ID
+      )
     )
   end
 
