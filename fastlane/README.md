@@ -128,7 +128,7 @@ Build the Paywalls Test app for Emerge Snapshots
 [bundle exec] fastlane ios record_and_upload_v1_snapshots
 ```
 
-Record V1 template snapshots and upload to Emerge
+Record V1 template snapshots and upload to Emerge and Sentry
 
 ### ios upload_v1_snapshots_to_emerge
 
@@ -137,6 +137,14 @@ Record V1 template snapshots and upload to Emerge
 ```
 
 Upload V1 template snapshots to Emerge using BYOS
+
+### ios upload_v1_snapshots_to_sentry
+
+```sh
+[bundle exec] fastlane ios upload_v1_snapshots_to_sentry
+```
+
+Upload V1 template snapshots to Sentry
 
 ### ios build_paywalls_tester_for_emerge_ios
 

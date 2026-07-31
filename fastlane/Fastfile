@@ -66,6 +66,7 @@ BINARY_SIZE_ANALYSIS_DEVICE = 'iPhone17,1'
 BINARY_SIZE_ANALYSIS_CONFIGURATION = 'Release'
 SENTRY_ORG_SLUG = 'revenuecat'
 SENTRY_PROJECT_SLUG = 'purchases-ios'
+PAYWALLS_V1_SNAPSHOTS_APP_ID = 'com.revenuecat.PaywallsTester.v1-snapshots'
 
 platform :ios do
   before_all do
@@ -509,7 +510,7 @@ platform :ios do
     # build_paywalls_tester_for_emerge_mac(platform: "iphone-app-on-mac")
   end
 
-  desc "Record V1 template snapshots and upload to Emerge"
+  desc "Record V1 template snapshots and upload to Emerge and Sentry"
   lane :record_and_upload_v1_snapshots do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
@@ -537,6 +538,7 @@ platform :ios do
     end
 
     upload_v1_snapshots_to_emerge
+    upload_v1_snapshots_to_sentry
   end
 
   desc "Upload V1 template snapshots to Emerge using BYOS"
@@ -548,10 +550,66 @@ platform :ios do
 
     upload_snapshots_to_emerge(
       name: "PaywallsTester V1 swift-snapshot-testing",
-      id: "com.revenuecat.PaywallsTester.v1-snapshots",
+      id: PAYWALLS_V1_SNAPSHOTS_APP_ID,
       client_library: "swift-snapshot-testing",
       project_root: File.expand_path("../Tests/RevenueCatUITests/Templates")
     )
+  end
+
+  desc "Upload V1 template snapshots to Sentry"
+  lane :upload_v1_snapshots_to_sentry do
+    snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
+    pngs = Dir.glob("#{snapshots_path}/**/*.png")
+    UI.user_error!("No snapshot PNGs found in #{snapshots_path}. Recording may have failed.") if pngs.empty?
+    UI.message("Found #{pngs.count} snapshot images to upload to Sentry")
+
+    sentry_args = sentry_snapshot_vcs_args.merge(
+      org_slug: SENTRY_ORG_SLUG,
+      project_slug: SENTRY_PROJECT_SLUG,
+      path: snapshots_path,
+      app_id: PAYWALLS_V1_SNAPSHOTS_APP_ID
+    )
+
+    sentry_upload_snapshots(sentry_args)
+  end
+
+  private_lane :sentry_snapshot_vcs_args do
+    args = {
+      vcs_provider: "github",
+      head_repo_name: "RevenueCat/#{REPO_NAME}",
+      base_repo_name: "RevenueCat/#{REPO_NAME}",
+      force_git_metadata: true
+    }
+
+    head_sha = ENV["CIRCLE_SHA1"]
+    args[:head_sha] = head_sha if head_sha && !head_sha.empty?
+
+    head_ref = ENV["CIRCLE_BRANCH"]
+    args[:head_ref] = head_ref if head_ref && !head_ref.empty?
+
+    pr_number = detect_pr_number
+    if pr_number
+      args[:pr_number] = pr_number
+
+      github_token = ENV["GITHUB_TOKEN"]
+      if github_token && !github_token.empty?
+        response = github_api(
+          server_url: "https://api.github.com",
+          api_token: github_token,
+          http_method: "GET",
+          path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
+        )
+        pull_request = response[:json]
+        args[:head_repo_name] = pull_request.dig("head", "repo", "full_name")
+        args[:base_repo_name] = pull_request.dig("base", "repo", "full_name")
+        args[:base_sha] = pull_request.dig("base", "sha")
+        args[:base_ref] = pull_request.dig("base", "ref")
+      else
+        UI.important("GITHUB_TOKEN is unavailable; Sentry CLI will infer snapshot base metadata")
+      end
+    end
+
+    args.compact
   end
 
   # Uploads snapshots to Emerge. Requires EMERGE_API_TOKEN to be available in the environment.
