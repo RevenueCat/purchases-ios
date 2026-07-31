@@ -40,17 +40,16 @@ class Backend {
         apiSourceProvider: RemoteConfigSourceProviderType?,
         dateProvider: DateProvider = DateProvider()
     ) {
-        // Shared by both HTTPClients so their failovers walk one source list and share one
-        // health-check cache; the provider's handle tokens keep concurrent reports from
-        // double-advancing the list.
+        // One `apiSourceFailover` for both HTTPClients, so they walk one source list and one
+        // health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
         let apiSourceFailover = apiSourceProvider.map {
             APISourceFailover(usesRemoteConfigAPISources:
                                 systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
                               sourceProvider: $0,
                               healthChecker: SourceHealthChecker())
         }
-        // Shared by both HTTPClients so a timeout one of them sees on a host fast-fails the other's next
-        // request to that same host, and a success on either clears it for both.
+        // `timeoutManager` is shared by both HTTPClients: a timeout on a host fast-fails the other's
+        // next request to it, and a success on either clears it for both.
         let timeoutManager = HTTPRequestTimeoutManager(networkTimeout: httpClientTimeout)
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
