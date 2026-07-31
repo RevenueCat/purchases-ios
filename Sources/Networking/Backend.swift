@@ -42,6 +42,15 @@ class Backend {
         apiSourceProvider: RemoteConfigSourceProviderType?,
         dateProvider: DateProvider = DateProvider()
     ) {
+        // Shared by both HTTPClients so their failovers walk one source list and share one
+        // health-check cache; the provider's handle tokens keep concurrent reports from
+        // double-advancing the list.
+        let apiSourceFailover = apiSourceProvider.map {
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+                              sourceProvider: $0,
+                              healthChecker: SourceHealthChecker())
+        }
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     tokenManager: tokenManager,
@@ -49,7 +58,7 @@ class Backend {
                                     diagnosticsTracker: diagnosticsTracker,
                                     requestTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
-                                    apiSourceProvider: apiSourceProvider)
+                                    apiSourceFailover: apiSourceFailover)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
@@ -63,7 +72,7 @@ class Backend {
                                                tokenManager: tokenManager,
                                                diagnosticsTracker: diagnosticsTracker,
                                                requestTimeout: httpClientTimeout,
-                                               apiSourceProvider: apiSourceProvider),
+                                               apiSourceFailover: apiSourceFailover),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -308,7 +317,7 @@ private extension HTTPClient {
         tokenManager: TokenManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
         requestTimeout: TimeInterval,
-        apiSourceProvider: RemoteConfigSourceProviderType?
+        apiSourceFailover: APISourceFailoverType?
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
@@ -317,7 +326,7 @@ private extension HTTPClient {
                    diagnosticsTracker: diagnosticsTracker,
                    requestTimeout: requestTimeout,
                    operationDispatcher: OperationDispatcher.default,
-                   apiSourceProvider: apiSourceProvider)
+                   apiSourceFailover: apiSourceFailover)
     }
 
 }

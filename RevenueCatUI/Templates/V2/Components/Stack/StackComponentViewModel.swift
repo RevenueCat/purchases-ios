@@ -28,7 +28,7 @@ class StackComponentViewModel {
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
 
-    /// Whether the first child is a full-width image or video.
+    /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
     var firstChildIsFullWidthMedia: Bool {
         guard case .zlayer = component.dimension else { return false }
@@ -41,6 +41,8 @@ class StackComponentViewModel {
             return image.size.width == .fill
         case .video(let video):
             return video.size.width == .fill
+        case .webView(let webView):
+            return webView.size.width == .fill
         default:
             return false
         }

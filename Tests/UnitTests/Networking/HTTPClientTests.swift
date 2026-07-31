@@ -72,8 +72,17 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     fileprivate final func createClient(
         _ systemInfo: SystemInfo,
         operationDispatcher: OperationDispatcher = MockOperationDispatcher(),
-        apiSourceProvider: RemoteConfigSourceProviderType? = nil
+        apiSourceProvider: RemoteConfigSourceProviderType? = nil,
+        sourceHealthChecker: SourceHealthCheckerType = SourceHealthChecker()
     ) -> HTTPClient {
+        // The real `SourceHealthChecker` default keeps health probes visible to OHHTTPStubs; tests
+        // that need a fixed health result inject a `MockSourceHealthChecker` instead.
+        let apiSourceFailover = apiSourceProvider.map {
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+                              sourceProvider: $0,
+                              healthChecker: sourceHealthChecker)
+        }
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
                           signing: self.signing,
@@ -81,7 +90,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
                           dnsChecker: MockDNSChecker.self,
                           requestTimeout: defaultRequestTimeout,
                           operationDispatcher: operationDispatcher,
-                          apiSourceProvider: apiSourceProvider,
+                          apiSourceFailover: apiSourceFailover,
                           timeoutManager: timeoutManager)
     }
 }
@@ -255,6 +264,308 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         expect(result).to(beSuccess())
         expect(apiSourceRequests.value) == 2
+    }
+
+    // MARK: - API source failover
+
+    private static let healthCheckPath = "/v1/health/connectivity"
+
+    /// Stubs `host`, counting and answering its health probes and its regular requests separately.
+    private func stubHost(
+        _ host: String,
+        healthStatusCode: Int32 = 200,
+        response: @escaping () -> HTTPStubsResponse
+    ) -> (healthChecks: Atomic<Int>, requests: Atomic<Int>) {
+        let healthChecks: Atomic<Int> = .init(0)
+        let requests: Atomic<Int> = .init(0)
+        stub(condition: isHost(host) && isPath(Self.healthCheckPath)) { _ in
+            healthChecks.modify { $0 += 1 }
+            return HTTPStubsResponse(data: Data(), statusCode: healthStatusCode, headers: nil)
+        }
+        stub(condition: isHost(host) && !isPath(Self.healthCheckPath)) { _ in
+            requests.modify { $0 += 1 }
+            return response()
+        }
+        return (healthChecks, requests)
+    }
+
+    func testFallsBackToNextAPISourceWhenCurrentSourceFails() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) { .serverDownResponse() }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(first.requests.value) == 1
+        expect(first.healthChecks.value) == 1
+        expect(second.requests.value) == 1
+    }
+
+    func testDoesNotFailOverWhenSourceIsHealthyDespiteServerError() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 200) { .serverDownResponse() }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        // The source is healthy, so the request failure was not a source outage: the original
+        // error surfaces without switching hosts.
+        expect(result).to(beFailure())
+        expect(first.requests.value) == 1
+        expect(first.healthChecks.value) == 1
+        expect(second.requests.value) == 0
+    }
+
+    func test4xxDoesNotFailOverAndDoesNotHealthCheck() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost) {
+            HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil)
+        }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(first.requests.value) == 1
+        expect(first.healthChecks.value) == 0
+        expect(second.requests.value) == 0
+    }
+
+    func testFailsOverOnConnectionFailureWhenHealthCheckFails() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) {
+            HTTPStubsResponse(error: URLError(.cannotConnectToHost))
+        }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(first.requests.value) == 1
+        expect(second.requests.value) == 1
+    }
+
+    func testDoesNotFailOverOnConnectionFailureWhenSourceIsHealthy() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 200) {
+            HTTPStubsResponse(error: URLError(.cannotConnectToHost))
+        }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(first.healthChecks.value) == 1
+        expect(second.requests.value) == 0
+    }
+
+    func testDoesNotHealthCheckOrFailOverOnDeviceConnectivityError() {
+        // Unlike Android, iOS can tell a device-connectivity failure apart from a host outage using
+        // the original request's URLError code. Switching hosts can't fix a device without
+        // connectivity, so the health check endpoint must not even be probed.
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost) {
+            HTTPStubsResponse(error: URLError(.notConnectedToInternet))
+        }
+        let second = self.stubHost(secondHost) { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(first.requests.value) == 1
+        expect(first.healthChecks.value) == 0
+        expect(second.requests.value) == 0
+    }
+
+    func testSurfacesOriginalErrorOnceSourcesAreExhausted() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) { .serverDownResponse() }
+        let second = self.stubHost(secondHost, healthStatusCode: 500) { .serverDownResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(first.requests.value) == 1
+        expect(second.requests.value) == 1
+    }
+
+    func testUsesStaticFallbackHostOnceSourcesAreExhausted() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) { .serverDownResponse() }
+        let second = self.stubHost(secondHost, healthStatusCode: 500) { .serverDownResponse() }
+        let fallback = self.stubHost("api-production.8-lives-cat.io") { .emptySuccessResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPathWithFallbacks)) { completion($0) }
+        }
+
+        // The static per-endpoint fallback host stays the last resort once every source declined.
+        expect(result).to(beSuccess())
+        expect(first.requests.value) == 1
+        expect(second.requests.value) == 1
+        expect(fallback.requests.value) == 1
+    }
+
+    func testPostRetriesWithItsBodyOnTheNextAPISource() throws {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let body = AnyEncodableRequestBody(["arg": "value"])
+        let bodyData = try JSONEncoder.default.encode(body)
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) { .serverDownResponse() }
+        let secondHostBodyCorrect: Atomic<Bool> = false
+        stub(condition: isHost(secondHost) && hasBody(bodyData)) { _ in
+            secondHostBodyCorrect.value = true
+            return .emptySuccessResponse()
+        }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .post(body), path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beSuccess())
+        expect(first.requests.value) == 1
+        expect(secondHostBodyCorrect.value) == true
+    }
+
+    func testCapsAPISourceAttemptsWhenTheListKeepsRearming() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        // A provider that re-arms its exhausted list on every read, simulating a topic rebuild or
+        // interval restart happening while a request walks the list.
+        let provider = AlwaysRearmingSourceProvider(
+            wrapping: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: provider
+        )
+
+        let first = self.stubHost(firstHost, healthStatusCode: 500) { .serverDownResponse() }
+        let second = self.stubHost(secondHost, healthStatusCode: 500) { .serverDownResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(first.requests.value + second.requests.value) == 5
+    }
+
+    func testRequestQueuedDuringAHealthCheckRunsAfterTheFailoverRetry() {
+        // While the probe is in flight the serial pipeline stays stalled, and the failover retry is
+        // requeued at the front: a request enqueued during the probe must run only after the retry.
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(hosts: [firstHost, secondHost])
+        )
+
+        let endpointHits: Atomic<[String]> = .init([])
+
+        stub(condition: isHost(firstHost) && isPath(Self.healthCheckPath)) { _ in
+            HTTPStubsResponse(data: Data(), statusCode: 503, headers: nil)
+                .responseTime(0.3)
+        }
+        stub(condition: isHost(firstHost) && !isPath(Self.healthCheckPath)) { request in
+            endpointHits.modify { $0.append("first:\(request.url?.path ?? "")") }
+            return .serverDownResponse()
+        }
+        stub(condition: isHost(secondHost) && !isPath(Self.healthCheckPath)) { request in
+            endpointHits.modify { $0.append("second:\(request.url?.path ?? "")") }
+            return .emptySuccessResponse()
+        }
+
+        let firstRequestPath = HTTPRequest.Path.mockPath.relativePath
+        let queuedRequestPath = HTTPRequest.Path.getCustomerInfo(appUserID: "queued-user").relativePath
+
+        let firstRequestCompleted: Atomic<Bool> = false
+        client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
+            firstRequestCompleted.value = true
+        }
+        // Enqueued while the first request's attempt/probe is in flight.
+        let queuedResult: EmptyResponse? = waitUntilValue(timeout: .seconds(5)) { completion in
+            client.perform(.init(method: .get, path: .getCustomerInfo(appUserID: "queued-user"))) {
+                completion($0)
+            }
+        }
+
+        expect(queuedResult).to(beSuccess())
+        expect(firstRequestCompleted.value) == true
+        expect(endpointHits.value) == [
+            "first:\(firstRequestPath)",
+            "second:\(firstRequestPath)",
+            "second:\(queuedRequestPath)"
+        ]
     }
 
     func testPassesHeaders() {
@@ -870,7 +1181,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         stub(condition: isPath(request.path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            expect(request.allHTTPHeaderFields?[ETagManager.lastRefreshTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(data: responseData,
@@ -903,7 +1214,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         stub(condition: isPath(path)) { request in
             expect(request.allHTTPHeaderFields?[ETagManager.eTagRequestHeader.rawValue]) == eTag
-            expect(request.allHTTPHeaderFields?[ETagManager.eTagValidationTimeRequestHeader.rawValue])
+            expect(request.allHTTPHeaderFields?[ETagManager.lastRefreshTimeRequestHeader.rawValue])
             == eTagValidationTime.millisecondsSince1970.description
 
             return HTTPStubsResponse(
@@ -2568,7 +2879,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response).to(beSuccess())
     }
 
-    func testforceServerErrorStrategyAlwaysFalseCallsTheOriginalPath() throws {
+    func testforceServerErrorStrategyPerformingRequestCallsTheOriginalPath() throws {
         let path: HTTPRequest.Path = .logIn
 
         let mockedResponse = BodyWithDate(data: "test", requestDate: Date())
@@ -2594,7 +2905,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(forceServerErrorStrategy: .init { _ in
-                        return false
+                        return .performRequest
                     })
                 ),
                 preferredLocalesProvider: .mock()
@@ -4175,7 +4486,15 @@ extension HTTPClientTests {
     /// A real `RemoteConfigSourceProvider` whose only API source is `https://<host>/`, so the resolved
     /// base host is unambiguously provider-driven rather than the default `serverHostURL`.
     fileprivate static func apiSourceProvider(host: String) -> RemoteConfigSourceProvider {
-        return RemoteConfigSourceProvider(topicStore: SingleAPISourceTopicStore(url: "https://\(host)/"))
+        return self.apiSourceProvider(hosts: [host])
+    }
+
+    /// A real `RemoteConfigSourceProvider` whose API sources are `https://<host>/` in the given
+    /// (priority) order.
+    fileprivate static func apiSourceProvider(hosts: [String]) -> RemoteConfigSourceProvider {
+        return RemoteConfigSourceProvider(
+            topicStore: APISourceTopicStore(urls: hosts.map { "https://\($0)/" })
+        )
     }
 
     /// A `MockSystemInfo` with the `usesRemoteConfigAPISources` dangerous setting enabled, so API source
@@ -4193,25 +4512,57 @@ extension HTTPClientTests {
 
 }
 
-/// A minimal `sources` topic store exposing a single API source, matching the backend topic shape.
-private final class SingleAPISourceTopicStore: RemoteConfigTopicStoreType {
+/// Re-arms the wrapped provider's exhausted list on every read, simulating a topic rebuild or
+/// interval restart happening while a request walks the list. Used to exercise the API source
+/// attempt cap.
+private final class AlwaysRearmingSourceProvider: RemoteConfigSourceProviderType {
 
-    private let url: String
+    private let wrapped: RemoteConfigSourceProvider
 
-    init(url: String) {
-        self.url = url
+    init(wrapping provider: RemoteConfigSourceProvider) {
+        self.wrapped = provider
+    }
+
+    func getCurrent(for purpose: RemoteConfigSourceHandle.Purpose) -> RemoteConfigSourceHandle? {
+        self.wrapped.restartIfExhausted(for: purpose)
+        return self.wrapped.getCurrent(for: purpose)
+    }
+
+    func reportUnhealthy(_ handle: RemoteConfigSourceHandle) {
+        self.wrapped.reportUnhealthy(handle)
+    }
+
+    func restart(for purpose: RemoteConfigSourceHandle.Purpose) {
+        self.wrapped.restart(for: purpose)
+    }
+
+    @discardableResult
+    func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
+        return self.wrapped.restartIfExhausted(for: purpose)
+    }
+
+}
+
+/// A minimal `sources` topic store exposing API sources in order (priority = index), matching the
+/// backend topic shape.
+private final class APISourceTopicStore: RemoteConfigTopicStoreType {
+
+    private let urls: [String]
+
+    init(urls: [String]) {
+        self.urls = urls
     }
 
     func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
         guard topic == .sources else { return nil }
         return ["api": RemoteConfiguration.ConfigItem(content: [
-            "sources": .array([
+            "sources": .array(self.urls.enumerated().map { priority, url in
                 .object([
-                    "url": .string(self.url),
-                    "priority": .int(0),
+                    "url": .string(url),
+                    "priority": .int(priority),
                     "weight": .int(1)
                 ])
-            ])
+            })
         ])]
     }
 

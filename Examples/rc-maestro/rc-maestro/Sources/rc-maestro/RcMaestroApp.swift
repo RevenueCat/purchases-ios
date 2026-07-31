@@ -14,45 +14,41 @@ struct RcMaestroApp: App {
         }
 
         // Used in E2E tests
+        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
-                        forceServerErrorStrategy: .init(
-                            fakeResponseWithoutPerformingRequest: { request in
-                                // Simulate a 4xx on the /v1/config endpoint (its session kill-switch),
+                        forceServerErrorStrategy: .init { request in
+                            switch forceServerErrorStrategy {
+                            case .never:
+                                return .performRequest
+
+                            case .remoteConfigKillswitch:
+                                // Let the backend serve the real kill-switch response for this request only,
                                 // so we can exercise the classic-paywall fallback for workflow offerings.
-                                guard case .remoteConfigNotFound = Constants.forceServerErrorStrategy,
-                                      request.path.contains("config/"),
-                                      let url = URL(string: "https://api.revenuecat.com"),
-                                      let response = HTTPURLResponse(url: url,
-                                                                     statusCode: 404,
-                                                                     httpVersion: nil,
-                                                                     headerFields: nil) else {
-                                    return nil
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .appendQueryItems([URLQueryItem(name: "force_killswitch", value: "true")])
+
+                            case .primaryBackendDown:
+                                // Remote config uses a separate request path whose primary URL is already
+                                // the fallback backend, so it does not have a fallbackUrlIndex.
+                                if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
+                                   case .remoteConfig = fallbackPath {
+                                    return .performRequest
                                 }
-                                return (response, Data("{}".utf8))
-                            },
-                            shouldForceServerError: { request in
-                                switch Constants.forceServerErrorStrategy {
-                                case .never, .remoteConfigNotFound:
-                                    return false
-                                case .primaryBackendDown:
-                                    // Remote config uses a separate request path whose primary URL is already
-                                    // the fallback backend, so it does not have a fallbackUrlIndex.
-                                    if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
-                                       case .remoteConfig = fallbackPath {
-                                        return false
-                                    }
-                                    return request.fallbackUrlIndex == nil
-                                }
+                                return request.fallbackUrlIndex == nil ? .defaultServerError : .performRequest
+
+                            case .remoteConfigNetworkError:
+                                // No network for /v1/config only; offerings still resolve so a paywall
+                                // is presentable and can degrade to the classic paywall. The unreachable
+                                // host makes the request fail with a transport error.
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .serverErrorURL(URL(string: "http://127.0.0.1:1")!)
                             }
-                        )
-                    ),
-                    // Workflows (multipage paywalls) read through remote config; this internal flag
-                    // is the runtime gate (no compile flag needed for the Maestro app).
-                    useWorkflows: true
+                        }
+                    )
                 ))
                 .build()
         )

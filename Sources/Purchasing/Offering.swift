@@ -101,11 +101,6 @@ import Foundation
     let hasPaywallComponents: Bool
 
     /**
-     Draft paywall components configuration defined in RevenueCat dashboard.
-     */
-    @_spi(Internal) public let draftPaywallComponents: PaywallComponents?
-
-    /**
      Array of ``Package`` objects available for purchase.
      */
     @objc public let availablePackages: [Package]
@@ -221,7 +216,7 @@ import Foundation
         webCheckoutUrl: URL?
     ) {
         self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
-                  paywall: paywall, paywallComponents: nil, draftPaywallComponents: nil,
+                  paywall: paywall, paywallComponents: nil, hasPaywallComponents: false,
                   availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
     }
 
@@ -237,7 +232,8 @@ import Foundation
     ) {
         self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
                   paywall: paywall, paywallComponents: paywallComponents,
-                  draftPaywallComponents: nil, availablePackages: availablePackages,
+                  hasPaywallComponents: paywallComponents != nil,
+                  availablePackages: availablePackages,
                   webCheckoutUrl: webCheckoutUrl)
     }
 
@@ -248,7 +244,6 @@ import Foundation
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
         hasPaywallComponents: Bool = false,
-        draftPaywallComponents: PaywallComponents?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
@@ -259,7 +254,6 @@ import Foundation
         self.paywall = paywall
         self.internalPaywallComponents = paywallComponents
         self.hasPaywallComponents = hasPaywallComponents || paywallComponents != nil
-        self.draftPaywallComponents = draftPaywallComponents
         self.webCheckoutUrl = webCheckoutUrl
 
         var foundPackages: [PackageType: Package] = [:]
@@ -322,6 +316,14 @@ public extension Offering {
         return availablePackages.first?.presentedOfferingContext
     }
 
+    /// Whether the backend served paywall components that this offering doesn't carry. Offerings parsed
+    /// while remote config is active keep only the marker, since workflows resolve components from
+    /// `/v1/config`. Such an offering can't render on its own once remote config is disabled, so callers
+    /// must re-resolve it against the offerings cache instead of rendering it as-is.
+    var hasPrunedPaywallComponents: Bool {
+        return hasPaywallComponents && internalPaywallComponents == nil
+    }
+
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
         return Self(
@@ -331,7 +333,6 @@ public extension Offering {
             paywall: paywall,
             paywallComponents: internalPaywallComponents,
             hasPaywallComponents: hasPaywallComponents,
-            draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
             webCheckoutUrl: webCheckoutUrl
         )
@@ -346,7 +347,6 @@ public extension Offering {
             paywall: paywall,
             paywallComponents: paywallComponents,
             hasPaywallComponents: true,
-            draftPaywallComponents: draftPaywallComponents,
             availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl
         )

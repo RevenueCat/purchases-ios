@@ -70,7 +70,11 @@ enum Constants {
 
     enum ForceServerErrorStrategy: String {
         case primaryBackendDown = "primary_backend_down"
-        case remoteConfigNotFound = "remote_config_not_found"
+        // Asks the backend to serve its /v1/config kill-switch response for our own request only.
+        case remoteConfigKillswitch = "remote_config_killswitch"
+        // Simulates no network for /v1/config: the request fails with a transport error (unreachable
+        // host) rather than a 4xx, exercising the offline/cache-fallback path instead of the kill-switch.
+        case remoteConfigNetworkError = "remote_config_network_error"
         case never
     }
 }

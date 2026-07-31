@@ -185,26 +185,20 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.apiBaseURL) == customURL
     }
 
-    func testRemoteConfigEnabledViaDangerousSettings() {
-        let dangerousSettings = DangerousSettings(
-            autoSyncPurchases: true,
-            internalSettings: DangerousSettings.Internal.default,
-            useWorkflows: true
-        )
+    func testRemoteConfigEnabledByDefault() {
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
                                     apiKey: "api_key",
-                                    dangerousSettings: dangerousSettings,
+                                    dangerousSettings: DangerousSettings(),
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == true
     }
 
-    func testRemoteConfigDisabledUnderCustomEntitlementComputationEvenWithWorkflows() {
+    func testRemoteConfigDisabledUnderCustomEntitlementComputation() {
         let dangerousSettings = DangerousSettings(
             autoSyncPurchases: true,
             customEntitlementComputation: true,
-            internalSettings: DangerousSettings.Internal.default,
-            useWorkflows: true
+            internalSettings: DangerousSettings.Internal.default
         )
         let systemInfo = SystemInfo(platformInfo: nil,
                                     finishTransactions: true,
@@ -212,22 +206,6 @@ class SystemInfoTests: TestCase {
                                     dangerousSettings: dangerousSettings,
                                     preferredLocalesProvider: .mock())
         expect(systemInfo.remoteConfigEnabled) == false
-    }
-
-    func testDangerousSettingsDifferingOnlyInUseWorkflowsAreNotEqual() {
-        // useWorkflows must participate in equality so reconfiguring with it toggled produces a
-        // new Purchases instance instead of returning the existing (deduped) one.
-        let withWorkflows = DangerousSettings(
-            autoSyncPurchases: true,
-            internalSettings: DangerousSettings.Internal.default,
-            useWorkflows: true
-        )
-        let withoutWorkflows = DangerousSettings(
-            autoSyncPurchases: true,
-            internalSettings: DangerousSettings.Internal.default,
-            useWorkflows: false
-        )
-        expect(withWorkflows) != withoutWorkflows
     }
 
 }

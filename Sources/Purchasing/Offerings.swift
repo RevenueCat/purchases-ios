@@ -179,7 +179,6 @@ private extension Offering {
                         paywall: self.paywall,
                         paywallComponents: self.internalPaywallComponents,
                         hasPaywallComponents: self.hasPaywallComponents,
-                        draftPaywallComponents: self.draftPaywallComponents,
                         availablePackages: updatedPackages,
                         webCheckoutUrl: self.webCheckoutUrl
         )
@@ -220,7 +219,8 @@ extension Offerings {
         var response: OfferingsResponse
         var originalSource: Offerings.OriginalSource
 
-        init(response: OfferingsResponse, httpResponseOriginalSource: HTTPResponseOriginalSource) {
+        init(response: OfferingsResponse,
+             httpResponseOriginalSource: HTTPResponseOriginalSource) {
             self.response = response
             self.originalSource = Offerings.OriginalSource(httpResponseOriginalSource: httpResponseOriginalSource)
         }

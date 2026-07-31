@@ -725,6 +725,18 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that the user tapped a web checkout CTA and left the app to complete payment externally.
+    @objc(paywallViewControllerDidOpenWebCheckout:)
+    optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
+
+    /// Notifies that a ``PaywallViewController`` successfully opened a URL, either from a button with a URL
+    /// destination or from a link inside a text component.
+    ///
+    /// Not called for web checkout URLs. Use ``paywallViewControllerDidOpenWebCheckout(_:)`` for those.
+    @objc(paywallViewController:didOpenURL:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didOpenURL url: URL)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -825,6 +837,13 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidCancelPurchase?(self)
             },
+            webCheckoutOpened: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
+            },
+            urlOpened: { [weak self] url in
+                self?.notifyDelegateURLOpened(url)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -859,6 +878,12 @@ private extension PaywallViewController {
         controller.view.translatesAutoresizingMaskIntoConstraints = false
 
         return controller
+    }
+
+    /// Extracted from the `urlOpened` handler so that closure needs no `guard`, keeping
+    /// `createHostingController`'s cyclomatic complexity within the linter's limit.
+    private func notifyDelegateURLOpened(_ url: URL) {
+        self.delegate?.paywallViewController?(self, didOpenURL: url)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
@@ -956,6 +981,8 @@ private struct PaywallContainerView: View {
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
+    let webCheckoutOpened: WebCheckoutOpenedHandler
+    let urlOpened: URLOpenedHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -976,6 +1003,8 @@ private struct PaywallContainerView: View {
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
+            .onURLOpened(self.urlOpened)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)

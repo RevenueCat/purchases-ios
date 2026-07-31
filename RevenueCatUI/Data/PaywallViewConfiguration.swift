@@ -22,7 +22,6 @@ struct PaywallViewConfiguration {
     /// can have their own close buttons configured via the dashboard, so it's not used by the
     /// PaywallsV2View success path.
     var displayCloseButton: Bool
-    let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
@@ -39,7 +38,6 @@ struct PaywallViewConfiguration {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
         promoOfferCache: PaywallPromoOfferCache? = nil
@@ -49,7 +47,6 @@ struct PaywallViewConfiguration {
         self.mode = mode
         self.fonts = fonts
         self.displayCloseButton = displayCloseButton
-        self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
@@ -82,7 +79,6 @@ extension PaywallViewConfiguration {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
         promoOfferCache: PaywallPromoOfferCache? = nil
@@ -95,7 +91,6 @@ extension PaywallViewConfiguration {
             mode: mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
             purchaseHandler: handler,
             promoOfferCache: promoOfferCache

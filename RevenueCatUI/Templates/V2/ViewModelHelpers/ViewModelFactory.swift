@@ -513,6 +513,14 @@ struct ViewModelFactory {
                     fallbackStackViewModel: fallbackStackViewModel
                 )
             )
+        case .webView(let component):
+            return .webView(
+                WebViewComponentViewModel(
+                    component: component,
+                    uiConfigProvider: uiConfigProvider,
+                    discardRules: discardRules
+                )
+            )
         case .fallbackHeader:
             // fallbackHeader is filtered out in toStackViewModel and should never reach here.
             assertionFailure("fallbackHeader should have been filtered before view model creation")
@@ -572,10 +580,11 @@ struct ViewModelFactory {
     }
 
     /// Matches the dashboard approach: drill through nested stacks only to find the first
-    /// non-stack component, and check if it's a full-width image or video.
+    /// non-stack component, and check if it's a full-width image, video, or web view.
     enum FirstMediaType {
         case image
         case video
+        case webView
     }
 
     private func findFirstFullWidthMedia(
@@ -586,6 +595,8 @@ struct ViewModelFactory {
             return image.size.width == .fill ? .image : nil
         case .video(let video):
             return video.size.width == .fill ? .video : nil
+        case .webView(let webView):
+            return webView.size.width == .fill ? .webView : nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }

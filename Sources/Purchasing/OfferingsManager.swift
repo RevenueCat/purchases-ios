@@ -30,6 +30,7 @@ class OfferingsManager {
     private let remoteConfigManager: RemoteConfigManagerType?
     private let uiConfigProvider: UiConfigProvider?
     private let workflowAssetPrewarmer: WorkflowAssetPrewarmingType?
+    private let offeringsCacheGeneration = Atomic(0)
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
@@ -130,14 +131,24 @@ class OfferingsManager {
     ) {
         // We keep track of preferred locales at the time of launching the request
         let preferredLocales = systemInfo.preferredLocales
-        self.backend.offerings.getOfferings(appUserID: appUserID, isAppBackgrounded: isAppBackgrounded) { result in
+        // Snapshot the generation before the mode. If remote config disables between these reads,
+        // the request is conservatively treated as stale instead of allowing a pruned response into
+        // the new generation.
+        let cacheGeneration = self.offeringsCacheGeneration.value
+        let decodingMode = self.offeringsResponseDecodingMode
+        self.backend.offerings.getOfferings(
+            appUserID: appUserID,
+            isAppBackgrounded: isAppBackgrounded,
+            decodingMode: decodingMode
+        ) { result in
             switch result {
-            case let .success(contents):
-                self.handleOfferingsBackendResult(with: contents,
+            case let .success(fetchResult):
+                self.handleOfferingsBackendResult(with: fetchResult,
                                                   appUserID: appUserID,
                                                   isAppBackgrounded: isAppBackgrounded,
                                                   fetchPolicy: fetchPolicy,
                                                   preferredLocales: preferredLocales,
+                                                  cacheGeneration: cacheGeneration,
                                                   completion: completion)
 
             case let .failure(backendError) where backendError.shouldFallBackToCache:
@@ -201,6 +212,20 @@ class OfferingsManager {
         }
     }
 
+    func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
+        self.offeringsCacheGeneration.modify { $0 += 1 }
+        let cachedOfferings = self.deviceCache.cachedOfferings
+
+        // Preserve the full response on disk so it can provide legacy paywall components if the network fails.
+        self.clearInMemoryOfferingsCache()
+
+        if cachedOfferings != nil {
+            self.offerings(appUserID: appUserID,
+                           fetchPolicy: .ignoreNotFoundProducts,
+                           trackDiagnostics: false) { @Sendable _ in }
+        }
+    }
+
 }
 
 private extension OfferingsManager {
@@ -244,7 +269,18 @@ private extension OfferingsManager {
         fetchPolicy: FetchPolicy,
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
-        guard let contents = self.deviceCache.cachedOfferingsContents(appUserID: appUserID) else {
+        guard let contents = self.deviceCache.cachedOfferingsContents(
+            appUserID: appUserID,
+            decodingMode: self.offeringsResponseDecodingMode
+        ) else {
+            completion(nil)
+            return
+        }
+
+        // A workflows-mode response intentionally omits legacy component bodies. Once remote config disables,
+        // that disk entry cannot provide the backwards-compatible paywall, so require a full network response
+        // instead of repeatedly rebuilding and rejecting the same pruned offering.
+        guard !self.shouldRejectPrunedDiskContents(contents) else {
             completion(nil)
             return
         }
@@ -338,22 +374,32 @@ private extension OfferingsManager {
 
     // swiftlint:disable:next function_parameter_count
     func handleOfferingsBackendResult(
-        with contents: Offerings.Contents,
+        with fetchResult: OfferingsFetchResult,
         appUserID: String,
         isAppBackgrounded: Bool,
         fetchPolicy: FetchPolicy,
         preferredLocales: [String],
+        cacheGeneration: Int,
         completion: (@MainActor @Sendable (Result<OfferingsResultData, Error>) -> Void)?
     ) {
+        let contents = fetchResult.contents
         self.createOfferings(from: contents, loadedFromDiskCache: false, fetchPolicy: fetchPolicy) { result in
             switch result {
             case let .success(offeringsResultData):
                 Logger.rcSuccess(Strings.offering.offerings_stale_updated_from_network)
 
-                self.deviceCache.cache(offerings: offeringsResultData.offerings,
-                                       diskContents: contents,
-                                       preferredLocales: preferredLocales,
-                                       appUserID: appUserID)
+                let didCache = self.offeringsCacheGeneration.modify { currentGeneration in
+                    guard currentGeneration == cacheGeneration else { return false }
+
+                    self.deviceCache.cache(offerings: offeringsResultData.offerings,
+                                           fetchResult: fetchResult,
+                                           preferredLocales: preferredLocales,
+                                           appUserID: appUserID)
+                    return true
+                }
+
+                // Superseded background refreshes have nothing to deliver and must not mutate either cache.
+                guard didCache || completion != nil else { return }
 
                 // A background refresh (nil completion) only updates the cache; skip the
                 // readiness gate so it doesn't await (and decode) config for a no-op delivery.
@@ -504,6 +550,10 @@ private extension OfferingsManager {
         return self.remoteConfigManager?.isDisabled ?? true
     }
 
+    var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
+        return self.shouldCreatePaywallComponents ? .withPaywallComponents : .withoutPaywallComponents
+    }
+
     /// If remote config was disabled after a workflows-enabled offerings fetch, the in-memory offering
     /// can still carry only the lightweight paywall marker, not the renderable components payload.
     /// Refetch so the legacy offerings paywall fallback is restored for the disabled-RC path.
@@ -512,6 +562,14 @@ private extension OfferingsManager {
 
         return offerings.all.values.contains { offering in
             offering.hasPaywallComponents && offering.internalPaywallComponents == nil
+        }
+    }
+
+    private func shouldRejectPrunedDiskContents(_ contents: Offerings.Contents) -> Bool {
+        guard self.remoteConfigManager?.isDisabled == true else { return false }
+
+        return contents.response.offerings.contains { offering in
+            offering.hasPaywallComponents == true && offering.paywallComponents == nil
         }
     }
 
