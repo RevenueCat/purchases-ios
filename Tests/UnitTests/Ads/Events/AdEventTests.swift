@@ -423,7 +423,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            failureReason: .backendError
+            failureReason: .backendError(reason: nil)
         )
 
         expect(event1) != event2
@@ -458,8 +458,31 @@ class AdEventTests: TestCase {
     func testAdRewardFailureReasonWireValuesMatchTheBackendContract() {
         expect(AdRewardFailureReason.timeout.rawValue) == "timeout"
         expect(AdRewardFailureReason.networkError.rawValue) == "network_error"
-        expect(AdRewardFailureReason.backendError.rawValue) == "backend_error"
+        expect(AdRewardFailureReason.backendError(reason: nil).rawValue) == "backend_error"
+        expect(AdRewardFailureReason.backendError(reason: "no_reward_rule").rawValue)
+            == "no_reward_rule"
         expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
+    }
+
+    func testAdRewardFailureReasonRoundTripsBackendCodes() throws {
+        let reason = AdRewardFailureReason.backendError(reason: "no_reward_rule")
+
+        let encoded = try JSONEncoder.default.encode(reason)
+        expect(String(data: encoded, encoding: .utf8)) == "\"no_reward_rule\""
+        expect(try JSONDecoder.default.decode(AdRewardFailureReason.self, from: encoded)) == reason
+    }
+
+    func testAdRewardFailureReasonDecodesKnownValues() throws {
+        let expected: [String: AdRewardFailureReason] = [
+            "timeout": .timeout,
+            "network_error": .networkError,
+            "backend_error": .backendError(reason: nil),
+            "unknown": .unknown
+        ]
+        for (rawValue, reason) in expected {
+            let data = try XCTUnwrap("\"\(rawValue)\"".data(using: .utf8))
+            expect(try JSONDecoder.default.decode(AdRewardFailureReason.self, from: data)) == reason
+        }
     }
 
     // MARK: - AdRewardGranted Equality
@@ -558,7 +581,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            failureReason: .backendError
+            failureReason: .backendError(reason: nil)
         )
 
         let data = try JSONEncoder.default.encode(original)
