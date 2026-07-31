@@ -95,11 +95,6 @@ extension E2ETestFlowView {
 
         /// Drives the config request that returns the kill switch, then waits for it to land so the flow
         /// doesn't have to sleep.
-        ///
-        /// The offering this screen already holds is deliberately left in place: the scenario under test is a
-        /// paywall presented with an offering the app captured while remote config was still enabled, and
-        /// re-reading offerings here would hand back one whose components have been restored, which renders
-        /// fine either way.
         @MainActor
         private func syncAndWaitForKillSwitch() async {
             _ = try? await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
