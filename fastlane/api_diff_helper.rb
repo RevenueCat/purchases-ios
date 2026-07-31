@@ -217,6 +217,34 @@ module ApiDiffHelper
     !output.to_s.include?(NO_CHANGES_MARKER)
   end
 
+  MERGE_BASE_SWIFTINTERFACE_DIR = "/tmp/merge-base-swiftinterface".freeze
+
+  # The gate compares against the merge base rather than the PR's own baselines. Once an
+  # author regenerates the baselines they match the generated interfaces exactly, and the
+  # evidence of what the PR changed is gone.
+  def resolve_merge_base(runner:)
+    sha = runner.call("git", "merge-base", "origin/main", "HEAD").to_s.strip
+    raise "Could not resolve the merge base with origin/main" if sha.empty?
+
+    sha
+  end
+
+  def extract_baselines_at(sha, destination_dir, scheme, runner:)
+    FileUtils.mkdir_p(destination_dir)
+    prefix = api_file_prefix(scheme)
+
+    PLATFORM_CHECKS.map do |platform|
+      repo_path = "api/#{prefix}-api#{platform[:suffix]}.swiftinterface"
+      content = runner.call("git", "show", "#{sha}:#{repo_path}").to_s
+
+      raise "Baseline at #{sha}:#{repo_path} is missing or empty" if content.strip.empty?
+
+      written = File.join(destination_dir, File.basename(repo_path))
+      File.write(written, content)
+      written
+    end
+  end
+
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)

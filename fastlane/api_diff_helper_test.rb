@@ -346,6 +346,55 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # --- Merge base baselines ---
+
+  def test_resolve_merge_base_returns_the_sha
+    runner = ->(*command) { command == ["git", "merge-base", "origin/main", "HEAD"] ? "abc123def\n" : "" }
+
+    assert_equal "abc123def", ApiDiffHelper.resolve_merge_base(runner: runner)
+  end
+
+  # Comparing against nothing would silently report the whole API as new.
+  def test_resolve_merge_base_raises_when_empty
+    error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_merge_base(runner: ->(*_c) { "\n" }) }
+
+    assert_match(/merge base/, error.message)
+  end
+
+  def test_extract_baselines_writes_one_file_per_platform
+    Dir.mktmpdir do |dir|
+      runner = ->(*command) { "public func fromMergeBase()\n// #{command.last}\n" }
+
+      written = ApiDiffHelper.extract_baselines_at("abc123", dir, "RevenueCat", runner: runner)
+
+      assert_equal ApiDiffHelper::PLATFORM_CHECKS.count, written.count
+      assert_includes written, File.join(dir, "revenuecat-api-ios.swiftinterface")
+      assert_match(/fromMergeBase/, File.read(File.join(dir, "revenuecat-api-ios.swiftinterface")))
+    end
+  end
+
+  def test_extract_baselines_asks_git_for_the_right_paths
+    Dir.mktmpdir do |dir|
+      seen = []
+      runner = ->(*command) { seen << command.last; "public func x()\n" }
+
+      ApiDiffHelper.extract_baselines_at("abc123", dir, "RevenueCatUI", runner: runner)
+
+      assert_includes seen, "abc123:api/revenuecatui-api-ios.swiftinterface"
+      assert_includes seen, "abc123:api/revenuecatui-api-visionos.swiftinterface"
+    end
+  end
+
+  def test_extract_baselines_raises_on_an_empty_baseline
+    Dir.mktmpdir do |dir|
+      error = assert_raises(RuntimeError) do
+        ApiDiffHelper.extract_baselines_at("abc123", dir, "RevenueCat", runner: ->(*_c) { "" })
+      end
+
+      assert_match(/empty|not found/, error.message)
+    end
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
