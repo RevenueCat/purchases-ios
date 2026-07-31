@@ -22,16 +22,7 @@ import Foundation
     /// Verification failed due to a network-level error.
     case networkError = "network_error"
 
-    /// The backend rejected the reward because no reward rule matched.
-    case noRewardRule = "no_reward_rule"
-
-    /// The backend rejected the reward because of an unrecognized virtual currency code.
-    case unknownVirtualCurrencyCode = "unknown_virtual_currency_code"
-
-    /// The backend rejected the reward because the app lacks access to ad rewards.
-    case noAccess = "no_access"
-
-    /// The backend explicitly declined to verify the reward for a reason not listed above.
+    /// The backend declined to verify the reward.
     case backendError = "backend_error"
 
     /// Verification failed for an unspecified reason.
