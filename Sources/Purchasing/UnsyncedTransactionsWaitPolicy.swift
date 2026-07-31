@@ -41,6 +41,11 @@ public final class UnsyncedTransactionsWaitPolicy: NSObject {
     /// device instead, so entitlements from those transactions are reported even though RevenueCat
     /// doesn't know about them yet.
     ///
+    /// - Important: only set this if your app reacts to
+    /// ``PurchasesDelegate/purchases(_:receivedUpdated:)`` or ``Purchases/customerInfoStream``. That's
+    /// where the ``CustomerInfo`` that accounts for the posted transactions is delivered, so an app that
+    /// only reads what its own ``Purchases/customerInfo(fetchPolicy:)`` calls return can keep showing
+    /// the state from before them.
     /// - Warning: a ``CustomerInfo`` fetched while a purchase is being posted can report the state
     /// before that purchase.
     /// - Warning: a ``CustomerInfo`` computed on the device is not verified by RevenueCat's servers, and

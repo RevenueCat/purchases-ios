@@ -281,8 +281,9 @@ import Foundation
         ///
         /// Defaults to ``UnsyncedTransactionsWaitPolicy/wait``. Use
         /// ``UnsyncedTransactionsWaitPolicy/doNotWait`` if your app gates a screen on
-        /// ``Purchases/customerInfo(fetchPolicy:)`` and you'd rather have a device computed
-        /// ``CustomerInfo`` immediately than wait for unsynced transactions to be posted.
+        /// ``Purchases/customerInfo(fetchPolicy:)`` and you'd rather not wait for unsynced transactions
+        /// to be posted. It requires reacting to ``CustomerInfo`` updates: see
+        /// ``UnsyncedTransactionsWaitPolicy/doNotWait``.
         @objc public func with(
             unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy
         ) -> Builder {
