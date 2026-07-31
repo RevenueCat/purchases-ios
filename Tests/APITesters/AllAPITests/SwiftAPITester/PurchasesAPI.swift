@@ -396,6 +396,17 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
 
         let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(
+            clientTransactionID: "",
+            trackingMetadata: RewardedAdTrackingMetadata(
+                networkName: nil,
+                mediatorName: .adMob,
+                adFormat: .rewarded,
+                placement: nil,
+                adUnitId: "",
+                impressionId: ""
+            )
+        )
     } catch {}
 }
 
