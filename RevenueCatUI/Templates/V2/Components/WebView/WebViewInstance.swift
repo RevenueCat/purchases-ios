@@ -39,6 +39,10 @@ final class WebViewInstance: ObservableObject {
     /// current host complete the handoff when it leaves instead of stranding the web view off-screen.
     private weak var pendingHost: WebViewHostView?
 
+    /// `true` while playback is suspended because no host is showing the web view. Tracked so suspend
+    /// and resume stay paired, as WebKit requires.
+    private(set) var isMediaPlaybackSuspended = false
+
     init(
         componentID: String,
         expectedOrigin: WebViewOrigin,
@@ -141,7 +145,13 @@ final class WebViewInstance: ObservableObject {
         if let pendingHost = self.pendingHost, pendingHost.window != nil {
             self.pendingHost = nil
             self.attachWebView(to: pendingHost)
+            return
         }
+
+        // Nothing is showing the web view any more — the component was hidden, or the paywall went
+        // away. The web view survives on the view model, so without this an `autoplay` video would
+        // keep playing audio from a component that is no longer on screen.
+        self.setMediaPlaybackSuspended(true)
     }
 
     /// Reasserts attachment for a host SwiftUI updated after it was already in a window. Unlike
@@ -160,6 +170,7 @@ final class WebViewInstance: ObservableObject {
         }
 
         self.attachedHost = host
+        self.setMediaPlaybackSuspended(false)
 
         guard webView.superview !== host else {
             return
@@ -174,6 +185,17 @@ final class WebViewInstance: ObservableObject {
             webView.topAnchor.constraint(equalTo: host.topAnchor),
             webView.bottomAnchor.constraint(equalTo: host.bottomAnchor)
         ])
+    }
+
+    /// Suspends rather than pauses: a paused page can restart itself by calling `play()`, whereas
+    /// suspension blocks the page and the user until it is lifted.
+    private func setMediaPlaybackSuspended(_ suspended: Bool) {
+        guard suspended != self.isMediaPlaybackSuspended, let webView = self.webView else {
+            return
+        }
+
+        self.isMediaPlaybackSuspended = suspended
+        webView.setAllMediaPlaybackSuspended(suspended)
     }
 
     func tearDown() {

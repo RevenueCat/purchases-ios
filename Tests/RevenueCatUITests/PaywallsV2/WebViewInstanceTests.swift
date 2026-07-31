@@ -235,6 +235,52 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === displayed)
     }
 
+    // MARK: - Media playback
+
+    /// The web view outlives the subtree now, so a hidden component would otherwise keep playing.
+    func testMediaIsSuspendedOnceNoHostIsShowingTheWebView() {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let host = self.makeWindowedHost()
+
+        instance.hostDidEnterWindow(host)
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+
+        host.removeFromSuperview()
+        instance.hostDidLeaveWindow(host)
+
+        XCTAssertTrue(instance.isMediaPlaybackSuspended)
+    }
+
+    func testMediaResumesWhenTheComponentIsShownAgain() {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let host = self.makeWindowedHost()
+
+        instance.hostDidEnterWindow(host)
+        host.removeFromSuperview()
+        instance.hostDidLeaveWindow(host)
+
+        instance.hostDidEnterWindow(self.makeWindowedHost())
+
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
+    /// A `ViewThatFits` swap hands the web view straight over, so playback must not be interrupted.
+    func testHandoffBetweenCandidatesDoesNotSuspendMedia() {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let outgoing = self.makeWindowedHost()
+        let incoming = self.makeWindowedHost()
+
+        instance.hostDidEnterWindow(outgoing)
+        instance.hostDidEnterWindow(incoming)
+        outgoing.removeFromSuperview()
+        instance.hostDidLeaveWindow(outgoing)
+
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
     func testTearDownReleasesTheWebViewFromItsHost() {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
