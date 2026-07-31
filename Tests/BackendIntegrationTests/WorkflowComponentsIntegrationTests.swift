@@ -20,7 +20,6 @@ import XCTest
 final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
-    override class var useWorkflows: Bool { true }
 
     private let remoteConfigFake = RemoteConfigKillSwitchFake()
 
