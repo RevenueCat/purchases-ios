@@ -105,8 +105,6 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.id).to(beNil())
     }
 
-    /// Without these, an undeclared key reads back nil and every `state_condition` override on a
-    /// funnel paywall stays unmatched.
     func testPassesThroughStateDeclarations() throws {
         let screen = try Self.makeScreen(
             stateDeclarationsJSON: """
