@@ -395,6 +395,111 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # --- Report parsing ---
+
+  # Real 0.12.0 shape: a brand new enum at target level, plus a case added to an existing one.
+  ENUM_CASE_REPORT = <<~REPORT.freeze
+    # 👀 2 public changes detected
+    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    #### ❇️ Added
+    ```swift
+    public enum ComponentInteractionType: Swift.String {
+      case button
+      case carousel
+    }
+    ```
+    ### `PaywallEvent`
+    #### ❇️ Added
+    ```swift
+    case componentInteraction(
+      RevenueCat.PaywallEvent.CreationData
+    )
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  MODIFIED_REPORT = <<~REPORT.freeze
+    # ⚠️ 1 public change detected ⚠️
+    <table><tr><td>🔀</td><td><b>1 Modification</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `Configuration.Builder`
+    #### 🔀 Modified
+    ```swift
+    // From
+    public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
+
+    // To
+    @objc
+    public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
+
+    /**
+    Changes:
+    - Added attribute `@objc`
+    */
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  def test_parse_report_no_changes_yields_nothing
+    assert_empty ApiDiffHelper.parse_report(NO_CHANGES_OUTPUT)
+  end
+
+  def test_parse_report_separates_target_level_from_member_changes
+    changes = ApiDiffHelper.parse_report(ENUM_CASE_REPORT)
+
+    assert_equal 2, changes.count
+    whole_type, member = changes
+
+    assert_equal :added, whole_type.kind
+    assert_nil whole_type.owner, "a new type sits at target level, not inside a type section"
+    assert_match(/public enum ComponentInteractionType/, whole_type.declaration)
+
+    assert_equal :added, member.kind
+    assert_equal "PaywallEvent", member.owner
+    assert_match(/\Acase componentInteraction\(/, member.declaration)
+  end
+
+  def test_parse_report_reads_removals_and_modifications
+    removal = ApiDiffHelper.parse_report(SINGLE_REMOVAL_OUTPUT)
+    assert_equal [:removed], removal.map(&:kind)
+    assert_match(/apiDiffHelperFixtureSingleRemoval/, removal.first.declaration)
+
+    modified = ApiDiffHelper.parse_report(MODIFIED_REPORT)
+    assert_equal [:modified], modified.map(&:kind)
+    assert_equal "Configuration.Builder", modified.first.owner
+  end
+
+  # A report claiming changes that parses to nothing means the format moved under us.
+  def test_parse_report_raises_when_it_cannot_find_the_changes_it_announced
+    broken = "# 👀 3 public changes detected\nsomething we do not understand\n"
+
+    error = assert_raises(RuntimeError) { ApiDiffHelper.parse_report(broken) }
+    assert_match(/could not be parsed/, error.message)
+  end
+
+  def test_modification_attribute_only
+    assert ApiDiffHelper.modification_attribute_only?(ApiDiffHelper.parse_report(MODIFIED_REPORT).first.declaration)
+
+    signature_change = "// From\npublic func f(a: Swift.Int)\n\n// To\npublic func f(a: Swift.String)\n\n/**\nChanges:\n- Changed parameter type\n*/"
+    refute ApiDiffHelper.modification_attribute_only?(signature_change)
+  end
+
+  def test_declaration_type_name
+    assert_equal "ComponentInteractionType",
+                 ApiDiffHelper.declaration_type_name("public enum ComponentInteractionType: Swift.String {")
+    assert_equal "Foo", ApiDiffHelper.declaration_type_name("@objc public protocol Foo : NSObjectProtocol {")
+    assert_nil ApiDiffHelper.declaration_type_name("public func notAType()")
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form

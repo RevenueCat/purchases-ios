@@ -245,6 +245,85 @@ module ApiDiffHelper
     end
   end
 
+  ReportChange = Struct.new(:kind, :owner, :declaration, keyword_init: true)
+
+  REPORT_TARGET_HEADING = /\A## `(.+)`\s*\z/.freeze
+  REPORT_TYPE_HEADING = /\A### `(.+)`\s*\z/.freeze
+  REPORT_KIND_HEADING = /\A#### .*\b(Added|Removed|Modified)\b\s*\z/.freeze
+  REPORT_FENCE = /\A```/.freeze
+
+  # The report nests members under their enclosing type, which is what lets us tell a case
+  # added to an existing enum from a brand new enum that happens to have cases. A type
+  # section only appears for a type present on both sides; a wholly new declaration sits
+  # directly under the target heading, so its owner is nil.
+  def parse_report(report)
+    changes = []
+    owner = nil
+    kind = nil
+    inside_block = false
+    buffer = []
+
+    report.to_s.each_line do |raw_line|
+      line = raw_line.rstrip
+
+      if REPORT_TARGET_HEADING.match?(line)
+        owner = nil
+        kind = nil
+        next
+      end
+
+      if (match = REPORT_TYPE_HEADING.match(line))
+        owner = match[1]
+        kind = nil
+        next
+      end
+
+      if (match = REPORT_KIND_HEADING.match(line))
+        kind = match[1].downcase.to_sym
+        next
+      end
+
+      if REPORT_FENCE.match?(line)
+        if inside_block
+          changes << ReportChange.new(kind: kind, owner: owner, declaration: buffer.join("\n").strip)
+          buffer = []
+          inside_block = false
+        elsif kind
+          inside_block = true
+        end
+        next
+      end
+
+      buffer << line if inside_block
+    end
+
+    if changes.empty? && api_changes_reported?(report)
+      raise "public-api-diff reported changes but the report could not be parsed"
+    end
+
+    changes
+  end
+
+  ATTRIBUTE_CHANGE_LINE = /\A-\s+(Added|Removed) attribute\b/.freeze
+
+  # Gaining or losing an attribute rewrites a declaration without breaking callers.
+  def modification_attribute_only?(declaration)
+    lines = declaration.to_s.lines.map(&:strip)
+    start = lines.index("Changes:")
+    return false if start.nil?
+
+    listed = lines[(start + 1)..].to_a.select { |line| line.start_with?("-") }
+    return false if listed.empty?
+
+    listed.all? { |line| ATTRIBUTE_CHANGE_LINE.match?(line) }
+  end
+
+  TYPE_DECLARATION = /\b(?:actor|class|enum|protocol|struct)\s+([A-Za-z_][A-Za-z0-9_]*)/.freeze
+
+  def declaration_type_name(declaration)
+    TYPE_DECLARATION.match(declaration.to_s.lines.first.to_s)&.captures&.first
+  end
+
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)
