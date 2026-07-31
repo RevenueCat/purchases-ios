@@ -48,10 +48,7 @@ struct RcMaestroApp: App {
                                 return .serverErrorURL(URL(string: "http://127.0.0.1:1")!)
                             }
                         }
-                    ),
-                    // Workflows (multipage paywalls) read through remote config; this internal flag
-                    // is the runtime gate (no compile flag needed for the Maestro app).
-                    useWorkflows: true
+                    )
                 ))
                 .build()
         )

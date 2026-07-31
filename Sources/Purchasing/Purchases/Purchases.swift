@@ -2440,7 +2440,7 @@ extension Purchases {
     }
 
     // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
-    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
+    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
         return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
