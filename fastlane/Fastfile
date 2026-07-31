@@ -2469,7 +2469,6 @@ platform :ios do
     merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
     UI.message("Comparing against the merge base #{merge_base}")
 
-    labels = pr_labels_for_api_gate
     all_breaks = []
 
     schemes.each do |scheme|
@@ -2493,6 +2492,12 @@ platform :ios do
     end
 
     all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
+
+    # Labels only matter once there is a break to judge them against: fetching them
+    # unconditionally means a PR that touches no Swift still calls the GitHub API, and
+    # pr_labels_for_api_gate's github_api call has no error_handlers, so any non-2xx response
+    # (rate limit, auth hiccup) raises and reds the job even though there was nothing to gate.
+    labels = all_breaks.any? ? pr_labels_for_api_gate : []
     ApiDiffHelper.print_breaking_summary(all_breaks, labels)
 
     if ApiDiffHelper.gate_blocked?(all_breaks, labels)

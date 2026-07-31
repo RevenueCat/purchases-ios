@@ -304,9 +304,35 @@ module ApiDiffHelper
     changes
   end
 
-  ATTRIBUTE_CHANGE_LINE = /\A-\s+(Added|Removed) attribute\b/.freeze
+  ATTRIBUTE_ONLY_LINE = /\A(?:@\w+(?:\(.*\))?\s*)+\z/.freeze
 
-  # Gaining or losing an attribute rewrites a declaration without breaking callers.
+  # A report block's literal first line is not always the significant one: the tool renders
+  # each attribute on its own line above the declaration it belongs to (`@objc(RCFoo)` then
+  # `case foo` on the next line), and a :modified block's fenced text opens with a literal
+  # `// From` marker line before the actual declaration. Every caller that reasons about "what
+  # declaration is this" (the enum-case prefix test, the type-name extractor, and a break's
+  # displayed/dedup text) wants the line that actually names the symbol, not whichever text
+  # happens to render first. Falls back to the raw first line if every line gets skipped
+  # (an unexpected shape), so this never does worse than the un-skipped behavior.
+  def significant_first_line(declaration)
+    lines = declaration.to_s.lines.map(&:strip)
+    significant = lines.drop_while { |line| line == "// From" || ATTRIBUTE_ONLY_LINE.match?(line) }
+
+    (significant.first || lines.first).to_s
+  end
+
+  ATTRIBUTE_CHANGE_LINE = /\A-\s+(Added|Removed) attribute `([^`]*)`/.freeze
+
+  # `unavailable` marks a declaration unusable immediately; `obsoleted` marks it unusable as of
+  # a version that, for any shipping baseline, has already passed. Gaining either breaks
+  # callers exactly like removing the declaration would. `deprecated` only warns, so it is
+  # deliberately left out of this list: it is not breaking.
+  BREAKING_ATTRIBUTE_ADDITION = /\b(?:unavailable|obsoleted)\b/.freeze
+
+  # Gaining an attribute is usually additive (e.g. `@objc` newly added to a Swift-only member).
+  # Losing one is not always additive: stripping `@objc` from a member on an Obj-C-exposed type
+  # breaks every Obj-C caller (see this repo's Objective-C Compatibility guidance), so a
+  # "Removed attribute" line must never be waved through here, whichever attribute it names.
   def modification_attribute_only?(declaration)
     lines = declaration.to_s.lines.map(&:strip)
     start = lines.index("Changes:")
@@ -315,13 +341,23 @@ module ApiDiffHelper
     listed = lines[(start + 1)..].to_a.select { |line| line.start_with?("-") }
     return false if listed.empty?
 
-    listed.all? { |line| ATTRIBUTE_CHANGE_LINE.match?(line) }
+    listed.all? { |line| non_breaking_attribute_addition?(line) }
+  end
+
+  def non_breaking_attribute_addition?(line)
+    match = ATTRIBUTE_CHANGE_LINE.match(line)
+    return false unless match
+
+    verb, attribute = match[1], match[2]
+    return false if verb == "Removed"
+
+    !BREAKING_ATTRIBUTE_ADDITION.match?(attribute)
   end
 
   TYPE_DECLARATION = /\b(?:actor|class|enum|protocol|struct)\s+([A-Za-z_][A-Za-z0-9_]*)/.freeze
 
   def declaration_type_name(declaration)
-    TYPE_DECLARATION.match(declaration.to_s.lines.first.to_s)&.captures&.first
+    TYPE_DECLARATION.match(significant_first_line(declaration))&.captures&.first
   end
 
   # Strips `//` line comments and the contents of double-quoted string literals so prose
@@ -366,7 +402,7 @@ module ApiDiffHelper
                             .compact
 
     changes.each_with_object([]) do |change, breaks|
-      first_line = change.declaration.to_s.lines.first.to_s.strip
+      first_line = significant_first_line(change.declaration)
 
       case change.kind
       when :removed

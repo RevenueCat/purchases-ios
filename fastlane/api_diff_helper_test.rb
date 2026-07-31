@@ -95,6 +95,37 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # Finding 4: pr_labels_for_api_gate calls github_api with no error_handlers, so a non-2xx
+  # response raises and reds check-api-changes-* on every PR, including ones with no breaks to
+  # judge labels against. fastlane/Fastfile is a DSL evaluated inside Fastlane::FastFile, so it
+  # can't be safely required or executed here; this reads the raw source instead and pins two
+  # structural invariants: the call site appears after all_breaks has been computed (not before
+  # the loop that builds it), and it is conditioned on all_breaks.any? rather than unconditional.
+  def test_pr_labels_are_only_fetched_when_there_is_a_break_to_judge
+    fastfile_path = File.expand_path('Fastfile', __dir__)
+    lines = File.readlines(fastfile_path)
+
+    concat_line_no = lines.index { |line| line.include?("all_breaks.concat(ApiDiffHelper.breaking_changes") }
+    refute_nil concat_line_no, "expected to find the loop that accumulates all_breaks"
+
+    # The private_lane definition ("private_lane :pr_labels_for_api_gate do") is a different
+    # call shape from the call site; filter it out so we isolate where check_api_changes
+    # actually invokes it.
+    call_sites = lines.each_with_index.select do |line, _|
+      line.include?("pr_labels_for_api_gate") &&
+        !line.include?("private_lane :pr_labels_for_api_gate") &&
+        !line.strip.start_with?("#")
+    end
+
+    assert_equal 1, call_sites.length, "expected exactly one call site for pr_labels_for_api_gate"
+    call_line, call_line_no = call_sites.first
+
+    assert call_line_no > concat_line_no,
+           "the label fetch must happen after all_breaks is computed, not before"
+    assert_match(/all_breaks\.any\?/, call_line,
+                 "the label fetch must be gated on all_breaks.any?, not unconditional")
+  end
+
   def test_validate_inputs_accepts_two_non_empty_files
     with_interface_files do |old_file, new_file|
       assert_nil ApiDiffHelper.validate_api_diff_inputs!(old_file, new_file)
@@ -504,11 +535,55 @@ class ApiDiffHelperTest < Minitest::Test
     refute ApiDiffHelper.modification_attribute_only?(signature_change)
   end
 
+  # Finding 2: losing an attribute must never be waved through, whichever attribute it names.
+  # Stripping `@objc` from a member on an Obj-C-exposed type breaks every Obj-C caller.
+  def test_modification_attribute_only_is_false_when_an_attribute_is_removed
+    removed = "// From\n@objc\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Removed attribute `@objc`\n*/"
+    refute ApiDiffHelper.modification_attribute_only?(removed)
+  end
+
+  # Finding 2: gaining `@available(*, unavailable)` breaks every caller exactly like removing
+  # the declaration would, so it must not be exempted as a harmless attribute-only change.
+  def test_modification_attribute_only_is_false_when_unavailable_is_added
+    unavailable = "// From\npublic func f()\n\n// To\n@available(*, unavailable)\npublic func f()\n\n/**\nChanges:\n- Added attribute `@available(*, unavailable)`\n*/"
+    refute ApiDiffHelper.modification_attribute_only?(unavailable)
+  end
+
+  # Finding 2: gaining `@available(*, deprecated, ...)` only warns; it is not breaking and must
+  # stay exempted, unlike `unavailable`/`obsoleted`.
+  def test_modification_attribute_only_is_true_when_deprecated_is_added
+    deprecated = "// From\npublic func f()\n\n// To\n@available(*, deprecated, message: \"x\")\npublic func f()\n\n/**\nChanges:\n- Added attribute `@available(*, deprecated, message: \"x\")`\n*/"
+    assert ApiDiffHelper.modification_attribute_only?(deprecated)
+  end
+
   def test_declaration_type_name
     assert_equal "ComponentInteractionType",
                  ApiDiffHelper.declaration_type_name("public enum ComponentInteractionType: Swift.String {")
     assert_equal "Foo", ApiDiffHelper.declaration_type_name("@objc public protocol Foo : NSObjectProtocol {")
     assert_nil ApiDiffHelper.declaration_type_name("public func notAType()")
+  end
+
+  # --- significant_first_line (shared helper behind Findings 1 and 3) ---
+
+  def test_significant_first_line_skips_a_leading_attribute
+    assert_equal "case brandNewError",
+                 ApiDiffHelper.significant_first_line("@objc(RCBrandNewError)\ncase brandNewError")
+  end
+
+  def test_significant_first_line_skips_the_from_marker
+    assert_equal "public func f()", ApiDiffHelper.significant_first_line("// From\npublic func f()")
+  end
+
+  def test_significant_first_line_skips_the_from_marker_and_a_stacked_attribute
+    assert_equal "public func f()",
+                 ApiDiffHelper.significant_first_line("// From\n@objc\npublic func f()")
+  end
+
+  # Fail-closed fallback: if every line looks skippable, fall back to the raw first line rather
+  # than returning nothing, so an unexpected shape degrades to the un-skipped behavior instead
+  # of losing the declaration outright.
+  def test_significant_first_line_falls_back_to_the_raw_first_line_when_everything_is_skipped
+    assert_equal "// From", ApiDiffHelper.significant_first_line("// From\n@objc\n")
   end
 
   # Coverage for the three defensive guards: owner/kind reset on target heading,
@@ -887,6 +962,267 @@ class ApiDiffHelperTest < Minitest::Test
     with_interface_containing(interface) do |path|
       assert_equal [:protocol_requirement], ApiDiffHelper.breaking_changes(report, path).map { |b| b[:reason] }
     end
+  end
+
+  # --- Final review wave (2026-07-31): Findings 1-3, captured from the real 0.12.0 binary ---
+  #
+  # Every fixture below is a verbatim `public-api-diff swift-interface` report, captured by
+  # running the real binary against a copy of api/revenuecat-api-ios.swiftinterface with one
+  # deliberate edit each. Capture commands (binary at $BIN):
+  #
+  #   # Finding 1: an @objc(RC...)-attributed case added to the pre-existing @objc ErrorCode enum
+  #   $BIN swift-interface --old old.swiftinterface --new new.swiftinterface --target-name RevenueCat
+  #   # (new.swiftinterface has one line inserted after ErrorCode's `unknownError` case:
+  #   #  `  @objc(RCBrandNewError) case brandNewError = 99`)
+  #
+  #   # Finding 2: @objc removed from CustomerInfo.expirationDate(forProductIdentifier:)
+  #   # (new.swiftinterface drops the leading `@objc ` from that one method line)
+  #
+  #   # Finding 2: @available(*, unavailable) / @available(*, deprecated, ...) added to
+  #   # CustomerInfo.purchaseDate(forEntitlement:) (one attribute line inserted above the method)
+  #
+  #   # Finding 3 dedup: @objc removed from *two* methods (expirationDate and purchaseDate,
+  #   # both forProductIdentifier) within the same CustomerInfo type
+  #
+  # Findings' root cause: the tool renders an attribute on its own line above the declaration,
+  # and a :modified block's fenced text opens with a literal `// From` line, so a naive
+  # first-line read only ever sees the attribute or the marker, never the declaration itself.
+
+  ATTRIBUTED_ENUM_CASE_ADDED_REPORT = <<~REPORT.freeze
+    # 👀 1 public change detected
+    <table><tr><td>❇️</td><td><b>1 Addition</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `ErrorCode`
+    #### ❇️ Added
+    ```swift
+    @objc(RCBrandNewError)
+    case brandNewError
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  OBJC_REMOVED_FROM_METHOD_REPORT = <<~REPORT.freeze
+    # ⚠️ 1 public change detected ⚠️
+    <table><tr><td>🔀</td><td><b>1 Modification</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `CustomerInfo`
+    #### 🔀 Modified
+    ```swift
+    // From
+    @objc
+    final public func expirationDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    // To
+    final public func expirationDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    /**
+    Changes:
+    - Removed attribute `@objc`
+    */
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  UNAVAILABLE_ATTRIBUTE_ADDED_REPORT = <<~REPORT.freeze
+    # ⚠️ 1 public change detected ⚠️
+    <table><tr><td>🔀</td><td><b>1 Modification</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `CustomerInfo`
+    #### 🔀 Modified
+    ```swift
+    // From
+    @objc
+    final public func purchaseDate(forEntitlement entitlementIdentifier: Swift.String) -> Foundation.Date?
+
+    // To
+    @available(*, unavailable)
+    @objc
+    final public func purchaseDate(forEntitlement entitlementIdentifier: Swift.String) -> Foundation.Date?
+
+    /**
+    Changes:
+    - Added attribute `@available(*, unavailable)`
+    */
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  DEPRECATED_ATTRIBUTE_ADDED_REPORT = <<~REPORT.freeze
+    # ⚠️ 1 public change detected ⚠️
+    <table><tr><td>🔀</td><td><b>1 Modification</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `CustomerInfo`
+    #### 🔀 Modified
+    ```swift
+    // From
+    @objc
+    final public func purchaseDate(forEntitlement entitlementIdentifier: Swift.String) -> Foundation.Date?
+
+    // To
+    @available(*, deprecated, message: "use something else")
+    @objc
+    final public func purchaseDate(forEntitlement entitlementIdentifier: Swift.String) -> Foundation.Date?
+
+    /**
+    Changes:
+    - Added attribute `@available(*, deprecated, message: "use something else")`
+    */
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  # Two distinct removals inside the same type, captured in one run, to prove the dedup fix:
+  # before Finding 3's fix both blocks' displayed declaration truncated to the literal
+  # "// From" line, so Fastfile's `uniq! { [reason, owner, declaration] }` collapsed them into
+  # one, silently dropping a real break.
+  TWO_OBJC_REMOVALS_IN_ONE_TYPE_REPORT = <<~REPORT.freeze
+    # ⚠️ 2 public changes detected ⚠️
+    <table><tr><td>🔀</td><td><b>2 Modifications</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    ### `CustomerInfo`
+    #### 🔀 Modified
+    ```swift
+    // From
+    @objc
+    final public func expirationDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    // To
+    final public func expirationDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    /**
+    Changes:
+    - Removed attribute `@objc`
+    */
+    ```
+    ```swift
+    // From
+    @objc
+    final public func purchaseDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    // To
+    final public func purchaseDate(forProductIdentifier productIdentifier: RevenueCat.ProductIdentifier) -> Foundation.Date?
+
+    /**
+    Changes:
+    - Removed attribute `@objc`
+    */
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  # A brand new @objc(RC...)-prefixed enum, captured as its own real report shape: the tool
+  # puts the attribute on its own line above `public enum ...`, which is exactly what made
+  # declaration_type_name (and therefore the new_type_names guard at breaking_changes:364)
+  # blind to attributed new types before Finding 3's fix.
+  NEW_OBJC_PREFIXED_ENUM_REPORT = <<~REPORT.freeze
+    # 👀 1 public change detected
+    <table><tr><td>❇️</td><td><b>1 Addition</b></td></tr></table>
+
+    ---
+    ## `RevenueCat`
+    #### ❇️ Added
+    ```swift
+    @objc(RCBrandNewEnum)
+    public enum BrandNewEnumFixture: Swift.Int {
+      case first
+      case second
+    }
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat
+  REPORT
+
+  # Finding 1: a case attributed with @objc(RC...) added to a pre-existing @objc enum must
+  # still be caught. 20 of 45 public enums in the committed baseline are @objc, and 63 of 152
+  # case lines are attributed, so this is the common shape, not an edge case.
+  def test_attributed_case_added_to_an_existing_objc_enum_is_a_break
+    with_interface_containing("@objc(RCPurchasesErrorCode) public enum ErrorCode : Swift.Int, Swift.Error {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(ATTRIBUTED_ENUM_CASE_ADDED_REPORT, path)
+
+      assert_equal [:enum_case], breaks.map { |b| b[:reason] }
+      assert_equal ["ErrorCode"], breaks.map { |b| b[:owner] }
+      assert_equal "case brandNewError", breaks.first[:declaration]
+    end
+  end
+
+  # Finding 2: removing @objc from a method on an Obj-C-exposed class breaks every Obj-C
+  # caller, so it must not be exempted as an attribute-only modification.
+  def test_removing_objc_from_a_method_is_a_break
+    with_interface_containing("public class CustomerInfo : NSObject {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(OBJC_REMOVED_FROM_METHOD_REPORT, path)
+
+      assert_equal [:modified], breaks.map { |b| b[:reason] }
+      assert_equal ["CustomerInfo"], breaks.map { |b| b[:owner] }
+      assert_match(/final public func expirationDate\(forProductIdentifier/, breaks.first[:declaration])
+    end
+  end
+
+  # Finding 2: gaining @available(*, unavailable) breaks callers exactly like removing the
+  # declaration would.
+  def test_adding_unavailable_attribute_is_a_break
+    with_interface_containing("public class CustomerInfo : NSObject {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(UNAVAILABLE_ATTRIBUTE_ADDED_REPORT, path)
+
+      assert_equal [:modified], breaks.map { |b| b[:reason] }
+    end
+  end
+
+  # Finding 2 (fail-open guard-alive): gaining @available(*, deprecated, ...) only warns, so it
+  # must stay exempted as attribute-only. Not a break, no false positive.
+  def test_adding_deprecated_attribute_is_not_a_break
+    with_interface_containing("public class CustomerInfo : NSObject {\n}\n") do |path|
+      assert_empty ApiDiffHelper.breaking_changes(DEPRECATED_ATTRIBUTE_ADDED_REPORT, path)
+    end
+  end
+
+  # Finding 3: two distinct removals in one type must both survive Fastfile's dedup step.
+  # breaking_changes itself never dedups (that happens only in Fastfile), so this test mirrors
+  # the exact key from fastlane/Fastfile's check_api_changes lane
+  # (`uniq! { [change[:reason], change[:owner], change[:declaration]] }`) to prove the two
+  # breaks are no longer indistinguishable after Finding 3's fix.
+  def test_two_distinct_removals_in_one_type_survive_the_fastfile_dedup_key
+    with_interface_containing("public class CustomerInfo : NSObject {\n}\n") do |path|
+      breaks = ApiDiffHelper.breaking_changes(TWO_OBJC_REMOVALS_IN_ONE_TYPE_REPORT, path)
+
+      assert_equal 2, breaks.count, "both @objc removals must be reported"
+      declarations = breaks.map { |b| b[:declaration] }
+      assert_equal declarations.length, declarations.uniq.length,
+                   "the two removals must have distinct declaration text, or Fastfile's dedup " \
+                   "key collapses them into one"
+
+      deduped = breaks.uniq { |change| [change[:reason], change[:owner], change[:declaration]] }
+      assert_equal 2, deduped.count, "distinct removals must survive the Fastfile dedup step"
+    end
+  end
+
+  # Finding 3: declaration_type_name (and therefore the new_type_names guard it feeds) must
+  # resolve an @objc(RC...)-prefixed brand new type, not just an unattributed one.
+  def test_declaration_type_name_resolves_an_objc_prefixed_new_type
+    change = ApiDiffHelper.parse_report(NEW_OBJC_PREFIXED_ENUM_REPORT).first
+
+    assert_nil change.owner, "a brand new type sits at target level, not inside a type section"
+    assert_equal "BrandNewEnumFixture", ApiDiffHelper.declaration_type_name(change.declaration)
   end
 
   # --- The gate ---
