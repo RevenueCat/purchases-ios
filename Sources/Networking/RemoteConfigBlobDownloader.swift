@@ -109,8 +109,11 @@ private extension HTTPRequestTimeoutManagerType {
                             reTieredTimeoutsEnabled: true)
     }
 
-    /// The widest timeout `blobDownloadTimeout(host:)` can return, so it doubles as the ceiling for the
-    /// whole download: it is the base tier, which no per-host reduced tier ever exceeds.
+    /// The timeout a blob download gets when its host has no recent timeout on record.
+    ///
+    /// This is the largest value `blobDownloadTimeout(host:)` can return, because the only other tier a
+    /// blob download can land on is the shorter fail-fast one. That is what makes it usable as the cap on
+    /// a whole download, which has to be picked when the `URLSession` is built, before any host is known.
     var blobDownloadTimeoutCeiling: TimeInterval {
         return self.blobDownloadTimeout(host: nil)
     }
