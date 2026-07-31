@@ -28,9 +28,7 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
     private let timeoutManager: HTTPRequestTimeoutManagerType
 
     convenience init(timeoutManager: HTTPRequestTimeoutManagerType) {
-        // The base tier is the widest timeout the manager can hand out for a blob download, since the
-        // reduced tiers are always shorter, so it doubles as the ceiling for the whole download.
-        let ceiling = timeoutManager.blobDownloadTimeout(host: nil)
+        let ceiling = timeoutManager.blobDownloadTimeoutCeiling
         self.init(timeoutManager: timeoutManager,
                   session: URLSession(configuration: Self.sessionConfiguration(timeoutCeiling: ceiling)))
     }
@@ -109,6 +107,12 @@ private extension HTTPRequestTimeoutManagerType {
                             endpointSupportsFallbackURLs: false,
                             isProxied: false,
                             reTieredTimeoutsEnabled: true)
+    }
+
+    /// The widest timeout `blobDownloadTimeout(host:)` can return, so it doubles as the ceiling for the
+    /// whole download: it is the base tier, which no per-host reduced tier ever exceeds.
+    var blobDownloadTimeoutCeiling: TimeInterval {
+        return self.blobDownloadTimeout(host: nil)
     }
 
 }
