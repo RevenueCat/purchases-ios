@@ -86,7 +86,7 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousAMR = tokenManager.currentTokenKind == .anonymous
+        lazy var isAnonymousAMR = tokenManager.currentAuthenticationMethod == .anonymous
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousAMR
     }

@@ -30,31 +30,6 @@ extension Purchases {
         }
     }
 
-    func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        return try await withUnsafeThrowingContinuation { continuation in
-            logIn(appUserID) { customerInfo, created, error in
-                continuation.resume(with: Result(customerInfo, error)
-                                        .map { ($0, created) })
-            }
-        }
-    }
-
-    func logInAsync(_ token: ExternalToken) async throws -> CustomerInfo {
-        return try await withUnsafeThrowingContinuation { continuation in
-            logIn(using: token) { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
-    func logOutAsync() async throws -> CustomerInfo {
-        return try await withUnsafeThrowingContinuation { continuation in
-            logOut { customerInfo, error in
-                continuation.resume(with: Result(customerInfo, error))
-            }
-        }
-    }
-
     func syncAttributesAndOfferingsIfNeededAsync() async throws -> Offerings? {
         return try await withUnsafeThrowingContinuation { continuation in
             syncAttributesAndOfferingsIfNeeded { offerings, error in

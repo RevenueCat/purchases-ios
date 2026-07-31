@@ -95,6 +95,10 @@ class TokenManager {
         storage.setString(nil, for: .id(userID))
     }
 
+    func deleteAccessToken(for userID: String) {
+        storage.setString(nil, for: .access(userID))
+    }
+
     func authorizationHeaders(for urlRequest: HTTPClient.Request) -> [String: String] {
         guard enabled else { return [:] }
         guard let currentAccessToken else { return [:] }

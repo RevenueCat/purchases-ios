@@ -86,7 +86,7 @@ class TokenAPI {
 
             let revokeCallback = TokenRevokeCallback(cacheKey: factory.cacheKey) { error in
                 if error == nil {
-                    self.tokenManager.
+                    self.tokenManager.deleteAccessToken(for: appUserID)
                 }
                 completion(error)
             }
