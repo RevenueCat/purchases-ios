@@ -45,7 +45,7 @@ final class WebViewComponentViewModel: Hashable {
         }
 
         let webViewInstance = WebViewInstance(
-            componentID: self.component.id,
+            componentID: self.componentID,
             expectedOrigin: expectedOrigin,
             fitsWidth: self.component.size.width.isFit,
             fitsHeight: self.component.size.height.isFit
