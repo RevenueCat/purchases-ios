@@ -584,48 +584,49 @@ class ApiDiffHelperTest < Minitest::Test
     refute_match(/this fence appears/, change.declaration)
   end
 
-  # Fixture where a type section is followed directly by another type section (no kind between them).
-  # Tests that kind = nil is reset when a new ### type heading appears.
-  CONSECUTIVE_TYPES_REPORT = <<~REPORT.freeze
+  # Fixture testing kind = nil reset in the ## target branch.
+  # A fenced block after a target heading, with no kind heading before it.
+  # With the guard: kind is nil so elsif kind refuses to open, no spurious change.
+  # Without kind = nil in target branch: stale kind from previous section leaks.
+  STALE_KIND_ACROSS_TARGETS_REPORT = <<~REPORT.freeze
     # 👀 2 public changes detected
-    <table><tr><td>❇️</td><td><b>2 Additions</b></td></tr></table>
+    <table><tr><td>❌</td><td>1 Removal</b></td><td>❇️</td><td>1 Addition</b></td></tr></table>
 
     ---
     ## `RevenueCat`
-    ### `FirstType`
-    #### ❇️ Added
+    ### `SomeType`
+    #### ❌ Removed
     ```swift
-    case firstMember
-    ```
-    ### `SecondType`
-    #### ❇️ Added
-    ```swift
-    case secondMember
+    public func removedMember()
     ```
 
     ---
-    **Analyzed targets:** RevenueCat
+    ## `RevenueCatUI`
+    ```swift
+    this fence has no kind heading and should be ignored because kind was reset to nil
+    ```
+
+    ---
+    **Analyzed targets:** RevenueCat, RevenueCatUI
   REPORT
 
-  def test_parse_report_resets_kind_on_new_type_heading
-    changes = ApiDiffHelper.parse_report(CONSECUTIVE_TYPES_REPORT)
+  def test_parse_report_does_not_leak_kind_across_target_sections
+    changes = ApiDiffHelper.parse_report(STALE_KIND_ACROSS_TARGETS_REPORT)
 
-    assert_equal 2, changes.count
-    first, second = changes
+    # Should only parse one change (the removal from RevenueCat).
+    # The fence in RevenueCatUI has no kind heading and should be ignored.
+    # This would fail if `kind = nil` was removed from the ## target branch,
+    # because then the orphaned fence would inherit :removed from the previous section.
+    assert_equal 1, changes.count
+    change = changes.first
 
-    # First change under FirstType
-    assert_equal :added, first.kind
-    assert_equal "FirstType", first.owner
-    assert_match(/firstMember/, first.declaration)
+    assert_equal :removed, change.kind
+    assert_equal "SomeType", change.owner
+    assert_match(/removedMember/, change.declaration)
+    refute_match(/this fence has no kind/, change.declaration)
 
-    # Second change under SecondType should have its own kind set by the #### heading.
-    # If `kind = nil` was removed from the type heading branch, the second change would
-    # incorrectly inherit :added from the previous section and the test would still pass.
-    # This test alone cannot catch that, but combined with test_parse_report_ignores_fences_before_kind_heading,
-    # it reinforces the pattern.
-    assert_equal :added, second.kind
-    assert_equal "SecondType", second.owner
-    assert_match(/secondMember/, second.declaration)
+    # Also assert that no change exists with kind :removed and owner nil (the spurious change that would appear without the guard).
+    assert_empty changes.select { |c| c.kind == :removed && c.owner.nil? }
   end
 
   # Fixture where a type section is NOT followed by a kind heading before a fence.
