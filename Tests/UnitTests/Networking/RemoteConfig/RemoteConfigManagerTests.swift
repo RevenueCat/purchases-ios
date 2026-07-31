@@ -205,6 +205,16 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
     }
 
+    func testSuccessfulRefreshDoesNotApplyFailureCooldown() {
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
+
+        self.dateProvider.advance(by: 6)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+    }
+
     func testFailureDoesNotMarkRefreshAsFresh() {
         self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
         self.remoteConfigAPI.complete(with: .failure(.networkError(.networkError(NSError(domain: "test", code: 1)))))
@@ -241,12 +251,18 @@ final class RemoteConfigManagerTests: TestCase {
 
         self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
 
-        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+        self.remoteConfigAPI.complete(with: .success(.test(container: nil)))
 
-        self.dateProvider.advance(by: Self.refreshAttemptCooldownElapsedInterval)
-        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: false)
+        self.dateProvider.advance(by: 6)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: true)
 
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 2
+
+        self.dateProvider.advance(by: 5)
+        self.manager.refreshRemoteConfigIfStale(fetchContext: .foreground, isAppBackgrounded: true)
+
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 3
     }
 
     func testClearCacheClearsRefreshAttemptCooldown() {
