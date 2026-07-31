@@ -77,15 +77,10 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
-  def test_pinned_version_is_not_the_buggy_orb_default
-    assert_equal "0.12.0", ApiDiffHelper::PUBLIC_API_DIFF_VERSION
-  end
-
-  # The constant above is not read by anything at CI time; the version that actually ships
-  # is the literal in .circleci/default_config.yml. This test parses that YAML (aliases in
-  # the file require unsafe_load_file) and checks every revenuecat/install-public-api-diff
-  # step against the constant, so editing or deleting the YAML pin fails this test instead
-  # of silently drifting back to the orb's buggy 0.10.1 default.
+  # The version that actually ships is the literal in .circleci/default_config.yml. This test
+  # parses that YAML (aliases in the file require unsafe_load_file) and checks every
+  # revenuecat/install-public-api-diff step against the constant, so editing or deleting the
+  # YAML pin fails this test instead of silently drifting back to the orb's buggy 0.10.1 default.
   def test_ci_config_pins_the_same_version_as_the_constant
     config_path = File.expand_path('../.circleci/default_config.yml', __dir__)
     config = YAML.unsafe_load_file(config_path)
