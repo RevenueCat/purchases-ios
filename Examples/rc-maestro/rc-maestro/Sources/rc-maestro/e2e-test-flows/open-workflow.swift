@@ -112,7 +112,10 @@ extension E2ETestFlowView {
             _ = try? await Purchases.shared.syncAttributesAndOfferingsIfNeeded()
 
             let deadline = Date().addingTimeInterval(10)
-            while Purchases.shared.remoteConfigEnabled, Date() < deadline {
+            while Purchases.shared.remoteConfigEnabled {
+                // Leaving the counter untouched makes the flow waiting on it fail here rather than later,
+                // on a paywall assertion that can't say why the kill switch never landed.
+                guard Date() < deadline else { return }
                 try? await Task.sleep(nanoseconds: 100_000_000)
             }
 
