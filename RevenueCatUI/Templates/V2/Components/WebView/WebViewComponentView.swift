@@ -65,11 +65,11 @@ struct WebViewComponentView: View {
         // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
         // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
-        if style.isRenderable, let url = style.url, let origin = style.origin {
+        if style.isRenderable, let url = style.url, let instance = self.viewModel.webViewInstance() {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                instance: self.viewModel.webViewInstance(expectedOrigin: origin)
+                instance: instance
             )
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):

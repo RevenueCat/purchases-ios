@@ -19,7 +19,7 @@ final class WebViewComponentViewModel: Hashable {
 
     #if !os(watchOS) && canImport(WebKit)
     @MainActor
-    private var webViewInstance: WebViewInstance?
+    private var storedWebViewInstance: WebViewInstance?
     #endif
 
     init(
@@ -34,14 +34,27 @@ final class WebViewComponentViewModel: Hashable {
     }
 
     #if !os(watchOS) && canImport(WebKit)
+    /// Canonical origin of the component's URL, or `nil` when it isn't a usable static HTTPS URL —
+    /// the same condition that makes the component non-renderable.
+    private var expectedOrigin: WebViewOrigin? {
+        WebViewOrigin(url: PaywallComponent.WebViewComponent.validatedHTTPSURL(from: self.component.url))
+    }
+
+    /// The live web view for this component, created on first use. `nil` when the component has no
+    /// resolvable origin to gate the bridge against.
     @MainActor
-    func webViewInstance(expectedOrigin: WebViewOrigin) -> WebViewInstance {
-        if let webViewInstance = self.webViewInstance {
-            guard webViewInstance.isUnusable else {
-                return webViewInstance
+    func webViewInstance() -> WebViewInstance? {
+        if let storedWebViewInstance = self.storedWebViewInstance {
+            guard storedWebViewInstance.isUnusable else {
+                return storedWebViewInstance
             }
 
-            webViewInstance.tearDown()
+            storedWebViewInstance.tearDown()
+            self.storedWebViewInstance = nil
+        }
+
+        guard let expectedOrigin = self.expectedOrigin else {
+            return nil
         }
 
         let webViewInstance = WebViewInstance(
@@ -50,7 +63,7 @@ final class WebViewComponentViewModel: Hashable {
             fitsWidth: self.component.size.width.isFit,
             fitsHeight: self.component.size.height.isFit
         )
-        self.webViewInstance = webViewInstance
+        self.storedWebViewInstance = webViewInstance
         return webViewInstance
     }
     #endif

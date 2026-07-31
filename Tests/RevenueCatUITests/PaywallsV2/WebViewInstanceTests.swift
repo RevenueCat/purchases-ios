@@ -32,27 +32,35 @@ final class WebViewInstanceTests: TestCase {
     func testOneViewModelReturnsTheSameInstanceToDuplicateRenderings() {
         let viewModel = Self.makeViewModel()
 
-        let first = viewModel.webViewInstance(expectedOrigin: Self.origin)
-        let second = viewModel.webViewInstance(expectedOrigin: Self.origin)
+        let first = viewModel.webViewInstance()
+        let second = viewModel.webViewInstance()
 
+        XCTAssertNotNil(first)
         XCTAssertTrue(first === second)
     }
 
     func testSeparateViewModelsOwnSeparateInstances() {
-        let first = Self.makeViewModel().webViewInstance(expectedOrigin: Self.origin)
-        let second = Self.makeViewModel().webViewInstance(expectedOrigin: Self.origin)
+        let first = Self.makeViewModel().webViewInstance()
+        let second = Self.makeViewModel().webViewInstance()
 
+        XCTAssertNotNil(first)
         XCTAssertFalse(first === second)
+    }
+
+    /// The origin gates every bridge message, so a component whose URL can't resolve one must not get
+    /// a web view at all.
+    func testNoInstanceIsCreatedWithoutAResolvableOrigin() {
+        XCTAssertNil(Self.makeViewModel(url: "not-a-url").webViewInstance())
     }
 
     // MARK: - Measured state
 
-    func testMeasuredSizeSurvivesAccessFromAnotherRendering() {
+    func testMeasuredSizeSurvivesAccessFromAnotherRendering() throws {
         let viewModel = Self.makeViewModel()
-        let instance = viewModel.webViewInstance(expectedOrigin: Self.origin)
+        let instance = try XCTUnwrap(viewModel.webViewInstance())
         instance.session.onContentResize?(nil, 438)
 
-        let surviving = viewModel.webViewInstance(expectedOrigin: Self.origin)
+        let surviving = try XCTUnwrap(viewModel.webViewInstance())
         XCTAssertEqual(surviving.measuredHeight, 438)
     }
 
@@ -90,12 +98,12 @@ final class WebViewInstanceTests: TestCase {
         XCTAssertTrue(instance.loadFailed)
     }
 
-    func testViewModelReplacesAnUnusableInstanceForALaterRendering() {
+    func testViewModelReplacesAnUnusableInstanceForALaterRendering() throws {
         let viewModel = Self.makeViewModel()
-        let terminated = viewModel.webViewInstance(expectedOrigin: Self.origin)
+        let terminated = try XCTUnwrap(viewModel.webViewInstance())
         terminated.markProcessTerminated()
 
-        let replacement = viewModel.webViewInstance(expectedOrigin: Self.origin)
+        let replacement = try XCTUnwrap(viewModel.webViewInstance())
 
         XCTAssertFalse(replacement === terminated)
         XCTAssertFalse(replacement.isUnusable)
@@ -122,12 +130,12 @@ final class WebViewInstanceTests: TestCase {
 
     private static let origin = WebViewOrigin(string: "https://example.com")!
 
-    private static func makeViewModel() -> WebViewComponentViewModel {
+    private static func makeViewModel(url: String = "https://example.com/index.html") -> WebViewComponentViewModel {
         return WebViewComponentViewModel(
             component: .init(
                 id: "faq",
                 protocolVersion: 1,
-                url: "https://example.com/index.html",
+                url: url,
                 size: .init(width: .fill, height: .fit(nil))
             ),
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
