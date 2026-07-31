@@ -3,10 +3,9 @@
 # workflow_config_fallback.yaml. It used to render the SDK's generic default paywall instead, because an
 # offering the app already held had its paywall components pruned with nothing left to render.
 #
-# The kill switch is armed and the refresh driven through in-app controls (see the `e2e_controls` launch
-# argument) rather than a relaunch or a deep link: a relaunch would reset the session this scenario needs
-# to keep, and opening a URL makes iOS put a confirmation dialog on screen that then blocks every
-# following flow in this directory.
+# The kill switch is armed and the refresh driven through in-app controls rather than a relaunch or a deep
+# link: a relaunch would reset the session this scenario needs to keep, and opening a URL makes iOS put a
+# confirmation dialog on screen that then blocks every following flow in this directory.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_config_killswitch_mid_session.yaml
@@ -23,7 +22,6 @@ env:
 - launchApp:
     arguments:
         e2e_test_flow: open_workflow
-        e2e_controls: "true"
 # Wait for offerings to load before the button appears.
 - extendedWaitUntil:
     visible: "Present Paywall"
@@ -49,10 +47,10 @@ env:
     timeout: 15000
 - takeScreenshot: "workflow_config_killswitch_mid_session - screen 3"
 
-# Back to the launcher: the close control is an unlabeled icon, tapped by coordinate (top-left on the
-# last screen, as in workflow_exit_offer_on_last_page.yaml).
+# Back to the launcher, through the labeled close button the dashboard puts on the last screen (the other
+# screens' close controls are unlabeled icons, which flows can only tap by coordinate).
 - tapOn:
-    point: "8%,11%"
+    text: "Close Paywall"
 - extendedWaitUntil:
     visible: "Present Paywall"
     timeout: 15000

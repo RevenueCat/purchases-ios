@@ -14,14 +14,6 @@ extension E2ETestFlowView {
 
         static let offeringIdentifier = "default_workflows"
 
-        /// Whether to show the controls E2E tests use to change SDK state without relaunching, which
-        /// would reset it. Off unless the `e2e_controls` launch argument is set, so that the flows which
-        /// don't need them see this screen unchanged. Any value turns them on: Maestro only forwards
-        /// launch arguments whose value is a string, so the flow has to pass `"true"` quoted anyway.
-        static var showsE2EControls: Bool {
-            return UserDefaults.standard.object(forKey: "e2e_controls") != nil
-        }
-
         /// Custom paywall variable overrides read from a launch argument (used by E2E tests). Empty when
         /// `custom_users_count` is not provided, so the workflow renders the dashboard default value.
         static var customVariableOverrides: [String: CustomVariableValue] {
@@ -66,9 +58,7 @@ extension E2ETestFlowView {
 
                 EntitlementView(identifier: "pro")
 
-                if Self.showsE2EControls {
-                    self.e2eControls
-                }
+                self.e2eControls
             }
             .task {
                 do {
@@ -85,6 +75,8 @@ extension E2ETestFlowView {
             .multilineTextAlignment(.center)
         }
 
+        /// Controls E2E tests use to change SDK state without relaunching, which would reset it. Always
+        /// shown: the flows that don't need them simply don't tap them.
         @ViewBuilder
         private var e2eControls: some View {
             Button("Force Config Killswitch") {
