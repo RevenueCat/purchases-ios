@@ -187,7 +187,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
 
@@ -222,7 +222,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result?.offering.identifier) == workflowOffering.identifier
-        expect(result?.offering.paywallComponents).toNot(beNil())
+        expect(result?.offering.internalPaywallComponents).toNot(beNil())
         expect(result?.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result?.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
     }
@@ -252,7 +252,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
 
@@ -283,7 +283,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == workflowOffering.identifier
-        expect(result.offering.paywallComponents).toNot(beNil())
+        expect(result.offering.internalPaywallComponents).toNot(beNil())
         expect(result.workflowContext?.initialOffering.identifier) == workflowOffering.identifier
         expect(result.workflowContext?.presentedOfferingContext?.offeringIdentifier) == initialOffering.identifier
         expect(result.workflowContext?.workflow.initialStepId) == "step_1"
@@ -307,7 +307,7 @@ final class PaywallViewConfigurationTests: TestCase {
 
         expect(workflowFetchAttempted) == true
         expect(result.offering.identifier) == offering.identifier
-        expect(result.offering.paywallComponents?.data) == paywallComponents.data
+        expect(result.offering.internalPaywallComponents?.data) == paywallComponents.data
         expect(result.workflowContext).to(beNil())
     }
 
@@ -335,7 +335,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == identifier
-        expect(result.offering.paywallComponents?.data) == paywallComponents.data
+        expect(result.offering.internalPaywallComponents?.data) == paywallComponents.data
         expect(result.workflowContext).to(beNil())
     }
 
@@ -361,7 +361,7 @@ final class PaywallViewConfigurationTests: TestCase {
             remoteConfigEnabled: false
         )
 
-        expect(result.offering.paywallComponents?.data) == paywallComponents.data
+        expect(result.offering.internalPaywallComponents?.data) == paywallComponents.data
         expect(result.offering.presentedOfferingContext?.placementIdentifier)
             == presentedOfferingContext.placementIdentifier
         expect(result.offering.presentedOfferingContext?.targetingContext?.ruleId)
@@ -417,7 +417,7 @@ final class PaywallViewConfigurationTests: TestCase {
         )
 
         expect(result.offering.identifier) == identifier
-        expect(result.offering.paywallComponents?.data) == paywallComponents.data
+        expect(result.offering.internalPaywallComponents?.data) == paywallComponents.data
         expect(result.workflowContext).to(beNil())
     }
 
