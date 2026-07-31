@@ -1986,7 +1986,10 @@ jobs:
       - update-spm-installation-commit
       - run:
           name: Build and upload PaywallsTester snapshots
-          command: bundle exec fastlane build_and_upload_paywalls_tester_snapshots
+          command: |
+            # Sentry CLI uploads snapshots concurrently, so the default macOS file limit is too low for this suite.
+            ulimit -n 4096
+            bundle exec fastlane build_and_upload_paywalls_tester_snapshots
       - slack-notify-on-fail
 
   binary_size_analysis:
