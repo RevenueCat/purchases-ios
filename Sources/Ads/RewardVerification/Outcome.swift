@@ -57,3 +57,23 @@ internal extension RewardVerification {
         case cancelled
     }
 }
+
+internal extension RewardVerification.FailureReason {
+
+    /// Maps this internal diagnostic classification to the coarser reason reported on the
+    /// ``AdRewardFailedToVerify`` tracking event.
+    var trackingFailureReason: AdRewardFailureReason {
+        switch self {
+        case .backendRejected:
+            return .backendError
+        case .exhaustedPending:
+            return .timeout
+        case .exhaustedTransient, .terminalError:
+            return .networkError
+        case .unexpectedResponse:
+            return .unknown
+        case .cancelled:
+            return .unknown
+        }
+    }
+}
