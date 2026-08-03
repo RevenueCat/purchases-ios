@@ -24,7 +24,9 @@ final class RecordingBlobDownloader: RemoteConfigBlobDownloaderType {
     private var _downloadedURLs: [URL] = []
     private var _failedURLs: [URL] = []
 
-    init(wrapping wrapped: RemoteConfigBlobDownloaderType = URLSessionRemoteConfigBlobDownloader()) {
+    init(wrapping wrapped: RemoteConfigBlobDownloaderType = URLSessionRemoteConfigBlobDownloader(
+        timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+    )) {
         self.wrapped = wrapped
     }
 
