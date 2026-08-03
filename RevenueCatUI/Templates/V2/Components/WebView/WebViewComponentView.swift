@@ -170,7 +170,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         }
     }
 
-    // Deliberately no `dismantle*` implementation: a discarded subtree is usually just a
+    // Deliberately no `dismantleNSView/dismantleUIView` implementation: a discarded subtree is usually just a
     // `ViewThatFits` candidate losing the layout, and tearing the web view down there is what caused
     // the component to blank out and reload. The component view model owns the web view instead.
     #if os(macOS)
