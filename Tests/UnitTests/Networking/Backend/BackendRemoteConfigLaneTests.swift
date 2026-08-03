@@ -110,16 +110,21 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
 
     private static let userID = "lane-user"
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        #if os(watchOS)
+        // See https://github.com/AliSoftware/OHHTTPStubs/issues/287
+        try XCTSkipIf(true, "OHHTTPStubs does not currently support watchOS")
+        #endif
+    }
+
     override func tearDown() {
         HTTPStubs.removeAllStubs()
         super.tearDown()
     }
 
     func testConfigCompletesWhileOfferingsHangsOnSeparateLane() throws {
-        #if os(watchOS)
-        throw XCTSkip("OHHTTPStubs does not support watchOS")
-        #endif
-
         let systemInfo = MockSystemInfo(finishTransactions: true)
         let eTagManager = MockETagManager()
 
@@ -128,7 +133,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               eTagManager: eTagManager,
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
-                              requestTimeout: 30,
+                              networkTimeout: .custom(30),
                               operationDispatcher: OperationDispatcher(),
                               apiSourceFailover: nil,
                               timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)))
