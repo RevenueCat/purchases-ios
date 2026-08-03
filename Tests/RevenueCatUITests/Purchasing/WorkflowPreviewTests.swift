@@ -28,7 +28,7 @@ final class WorkflowPreviewTests: TestCase {
 
         // The rendered offering is the screen's offering with the workflow screen's components applied.
         expect(context.initialOffering.identifier) == "offering_a"
-        expect(context.initialOffering.paywallComponents).toNot(beNil())
+        expect(context.initialOffering.internalPaywallComponents).toNot(beNil())
         expect(context.workflow.id) == "wf_test"
     }
 

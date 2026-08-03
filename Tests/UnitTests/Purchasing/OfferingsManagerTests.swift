@@ -1125,7 +1125,7 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == true
-        expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).toNot(beNil())
+        expect(result?.value?.offering(identifier: "paywall_components")?.internalPaywallComponents).toNot(beNil())
     }
 
     func testGetOfferingsRefetchesIfRemoteConfigDisablesBeforeReadinessDelivery() throws {
@@ -1166,7 +1166,7 @@ extension OfferingsManagerTests {
             .withPaywallComponents
         ]
         let deliveredOffering = deliveredResult.value?.value?.offering(identifier: "paywall_components")
-        expect(deliveredOffering?.paywallComponents).toNot(beNil())
+        expect(deliveredOffering?.internalPaywallComponents).toNot(beNil())
     }
 
     func testGetOfferingsCarriesFullResponseDataToDiskCacheWhenRemoteConfigManagerIsEnabled() throws {
@@ -1212,7 +1212,7 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).to(beNil())
+        expect(result?.value?.offering(identifier: "paywall_components")?.internalPaywallComponents).to(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?.paywallComponents)
             .to(beNil())
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?.hasPaywallComponents)
@@ -1545,7 +1545,7 @@ extension OfferingsManagerTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.loadedFromDiskCache) == true
-        expect(result?.value?.offering(identifier: "paywall_components")?.paywallComponents).toNot(beNil())
+        expect(result?.value?.offering(identifier: "paywall_components")?.internalPaywallComponents).toNot(beNil())
         expect(self.mockOfferings.invokedGetOfferingsForAppUserIDCount) == 1
     }
 
@@ -1581,7 +1581,7 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.clearCachedOfferingsCount) == 0
         expect(self.mockDeviceCache.stubbedOfferings?.loadedFromDiskCache) == true
         expect(self.mockDeviceCache.stubbedOfferings?.offering(identifier: "paywall_components")?
-            .paywallComponents).toNot(beNil())
+            .internalPaywallComponents).toNot(beNil())
     }
 
     func testRemoteConfigDisableDoesNotAllowOlderPrunedRequestToOverwriteFullCache() throws {
