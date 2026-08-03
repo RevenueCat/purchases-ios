@@ -65,12 +65,12 @@ extension AdEventsRequest {
         var rewardVerificationEnabled: Bool?
         var rewardItem: String?
         var rewardAmount: Int?
-        // For reward verified events only:
+        // For reward granted events only:
         var rewardType: String?
         var rewardCurrencyCode: String?
         var rewardCurrencyAmount: Int?
         // For reward failed-to-verify events only:
-        var failureReason: String?
+        var rewardFailureReason: String?
 
     }
 
@@ -125,12 +125,10 @@ extension AdEventsRequest.AdEventRequest {
                 rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
                 rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
                 rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
-                rewardType: (adEvent.rewardVerifiedData?.reward ?? adEvent.rewardGrantedData?.reward)?.kindRawValue,
-                rewardCurrencyCode: (adEvent.rewardVerifiedData?.reward ??
-                                     adEvent.rewardGrantedData?.reward)?.virtualCurrency?.code,
-                rewardCurrencyAmount: (adEvent.rewardVerifiedData?.reward ??
-                                       adEvent.rewardGrantedData?.reward)?.virtualCurrency?.amount,
-                failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
+                rewardType: adEvent.rewardGrantedData?.reward.kindRawValue,
+                rewardCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
+                rewardCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
+                rewardFailureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -195,7 +193,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case rewardType
         case rewardCurrencyCode
         case rewardCurrencyAmount
-        case failureReason = "reward_failure_reason"
+        case rewardFailureReason
 
     }
 
