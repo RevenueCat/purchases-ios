@@ -8,8 +8,8 @@
 import Foundation
 
 @_spi(Experimental)
-@objc(RCPurchasesAuthenticatorDelegate)
-public protocol AuthenticatorDelegate: NSObjectProtocol {
+@objc(RCPurchasesAuthenticationDelegate)
+public protocol AuthenticationDelegate: NSObjectProtocol {
     func authenticatorDidEncounterError(_ error: PublicError)
 }
 
@@ -19,8 +19,8 @@ internal protocol InternalAuthenticatorDelegate: AnyObject {
 }
 
 @_spi(Experimental)
-@objc(RCPurchasesAuthenticator)
-public final class Authenticator: NSObject {
+@objc(RCPurchasesAuthentication)
+public final class Authentication: NSObject {
 
     private let backend: Backend
     private let identityManager: IdentityManager
@@ -28,7 +28,7 @@ public final class Authenticator: NSObject {
     private let systemInfo: SystemInfo
     internal weak var internalDelegate: InternalAuthenticatorDelegate?
 
-    public weak var delegate: AuthenticatorDelegate?
+    public weak var delegate: AuthenticationDelegate?
 
     internal init(backend: Backend, identityManager: IdentityManager, operationDispatcher: OperationDispatcher, systemInfo: SystemInfo, internalDelegate: InternalAuthenticatorDelegate? = nil) {
         self.backend = backend

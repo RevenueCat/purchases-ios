@@ -273,7 +273,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
-    private let _authenticator: Authenticator
+    private let _authentication: Authentication
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
@@ -890,10 +890,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
-        self._authenticator = Authenticator(backend: backend, identityManager: identityManager, operationDispatcher: operationDispatcher, systemInfo: systemInfo)
+        self._authentication = Authentication(backend: backend, identityManager: identityManager, operationDispatcher: operationDispatcher, systemInfo: systemInfo)
 
         super.init()
-        self._authenticator.internalDelegate = self
+        self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
@@ -1091,7 +1091,7 @@ public extension Purchases {
 public extension Purchases {
 
     @_spi(Experimental)
-    public var authenticator: Authenticator { _authenticator }
+    public var authentication: Authentication { _authentication }
 
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
@@ -1099,7 +1099,7 @@ public extension Purchases {
     See https://docs.revenuecat.com/docs/user-ids for more information.
     """)
     func logIn(_ appUserID: StaticString, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        _authenticator.identifyCurrentUser(as: appUserID, completion: completion)
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1108,11 +1108,11 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        _authenticator.identifyCurrentUser(as: appUserID, completion: completion)
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
     func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        try await _authenticator.identifyCurrentUser(as: appUserID)
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1120,26 +1120,26 @@ public extension Purchases {
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        try await _authenticator.identifyCurrentUser(as: appUserID)
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     @_spi(Experimental)
     @objc(logInUsingToken:completion:)
     func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
-        _authenticator.logIn(using: token, completion: completion)
+        _authentication.logIn(using: token, completion: completion)
     }
 
     @_spi(Experimental)
     func logIn(using token: ExternalToken) async throws -> CustomerInfo {
-        try await _authenticator.logIn(using: token)
+        try await _authentication.logIn(using: token)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        _authenticator.logOut(completion: completion)
+        _authentication.logOut(completion: completion)
     }
 
     func logOut() async throws -> CustomerInfo {
-        return try await _authenticator.logOut()
+        return try await _authentication.logOut()
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
