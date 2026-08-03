@@ -13,15 +13,15 @@ struct RcMaestroApp: App {
             SystemInfo.apiBaseURL = apiBaseURL
         }
 
-        // Used in E2E tests
-        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
+        // Used in E2E tests. The strategy is read on every request rather than captured here, so that
+        // tests can change it mid-session through `ForceServerErrorStrategyStore`.
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init { request in
-                            switch forceServerErrorStrategy {
+                            switch ForceServerErrorStrategyStore.current {
                             case .never:
                                 return .performRequest
 

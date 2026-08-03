@@ -1,6 +1,7 @@
 # Navigates a workflow to its last page (the exit-offer step) and closes it; the configured exit
 # offer (offering `default`) must be presented. Presents via `.presentPaywall` (the exit-offer-aware
-# path). The close control is an unlabeled icon, so it is tapped by coordinate (top-left on the paywall).
+# path). Closing goes through the labeled button the dashboard puts on the last page, since the paywall's
+# own close control is an unlabeled icon that flows can only tap by coordinate.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_exit_offer_on_last_page.yaml
@@ -30,8 +31,8 @@ env:
     visible: "People Who Meditate Daily Sleep 40% Better"
     timeout: 15000
 
-# Close the last page (unlabeled close icon, top-left) -> the exit offer paywall is presented.
-- tapOn: { point: "8%,11%" }
+# Close the last page -> the exit offer paywall is presented.
+- tapOn: { text: "Close Paywall" }
 - extendedWaitUntil:
     visible: "Paywall V2"
     timeout: 15000
