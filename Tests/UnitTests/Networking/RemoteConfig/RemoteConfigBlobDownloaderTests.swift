@@ -200,6 +200,25 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
         expect(captured) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
     }
 
+    func testRecordsMainSourceTimedOutForNSErrorTimeoutFromURLLoadingSystem() async throws {
+        let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
+        let manager = MockHTTPRequestTimeoutManager(defaultTimeout: 15)
+        MockRemoteConfigBlobURLProtocol.handler = { _ in
+            throw NSError(domain: NSURLErrorDomain, code: NSURLErrorTimedOut)
+        }
+
+        do {
+            _ = try await self.downloader(timeoutManager: manager).data(from: url)
+            fail("Expected downloader to throw")
+        } catch {
+            expect(manager.recordedHosts) == ["blob.example.com"]
+            guard case .mainSourceTimedOut = try XCTUnwrap(manager.recordedResults.first) else {
+                fail("Expected mainSourceTimedOut, got \(manager.recordedResults)")
+                return
+            }
+        }
+    }
+
     func testSuccessfulBlobDownloadClearsTheSourceMemory() async throws {
         let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
         let downloader = self.downloader(dateProvider: MockCurrentDateProvider())

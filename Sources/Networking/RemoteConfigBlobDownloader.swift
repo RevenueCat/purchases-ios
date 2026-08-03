@@ -59,8 +59,10 @@ final class URLSessionRemoteConfigBlobDownloader: RemoteConfigBlobDownloaderType
             self.timeoutManager.recordRequestResult(host: host, .successOnMainBackend)
             return data
         } catch {
-            let isTimeout = (error as? URLError)?.code == .timedOut
-            self.timeoutManager.recordRequestResult(host: host, isTimeout ? .mainSourceTimedOut : .other)
+            self.timeoutManager.recordRequestResult(
+                host: host,
+                error.isURLRequestTimeout ? .mainSourceTimedOut : .other
+            )
             throw error
         }
     }
