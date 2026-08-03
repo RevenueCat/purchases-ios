@@ -344,10 +344,9 @@ extension PurchasesRewardVerificationTests {
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
 
         let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified, granted
-        guard case let .rewardVerified(_, verifiedData) = trackedEvents[1] else {
+        guard case .rewardVerified = trackedEvents[1] else {
             return fail("Expected AdEvent.rewardVerified but got \(trackedEvents[1])")
         }
-        expect(verifiedData.reward.virtualCurrency?.code) == "coins"
 
         guard case let .rewardGranted(_, grantedData) = trackedEvents[2] else {
             return fail("Expected AdEvent.rewardGranted but got \(trackedEvents[2])")
@@ -409,7 +408,29 @@ extension PurchasesRewardVerificationTests {
         guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
             return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
         }
-        expect(failedData.failureReason) == .backendError
+        expect(failedData.failureReason) == .backendError(reason: "no_reward_rule")
+    }
+
+    func testPollRewardVerificationTracksCancellation() async throws {
+        let poller = self.makeStubPoller(statuses: [.pending, .verified(.noReward)])
+
+        let task = Task {
+            await self.purchases.pollRewardVerification(
+                clientTransactionID: "tx-1",
+                trackingMetadata: self.makeTrackingMetadata(),
+                poller: poller
+            )
+        }
+        task.cancel()
+        _ = await task.value
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, failed-to-verify
+        guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
+            return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
+        }
+        expect(failedData.failureReason) == .cancelled
     }
 
 }

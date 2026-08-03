@@ -77,9 +77,14 @@ final class RewardVerificationOutcomeTests: TestCase {
 
     // MARK: - trackingFailureReason
 
-    func testTrackingFailureReasonMapsBackendRejectedToBackendError() {
+    func testTrackingFailureReasonCarriesTheBackendReasonCode() {
         let reason = RewardVerification.FailureReason.backendRejected(reason: "no_access", message: "nope")
-        XCTAssertEqual(reason.trackingFailureReason, .backendError)
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: "no_access"))
+    }
+
+    func testTrackingFailureReasonMapsBackendRejectedWithoutReasonToBackendError() {
+        let reason = RewardVerification.FailureReason.backendRejected(reason: nil, message: "nope")
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: nil))
     }
 
     func testTrackingFailureReasonMapsExhaustedPendingToTimeout() {
@@ -99,7 +104,7 @@ final class RewardVerificationOutcomeTests: TestCase {
         XCTAssertEqual(RewardVerification.FailureReason.unexpectedResponse.trackingFailureReason, .unknown)
     }
 
-    func testTrackingFailureReasonMapsCancelledToUnknown() {
-        XCTAssertEqual(RewardVerification.FailureReason.cancelled.trackingFailureReason, .unknown)
+    func testTrackingFailureReasonMapsCancelledToCancelled() {
+        XCTAssertEqual(RewardVerification.FailureReason.cancelled.trackingFailureReason, .cancelled)
     }
 }
