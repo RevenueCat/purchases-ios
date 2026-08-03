@@ -31,6 +31,7 @@ enum CustomerInfoStrings {
     case customerinfo_updated_from_network
     case customerinfo_updated_from_network_error(BackendError)
     case customerinfo_updated_offline
+    case customerinfo_computed_on_device
     case posting_transactions_in_lieu_of_fetching_customerinfo([StoreTransaction])
     case posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(BackendError)
     case not_waiting_for_unsynced_transactions([StoreTransaction])
@@ -80,6 +81,8 @@ extension CustomerInfoStrings: LogMessage {
             }
 
             return result
+        case .customerinfo_computed_on_device:
+            return "CustomerInfo was computed on the device while unsynced transactions are posted."
         case .customerinfo_updated_offline:
             return "There was an error communicating with RevenueCat servers. " +
             "CustomerInfo was temporarily computed offline, and it will be posted again as soon as possible."

@@ -265,7 +265,7 @@ class CustomerInfoManager {
         }
 
         if customerInfo.shouldCache {
-            guard !self.isStalerThanCache(customerInfo: customerInfo, appUserID: appUserID) else {
+            guard self.claimCacheWrite(for: customerInfo, appUserID: appUserID) else {
                 Logger.debug(Strings.customerInfo.not_caching_staler_customer_info)
                 return
             }
@@ -273,7 +273,6 @@ class CustomerInfoManager {
             do {
                 let jsonData = try JSONEncoder.default.encode(customerInfo)
                 self.deviceCache.cache(customerInfo: jsonData, appUserID: appUserID)
-                self.recordCachedRequestDate(of: customerInfo, appUserID: appUserID)
             } catch {
                 Logger.error(Strings.customerInfo.error_encoding_customerinfo(error))
             }
@@ -285,26 +284,43 @@ class CustomerInfoManager {
         self.sendUpdateIfChanged(customerInfo: customerInfo)
     }
 
-    private func recordCachedRequestDate(of customerInfo: CustomerInfo, appUserID: String) {
-        guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait else { return }
-
-        self.modifyData { $0.lastCachedRequestDateByAppUserID[appUserID] = customerInfo.requestDate }
-    }
-
+    /// Records `customerInfo`'s request date as the newest one written to the cache, returning whether
+    /// it should be written at all.
+    ///
     /// With ``UnsyncedTransactionsWaitPolicy/doNotWait``, receipt posts run on their own lane, so a
     /// `GET /subscribers` response can land after a fresher `POST /receipts` one. Dropping the staler
-    /// of the two keeps the cache from going back to a pre-purchase state.
+    /// of the two keeps the cache from going back to a pre-purchase state. Checking and recording in one
+    /// step, so two responses racing can't both consider themselves the newest.
     ///
     /// Gated on the policy so apps that didn't opt in keep their existing cache behavior, and only
     /// meaningful for cacheable (server issued) `CustomerInfo`: their `requestDate` comes from the
     /// backend, while a device computed one uses the device's clock, so the two aren't comparable.
-    private func isStalerThanCache(customerInfo: CustomerInfo, appUserID: String) -> Bool {
-        guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait,
-              let lastCachedRequestDate = self.data.value.lastCachedRequestDateByAppUserID[appUserID] else {
-            return false
+    private func claimCacheWrite(for customerInfo: CustomerInfo, appUserID: String) -> Bool {
+        guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait else { return true }
+
+        return self.modifyData { data in
+            if let lastCachedRequestDate = data.lastCachedRequestDateByAppUserID[appUserID],
+               customerInfo.requestDate < lastCachedRequestDate {
+                return false
+            }
+
+            data.lastCachedRequestDateByAppUserID[appUserID] = customerInfo.requestDate
+            return true
+        }
+    }
+
+    private func updatedCustomerInfoMessage(
+        for result: CustomerInfoDataResult,
+        info: CustomerInfo
+    ) -> CustomerInfoStrings {
+        if result.usedOfflineEntitlements {
+            // Computing on the device was the app's choice, not a fallback for an unreachable backend.
+            return .customerinfo_computed_on_device
         }
 
-        return customerInfo.requestDate < lastCachedRequestDate
+        return info.isComputedOffline
+        ? .customerinfo_updated_offline
+        : .customerinfo_updated_from_network
     }
 
     func clearCustomerInfoCache(forAppUserID appUserID: String) {
@@ -560,11 +576,7 @@ private extension CustomerInfoManager {
 
             case let .success(info):
                 self.cache(customerInfo: info, appUserID: appUserID)
-                Logger.rcSuccess(
-                    info.isComputedOffline
-                    ? Strings.customerInfo.customerinfo_updated_offline
-                    : Strings.customerInfo.customerinfo_updated_from_network
-                )
+                Logger.rcSuccess(self.updatedCustomerInfoMessage(for: customerInfoDataResult, info: info))
             }
 
             if let completion = completion {
@@ -619,9 +631,10 @@ private extension CustomerInfoManager {
     ) async -> UnsyncedTransactionsResolution {
         guard self.systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait else { return .waitForPost }
 
-        // A cached `CustomerInfo` means the backend already knows this user, so fetching is a better
-        // answer than computing on the device, which can't see purchases made outside of the store.
-        guard self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil else {
+        // A usable cached `CustomerInfo` means the backend already knows this user, so fetching is a
+        // better answer than computing on the device, which can't see purchases made outside of the
+        // store. Checked by decoding, since an entry from an older schema version can't be reported.
+        guard ((try? self.cachedCustomerInfo(appUserID: appUserID)) ?? nil) == nil else {
             return .fetchWhilePosting
         }
 
