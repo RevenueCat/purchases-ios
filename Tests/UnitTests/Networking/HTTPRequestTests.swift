@@ -224,6 +224,13 @@ class HTTPRequestTests: TestCase {
         expect(path.supportsSignatureVerification).to(beTrue())
         expect(path.needsNonceForSigning).to(beFalse())
         expect(path.name) == "remote_config_fallback"
+        expect(path.isFallbackHostPath).to(beTrue())
+    }
+
+    func testMainPathsAreNotFallbackHostPaths() {
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
     }
 
     func testUserIDEscaping() {
