@@ -112,6 +112,8 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
     }
 
     func testRecordsMainSourceTimedOutWhenTheRequestTimesOut() async throws {
+        try self.requireURLProtocolErrorInjection()
+
         let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
         let manager = MockHTTPRequestTimeoutManager(defaultTimeout: 15)
         MockRemoteConfigBlobURLProtocol.handler = { _ in throw URLError(.timedOut) }
@@ -201,6 +203,8 @@ final class RemoteConfigBlobDownloaderTests: TestCase {
     }
 
     func testRecordsMainSourceTimedOutForNSErrorTimeoutFromURLLoadingSystem() async throws {
+        try self.requireURLProtocolErrorInjection()
+
         let url = try XCTUnwrap(URL(string: "https://blob.example.com/blob"))
         let manager = MockHTTPRequestTimeoutManager(defaultTimeout: 15)
         MockRemoteConfigBlobURLProtocol.handler = { _ in
@@ -311,6 +315,8 @@ private extension RemoteConfigBlobDownloaderTests {
 
     /// Forces a timed-out attempt so the source's fail-fast memory is armed.
     func timeOut(_ downloader: URLSessionRemoteConfigBlobDownloader, url: URL) async throws {
+        try self.requireURLProtocolErrorInjection()
+
         MockRemoteConfigBlobURLProtocol.handler = { _ in throw URLError(.timedOut) }
         do {
             _ = try await downloader.data(from: url)
@@ -318,6 +324,14 @@ private extension RemoteConfigBlobDownloaderTests {
         } catch {
             // Expected: the timeout is recorded for the host.
         }
+    }
+
+    /// watchOS does not support custom `URLProtocol` subclasses. In particular, failures sent through
+    /// `URLProtocolClient` are replaced by a real URL-loading error, so these tests cannot inject a timeout.
+    func requireURLProtocolErrorInjection() throws {
+        #if os(watchOS)
+        throw XCTSkip("Custom URLProtocol error injection is unavailable on watchOS")
+        #endif
     }
 
     /// Runs one attempt that fails with a non-timeout HTTP status so the source memory is exercised without a timeout.
