@@ -370,6 +370,7 @@ class AdEventTests: TestCase {
         expect(AdRewardFailureReason.backendError(reason: nil).rawValue) == "backend_error"
         expect(AdRewardFailureReason.backendError(reason: "no_reward_rule").rawValue)
             == "no_reward_rule"
+        expect(AdRewardFailureReason.cancelled.rawValue) == "cancelled"
         expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
     }
 
@@ -386,6 +387,7 @@ class AdEventTests: TestCase {
             "timeout": .timeout,
             "network_error": .networkError,
             "backend_error": .backendError(reason: nil),
+            "cancelled": .cancelled,
             "unknown": .unknown
         ]
         for (rawValue, reason) in expected {

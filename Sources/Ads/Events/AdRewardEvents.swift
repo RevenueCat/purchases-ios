@@ -26,6 +26,9 @@ import Foundation
     /// when it reported one, and is what gets sent for this case.
     case backendError(reason: String?)
 
+    /// Polling was cancelled before the backend reached an outcome.
+    case cancelled
+
     /// Verification failed for an unspecified reason.
     case unknown
 
@@ -35,6 +38,7 @@ import Foundation
         case .timeout: return "timeout"
         case .networkError: return "network_error"
         case .backendError(let reason): return reason ?? "backend_error"
+        case .cancelled: return "cancelled"
         case .unknown: return "unknown"
         }
     }
@@ -43,6 +47,7 @@ import Foundation
         switch try decoder.singleValueContainer().decode(String.self) {
         case "timeout": self = .timeout
         case "network_error": self = .networkError
+        case "cancelled": self = .cancelled
         case "unknown": self = .unknown
         case "backend_error": self = .backendError(reason: nil)
         case let reason: self = .backendError(reason: reason)
