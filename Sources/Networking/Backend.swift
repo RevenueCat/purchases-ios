@@ -38,6 +38,7 @@ class Backend {
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType,
         dateProvider: DateProvider = DateProvider()
     ) {
         // One `apiSourceFailover` for both HTTPClients, so they walk one source list and one
@@ -48,9 +49,9 @@ class Backend {
                               sourceProvider: $0,
                               healthChecker: SourceHealthChecker())
         }
-        // `timeoutManager` is shared by both HTTPClients: a timeout on a host fast-fails the other's
-        // next request to it, and a success on either clears it for both.
-        let timeoutManager = HTTPRequestTimeoutManager(networkTimeout: httpClientTimeout)
+        // `timeoutManager` is shared by both HTTPClients (and, outside of `Backend`, by the blob
+        // downloader) so a timeout one of them sees on a host fast-fails the others' next request to that
+        // same host, and a success on any of them clears it for all.
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
@@ -334,6 +335,14 @@ extension Backend {
 
     var networkTimeout: TimeInterval {
         return self.config.httpClient.timeout
+    }
+
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.config.httpClient.requestTimeoutManager.timeout(host: nil,
+                                                                    isFallbackHostRequest: false,
+                                                                    endpointSupportsFallbackURLs: false,
+                                                                    isProxied: false,
+                                                                    reTieredTimeoutsEnabled: true)
     }
 
     var offlineCustomerInfoEnabled: Bool {

@@ -26,7 +26,7 @@ final class RemoteConfigBlobFetcher: RemoteConfigBlobFetcherType {
     init(
         blobStore: RemoteConfigBlobStoreType,
         sourceProvider: RemoteConfigSourceProviderType,
-        downloader: RemoteConfigBlobDownloaderType = URLSessionRemoteConfigBlobDownloader()
+        downloader: RemoteConfigBlobDownloaderType
     ) {
         self.scheduler = RemoteConfigBlobFetchScheduler(
             blobStore: blobStore,

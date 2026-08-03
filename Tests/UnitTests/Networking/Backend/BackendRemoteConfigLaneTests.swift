@@ -207,7 +207,8 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                                                    systemInfo: systemInfo),
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
-            apiSourceProvider: nil
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
         )
 
         let apiHost = try XCTUnwrap(SystemInfo.apiBaseURL.host)
