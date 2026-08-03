@@ -620,6 +620,10 @@ private extension HTTPClient {
                    error.isAllowedToRetryWithFallbackHost,
                    let apiSourceFailover = self.apiSourceFailover {
                     let requestTimeoutResult = requestTimeoutResult
+
+                    // Make sure to already update the shared timeout state before making any other requests
+                    self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+
                     apiSourceFailover.onRequestFailure(source) { decision in
                         let retryScheduled = self.handleAPISourceFailureDecision(decision,
                                                                                  request: request,
@@ -629,6 +633,7 @@ private extension HTTPClient {
                                     response: .failure(error),
                                     retryScheduled: retryScheduled,
                                     requestTimeoutResult: requestTimeoutResult,
+                                    recordRequestTimeoutResult: false,
                                     urlRequest: urlRequest,
                                     requestStartTime: requestStartTime)
                     }
@@ -700,13 +705,16 @@ private extension HTTPClient {
                         response: VerifiedHTTPResponse<Data>.Result?,
                         retryScheduled: Bool,
                         requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult,
+                        recordRequestTimeoutResult: Bool = true,
                         urlRequest: URLRequest,
                         requestStartTime: Date) {
         if !retryScheduled, let response = response {
             request.completionHandler?(response)
         }
 
-        self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+        if recordRequestTimeoutResult {
+            self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+        }
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,

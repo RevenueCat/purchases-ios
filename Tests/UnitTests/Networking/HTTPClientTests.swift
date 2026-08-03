@@ -568,6 +568,40 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         ]
     }
 
+    func testRecordsAPISourceTimeoutBeforeHealthCheckCompletes() {
+        let host = "first-api.rc-test.com"
+        let healthCheckStarted = self.expectation(description: "Health check started")
+        let healthChecker = DelayedSourceHealthChecker(checkStarted: healthCheckStarted)
+        let client = self.createClient(
+            self.systemInfoUsingAPISources(),
+            apiSourceProvider: Self.apiSourceProvider(host: host),
+            sourceHealthChecker: healthChecker
+        )
+
+        stub(condition: isHost(host)) { _ in .timeoutResponse() }
+
+        let requestCompleted = self.expectation(description: "Request completed")
+        client.perform(.init(method: .get, path: .mockPath)) { (_: EmptyResponse) in
+            requestCompleted.fulfill()
+        }
+
+        self.wait(for: [healthCheckStarted], timeout: 1)
+
+        XCTAssertEqual(
+            self.timeoutManager.timeout(
+                host: host,
+                isFallbackHostRequest: false,
+                endpointSupportsFallbackURLs: false,
+                isProxied: false,
+                reTieredTimeoutsEnabled: true
+            ),
+            HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
+        )
+
+        healthChecker.complete(isHealthy: false)
+        self.wait(for: [requestCompleted], timeout: 1)
+    }
+
     func testPassesHeaders() {
         let headerPresent: Atomic<Bool> = false
 
@@ -4657,6 +4691,42 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         expect(self.timeoutManager.recordedResults.first) == .mainSourceTimedOut
     }
 
+    func testRecordsEachAPISourceAttemptOnceWhenMultipleSourcesTimeOut() {
+        let firstHost = "first-api.rc-test.com"
+        let secondHost = "second-api.rc-test.com"
+        let healthChecker = MockSourceHealthChecker()
+        healthChecker.stubbedIsHealthy.value = false
+        let systemInfoUsingAPISources = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
+        let sourceProvider = RemoteConfigSourceProvider(
+            topicStore: APISourceTopicStore(urls: [
+                "https://\(firstHost)/",
+                "https://\(secondHost)/"
+            ])
+        )
+        let client = self.createClient(
+            systemInfoUsingAPISources,
+            apiSourceProvider: sourceProvider,
+            sourceHealthChecker: healthChecker
+        )
+
+        stub(condition: isHost(firstHost) || isHost(secondHost)) { _ in .timeoutResponse() }
+
+        let result: EmptyResponse? = waitUntilValue { completion in
+            client.perform(.init(method: .get, path: .mockPath)) { completion($0) }
+        }
+
+        expect(result).to(beFailure())
+        expect(healthChecker.checkedSourceURLs.value.map(\.host)) == [firstHost, secondHost]
+        expect(self.timeoutManager.recordedHosts) == [firstHost, secondHost]
+        expect(self.timeoutManager.recordedResults) == [.mainSourceTimedOut, .mainSourceTimedOut]
+    }
+
     /// Verifies that with API sources disabled (the default), a timeout on a no-fallback endpoint does
     /// not arm the per-host memory, preserving the legacy behavior.
     func testDoesNotRecordMainSourceTimedOutForNoFallbackEndpointWhenAPISourcesDisabled() {
@@ -4795,6 +4865,34 @@ private final class AlwaysRearmingSourceProvider: RemoteConfigSourceProviderType
     @discardableResult
     func restartIfExhausted(for purpose: RemoteConfigSourceHandle.Purpose) -> Bool {
         return self.wrapped.restartIfExhausted(for: purpose)
+    }
+
+}
+
+private final class DelayedSourceHealthChecker: SourceHealthCheckerType, @unchecked Sendable {
+
+    private let checkStarted: XCTestExpectation
+    private let lock = Lock()
+    private var pendingCompletion: (@Sendable (Bool) -> Void)?
+
+    init(checkStarted: XCTestExpectation) {
+        self.checkStarted = checkStarted
+    }
+
+    func checkHealth(ofSourceBaseURL _: URL, completion: @escaping @Sendable (Bool) -> Void) {
+        self.lock.perform {
+            self.pendingCompletion = completion
+        }
+        self.checkStarted.fulfill()
+    }
+
+    func complete(isHealthy: Bool) {
+        let completion = self.lock.perform {
+            let completion = self.pendingCompletion
+            self.pendingCompletion = nil
+            return completion
+        }
+        completion?(isHealthy)
     }
 
 }
