@@ -244,9 +244,10 @@ struct WorkflowPaywallView: View {
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
     /// store, so values survive screen navigation and reset only when the presentation ends
-    /// (this view, and with it the `@StateObject`, is torn down). Seeded empty for now —
-    /// workflow-root `state` declarations arrive with the workflow wire-format follow-up.
-    @StateObject private var stateStore = PaywallStateStore()
+    /// (this view, and with it the `@StateObject`, is torn down). Seeded from every screen's
+    /// declarations: `PaywallsV2View` suppresses its own store inside a workflow, so nothing else
+    /// seeds this one.
+    @StateObject private var stateStore: PaywallStateStore
     // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
@@ -282,6 +283,9 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        self._stateStore = .init(
+            wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
+        )
         self._promoOfferCacheOwner = .init(wrappedValue: PromoOfferCacheOwner(
             cache: promoOfferCache ?? PaywallPromoOfferCache(
                 subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -309,6 +313,19 @@ struct WorkflowPaywallView: View {
         )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
         self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
+    }
+
+    /// Merged across all screens so a key declared on a screen the user has not reached yet is
+    /// already seeded; sorted by id so a key two screens declare differently resolves the same way
+    /// every time.
+    static func mergedStateDeclarations(
+        in workflow: PublishedWorkflow
+    ) -> [String: PaywallComponent.StateDeclaration] {
+        var merged: [String: PaywallComponent.StateDeclaration] = [:]
+        for (_, screen) in workflow.screens.sorted(by: { $0.key < $1.key }) {
+            merged.merge(screen.stateDeclarations ?? [:]) { first, _ in first }
+        }
+        return merged
     }
 
     var body: some View {
@@ -503,9 +520,10 @@ struct WorkflowPaywallView: View {
             // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
             // single-step-fallback rule.
             workflowScreenType: page.screenType,
-            // Workflow attribution on the impression event (#7024), orthogonal to the screen_type gate.
+            // Workflow purchase attribution, orthogonal to the screen_type gate.
             workflowId: self.context.workflow.id,
             stepId: page.stepId,
+            traceId: self.stepEventCoordinator.traceId,
             isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
@@ -757,7 +775,8 @@ struct WorkflowPaywallView: View {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: context.uiConfig
+            uiConfig: context.uiConfig,
+            paywallId: screenId
         )
 
         return .init(

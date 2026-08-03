@@ -94,25 +94,15 @@ class SystemInfo {
         return self._isSandbox
     }
 
-    /// Whether remote config lifecycle wiring is enabled. Temporary gate while remote config is being
-    /// rolled out. Paywall workflows read entirely through remote config, so this is also the single
-    /// gate for workflows: there's no separate workflows switch, since the two ship together.
+    /// Whether remote config lifecycle wiring is enabled. Paywall workflows read entirely through
+    /// remote config, so this is also the gate for workflows: there's no separate workflows switch,
+    /// since the two ship together.
     ///
-    /// Enabled either programmatically via the internal `DangerousSettings.useWorkflows` flag (used by
-    /// hybrid SDKs, which can't set a compilation condition at runtime) or by the `ENABLE_REMOTE_CONFIG`
-    /// compilation condition. Always disabled under custom entitlement computation.
+    /// Enabled for everyone except under custom entitlement computation. Once enabled here, remote
+    /// config can still be turned off at runtime by the backend kill switch
+    /// (see `Purchases.remoteConfigEnabled`).
     var remoteConfigEnabled: Bool {
-        guard !self.dangerousSettings.customEntitlementComputation else { return false }
-
-        if self.dangerousSettings.useWorkflows {
-            return true
-        }
-
-        #if ENABLE_REMOTE_CONFIG
-        return true
-        #else
-        return false
-        #endif
+        return !self.dangerousSettings.customEntitlementComputation
     }
 
     var isDebugBuild: Bool {
@@ -128,7 +118,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.82.0-SNAPSHOT"
+        return "5.84.0-SNAPSHOT"
     }
 
     static var installationMethod: String {

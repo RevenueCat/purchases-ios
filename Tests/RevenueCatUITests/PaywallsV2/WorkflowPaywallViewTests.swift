@@ -474,6 +474,39 @@ extension WorkflowPaywallViewTests {
         expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
     }
 
+    // MARK: - State declarations
+
+    func testMergedStateDeclarationsCollectsEveryScreenAndKeepsTheFirstDuplicate() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: Self.makeScreenJSON(extraKeysJSON: """
+            "state_declarations": {
+                "on_initial": { "type": "boolean", "default": true },
+                "shared": { "type": "string", "default": "from_initial" }
+            }
+            """),
+            terminalScreenJSON: Self.makeScreenJSON(extraKeysJSON: """
+            "state_declarations": {
+                "on_terminal": { "type": "string", "default": "annual" },
+                "shared": { "type": "string", "default": "from_terminal" }
+            }
+            """)
+        )
+
+        let merged = WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)
+
+        expect(merged.keys).to(contain("on_initial", "on_terminal"))
+        expect(merged["on_terminal"]?.defaultValue) == .string("annual")
+        // Screens merge in id order, so `screen_initial` wins over `screen_terminal`.
+        expect(merged["shared"]?.defaultValue) == .string("from_initial")
+    }
+
+    func testMergedStateDeclarationsIsEmptyWhenNoScreenDeclaresState() throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+
+        expect(WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)).to(beEmpty())
+    }
+
 }
 
 // MARK: - Helpers for workflowPackageContext tests
@@ -594,13 +627,14 @@ private extension WorkflowPaywallViewTests {
     }
 
     static func makeScreenJSON(
-        packages: [PackageSpec],
-        offeringId: String,
-        extraComponentsJSON: [String] = []
+        packages: [PackageSpec] = [],
+        offeringId: String = "offering_test",
+        extraKeysJSON: String = ""
     ) -> String {
-        let componentsJSON = (
-            packages.map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) } + extraComponentsJSON
-        ).joined(separator: ",")
+        let componentsJSON = packages
+            .map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
+            .joined(separator: ",")
+        let extraKeys = extraKeysJSON.isEmpty ? "" : ",\n    \(extraKeysJSON)"
         return """
         {
             "template_name": "template_v2",
@@ -617,7 +651,7 @@ private extension WorkflowPaywallViewTests {
                         "value": { "light": { "type": "hex", "value": "#220000ff" } }
                     }
                 }
-            }
+            }\(extraKeys)
         }
         """
     }
@@ -1150,6 +1184,190 @@ extension WorkflowPaywallViewTests {
 
 }
 
+// MARK: - Trace id wiring
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPaywallViewTests {
+
+    /// `PaywallsV2View`'s `traceId` defaults to `nil`, so dropping the argument would compile silently.
+    @MainActor
+    func testPaywallEventCarriesTheSameTraceIdAsTheWorkflowEvent() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let workflowEvents: Atomic<[WorkflowEvent]> = .init([])
+        let (purchases, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        purchases.trackWorkflowEventBlock = { event in
+            workflowEvents.modify { $0.append(event) }
+        }
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+        await expect(workflowEvents.value).toEventually(
+            containElementSatisfying { Self.isStepStarted($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        let stepStarted = try XCTUnwrap(workflowEvents.value.first { Self.isStepStarted($0) })
+
+        let paywallTraceId = try XCTUnwrap(impression.data.traceId, "paywall event carried no trace id")
+        let workflowTraceId = try XCTUnwrap(stepStarted.data.traceId, "workflow event carried no trace id")
+        expect(paywallTraceId) == workflowTraceId
+    }
+
+    @MainActor
+    func testPaywallImpressionCarriesThePaywallIdFromTheScreen() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let (_, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+
+        let dispose = try WorkflowPurchaseObserver(purchaseHandler: purchaseHandler, context: context)
+            .addToHierarchy()
+        defer { dispose() }
+
+        await expect(paywallEvents.value).toEventually(
+            containElementSatisfying { Self.isImpression($0) },
+            timeout: .seconds(3)
+        )
+
+        let impression = try XCTUnwrap(paywallEvents.value.first { Self.isImpression($0) })
+        expect(impression.data.paywallIdentifier) == "screen_a"
+    }
+
+    /// Re-entering a step mints a fresh paywall session and fires a second `paywall_viewed`
+    /// (`PaywallsV2View.onChangeOf(isActiveWorkflowPage)`). The trace id identifies the presentation, not
+    /// the visit, so it has to survive that. Driven at the `PaywallsV2View` seam because the page's
+    /// activation is the only part of navigation reachable without simulating a tap.
+    @MainActor
+    func testReenteringAWorkflowPageKeepsTheTraceIdOnTheSecondImpression() async throws {
+        let paywallEvents: Atomic<[PaywallEvent]> = .init([])
+        let (_, purchaseHandler) = Self.makeEventRecordingPurchaseHandler(paywallEvents: paywallEvents)
+        let context = try Self.makeContextStartingAt(stepId: "step_a")
+        let screen = try XCTUnwrap(context.workflow.screens["screen_a"])
+        let activation = WorkflowPageActivation(isActive: true)
+
+        let dispose = try WorkflowPageActivationHost(
+            activation: activation,
+            paywallComponents: WorkflowScreenMapper.toPaywallComponents(
+                screen: screen,
+                uiConfig: context.uiConfig
+            ),
+            offering: context.initialOffering,
+            purchaseHandler: purchaseHandler,
+            traceId: Self.reentryTraceId
+        ).addToHierarchy()
+
+        defer { dispose() }
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(1),
+            timeout: .seconds(3)
+        )
+
+        // Navigate away and back. The page stays mounted, it just stops being the current step.
+        // The render pass in between is required, otherwise both flips coalesce into no change at all.
+        activation.isActive = false
+        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
+        activation.isActive = true
+
+        await expect(Self.impressionData(in: paywallEvents.value)).toEventually(
+            haveCount(2),
+            timeout: .seconds(3)
+        )
+
+        let impressions = Self.impressionData(in: paywallEvents.value)
+        expect(impressions.map(\.traceId)) == [Self.reentryTraceId, Self.reentryTraceId]
+
+        let firstVisit = try XCTUnwrap(impressions.first)
+        let secondVisit = try XCTUnwrap(impressions.dropFirst().first)
+        expect(firstVisit.sessionIdentifier) != secondVisit.sessionIdentifier
+    }
+
+    private static let reentryTraceId = "trace_reentry"
+
+    private static func isImpression(_ event: PaywallEvent) -> Bool {
+        if case .impression = event { return true }
+        return false
+    }
+
+    private static func isStepStarted(_ event: WorkflowEvent) -> Bool {
+        if case .stepStarted = event { return true }
+        return false
+    }
+
+    private static func impressionData(in events: [PaywallEvent]) -> [PaywallEvent.Data] {
+        return events.filter { Self.isImpression($0) }.map(\.data)
+    }
+
+    private static func makeEventRecordingPurchaseHandler(
+        paywallEvents: Atomic<[PaywallEvent]>
+    ) -> (MockPurchases, PurchaseHandler) {
+        let purchases = MockPurchases { _, _, _ in
+            return (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { event in
+            paywallEvents.modify { $0.append(event) }
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let purchaseHandler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(purchases: purchases, eventDispatcher: PaywallEventTrackerTestDispatcher.value)
+        )
+        return (purchases, purchaseHandler)
+    }
+
+}
+
+/// Lets a test flip a workflow page between current and not-current, the signal
+/// `WorkflowPaywallView` feeds `PaywallsV2View` on every navigation.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class WorkflowPageActivation: ObservableObject {
+
+    @Published var isActive: Bool
+
+    init(isActive: Bool) {
+        self.isActive = isActive
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowPageActivationHost: View {
+
+    @ObservedObject var activation: WorkflowPageActivation
+    let paywallComponents: Offering.PaywallComponents
+    let offering: Offering
+    let purchaseHandler: PurchaseHandler
+    let traceId: String
+
+    var body: some View {
+        PaywallsV2View(
+            paywallComponents: self.paywallComponents,
+            offering: self.offering,
+            purchaseHandler: self.purchaseHandler,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            onDismiss: {},
+            failedToLoadFont: { _ in },
+            colorScheme: .light,
+            isActiveWorkflowPage: self.activation.isActive,
+            workflowScreenType: [WorkflowScreenType.paywall],
+            workflowId: "wf_non_initial_test",
+            stepId: "step_a",
+            traceId: self.traceId
+        )
+    }
+
+}
+
 // MARK: - Callback test helpers
 
 /// Mirrors the @StateObject role that PaywallView plays in production:
@@ -1278,10 +1496,6 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
     /// The fixture screen's root background: `#220000ff`.
     fileprivate static let backgroundColor = PixelColor(red: 0x22, green: 0x00, blue: 0x00)
 
-    /// The nested stack's own background. Different from the root, so the edge samples show which
-    /// of the two reached the edge.
-    fileprivate static let nestedBackgroundColor = PixelColor(red: 0x00, green: 0x22, blue: 0x00)
-
     /// Sliding by only `size.width` leaves part of the off-screen page inside the clip mask, so a
     /// strip of the wrong page shows at the edge while the animation runs. Both roles and both
     /// directions, since each is a separate call into the same offset code.
@@ -1377,23 +1591,6 @@ final class WorkflowLandscapeSafeAreaTests: TestCase {
         )
     }
 
-    /// `BackgroundStyleModifier` is also used by stacks, text and badges, not just the page root. A
-    /// nested background has to reach the edge mid-animation the same way it does at rest, or the
-    /// paywall jumps when the animation starts and stops.
-    @MainActor
-    func testComponentBackgroundReachesHorizontalScreenEdgesWhileTransitioning() throws {
-        try Self.expectBackgroundAtEdges(
-            of: try Self.renderScreenInLandscape(
-                isTransitioning: true,
-                screenJSON: Self.nestedComponentBackgroundScreenJSON(),
-                settled: Self.nestedBackgroundColor
-            ),
-            axis: .horizontal,
-            label: "nested component background, mid-transition",
-            expected: Self.nestedBackgroundColor
-        )
-    }
-
     /// The mask grows on all four edges. The other tests use a zero top inset and sample the middle
     /// row, so they would not catch a mistake in the top or bottom growth.
     @MainActor
@@ -1435,12 +1632,8 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// Samples both edges along `axis`, halfway along the other one. Both have to be the paywall's
     /// background; anything else means it stopped at the safe area and the view behind shows.
-    static func expectBackgroundAtEdges(
-        of image: UIImage,
-        axis: Axis,
-        label: String,
-        expected: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws {
+    static func expectBackgroundAtEdges(of image: UIImage, axis: Axis, label: String) throws {
+        let expected = Self.backgroundColor
         let pixels = try PixelSampler(image: image)
         let midColumn = pixels.width / 2
         let midRow = pixels.height / 2
@@ -1485,12 +1678,8 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// The fixture screen without the workflow container, optionally with the transition flag set.
     @MainActor
-    static func renderScreenInLandscape(
-        isTransitioning: Bool,
-        screenJSON: String? = nil,
-        settled: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws -> UIImage {
-        let context = try Self.makeLandscapeContext(screenJSON: screenJSON)
+    static func renderScreenInLandscape(isTransitioning: Bool) throws -> UIImage {
+        let context = try Self.makeLandscapeContext()
         let screen = try XCTUnwrap(context.workflow.screens[Self.landscapeScreenId])
         let offering = try XCTUnwrap(context.offering(for: screen.offeringIdentifier))
 
@@ -1518,8 +1707,7 @@ private extension WorkflowLandscapeSafeAreaTests {
                     )
                 )
             ),
-            safeArea: Landscape.symmetricSafeArea,
-            settled: settled
+            safeArea: Landscape.symmetricSafeArea
         )
     }
 
@@ -1544,11 +1732,7 @@ private extension WorkflowLandscapeSafeAreaTests {
     /// Puts `view` in a landscape-sized window with the given safe area insets and draws it at
     /// scale 1, so one pixel is one point.
     @MainActor
-    static func renderInLandscape(
-        _ view: some View,
-        safeArea: UIEdgeInsets,
-        settled: PixelColor = WorkflowLandscapeSafeAreaTests.backgroundColor
-    ) throws -> UIImage {
+    static func renderInLandscape(_ view: some View, safeArea: UIEdgeInsets) throws -> UIImage {
         UIView.setAnimationsEnabled(false)
 
         let controller = UIHostingController(rootView: view)
@@ -1589,7 +1773,7 @@ private extension WorkflowLandscapeSafeAreaTests {
               (try? PixelSampler(image: image).color(
                   column: Int(Landscape.size.width / 2),
                   row: Int(Landscape.size.height / 2)
-              )) != settled {
+              )) != Self.backgroundColor {
             RunLoop.main.run(until: Date().addingTimeInterval(0.05))
             image = render()
         }
@@ -1603,41 +1787,11 @@ private extension WorkflowLandscapeSafeAreaTests {
 
     /// The screen id `makeContext` gives the workflow's first step.
     static let landscapeScreenId = "screen_initial"
-    static let landscapeOfferingId = "offering_test"
 
-    /// A workflow whose first screen is `screenJSON`, defaulting to a flat `#220000ff` stack that
-    /// fills the screen, so edge pixels are easy to check.
-    static func makeLandscapeContext(screenJSON: String? = nil) throws -> WorkflowContext {
-        return try WorkflowPaywallViewTests.makeContext(
-            singleStepFallbackId: nil,
-            initialScreenJSON: screenJSON
-        )
-    }
-
-    /// The flat fixture plus a child stack that fills the screen and has its own background, so the
-    /// sampled edges come from a component rather than the page root.
-    static func nestedComponentBackgroundScreenJSON() -> String {
-        let childStack = """
-        {
-            "type": "stack",
-            "components": [],
-            "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
-            "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
-            "margin": {},
-            "padding": {},
-            "spacing": 0,
-            "background": {
-                "type": "color",
-                "value": { "light": { "type": "hex", "value": "#002200ff" } }
-            }
-        }
-        """
-
-        return WorkflowPaywallViewTests.makeScreenJSON(
-            packages: [],
-            offeringId: Self.landscapeOfferingId,
-            extraComponentsJSON: [childStack]
-        )
+    /// A workflow whose first screen is a flat `#220000ff` stack that fills the screen, so edge
+    /// pixels are easy to check.
+    static func makeLandscapeContext() throws -> WorkflowContext {
+        return try WorkflowPaywallViewTests.makeContext(singleStepFallbackId: nil)
     }
 
 }

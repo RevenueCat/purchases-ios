@@ -23,6 +23,8 @@ import XCTest
 @MainActor
 class PurchaseHandlerTests: TestCase {
 
+    private static let urlOpenedURL = URL(string: "https://revenuecat.com/terms")!
+
     private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
 
     lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
@@ -124,6 +126,42 @@ class PurchaseHandlerTests: TestCase {
 
         // Cleared a tick later (see `deferredClearWebCheckoutOpened`), not synchronously.
         await expect(handler.webCheckoutOpened).toEventually(beNil())
+    }
+
+    @MainActor
+    func testSignalURLOpenedSetsANewSignalForTheSameURL() async throws {
+        let handler: PurchaseHandler = .mock()
+        expect(handler.urlOpened).to(beNil())
+
+        handler.signalURLOpened(Self.urlOpenedURL)
+        let firstSignal = handler.urlOpened
+        expect(firstSignal?.url) == Self.urlOpenedURL
+
+        handler.signalURLOpened(Self.urlOpenedURL)
+        expect(handler.urlOpened?.url) == Self.urlOpenedURL
+        expect(handler.urlOpened).toNot(equal(firstSignal))
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsURLOpened() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalURLOpened(Self.urlOpenedURL)
+        expect(handler.urlOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+
+        // Cleared a tick later (see `deferredClearURLOpened`), not synchronously.
+        await expect(handler.urlOpened).toEventually(beNil())
+    }
+
+    @MainActor
+    func testClearURLOpenedClearsSynchronously() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalURLOpened(Self.urlOpenedURL)
+
+        handler.clearURLOpened()
+
+        expect(handler.urlOpened).to(beNil())
     }
 
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
