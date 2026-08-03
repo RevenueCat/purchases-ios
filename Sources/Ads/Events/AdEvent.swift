@@ -732,7 +732,6 @@ extension AdEvent {
         }
     }
 
-    /// - Returns: the underlying ``AdRewardGranted`` for reward-granted events.
     internal var rewardGrantedData: AdRewardGranted? {
         switch self {
         case .failedToLoad, .loaded, .displayed, .opened, .revenue,

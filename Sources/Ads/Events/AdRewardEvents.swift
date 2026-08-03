@@ -39,8 +39,6 @@ import Foundation
         }
     }
 
-    /// Encoded as a bare string. An unrecognized value decodes as a backend decline carrying
-    /// that code, which is the only way one can arise.
     public init(from decoder: Decoder) throws {
         switch try decoder.singleValueContainer().decode(String.self) {
         case "timeout": self = .timeout
@@ -98,8 +96,8 @@ import Foundation
 
 }
 
-/// Data for the moment backend verification confirms the reward delivered by the ad SDK.
-@_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Equatable, Sendable {
+/// Data for the moment backend verification confirms the reward earned from an ad.
+@_spi(Internal) public struct AdRewardVerified: AdImpressionEventData, Codable, Equatable, Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?
@@ -109,17 +107,13 @@ import Foundation
     public let adUnitId: String
     public let impressionId: String
 
-    /// The verified reward payload.
-    public let reward: AdReward
-
     public init(
         networkName: String?,
         mediatorName: MediatorName,
         adFormat: AdFormat,
         placement: String?,
         adUnitId: String,
-        impressionId: String,
-        reward: AdReward
+        impressionId: String
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
@@ -127,63 +121,8 @@ import Foundation
         self.placement = placement
         self.adUnitId = adUnitId
         self.impressionId = impressionId
-        self.reward = reward
     }
     // swiftlint:enable missing_docs
-
-}
-
-extension AdRewardVerified: Codable {
-
-    /// Wire-format keys. ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` /
-    /// `rewardCurrencyAmount` fields so the backend schema remains unchanged.
-    private enum CodingKeys: String, CodingKey {
-        case networkName
-        case mediatorName
-        case adFormat
-        case placement
-        case adUnitId
-        case impressionId
-        case rewardType
-        case rewardCurrencyCode
-        case rewardCurrencyAmount
-    }
-
-    // swiftlint:disable:next missing_docs
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encodeIfPresent(self.networkName, forKey: .networkName)
-        try container.encode(self.mediatorName, forKey: .mediatorName)
-        try container.encode(self.adFormat, forKey: .adFormat)
-        try container.encodeIfPresent(self.placement, forKey: .placement)
-        try container.encode(self.adUnitId, forKey: .adUnitId)
-        try container.encode(self.impressionId, forKey: .impressionId)
-        try self.reward.encode(
-            into: &container,
-            typeKey: .rewardType,
-            codeKey: .rewardCurrencyCode,
-            amountKey: .rewardCurrencyAmount
-        )
-    }
-
-    // swiftlint:disable:next missing_docs
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.init(
-            networkName: try container.decodeIfPresent(String.self, forKey: .networkName),
-            mediatorName: try container.decode(MediatorName.self, forKey: .mediatorName),
-            adFormat: try container.decode(AdFormat.self, forKey: .adFormat),
-            placement: try container.decodeIfPresent(String.self, forKey: .placement),
-            adUnitId: try container.decode(String.self, forKey: .adUnitId),
-            impressionId: try container.decode(String.self, forKey: .impressionId),
-            reward: try AdReward.decode(
-                from: container,
-                typeKey: .rewardType,
-                codeKey: .rewardCurrencyCode,
-                amountKey: .rewardCurrencyAmount
-            )
-        )
-    }
 
 }
 
