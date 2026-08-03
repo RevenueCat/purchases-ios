@@ -336,12 +336,6 @@ extension Backend {
         return self.config.httpClient.timeout
     }
 
-    /// How many distinct timeout managers the backend's `HTTPClient`s use. Both are expected to share one.
-    var distinctHTTPClientTimeoutManagerCount: Int {
-        return Set([ObjectIdentifier(self.config.httpClient.requestTimeoutManager),
-                    ObjectIdentifier(self.remoteConfigAPI.httpClient.requestTimeoutManager)]).count
-    }
-
     var offlineCustomerInfoEnabled: Bool {
         return self.config.offlineCustomerInfoCreator != nil
     }

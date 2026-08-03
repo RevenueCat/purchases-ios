@@ -185,8 +185,14 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
     }
 
     /// Both lanes talk to the same hosts, so a timeout either of them sees must fast-fail the other.
-    func testBothLanesShareOneRequestTimeoutManager() {
-        let systemInfo = MockSystemInfo(finishTransactions: true)
+    func testTimeoutOnMainLaneReducesTimeoutOnRemoteConfigLane() throws {
+        let systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: .default,
@@ -199,7 +205,36 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             apiSourceProvider: nil
         )
 
-        expect(backend.distinctHTTPClientTimeoutManagerCount) == 1
+        let apiHost = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        stub(condition: pathEndsWith("/offerings")) { request in
+            if request.url?.host == apiHost {
+                return .timeoutResponse()
+            }
+            return HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil)
+        }
+
+        waitUntil { completed in
+            backend.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in
+                completed()
+            }
+        }
+
+        let remoteConfigTimeout: Atomic<TimeInterval?> = nil
+        stub(condition: pathEndsWith("/config/app")) { request in
+            remoteConfigTimeout.value = request.timeoutInterval
+            return HTTPStubsResponse(data: Data(), statusCode: 204, headers: nil)
+        }
+
+        let configResult: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            backend.remoteConfigAPI.getRemoteConfig(
+                request: .init(fetchContext: .appStart, appUserID: Self.userID),
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        expect(configResult).to(beSuccess())
+        expect(remoteConfigTimeout.value) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
     }
 
 }
