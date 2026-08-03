@@ -69,37 +69,32 @@ class Backend {
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
 
-        // Apps that opted out of waiting for unsynced transactions get a dedicated lane for receipt
-        // posts. Both serializers have to be separate (queue and `HTTPClient`), otherwise the post
-        // still blocks reads through `HTTPClient.currentSerialRequest`.
+        // Each lane gets its own `HTTPClient`: a separate queue isn't enough, since requests also
+        // serialize on `HTTPClient.currentSerialRequest`.
+        func lane(on operationQueue: OperationQueue) -> BackendConfiguration {
+            return BackendConfiguration(
+                httpClient: .dedicatedLane(systemInfo: systemInfo,
+                                           eTagManager: eTagManager,
+                                           diagnosticsTracker: diagnosticsTracker,
+                                           networkTimeout: httpClientTimeout,
+                                           apiSourceFailover: apiSourceFailover,
+                                           timeoutManager: timeoutManager),
+                operationDispatcher: operationDispatcher,
+                operationQueue: operationQueue,
+                diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+                systemInfo: systemInfo,
+                offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                dateProvider: dateProvider
+            )
+        }
+
+        // Only apps that opted out of waiting for unsynced transactions get the receipt post lane.
         let receiptPostConfig: BackendConfiguration? =
             systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
-            ? BackendConfiguration(httpClient: .dedicatedLane(systemInfo: systemInfo,
-                                                              eTagManager: eTagManager,
-                                                              diagnosticsTracker: diagnosticsTracker,
-                                                              networkTimeout: httpClientTimeout,
-                                                              apiSourceFailover: apiSourceFailover,
-                                                              timeoutManager: timeoutManager),
-                                   operationDispatcher: operationDispatcher,
-                                   operationQueue: QueueProvider.createReceiptPostQueue(),
-                                   diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-                                   systemInfo: systemInfo,
-                                   offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-                                   dateProvider: dateProvider)
+            ? lane(on: QueueProvider.createReceiptPostQueue())
             : nil
-        let remoteConfigConfig = BackendConfiguration(
-            httpClient: .dedicatedLane(systemInfo: systemInfo,
-                                       eTagManager: eTagManager,
-                                       diagnosticsTracker: diagnosticsTracker,
-                                       networkTimeout: httpClientTimeout,
-                                       apiSourceFailover: apiSourceFailover,
-                                       timeoutManager: timeoutManager),
-            operationDispatcher: operationDispatcher,
-            operationQueue: QueueProvider.createRemoteConfigQueue(),
-            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-            systemInfo: systemInfo,
-            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-            dateProvider: dateProvider)
+        let remoteConfigConfig = lane(on: QueueProvider.createRemoteConfigQueue())
+
         self.init(backendConfig: config,
                   remoteConfigBackendConfig: remoteConfigConfig,
                   receiptPostBackendConfig: receiptPostConfig,
