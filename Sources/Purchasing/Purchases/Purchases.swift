@@ -1879,8 +1879,7 @@ extension Purchases {
                 adFormat: trackingMetadata.adFormat,
                 placement: trackingMetadata.placement,
                 adUnitId: trackingMetadata.adUnitId,
-                impressionId: trackingMetadata.impressionId,
-                reward: reward
+                impressionId: trackingMetadata.impressionId
             )
             self.trackRewardAdEvent(.rewardVerified(.init(captureMethod: captureMethod), verified))
 
@@ -1896,8 +1895,6 @@ extension Purchases {
                 )
                 self.trackRewardAdEvent(.rewardGranted(.init(captureMethod: captureMethod), granted))
             }
-        case .failed(.cancelled):
-            break
         case let .failed(reason):
             let failed = AdRewardFailedToVerify(
                 networkName: trackingMetadata.networkName,

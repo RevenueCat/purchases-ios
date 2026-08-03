@@ -60,12 +60,12 @@ internal extension RewardVerification {
 
 internal extension RewardVerification.FailureReason {
 
-    /// Maps this internal diagnostic classification to the coarser reason reported on the
+    /// Maps this internal diagnostic classification to the reason reported on the
     /// ``AdRewardFailedToVerify`` tracking event.
     var trackingFailureReason: AdRewardFailureReason {
         switch self {
-        case .backendRejected:
-            return .backendError
+        case .backendRejected(let reason, _):
+            return .backendError(reason: reason)
         case .exhaustedPending:
             return .timeout
         case .exhaustedTransient, .terminalError:
@@ -73,7 +73,7 @@ internal extension RewardVerification.FailureReason {
         case .unexpectedResponse:
             return .unknown
         case .cancelled:
-            return .unknown
+            return .cancelled
         }
     }
 }
