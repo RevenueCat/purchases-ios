@@ -99,11 +99,13 @@ extension AdReward {
         into container: inout KeyedEncodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K
     ) throws {
         try container.encode(self.kindRawValue, forKey: typeKey)
         try container.encodeIfPresent(self.virtualCurrency?.code, forKey: codeKey)
         try container.encodeIfPresent(self.virtualCurrency?.amount, forKey: amountKey)
+        try container.encodeIfPresent(self.entitlement?.identifier, forKey: entitlementIdKey)
     }
 
     /// Unknown kinds and malformed payloads log a warning and fall back to ``unsupportedReward``
@@ -112,19 +114,28 @@ extension AdReward {
         from container: KeyedDecodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K
     ) throws -> AdReward {
         let kindRawValue = try container.decode(String.self, forKey: typeKey)
-        let code = try container.decodeIfPresent(String.self, forKey: codeKey)
-        let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
         switch kindRawValue {
         case Kind.virtualCurrency:
+            let code = try container.decodeIfPresent(String.self, forKey: codeKey)
+            let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
             guard let code, let amount,
                   let payload = VirtualCurrencyReward(code: code, amount: amount) else {
                 Logger.warn(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
                 return .unsupportedReward
             }
             return .virtualCurrency(payload)
+        case Kind.entitlement:
+            let identifier = try container.decodeIfPresent(String.self, forKey: entitlementIdKey)
+            guard let identifier,
+                  let payload = EntitlementReward(identifier: identifier, expiresAt: Date()) else {
+                Logger.warn(AdsStrings.invalid_entitlement_payload(identifier: identifier))
+                return .unsupportedReward
+            }
+            return .entitlement(payload)
         case Kind.noReward:
             return .noReward
         case Kind.unsupportedReward:

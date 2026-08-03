@@ -102,6 +102,19 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    func testRewardGrantedEntitlementEvent() throws {
+        let event = AdEvent.rewardGranted(Self.eventCreationData, Self.rewardGrantedEntitlementData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.rewardType) == "entitlement"
+        expect(requestEvent.rewardEntitlementId) == "pro"
+        expect(requestEvent.rewardCurrencyCode).to(beNil())
+        expect(requestEvent.rewardCurrencyAmount).to(beNil())
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
     func testCanInitFromDeserializedEvent() throws {
         let expectedUserID = "test-user"
         let adEventCreationData: AdEvent.CreationData = .init(
@@ -428,6 +441,16 @@ private extension AdFeatureEventsRequestTests {
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
         reward: .virtualCurrency(code: "GOLD", amount: 100)
+    )
+
+    static let rewardGrantedEntitlementData: AdRewardGranted = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .entitlement(identifier: "pro", expiresAt: Date(timeIntervalSince1970: 1_700_000_000))
     )
 
     static let userID = "test-user-id"

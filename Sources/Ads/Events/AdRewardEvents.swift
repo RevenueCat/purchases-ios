@@ -168,8 +168,8 @@ import Foundation
 
 extension AdRewardGranted: Codable {
 
-    /// ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` / `rewardCurrencyAmount`
-    /// fields, matching ``AdRewardVerified``'s wire shape.
+    /// ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` / `rewardCurrencyAmount` /
+    /// `rewardEntitlementId` fields, matching ``AdRewardVerified``'s wire shape.
     private enum CodingKeys: String, CodingKey {
         case networkName
         case mediatorName
@@ -180,6 +180,7 @@ extension AdRewardGranted: Codable {
         case rewardType
         case rewardCurrencyCode
         case rewardCurrencyAmount
+        case rewardEntitlementId
     }
 
     // swiftlint:disable:next missing_docs
@@ -195,7 +196,8 @@ extension AdRewardGranted: Codable {
             into: &container,
             typeKey: .rewardType,
             codeKey: .rewardCurrencyCode,
-            amountKey: .rewardCurrencyAmount
+            amountKey: .rewardCurrencyAmount,
+            entitlementIdKey: .rewardEntitlementId
         )
     }
 
@@ -213,7 +215,8 @@ extension AdRewardGranted: Codable {
                 from: container,
                 typeKey: .rewardType,
                 codeKey: .rewardCurrencyCode,
-                amountKey: .rewardCurrencyAmount
+                amountKey: .rewardCurrencyAmount,
+                entitlementIdKey: .rewardEntitlementId
             )
         )
     }
