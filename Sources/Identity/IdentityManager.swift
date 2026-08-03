@@ -91,6 +91,13 @@ class IdentityManager: CurrentUserProvider {
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousAMR
     }
 
+    var needsIAMLogin: Bool {
+        guard tokenManager.enabled else { return false }
+        guard currentUserIsAnonymous else { return false }
+        if tokenManager.hasCurrentAccessToken { return false }
+        return true
+    }
+
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID && appUserID != Self.uiPreviewModeAppUserID else {
             completion(.failure(.unsupportedInUIPreviewMode()))

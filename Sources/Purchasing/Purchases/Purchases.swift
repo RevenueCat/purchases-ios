@@ -540,9 +540,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         // PROBLEM: this also only checks if the current user is anonymous; it doesn't check if
         // the current user is a custom name (ie, previous used with the logIn(_:) method to be
         // an app-specified id for the user). (This is the "migration" problem)
-        if tokenManager.enabled &&
-            identityManager.currentUserIsAnonymous &&
-            tokenManager.hasCurrentAccessToken == false {
+        if identityManager.needsIAMLogin {
             // immediately attempt to retrieve access tokens for the anonymous user
             identityManager.logIn(externalToken: .anonymous(appUserID: identityManager.currentAppUserID),
                                   completion: { _ in })
