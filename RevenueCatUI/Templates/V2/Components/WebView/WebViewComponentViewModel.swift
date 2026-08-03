@@ -17,6 +17,11 @@ final class WebViewComponentViewModel: Hashable {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
+    #if !os(watchOS) && canImport(WebKit)
+    @MainActor
+    private var storedWebViewInstance: WebViewInstance?
+    #endif
+
     init(
         component: PaywallComponent.WebViewComponent,
         uiConfigProvider: UIConfigProvider,
@@ -27,6 +32,41 @@ final class WebViewComponentViewModel: Hashable {
         self.uiConfigProvider = uiConfigProvider
         self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
+
+    #if !os(watchOS) && canImport(WebKit)
+    /// Canonical origin of the component's URL, or `nil` when it isn't a usable static HTTPS URL —
+    /// the same condition that makes the component non-renderable.
+    private var expectedOrigin: WebViewOrigin? {
+        WebViewOrigin(url: PaywallComponent.WebViewComponent.validatedHTTPSURL(from: self.component.url))
+    }
+
+    /// The live web view for this component, created on first use. `nil` when the component has no
+    /// resolvable origin to gate the bridge against.
+    @MainActor
+    func webViewInstance() -> WebViewInstance? {
+        if let storedWebViewInstance = self.storedWebViewInstance {
+            guard storedWebViewInstance.isUnusable else {
+                return storedWebViewInstance
+            }
+
+            storedWebViewInstance.tearDown()
+            self.storedWebViewInstance = nil
+        }
+
+        guard let expectedOrigin = self.expectedOrigin else {
+            return nil
+        }
+
+        let webViewInstance = WebViewInstance(
+            componentID: self.componentID,
+            expectedOrigin: expectedOrigin,
+            fitsWidth: self.component.size.width.isFit,
+            fitsHeight: self.component.size.height.isFit
+        )
+        self.storedWebViewInstance = webViewInstance
+        return webViewInstance
+    }
+    #endif
 
     /// Resolves the component's rendered properties for the current presentation context, applying any
     /// matching overrides on top of the base component values.
@@ -72,6 +112,18 @@ final class WebViewComponentViewModel: Hashable {
     static func == (lhs: WebViewComponentViewModel, rhs: WebViewComponentViewModel) -> Bool {
         lhs.component == rhs.component
     }
+}
+
+private extension PaywallComponent.SizeConstraint {
+
+    var isFit: Bool {
+        if case .fit = self {
+            return true
+        }
+
+        return false
+    }
+
 }
 
 extension PresentedWebViewPartial: PresentedPartial {
