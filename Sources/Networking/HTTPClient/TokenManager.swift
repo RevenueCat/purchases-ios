@@ -83,6 +83,10 @@ class TokenManager {
         return AuthenticationMethod(amr: amr)
     }
 
+    func idToken(for user: String) -> String? {
+        storage.string(for: .id(user))
+    }
+
     func saveTokens(refreshToken: String?, accessToken: String, idToken: String?, for userID: String) {
         storage.setString(refreshToken, for: .refresh(userID))
         storage.setString(accessToken, for: .access(userID))

@@ -17,16 +17,19 @@ final class TokenLogInOperation: CacheableNetworkOperation {
     private let tokenCallbackCache: CallbackCache<TokenCallback>
     private let configuration: UserSpecificConfiguration
     private let token: ExternalAuthToken
+    private let linkToID: String?
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         token: ExternalAuthToken,
+        linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>
     ) -> CacheableNetworkOperationFactory<TokenLogInOperation> {
         return .init({
             .init(
                 configuration: configuration,
                 token: token,
+                linkToIDToken: linkToIDToken,
                 tokenCallbackCache: tokenCallbackCache,
                 cacheKey: $0
             ) },
@@ -36,11 +39,13 @@ final class TokenLogInOperation: CacheableNetworkOperation {
     private init(
         configuration: UserSpecificConfiguration,
         token: ExternalAuthToken,
+        linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.token = token
+        self.linkToID = linkToIDToken
         self.tokenCallbackCache = tokenCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
@@ -60,8 +65,7 @@ private extension TokenLogInOperation {
     func logIn(completion: @escaping () -> Void) {
         guard self.token.validate() else {
             self.tokenCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
-                #warning("DAVE: this could use a better failure reason")
-                callback.completion(.failure(.missingAppUserID()))
+                callback.completion(.failure(.invalidAuthorizationToken()))
             }
             completion()
 
@@ -78,28 +82,28 @@ private extension TokenLogInOperation {
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
-                                linkToID: nil)
+                                linkToID: linkToID)
         case .google(let token):
             body = StandardBody(method: "google",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
-                                linkToID: nil)
+                                linkToID: linkToID)
         case .signInWithApple(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
-                                linkToID: nil)
+                                linkToID: linkToID)
         case .facebook(let token, let email):
             body = FacebookBody(method: "facebook",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
                                 email: email,
-                                linkToID: nil)
+                                linkToID: linkToID)
         case .firebase(let token):
             body = StandardBody(method: "firebase",
                                 scope: "openid offline_access",
                                 idToken: String(decoding: token, as: UTF8.self),
-                                linkToID: nil)
+                                linkToID: linkToID)
         }
 
         let request = HTTPRequest(method: .post(body), path: .tokenLogin)

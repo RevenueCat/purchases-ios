@@ -30,8 +30,10 @@ class TokenAPI {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
+        let linkToID = tokenManager.idToken(for: currentAppUserID)
         let factory = TokenLogInOperation.createFactory(configuration: config,
                                                         token: token.authToken,
+                                                        linkToIDToken: linkToID,
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
         let tokenCallback = TokenCallback(cacheKey: factory.cacheKey) { result in
