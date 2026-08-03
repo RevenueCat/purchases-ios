@@ -563,6 +563,7 @@ private extension HTTPClient {
         // The requestTimeoutManager tracks how fast a host answers, so a non-error response clears the
         // entry even when parsing or verifying that response fails afterwards.
         if !request.targetsFallbackHost,
+           networkError == nil,
            (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
             requestTimeoutResult = .successOnMainBackend
         }
@@ -604,8 +605,8 @@ private extension HTTPClient {
                 // A timeout on a non-fallback (main-source) request arms the per-host fail-fast memory.
                 // With API sources enabled this covers every main-source timeout; otherwise it stays
                 // limited to fallback-supporting endpoints, matching the legacy behavior.
-                if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
+                if networkError?.isURLRequestTimeout == true,
+                    !request.targetsFallbackHost,
                     self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
                         || request.httpRequest.path.supportsFallbackURLs {
                     requestTimeoutResult = .mainSourceTimedOut
