@@ -84,14 +84,35 @@ final class AdRewardTests: TestCase {
 
     // MARK: - Flat (analytics events) encoding
 
-    func testEntitlementFlatEncodingEmitsTypeOnlyAndDecodesAsUnsupported() throws {
+    func testVirtualCurrencyFlatEncodingOmitsEntitlementKeysAndRoundTrips() throws {
+        let reward = AdReward.virtualCurrency(code: "coins", amount: 5)
+
+        let data = try JSONEncoder().encode(FlatRewardWrapper(reward: reward))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        expect(json["type"] as? String) == "virtual_currency"
+        expect(json.keys).toNot(contain("entitlementId"))
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward) == reward
+    }
+
+    func testEntitlementFlatEncodingEmitsIdAndRoundTripsIdentifier() throws {
         let reward = AdReward.entitlement(identifier: "pro", expiresAt: Date())
 
         let data = try JSONEncoder().encode(FlatRewardWrapper(reward: reward))
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         expect(json["type"] as? String) == "entitlement"
+        expect(json["entitlementId"] as? String) == "pro"
         expect(json.keys).toNot(contain("code"))
         expect(json.keys).toNot(contain("amount"))
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward.entitlement?.identifier) == "pro"
+    }
+
+    func testEntitlementFlatDecodingFallsBackToUnsupportedWhenIdMissing() throws {
+        let json: [String: Any] = ["type": "entitlement"]
+        let data = try JSONSerialization.data(withJSONObject: json)
 
         let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
         expect(decoded.reward) == .unsupportedReward
@@ -105,6 +126,7 @@ private struct FlatRewardWrapper: Codable, Equatable {
         case type
         case code
         case amount
+        case entitlementId
     }
 
     let reward: AdReward
@@ -115,11 +137,23 @@ private struct FlatRewardWrapper: Codable, Equatable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try self.reward.encode(into: &container, typeKey: .type, codeKey: .code, amountKey: .amount)
+        try self.reward.encode(
+            into: &container,
+            typeKey: .type,
+            codeKey: .code,
+            amountKey: .amount,
+            entitlementIdKey: .entitlementId
+        )
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.reward = try AdReward.decode(from: container, typeKey: .type, codeKey: .code, amountKey: .amount)
+        self.reward = try AdReward.decode(
+            from: container,
+            typeKey: .type,
+            codeKey: .code,
+            amountKey: .amount,
+            entitlementIdKey: .entitlementId
+        )
     }
 }
