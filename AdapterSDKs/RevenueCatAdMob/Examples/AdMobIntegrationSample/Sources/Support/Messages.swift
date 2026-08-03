@@ -29,6 +29,10 @@ struct Message: Equatable {
     ✅ Verified
     ⚠️ Unsupported reward
     """
+    private static let verificationEntitlementGrantedTemplate = """
+    ✅ Verified
+    🎁 Reward granted: entitlement %@
+    """
     private static let verificationUnhandledRewardTypeText = """
     ✅ Verified
     ⚠️ Unhandled reward type
@@ -75,6 +79,12 @@ struct Message: Equatable {
                     "\(virtualCurrency.amount)",
                     virtualCurrency.code
                 ),
+                severity: .success,
+                isLoading: false
+            )
+        } else if let entitlement = reward.entitlement {
+            return .init(
+                text: String(format: Self.verificationEntitlementGrantedTemplate, entitlement.identifier),
                 severity: .success,
                 isLoading: false
             )
