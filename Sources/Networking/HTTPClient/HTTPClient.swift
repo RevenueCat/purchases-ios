@@ -35,7 +35,7 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
-    private let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    let requestTimeoutManager: HTTPRequestTimeoutManagerType
     private let apiSourceFailover: APISourceFailoverType?
 
     private let retryBackoffIntervals: [TimeInterval] = [
@@ -55,16 +55,16 @@ class HTTPClient {
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
-         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+         networkTimeout: NetworkTimeout,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
          apiSourceFailover: APISourceFailoverType?,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+         timeoutManager: HTTPRequestTimeoutManagerType
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = requestTimeout
-        config.timeoutIntervalForResource = requestTimeout
+        config.timeoutIntervalForRequest = networkTimeout.timeoutInterval
+        config.timeoutIntervalForResource = networkTimeout.timeoutInterval
         config.urlCache = nil // We implement our own caching with `ETagManager`.
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
@@ -76,15 +76,12 @@ class HTTPClient {
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
-        self.timeout = requestTimeout
+        self.timeout = networkTimeout.timeoutInterval
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
         self.apiSourceFailover = apiSourceFailover
-        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
-            defaultTimeout: timeout,
-            dateProvider: dateProvider
-        )
+        self.requestTimeoutManager = timeoutManager
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -314,6 +311,13 @@ internal extension HTTPClient {
         /// Whether the request is being made to a fallback URL.
         var isFallbackURLRequest: Bool {
             return self.fallbackUrlIndex != nil
+        }
+
+        /// Whether the attempt is aimed at a fallback host, either because the fallback walk moved it
+        /// there or because the path targets one on its own. Such attempts get the flat fallback
+        /// timeout and never take part in the main source's per-host fail-fast memory.
+        var targetsFallbackHost: Bool {
+            return self.isFallbackURLRequest || self.httpRequest.path.isFallbackHostPath
         }
 
         /// Carried on the request so a failure can report the exact handle unhealthy, and so
@@ -579,6 +583,14 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
+        // The requestTimeoutManager tracks how fast a host answers, so a non-error response clears the
+        // entry even when parsing or verifying that response fails afterwards.
+        if !request.targetsFallbackHost,
+           networkError == nil,
+           (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
+            requestTimeoutResult = .successOnMainBackend
+        }
+
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
 
@@ -594,11 +606,6 @@ private extension HTTPClient {
 
                 if response.isLoadShedder {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
-                }
-
-                // Record successful response from the main backend
-                if !request.isFallbackURLRequest {
-                    requestTimeoutResult = .successOnMainBackend
                 }
 
                 self.finish(request: request,
@@ -618,11 +625,14 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // A timeout on a main backend URL for a request that has a fallback URL
-                if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
-                    request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                // A timeout on a non-fallback (main-source) request arms the per-host fail-fast memory.
+                // With API sources enabled this covers every main-source timeout; otherwise it stays
+                // limited to fallback-supporting endpoints, matching the legacy behavior.
+                if networkError?.isURLRequestTimeout == true,
+                    !request.targetsFallbackHost,
+                    self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
+                        || request.httpRequest.path.supportsFallbackURLs {
+                    requestTimeoutResult = .mainSourceTimedOut
                 }
 
                 // A failure that points at the host (never a device-connectivity error or a 4xx) on a
@@ -634,6 +644,10 @@ private extension HTTPClient {
                    error.isAllowedToRetryWithFallbackHost,
                    let apiSourceFailover = self.apiSourceFailover {
                     let requestTimeoutResult = requestTimeoutResult
+
+                    // Make sure to already update the shared timeout state before making any other requests
+                    self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+
                     apiSourceFailover.onRequestFailure(source) { decision in
                         let retryScheduled = self.handleAPISourceFailureDecision(decision,
                                                                                  request: request,
@@ -643,6 +657,7 @@ private extension HTTPClient {
                                     response: .failure(error),
                                     retryScheduled: retryScheduled,
                                     requestTimeoutResult: requestTimeoutResult,
+                                    recordRequestTimeoutResult: false,
                                     urlRequest: urlRequest,
                                     requestStartTime: requestStartTime)
                     }
@@ -722,13 +737,16 @@ private extension HTTPClient {
                         response: VerifiedHTTPResponse<Data>.Result?,
                         retryScheduled: Bool,
                         requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult,
+                        recordRequestTimeoutResult: Bool = true,
                         urlRequest: URLRequest,
                         requestStartTime: Date) {
         if !retryScheduled, let response = response {
             request.completionHandler?(response)
         }
 
-        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
+        if recordRequestTimeoutResult {
+            self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+        }
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -793,8 +811,13 @@ private extension HTTPClient {
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            isFallback: request.isFallbackURLRequest,
-            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
+            host: finalURLRequest.url?.host,
+            isFallbackHostRequest: request.targetsFallbackHost,
+            endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
+            isProxied: SystemInfo.proxyURL != nil,
+            // The re-tiered fail-fast timeouts for main-API requests only apply when API sources are
+            // enabled. Blob-source downloads opt in independently of this setting.
+            reTieredTimeoutsEnabled: self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
         )
 
         // swiftlint:disable:next redundant_void_return

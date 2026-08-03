@@ -65,16 +65,11 @@ struct WebViewComponentView: View {
         // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
         // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
-        if style.isRenderable, let url = style.url, let origin = style.origin {
-            BridgedWebViewComponentView(
+        if style.isRenderable, let url = style.url, let instance = self.viewModel.webViewInstance() {
+            HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                expectedOrigin: origin,
-                componentID: style.componentID
-            )
-            .id(
-                "\(style.urlString)-\(style.componentID)-" +
-                "\(style.size.width.isFit)-\(style.size.height.isFit)"
+                instance: instance
             )
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
@@ -115,96 +110,28 @@ enum WebViewSizing {
 
 }
 
-private extension PaywallComponent.SizeConstraint {
-
-    var isFit: Bool {
-        if case .fit = self {
-            return true
-        }
-
-        return false
-    }
-
-}
-
 #if canImport(WebKit) && !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct BridgedWebViewComponentView: View {
+private struct HostedWebViewComponentView: View {
 
     let size: PaywallComponent.Size
     let url: URL
-    let expectedOrigin: WebViewOrigin
 
-    @StateObject
-    private var session: WebViewSession
-
-    @State
-    private var measuredWidth: CGFloat?
-
-    @State
-    private var measuredHeight: CGFloat?
-
-    @State
-    private var processTerminated = false
-
-    @State
-    private var loadFailed = false
-
-    init(
-        size: PaywallComponent.Size,
-        url: URL,
-        expectedOrigin: WebViewOrigin,
-        componentID: String
-    ) {
-        self.size = size
-        self.url = url
-        self.expectedOrigin = expectedOrigin
-
-        // `evaluateJavaScript`/`currentURL` are rebound to the live web view in the representable's
-        // `configureSession(for:)`; the no-op defaults only cover the window before it is created.
-        self._session = StateObject(
-            wrappedValue: WebViewSession(
-                componentID: componentID,
-                expectedOrigin: expectedOrigin,
-                fitAxes: (
-                    width: size.width.isFit,
-                    height: size.height.isFit
-                ),
-                evaluateJavaScript: { _ in false },
-                currentURL: { nil }
-            )
-        )
-    }
+    @ObservedObject
+    var instance: WebViewInstance
 
     var body: some View {
-        // The resize sink is (re)assigned inside the representable's make/update (not `.onAppear`)
-        // so a connect arriving before `.onAppear` fires always sees the current values.
-        if !processTerminated, !loadFailed {
+        if !self.instance.processTerminated, !self.instance.loadFailed {
             WebViewRepresentable(
-                url: url,
-                expectedOrigin: expectedOrigin,
-                session: session,
-                onContentResize: { width, height in
-                    if let width {
-                        self.measuredWidth = width
-                    }
-                    if let height {
-                        self.measuredHeight = height
-                    }
-                },
-                onDocumentReset: {
-                    self.measuredWidth = nil
-                    self.measuredHeight = nil
-                },
-                onProcessTerminated: {
-                    self.processTerminated = true
-                },
-                onLoadFailed: {
-                    self.loadFailed = true
-                }
+                url: self.url,
+                instance: self.instance
             )
-            .webViewSize(size, measuredWidth: measuredWidth, measuredHeight: measuredHeight)
+            .webViewSize(
+                self.size,
+                measuredWidth: self.instance.measuredWidth,
+                measuredHeight: self.instance.measuredHeight
+            )
             // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
             // placeholder -> measured); never paint outside the component's box.
             .clipped()
@@ -224,50 +151,72 @@ typealias PlatformWebView = WKWebView
 struct WebViewRepresentable: PlatformViewRepresentable {
 
     let url: URL
-    let expectedOrigin: WebViewOrigin
-    weak var session: WebViewSession?
-    var onContentResize: (@MainActor (CGFloat?, CGFloat?) -> Void)?
-    var onDocumentReset: (@MainActor () -> Void)?
-    var onProcessTerminated: (@MainActor () -> Void)?
-    var onLoadFailed: (@MainActor () -> Void)?
+    let instance: WebViewInstance
 
+    var expectedOrigin: WebViewOrigin {
+        self.instance.session.expectedOrigin
+    }
+
+    /// One coordinator per instance, retained by the instance: `navigationDelegate` is weak, so a
+    /// coordinator owned by a `ViewThatFits` candidate would stop delivering callbacks the moment
+    /// that candidate is discarded.
     func makeCoordinator() -> Coordinator {
-        let coordinator = Coordinator(expectedOrigin: expectedOrigin)
-        coordinator.session = session
-        coordinator.onProcessTerminated = onProcessTerminated
-        coordinator.onLoadFailed = onLoadFailed
-        return coordinator
+        self.instance.navigationDelegate {
+            let coordinator = Coordinator(expectedOrigin: self.expectedOrigin)
+            coordinator.session = self.instance.session
+            coordinator.onProcessTerminated = { [weak instance] in instance?.markProcessTerminated() }
+            coordinator.onLoadFailed = { [weak instance] in instance?.markLoadFailed() }
+            return coordinator
+        }
     }
 
+    // Deliberately no `dismantleNSView/dismantleUIView` implementation: a discarded subtree is usually just a
+    // `ViewThatFits` candidate losing the layout, and tearing the web view down there is what caused
+    // the component to blank out and reload. The component view model owns the web view instead.
     #if os(macOS)
-    func makeNSView(context: Context) -> PlatformWebView {
-        self.makeWebView(context: context)
+    func makeNSView(context: Context) -> WebViewHostView {
+        self.makeHost(context: context)
     }
 
-    func updateNSView(_ webView: PlatformWebView, context: Context) {
-        context.coordinator.onProcessTerminated = onProcessTerminated
-        context.coordinator.onLoadFailed = onLoadFailed
-        self.update(webView)
-    }
-
-    static func dismantleNSView(_ webView: PlatformWebView, coordinator: Coordinator) {
-        dismantle(webView)
+    func updateNSView(_ host: WebViewHostView, context: Context) {
+        self.update(host)
     }
     #else
-    func makeUIView(context: Context) -> PlatformWebView {
-        self.makeWebView(context: context)
+    func makeUIView(context: Context) -> WebViewHostView {
+        self.makeHost(context: context)
     }
 
-    func updateUIView(_ webView: PlatformWebView, context: Context) {
-        context.coordinator.onProcessTerminated = onProcessTerminated
-        context.coordinator.onLoadFailed = onLoadFailed
-        self.update(webView)
-    }
-
-    static func dismantleUIView(_ webView: PlatformWebView, coordinator: Coordinator) {
-        dismantle(webView)
+    func updateUIView(_ host: WebViewHostView, context: Context) {
+        self.update(host)
     }
     #endif
+
+    @MainActor
+    private func makeHost(context: Context) -> WebViewHostView {
+        let host = WebViewHostView()
+
+        _ = self.instance.webView {
+            self.makeWebView(context: context)
+        }
+
+        let instance = self.instance
+        host.onMoveToWindow = { [weak instance] host in
+            if host.window == nil {
+                instance?.hostDidLeaveWindow(host)
+            } else {
+                instance?.hostDidEnterWindow(host)
+            }
+        }
+
+        return host
+    }
+
+    @MainActor
+    private func update(_ host: WebViewHostView) {
+        if host.window != nil {
+            self.instance.updateHost(host)
+        }
+    }
 
     @MainActor
     static func makeConfiguration(session: WebViewSession?) -> WKWebViewConfiguration {
@@ -302,7 +251,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     @MainActor
     private func makeWebView(context: Context) -> PlatformWebView {
-        let configuration = Self.makeConfiguration(session: session)
+        let configuration = Self.makeConfiguration(session: self.instance.session)
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
 
@@ -336,7 +285,6 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         self.installScrollGestureArbitration(on: webView)
         #endif
 
-        self.configureSession(for: webView)
         self.load(webView)
         return webView
     }
@@ -354,45 +302,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
     #endif
 
-    @MainActor
-    private func update(_ webView: PlatformWebView) {
-        self.configureSession(for: webView)
-    }
-
-    @MainActor
-    private func configureSession(for webView: PlatformWebView) {
-        self.session?.onContentResize = self.onContentResize
-        self.session?.onDocumentReset = self.onDocumentReset
-        self.session?.evaluateJavaScript = { [weak webView] script in
-            // A released web view means the frame never reaches the page; report the miss
-            guard let webView else { return false }
-            webView.evaluateJavaScript(script) { _, error in
-                if let error {
-                    Logger.debug(Strings.paywall_web_view_post_message_failed(String(describing: error)))
-                }
-            }
-            return true
-        }
-        self.session?.currentURL = { [weak webView] in
-            webView?.url
-        }
-    }
-
     private func load(_ webView: PlatformWebView) {
         // Cross-origin isolation is delegated to the server-provided CSP (see WebViewNavigationPolicy),
         // so no WKContentRuleList is installed here.
         webView.load(URLRequest(url: url))
-    }
-
-    private static func dismantle(_ webView: PlatformWebView) {
-        webView.configuration.userContentController.removeScriptMessageHandler(
-            forName: WebViewEnvelope.messageHandlerName
-        )
-        #if os(iOS)
-        webView.configuration.userContentController.removeScriptMessageHandler(
-            forName: WebViewGestureProbe.messageHandlerName
-        )
-        #endif
     }
 
     // `WKNavigationDelegate` is `@MainActor`-annotated in the SDK (its `WK_SWIFT_UI_ACTOR` attribute

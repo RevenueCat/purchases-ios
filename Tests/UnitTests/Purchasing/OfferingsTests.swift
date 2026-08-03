@@ -806,7 +806,7 @@ class OfferingsTests: TestCase {
             )
 
         expect(offering.paywall).to(beNil())
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == false
     }
 
@@ -833,7 +833,7 @@ class OfferingsTests: TestCase {
             )
 
         expect(offering.paywall).toNot(beNil())
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == true
     }
 
@@ -858,7 +858,7 @@ class OfferingsTests: TestCase {
             )
 
         expect(offering.paywall).to(beNil())
-        expect(offering.paywallComponents).toNot(beNil())
+        expect(offering.internalPaywallComponents).toNot(beNil())
         expect(offering.hasPaywall) == true
     }
 
@@ -884,7 +884,7 @@ class OfferingsTests: TestCase {
             )
 
         expect(offering.paywall).to(beNil())
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == true
     }
 
@@ -906,7 +906,7 @@ class OfferingsTests: TestCase {
         let offering = try XCTUnwrap(offerings.offering(identifier: "paywall_components"))
 
         expect(offering.paywall).to(beNil())
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == true
         expect(offerings.response.offerings.first?.paywallComponents).to(beNil())
         expect(offerings.response.offerings.first?.hasPaywallComponents) == true
@@ -937,7 +937,7 @@ class OfferingsTests: TestCase {
         )
         let offering = try XCTUnwrap(rebuiltOfferings.offering(identifier: "paywall_components"))
 
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == true
         expect(rebuiltOfferings.response.offerings.first?.paywallComponents).to(beNil())
         expect(rebuiltOfferings.response.offerings.first?.hasPaywallComponents) == true
@@ -964,7 +964,7 @@ class OfferingsTests: TestCase {
             )
 
         expect(offering.paywall).to(beNil())
-        expect(offering.paywallComponents).to(beNil())
+        expect(offering.internalPaywallComponents).to(beNil())
         expect(offering.hasPaywall) == false
     }
 

@@ -35,7 +35,7 @@ final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
         let phase1Current = try await self.currentOffering
         expect(phase1Current.identifier) == "default"
         expect(phase1Current.hasPaywall) == true
-        expect(phase1Current.paywallComponents).to(beNil())
+        expect(phase1Current.internalPaywallComponents).to(beNil())
 
         self.remoteConfigFake.disableRemoteConfig = true
         _ = try? await self.purchases.logIn("integration-test-workflows-\(UUID().uuidString)")
@@ -43,14 +43,14 @@ final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
         let phase2Current = try await self.currentOfferingWithComponents()
         expect(phase2Current.identifier) == "default"
         expect(phase2Current.hasPaywall) == true
-        expect(phase2Current.paywallComponents).toNot(beNil())
-        expect(phase2Current.paywallComponents?.data).toNot(beNil())
+        expect(phase2Current.internalPaywallComponents).toNot(beNil())
+        expect(phase2Current.internalPaywallComponents?.data).toNot(beNil())
     }
 
     private func currentOfferingWithComponents() async throws -> Offering {
         for _ in 0..<20 {
             let current = try await self.currentOffering
-            if current.paywallComponents != nil {
+            if current.internalPaywallComponents != nil {
                 return current
             }
 

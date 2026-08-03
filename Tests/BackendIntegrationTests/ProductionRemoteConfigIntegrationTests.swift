@@ -140,7 +140,8 @@ private extension BaseProductionRemoteConfigIntegrationTests {
             ),
             offlineCustomerInfoCreator: nil,
             diagnosticsTracker: nil,
-            apiSourceProvider: nil
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
         )
 
         return backend.remoteConfigAPI

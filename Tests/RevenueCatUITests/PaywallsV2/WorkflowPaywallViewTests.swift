@@ -474,6 +474,39 @@ extension WorkflowPaywallViewTests {
         expect(packageContext.variableContext.mostExpensivePricePerMonth).toNot(beNil())
     }
 
+    // MARK: - State declarations
+
+    func testMergedStateDeclarationsCollectsEveryScreenAndKeepsTheFirstDuplicate() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialScreenJSON: Self.makeScreenJSON(extraKeysJSON: """
+            "state_declarations": {
+                "on_initial": { "type": "boolean", "default": true },
+                "shared": { "type": "string", "default": "from_initial" }
+            }
+            """),
+            terminalScreenJSON: Self.makeScreenJSON(extraKeysJSON: """
+            "state_declarations": {
+                "on_terminal": { "type": "string", "default": "annual" },
+                "shared": { "type": "string", "default": "from_terminal" }
+            }
+            """)
+        )
+
+        let merged = WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)
+
+        expect(merged.keys).to(contain("on_initial", "on_terminal"))
+        expect(merged["on_terminal"]?.defaultValue) == .string("annual")
+        // Screens merge in id order, so `screen_initial` wins over `screen_terminal`.
+        expect(merged["shared"]?.defaultValue) == .string("from_initial")
+    }
+
+    func testMergedStateDeclarationsIsEmptyWhenNoScreenDeclaresState() throws {
+        let context = try Self.makeContext(singleStepFallbackId: "step_terminal")
+
+        expect(WorkflowPaywallView.mergedStateDeclarations(in: context.workflow)).to(beEmpty())
+    }
+
 }
 
 // MARK: - Helpers for workflowPackageContext tests
@@ -593,10 +626,15 @@ private extension WorkflowPaywallViewTests {
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
-    static func makeScreenJSON(packages: [PackageSpec], offeringId: String) -> String {
+    static func makeScreenJSON(
+        packages: [PackageSpec] = [],
+        offeringId: String = "offering_test",
+        extraKeysJSON: String = ""
+    ) -> String {
         let componentsJSON = packages
             .map { packageComponentJSON(id: $0.id, isDefault: $0.isDefault) }
             .joined(separator: ",")
+        let extraKeys = extraKeysJSON.isEmpty ? "" : ",\n    \(extraKeysJSON)"
         return """
         {
             "template_name": "template_v2",
@@ -613,7 +651,7 @@ private extension WorkflowPaywallViewTests {
                         "value": { "light": { "type": "hex", "value": "#220000ff" } }
                     }
                 }
-            }
+            }\(extraKeys)
         }
         """
     }

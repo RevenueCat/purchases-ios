@@ -78,6 +78,9 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         expect(purchases.networkTimeout) == networkTimeoutSeconds
         expect(purchases.storeKitTimeout) == networkTimeoutSeconds
+        // The shared timeout manager must be built from the configured timeout too, otherwise every
+        // request would silently fall back to the built-in tiers.
+        expect(purchases.requestTimeoutManagerBaseTimeout) == networkTimeoutSeconds
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {

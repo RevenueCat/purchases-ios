@@ -65,6 +65,7 @@
 		0882A0238A0B15DCAA63DCA5 /* WorkflowManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */; };
 		0DCCBCD6C7CA32B59407A391 /* IterationOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB697245B7ED4A8855FF027E /* IterationOperators.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
+		B2D5F8C31AE904672C5F8DA1 /* WebViewInstance.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */; };
 		116EA498A344F7446083E8C5 /* EqualityOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EEB3B4E7701F8CC8B811A9 /* EqualityOperators.swift */; };
 		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
 		150BEBF14F59182317CDA8DA /* WorkflowContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = F598F832810DB534092FBED3 /* WorkflowContext.swift */; };
@@ -129,6 +130,7 @@
 		1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232493C1C6A935B7FE1C6873 /* RulesEngineLogger.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
 		1D20E1D82EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */; };
+		1DFF00A12EBCF80E00ABE4CD /* NetworkTimeout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DFF00C12EBCF80E00ABE4CD /* NetworkTimeout.swift */; };
 		1D291F722F154834008E4FDA /* CacheStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D291F712F154834008E4FDA /* CacheStrings.swift */; };
 		1D58A16C2ED59AD90086809D /* ConnectionErrorReason.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */; };
 		1D73D6612EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */; };
@@ -1675,6 +1677,7 @@
 		19B7F3F7BB1256FB17221052 /* CarouselState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CarouselState.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
 		1D20E1D72EBCF82900ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
+		1DFF00C12EBCF80E00ABE4CD /* NetworkTimeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkTimeout.swift; sourceTree = "<group>"; };
 		1D291F712F154834008E4FDA /* CacheStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStrings.swift; sourceTree = "<group>"; };
 		1D58A16B2ED59AD90086809D /* ConnectionErrorReason.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionErrorReason.swift; sourceTree = "<group>"; };
 		1D73D6602EBDD5CB00A9F0F3 /* MockHTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockHTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
@@ -2496,6 +2499,8 @@
 		6EFD5F7BD8404B6E828C4E10 /* WorkflowPaywallViewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallViewTests.swift; sourceTree = "<group>"; };
 		6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewModel.swift; sourceTree = "<group>"; };
 		72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewSession.swift; sourceTree = "<group>"; };
+		A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewInstance.swift; sourceTree = "<group>"; };
+		C3E609D42BFA15783D609EB2 /* WebViewInstanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewInstanceTests.swift; sourceTree = "<group>"; };
 		750B39FD2E40940F005E141D /* PurchasesOrchestratorSimulatedStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesOrchestratorSimulatedStoreTests.swift; sourceTree = "<group>"; };
 		751192DC2E39147600E583CC /* MockWebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBillingAPI.swift; sourceTree = "<group>"; };
 		751192DF2E39149200E583CC /* WebBillingAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingAPI.swift; sourceTree = "<group>"; };
@@ -3204,6 +3209,7 @@
 			isa = PBXGroup;
 			children = (
 				E7EB64E9D44783DD16A28B05 /* WebViewComponentViewTests.swift */,
+				C3E609D42BFA15783D609EB2 /* WebViewInstanceTests.swift */,
 				9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */,
 				AAB0C0DE00000000000A0601 /* WebViewOriginTests.swift */,
 				686562C08D953A27986DB276 /* PaywallWebViewValueTests.swift */,
@@ -3413,6 +3419,7 @@
 				9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */,
 				89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */,
 				72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */,
+				A1C4E7B209D8F3561B4E7C90 /* WebViewInstance.swift */,
 				D0A2779D02050D28BF369658 /* WebViewComponentView.swift */,
 				047CB41107F93D74B35CED61 /* WebViewScrollGestureArbitration.swift */,
 				6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */,
@@ -6348,6 +6355,7 @@
 				35F82BB326A9A74D0051DF03 /* HTTPClient.swift */,
 				57DC9F4527CC2E4900DA6AF9 /* HTTPRequest.swift */,
 				1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */,
+				1DFF00C12EBCF80E00ABE4CD /* NetworkTimeout.swift */,
 				4F7D8E552A56290100F17FFC /* HTTPRequestBody.swift */,
 				35D832F3262E606500E60AC5 /* HTTPResponse.swift */,
 				575137CE27F50D2F0064AB2C /* HTTPResponseBody.swift */,
@@ -7374,6 +7382,7 @@
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,
 				4DBF1F362B4D572400D52354 /* LocalReceiptFetcher.swift in Sources */,
 				1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */,
+				1DFF00A12EBCF80E00ABE4CD /* NetworkTimeout.swift in Sources */,
 				57488A7F29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift in Sources */,
 				88E679472C7503C1007E69D5 /* PaywallStackComponent.swift in Sources */,
 				B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */,
@@ -8258,6 +8267,7 @@
 				FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */,
 				11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */,
 				0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */,
+				B2D5F8C31AE904672C5F8DA1 /* WebViewInstance.swift in Sources */,
 				D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */,
 				B3728970B7484A89838D0504 /* WebViewScrollGestureArbitration.swift in Sources */,
 				B53032B7D38B14FE9850F314 /* WebViewComponentViewModel.swift in Sources */,
