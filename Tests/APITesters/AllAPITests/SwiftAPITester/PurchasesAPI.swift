@@ -416,18 +416,18 @@ private final class CheckpointListenerAPITester: CheckpointListener {
         let _: CheckpointInfo = result.checkpoint
 
         if let presented = result as? CheckpointPaywallPresentedResult {
-            let _: CheckpointPaywallResult = presented.paywallResult
+            let _: CheckpointPaywallOutcome = presented.paywallOutcome
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
         }
     }
 
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, result: CheckpointPaywallResult) {
-        if let purchased = result as? CheckpointPaywallPurchasedResult {
+    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome) {
+        if let purchased = outcome as? CheckpointPaywallPurchasedOutcome {
             let _: CustomerInfo = purchased.customerInfo
-        } else if let restored = result as? CheckpointPaywallRestoredResult {
+        } else if let restored = outcome as? CheckpointPaywallRestoredOutcome {
             let _: CustomerInfo = restored.customerInfo
-        } else if let error = result as? CheckpointPaywallErrorResult {
+        } else if let error = outcome as? CheckpointPaywallErrorOutcome {
             let _: PublicError = error.error
         }
     }
