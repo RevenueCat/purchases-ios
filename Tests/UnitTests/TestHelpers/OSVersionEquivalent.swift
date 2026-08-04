@@ -35,6 +35,7 @@ enum OSVersionEquivalent: Int {
     case iOS17 = 17
     case iOS18 = 18
     case iOS26 = 26
+    case iOS27 = 27
 }
 
 extension OSVersionEquivalent {
