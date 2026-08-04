@@ -6,8 +6,6 @@ excluded:
   - vendor
   - scan_derived_data
   - .git
-  - build
-  - "**/DerivedSources/GeneratedAssetSymbols.swift"
   - .build
 
 opt_in_rules:
