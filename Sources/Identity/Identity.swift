@@ -1,5 +1,5 @@
 //
-//  ExternalToken.swift
+//  Identity.swift
 //  RevenueCat
 //
 //  Created by Dave DeLong on 7/8/26.
@@ -9,40 +9,40 @@
 import Foundation
 
 @_spi(Experimental)
-@objc(RCExternalToken)
-public final class ExternalToken: NSObject {
+@objc(RCIdentity)
+public final class Identity: NSObject {
 
-    @objc internal static func anonymous(appUserID: String?) -> ExternalToken {
-        ExternalToken(token: .anonymous(appUserID))
+    @objc internal static func anonymous(appUserID: String?) -> Identity {
+        Identity(token: .anonymous(appUserID))
     }
 
-//    @objc public static func oidc(_ token: Data) -> ExternalToken {
-//        ExternalToken(token: .oidc(token))
+//    @objc public static func oidc(_ token: Data) -> Identity {
+//        Identity(token: .oidc(token))
 //    }
 //
-//    @objc public static func google(_ token: Data) -> ExternalToken {
-//        ExternalToken(token: .google(token))
+//    @objc public static func google(_ token: Data) -> Identity {
+//        Identity(token: .google(token))
 //    }
 
-    @objc public static func signInWithApple(_ identityToken: Data) -> ExternalToken {
-        ExternalToken(token: .signInWithApple(identityToken))
+    @objc public static func signInWithApple(_ identityToken: Data) -> Identity {
+        Identity(token: .signInWithApple(identityToken))
     }
 
-//    @objc public static func facebook(_ idToken: Data) -> ExternalToken {
-//        ExternalToken(token: .facebook(idToken, nil))
+//    @objc public static func facebook(_ idToken: Data) -> Identity {
+//        Identity(token: .facebook(idToken, nil))
 //    }
 //
-//    @objc public static func facebook(idToken: Data, email: String) -> ExternalToken {
-//        ExternalToken(token: .facebook(idToken, email))
+//    @objc public static func facebook(idToken: Data, email: String) -> Identity {
+//        Identity(token: .facebook(idToken, email))
 //    }
 //
-//    @objc public static func firebase(_ token: Data) -> ExternalToken {
-//        ExternalToken(token: .firebase(token))
+//    @objc public static func firebase(_ token: Data) -> Identity {
+//        Identity(token: .firebase(token))
 //    }
 
-    internal let authToken: ExternalAuthToken
+    internal let authToken: IdentityAuthToken
 
-    private init(token: ExternalAuthToken) {
+    private init(token: IdentityAuthToken) {
         self.authToken = token
         super.init()
     }
@@ -50,8 +50,8 @@ public final class ExternalToken: NSObject {
 }
 
 @_spi(Experimental)
-@objc(RCAuthenticationMethod)
-public enum AuthenticationMethod: Int {
+@objc(RCIdentitySource)
+public enum IdentitySource: Int {
     case anonymous
     case oidc
     case google
@@ -72,7 +72,7 @@ public enum AuthenticationMethod: Int {
     }
 }
 
-internal enum ExternalAuthToken: Hashable {
+internal enum IdentityAuthToken: Hashable {
     case anonymous(String?)
     case oidc(Data)
     case google(Data)
@@ -80,7 +80,7 @@ internal enum ExternalAuthToken: Hashable {
     case facebook(Data, String?)
     case firebase(Data)
 
-    var authenticationMethod: AuthenticationMethod {
+    var authenticationMethod: IdentitySource {
         switch self {
         case .anonymous: return .anonymous
         case .oidc: return .oidc

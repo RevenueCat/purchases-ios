@@ -70,7 +70,7 @@ public final class Authentication: NSObject {
     }
 
     @objc(logInUsingToken:completion:)
-    public func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
+    public func logIn(using token: Identity, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
         self.logIn(using: token, userInitiated: true, completion: completion)
     }
 
@@ -116,7 +116,7 @@ public final class Authentication: NSObject {
         }
     }
 
-    public func logIn(using token: ExternalToken) async throws -> CustomerInfo {
+    public func logIn(using token: Identity) async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
             self.logIn(using: token, completion: { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
@@ -145,11 +145,11 @@ public final class Authentication: NSObject {
 
     internal func logInIfNeeded(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         guard identityManager.needsIAMLogin else { return }
-        let token = ExternalToken.anonymous(appUserID: identityManager.currentAppUserID)
+        let token = Identity.anonymous(appUserID: identityManager.currentAppUserID)
         self.logIn(using: token, userInitiated: false, completion: completion)
     }
 
-    internal func logIn(using token: ExternalToken,
+    internal func logIn(using identity: Identity,
                         userInitiated: Bool,
                         completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard self.backend.token.enabled else {
@@ -159,7 +159,7 @@ public final class Authentication: NSObject {
             return
         }
 
-        self.identityManager.logIn(externalToken: token) { result in
+        self.identityManager.logIn(identity: identity) { result in
             if let completion {
                 self.operationDispatcher.dispatchOnMainThread {
                     completion(result.value?.info, result.error?.asPublicError)

@@ -1030,7 +1030,7 @@ public extension Purchases {
     @objc var isSandbox: Bool { return self.systemInfo.isSandbox }
 
     @_spi(Experimental)
-    var authenticationMethod: AuthenticationMethod? { self.tokenManager.currentAuthenticationMethod }
+    var identitySource: IdentitySource? { self.tokenManager.currentIdentitySource }
 
     @objc func getOfferings(completion: @escaping (Offerings?, PublicError?) -> Void) {
         self.getOfferings(fetchPolicy: .default, completion: completion)
@@ -1115,13 +1115,13 @@ public extension Purchases {
 
     @_spi(Experimental)
     @objc(logInUsingToken:completion:)
-    func logIn(using token: ExternalToken, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
-        _authentication.logIn(using: token, completion: completion)
+    func logIn(using identity: Identity, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
+        _authentication.logIn(using: identity, completion: completion)
     }
 
     @_spi(Experimental)
-    func logIn(using token: ExternalToken) async throws -> CustomerInfo {
-        try await _authentication.logIn(using: token)
+    func logIn(using identity: Identity) async throws -> CustomerInfo {
+        try await _authentication.logIn(using: identity)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {

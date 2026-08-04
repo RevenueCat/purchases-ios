@@ -16,12 +16,12 @@ final class TokenLogInOperation: CacheableNetworkOperation {
 
     private let tokenCallbackCache: CallbackCache<TokenCallback>
     private let configuration: UserSpecificConfiguration
-    private let token: ExternalAuthToken
+    private let token: IdentityAuthToken
     private let linkToID: String?
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
-        token: ExternalAuthToken,
+        token: IdentityAuthToken,
         linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>
     ) -> CacheableNetworkOperationFactory<TokenLogInOperation> {
@@ -38,7 +38,7 @@ final class TokenLogInOperation: CacheableNetworkOperation {
 
     private init(
         configuration: UserSpecificConfiguration,
-        token: ExternalAuthToken,
+        token: IdentityAuthToken,
         linkToIDToken: String?,
         tokenCallbackCache: CallbackCache<TokenCallback>,
         cacheKey: String

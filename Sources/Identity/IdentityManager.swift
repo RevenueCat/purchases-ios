@@ -86,7 +86,7 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousAMR = tokenManager.currentAuthenticationMethod == .anonymous
+        lazy var isAnonymousAMR = tokenManager.currentIdentitySource == .anonymous
 
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousAMR
     }
@@ -109,14 +109,14 @@ class IdentityManager: CurrentUserProvider {
         }
     }
 
-    func logIn(externalToken: ExternalToken, completion: @escaping IdentityAPI.LogInResponseHandler) {
+    func logIn(identity: Identity, completion: @escaping IdentityAPI.LogInResponseHandler) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
             completion(.failure(.unsupportedInUIPreviewMode()))
             return
         }
 
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
-            self.performLogIn(token: externalToken, completion: completion)
+            self.performLogIn(identity: identity, completion: completion)
         }
     }
 
@@ -210,10 +210,10 @@ private extension IdentityManager {
         }
     }
 
-    func performLogIn(token: ExternalToken, completion: @escaping IdentityAPI.LogInResponseHandler) {
+    func performLogIn(identity: Identity, completion: @escaping IdentityAPI.LogInResponseHandler) {
         let oldAppUserID = self.currentAppUserID
 
-        self.backend.token.logIn(currentAppUserID: oldAppUserID, token: token) { result in
+        self.backend.token.logIn(currentAppUserID: oldAppUserID, identity: identity) { result in
             switch result {
             case .success(let (_, newAppUserID)):
                 self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
@@ -264,7 +264,7 @@ private extension IdentityManager {
 
         if self.backend.token.enabled {
             // immediately get tokens for the new user id
-            self.performLogIn(token: .anonymous(appUserID: newUserID), completion: { result in
+            self.performLogIn(identity: .anonymous(appUserID: newUserID), completion: { result in
                 completion(result.error?.asPurchasesError)
             })
         } else {

@@ -26,13 +26,13 @@ class TokenAPI {
         self.revokeCallbacksCache = CallbackCache<TokenRevokeCallback>()
     }
 
-    func logIn(currentAppUserID: String, token: ExternalToken, completion: @escaping TokenResponseHandler) {
+    func logIn(currentAppUserID: String, identity: Identity, completion: @escaping TokenResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
 
         let linkToID = tokenManager.idToken(for: currentAppUserID)
         let factory = TokenLogInOperation.createFactory(configuration: config,
-                                                        token: token.authToken,
+                                                        token: identity.authToken,
                                                         linkToIDToken: linkToID,
                                                         tokenCallbackCache: self.tokenCallbacksCache)
 
