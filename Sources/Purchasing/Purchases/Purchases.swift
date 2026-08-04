@@ -1854,6 +1854,11 @@ extension Purchases {
 // MARK: - Preferred locale
 
 extension Purchases {
+    /// Demo-only API used to verify the public API diff report in CI. Do not merge.
+    @objc public func apiDiffDemoPing() -> String {
+        "pong"
+    }
+
     /// Overrides the preferred locale for RevenueCatUI components.
     /// - Parameter locale: A locale string in the format "language_region" (e.g., "en_US").
     /// Use `nil` to remove the override and use the default user locale determined by the system.
