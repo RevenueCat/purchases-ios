@@ -2101,14 +2101,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # Pinned: the orb default is 0.10.1, whose consolidator bug reported no changes for
-      # files that differed. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
+      # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
       - revenuecat/install-public-api-diff:
           version: "0.12.0"
-      # The break gate resolves `git merge-base origin/main HEAD`, and checkout does not
-      # necessarily leave origin/main present. The explicit destination refspec forces
-      # refs/remotes/origin/main to be written regardless of the checkout's remote.origin.fetch
-      # config, whereas a bare `origin main` only updates it opportunistically.
+      # merge-base needs origin/main, which checkout does not guarantee exists.
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
@@ -2118,8 +2114,7 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
-          # The bot token comes from the slack-secrets contexts, already used by
-          # slack-notify-on-fail. Only the channel is needed here, and a channel is not secret.
+          # Token comes from slack-secrets, as slack-notify-on-fail already uses. A channel is not secret.
           environment:
             SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
@@ -2160,14 +2155,10 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # Pinned: the orb default is 0.10.1, whose consolidator bug reported no changes for
-      # files that differed. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
+      # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
       - revenuecat/install-public-api-diff:
           version: "0.12.0"
-      # The break gate resolves `git merge-base origin/main HEAD`, and checkout does not
-      # necessarily leave origin/main present. The explicit destination refspec forces
-      # refs/remotes/origin/main to be written regardless of the checkout's remote.origin.fetch
-      # config, whereas a bare `origin main` only updates it opportunistically.
+      # merge-base needs origin/main, which checkout does not guarantee exists.
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
@@ -2177,8 +2168,7 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
-          # The bot token comes from the slack-secrets contexts, already used by
-          # slack-notify-on-fail. Only the channel is needed here, and a channel is not secret.
+          # Token comes from slack-secrets, as slack-notify-on-fail already uses. A channel is not secret.
           environment:
             SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |

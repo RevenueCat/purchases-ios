@@ -739,7 +739,6 @@ platform :ios do
     pr_number
   end
 
-  # Labels come from the PR, so a local run or a non-PR build simply has none.
   private_lane :pr_labels_for_api_gate do
     pr_number = detect_pr_number
     token = ENV["DANGER_GITHUB_API_TOKEN"]
@@ -2462,12 +2461,8 @@ platform :ios do
       UI.success("✅ No API changes detected")
     end
 
-    # Deliberately NOT failing yet. Stale baselines and a breaking change are separate
-    # problems, and an author who forgot to regenerate still deserves to see what they
-    # changed rather than only being told to regenerate. Both failures are raised at the end.
 
-    # Second comparison: what this PR changes relative to main. The freshness loop above
-    # cannot answer that, because regenerating the baselines makes its diff empty.
+    # Regenerated baselines make the freshness diff empty, so the gate needs the merge base.
     runner = ->(*command) { sh(*command, log: false) }
     merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
     UI.message("Comparing against the merge base #{merge_base}")
@@ -2499,15 +2494,11 @@ platform :ios do
 
     all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
 
-    # Labels only matter once there is a break to judge them against: fetching them
-    # unconditionally means a PR that touches no Swift still calls the GitHub API, and
-    # pr_labels_for_api_gate's github_api call has no error_handlers, so any non-2xx response
-    # (rate limit, auth hiccup) raises and reds the job even though there was nothing to gate.
+    # Only when there is a break to judge: github_api raises on non-2xx and would red clean PRs.
     labels = all_breaks.any? ? pr_labels_for_api_gate : []
     ApiDiffHelper.print_breaking_summary(all_breaks, labels)
 
-    # The report and the Slack ping are informational, so a GitHub or Slack outage must not
-    # decide whether the gate below fails.
+    # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
       schemes.each do |scheme|
         upsert_api_diff_comment(
@@ -2522,8 +2513,7 @@ platform :ios do
       UI.important("Could not publish the API diff report: #{e.message}")
     end
 
-    # Report first, then fail. Staleness is reported before the gate because regenerating the
-    # baselines is the author's first step either way.
+    # Both failures raise after the report has been published.
     if failed_platforms.any?
       UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     end
@@ -2533,7 +2523,6 @@ platform :ios do
     end
   end
 
-  # One comment per PR, rewritten in place. Skips silently outside a PR build.
   private_lane :upsert_api_diff_comment do |options|
     pr_number = detect_pr_number
     token = ENV["DANGER_GITHUB_API_TOKEN"]
@@ -2551,8 +2540,7 @@ platform :ios do
     )
 
     if existing_id
-      # Read the current body first: the other module's job owns its own section of this same
-      # comment, and overwriting wholesale would discard whatever it found.
+      # The other module's job owns its own section of this comment.
       existing = github_api(
         server_url: 'https://api.github.com',
         api_token: token,
@@ -2581,7 +2569,6 @@ platform :ios do
     end
   end
 
-  # Posts to #feed-sdk-new-api. Silent when there is nothing to say or no credential.
   private_lane :notify_api_changes_on_slack do |options|
     breaks = options[:breaks]
     changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
@@ -2920,8 +2907,7 @@ def update_paywall_preview_resources_commit(hash)
 end
 
 def find_pr_comment_with_marker(repo, pr_number, token, marker)
-  # Paginate: a single page misses the marker on a chatty PR, and a missed marker means a
-  # second comment gets posted instead of the existing one being updated.
+  # A missed marker posts a duplicate instead of updating.
   page = 1
 
   loop do

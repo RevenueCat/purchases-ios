@@ -175,16 +175,14 @@ module ApiDiffHelper
                         "from the generated interface at the byte level. Regenerate the baselines."
                       end
     rescue StandardError => e
-      # The check has already failed on bytes; surface why the explanation is missing.
+      # Already failed on bytes; surface why the explanation is missing.
       result[:diff] = "public-api-diff failed: #{e.message}"
     end
 
     result
   end
 
-  # Pinned deliberately: the orb command defaults to 0.10.1, the release whose
-  # SwiftInterfaceChangeConsolidator bug reported "no changes detected" for files that
-  # differed. Fixed upstream in 0.11.0.
+  # The orb default 0.10.1 has the consolidator bug; fixed upstream in 0.11.0.
   PUBLIC_API_DIFF_VERSION = "0.12.0".freeze
 
   NO_CHANGES_MARKER = "✅ No changes detected".freeze
@@ -200,9 +198,7 @@ module ApiDiffHelper
     nil
   end
 
-  # public-api-diff exits 0 for changes, for no changes, and even for a missing input file,
-  # so its report is the only signal we have. Silence means the tool did not run, which is
-  # not the same as the API being unchanged.
+  # The tool exits 0 even for a missing input file, so silence means it did not run.
   def validate_api_diff_output!(output, old_file, new_file)
     report = output.to_s.encode("UTF-8", invalid: :replace, undef: :replace).strip
 
@@ -219,9 +215,7 @@ module ApiDiffHelper
 
   MERGE_BASE_SWIFTINTERFACE_DIR = "/tmp/merge-base-swiftinterface".freeze
 
-  # The gate compares against the merge base rather than the PR's own baselines. Once an
-  # author regenerates the baselines they match the generated interfaces exactly, and the
-  # evidence of what the PR changed is gone.
+  # The PR's own baselines match the generated files once regenerated, erasing the evidence.
   def resolve_merge_base(runner:)
     sha = runner.call("git", "merge-base", "origin/main", "HEAD").to_s.strip
     raise "Could not resolve the merge base with origin/main" if sha.empty?
@@ -252,10 +246,7 @@ module ApiDiffHelper
   REPORT_KIND_HEADING = /\A#### .*\b(Added|Removed|Modified)\b\s*\z/.freeze
   REPORT_FENCE = /\A```/.freeze
 
-  # The report nests members under their enclosing type, which is what lets us tell a case
-  # added to an existing enum from a brand new enum that happens to have cases. A type
-  # section only appears for a type present on both sides; a wholly new declaration sits
-  # directly under the target heading, so its owner is nil.
+  # A type section only appears for a type on both sides, so a new declaration has no owner.
   def parse_report(report)
     changes = []
     owner = nil
@@ -306,14 +297,7 @@ module ApiDiffHelper
 
   ATTRIBUTE_ONLY_LINE = /\A(?:@\w+(?:\(.*\))?\s*)+\z/.freeze
 
-  # A report block's literal first line is not always the significant one: the tool renders
-  # each attribute on its own line above the declaration it belongs to (`@objc(RCFoo)` then
-  # `case foo` on the next line), and a :modified block's fenced text opens with a literal
-  # `// From` marker line before the actual declaration. Every caller that reasons about "what
-  # declaration is this" (the enum-case prefix test, the type-name extractor, and a break's
-  # displayed/dedup text) wants the line that actually names the symbol, not whichever text
-  # happens to render first. Falls back to the raw first line if every line gets skipped
-  # (an unexpected shape), so this never does worse than the un-skipped behavior.
+  # Attributes render on their own line, and a modification opens with `// From`.
   def significant_first_line(declaration)
     lines = declaration.to_s.lines.map(&:strip)
     significant = lines.drop_while { |line| line == "// From" || ATTRIBUTE_ONLY_LINE.match?(line) }
@@ -323,16 +307,10 @@ module ApiDiffHelper
 
   ATTRIBUTE_CHANGE_LINE = /\A-\s+(Added|Removed) attribute `([^`]*)`/.freeze
 
-  # `unavailable` marks a declaration unusable immediately; `obsoleted` marks it unusable as of
-  # a version that, for any shipping baseline, has already passed. Gaining either breaks
-  # callers exactly like removing the declaration would. `deprecated` only warns, so it is
-  # deliberately left out of this list: it is not breaking.
+  # Gaining these breaks callers like a removal would; `deprecated` only warns.
   BREAKING_ATTRIBUTE_ADDITION = /\b(?:unavailable|obsoleted)\b/.freeze
 
-  # Gaining an attribute is usually additive (e.g. `@objc` newly added to a Swift-only member).
-  # Losing one is not always additive: stripping `@objc` from a member on an Obj-C-exposed type
-  # breaks every Obj-C caller (see this repo's Objective-C Compatibility guidance), so a
-  # "Removed attribute" line must never be waved through here, whichever attribute it names.
+  # Stripping `@objc` breaks every Obj-C caller, so a removal is never waved through.
   def modification_attribute_only?(declaration)
     lines = declaration.to_s.lines.map(&:strip)
     start = lines.index("Changes:")
@@ -360,19 +338,12 @@ module ApiDiffHelper
     TYPE_DECLARATION.match(significant_first_line(declaration))&.captures&.first
   end
 
-  # Strips `//` line comments and the contents of double-quoted string literals so prose
-  # (e.g. an `@available(*, deprecated, message: "the enum Foo pattern...")` string) can't
-  # masquerade as a declaration. Strings are neutralized first so a `//` inside one (a URL in
-  # a deprecation message, say) isn't mistaken for a comment opener. String bodies are not
-  # allowed to cross a newline, so an unbalanced quote can't swallow real declarations that
-  # follow it. Block comments (`/* */`) are deliberately out of scope: real .swiftinterface
-  # output doesn't use them, and we're not writing a Swift parser.
+  # Keeps prose in strings and comments from passing as a declaration.
   def strip_comments_and_strings(contents)
     contents.gsub(/"(?:\\.|[^"\\\n])*"/, '""').gsub(%r{//[^\n]*}, '')
   end
 
-  # The report says what changed and inside which type, but never what kind of type that is,
-  # so the generated interface is the source of truth for enum versus protocol.
+  # The report never says what kind of type an owner is, so the interface decides.
   def enclosing_type_kind(interface_path, type_name)
     name = type_name.to_s.split(".").last
     return nil if name.nil? || name.empty?
@@ -384,11 +355,7 @@ module ApiDiffHelper
     nil
   end
 
-  # Matches `optional` only when it functions as a declaration modifier immediately preceding
-  # the requirement's keyword (optionally after attributes like `@objc`), not merely anywhere
-  # in the text, e.g. a parameter literally named `optional` or a doc comment mentioning it.
-  # Failing to recognize a real `optional` modifier here would over-report, not under-report,
-  # which is the safe direction for this gate.
+  # Only as a modifier, not a parameter named `optional`.
   PROTOCOL_OPTIONAL_MODIFIER = /^\s*(?:@\w+(?:\([^)]*\))?\s*)*optional\s+(?:func|var|subscript|init)\b/.freeze
 
   def protocol_requirement_optional?(declaration)
@@ -412,12 +379,7 @@ module ApiDiffHelper
 
         breaks << { reason: :modified, owner: change.owner, declaration: first_line }
       when :added
-        # A wholly new declaration breaks nothing, and neither does a member reported under a
-        # type this same report introduces: match the owner in full, not by last component,
-        # since a same-basename but differently-owned type (e.g. `Other.Config` alongside a
-        # new top-level `Config`) must still be evaluated below. A nested member of a new type
-        # reported with a dotted owner falls through to evaluation too; that only over-reports
-        # (never under-reports), which `pr:breaking-api` exists to override.
+        # By last component a new top-level `Config` would mask a break on `Other.Config`.
         next if change.owner.nil?
         next if new_type_names.include?(change.owner)
 
@@ -481,9 +443,7 @@ module ApiDiffHelper
     "<!-- /api-diff:#{module_name} -->"
   end
 
-  # One comment per pull request, but two jobs write it, one per module, and neither knows
-  # what the other found. Each owns a delimited section and leaves the rest alone; without
-  # this the job that finishes last overwrites the other's findings.
+  # Two jobs write this comment; each owns a section or the last writer wins.
   def merge_api_diff_comment(existing_body, module_name, section)
     open_tag = api_diff_section_open(module_name)
     close_tag = api_diff_section_close(module_name)
@@ -506,8 +466,6 @@ module ApiDiffHelper
     [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
   end
 
-  # The body of one module's section. `heading` lets the shared header be omitted when this is
-  # nested inside a multi-module comment.
   def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil)
     lines = heading ? [heading] : [API_DIFF_COMMENT_MARKER, "## Public API changes"]
 
@@ -528,8 +486,7 @@ module ApiDiffHelper
       lines << ""
       lines << "No public API changes."
     else
-      # Identical reports across platforms collapse: the same change is reported once per
-      # platform and nobody wants to read it nine times.
+      # Nine identical per-platform reports collapse into one section.
       changed.group_by { |_target, report| strip_target_headings(report) }.each do |_body, group|
         targets = group.map(&:first)
         lines << ""
@@ -544,8 +501,7 @@ module ApiDiffHelper
     lines.join("\n")
   end
 
-  # Target names appear inside the report, so they must be neutralised before comparing two
-  # platforms' reports for equality.
+  # Target names differ per platform, so neutralise them before comparing reports.
   def strip_target_headings(report)
     report.to_s.gsub(/^#+ `[^`]*`\s*$/, "").gsub(/\*\*Analyzed targets:\*\*.*$/, "").strip
   end
@@ -557,9 +513,7 @@ module ApiDiffHelper
     platforms.join(", ")
   end
 
-  # The same declaration is reported once per platform, so counting reports counts platforms,
-  # not API. Deduplicating by the declaration itself is what makes "1 new declaration" read
-  # as 1 rather than 9.
+  # Counting reports would count platforms, not API.
   def added_declarations(reports_by_target)
     reports_by_target.values.compact.flat_map do |report|
       next [] unless api_changes_reported?(report)
@@ -569,10 +523,7 @@ module ApiDiffHelper
     end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
   end
 
-  # Slack renders neither the report's HTML table nor its long code blocks, so the message is
-  # derived rather than forwarded.
-  # A ping, not a report: headline, the PR link, and counts. The detail lives in the PR
-  # comment, which is one click away.
+  # A ping, not a report: the detail lives in the PR comment.
   def slack_summary(breaks, labels, source:, new_declarations: [])
     headline = if breaks.any?
                  gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
@@ -585,7 +536,6 @@ module ApiDiffHelper
 
     counts = []
     counts << "#{breaks.count} potential break#{'s' if breaks.count != 1}" if breaks.any?
-    # Counted per declaration, not per report: the same declaration appears once per platform.
     counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
     lines << counts.join(", ") if counts.any?
 
@@ -593,9 +543,6 @@ module ApiDiffHelper
   end
 
 
-  # Either an incoming webhook, which carries its own channel, or a bot token with an
-  # explicit channel, so the notification can use whichever Slack credential CI already has.
-  # Returns nil when neither is configured.
   def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
     unless webhook_url.to_s.empty?
       return {
@@ -627,9 +574,7 @@ module ApiDiffHelper
           error_callback: ->(sh_output) { captured_output = sh_output }
         )
       rescue StandardError => e
-        # log: false keeps the raw report out of the CI log. If fastlane still raises
-        # (rather than routing through error_callback), fold the captured output back in
-        # so the failure is not just a bare exit status.
+        # log: false keeps the report out of the CI log; the callback keeps it in the error.
         raise "#{e.message}\n#{captured_output}".strip
       end
     end
@@ -639,8 +584,7 @@ module ApiDiffHelper
       "--new", new_file,
       "--target-name", target_name
     )
-    # Sanitize before this string flows any further: it gets substring-matched and
-    # stored in the result, not just validated, and invalid bytes would raise there too.
+    # Sanitised here because the value is substring-matched and stored, not just validated.
     output = output.to_s.encode("UTF-8", invalid: :replace, undef: :replace)
 
     validate_api_diff_output!(output, old_file, new_file)
