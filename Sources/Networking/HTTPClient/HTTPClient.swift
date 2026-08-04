@@ -528,7 +528,8 @@ private extension HTTPClient {
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
-                    isFallbackUrlResponse: isFallbackUrlResponse
+                    isFallbackUrlResponse: isFallbackUrlResponse,
+                    isIAMEnabled: self.tokenManager.enabled,
                 )
             }
             // Fetch from ETagManager if available

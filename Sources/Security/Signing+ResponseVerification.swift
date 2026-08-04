@@ -22,7 +22,8 @@ extension HTTPResponse where Body == Data? {
         requestHeaders: HTTPRequest.Headers,
         publicKey: Signing.PublicKey?,
         isLoadShedderResponse: Bool,
-        isFallbackUrlResponse: Bool
+        isFallbackUrlResponse: Bool,
+        isIAMEnabled: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -33,6 +34,7 @@ extension HTTPResponse where Body == Data? {
             request: request,
             publicKey: publicKey,
             signing: signing,
+            iamEnabled: isIAMEnabled,
             isFallbackUrlResponse: isFallbackUrlResponse
         )
 
@@ -62,6 +64,7 @@ extension HTTPResponse where Body == Data? {
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
         signing: SigningType,
+        iamEnabled: Bool,
         isFallbackUrlResponse: Bool
     ) -> VerificationResult {
         guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
@@ -99,6 +102,7 @@ extension HTTPResponse where Body == Data? {
         if signing.verify(signature: signature,
                           with: .init(
                             path: request.path,
+                            iamEnabled: iamEnabled,
                             message: message,
                             requestHeaders: requestHeaders,
                             requestBody: contextProvider.requestBodyForSignature(for: request),

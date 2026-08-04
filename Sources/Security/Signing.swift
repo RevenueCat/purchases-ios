@@ -35,6 +35,7 @@ final class Signing: SigningType {
     struct SignatureParameters {
 
         var path: HTTPRequestPath
+        var iamEnabled: Bool
         var message: Data?
         var requestHeaders: HTTPRequest.Headers
         var requestBody: HTTPRequestBody?
@@ -240,6 +241,7 @@ extension Signing.SignatureParameters {
 
     init(
         path: HTTPRequest.Path,
+        iamEnabled: Bool,
         message: Data? = nil,
         requestHeaders: HTTPRequest.Headers = [:],
         requestBody: HTTPRequestBody? = nil,
@@ -249,6 +251,7 @@ extension Signing.SignatureParameters {
         useFallbackPath: Bool = false
     ) {
         self.path = path
+        self.iamEnabled = iamEnabled
         self.message = message
         self.requestHeaders = requestHeaders
         self.requestBody = requestBody
@@ -269,7 +272,7 @@ extension Signing.SignatureParameters {
         if useFallbackPath, let fallbackRelativePath = self.path.fallbackRelativePath {
             relativePath = fallbackRelativePath
         } else {
-            relativePath = self.path.relativePath
+            relativePath = self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath
         }
         let path: Data = relativePath.asData
         let postParameterHash: Data = self.requestBody?.postParameterHeader?.asData ?? .init()
@@ -292,7 +295,7 @@ extension Signing.SignatureParameters: CustomDebugStringConvertible {
     var debugDescription: String {
         return """
         SignatureParameters(" +
-            path: '\(self.path.relativePath)'
+            path: '\(self.iamEnabled ? self.path.relativeIAMPath : self.path.relativePath)'
             message: '\(self.messageString.trimmingWhitespacesAndNewLines)'
             headerParametersHash: '\(HTTPRequest.headerParametersForSignatureHeader(
                 headers: self.requestHeaders,
