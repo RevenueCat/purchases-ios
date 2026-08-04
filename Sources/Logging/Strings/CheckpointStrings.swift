@@ -7,6 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
+//  CheckpointStrings.swift
+//
+//  Created by Rick van der Linden.
+//
 
 import Foundation
 

@@ -9,7 +9,7 @@
 //
 //  Checkpoint.swift
 //
-//  Created by RevenueCat.
+//  Created by Rick van der Linden.
 //
 
 import Foundation

@@ -7,6 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
+//  RCCheckpointAPI.h
+//
+//  Created by Rick van der Linden.
+//
 
 #import <Foundation/Foundation.h>
 
