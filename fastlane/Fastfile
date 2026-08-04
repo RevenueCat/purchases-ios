@@ -2513,7 +2513,6 @@ platform :ios do
       UI.important("Could not publish the API diff report: #{e.message}")
     end
 
-    # Both failures raise after the report has been published.
     if failed_platforms.any?
       UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     end

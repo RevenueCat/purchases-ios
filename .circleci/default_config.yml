@@ -2104,7 +2104,6 @@ jobs:
       # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
       - revenuecat/install-public-api-diff:
           version: "0.12.0"
-      # merge-base needs origin/main, which checkout does not guarantee exists.
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
@@ -2114,7 +2113,6 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
-          # Token comes from slack-secrets, as slack-notify-on-fail already uses. A channel is not secret.
           environment:
             SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
@@ -2158,7 +2156,6 @@ jobs:
       # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
       - revenuecat/install-public-api-diff:
           version: "0.12.0"
-      # merge-base needs origin/main, which checkout does not guarantee exists.
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
@@ -2168,7 +2165,6 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
-          # Token comes from slack-secrets, as slack-notify-on-fail already uses. A channel is not secret.
           environment:
             SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
