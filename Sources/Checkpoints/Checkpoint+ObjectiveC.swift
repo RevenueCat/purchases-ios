@@ -78,36 +78,36 @@ public final class ObjCCheckpointNoActionReason: NSObject {
 
 }
 
-/// Base class for Objective-C checkpoint paywall results.
-@_spi(Internal) @objc(RCCheckpointPaywallResult)
-public class ObjCCheckpointPaywallResult: NSObject {
+/// Base class for Objective-C checkpoint paywall outcomes.
+@_spi(Internal) @objc(RCCheckpointPaywallOutcome)
+public class ObjCCheckpointPaywallOutcome: NSObject {
 
     fileprivate override init() { super.init() }
 
-    static func wrapping(_ result: CheckpointPaywallResult) -> ObjCCheckpointPaywallResult {
-        switch result {
-        case is CheckpointPaywallDismissedResult:
-            return ObjCCheckpointPaywallDismissedResult()
-        case let purchased as CheckpointPaywallPurchasedResult:
-            return ObjCCheckpointPaywallPurchasedResult(customerInfo: purchased.customerInfo)
-        case let restored as CheckpointPaywallRestoredResult:
-            return ObjCCheckpointPaywallRestoredResult(customerInfo: restored.customerInfo)
-        case let error as CheckpointPaywallErrorResult:
-            return ObjCCheckpointPaywallErrorResult(error: error.error)
+    static func wrapping(_ outcome: CheckpointPaywallOutcome) -> ObjCCheckpointPaywallOutcome {
+        switch outcome {
+        case is CheckpointPaywallDismissedOutcome:
+            return ObjCCheckpointPaywallDismissedOutcome()
+        case let purchased as CheckpointPaywallPurchasedOutcome:
+            return ObjCCheckpointPaywallPurchasedOutcome(customerInfo: purchased.customerInfo)
+        case let restored as CheckpointPaywallRestoredOutcome:
+            return ObjCCheckpointPaywallRestoredOutcome(customerInfo: restored.customerInfo)
+        case let error as CheckpointPaywallErrorOutcome:
+            return ObjCCheckpointPaywallErrorOutcome(error: error.error)
         default:
-            return ObjCCheckpointPaywallResult()
+            return ObjCCheckpointPaywallOutcome()
         }
     }
 
 }
 
 /// Objective-C result indicating that the paywall was dismissed.
-@_spi(Internal) @objc(RCCheckpointPaywallDismissedResult)
-public final class ObjCCheckpointPaywallDismissedResult: ObjCCheckpointPaywallResult {}
+@_spi(Internal) @objc(RCCheckpointPaywallDismissedOutcome)
+public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallOutcome {}
 
 /// Objective-C result indicating that the customer purchased from the paywall.
-@_spi(Internal) @objc(RCCheckpointPaywallPurchasedResult)
-public final class ObjCCheckpointPaywallPurchasedResult: ObjCCheckpointPaywallResult {
+@_spi(Internal) @objc(RCCheckpointPaywallPurchasedOutcome)
+public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
     /// Customer information after the purchase.
     @objc public let customerInfo: CustomerInfo
@@ -120,8 +120,8 @@ public final class ObjCCheckpointPaywallPurchasedResult: ObjCCheckpointPaywallRe
 }
 
 /// Objective-C result indicating that the customer restored purchases from the paywall.
-@_spi(Internal) @objc(RCCheckpointPaywallRestoredResult)
-public final class ObjCCheckpointPaywallRestoredResult: ObjCCheckpointPaywallResult {
+@_spi(Internal) @objc(RCCheckpointPaywallRestoredOutcome)
+public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
     @objc public let customerInfo: CustomerInfo
@@ -134,8 +134,8 @@ public final class ObjCCheckpointPaywallRestoredResult: ObjCCheckpointPaywallRes
 }
 
 /// Objective-C result indicating that the paywall ended with an error.
-@_spi(Internal) @objc(RCCheckpointPaywallErrorResult)
-public final class ObjCCheckpointPaywallErrorResult: ObjCCheckpointPaywallResult {
+@_spi(Internal) @objc(RCCheckpointPaywallErrorOutcome)
+public final class ObjCCheckpointPaywallErrorOutcome: ObjCCheckpointPaywallOutcome {
 
     /// The error that ended the paywall.
     @objc public let error: PublicError
@@ -165,7 +165,7 @@ public class ObjCCheckpointResult: NSObject {
         case let presented as CheckpointPaywallPresentedResult:
             return ObjCCheckpointPaywallPresentedResult(
                 checkpoint: checkpoint,
-                paywallResult: .wrapping(presented.paywallResult)
+                paywallOutcome: .wrapping(presented.paywallOutcome)
             )
         case let noAction as CheckpointNoActionResult:
             return ObjCCheckpointNoActionResult(
@@ -183,11 +183,11 @@ public class ObjCCheckpointResult: NSObject {
 @_spi(Internal) @objc(RCCheckpointPaywallPresentedResult)
 public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 
-    /// The terminal result of the presented paywall.
-    @objc public let paywallResult: ObjCCheckpointPaywallResult
+    /// The terminal outcome of the presented paywall.
+    @objc public let paywallOutcome: ObjCCheckpointPaywallOutcome
 
-    fileprivate init(checkpoint: ObjCCheckpointInfo, paywallResult: ObjCCheckpointPaywallResult) {
-        self.paywallResult = paywallResult
+    fileprivate init(checkpoint: ObjCCheckpointInfo, paywallOutcome: ObjCCheckpointPaywallOutcome) {
+        self.paywallOutcome = paywallOutcome
         super.init(checkpoint: checkpoint)
     }
 

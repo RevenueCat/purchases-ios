@@ -53,7 +53,7 @@ import Foundation
 
 }
 
-/// Information about a checkpoint that was reached.
+/// Information about a checkpoint that was hit.
 @_spi(Internal) public struct CheckpointInfo {
 
     /// The checkpoint identifier configured in the RevenueCat dashboard.
@@ -96,7 +96,7 @@ import Foundation
 
 }
 
-/// Base class for the result of reaching a checkpoint.
+/// Base class for the result of hitting a checkpoint.
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
 /// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
@@ -119,17 +119,17 @@ import Foundation
 /// A checkpoint-triggered paywall was presented and finished.
 @_spi(Internal) public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
-    /// The terminal result of the presented paywall.
-    public let paywallResult: CheckpointPaywallResult
+    /// The terminal outcome of the presented paywall.
+    public let paywallOutcome: CheckpointPaywallOutcome
 
-    init(checkpoint: CheckpointInfo, paywallResult: CheckpointPaywallResult) {
-        self.paywallResult = paywallResult
+    init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
+        self.paywallOutcome = paywallOutcome
         super.init(checkpoint: checkpoint)
     }
 
     /// A debug description of the presented-paywall result.
     public override var description: String {
-        return "PaywallPresented(checkpoint=\(self.checkpoint), paywallResult=\(self.paywallResult))"
+        return "PaywallPresented(checkpoint=\(self.checkpoint), paywallOutcome=\(self.paywallOutcome))"
     }
 
 }
@@ -156,77 +156,77 @@ import Foundation
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
 /// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
-@_spi(Internal) public class CheckpointPaywallResult: CustomStringConvertible {
+@_spi(Internal) public class CheckpointPaywallOutcome: CustomStringConvertible {
 
     fileprivate init() {}
 
-    /// A debug description of the paywall result.
+    /// A debug description of the paywall outcome.
     public var description: String {
-        return "CheckpointPaywallResult"
+        return "CheckpointPaywallOutcome"
     }
 
 }
 
 /// The customer dismissed the paywall.
-@_spi(Internal) public final class CheckpointPaywallDismissedResult: CheckpointPaywallResult {
+@_spi(Internal) public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
-    /// Creates a dismissed paywall result.
+    /// Creates a dismissed paywall outcome.
     public override init() {
         super.init()
     }
 
-    /// A debug description of the dismissed result.
+    /// A debug description of the dismissed outcome.
     public override var description: String { return "Dismissed" }
 
 }
 
 /// The customer completed a purchase.
-@_spi(Internal) public final class CheckpointPaywallPurchasedResult: CheckpointPaywallResult {
+@_spi(Internal) public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after the completed purchase.
     public let customerInfo: CustomerInfo
 
-    /// Creates a purchased result with the latest customer information.
+    /// Creates a purchased outcome with the latest customer information.
     public init(customerInfo: CustomerInfo) {
         self.customerInfo = customerInfo
         super.init()
     }
 
-    /// A debug description of the purchased result.
+    /// A debug description of the purchased outcome.
     public override var description: String { return "Purchased" }
 
 }
 
 /// The customer restored purchases.
-@_spi(Internal) public final class CheckpointPaywallRestoredResult: CheckpointPaywallResult {
+@_spi(Internal) public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
     public let customerInfo: CustomerInfo
 
-    /// Creates a restored result with the latest customer information.
+    /// Creates a restored outcome with the latest customer information.
     public init(customerInfo: CustomerInfo) {
         self.customerInfo = customerInfo
         super.init()
     }
 
-    /// A debug description of the restored result.
+    /// A debug description of the restored outcome.
     public override var description: String { return "Restored" }
 
 }
 
 /// The paywall ended with an error.
-@_spi(Internal) public final class CheckpointPaywallErrorResult: CheckpointPaywallResult {
+@_spi(Internal) public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     /// The error that ended the checkpoint experience.
     public let error: PublicError
 
-    /// Creates a paywall error result.
+    /// Creates a paywall error outcome.
     public init(error: PublicError) {
         self.error = error
         super.init()
     }
 
-    /// A debug description of the error result.
+    /// A debug description of the error outcome.
     public override var description: String {
         return "Error(error=\(self.error))"
     }
@@ -241,11 +241,11 @@ import Foundation
     /// A checkpoint was hit, before evaluation.
     func onCheckpointHit(_ checkpoint: CheckpointInfo)
 
-    /// The outcome was decided.
+    /// The checkpoint was resolved and the outcome was returned.
     func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult)
 
     /// A checkpoint-presented paywall finished.
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, result: CheckpointPaywallResult)
+    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome)
 
 }
 
@@ -258,7 +258,7 @@ import Foundation
     func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
 
     /// Default no-op implementation.
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, result: CheckpointPaywallResult) {}
+    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome) {}
 
 }
 

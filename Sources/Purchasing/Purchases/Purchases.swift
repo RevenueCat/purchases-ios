@@ -1062,9 +1062,10 @@ public extension Purchases {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
-    /// Registers that a checkpoint was reached.
+    /// Registers that a checkpoint was hit.
     ///
-    /// Depending on the configured targeting rules, this may present an experience or do nothing.
+    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
+    /// The call resolves when the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
     ///   - params: Optional per-call parameters.
@@ -1082,9 +1083,10 @@ public extension Purchases {
         )
     }
 
-    /// Registers that a checkpoint was reached.
+    /// Registers that a checkpoint was hit.
     ///
-    /// Depending on the configured targeting rules, this may present an experience or do nothing.
+    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
+    /// The call resolves when the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
     ///   - params: Optional per-call parameters.
