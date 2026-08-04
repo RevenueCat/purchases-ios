@@ -124,6 +124,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
+    /// Global listener for checkpoint activity.
+    @_spi(Internal) public var checkpointListener: CheckpointListener? {
+        get { self.purchasesOrchestrator.checkpointListener }
+        set { self.purchasesOrchestrator.checkpointListener = newValue }
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -1054,6 +1060,42 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    /// Registers that a checkpoint was reached.
+    ///
+    /// Depending on the configured targeting rules, this may present an experience or do nothing.
+    /// - Parameters:
+    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
+    ///   - params: Optional per-call parameters.
+    ///   - completion: Called with the result, or an error if the checkpoint could not be handled.
+    @_spi(Internal)
+    func checkpoint(
+        _ identifier: String,
+        params: CheckpointParams = .init(),
+        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+    ) {
+        self.purchasesOrchestrator.checkpoint(
+            identifier: identifier,
+            params: params,
+            completion: completion
+        )
+    }
+
+    /// Registers that a checkpoint was reached.
+    ///
+    /// Depending on the configured targeting rules, this may present an experience or do nothing.
+    /// - Parameters:
+    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
+    ///   - params: Optional per-call parameters.
+    /// - Returns: The result for this checkpoint.
+    /// - Throws: An error if the checkpoint could not be handled.
+    @_spi(Internal)
+    func checkpoint(
+        _ identifier: String,
+        params: CheckpointParams = .init()
+    ) async throws -> CheckpointResult {
+        return try await self.purchasesOrchestrator.checkpoint(identifier: identifier, params: params)
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

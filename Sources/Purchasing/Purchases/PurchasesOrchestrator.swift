@@ -77,6 +77,7 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
+    private let checkpointsManager: CheckpointsManager
 
     let notificationCenter: NotificationCenter
 
@@ -240,6 +241,7 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+         checkpointsManager: CheckpointsManager = CheckpointsManager(),
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {
@@ -266,10 +268,32 @@ final class PurchasesOrchestrator {
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
+        self.checkpointsManager = checkpointsManager
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
+    }
+
+    var checkpointListener: CheckpointListener? {
+        get { self.checkpointsManager.checkpointListener }
+        set { self.checkpointsManager.checkpointListener = newValue }
+    }
+
+    func checkpoint(
+        identifier: String,
+        params: CheckpointParams?,
+        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+    ) {
+        self.checkpointsManager.checkpoint(
+            identifier: identifier,
+            params: params,
+            completion: completion
+        )
+    }
+
+    func checkpoint(identifier: String, params: CheckpointParams?) async throws -> CheckpointResult {
+        return try await self.checkpointsManager.checkpoint(identifier: identifier, params: params)
     }
 
     deinit {

@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -35,6 +35,7 @@ func checkPurchasesAPI() {
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
     checkRewardVerificationAPI(purchases: purch)
+    checkCheckpointAPI(purch)
 
     let _: Attribution = purch.attribution
 
@@ -326,6 +327,10 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
+        let _: CheckpointResult = try await purchases.checkpoint(
+            "test_checkpoint",
+            params: CheckpointParams(customProperties: ["name": "Rick"])
+        )
 
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
@@ -398,6 +403,56 @@ private func checkAsyncMethods(purchases: Purchases) async {
 
         let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
     } catch {}
+}
+
+private final class CheckpointListenerAPITester: CheckpointListener {
+
+    func onCheckpointHit(_ checkpoint: CheckpointInfo) {
+        let _: String = checkpoint.identifier
+        let _: CheckpointParams = checkpoint.params
+    }
+
+    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
+        let _: CheckpointInfo = result.checkpoint
+
+        if let presented = result as? CheckpointPaywallPresentedResult {
+            let _: CheckpointPaywallResult = presented.paywallResult
+        } else if let noAction = result as? CheckpointNoActionResult {
+            let _: CheckpointNoActionReason = noAction.reason
+        }
+    }
+
+    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, result: CheckpointPaywallResult) {
+        if let purchased = result as? CheckpointPaywallPurchasedResult {
+            let _: CustomerInfo = purchased.customerInfo
+        } else if let restored = result as? CheckpointPaywallRestoredResult {
+            let _: CustomerInfo = restored.customerInfo
+        } else if let error = result as? CheckpointPaywallErrorResult {
+            let _: PublicError = error.error
+        }
+    }
+
+}
+
+private func checkCheckpointAPI(_ purchases: Purchases) {
+    purchases.checkpointListener = CheckpointListenerAPITester()
+    let _: CheckpointListener? = purchases.checkpointListener
+
+    purchases.checkpoint(
+        "test_checkpoint",
+        params: CheckpointParams()
+    ) { (_: Result<CheckpointResult, PublicError>) in }
+
+    purchases.checkpoint(
+        "test_checkpoint",
+        params: ObjCCheckpointParams()
+    ) { (_: ObjCCheckpointResult?, _: PublicError?) in }
+
+    let _: CheckpointNoActionReason = .noMatch
+    let _: CheckpointNoActionReason = .holdout
+    let _: CheckpointNoActionReason = .frequencyCapped
+    let _: CheckpointNoActionReason = .configurationUnavailable
+    let _: CheckpointNoActionReason = .disabled
 }
 
 func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bool {
