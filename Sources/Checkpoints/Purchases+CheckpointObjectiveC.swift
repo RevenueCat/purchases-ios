@@ -7,6 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
+//  Purchases+CheckpointObjectiveC.swift
+//
+//  Created by Rick van der Linden.
+//
 
 import Foundation
 

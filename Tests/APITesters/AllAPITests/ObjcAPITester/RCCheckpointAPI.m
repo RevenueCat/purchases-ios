@@ -7,6 +7,10 @@
 //
 //      https://opensource.org/licenses/MIT
 //
+//  RCCheckpointAPI.m
+//
+//  Created by Rick van der Linden.
+//
 
 @import RevenueCat;
 
