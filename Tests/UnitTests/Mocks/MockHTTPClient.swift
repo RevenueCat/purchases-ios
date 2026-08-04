@@ -86,7 +86,7 @@ class MockHTTPClient: HTTPClient {
          eTagManager: ETagManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         requestTimeout: TimeInterval = 7,
+         networkTimeout: NetworkTimeout = .custom(7),
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
@@ -95,9 +95,10 @@ class MockHTTPClient: HTTPClient {
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout,
+                   networkTimeout: networkTimeout,
                    operationDispatcher: MockOperationDispatcher(),
-                   apiSourceFailover: nil)
+                   apiSourceFailover: nil,
+                   timeoutManager: HTTPRequestTimeoutManager(networkTimeout: networkTimeout))
     }
 
     /// Disables snapshot testing for this mock HTTP client.

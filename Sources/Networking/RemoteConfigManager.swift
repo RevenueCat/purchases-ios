@@ -298,10 +298,15 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     /// ID over the provider value, so a request is either created for the cleared identity or treated as stale later.
     private var identityBoundAppUserID: String?
 
-    /// In-memory staleness marker. Only successful `200` and `204` responses mark the config fresh.
+    /// Client-clock time when this process last completed a successful `200` or `204` refresh.
+    ///
+    /// This is memory-only and is compared with `dateProvider.now()` to decide when the local cache is stale.
     private var lastRefreshedAt: Date?
 
-    /// In-memory attempt marker used to avoid hammering the endpoint when a stale refresh keeps failing.
+    /// Client-clock time when this process last attempted a stale-gated refresh.
+    ///
+    /// This is memory-only and drives the local retry cooldown. The configuration stores its main-server request
+    /// time separately for refresh requests.
     private var lastRefreshAttemptAt: Date?
 
     /// Read callers waiting for the current refresh to finish before rereading committed config state.
@@ -347,6 +352,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        guard !self.isDisabled else {
+            Logger.debug(Strings.remoteConfig.refreshSkippedDisabled)
+            return
+        }
+
         let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfNeeded(
             fetchContext: fetchContext,
@@ -357,6 +367,11 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     }
 
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        guard !self.isDisabled else {
+            Logger.debug(Strings.remoteConfig.refreshSkippedDisabled)
+            return
+        }
+
         let appUserID = self.currentUserProvider.currentAppUserID
         guard let requestContext = self.prepareRefreshIfStale(
             fetchContext: fetchContext,
@@ -504,7 +519,9 @@ private extension RemoteConfigManager {
             appUserID: requestContext.requestAppUserID,
             domain: persisted?.domain ?? Self.defaultDomain,
             manifest: persisted?.manifest,
-            prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted)
+            prefetchedBlobs: self.cachedPrefetchedBlobRefs(from: persisted),
+            // Replay the persisted main-server request date.
+            lastRefreshTime: persisted?.lastRefreshTime
         )
 
         Logger.verbose(Strings.remoteConfig.refreshing(
@@ -579,7 +596,11 @@ private extension RemoteConfigManager {
 
         guard let container = fetchResult.container else {
             Logger.debug(Strings.remoteConfig.notModified)
-            self.markRefreshedIfCurrent(requestEpoch)
+            self.markRefreshedIfCurrent(
+                requestEpoch,
+                previous: previous,
+                requestDate: fetchResult.requestDate
+            )
             return
         }
 
@@ -593,14 +614,17 @@ private extension RemoteConfigManager {
 
             self.lock.perform {
                 guard self.epoch == requestEpoch else { return }
+                // Prefer this response's main-server request date, carrying forward the persisted value as needed.
+                let lastRefreshTime = fetchResult.requestDate ?? previous?.lastRefreshTime
                 let didPersist = self.persist(
                     container: container,
                     previous: previous,
-                    response: response
+                    response: response,
+                    lastRefreshTime: lastRefreshTime
                 )
                 if didPersist {
                     self.generation += 1
-                    self.markRefreshed()
+                    self.markRefreshed(at: self.dateProvider.now())
                 }
             }
         } catch {
@@ -683,14 +707,16 @@ private extension RemoteConfigManager {
 
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
+            // Keep the persisted refresh time associated with main API responses.
             let didPersist = self.persist(
                 container: nil,
                 previous: previous,
-                response: fallbackResult.configuration
+                response: fallbackResult.configuration,
+                lastRefreshTime: previous?.lastRefreshTime
             )
             if didPersist {
                 self.generation += 1
-                self.markRefreshed()
+                self.markRefreshed(at: self.dateProvider.now())
             }
         }
     }
@@ -723,7 +749,11 @@ private extension RemoteConfigManager {
             self.onRemoteConfigDisabled?()
         }
 
-        Logger.error(Strings.remoteConfig.refreshFailed(error))
+        if shouldDisableRefresh && error.isRemoteConfigDisablingClientError {
+            Logger.error(Strings.remoteConfig.disablingRefresh(error))
+        } else {
+            Logger.error(Strings.remoteConfig.refreshFailed(error))
+        }
     }
 
     func disableRefreshIfNeeded(for error: BackendError) -> Bool {
@@ -741,19 +771,30 @@ private extension RemoteConfigManager {
         }
     }
 
-    func markRefreshedIfCurrent(_ requestEpoch: Int) {
+    func markRefreshedIfCurrent(
+        _ requestEpoch: Int,
+        previous: PersistedRemoteConfiguration?,
+        requestDate: Date?
+    ) {
         self.lock.perform {
             guard self.epoch == requestEpoch else { return }
 
-            self.markRefreshed()
+            // A response request date advances the persisted main-server time.
+            if let previous, let requestDate {
+                self.diskCache.write(previous.withLastRefreshTime(requestDate))
+            }
+            // Local staleness starts when this response lands, independently of the server timestamp above.
+            self.markRefreshed(at: self.dateProvider.now())
         }
     }
 
-    /// Records a landed refresh: stamps the refresh time and marks the session's initial config as committed, so
-    /// later refreshes stop being forced to `.appStart`. Must be called within `lock`.
-    func markRefreshed() {
+    /// Records a landed refresh using the client clock and marks the session's initial config as committed, so later
+    /// refreshes stop being forced to `.appStart`. This timestamp drives local staleness; the main-server request
+    /// timestamp is persisted separately. Must be called within `lock`.
+    func markRefreshed(at date: Date) {
         self.hasCommittedInitialConfig = true
-        self.lastRefreshedAt = self.dateProvider.now()
+        self.lastRefreshedAt = date
+        self.lastRefreshAttemptAt = nil
     }
 
     /// Waits for committed config state to become available for read APIs.
@@ -931,7 +972,8 @@ private extension RemoteConfigManager {
     func persist(
         container: RemoteConfigContainer?,
         previous: PersistedRemoteConfiguration?,
-        response: RemoteConfiguration
+        response: RemoteConfiguration,
+        lastRefreshTime: Date?
     ) -> Bool {
         Logger.debug(Strings.remoteConfig.receivedConfiguration(
             activeTopics: response.activeTopics, changedTopics: Array(response.topics.entries.keys)
@@ -951,7 +993,8 @@ private extension RemoteConfigManager {
             manifest: response.manifest,
             activeTopics: response.activeTopics,
             prefetchBlobs: response.prefetchBlobs,
-            topics: postSyncTopics
+            topics: postSyncTopics,
+            lastRefreshTimeMilliseconds: lastRefreshTime?.millisecondsSince1970
         )
 
         guard self.diskCache.write(persistedConfiguration) else { return false }

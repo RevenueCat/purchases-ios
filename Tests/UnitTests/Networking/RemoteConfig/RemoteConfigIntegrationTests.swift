@@ -24,6 +24,7 @@ final class RemoteConfigIntegrationTests: TestCase {
     private var blobStore: RemoteConfigBlobStore!
     private var sourceProvider: RemoteConfigSourceProvider!
     private var downloader: MockIntegrationBlobDownloader!
+    private var dateProvider: MockCurrentDateProvider!
     private var remoteConfigAPI: RemoteConfigAPI!
     private var manager: RemoteConfigManager!
 
@@ -55,6 +56,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
         self.sourceProvider = RemoteConfigSourceProvider(topicStore: self.diskCache)
         self.downloader = MockIntegrationBlobDownloader()
+        self.dateProvider = MockCurrentDateProvider()
         self.systemInfo = MockSystemInfo(finishTransactions: false)
         self.httpClient = MockHTTPClient(
             systemInfo: self.systemInfo,
@@ -82,6 +84,7 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         self.manager = nil
         self.remoteConfigAPI = nil
+        self.dateProvider = nil
         self.downloader = nil
         self.sourceProvider = nil
         self.blobStore = nil
@@ -431,6 +434,71 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(self.blobStore.cachedRefs()).to(beEmpty())
     }
 
+    func testFirstRequestDoesNotSendLastRefreshTimeHeader() async {
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+    }
+
+    func testRequestSendsLastRefreshTimeHeaderAfterSuccessfulConfigIsStored() async throws {
+        let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let serverRequestTime = Date(timeIntervalSince1970: 50)
+
+        await self.refresh(with: container, requestDate: serverRequestTime)
+
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+
+        expect(self.remoteConfigCalls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls.last?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
+            == serverRequestTime.millisecondsSince1970.description
+    }
+
+    func testNoContentResponseAdvancesLastRefreshTimeHeader() async throws {
+        let container = try Self.containerData(topics: Self.workflowTopic(ref: "unused"))
+        let firstServerRequestTime = Date(timeIntervalSince1970: 50)
+        self.dateProvider.advance(by: 100)
+        await self.refresh(with: container, requestDate: firstServerRequestTime)
+
+        let secondServerRequestTime = Date(timeIntervalSince1970: 75)
+        self.dateProvider.advance(by: 123)
+        self.mockRemoteConfigResponse(
+            statusCode: .noContent,
+            body: Data(),
+            requestDate: secondServerRequestTime
+        )
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+        await self.waitForStoredRefreshTime(75_000)
+
+        self.manager.refreshRemoteConfig(fetchContext: .foreground, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(3)
+
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "50000"
+        expect(self.remoteConfigCalls[2].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]) == "75000"
+    }
+
+    func testErrorResponseDoesNotAddLastRefreshTimeHeader() async {
+        self.mockRemoteConfigError(Self.serverError)
+        self.mockRemoteConfigFallbackError(Self.serverError)
+
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(1)
+        await self.waitForRemoteConfigFallbackRequestCount(1)
+
+        self.mockRemoteConfigResponse(statusCode: .noContent, body: Data())
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        await self.waitForRemoteConfigRequestCount(2)
+
+        expect(self.remoteConfigCalls[0].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+        expect(self.remoteConfigCalls[1].headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
+    }
+
     func testInformationalFailedVerificationStillPersistsResponse() async throws {
         let blob = #"{"workflow":"informational"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
@@ -571,6 +639,13 @@ private extension RemoteConfigIntegrationTests {
         )
     }
 
+    static var serverError: NetworkError {
+        return .errorResponse(
+            .init(code: .unknownError, originalCode: BackendErrorCode.unknownError.rawValue),
+            .internalServerError
+        )
+    }
+
     func createManager(blobStore: RemoteConfigBlobStoreType) -> RemoteConfigManager {
         return RemoteConfigManager(
             remoteConfigAPI: self.remoteConfigAPI,
@@ -581,15 +656,21 @@ private extension RemoteConfigIntegrationTests {
                 sourceProvider: self.sourceProvider,
                 downloader: self.downloader
             ),
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "integration-test-user")
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "integration-test-user"),
+            dateProvider: self.dateProvider
         )
     }
 
     func refresh(
         with body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil
     ) async {
-        self.mockRemoteConfigResponse(body: body, verificationResult: verificationResult)
+        self.mockRemoteConfigResponse(
+            body: body,
+            verificationResult: verificationResult,
+            requestDate: requestDate
+        )
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
         await self.waitForRemoteConfigRequestCount(1)
@@ -615,11 +696,21 @@ private extension RemoteConfigIntegrationTests {
     func mockRemoteConfigResponse(
         statusCode: HTTPStatusCode = .success,
         body: Data,
-        verificationResult: VerificationResult = .verified
+        verificationResult: VerificationResult = .verified,
+        requestDate: Date? = nil
     ) {
+        let responseHeaders: HTTPResponse.Headers = [
+            HTTPClient.ResponseHeader.requestDate.rawValue:
+                requestDate?.millisecondsSince1970.description
+        ].compactMapValues { $0 }
         self.httpClient.mock(
             requestPath: HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain),
-            response: .init(statusCode: statusCode, body: body, verificationResult: verificationResult)
+            response: .init(
+                statusCode: statusCode,
+                body: body,
+                responseHeaders: responseHeaders,
+                verificationResult: verificationResult
+            )
         )
     }
 
@@ -641,10 +732,21 @@ private extension RemoteConfigIntegrationTests {
         )
     }
 
+    func mockRemoteConfigFallbackError(_ error: NetworkError) {
+        self.httpClient.mock(
+            requestPath: HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain),
+            response: .init(error: error)
+        )
+    }
+
     var remoteConfigRequestCount: Int {
+        return self.remoteConfigCalls.count
+    }
+
+    var remoteConfigCalls: [MockHTTPClient.Call] {
         return self.httpClient.calls.filter {
             $0.request.path.url == HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
-        }.count
+        }
     }
 
     var remoteConfigFallbackRequestCount: Int {
@@ -682,6 +784,15 @@ private extension RemoteConfigIntegrationTests {
     ) async {
         await expect(file: file, line: line, self.diskCache.read()?.manifest)
             .toEventually(equal(manifest), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
+    }
+
+    func waitForStoredRefreshTime(
+        _ milliseconds: UInt64,
+        file: FileString = #filePath,
+        line: UInt = #line
+    ) async {
+        await expect(file: file, line: line, self.diskCache.read()?.lastRefreshTimeMilliseconds)
+            .toEventually(equal(milliseconds), timeout: Self.pollTimeout, pollInterval: Self.pollInterval)
     }
 
     /// Waits until the blob store reflects the expected refs.

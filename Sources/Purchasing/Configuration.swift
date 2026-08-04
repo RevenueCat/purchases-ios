@@ -52,7 +52,7 @@ import Foundation
         let userDefaults: UserDefaults?
         let storeKitVersion: StoreKitVersion
         let dangerousSettings: DangerousSettings?
-        let networkTimeout: TimeInterval
+        let networkTimeout: NetworkTimeout
         let storeKit1Timeout: TimeInterval
         let platformInfo: Purchases.PlatformInfo?
         let entitlementVerificationMode: EntitlementVerificationMode
@@ -74,7 +74,7 @@ import Foundation
     var userDefaults: UserDefaults? { self.storage.userDefaults }
     var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
     var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
-    var networkTimeout: TimeInterval { self.storage.networkTimeout }
+    var networkTimeout: NetworkTimeout { self.storage.networkTimeout }
     var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
     var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
     var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
@@ -146,7 +146,7 @@ import Foundation
         private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
-        private(set) var networkTimeout = Configuration.networkTimeoutDefault
+        private(set) var networkTimeout: NetworkTimeout = .default
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
@@ -255,7 +255,7 @@ import Foundation
 
         /// Set `networkTimeout`.
         @objc public func with(networkTimeout: TimeInterval) -> Builder {
-            self.networkTimeout = clamped(timeout: networkTimeout)
+            self.networkTimeout = .custom(clamped(timeout: networkTimeout))
             return self
         }
 

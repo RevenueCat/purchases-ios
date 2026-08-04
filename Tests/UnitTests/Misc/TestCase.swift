@@ -101,12 +101,18 @@ extension ForceServerErrorStrategy {
 
     /// Forces server error in all requests, including requests made to the fallback API hosts.
     static let allServersDown: ForceServerErrorStrategy = .init { _ in
-        return true // All requests fail
+        return .defaultServerError
     }
 
     /// Forces server error in all requests except those made to the fallback API hosts.
     static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
-        return !request.isRequestToFallbackUrl
+        return request.isRequestToFallbackUrl ? .performRequest : .defaultServerError
+    }
+
+    /// Forces server error by pointing all requests to an unreachable address.
+    static let noNetwork: ForceServerErrorStrategy = .init { _ in
+        // swiftlint:disable:next force_unwrapping
+        return .serverErrorURL(URL(string: "http://localhost:100/unreachable-address")!)
     }
 
 }
@@ -116,12 +122,5 @@ extension HTTPClient.Request {
     var isRequestToFallbackUrl: Bool {
         return self.fallbackUrlIndex != nil
     }
-
-    /// Forces server error by pointing to an unreachable address.
-    static let noNetwork = ForceServerErrorStrategy(
-        // swiftlint:disable:next force_unwrapping
-        serverErrorURL: URL(string: "http://localhost:100/unreachable-address")!,
-        shouldForceServerError: { _ in true }
-    )
 
 }

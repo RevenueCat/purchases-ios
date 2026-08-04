@@ -339,7 +339,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      responseVerificationMode: Signing.ResponseVerificationMode,
                      storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
-                     networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+                     networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
@@ -408,6 +408,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
+        // One instance for every request kind that consults the per-host fail-fast memory: both backend
+        // HTTPClients and the blob downloader.
+        let requestTimeoutManager = HTTPRequestTimeoutManager(networkTimeout: networkTimeout)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -422,7 +426,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker,
-            apiSourceProvider: apiSourceProvider
+            apiSourceProvider: apiSourceProvider,
+            timeoutManager: requestTimeoutManager
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -510,7 +515,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             let blobStore = RemoteConfigBlobStore()
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: apiSourceProvider
+                sourceProvider: apiSourceProvider,
+                downloader: URLSessionRemoteConfigBlobDownloader(timeoutManager: requestTimeoutManager)
             )
 
             return RemoteConfigManager(
@@ -1151,7 +1157,13 @@ public extension Purchases {
         }
 
         self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .read,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            }
         })
     }
 
@@ -2194,7 +2206,7 @@ public extension Purchases {
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
-        networkTimeout: TimeInterval,
+        networkTimeout: NetworkTimeout,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
@@ -2434,7 +2446,7 @@ extension Purchases {
     }
 
     // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
-    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
+    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
         return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
@@ -2593,6 +2605,12 @@ internal extension Purchases {
 
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
+    }
+
+    /// The timeout the shared request timeout manager hands out for a request that can't be reduced by the
+    /// per-host memory, which is the configured network timeout whenever the developer customized it.
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.backend.requestTimeoutManagerBaseTimeout
     }
 
     var storeKitTimeout: TimeInterval {

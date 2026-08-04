@@ -50,6 +50,13 @@ protocol HTTPRequestPath {
     /// list with failover) rather than the static `serverHostURL`.
     var usesAPISources: Bool { get }
 
+    /// Whether this path's `serverHostURL` is a fallback host rather than the main API host.
+    ///
+    /// Requests to such a path are fallback attempts from the very first try, even though
+    /// `HTTPClient`'s own fallback walk never started, so they must not be treated as main-source
+    /// requests when picking a timeout or updating the per-host fail-fast memory.
+    var isFallbackHostPath: Bool { get }
+
     /// Additional headers specific to this endpoint.
     var additionalHeaders: HTTPRequest.Headers { get }
 
@@ -100,6 +107,10 @@ extension HTTPRequestPath {
     }
 
     var usesAPISources: Bool {
+        return false
+    }
+
+    var isFallbackHostPath: Bool {
         return false
     }
 
@@ -508,6 +519,13 @@ extension HTTPRequest.FallbackPath: HTTPRequestPath {
 
     // swiftlint:disable:next force_unwrapping
     static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+    var isFallbackHostPath: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
 
     var authenticated: Bool {
         switch self {

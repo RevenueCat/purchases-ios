@@ -115,6 +115,9 @@ private struct NonLocalizedMarkdownText: View {
     @Environment(\.openURL)
     private var parentOpenURL
 
+    @Environment(\.urlOpenedNotifier)
+    private var urlOpenedNotifier
+
     let text: String
     let font: Font
     let fontWeight: Font.Weight
@@ -167,9 +170,15 @@ private struct NonLocalizedMarkdownText: View {
                             url: url
                         ))
 #if os(watchOS)
+                        // watchOS doesn't report whether opening succeeded, so we notify right away.
                         self.parentOpenURL(url)
+                        self.urlOpenedNotifier(url)
 #else
-                        self.parentOpenURL(url) { _ in }
+                        self.parentOpenURL(url) { success in
+                            if success {
+                                self.urlOpenedNotifier(url)
+                            }
+                        }
 #endif
                         return .handled
                     })
