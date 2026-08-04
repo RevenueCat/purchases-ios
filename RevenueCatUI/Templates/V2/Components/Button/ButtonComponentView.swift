@@ -112,6 +112,9 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
+            .applyIfLet(self.viewModel.derivedAccessibilityLabel, apply: { view, label in
+                view.accessibilityLabel(label)
+            })
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)

@@ -30,6 +30,12 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    /// Whether this component renders anything a screen reader can announce. An empty base string
+    /// still counts when overrides exist, since an override can supply text of its own.
+    var announcesText: Bool {
+        return !self.text.isEmpty || self.presentedOverrides != nil
+    }
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,

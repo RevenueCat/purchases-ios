@@ -117,6 +117,51 @@ class ButtonComponentViewModel {
         case .unknown:
             self.action = .unknown
         }
+
+        self.derivedAccessibilityLabel = Self.deriveAccessibilityLabel(
+            action: self.action,
+            stackViewModel: stackViewModel,
+            localizationProvider: localizationProvider
+        )
+    }
+
+    /// A screen reader label for buttons that announce nothing on their own, like an icon-only
+    /// close button. `nil` when the button already announces something, or when the action's
+    /// meaning is opaque to us.
+    let derivedAccessibilityLabel: String?
+
+    private static func deriveAccessibilityLabel(
+        action: Action,
+        stackViewModel: StackComponentViewModel,
+        localizationProvider: LocalizationProvider
+    ) -> String? {
+        let key: String?
+        switch action {
+        case .navigateBack, .closeWorkflow:
+            key = "Close"
+        case .restorePurchases:
+            key = "Restore purchases"
+        case .navigateTo(.privacyPolicy):
+            key = "Privacy policy"
+        case .navigateTo(.terms):
+            key = "Terms and conditions"
+        case .navigateTo(.customerCenter):
+            key = "Manage subscription"
+        case .navigateTo(.offerCodeRedemptionSheet):
+            key = "Redeem code"
+        case .navigateTo(.url), .navigateTo(.webPaywallLink), .navigateTo(.unknown),
+             .sheet, .workflowTrigger, .unknown:
+            key = nil
+        }
+
+        // Checked last: walking the stack is the expensive part, and it only matters once we know
+        // there is a label to suppress.
+        guard let key, !stackViewModel.containsAnnounceableContent else {
+            return nil
+        }
+
+        return Localization.localizedBundle(localizationProvider.locale)
+            .localizedString(forKey: key, value: nil, table: nil)
     }
 
     var hasUnknownAction: Bool {
