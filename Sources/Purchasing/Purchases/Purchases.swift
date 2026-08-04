@@ -1865,26 +1865,6 @@ extension Purchases {
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
     /// - Important: This method only takes effect after `Purchases` has been configured.
-    @objc public func overridePreferredUILocale(_ locale: String?) {
-        guard locale != self.systemInfo.preferredLocaleOverride else {
-            return
-        }
-
-        self.systemInfo.overridePreferredLocale(locale)
-
-        if self.overridePreferredUILocaleRateLimiter.shouldProceed() {
-            // Refetches new offerings with preferred locale
-            self.offeringsManager.clearInMemoryOfferingsCache()
-            self.getOfferings(fetchPolicy: .default) { _, _ in
-                // No-op
-            }
-        } else {
-            Logger.debug(Strings.offering.override_preferred_locale_rate_limited(
-                maxCalls: self.overridePreferredUILocaleRateLimiter.maxCalls,
-                periodSeconds: Int(self.overridePreferredUILocaleRateLimiter.period)
-            ))
-        }
-    }
 }
 
 // MARK: Configuring Purchases
