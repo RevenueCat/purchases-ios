@@ -1325,29 +1325,20 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_leads_with_breaks_when_there_are_any
     breaks = [{ reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" }]
 
-    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_api_count: 3)
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
 
     assert message.start_with?(":warning: *Breaking public API changes*")
     assert_includes message, "<url|#42> Some PR"
-    assert_includes message, "removed in CustomerInfo"
+    assert_includes message, "1 potential break"
   end
 
   def test_slack_summary_leads_with_new_api_when_nothing_breaks
-    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_api_count: 2)
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
 
     assert message.start_with?(":sparkles: *New public API*")
-    assert_includes message, "2 declarations changed"
+    assert_includes message, "2 new declarations"
   end
 
-  def test_slack_summary_truncates_long_break_lists
-    breaks = (1..15).map { |i| { reason: :removed, owner: nil, declaration: "public func gone#{i}()" } }
-
-    message = ApiDiffHelper.slack_summary(breaks, [], source: nil, new_api_count: 0)
-
-    assert_includes message, "gone10()"
-    refute_includes message, "gone11()"
-    assert_includes message, "... and 5 more"
-  end
 
   def test_slack_request_supports_webhook_or_bot_token
     webhook = ApiDiffHelper.slack_post_request("hi", webhook_url: "https://hooks.example/abc")
@@ -1401,6 +1392,43 @@ class ApiDiffHelperTest < Minitest::Test
     assert_includes updated, "### RevenueCatUI", "the other module's section must remain"
     assert_equal 1, updated.scan("### RevenueCat\n").count
     assert_equal 1, updated.scan(ApiDiffHelper.api_diff_section_open("RevenueCat")).count
+  end
+
+
+  # The message said "9 declarations changed" for a single method, because it counted reports
+  # (one per platform) instead of declarations.
+  def test_added_declarations_counts_declarations_not_platforms
+    reports = ApiDiffHelper::PLATFORM_CHECKS.each_with_object({}) do |platform, acc|
+      target = "RevenueCat #{platform[:name]}"
+      acc[target] = <<~REPORT
+        # 👀 1 public change detected
+
+        ---
+        ## `#{target}`
+        ### `RevenueCat.Purchases`
+        #### ❇️ Added
+        ```swift
+        @objc
+        final public func apiDiffDemoPing() -> Swift.String
+        ```
+      REPORT
+    end
+
+    declarations = ApiDiffHelper.added_declarations(reports)
+
+    assert_equal ["final public func apiDiffDemoPing() -> Swift.String"], declarations,
+                 "one declaration on nine platforms is one declaration"
+  end
+
+  def test_added_declarations_ignores_unchanged_targets
+    assert_empty ApiDiffHelper.added_declarations({ "RevenueCat iOS" => NO_CHANGES_OUTPUT })
+  end
+
+  def test_slack_summary_names_the_new_api
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7355>", new_declarations: ["final public func apiDiffDemoPing() -> Swift.String"])
+
+    assert_includes message, "1 new declaration"
+    refute_includes message, "apiDiffDemoPing", "Slack stays a ping; the detail belongs in the PR comment"
   end
 
   private

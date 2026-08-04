@@ -557,9 +557,23 @@ module ApiDiffHelper
     platforms.join(", ")
   end
 
+  # The same declaration is reported once per platform, so counting reports counts platforms,
+  # not API. Deduplicating by the declaration itself is what makes "1 new declaration" read
+  # as 1 rather than 9.
+  def added_declarations(reports_by_target)
+    reports_by_target.values.compact.flat_map do |report|
+      next [] unless api_changes_reported?(report)
+
+      parse_report(report).select { |change| change.kind == :added }
+                          .map { |change| significant_first_line(change.declaration) }
+    end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
+  end
+
   # Slack renders neither the report's HTML table nor its long code blocks, so the message is
   # derived rather than forwarded.
-  def slack_summary(breaks, labels, source:, new_api_count:)
+  # A ping, not a report: headline, the PR link, and counts. The detail lives in the PR
+  # comment, which is one click away.
+  def slack_summary(breaks, labels, source:, new_declarations: [])
     headline = if breaks.any?
                  gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
                else
@@ -569,18 +583,15 @@ module ApiDiffHelper
     lines = [headline]
     lines << source unless source.to_s.empty?
 
-    breaks.first(MAX_DECLARATIONS_PER_TARGET).each do |change|
-      owner = change[:owner] ? " in #{change[:owner]}" : ""
-      lines << "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: `#{change[:declaration]}`"
-    end
-    remaining = breaks.count - MAX_DECLARATIONS_PER_TARGET
-    lines << "- ... and #{remaining} more" if remaining > 0
+    counts = []
+    counts << "#{breaks.count} potential break#{'s' if breaks.count != 1}" if breaks.any?
+    # Counted per declaration, not per report: the same declaration appears once per platform.
+    counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
+    lines << counts.join(", ") if counts.any?
 
-    lines << "#{new_api_count} declaration#{'s' if new_api_count != 1} changed in total." if new_api_count > 0
     lines.join("\n")
   end
 
-  MAX_DECLARATIONS_PER_TARGET = 10
 
   # Either an incoming webhook, which carries its own channel, or a bot token with an
   # explicit channel, so the notification can use whichever Slack credential CI already has.

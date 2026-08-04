@@ -2596,7 +2596,7 @@ platform :ios do
         breaks,
         options[:labels],
         source: api_gate_pr_link,
-        new_api_count: changed_targets.count
+        new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target])
       ),
       webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
       bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
