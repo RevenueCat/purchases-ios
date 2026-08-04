@@ -27,23 +27,28 @@ module Fastlane
         UI.user_error!("xcresulttool did not produce #{manifest_path}") unless File.exist?(manifest_path)
 
         manifest = JSON.parse(File.read(manifest_path))
-        attachments = collect_attachments(manifest)
+        test_attachments = collect_test_attachments(manifest)
         exported_images = 0
 
-        attachments.each do |attachment|
-          exported_file_name = attachment["exportedFileName"]
-          suggested_name = attachment["suggestedHumanReadableName"]
-          next unless exported_file_name && suggested_name
+        test_attachments.each do |test_attachment|
+          test_identifier = test_attachment["testIdentifier"]
+          UI.user_error!("XCResult attachment group is missing its test identifier") unless test_identifier
 
-          source = File.join(export_dir, exported_file_name)
-          next unless File.file?(source) && File.extname(source).casecmp?(".png")
+          Array(test_attachment["attachments"]).each do |attachment|
+            exported_file_name = attachment["exportedFileName"]
+            suggested_name = attachment["suggestedHumanReadableName"]
+            next unless exported_file_name && suggested_name
 
-          destination_name = snapshot_file_name(suggested_name)
-          destination = File.join(output_dir, destination_name)
-          UI.user_error!("Multiple Preview snapshots have the name '#{destination_name}'") if File.exist?(destination)
+            source = File.join(export_dir, exported_file_name)
+            next unless File.file?(source) && File.extname(source).casecmp?(".png")
 
-          FileUtils.mv(source, destination)
-          exported_images += 1
+            destination_name = snapshot_file_name(test_identifier, suggested_name)
+            destination = File.join(output_dir, destination_name)
+            UI.user_error!("Multiple Preview snapshots have the name '#{destination_name}'") if File.exist?(destination)
+
+            FileUtils.mv(source, destination)
+            exported_images += 1
+          end
         end
 
         FileUtils.rm_rf(export_dir)
@@ -52,24 +57,31 @@ module Fastlane
         UI.message("Extracted #{exported_images} PNG attachments from #{xcresult_path}")
       end
 
-      def self.collect_attachments(value, attachments = [])
+      def self.collect_test_attachments(value, test_attachments = [])
         case value
         when Hash
-          if value.key?("exportedFileName") && value.key?("suggestedHumanReadableName")
-            attachments << value
+          if value.key?("testIdentifier") && value.key?("attachments")
+            test_attachments << value
           else
-            value.each_value { |child| collect_attachments(child, attachments) }
+            value.each_value { |child| collect_test_attachments(child, test_attachments) }
           end
         when Array
-          value.each { |child| collect_attachments(child, attachments) }
+          value.each { |child| collect_test_attachments(child, test_attachments) }
         end
 
-        attachments
+        test_attachments
       end
 
-      def self.snapshot_file_name(suggested_name)
-        base_name = suggested_name.sub(/\.png\z/i, "")
-        sanitized_name = base_name
+      def self.snapshot_file_name(test_identifier, suggested_name)
+        # xcresulttool appends an attachment index and a per-run UUID to suggestedHumanReadableName.
+        # Use the XCTest identifier for uniqueness, but remove SnapshotPreviews' final global test index
+        # so inserting a Preview elsewhere in the suite does not rename every subsequent snapshot.
+        stable_test_identifier = test_identifier.sub(/-\d+\(\)\z/, "")
+        stable_attachment_name = suggested_name
+                                 .sub(/\.png\z/i, "")
+                                 .sub(/_\d+_[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z/i, "")
+        stable_name = "#{stable_test_identifier}__#{stable_attachment_name}"
+        sanitized_name = stable_name
                          .gsub(/[\\\/]/, "__")
                          .gsub(/[^0-9A-Za-z._() -]/, "_")
                          .gsub(/\s+/, " ")
