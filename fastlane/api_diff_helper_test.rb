@@ -91,7 +91,7 @@ class ApiDiffHelperTest < Minitest::Test
                  "expected exactly two revenuecat/install-public-api-diff steps in .circleci/default_config.yml, " \
                  "found #{versions.length}"
     versions.each do |version|
-      assert_equal ApiDiffHelper::PUBLIC_API_DIFF_VERSION, version
+      assert_equal ApiDiffHelper::PUBLIC_API_DIFF_REF, version
     end
   end
 
@@ -1447,6 +1447,37 @@ class ApiDiffHelperTest < Minitest::Test
                  "reading the labels must degrade, not raise")
     assert_operator gate.index("upsert_api_diff_comment"), :>, gate.index("pr_labels_for_api_gate"),
                     "labels are read before publishing, so the read must not be able to abort it"
+  end
+
+
+  # --- Attribute additions: allowlist, not denylist ---
+
+  def modification_adding(attribute)
+    "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Added attribute `#{attribute}`\n*/"
+  end
+
+  # These used to slip through: the old check exempted every addition except unavailable and
+  # obsoleted, so anything nobody had thought about was waved through.
+  def test_constraining_attribute_additions_are_breaking
+    ["@MainActor", "@available(iOS 17.0, *)", "@available(*, unavailable)",
+     "@available(iOS, obsoleted: 13.0)", "@SomeFutureAttribute"].each do |attribute|
+      refute ApiDiffHelper.modification_attribute_only?(modification_adding(attribute)),
+             "adding #{attribute} must not be treated as attribute-only"
+    end
+  end
+
+  def test_harmless_attribute_additions_stay_non_breaking
+    ["@objc", "@objc(RCThing)", "@discardableResult", "@inlinable",
+     '@available(*, deprecated, message: "use somethingElse")'].each do |attribute|
+      assert ApiDiffHelper.modification_attribute_only?(modification_adding(attribute)),
+             "adding #{attribute} is additive and must stay non-breaking"
+    end
+  end
+
+  def test_removing_an_allowlisted_attribute_is_still_breaking
+    removal = "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Removed attribute `@objc`\n*/"
+
+    refute ApiDiffHelper.modification_attribute_only?(removal)
   end
 
   private

@@ -185,6 +185,9 @@ module ApiDiffHelper
   # The orb default 0.10.1 has the consolidator bug; fixed upstream in 0.11.0.
   PUBLIC_API_DIFF_VERSION = "0.12.0".freeze
 
+  # A tag can move, so CI checks out the commit that 0.12.0 points at.
+  PUBLIC_API_DIFF_REF = "06620ffe614773a43102ab8052077ae463908b78".freeze
+
   NO_CHANGES_MARKER = "✅ No changes detected".freeze
 
   CHANGES_HEADER_PATTERN = /^#\s.*\d+ public changes? detected/.freeze
@@ -307,8 +310,14 @@ module ApiDiffHelper
 
   ATTRIBUTE_CHANGE_LINE = /\A-\s+(Added|Removed) attribute `([^`]*)`/.freeze
 
-  # Gaining these breaks callers like a removal would; `deprecated` only warns.
-  BREAKING_ATTRIBUTE_ADDITION = /\b(?:unavailable|obsoleted)\b/.freeze
+  # An allowlist, so an attribute nobody thought about counts as breaking rather than slipping
+  # through: @MainActor constrains every caller, and a new @available floor drops platforms.
+  NON_BREAKING_ATTRIBUTE_ADDITIONS = [
+    /\A@objc\b/,
+    /\A@discardableResult\b/,
+    /\A@inlinable\b/,
+    /\A@available\(\s*\*\s*,\s*deprecated\b/
+  ].freeze
 
   # Stripping `@objc` breaks every Obj-C caller, so a removal is never waved through.
   def modification_attribute_only?(declaration)
@@ -329,7 +338,7 @@ module ApiDiffHelper
     verb, attribute = match[1], match[2]
     return false if verb == "Removed"
 
-    !BREAKING_ATTRIBUTE_ADDITION.match?(attribute)
+    NON_BREAKING_ATTRIBUTE_ADDITIONS.any? { |allowed| allowed.match?(attribute) }
   end
 
   TYPE_DECLARATION = /\b(?:actor|class|enum|protocol|struct)\s+([A-Za-z_][A-Za-z0-9_]*)/.freeze

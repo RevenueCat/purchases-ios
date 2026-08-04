@@ -2101,9 +2101,9 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
+      # A commit, not a tag, so the build cannot shift under us. This is 0.12.0.
       - revenuecat/install-public-api-diff:
-          version: "0.12.0"
+          version: "06620ffe614773a43102ab8052077ae463908b78"
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
@@ -2153,9 +2153,9 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # Pinned: the orb default 0.10.1 carries the bug this replaces. Keep in sync with ApiDiffHelper::PUBLIC_API_DIFF_VERSION.
+      # A commit, not a tag, so the build cannot shift under us. This is 0.12.0.
       - revenuecat/install-public-api-diff:
-          version: "0.12.0"
+          version: "06620ffe614773a43102ab8052077ae463908b78"
       - run:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
