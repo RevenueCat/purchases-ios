@@ -19,7 +19,7 @@ extension UInt32 {
     init(littleEndian32Bits data: Data) {
         assert(data.count == 4, "Data needs to be 32bits: \(data)")
 
-        self.init(littleEndian: data.withUnsafeBytes { $0.load(as: UInt32.self) })
+        self.init(littleEndian: data.withUnsafeBytes { $0.loadUnaligned(as: UInt32.self) })
     }
 
     /// - Returns: the `Data` representation as little-endian 32 bits.
