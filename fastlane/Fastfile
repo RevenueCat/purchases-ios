@@ -212,6 +212,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    # Allow overriding the test plan (e.g. RevenueCatUI-UnitTests to skip snapshot
+    # tests on OS versions that don't have reference snapshots yet).
+    test_plan = ENV['REVENUECATUI_TEST_PLAN'] || (generate_snapshots ? "CI-Snapshots" : "CI-RevenueCatUI")
 
     fetch_snapshots
 
@@ -227,7 +230,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        xcargs: "-testPlan #{test_plan}"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`

@@ -17,6 +17,8 @@
       }
     ],
     "maximumTestExecutionTimeAllowance" : 180,
+    "maximumTestRepetitions" : 3,
+    "testRepetitionMode" : "retryOnFailure",
     "testTimeoutsEnabled" : true
   },
   "testTargets" : [
