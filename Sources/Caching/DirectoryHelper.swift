@@ -37,7 +37,35 @@ enum DirectoryHelper {
         return Self.baseUrl(for: directoryType, inAppSpecificDirectory: false)
     }
 
+    #if SDK_CONFIG_BENCHMARK
+    /// Benchmark-only: when set, every SDK disk cache resolves under this root. The standard
+    /// container directories ignore $HOME, so without this override concurrent benchmark
+    /// processes would share (and corrupt) one another's caches in the real user Library.
+    /// Set once at process startup, before any disk access.
+    static var benchmarkBaseDirectoryOverride: URL?
+
+    /// While the override is active, legacy Documents-directory migrations must not run:
+    /// they read, move, and delete files under the real user Documents folder, outside the
+    /// benchmark's sandbox.
+    static var skipsLegacyDocumentsMigrations: Bool {
+        return self.benchmarkBaseDirectoryOverride != nil
+    }
+    #endif
+
     static func baseUrl(for type: DirectoryType, inAppSpecificDirectory: Bool = true) -> URL? {
+        #if SDK_CONFIG_BENCHMARK
+        if let overrideRoot = Self.benchmarkBaseDirectoryOverride {
+            switch type {
+            case .cache:
+                return overrideRoot.appendingPathComponent("caches")
+            #if !os(tvOS)
+            case .applicationSupport:
+                return overrideRoot.appendingPathComponent("application-support")
+            #endif
+            }
+        }
+        #endif
+
         guard let baseDirectory = type.url else {
             return nil
         }

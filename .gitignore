@@ -107,3 +107,7 @@ Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.storekit
 
 # Claude Code
 .claude/
+
+# Python bytecode (e.g. from running the benchmark compare.py)
+__pycache__/
+*.pyc

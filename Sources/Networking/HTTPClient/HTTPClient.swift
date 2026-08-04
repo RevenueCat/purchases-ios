@@ -64,6 +64,9 @@ class HTTPClient {
         config.timeoutIntervalForRequest = networkTimeout.timeoutInterval
         config.timeoutIntervalForResource = networkTimeout.timeoutInterval
         config.urlCache = nil // We implement our own caching with `ETagManager`.
+        #if SDK_CONFIG_BENCHMARK
+        config.protocolClasses = [SimulatedTransportURLProtocol.self]
+        #endif
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
                                   delegateQueue: nil)

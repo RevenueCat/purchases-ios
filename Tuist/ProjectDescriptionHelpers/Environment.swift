@@ -107,6 +107,19 @@ extension Environment {
         return value.isEmpty ? nil : value
     }
 
+    /// Returns the API key to inject into the SDKConfigBenchmarkApp scheme's run environment,
+    /// so the app can be launched directly from Xcode without the XCUITest runner.
+    ///
+    /// Example usage:
+    /// ```bash
+    /// TUIST_BENCH_API_KEY=$(mafdet app api-keys --project-id 5f07e7e3 | jq -r '.[] | select(.app_store_type == "test_store") | .key') \
+    ///   tuist generate SDKConfigBenchmarkApp
+    /// ```
+    public static var benchApiKey: String? {
+        let value = ProcessInfo.processInfo.environment["TUIST_BENCH_API_KEY"] ?? ""
+        return value.isEmpty ? nil : value
+    }
+
     /// Returns extra launch arguments to inject into scheme run actions, enabled by default.
     ///
     /// Example usage:
