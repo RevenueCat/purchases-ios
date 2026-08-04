@@ -19,7 +19,8 @@ enum CheckpointPresenterFactory {
 
     static func makePresenter() -> CheckpointEnginePresenter? {
         if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
-            return CheckpointWorkflowPresenter()
+            // PoC-only: render the bundled JSON registered by CheckpointTester.
+            return DemoCheckpointWorkflowPresenter()
         } else {
             return nil
         }

@@ -282,6 +282,14 @@ final class PurchasesOrchestrator {
         set { self.checkpointsManager.checkpointListener = newValue }
     }
 
+    func setCheckpointWorkflowData(_ workflowDataByIdentifier: [String: Data]) {
+        self.checkpointsManager.setResolver(
+            RegisteredWorkflowCheckpointResolver(
+                workflowDataByIdentifier: workflowDataByIdentifier
+            )
+        )
+    }
+
     func checkpoint(
         identifier: String,
         params: CheckpointParams,

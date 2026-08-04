@@ -21,7 +21,7 @@ import XCTest
 final class CheckpointWorkflowPresenterTests: TestCase {
 
     func testFactoryCreatesPresenterDirectly() {
-        XCTAssertTrue(CheckpointPresenterFactory.makePresenter() is CheckpointWorkflowPresenter)
+        XCTAssertTrue(CheckpointPresenterFactory.makePresenter() is DemoCheckpointWorkflowPresenter)
     }
 
     func testPresenterRejectsAnUnresolvedPresentation() {

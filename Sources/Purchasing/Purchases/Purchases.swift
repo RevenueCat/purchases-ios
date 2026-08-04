@@ -130,6 +130,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.purchasesOrchestrator.checkpointListenerInternal = newValue }
     }
 
+    /// Supplies JSON workflow data for checkpoint presentation.
+    ///
+    /// This temporary API exists only for CheckpointTester. Production checkpoint workflows are fetched
+    /// from RevenueCat configuration and rendered by RevenueCatUI's existing workflow renderer.
+    @_spi(Internal)
+    public func setCheckpointWorkflowData(_ workflowDataByIdentifier: [String: Data]) {
+        self.purchasesOrchestrator.setCheckpointWorkflowData(workflowDataByIdentifier)
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**

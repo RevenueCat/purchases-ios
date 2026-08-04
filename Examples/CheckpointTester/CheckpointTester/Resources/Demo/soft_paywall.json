@@ -1,0 +1,53 @@
+{
+  "id": "soft_paywall",
+  "presentation": {
+    "dismissible": true
+  },
+  "pages": [
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "wand.and.stars"
+        },
+        {
+          "type": "title",
+          "text": "Try Cat Pro"
+        },
+        {
+          "type": "body",
+          "text": "This soft paywall can be dismissed and the app continues normally."
+        },
+        {
+          "type": "feature",
+          "text": "Unlimited checkpoint experiments"
+        },
+        {
+          "type": "feature",
+          "text": "Advanced targeting insights"
+        },
+        {
+          "type": "feature",
+          "text": "Priority support for every cat"
+        }
+      ],
+      "actions": [
+        {
+          "title": "Purchased",
+          "type": "purchase",
+          "style": "primary"
+        },
+        {
+          "title": "Restored",
+          "type": "restore",
+          "style": "secondary"
+        },
+        {
+          "title": "Not now",
+          "type": "dismiss",
+          "style": "secondary"
+        }
+      ]
+    }
+  ]
+}

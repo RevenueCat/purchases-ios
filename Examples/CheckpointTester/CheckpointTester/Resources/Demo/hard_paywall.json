@@ -1,0 +1,49 @@
+{
+  "id": "hard_paywall",
+  "presentation": {
+    "dismissible": false
+  },
+  "pages": [
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "lock.shield.fill"
+        },
+        {
+          "type": "title",
+          "text": "Unlock to continue"
+        },
+        {
+          "type": "body",
+          "text": "This hard paywall cannot be swiped away. Choose an outcome below."
+        },
+        {
+          "type": "feature",
+          "text": "Unlimited checkpoint experiments"
+        },
+        {
+          "type": "feature",
+          "text": "Advanced targeting insights"
+        }
+      ],
+      "actions": [
+        {
+          "title": "Purchased",
+          "type": "purchase",
+          "style": "primary"
+        },
+        {
+          "title": "Restored",
+          "type": "restore",
+          "style": "secondary"
+        },
+        {
+          "title": "Simulate error",
+          "type": "error",
+          "style": "destructive"
+        }
+      ]
+    }
+  ]
+}

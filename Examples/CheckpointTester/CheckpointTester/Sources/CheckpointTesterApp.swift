@@ -44,6 +44,9 @@ struct CheckpointTesterApp: App {
 
     // MARK: - New checkpoint public API implementation
 
+    // This section is the app-side setup for the new public API. Everything below the
+    // `setCheckpointWorkflowData` call is demo infrastructure that stands in for workflows
+    // the SDK will fetch from RevenueCat's server in production.
     private static func configurePurchases(analyticsTracker: GlobalCheckpointAnalyticsTracker) {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
               apiKey.hasPrefix("appl_"),
@@ -55,6 +58,9 @@ struct CheckpointTesterApp: App {
             ? Purchases.shared
             : Purchases.configure(withAPIKey: apiKey)
         purchases.checkpointListener = analyticsTracker
+
+        // Demo-only: production SDKs fetch these workflow documents from RevenueCat's server.
+        purchases.setCheckpointWorkflowData(DemoWorkflowLoader.loadBundledWorkflowData())
     }
 
 }

@@ -39,6 +39,7 @@ let project = Project(
                 ]
             ),
             sources: ["CheckpointTester/Sources/**/*.swift"],
+            resources: ["CheckpointTester/Resources/**/*.json"],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,

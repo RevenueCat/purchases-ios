@@ -1,0 +1,46 @@
+{
+  "id": "result_picker",
+  "presentation": {
+    "dismissible": true
+  },
+  "pages": [
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "point.3.connected.trianglepath.dotted"
+        },
+        {
+          "type": "title",
+          "text": "Mock checkpoint UI"
+        },
+        {
+          "type": "body",
+          "text": "Choose the terminal result reported to the checkpoint listener."
+        }
+      ],
+      "actions": [
+        {
+          "title": "Purchased",
+          "type": "purchase",
+          "style": "primary"
+        },
+        {
+          "title": "Restored",
+          "type": "restore",
+          "style": "secondary"
+        },
+        {
+          "title": "Dismissed",
+          "type": "dismiss",
+          "style": "secondary"
+        },
+        {
+          "title": "Simulate error",
+          "type": "error",
+          "style": "destructive"
+        }
+      ]
+    }
+  ]
+}

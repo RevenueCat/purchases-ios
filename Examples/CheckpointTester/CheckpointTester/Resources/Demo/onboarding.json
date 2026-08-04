@@ -1,0 +1,87 @@
+{
+  "id": "onboarding",
+  "presentation": {
+    "dismissible": true
+  },
+  "pages": [
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "hand.wave.fill"
+        },
+        {
+          "type": "title",
+          "text": "Welcome"
+        },
+        {
+          "type": "body",
+          "text": "This checkpoint loaded a multi-step onboarding workflow from JSON."
+        }
+      ],
+      "actions": [
+        {
+          "title": "Continue",
+          "type": "next",
+          "style": "primary"
+        }
+      ]
+    },
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "slider.horizontal.3"
+        },
+        {
+          "type": "title",
+          "text": "Personalize"
+        },
+        {
+          "type": "body",
+          "text": "A real workflow could collect preferences and customize the next experience."
+        }
+      ],
+      "actions": [
+        {
+          "title": "Back",
+          "type": "previous",
+          "style": "secondary"
+        },
+        {
+          "title": "Continue",
+          "type": "next",
+          "style": "primary"
+        }
+      ]
+    },
+    {
+      "components": [
+        {
+          "type": "image",
+          "system_name": "checkmark.seal.fill"
+        },
+        {
+          "type": "title",
+          "text": "You're ready"
+        },
+        {
+          "type": "body",
+          "text": "The current UI result has no onboarding-completed case, so this PoC reports Dismissed."
+        }
+      ],
+      "actions": [
+        {
+          "title": "Back",
+          "type": "previous",
+          "style": "secondary"
+        },
+        {
+          "title": "Finish onboarding",
+          "type": "complete",
+          "style": "primary"
+        }
+      ]
+    }
+  ]
+}
