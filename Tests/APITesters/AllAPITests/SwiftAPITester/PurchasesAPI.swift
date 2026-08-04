@@ -331,6 +331,7 @@ private func checkAsyncMethods(purchases: Purchases) async {
             "test_checkpoint",
             params: CheckpointParams(customProperties: ["name": "Rick"])
         )
+        let _: CheckpointResult = try await purchases.checkpoint("test_checkpoint")
 
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
@@ -434,6 +435,8 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 
 }
 
+private final class CheckpointListenerDefaultsAPITester: CheckpointListener {}
+
 private func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
@@ -443,9 +446,35 @@ private func checkCheckpointAPI(_ purchases: Purchases) {
         params: CheckpointParams()
     ) { (_: Result<CheckpointResult, PublicError>) in }
 
+    purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
+
     purchases.checkpoint(
         "test_checkpoint",
         params: ObjCCheckpointParams()
+    ) { (result: ObjCCheckpointResult?, _: PublicError?) in
+        guard let result else { return }
+        let _: ObjCCheckpointInfo = result.checkpoint
+
+        if let presented = result as? ObjCCheckpointPaywallPresentedResult {
+            let outcome: ObjCCheckpointPaywallOutcome = presented.paywallOutcome
+            if let purchased = outcome as? ObjCCheckpointPaywallPurchasedOutcome {
+                let _: CustomerInfo = purchased.customerInfo
+            } else if let restored = outcome as? ObjCCheckpointPaywallRestoredOutcome {
+                let _: CustomerInfo = restored.customerInfo
+            } else if let error = outcome as? ObjCCheckpointPaywallErrorOutcome {
+                let _: PublicError = error.error
+            } else if outcome is ObjCCheckpointPaywallDismissedOutcome {
+                return
+            }
+        } else if let noAction = result as? ObjCCheckpointNoActionResult {
+            let _: ObjCCheckpointNoActionReason = noAction.reason
+            let _: String = noAction.reason.value
+        }
+    }
+
+    purchases.checkpoint(
+        "test_checkpoint",
+        params: nil as ObjCCheckpointParams?
     ) { (_: ObjCCheckpointResult?, _: PublicError?) in }
 
     let _: CheckpointNoActionReason = .noMatch
@@ -453,6 +482,18 @@ private func checkCheckpointAPI(_ purchases: Purchases) {
     let _: CheckpointNoActionReason = .frequencyCapped
     let _: CheckpointNoActionReason = .configurationUnavailable
     let _: CheckpointNoActionReason = .disabled
+}
+
+private func checkCheckpointPaywallOutcomeAPI(customerInfo: CustomerInfo, error: PublicError) {
+    let dismissed: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome()
+    let purchased: CheckpointPaywallOutcome = CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo)
+    let restored: CheckpointPaywallOutcome = CheckpointPaywallRestoredOutcome(customerInfo: customerInfo)
+    let failed: CheckpointPaywallOutcome = CheckpointPaywallErrorOutcome(error: error)
+
+    let _: String = dismissed.description
+    let _: String = purchased.description
+    let _: String = restored.description
+    let _: String = failed.description
 }
 
 func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bool {
