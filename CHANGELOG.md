@@ -1,3 +1,7 @@
+## 4.44.3
+### 🔄 Other Changes
+* [v4] Add Xcode 27 support (#7356) via Rick (@rickvdl)
+
 ## 4.44.2
 ## RevenueCat SDK
 ### 🐞 Bugfixes
