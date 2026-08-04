@@ -2458,10 +2458,13 @@ platform :ios do
 
     if failed_platforms.any?
       ApiDiffHelper.print_failure_summary(failed_platforms)
-      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     else
       UI.success("✅ No API changes detected")
     end
+
+    # Deliberately NOT failing yet. Stale baselines and a breaking change are separate
+    # problems, and an author who forgot to regenerate still deserves to see what they
+    # changed rather than only being told to regenerate. Both failures are raised at the end.
 
     # Second comparison: what this PR changes relative to main. The freshness loop above
     # cannot answer that, because regenerating the baselines makes its diff empty.
@@ -2510,6 +2513,12 @@ platform :ios do
       notify_api_changes_on_slack(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
     rescue StandardError => e
       UI.important("Could not publish the API diff report: #{e.message}")
+    end
+
+    # Report first, then fail. Staleness is reported before the gate because regenerating the
+    # baselines is the author's first step either way.
+    if failed_platforms.any?
+      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     end
 
     if ApiDiffHelper.gate_blocked?(all_breaks, labels)
