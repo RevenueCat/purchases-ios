@@ -1272,6 +1272,96 @@ class ApiDiffHelperTest < Minitest::Test
     refute_includes joined, "Add the #{ApiDiffHelper::BREAKING_CHANGE_LABEL} label"
   end
 
+  # --- Part B: PR comment and Slack ---
+
+  def test_comment_body_carries_the_marker_and_says_no_changes
+    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], [])
+
+    assert body.start_with?(ApiDiffHelper::API_DIFF_COMMENT_MARKER), "the marker is how the upsert finds the comment"
+    assert_includes body, "No public API changes."
+  end
+
+  def test_comment_body_lists_breaks_and_asks_for_the_label
+    breaks = [{ reason: :enum_case, owner: "PaywallEvent", declaration: "case componentInteraction(" }]
+    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, breaks, [])
+
+    assert_includes body, "Potential breaking changes"
+    assert_includes body, "case added to an existing enum"
+    assert_includes body, "`PaywallEvent`"
+    assert_includes body, ApiDiffHelper::BREAKING_CHANGE_LABEL
+  end
+
+  def test_comment_body_notes_when_the_label_permits_the_break
+    breaks = [{ reason: :removed, owner: nil, declaration: "public func gone()" }]
+    body = ApiDiffHelper.api_diff_comment_body({}, breaks, [ApiDiffHelper::BREAKING_CHANGE_LABEL])
+
+    assert_includes body, "allowed by label"
+    refute_includes body, "Add the `#{ApiDiffHelper::BREAKING_CHANGE_LABEL}` label"
+  end
+
+  # The same change is reported once per platform; a comment repeating it nine times is unusable.
+  def test_comment_body_collapses_identical_reports_across_platforms
+    reports = ApiDiffHelper::PLATFORM_CHECKS.each_with_object({}) do |platform, acc|
+      acc["RevenueCat #{platform[:name]}"] = SINGLE_ADDITION_OUTPUT.gsub("RevenueCat", "RevenueCat #{platform[:name]}")
+    end
+
+    body = ApiDiffHelper.api_diff_comment_body(reports, [], [])
+
+    assert_equal 1, body.scan("<details>").count, "identical per-platform reports must collapse to one section"
+    assert_includes body, "all platforms"
+  end
+
+  def test_comment_body_keeps_platform_specific_reports_apart
+    reports = {
+      "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT,
+      "RevenueCat macOS" => SINGLE_REMOVAL_OUTPUT
+    }
+
+    body = ApiDiffHelper.api_diff_comment_body(reports, [], [])
+
+    assert_equal 2, body.scan("<details>").count
+  end
+
+  def test_slack_summary_leads_with_breaks_when_there_are_any
+    breaks = [{ reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" }]
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_api_count: 3)
+
+    assert message.start_with?(":warning: *Breaking public API changes*")
+    assert_includes message, "<url|#42> Some PR"
+    assert_includes message, "removed in CustomerInfo"
+  end
+
+  def test_slack_summary_leads_with_new_api_when_nothing_breaks
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_api_count: 2)
+
+    assert message.start_with?(":sparkles: *New public API*")
+    assert_includes message, "2 declarations changed"
+  end
+
+  def test_slack_summary_truncates_long_break_lists
+    breaks = (1..15).map { |i| { reason: :removed, owner: nil, declaration: "public func gone#{i}()" } }
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: nil, new_api_count: 0)
+
+    assert_includes message, "gone10()"
+    refute_includes message, "gone11()"
+    assert_includes message, "... and 5 more"
+  end
+
+  def test_slack_request_supports_webhook_or_bot_token
+    webhook = ApiDiffHelper.slack_post_request("hi", webhook_url: "https://hooks.example/abc")
+    assert_equal "https://hooks.example/abc", webhook[:url]
+    assert_equal({ text: "hi" }, webhook[:body])
+
+    bot = ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: "C1")
+    assert_equal "https://slack.com/api/chat.postMessage", bot[:url]
+    assert_equal "Bearer xoxb-t", bot[:headers]["Authorization"]
+
+    assert_nil ApiDiffHelper.slack_post_request("hi"), "no credential means no request"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t"), "a bot token with no channel has nowhere to post"
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form

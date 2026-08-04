@@ -471,6 +471,105 @@ module ApiDiffHelper
     nil
   end
 
+  API_DIFF_COMMENT_MARKER = "<!-- api-diff-report -->".freeze
+
+  # One comment per pull request, rewritten in place on every run. The marker is how the
+  # lane finds the comment it already posted.
+  def api_diff_comment_body(reports_by_target, breaks, labels)
+    lines = [API_DIFF_COMMENT_MARKER, "## Public API changes"]
+
+    if breaks.any?
+      lines << ""
+      lines << (gate_blocked?(breaks, labels) ? "### :warning: Potential breaking changes" : "### :warning: Potential breaking changes (allowed by label)")
+      breaks.each do |change|
+        owner = change[:owner] ? " in `#{change[:owner]}`" : ""
+        lines << "- **#{BREAK_REASONS.fetch(change[:reason], change[:reason])}**#{owner}: `#{change[:declaration]}`"
+      end
+      lines << ""
+      lines << "Add the `#{BREAKING_CHANGE_LABEL}` label if these are intentional." if gate_blocked?(breaks, labels)
+    end
+
+    changed = reports_by_target.reject { |_target, report| report.nil? || !api_changes_reported?(report) }
+
+    if changed.empty?
+      lines << ""
+      lines << "No public API changes."
+    else
+      # Identical reports across platforms collapse: the same change is reported once per
+      # platform and nobody wants to read it nine times.
+      changed.group_by { |_target, report| strip_target_headings(report) }.each do |_body, group|
+        targets = group.map(&:first)
+        lines << ""
+        lines << "<details><summary>#{targets.first.split(' ').first} on #{describe_targets(targets)}</summary>"
+        lines << ""
+        lines << group.first.last.strip
+        lines << ""
+        lines << "</details>"
+      end
+    end
+
+    lines.join("\n")
+  end
+
+  # Target names appear inside the report, so they must be neutralised before comparing two
+  # platforms' reports for equality.
+  def strip_target_headings(report)
+    report.to_s.gsub(/^#+ `[^`]*`\s*$/, "").gsub(/\*\*Analyzed targets:\*\*.*$/, "").strip
+  end
+
+  def describe_targets(targets)
+    platforms = targets.map { |target| target.split(" ", 2).last }
+    return "all platforms" if platforms.count >= PLATFORM_CHECKS.count
+
+    platforms.join(", ")
+  end
+
+  # Slack renders neither the report's HTML table nor its long code blocks, so the message is
+  # derived rather than forwarded.
+  def slack_summary(breaks, labels, source:, new_api_count:)
+    headline = if breaks.any?
+                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
+               else
+                 ":sparkles: *New public API*"
+               end
+
+    lines = [headline]
+    lines << source unless source.to_s.empty?
+
+    breaks.first(MAX_DECLARATIONS_PER_TARGET).each do |change|
+      owner = change[:owner] ? " in #{change[:owner]}" : ""
+      lines << "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: `#{change[:declaration]}`"
+    end
+    remaining = breaks.count - MAX_DECLARATIONS_PER_TARGET
+    lines << "- ... and #{remaining} more" if remaining > 0
+
+    lines << "#{new_api_count} declaration#{'s' if new_api_count != 1} changed in total." if new_api_count > 0
+    lines.join("\n")
+  end
+
+  MAX_DECLARATIONS_PER_TARGET = 10
+
+  # Either an incoming webhook, which carries its own channel, or a bot token with an
+  # explicit channel, so the notification can use whichever Slack credential CI already has.
+  # Returns nil when neither is configured.
+  def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
+    unless webhook_url.to_s.empty?
+      return {
+        url: webhook_url,
+        headers: { "Content-Type" => "application/json" },
+        body: { text: message }
+      }
+    end
+
+    return nil if bot_token.to_s.empty? || channel.to_s.empty?
+
+    {
+      url: "https://slack.com/api/chat.postMessage",
+      headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{bot_token}" },
+      body: { channel: channel, text: message }
+    }
+  end
+
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.
   def public_api_diff_report(tool:, old_file:, new_file:, target_name:, runner: nil)
     validate_api_diff_inputs!(old_file, new_file)
