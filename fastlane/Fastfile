@@ -2509,7 +2509,14 @@ platform :ios do
     # The report and the Slack ping are informational, so a GitHub or Slack outage must not
     # decide whether the gate below fails.
     begin
-      upsert_api_diff_comment(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
+      schemes.each do |scheme|
+        upsert_api_diff_comment(
+          scheme: scheme,
+          reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
+          breaks: all_breaks,
+          labels: labels
+        )
+      end
       notify_api_changes_on_slack(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
     rescue StandardError => e
       UI.important("Could not publish the API diff report: #{e.message}")
@@ -2536,11 +2543,24 @@ platform :ios do
       next
     end
 
-    body = ApiDiffHelper.api_diff_comment_body(options[:reports_by_target], options[:breaks], options[:labels])
     repo = "RevenueCat/#{REPO_NAME}"
     existing_id = find_pr_comment_with_marker(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
 
+    section = ApiDiffHelper.api_diff_comment_section(
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels]
+    )
+
     if existing_id
+      # Read the current body first: the other module's job owns its own section of this same
+      # comment, and overwriting wholesale would discard whatever it found.
+      existing = github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'GET',
+        path: "/repos/#{repo}/issues/comments/#{existing_id}"
+      )
+      body = ApiDiffHelper.merge_api_diff_comment(existing[:json]["body"], options[:scheme], section)
+
       UI.message("Updating API diff comment #{existing_id}")
       github_api(
         server_url: 'https://api.github.com',
@@ -2556,7 +2576,7 @@ platform :ios do
         api_token: token,
         http_method: 'POST',
         path: "/repos/#{repo}/issues/#{pr_number}/comments",
-        body: { body: body }
+        body: { body: ApiDiffHelper.merge_api_diff_comment(nil, options[:scheme], section) }
       )
     end
   end

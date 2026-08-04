@@ -473,10 +473,43 @@ module ApiDiffHelper
 
   API_DIFF_COMMENT_MARKER = "<!-- api-diff-report -->".freeze
 
-  # One comment per pull request, rewritten in place on every run. The marker is how the
-  # lane finds the comment it already posted.
-  def api_diff_comment_body(reports_by_target, breaks, labels)
-    lines = [API_DIFF_COMMENT_MARKER, "## Public API changes"]
+  def api_diff_section_open(module_name)
+    "<!-- api-diff:#{module_name} -->"
+  end
+
+  def api_diff_section_close(module_name)
+    "<!-- /api-diff:#{module_name} -->"
+  end
+
+  # One comment per pull request, but two jobs write it, one per module, and neither knows
+  # what the other found. Each owns a delimited section and leaves the rest alone; without
+  # this the job that finishes last overwrites the other's findings.
+  def merge_api_diff_comment(existing_body, module_name, section)
+    open_tag = api_diff_section_open(module_name)
+    close_tag = api_diff_section_close(module_name)
+    body = existing_body.to_s
+
+    unless body.include?(API_DIFF_COMMENT_MARKER)
+      return "#{API_DIFF_COMMENT_MARKER}\n## Public API changes\n\n#{section}\n"
+    end
+
+    if body.include?(open_tag) && body.include?(close_tag)
+      body.sub(/#{Regexp.escape(open_tag)}.*?#{Regexp.escape(close_tag)}/m, section)
+    else
+      "#{body.rstrip}\n\n#{section}\n"
+    end
+  end
+
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels)
+    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}")
+
+    [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
+  end
+
+  # The body of one module's section. `heading` lets the shared header be omitted when this is
+  # nested inside a multi-module comment.
+  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil)
+    lines = heading ? [heading] : [API_DIFF_COMMENT_MARKER, "## Public API changes"]
 
     if breaks.any?
       lines << ""

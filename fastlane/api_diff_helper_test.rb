@@ -1362,6 +1362,47 @@ class ApiDiffHelperTest < Minitest::Test
     assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t"), "a bot token with no channel has nowhere to post"
   end
 
+
+  # --- One comment, two jobs ---
+
+  # Two jobs write this comment, one per module. Before sections existed, whichever finished
+  # last overwrote the other's findings with its own view.
+  def test_merge_starts_a_fresh_comment_with_the_marker
+    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [])
+    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", section)
+
+    assert body.start_with?(ApiDiffHelper::API_DIFF_COMMENT_MARKER)
+    assert_includes body, "### RevenueCat"
+  end
+
+  def test_merge_preserves_the_other_modules_section
+    rc_breaks = [{ reason: :removed, owner: nil, declaration: "public func gone()" }]
+    rc = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, rc_breaks, [])
+    first = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", rc)
+
+    ui = ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [])
+    both = ApiDiffHelper.merge_api_diff_comment(first, "RevenueCatUI", ui)
+
+    assert_includes both, "public func gone()", "the RevenueCat findings must survive the RevenueCatUI write"
+    assert_includes both, "### RevenueCatUI"
+    assert_equal 1, both.scan(ApiDiffHelper::API_DIFF_COMMENT_MARKER).count
+  end
+
+  def test_merge_replaces_only_its_own_section_on_a_rerun
+    rc_first = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [{ reason: :removed, owner: nil, declaration: "public func gone()" }], [])
+    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", rc_first)
+    body = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCatUI", ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], []))
+
+    # RevenueCat runs again and now finds nothing.
+    rc_second = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [])
+    updated = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", rc_second)
+
+    refute_includes updated, "public func gone()", "its own stale finding must be replaced"
+    assert_includes updated, "### RevenueCatUI", "the other module's section must remain"
+    assert_equal 1, updated.scan("### RevenueCat\n").count
+    assert_equal 1, updated.scan(ApiDiffHelper.api_diff_section_open("RevenueCat")).count
+  end
+
   private
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
