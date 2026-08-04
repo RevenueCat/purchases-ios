@@ -122,7 +122,10 @@ class ApiDiffHelperTest < Minitest::Test
 
     assert call_line_no > concat_line_no,
            "the label fetch must happen after all_breaks is computed, not before"
-    assert_match(/all_breaks\.any\?/, call_line,
+
+    # The guard sits above the call rather than on it, so look at the lines leading up to it.
+    preceding = lines[(call_line_no - 3)..call_line_no].join
+    assert_match(/all_breaks\.any\?/, preceding,
                  "the label fetch must be gated on all_breaks.any?, not unconditional")
   end
 
@@ -1429,6 +1432,21 @@ class ApiDiffHelperTest < Minitest::Test
 
     assert_includes message, "1 new declaration"
     refute_includes message, "apiDiffDemoPing", "Slack stays a ping; the detail belongs in the PR comment"
+  end
+
+
+  # The lane cannot run outside fastlane, so this asserts the structure a review found wrong:
+  # the label read used to sit outside the best-effort block, so a GitHub blip aborted the lane
+  # before the report was published, exactly when breaks needed reviewing.
+  def test_label_read_cannot_abort_before_the_report_is_published
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    gate = lane[/labels = \[\].*?gate_blocked\?/m]
+
+    refute_nil gate, "the gate section of check_api_changes moved; update this test"
+    assert_match(/begin\s+labels = pr_labels_for_api_gate\s+rescue/, gate,
+                 "reading the labels must degrade, not raise")
+    assert_operator gate.index("upsert_api_diff_comment"), :>, gate.index("pr_labels_for_api_gate"),
+                    "labels are read before publishing, so the read must not be able to abort it"
   end
 
   private

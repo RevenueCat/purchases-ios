@@ -2494,8 +2494,17 @@ platform :ios do
 
     all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
 
-    # Only when there is a break to judge: github_api raises on non-2xx and would red clean PRs.
-    labels = all_breaks.any? ? pr_labels_for_api_gate : []
+    labels = []
+    if all_breaks.any?
+      begin
+        labels = pr_labels_for_api_gate
+      rescue StandardError => e
+        # Unreadable labels must not abort before the report is published, and an unlabelled
+        # PR is the blocking answer, so a failure here degrades rather than raising.
+        UI.important("Could not read the PR labels (#{e.message}), treating the PR as unlabelled")
+      end
+    end
+
     ApiDiffHelper.print_breaking_summary(all_breaks, labels)
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
