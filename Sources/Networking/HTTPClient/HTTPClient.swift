@@ -890,16 +890,26 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
+        var headers = request.headers
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
                 withSignatureVerification: request.verificationMode.isEnabled,
                 refreshETag: request.retried
             )
-            return request.headers.merging(eTagHeader)
-        } else {
-            return request.headers
+            headers = headers.merging(eTagHeader)
         }
+        
+        if request.httpRequest.path.authenticated {
+            // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
+            // because it's how the API key is sent up
+            // if the TokenManager produces a new authorization header, it will override
+            // any existing authorization header present
+            let authorization = self.tokenManager.authorizationHeaders(for: request)
+            headers = headers.merging(authorization)
+        }
+
+        return headers
     }
 
     private func signing(for request: HTTPRequest) -> SigningType {

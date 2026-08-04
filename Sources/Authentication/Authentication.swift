@@ -145,8 +145,7 @@ public final class Authentication: NSObject {
 
     internal func logInIfNeeded(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
         guard identityManager.needsIAMLogin else { return }
-        let token = Identity.anonymous(appUserID: identityManager.currentAppUserID)
-        self.logIn(using: token, userInitiated: false, completion: completion)
+        self.logIn(using: .anonymous, userInitiated: false, completion: completion)
     }
 
     internal func logIn(using identity: Identity,

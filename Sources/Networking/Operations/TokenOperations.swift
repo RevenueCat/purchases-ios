@@ -74,10 +74,9 @@ private extension TokenLogInOperation {
 
         let body: any HTTPRequestBody
         switch token {
-        case .anonymous(let appUserID):
+        case .anonymous:
             body = AnonymousBody(method: "anonymous",
-                                 scope: "openid offline_access",
-                                 reference: appUserID)
+                                 scope: "openid offline_access")
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
@@ -243,18 +242,15 @@ extension TokenLogInOperation {
         private enum CodingKeys: String, CodingKey {
             case method = "method"
             case scope = "scope"
-            case reference = "reference"
         }
 
         let method: String
         let scope: String
-        let reference: String?
 
         var contentForSignature: [(key: String, value: String?)] {
             return [
                 (Self.CodingKeys.method.stringValue, self.method),
-                (Self.CodingKeys.scope.stringValue, self.scope),
-                (Self.CodingKeys.reference.stringValue, self.reference)
+                (Self.CodingKeys.scope.stringValue, self.scope)
             ]
         }
 

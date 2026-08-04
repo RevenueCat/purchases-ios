@@ -12,8 +12,8 @@ import Foundation
 @objc(RCIdentity)
 public final class Identity: NSObject {
 
-    @objc internal static func anonymous(appUserID: String?) -> Identity {
-        Identity(token: .anonymous(appUserID))
+    @objc internal static var anonymous: Identity {
+        Identity(token: .anonymous)
     }
 
 //    @objc public static func oidc(_ token: Data) -> Identity {
@@ -73,7 +73,7 @@ public enum IdentitySource: Int {
 }
 
 internal enum IdentityAuthToken: Hashable {
-    case anonymous(String?)
+    case anonymous
     case oidc(Data)
     case google(Data)
     case signInWithApple(Data)
@@ -93,7 +93,7 @@ internal enum IdentityAuthToken: Hashable {
 
     internal var cacheIdentifier: String {
         switch self {
-        case .anonymous(let id): return "anon-\(id ?? "NULL")"
+        case .anonymous: return "anon"
         case .oidc(let data): return "oidc-\(data.hashString)"
         case .google(let data): return "google-\(data.hashString)"
         case .signInWithApple(let data): return "siwa-\(data.hashString)"

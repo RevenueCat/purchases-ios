@@ -189,7 +189,7 @@ private extension IdentityManager {
         guard newAppUserID != oldAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
             self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
-                                                  fetchPolicy: .cachedOrFetched) { @Sendable result in
+                                                  fetchPolicy: .fetchCurrent) { @Sendable result in
                 completion(
                     result.map { (info: $0, created: false) }
                 )
@@ -264,7 +264,7 @@ private extension IdentityManager {
 
         if self.backend.token.enabled {
             // immediately get tokens for the new user id
-            self.performLogIn(identity: .anonymous(appUserID: newUserID), completion: { result in
+            self.performLogIn(identity: .anonymous, completion: { result in
                 completion(result.error?.asPurchasesError)
             })
         } else {
