@@ -511,7 +511,8 @@ platform :ios do
     FileUtils.mkdir_p(image_output_dir)
     extract_xcresult_images(
       xcresult_path: result_bundle_path,
-      output_dir: image_output_dir
+      output_dir: image_output_dir,
+      test_id: "TakeScreenshotTests/testPaywallValidationScreenshots()"
     )
 
     output_dir
@@ -682,9 +683,10 @@ platform :ios do
       app_id_suffix: ""
     )
 
-    extract_xcresult_attachments(
+    extract_xcresult_images(
       xcresult_path: result_bundle_path,
-      output_dir: image_output_dir
+      output_dir: image_output_dir,
+      include_test_identifier: true
     )
 
     pngs = Dir.glob("#{image_output_dir}/**/*.png", File::FNM_CASEFOLD)
