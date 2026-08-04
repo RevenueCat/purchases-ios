@@ -538,20 +538,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         identityManager.remoteConfigManager = remoteConfigManager
         tokenManager.currentUserProvider = identityManager
 
-        #warning("DAVE: This is a bit of a hack")
-        // PROBLEM: this only runs once at initialization time
-        // what if the device is in airplane mode when the app is launched? how will subsequent
-        // requests know they have to authorize first?
-        //
-        // PROBLEM: this also only checks if the current user is anonymous; it doesn't check if
-        // the current user is a custom name (ie, previous used with the logIn(_:) method to be
-        // an app-specified id for the user). (This is the "migration" problem)
-        if identityManager.needsIAMLogin {
-            // immediately attempt to retrieve access tokens for the anonymous user
-            identityManager.logIn(externalToken: .anonymous(appUserID: identityManager.currentAppUserID),
-                                  completion: { _ in })
-        }
-
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
            let featureEventStore = FeatureEventStore.createDefault(
@@ -2699,6 +2685,11 @@ private extension Purchases {
 
         self.systemInfo.isAppBackgroundedState = false
 
+        // if IAM is enabled and we don't have tokens for the current (anonymous) user,
+        // then attempt to get them. If this fails, this will invoke the authentication delegate's
+        // callback about failure, because it was not explicitly user-initiated
+        self.authentication.logInIfNeeded()
+
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
@@ -2765,6 +2756,8 @@ private extension Purchases {
     private func performInitialForegroundSetup() {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
+
+            self.authentication.logInIfNeeded()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(

@@ -143,19 +143,27 @@ public final class Authentication: NSObject {
 
     // MARK: - Internals
 
+    internal func logInIfNeeded(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        guard identityManager.needsIAMLogin else { return }
+        let token = ExternalToken.anonymous(appUserID: identityManager.currentAppUserID)
+        self.logIn(using: token, userInitiated: false, completion: completion)
+    }
+
     internal func logIn(using token: ExternalToken,
                         userInitiated: Bool,
-                        completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
+                        completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard self.backend.token.enabled else {
             let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
-            completion(nil, error.asPublicError)
+            completion?(nil, error.asPublicError)
             if userInitiated == false { self.reportAuthenticationError(error.asPublicError) }
             return
         }
 
         self.identityManager.logIn(externalToken: token) { result in
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.error?.asPublicError)
+            if let completion {
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(result.value?.info, result.error?.asPublicError)
+                }
             }
 
             switch result {
