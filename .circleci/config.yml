@@ -357,6 +357,7 @@ commands:
       - run:
           name: Trust GitHub key
           command: |
+              mkdir -p ~/.ssh
               for ip in $(dig @8.8.8.8 github.com +short); \
               do ssh-keyscan github.com,$ip; \
               ssh-keyscan $ip; \
@@ -1195,6 +1196,7 @@ jobs:
     steps:
       - checkout
       - setup-git-credentials
+      - trust-github-key
       - install-rubydocker-dependencies
       - run:
           name: Tag branch
