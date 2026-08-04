@@ -2118,6 +2118,10 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
+          # The bot token comes from the slack-secrets contexts, already used by
+          # slack-notify-on-fail. Only the channel is needed here, and a channel is not secret.
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
@@ -2173,6 +2177,10 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
+          # The bot token comes from the slack-secrets contexts, already used by
+          # slack-notify-on-fail. Only the channel is needed here, and a channel is not secret.
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
       - store_artifacts:
@@ -2366,9 +2374,11 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
@@ -2806,9 +2816,11 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests

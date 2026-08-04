@@ -2584,7 +2584,7 @@ platform :ios do
     )
 
     if request.nil?
-      UI.important("No Slack credential configured (SLACK_URL_SDK_NEW_API, or SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS with SLACK_CHANNEL_SDK_NEW_API), skipping")
+      UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API, or SLACK_URL_SDK_NEW_API. Skipping.")
       next
     end
 
