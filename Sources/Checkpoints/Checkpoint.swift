@@ -17,7 +17,7 @@ import Foundation
 /// Per-call parameters for ``Purchases/checkpoint(_:params:)``.
 ///
 /// Custom property values must be a `String`, number, or `Bool`.
-@_spi(Internal) public struct CheckpointParams {
+@_spi(Internal) public struct CheckpointParams: Equatable {
 
     /// Custom properties usable in checkpoint targeting rules.
     public let customProperties: [String: Any]
@@ -51,10 +51,14 @@ import Foundation
         }
     }
 
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return (lhs.customProperties as NSDictionary).isEqual(to: rhs.customProperties)
+    }
+
 }
 
 /// Information about a checkpoint that was hit.
-@_spi(Internal) public struct CheckpointInfo {
+@_spi(Internal) public struct CheckpointInfo: Equatable {
 
     /// The checkpoint identifier configured in the RevenueCat dashboard.
     public let identifier: String
@@ -100,7 +104,7 @@ import Foundation
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
 /// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
-@_spi(Internal) public class CheckpointResult: CustomStringConvertible {
+@_spi(Internal) public class CheckpointResult: CustomStringConvertible, Equatable {
 
     /// Information about the checkpoint that produced this result.
     public let checkpoint: CheckpointInfo
@@ -112,6 +116,14 @@ import Foundation
     /// A debug description of the checkpoint result.
     public var description: String {
         return "CheckpointResult(checkpoint=\(self.checkpoint))"
+    }
+
+    public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
+        return lhs.isEqual(to: rhs)
+    }
+
+    fileprivate func isEqual(to other: CheckpointResult) -> Bool {
+        return type(of: self) == type(of: other) && self.checkpoint == other.checkpoint
     }
 
 }
@@ -132,6 +144,11 @@ import Foundation
         return "PaywallPresented(checkpoint=\(self.checkpoint), paywallOutcome=\(self.paywallOutcome))"
     }
 
+    fileprivate override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointPaywallPresentedResult else { return false }
+        return self.checkpoint == other.checkpoint && self.paywallOutcome == other.paywallOutcome
+    }
+
 }
 
 /// Nothing was served for a checkpoint.
@@ -150,13 +167,18 @@ import Foundation
         return "NoAction(checkpoint=\(self.checkpoint), reason=\(self.reason))"
     }
 
+    fileprivate override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointNoActionResult else { return false }
+        return self.checkpoint == other.checkpoint && self.reason == other.reason
+    }
+
 }
 
 /// Base class for the terminal result of a checkpoint-presented paywall.
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
 /// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
-@_spi(Internal) public class CheckpointPaywallOutcome: CustomStringConvertible {
+@_spi(Internal) public class CheckpointPaywallOutcome: CustomStringConvertible, Equatable {
 
     fileprivate init() {}
 
@@ -165,13 +187,23 @@ import Foundation
         return "CheckpointPaywallOutcome"
     }
 
+    public static func == (lhs: CheckpointPaywallOutcome, rhs: CheckpointPaywallOutcome) -> Bool {
+        return lhs.isEqual(to: rhs)
+    }
+
+    fileprivate func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        return type(of: self) == type(of: other)
+    }
+
 }
 
 /// The customer dismissed the paywall.
 @_spi(Internal) public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
-    /// Creates a dismissed paywall outcome.
-    public override init() {
+    /// The dismissed paywall outcome.
+    public static let shared = CheckpointPaywallDismissedOutcome()
+
+    private override init() {
         super.init()
     }
 
@@ -195,6 +227,11 @@ import Foundation
     /// A debug description of the purchased outcome.
     public override var description: String { return "Purchased" }
 
+    fileprivate override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        guard let other = other as? CheckpointPaywallPurchasedOutcome else { return false }
+        return self.customerInfo.isEqual(other.customerInfo)
+    }
+
 }
 
 /// The customer restored purchases.
@@ -211,6 +248,11 @@ import Foundation
 
     /// A debug description of the restored outcome.
     public override var description: String { return "Restored" }
+
+    fileprivate override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        guard let other = other as? CheckpointPaywallRestoredOutcome else { return false }
+        return self.customerInfo.isEqual(other.customerInfo)
+    }
 
 }
 
@@ -229,6 +271,11 @@ import Foundation
     /// A debug description of the error outcome.
     public override var description: String {
         return "Error(error=\(self.error))"
+    }
+
+    fileprivate override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        guard let other = other as? CheckpointPaywallErrorOutcome else { return false }
+        return self.error.isEqual(other.error)
     }
 
 }
