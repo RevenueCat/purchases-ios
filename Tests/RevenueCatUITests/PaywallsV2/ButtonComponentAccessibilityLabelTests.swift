@@ -30,31 +30,46 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
     func testIconOnlyNavigateBackDerivesCloseLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "navigate_back" }"#)
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Close")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Close")
+    }
+
+    /// The same action goes back a step inside a workflow with somewhere to return to, so it must
+    /// not claim to close.
+    func testIconOnlyNavigateBackDerivesGoBackLabelWhenItDoesNotDismiss() throws {
+        let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "navigate_back" }"#)
+
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: false), "Go back")
+    }
+
+    /// `close_workflow` always closes, so it is unaffected by the back stack.
+    func testIconOnlyCloseWorkflowIgnoresDismissesPaywall() throws {
+        let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "close_workflow" }"#)
+
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: false), "Close")
     }
 
     func testIconOnlyCloseWorkflowDerivesCloseLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "close_workflow" }"#)
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Close")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Close")
     }
 
     func testIconOnlyRestorePurchasesDerivesRestoreLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "restore_purchases" }"#)
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Restore purchases")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Restore purchases")
     }
 
     func testIconOnlyPrivacyPolicyDerivesPrivacyPolicyLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: Self.navigateTo(destination: "privacy_policy"))
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Privacy policy")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Privacy policy")
     }
 
     func testIconOnlyTermsDerivesTermsLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: Self.navigateTo(destination: "terms"))
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Terms and conditions")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Terms and conditions")
     }
 
     func testIconOnlyCustomerCenterDerivesManageSubscriptionLabel() throws {
@@ -62,13 +77,13 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
             action: #"{ "type": "navigate_to", "destination": "customer_center" }"#
         )
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Manage subscription")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Manage subscription")
     }
 
     func testIconOnlyOfferCodeDerivesRedeemCodeLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "navigate_to", "destination": "offer_code" }"#)
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Redeem code")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Redeem code")
     }
 
     // MARK: - Actions with no honest label
@@ -76,13 +91,13 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
     func testIconOnlyArbitraryURLDerivesNoLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: Self.navigateTo(destination: "url"))
 
-        XCTAssertNil(viewModel.derivedAccessibilityLabel)
+        XCTAssertNil(viewModel.derivedAccessibilityLabel(dismissesPaywall: true))
     }
 
     func testIconOnlyWorkflowTriggerDerivesNoLabel() throws {
         let viewModel = try Self.makeIconOnlyButton(action: #"{ "type": "workflow" }"#)
 
-        XCTAssertNil(viewModel.derivedAccessibilityLabel)
+        XCTAssertNil(viewModel.derivedAccessibilityLabel(dismissesPaywall: true))
     }
 
     // MARK: - The fallback never overrides a label that already works
@@ -93,7 +108,7 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
             children: [.text(try Self.makeTextViewModel())]
         )
 
-        XCTAssertNil(viewModel.derivedAccessibilityLabel)
+        XCTAssertNil(viewModel.derivedAccessibilityLabel(dismissesPaywall: true))
     }
 
     func testButtonWithTextNestedInStackDerivesNoLabel() throws {
@@ -104,7 +119,7 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
             children: [.stack(nested)]
         )
 
-        XCTAssertNil(viewModel.derivedAccessibilityLabel)
+        XCTAssertNil(viewModel.derivedAccessibilityLabel(dismissesPaywall: true))
     }
 
     /// Badges live in a separate array from the stack's children and render text of their own.
@@ -115,7 +130,7 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
             badges: [.text(try Self.makeTextViewModel())]
         )
 
-        XCTAssertNil(viewModel.derivedAccessibilityLabel)
+        XCTAssertNil(viewModel.derivedAccessibilityLabel(dismissesPaywall: true))
     }
 
     /// A text component whose localization is missing renders nothing, so it must not count as
@@ -126,7 +141,32 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
             children: [.text(try Self.makeTextViewModel(lid: "missing_lid"))]
         )
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Close")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Close")
+    }
+
+    /// Text authored hidden never renders, so it must not suppress the label the way visible text
+    /// does. Only base visibility is consulted, override-driven visibility is not.
+    func testButtonWithHiddenTextStillDerivesALabel() throws {
+        let viewModel = try Self.makeButton(
+            action: #"{ "type": "navigate_back" }"#,
+            children: [.text(try Self.makeTextViewModel(visible: false))]
+        )
+
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Close")
+    }
+
+    func testButtonWithTextInAHiddenStackStillDerivesALabel() throws {
+        let hidden = Self.makeStackViewModel(
+            children: [.text(try Self.makeTextViewModel())],
+            visible: false
+        )
+
+        let viewModel = try Self.makeButton(
+            action: #"{ "type": "navigate_back" }"#,
+            children: [.stack(hidden)]
+        )
+
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "Close")
     }
 
     // MARK: - Catalog
@@ -136,8 +176,7 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
     func testEveryDerivedLabelKeyExistsInTheLocalizationCatalog() throws {
         let bundle = Localization.localizedBundle(Self.locale)
 
-        for key in ["Close", "Restore purchases", "Privacy policy",
-                    "Terms and conditions", "Manage subscription", "Redeem code"] {
+        for key in Self.derivedLabelKeys {
             XCTAssertNotEqual(
                 bundle.localizedString(forKey: key, value: "__missing__", table: nil),
                 "__missing__",
@@ -146,16 +185,37 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
         }
     }
 
-    /// The new keys only ship English for now. An untranslated locale must still announce
-    /// something, so it falls back to the key itself rather than to an empty label.
-    func testUntranslatedLocaleFallsBackToTheEnglishLabel() throws {
+    /// A screen reader announces in the paywall's language, so every locale the SDK ships needs
+    /// these keys, not just English.
+    func testEveryShippedLocaleTranslatesEveryDerivedLabelKey() throws {
+        let localizations = Bundle.revenueCatUI.localizations
+        XCTAssertGreaterThan(localizations.count, 40, "Expected the full locale set.")
+
+        for localization in localizations {
+            let bundle = Localization.localizedBundle(Locale(identifier: localization))
+            for key in Self.derivedLabelKeys {
+                XCTAssertNotEqual(
+                    bundle.localizedString(forKey: key, value: "__missing__", table: nil),
+                    "__missing__",
+                    "\(localization) is missing \"\(key)\""
+                )
+            }
+        }
+    }
+
+    func testTranslatedLocaleAnnouncesInThatLanguage() throws {
         let viewModel = try Self.makeIconOnlyButton(
             action: #"{ "type": "navigate_back" }"#,
             locale: Locale(identifier: "ja_JP")
         )
 
-        XCTAssertEqual(viewModel.derivedAccessibilityLabel, "Close")
+        XCTAssertEqual(viewModel.derivedAccessibilityLabel(dismissesPaywall: true), "閉じる")
     }
+
+    private static let derivedLabelKeys = [
+        "Close", "Go back", "Restore purchases", "Privacy policy",
+        "Terms and conditions", "Manage subscription", "Redeem code"
+    ]
 
     // MARK: - Helpers
 
@@ -222,21 +282,25 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
 
     private static func makeStackViewModel(
         children: [PaywallComponentViewModel],
-        badges: [PaywallComponentViewModel] = []
+        badges: [PaywallComponentViewModel] = [],
+        visible: Bool? = nil
     ) -> StackComponentViewModel {
         return StackComponentViewModel(
-            component: .init(components: []),
+            component: .init(visible: visible, components: []),
             viewModels: children,
             badgeViewModels: badges,
             uiConfigProvider: self.uiConfigProvider
         )
     }
 
-    private static func makeTextViewModel(lid: String = "text_lid") throws -> TextComponentViewModel {
+    private static func makeTextViewModel(
+        lid: String = "text_lid",
+        visible: Bool? = nil
+    ) throws -> TextComponentViewModel {
         return try TextComponentViewModel(
             localizationProvider: self.localizationProvider,
             uiConfigProvider: self.uiConfigProvider,
-            component: .init(text: lid, color: .init(light: .hex("#000000")))
+            component: .init(visible: visible, text: lid, color: .init(light: .hex("#000000")))
         )
     }
 

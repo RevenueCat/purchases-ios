@@ -54,6 +54,8 @@ class ButtonComponentViewModel {
     let sheetStackViewModel: StackComponentViewModel?
 
     private let componentVisible: Bool?
+    private let announcesOwnContent: Bool
+    private let localizedBundle: Bundle
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
 
@@ -118,26 +120,29 @@ class ButtonComponentViewModel {
             self.action = .unknown
         }
 
-        self.derivedAccessibilityLabel = Self.deriveAccessibilityLabel(
-            action: self.action,
-            stackViewModel: stackViewModel,
-            localizationProvider: localizationProvider
-        )
+        // Both resolved once here: the stack walk is the expensive part, and looking up the
+        // localized bundle repeatedly would repeat a path search on every render.
+        self.announcesOwnContent = stackViewModel.containsAnnounceableContent
+        self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
     }
 
     /// A screen reader label for buttons that announce nothing on their own, like an icon-only
     /// close button. `nil` when the button already announces something, or when the action's
     /// meaning is opaque to us.
-    let derivedAccessibilityLabel: String?
+    ///
+    /// `dismissesPaywall` distinguishes the two things a `navigate_back` button can do: inside a
+    /// workflow with somewhere to go back to it returns the user to the previous step, otherwise it
+    /// dismisses. The caller resolves that, so the word matches where the tap actually leads.
+    func derivedAccessibilityLabel(dismissesPaywall: Bool) -> String? {
+        guard !self.announcesOwnContent else {
+            return nil
+        }
 
-    private static func deriveAccessibilityLabel(
-        action: Action,
-        stackViewModel: StackComponentViewModel,
-        localizationProvider: LocalizationProvider
-    ) -> String? {
         let key: String?
-        switch action {
-        case .navigateBack, .closeWorkflow:
+        switch self.action {
+        case .navigateBack:
+            key = dismissesPaywall ? "Close" : "Go back"
+        case .closeWorkflow:
             key = "Close"
         case .restorePurchases:
             key = "Restore purchases"
@@ -154,14 +159,11 @@ class ButtonComponentViewModel {
             key = nil
         }
 
-        // Checked last: walking the stack is the expensive part, and it only matters once we know
-        // there is a label to suppress.
-        guard let key, !stackViewModel.containsAnnounceableContent else {
+        guard let key else {
             return nil
         }
 
-        return Localization.localizedBundle(localizationProvider.locale)
-            .localizedString(forKey: key, value: nil, table: nil)
+        return self.localizedBundle.localizedString(forKey: key, value: nil, table: nil)
     }
 
     var hasUnknownAction: Bool {

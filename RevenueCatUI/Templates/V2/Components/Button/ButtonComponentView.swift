@@ -112,7 +112,7 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
-            .applyIfLet(self.viewModel.derivedAccessibilityLabel, apply: { view, label in
+            .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
                 view.accessibilityLabel(label)
             })
             .withTransition(viewModel.component.transition)
@@ -141,6 +141,19 @@ struct ButtonComponentView: View {
             #endif
             #endif
         }
+    }
+
+    /// Resolved through the same `dismissalAction` the tap itself goes through, so the announced
+    /// word cannot drift from where the button actually leads.
+    private var derivedAccessibilityLabel: String? {
+        let dismissal = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: self.workflowRenderingContext.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        )
+
+        return self.viewModel.derivedAccessibilityLabel(
+            dismissesPaywall: dismissal == .dismissWorkflow
+        )
     }
 
     private var headerPageOffset: CGFloat {

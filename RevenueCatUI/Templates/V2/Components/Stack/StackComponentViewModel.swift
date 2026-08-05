@@ -51,6 +51,10 @@ class StackComponentViewModel {
     /// Whether this stack renders anything a screen reader can announce, at any depth.
     /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
     var containsAnnounceableContent: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
         return self.viewModels.contains(where: Self.announces)
             || self.badgeViewModels.contains(where: Self.announces)
     }
