@@ -181,6 +181,86 @@ final class PaywallCacheWarmingTests: TestCase {
 
 #if !os(tvOS) // For Paywalls V2
 
+    func testWorkflowAssetPrewarmingDownloadsPreferredImagesAndLowResVideos() async {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet",
+            name: nil,
+            stack: .init(components: [
+                .image(.init(source: Self.cacheWarmingImage("sheet")))
+            ]),
+            backgroundBlur: false,
+            size: nil
+        )
+        let screen = Self.workflowScreen(components: [
+            .image(.init(source: Self.cacheWarmingImage("image"))),
+            .button(.init(
+                action: .navigateTo(destination: .sheet(sheet: sheet)),
+                stack: .init(components: [])
+            )),
+            .video(.init(source: Self.cacheWarmingVideo("video"))),
+            .video(.init(source: Self.cacheWarmingVideo("high-only", hasLowRes: false)))
+        ])
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": screen]
+        )
+
+        await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.cacheWarmingURL("image-low.heic"), checksum: nil),
+            .init(url: Self.cacheWarmingURL("sheet-low.heic"), checksum: nil),
+            .init(url: Self.cacheWarmingURL("sheet-high.heic"), checksum: nil),
+            .init(
+                url: Self.cacheWarmingURL("video-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "video-low")
+            )
+        ])
+    }
+
+    func testOfferingsImageAndVideoPrewarmingDownloadsEachAssetOnce() async throws {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let data = Self.paywallComponentsData(components: [
+            .image(.init(source: Self.cacheWarmingImage("offering-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("offering-video")))
+        ])
+        let offering = Offering(
+            identifier: Self.offeringIdentifier,
+            serverDescription: "Test",
+            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let offerings = try Self.createOfferings([offering])
+
+        await cache.warmUpPaywallImagesCache(offerings: offerings)
+        await cache.warmUpPaywallVideosCache(offerings: offerings)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil),
+            .init(
+                url: Self.cacheWarmingURL("offering-video-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "offering-video-low")
+            )
+        ])
+    }
+
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
         let font = DownloadableFont(
             name: "MockFont",
@@ -352,6 +432,71 @@ final class PaywallCacheWarmingTests: TestCase {
 private extension PaywallCacheWarmingTests {
 
 #if !os(tvOS)
+    static var emptyUIConfig: UIConfig {
+        return .init(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        )
+    }
+
+    static func workflowScreen(components: [PaywallComponent]) -> WorkflowScreen {
+        let data = Self.paywallComponentsData(components: components)
+        return .init(
+            name: "Test",
+            templateName: data.templateName,
+            assetBaseURL: data.assetBaseURL,
+            componentsConfig: data.componentsConfig,
+            componentsLocalizations: data.componentsLocalizations,
+            defaultLocale: data.defaultLocale,
+            offeringIdentifier: nil
+        )
+    }
+
+    static func paywallComponentsData(components: [PaywallComponent]) -> PaywallComponentsData {
+        return .init(
+            templateName: "test",
+            assetBaseURL: Self.cacheWarmingURL(""),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: components),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [:],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func cacheWarmingImage(_ name: String) -> PaywallComponent.ThemeImageUrls {
+        return .init(light: .init(
+            width: 100,
+            height: 100,
+            original: Self.cacheWarmingURL("\(name)-original.png"),
+            heic: Self.cacheWarmingURL("\(name)-high.heic"),
+            heicLowRes: Self.cacheWarmingURL("\(name)-low.heic")
+        ))
+    }
+
+    static func cacheWarmingVideo(
+        _ name: String,
+        hasLowRes: Bool = true
+    ) -> PaywallComponent.ThemeVideoUrls {
+        return .init(light: .init(
+            width: 100,
+            height: 100,
+            url: Self.cacheWarmingURL("\(name)-high.mp4"),
+            checksum: .init(algorithm: .sha256, value: "\(name)-high"),
+            urlLowRes: hasLowRes ? Self.cacheWarmingURL("\(name)-low.mp4") : nil,
+            checksumLowRes: hasLowRes ? .init(algorithm: .sha256, value: "\(name)-low") : nil
+        ))
+    }
+
+    static func cacheWarmingURL(_ path: String) -> URL {
+        // swiftlint:disable:next force_unwrapping
+        return URL(string: "https://assets.example.com/\(path)")!
+    }
+
     func workflowFontInstallCallCount(
         fontNames: [String],
         shouldFailInstallation: Bool = false
@@ -447,6 +592,23 @@ private extension PaywallCacheWarmingTests {
 
     static let bundle = Bundle(for: PaywallCacheWarmingTests.self)
     static let offeringIdentifier = "offering"
+
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private actor MockCacheWarmingFileRepository: FileRepositoryType {
+
+    private(set) var requests: [URLWithValidation] = []
+
+    nonisolated func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requests.append(.init(url: url, checksum: checksum))
+        return url
+    }
 
 }
 
