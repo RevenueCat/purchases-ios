@@ -3242,6 +3242,10 @@ The RevenueCat iOS SDK v5 is here!! Version 5.0 of the RevenueCat SDK enables fu
 
 See our [RevenueCat v5 Migration Guide](Sources/DocCDocumentation/DocCDocumentation.docc/V5_API_Migration_guide.md) for all the details.
 
+## 4.44.3
+### 🔄 Other Changes
+* [v4] Add Xcode 27 support (#7356) via Rick (@rickvdl)
+
 ## 4.44.2
 ## RevenueCat SDK
 ### 🐞 Bugfixes
