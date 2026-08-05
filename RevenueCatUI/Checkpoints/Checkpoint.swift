@@ -68,6 +68,7 @@ extension CheckpointNoActionReason {
         return "CheckpointResult(checkpoint=\(self.checkpoint))"
     }
 
+    /// Returns whether two checkpoint results have the same concrete type and associated values.
     public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
         return lhs.isEqual(to: rhs)
     }
@@ -137,6 +138,7 @@ extension CheckpointNoActionReason {
         return "CheckpointPaywallOutcome"
     }
 
+    /// Returns whether two paywall outcomes have the same concrete type and associated values.
     public static func == (lhs: CheckpointPaywallOutcome, rhs: CheckpointPaywallOutcome) -> Bool {
         return lhs.isEqual(to: rhs)
     }
