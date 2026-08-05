@@ -12,28 +12,151 @@
 //  Created by Rick van der Linden.
 //
 
+import CoreFoundation
 import Foundation
 
-/// Parameters passed from RevenueCatUI into the checkpoint engine.
-@_spi(Internal) public struct CheckpointEngineParams {
+/// A custom value supplied when a checkpoint is hit.
+@_spi(Internal) public enum CheckpointValue: Equatable, Hashable, Sendable {
 
-    public let customProperties: [String: Any]
+    case string(String)
+    case integer(Int64)
+    case double(Double)
+    case boolean(Bool)
 
-    public init(customProperties: [String: Any]) {
+}
+
+extension CheckpointValue: ExpressibleByStringLiteral {
+
+    public init(stringLiteral value: String) { self = .string(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByIntegerLiteral {
+
+    public init(integerLiteral value: Int64) { self = .integer(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByFloatLiteral {
+
+    public init(floatLiteral value: Double) { self = .double(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByBooleanLiteral {
+
+    public init(booleanLiteral value: Bool) { self = .boolean(value) }
+
+}
+
+extension CheckpointValue: Codable {
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+
+        if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .boolean(value)
+        } else if let value = try? container.decode(Int64.self) {
+            self = .integer(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .double(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                Self.self,
+                .init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Expected a string, integer, double, or boolean."
+                )
+            )
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+
+        switch self {
+        case let .string(value): try container.encode(value)
+        case let .integer(value): try container.encode(value)
+        case let .double(value): try container.encode(value)
+        case let .boolean(value): try container.encode(value)
+        }
+    }
+
+}
+
+extension CheckpointValue {
+
+    public init?(foundationValue: Any) {
+        if let value = foundationValue as? String {
+            self = .string(value)
+            return
+        }
+
+        guard let number = foundationValue as? NSNumber else { return nil }
+        if CFGetTypeID(number) == CFBooleanGetTypeID() {
+            self = .boolean(number.boolValue)
+            return
+        }
+
+        switch String(cString: number.objCType) {
+        case "c", "i", "s", "l", "q", "C", "I", "S", "L", "Q":
+            guard let value = Int64(number.stringValue) else { return nil }
+            self = .integer(value)
+        default:
+            self = .double(number.doubleValue)
+        }
+    }
+
+    public var foundationValue: Any {
+        switch self {
+        case let .string(value): return value
+        case let .integer(value): return NSNumber(value: value)
+        case let .double(value): return NSNumber(value: value)
+        case let .boolean(value): return NSNumber(value: value)
+        }
+    }
+
+}
+
+/// Per-call parameters for a checkpoint.
+@_spi(Internal) public struct CheckpointParams: Equatable, Hashable, Sendable {
+
+    /// Custom properties usable in checkpoint targeting rules and feature events.
+    public let customProperties: [String: CheckpointValue]
+
+    public init(customProperties: [String: CheckpointValue] = [:]) {
         self.customProperties = customProperties
     }
 
 }
 
-/// Checkpoint information used across the RevenueCat and RevenueCatUI module boundary.
-@_spi(Internal) public struct CheckpointEngineInfo {
+/// Information about a checkpoint that was hit.
+@_spi(Internal) public struct CheckpointInfo: Equatable, Hashable, Sendable {
 
     public let identifier: String
-    public let params: CheckpointEngineParams
+    public let params: CheckpointParams
 
-    public init(identifier: String, params: CheckpointEngineParams) {
+    public init(identifier: String, params: CheckpointParams) {
         self.identifier = identifier
         self.params = params
+    }
+
+}
+
+extension CheckpointParams: CustomStringConvertible {
+
+    public var description: String {
+        return "CheckpointParams(customProperties=\(self.customProperties))"
+    }
+
+}
+
+extension CheckpointInfo: CustomStringConvertible {
+
+    public var description: String {
+        return "CheckpointInfo(identifier='\(self.identifier)', params=\(self.params))"
     }
 
 }
@@ -58,10 +181,10 @@ import Foundation
 /// Internal checkpoint result returned to RevenueCatUI for conversion into its public result hierarchy.
 @_spi(Internal) public enum CheckpointEngineResult {
 
-    case paywallPresented(checkpoint: CheckpointEngineInfo, outcome: CheckpointEnginePaywallOutcome)
-    case noAction(checkpoint: CheckpointEngineInfo, reason: CheckpointEngineNoActionReason)
+    case paywallPresented(checkpoint: CheckpointInfo, outcome: CheckpointEnginePaywallOutcome)
+    case noAction(checkpoint: CheckpointInfo, reason: CheckpointEngineNoActionReason)
 
-    public var checkpoint: CheckpointEngineInfo {
+    public var checkpoint: CheckpointInfo {
         switch self {
         case let .paywallPresented(checkpoint, _), let .noAction(checkpoint, _):
             return checkpoint
@@ -83,9 +206,9 @@ import Foundation
 /// Input supplied by the core checkpoint engine to RevenueCatUI for presentation.
 @_spi(Internal) public class CheckpointEnginePresentation {
 
-    public let checkpoint: CheckpointEngineInfo
+    public let checkpoint: CheckpointInfo
 
-    public init(checkpoint: CheckpointEngineInfo) {
+    public init(checkpoint: CheckpointInfo) {
         self.checkpoint = checkpoint
     }
 
@@ -113,10 +236,10 @@ import Foundation
 /// Receives checkpoint engine events for conversion into the RevenueCatUI public listener API.
 @_spi(Internal) public protocol CheckpointEngineListener: AnyObject {
 
-    func onCheckpointHit(_ checkpoint: CheckpointEngineInfo)
-    func onCheckpointResolved(_ checkpoint: CheckpointEngineInfo, result: CheckpointEngineResult)
+    func onCheckpointHit(_ checkpoint: CheckpointInfo)
+    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointEngineResult)
     func onCheckpointPaywallFinished(
-        _ checkpoint: CheckpointEngineInfo,
+        _ checkpoint: CheckpointInfo,
         outcome: CheckpointEnginePaywallOutcome
     )
 

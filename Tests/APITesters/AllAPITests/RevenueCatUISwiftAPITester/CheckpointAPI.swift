@@ -12,7 +12,7 @@
 //  Created by Rick van der Linden.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) import RevenueCatUI
 
 private final class CheckpointListenerAPITester: CheckpointListener {
@@ -50,9 +50,17 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
+    let params = CheckpointParams(customProperties: [
+        "name": "Rick",
+        "attempts": 2,
+        "score": 4.5,
+        "subscriber": true
+    ])
+    let _: [String: CheckpointValue] = params.customProperties
+
     purchases.checkpoint(
         "test_checkpoint",
-        params: CheckpointParams()
+        params: params
     ) { (_: Result<CheckpointResult, PublicError>) in }
 
     purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
@@ -60,37 +68,6 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     Task {
         let _: CheckpointResult = try await purchases.checkpoint("test_checkpoint")
     }
-
-    #if ENABLE_CHECKPOINTS_OBJC
-    purchases.checkpoint(
-        "test_checkpoint",
-        params: ObjCCheckpointParams()
-    ) { (result: ObjCCheckpointResult?, _: PublicError?) in
-        guard let result else { return }
-        let _: ObjCCheckpointInfo = result.checkpoint
-
-        if let presented = result as? ObjCCheckpointPaywallPresentedResult {
-            let outcome: ObjCCheckpointPaywallOutcome = presented.paywallOutcome
-            if let purchased = outcome as? ObjCCheckpointPaywallPurchasedOutcome {
-                let _: CustomerInfo = purchased.customerInfo
-            } else if let restored = outcome as? ObjCCheckpointPaywallRestoredOutcome {
-                let _: CustomerInfo = restored.customerInfo
-            } else if let error = outcome as? ObjCCheckpointPaywallErrorOutcome {
-                let _: PublicError = error.error
-            } else if outcome is ObjCCheckpointPaywallDismissedOutcome {
-                return
-            }
-        } else if let noAction = result as? ObjCCheckpointNoActionResult {
-            let _: ObjCCheckpointNoActionReason = noAction.reason
-            let _: String = noAction.reason.value
-        }
-    }
-
-    purchases.checkpoint(
-        "test_checkpoint",
-        params: nil as ObjCCheckpointParams?
-    ) { (_: ObjCCheckpointResult?, _: PublicError?) in }
-    #endif
 
     let _: CheckpointNoActionReason = .noMatch
     let _: CheckpointNoActionReason = .holdout

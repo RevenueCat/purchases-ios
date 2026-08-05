@@ -22,17 +22,27 @@ import Foundation
 public final class ObjCCheckpointParams: NSObject {
 
     /// Custom properties usable in checkpoint targeting rules.
-    @objc public let customProperties: NSDictionary
+    @objc public var customProperties: NSDictionary {
+        return self.swiftValue.customProperties.mapValues { $0.foundationValue } as NSDictionary
+    }
 
     let swiftValue: CheckpointParams
 
     /// Creates parameters with custom properties. Unsupported values are dropped.
     @objc public init(customProperties: NSDictionary) {
-        let swiftValue = CheckpointParams(
-            customProperties: customProperties as? [String: Any] ?? [:]
-        )
-        self.swiftValue = swiftValue
-        self.customProperties = swiftValue.customProperties as NSDictionary
+        var values: [String: CheckpointValue] = [:]
+        for (rawKey, rawValue) in customProperties {
+            guard let key = rawKey as? String,
+                  let value = CheckpointValue(foundationValue: rawValue) else {
+                Logger.warning(
+                    "Dropping invalid Objective-C checkpoint custom property: " +
+                    String(reflecting: type(of: rawValue))
+                )
+                continue
+            }
+            values[key] = value
+        }
+        self.swiftValue = CheckpointParams(customProperties: values)
         super.init()
     }
 
@@ -58,7 +68,7 @@ public final class ObjCCheckpointInfo: NSObject {
     init(_ checkpoint: CheckpointInfo) {
         self.identifier = checkpoint.identifier
         self.params = ObjCCheckpointParams(
-            customProperties: checkpoint.params.customProperties as NSDictionary
+            customProperties: checkpoint.params.customProperties.mapValues { $0.foundationValue } as NSDictionary
         )
         super.init()
     }

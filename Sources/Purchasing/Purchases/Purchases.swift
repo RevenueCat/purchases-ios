@@ -1066,7 +1066,7 @@ public extension Purchases {
     @_spi(Internal)
     func performCheckpoint(
         identifier: String,
-        params: CheckpointEngineParams,
+        params: CheckpointParams,
         presenter: CheckpointEnginePresenter?,
         completion: @escaping (Result<CheckpointEngineResult, PublicError>) -> Void
     ) {
@@ -1082,7 +1082,7 @@ public extension Purchases {
     @_spi(Internal)
     func performCheckpoint(
         identifier: String,
-        params: CheckpointEngineParams,
+        params: CheckpointParams,
         presenter: CheckpointEnginePresenter?
     ) async throws -> CheckpointEngineResult {
         return try await self.purchasesOrchestrator.checkpoint(
