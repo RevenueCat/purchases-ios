@@ -111,7 +111,6 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(ruleSet).to(beNil())
     }
 
-    /// Rules live in the item's payload, not its metadata, so an item without a `blob_ref` has nothing to read.
     func testReturnsNilForAnItemWithoutABlobRef() async {
         self.commit(checkpoints: [
             "onboarding": .init(content: ["rules": .array([
@@ -124,8 +123,6 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(ruleSet).to(beNil())
     }
 
-    /// A checkpoint whose payload carries no rules is still resolvable, so a caller can tell it apart from
-    /// an unconfigured one.
     func testResolvesACheckpointWhosePayloadHasNoRules() async throws {
         self.commit(
             checkpoints: ["onboarding": .init(blobRef: "onboarding-ref", prefetch: true)],
@@ -140,8 +137,7 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(ruleSet.rules).to(beEmpty())
     }
 
-    /// `blobData` re-reads through the manager every time, so a config replacement is picked up without the
-    /// provider holding any state of its own.
+    /// The provider holds no state of its own, so a config replacement is picked up on the next read.
     func testPicksUpANewPayloadAfterTheConfigIsReplaced() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
         let beforeResult = await self.provider.getCheckpoint("onboarding")
@@ -160,14 +156,12 @@ class CheckpointsConfigProviderTests: TestCase {
 
     // MARK: - Helpers
 
-    /// Commits one blob-backed item per checkpoint, each payload carrying one rule per workflow id. This is
-    /// the shape the topic is expected to arrive in, so most tests can stay a single line.
+    /// One blob-backed item per checkpoint, each payload carrying one rule per workflow id.
     private func commit(rules: [String: [String]], ids: [String: String] = [:]) {
         var items: [String: RemoteConfiguration.ConfigItem] = [:]
         var blobs: [String: Data] = [:]
 
         for (identifier, workflowIds) in rules {
-            // Vary the ref with the payload, the way a content-addressed ref would.
             let ref = "\(identifier)-\(workflowIds.joined(separator: "-"))-ref"
             items[identifier] = .init(blobRef: ref, prefetch: true)
             blobs[ref] = Self.payload(id: ids[identifier], workflowIds: workflowIds)
@@ -210,10 +204,8 @@ private final class FakeCheckpointsRemoteConfigAPI: RemoteConfigAPIType {
         isAppBackgrounded: Bool,
         completion: @escaping Backend.ResponseHandler<RemoteConfigFetchResult>
     ) {
-        // `blobData(for:itemKey:)` triggers a refresh-and-wait whenever an item is absent, so this must
-        // always settle rather than hang: report a "204 Not Modified", since state is already pre-committed.
-        // `RemoteConfigManager` calls this from inside a lock and documents that it assumes the completion is
-        // never invoked synchronously, so this must dispatch asynchronously.
+        // Must always settle rather than hang, since a missing item triggers a refresh-and-wait. Must also
+        // dispatch asynchronously: `RemoteConfigManager` calls this from inside a lock.
         DispatchQueue.global().async {
             completion(.success(RemoteConfigFetchResult(response: VerifiedHTTPResponse(
                 httpStatusCode: .noContent,

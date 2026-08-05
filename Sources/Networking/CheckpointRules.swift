@@ -12,10 +12,9 @@ struct CheckpointRuleSet: Equatable, Sendable {
 
     /// The checkpoint name, which is also the topic item key.
     let identifier: String
-    /// The checkpoint's backend id, absent when the backend doesn't send one.
+    /// The checkpoint's backend id, as opposed to its name.
     let id: String?
-    /// Served in priority order: evaluated top to bottom, first match wins. Not re-sorted here, since the
-    /// wire order *is* the order.
+    /// Served in priority order, first match wins. Never re-sorted here.
     let rules: [CheckpointRule]
 
     init(identifier: String, id: String? = nil, rules: [CheckpointRule]) {
@@ -26,17 +25,14 @@ struct CheckpointRuleSet: Equatable, Sendable {
 
 }
 
-/// One rule at a checkpoint: who it applies to, and the workflow it resolves to.
 struct CheckpointRule: Equatable, Sendable {
 
     let id: String?
-    /// The audience this rule targets, as a reference. The audience's own predicate is expected to arrive in
-    /// a separate topic, so nothing here evaluates it. `nil` targets every user.
+    /// Reference to the targeted audience, whose predicate arrives in a separate topic. `nil` targets everyone.
     let audienceId: String?
     let workflowId: String
     let frequencyCap: CheckpointFrequencyCap?
-    /// When the rule is live. Rules are published on creation, ahead of their start date, so a scheduled
-    /// window has to be resolved on device.
+    /// Rules are published ahead of their start date, so this window is resolved on device.
     let schedule: CheckpointRuleSchedule?
 
     init(
@@ -55,8 +51,7 @@ struct CheckpointRule: Equatable, Sendable {
 
 }
 
-/// How often a rule may fire. `type` stays the raw wire value: frequency capping is out of V1 scope and its
-/// vocabulary isn't settled, so this carries what was sent instead of interpreting it.
+/// `type` stays the raw wire value: frequency capping is out of V1 scope and its vocabulary isn't settled.
 struct CheckpointFrequencyCap: Equatable, Sendable {
 
     let type: String
@@ -71,7 +66,7 @@ struct CheckpointFrequencyCap: Equatable, Sendable {
 
 }
 
-/// A rule's scheduled window. Either bound can be absent, meaning open-ended on that side.
+/// Either bound absent means open-ended on that side.
 struct CheckpointRuleSchedule: Equatable, Sendable {
 
     let start: Date?
@@ -88,19 +83,14 @@ struct CheckpointRuleSchedule: Equatable, Sendable {
 
 extension CheckpointRuleSet {
 
-    /// Parses a checkpoint's blob payload. Returns `nil` when the bytes aren't a JSON object.
+    /// `nil` when the bytes aren't a JSON object.
     static func parse(identifier: String, blob data: Data) -> CheckpointRuleSet? {
         guard let fields = Self.fields(fromBlob: data) else { return nil }
         return Self.parse(identifier: identifier, fields: fields)
     }
 
-    /// Parses one checkpoint's id and rules from its decoded payload. A malformed rule is skipped rather than
-    /// failing the checkpoint, and unknown fields are ignored so the backend can extend the schema without a
-    /// client release.
-    ///
-    /// Keys are read at their wire spelling (`workflow_id`, `frequency_cap`): the payload is decoded as a
-    /// dictionary, and `.convertFromSnakeCase` only renames keys read through a keyed container. That holds at
-    /// every depth here, unlike an item's `content`, whose own keys `ConfigItem.init(from:)` does camelCase.
+    /// A malformed rule is skipped rather than failing the checkpoint, and unknown fields are ignored so the
+    /// backend can extend the schema without a client release.
     static func parse(identifier: String, fields: [String: AnyDecodable]) -> CheckpointRuleSet {
         var id: String?
         if case let .string(value)? = fields[Self.idKey] {
@@ -182,8 +172,7 @@ extension CheckpointRuleSet {
         return CheckpointFrequencyCap(type: type, count: count, window: window)
     }
 
-    /// A schedule with neither bound parseable is dropped, so an unparseable window can't be mistaken for
-    /// an open-ended one.
+    /// Dropped rather than kept as open-ended, which would run the rule outside its dates.
     private static func parseSchedule(_ field: AnyDecodable?) -> CheckpointRuleSchedule? {
         guard case let .object(fields)? = field else { return nil }
 

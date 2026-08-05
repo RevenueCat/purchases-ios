@@ -16,14 +16,10 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
-/// Parsing-level tests for a checkpoint's payload. The first two go through real JSON bytes so the key
-/// contract is exercised end to end; the rest build the decoded fields directly to keep each case focused.
 final class CheckpointRulesTests: TestCase {
 
     // MARK: - Wire contract
 
-    /// The example payload from the "Storing and serving checkpoint rules" proposal, with its placeholder ids
-    /// filled in, as it would arrive in a checkpoint's blob.
     func testParsesTheDocumentedExamplePayload() throws {
         let blob = Data("""
         {
@@ -63,8 +59,6 @@ final class CheckpointRulesTests: TestCase {
         expect(second.schedule).to(beNil())
     }
 
-    /// A payload is decoded as a dictionary, so `.convertFromSnakeCase` leaves every key alone at every
-    /// depth. An item's own `content` keys are the exception, and those carry metadata, not rules.
     func testKeepsPayloadKeysVerbatimWhileItemMetadataIsCamelCased() throws {
         let blob = Data(#"{ "rules": [{ "workflow_id": "wf-1", "frequency_cap": { "type": "once" } }] }"#.utf8)
         let ruleSet = try XCTUnwrap(CheckpointRuleSet.parse(identifier: "app_open", blob: blob))
@@ -102,7 +96,6 @@ final class CheckpointRulesTests: TestCase {
 
     // MARK: - Ordering
 
-    /// Rules are served in priority order, so parsing must not reorder them.
     func testPreservesTheServedRuleOrder() {
         let ruleSet = Self.ruleSet(["rules": .array([
             Self.rule(workflowId: "wf-c"),
@@ -148,7 +141,6 @@ final class CheckpointRulesTests: TestCase {
         expect(Self.ruleSet(["rules": .string("nope")]).rules).to(beEmpty())
     }
 
-    /// A payload carrying only the checkpoint's own id is still a known checkpoint with no rules.
     func testKeepsCheckpointWithNoRulesKeyAtAll() {
         let ruleSet = Self.ruleSet(["id": .string("checkpoint-xyz")])
 
@@ -216,8 +208,7 @@ final class CheckpointRulesTests: TestCase {
         expect(ruleSet.rules.onlyElement?.schedule?.end).to(beNil())
     }
 
-    /// Dropped rather than kept as an open-ended window, which would run a rule outside the dates it was
-    /// scheduled for.
+    /// Dropped rather than kept as open-ended, which would run the rule outside its dates.
     func testDropsAScheduleWhoseDatesCantBeParsed() {
         let ruleSet = Self.ruleSet(["rules": .array([
             .object([
