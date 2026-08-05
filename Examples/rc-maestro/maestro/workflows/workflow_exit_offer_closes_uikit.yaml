@@ -8,9 +8,13 @@
 #
 # Navigation mirrors workflow_exit_offer_on_last_page.yaml, so it reuses the same app, offering and
 # steps that flow already exercises. Leaving the last page goes through the labeled button the
-# dashboard puts there. The exit offer is closed through the SDK's own close button, which carries an
-# accessibility label ("Dismiss", set in `PaywallsV2View.makeCloseButton`) rather than a coordinate,
-# so a shifted sheet cannot turn a miss into a false failure.
+# dashboard puts there.
+#
+# The exit offer's close button is authored on the paywall (Header -> Close button), so it is an
+# unlabeled icon with no accessibility text and can only be tapped by coordinate. It sits top-trailing;
+# measured bounds on iPhone 17 Pro were [332,62][402,108], hence 91%,10%. If this ever misses, the tap
+# still "succeeds" and only the assertions below fail, so check the failure screenshot before assuming
+# the SDK regressed.
 #
 # Run locally against the test store:
 #   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_exit_offer_closes_uikit.yaml
@@ -43,13 +47,13 @@ env:
 # Close the last page -> the exit offer paywall is presented.
 - tapOn: { text: "Close Paywall" }
 - extendedWaitUntil:
-    visible: "Paywall V2"
+    visible: "Unlock full access"
     timeout: 15000
 - takeScreenshot: "workflow_exit_offer_closes_uikit_presented"
 
 # Close the exit offer -> it goes away and we are back on the launcher, not stuck on the paywall.
-- tapOn: { text: "Dismiss" }
+- tapOn: { point: "91%,10%" }
 - waitForAnimationToEnd: { timeout: 8000 }
-- assertNotVisible: "Paywall V2"
+- assertNotVisible: "Unlock full access"
 - assertVisible: "Workflow paywall (UIKit)"
 - takeScreenshot: "workflow_exit_offer_closes_uikit_dismissed"
