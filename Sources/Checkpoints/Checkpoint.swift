@@ -12,7 +12,6 @@
 //  Created by Rick van der Linden.
 //
 
-import CoreFoundation
 import Foundation
 
 // swiftlint:disable file_length
