@@ -1,24 +1,17 @@
-## RevenueCat SDK
-### Remote-config
-#### 🐞 Bugfixes
-* Refresh remote config when syncing attributes and offerings (#7323) via Antonio Pallares (@ajpallares)
-
 ## RevenueCatUI SDK
-### ✨ New Features
-* feat: add onURLOpened to paywall listener surfaces (#7320) via Toni Rico (@tonidero)
 ### Paywallsv2
-#### ✨ New Features
-* Enable support for multipage paywalls (#7327) via Facundo Menzella (@facumenzella)
 #### 🐞 Bugfixes
-* Send `paywall_id` and `trace_id` on post receipt (#7311) via Cesar de la Vega (@vegaro)
+* Fix web_view component flashing on paywall load (#7318) via Antonio Pallares (@ajpallares)
+* fix(paywalls): apply tab state rules on workflow-backed paywalls (#7347) via Álvaro Brey (@AlvaroBrey)
 
 ### 🔄 Other Changes
-* fix(remote-config): clear last attempt timestamp for cooldown after successful response (#7328) via Rick (@rickvdl)
-* fix(maestro): tap the relabeled Continue buttons in the workflow flows (#7332) via Antonio Pallares (@ajpallares)
-* chore: align 5.82.0 changelog entry for #7233 with release notes (#7326) via Antonio Pallares (@ajpallares)
-* feat(remote-config): force the config kill-switch via query param in E2E tests (#7317) via Antonio Pallares (@ajpallares)
-* Send `paywall_id`, `workflow_id` and `trace_id` on paywall events (#7322) via Cesar de la Vega (@vegaro)
-* Re-resolve pruned offerings when the config kill switch trips (#7321) via Antonio Pallares (@ajpallares)
-* feat(remote-config): use the server clock for X-RC-Last-Refresh-Time (#7314) via Rick (@rickvdl)
-* test(paywalls): drop the nested background landscape test (#7319) via Facundo Menzella (@facumenzella)
-* refactor: model ForceServerErrorStrategy interception as a single Action enum (#7315) via Antonio Pallares (@ajpallares)
+* ci: report public API changes and pings to #feed-sdk-new-api (#7309) via Facundo Menzella (@facumenzella)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `dd577ee` to `b4e1e7f` (#7358) via dependabot[bot] (@dependabot[bot])
+* Use internalPaywallComponents property in tests (#7346) via Rick (@rickvdl)
+* Bound blob downloads with per-source timeouts (#7185) via Antonio Pallares (@ajpallares)
+* Re-tier HTTP request timeouts around per-host memory (#7179) via Antonio Pallares (@ajpallares)
+* Chore(deps): Bump danger from 9.6.0 to 9.6.1 (#7350) via dependabot[bot] (@dependabot[bot])
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `3421c88` to `dd577ee` (#7351) via dependabot[bot] (@dependabot[bot])
+* Add a Maestro flow for the config kill switch tripping mid-session (#7324) via Antonio Pallares (@ajpallares)
+* Fix `fastlane setup_dev` in submodule checkouts and with PATH-installed swiftlint (#7330) via Álvaro Brey (@AlvaroBrey)
+* fix(remote-config): improve logging when remote config is disabled through to killswitch (#7337) via Rick (@rickvdl)
