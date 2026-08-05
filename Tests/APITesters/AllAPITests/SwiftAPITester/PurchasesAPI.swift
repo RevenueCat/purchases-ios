@@ -326,12 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-        let _: CheckpointResult = try await purchases.checkpoint(
-            "test_checkpoint",
-            params: CheckpointParams(customProperties: ["name": "Rick"])
-        )
-        let _: CheckpointResult = try await purchases.checkpoint("test_checkpoint")
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])

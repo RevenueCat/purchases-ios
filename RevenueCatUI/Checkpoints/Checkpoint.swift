@@ -15,83 +15,6 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Per-call parameters for ``Purchases/checkpoint(_:params:)``.
-///
-/// Custom property values must be a `String`, number, or `Bool`.
-@_spi(Internal) public struct CheckpointParams: Equatable {
-
-    /// Custom properties usable in checkpoint targeting rules.
-    public let customProperties: [String: Any]
-
-    /// Creates parameters with optional custom properties.
-    public init(customProperties: [String: Any] = [:]) {
-        self.customProperties = customProperties.reduce(into: [:]) { validProperties, property in
-            let (key, value) = property
-            guard Self.isValidCustomPropertyValue(value) else {
-                Logger.warning(
-                    "Dropping invalid checkpoint custom property '\(key)': " +
-                    String(reflecting: type(of: value))
-                )
-                return
-            }
-            validProperties[key] = value
-        }
-    }
-
-    private static func isValidCustomPropertyValue(_ value: Any) -> Bool {
-        switch value {
-        case is String, is Bool,
-             is Int, is Int8, is Int16, is Int32, is Int64,
-             is UInt, is UInt8, is UInt16, is UInt32, is UInt64,
-             is Float, is Double, is Decimal, is NSNumber:
-            return true
-        default:
-            return false
-        }
-    }
-
-    public static func == (lhs: Self, rhs: Self) -> Bool {
-        return (lhs.customProperties as NSDictionary).isEqual(to: rhs.customProperties)
-    }
-
-}
-
-extension CheckpointParams {
-
-    var engineValue: CheckpointEngineParams {
-        return CheckpointEngineParams(customProperties: self.customProperties)
-    }
-
-    init(_ params: CheckpointEngineParams) {
-        self.init(customProperties: params.customProperties)
-    }
-
-}
-
-/// Information about a checkpoint that was hit.
-@_spi(Internal) public struct CheckpointInfo: Equatable {
-
-    /// The checkpoint identifier configured in the RevenueCat dashboard.
-    public let identifier: String
-
-    /// The parameters registered with the checkpoint.
-    public let params: CheckpointParams
-
-    init(identifier: String, params: CheckpointParams) {
-        self.identifier = identifier
-        self.params = params
-    }
-
-}
-
-extension CheckpointInfo {
-
-    init(_ checkpoint: CheckpointEngineInfo) {
-        self.init(identifier: checkpoint.identifier, params: CheckpointParams(checkpoint.params))
-    }
-
-}
-
 /// The reason no experience was served for a checkpoint.
 @_spi(Internal) public struct CheckpointNoActionReason: Equatable, Hashable, Sendable {
 
@@ -130,7 +53,7 @@ extension CheckpointNoActionReason {
 /// Base class for the result of hitting a checkpoint.
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
-/// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
+/// the SDK. New result subclasses can be added without breaking application code that inspects the concrete type.
 @_spi(Internal) public class CheckpointResult: CustomStringConvertible, Equatable {
 
     /// Information about the checkpoint that produced this result.
@@ -204,7 +127,7 @@ extension CheckpointNoActionReason {
 /// Base class for the terminal result of a checkpoint-presented paywall.
 ///
 /// Inspect the concrete subclass to determine the outcome. This class cannot be initialized or subclassed outside
-/// the SDK, allowing RevenueCat to add new result subclasses without breaking exhaustive switches in applications.
+/// the SDK. New outcome subclasses can be added without breaking application code that inspects the concrete type.
 @_spi(Internal) public class CheckpointPaywallOutcome: CustomStringConvertible, Equatable {
 
     fileprivate init() {}
@@ -338,24 +261,6 @@ extension CheckpointNoActionReason {
 
 // MARK: - Debug descriptions
 
-extension CheckpointParams: CustomStringConvertible {
-
-    /// A debug description of the checkpoint parameters.
-    public var description: String {
-        return "CheckpointParams(customProperties=\(self.customProperties))"
-    }
-
-}
-
-extension CheckpointInfo: CustomStringConvertible {
-
-    /// A debug description of the checkpoint information.
-    public var description: String {
-        return "CheckpointInfo(identifier='\(self.identifier)', params=\(self.params))"
-    }
-
-}
-
 extension CheckpointNoActionReason: CustomStringConvertible {
 
     /// The raw reason value.
@@ -369,12 +274,12 @@ extension CheckpointResult {
         switch result {
         case let .paywallPresented(checkpoint, outcome):
             return CheckpointPaywallPresentedResult(
-                checkpoint: CheckpointInfo(checkpoint),
+                checkpoint: checkpoint,
                 paywallOutcome: CheckpointPaywallOutcome.from(outcome)
             )
         case let .noAction(checkpoint, reason):
             return CheckpointNoActionResult(
-                checkpoint: CheckpointInfo(checkpoint),
+                checkpoint: checkpoint,
                 reason: CheckpointNoActionReason(reason)
             )
         }

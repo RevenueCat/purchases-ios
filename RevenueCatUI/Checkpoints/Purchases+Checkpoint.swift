@@ -38,7 +38,7 @@ import Foundation
     ) {
         self.performCheckpoint(
             identifier: identifier,
-            params: params.engineValue,
+            params: params,
             presenter: nil
         ) { result in
             completion(result.map(CheckpointResult.from))
@@ -61,7 +61,7 @@ import Foundation
         return CheckpointResult.from(
             try await self.performCheckpoint(
                 identifier: identifier,
-                params: params.engineValue,
+                params: params,
                 presenter: nil
             )
         )
@@ -77,23 +77,23 @@ private final class CheckpointListenerAdapter: CheckpointEngineListener {
         self.listener = listener
     }
 
-    func onCheckpointHit(_ checkpoint: CheckpointEngineInfo) {
-        self.listener.onCheckpointHit(CheckpointInfo(checkpoint))
+    func onCheckpointHit(_ checkpoint: CheckpointInfo) {
+        self.listener.onCheckpointHit(checkpoint)
     }
 
-    func onCheckpointResolved(_ checkpoint: CheckpointEngineInfo, result: CheckpointEngineResult) {
+    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointEngineResult) {
         self.listener.onCheckpointResolved(
-            CheckpointInfo(checkpoint),
+            checkpoint,
             result: CheckpointResult.from(result)
         )
     }
 
     func onCheckpointPaywallFinished(
-        _ checkpoint: CheckpointEngineInfo,
+        _ checkpoint: CheckpointInfo,
         outcome: CheckpointEnginePaywallOutcome
     ) {
         self.listener.onCheckpointPaywallFinished(
-            CheckpointInfo(checkpoint),
+            checkpoint,
             outcome: CheckpointPaywallOutcome.from(outcome)
         )
     }

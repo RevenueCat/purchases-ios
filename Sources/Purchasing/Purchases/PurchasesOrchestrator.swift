@@ -280,7 +280,7 @@ final class PurchasesOrchestrator {
 
     func checkpoint(
         identifier: String,
-        params: CheckpointEngineParams,
+        params: CheckpointParams,
         presenter: CheckpointEnginePresenter?,
         completion: @escaping (Result<CheckpointEngineResult, PublicError>) -> Void
     ) {
@@ -289,7 +289,7 @@ final class PurchasesOrchestrator {
 
     func checkpoint(
         identifier: String,
-        params: CheckpointEngineParams,
+        params: CheckpointParams,
         presenter: CheckpointEnginePresenter?
     ) async throws -> CheckpointEngineResult {
         throw Self.unsupportedCheckpointError
