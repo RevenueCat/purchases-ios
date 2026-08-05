@@ -107,9 +107,8 @@ class TokenManager {
         guard enabled else { return [:] }
         guard let currentAccessToken else { return [:] }
 
-        // /auth/login and /auth/revoke both want the API key
-        if urlRequest.path == HTTPRequest.Path.tokenLogin.iamPathComponent { return [:] }
-        if urlRequest.path == HTTPRequest.Path.tokenLogOut.iamPathComponent { return [:] }
+        // /auth/* paths want the API key
+        if urlRequest.httpRequest.path.isIAMPath { return [:] }
 
         return [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(currentAccessToken)"

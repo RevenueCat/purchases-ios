@@ -502,10 +502,10 @@ private extension HTTPClient {
             ))
             requestHeaders = [:]
         } else {
-            requestHeaders = request.headers
+            requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         }
         #else
-        let requestHeaders = request.headers
+        let requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         #endif
 
         let result = Result
