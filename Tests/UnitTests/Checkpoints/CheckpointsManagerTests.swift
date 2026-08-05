@@ -88,7 +88,7 @@ final class CheckpointsManagerTests: TestCase {
             result.description,
             "NoAction(checkpoint=\(checkpoint), reason=NO_MATCH)"
         )
-        XCTAssertEqual(CheckpointPaywallDismissedOutcome().description, "Dismissed")
+        XCTAssertEqual(CheckpointPaywallDismissedOutcome.shared.description, "Dismissed")
     }
 
     #if ENABLE_CHECKPOINTS_OBJC
@@ -102,7 +102,7 @@ final class CheckpointsManagerTests: TestCase {
             ObjCCheckpointResult.wrapping(
                 CheckpointPaywallPresentedResult(
                     checkpoint: checkpoint,
-                    paywallOutcome: CheckpointPaywallDismissedOutcome()
+                    paywallOutcome: CheckpointPaywallDismissedOutcome.shared
                 )
             ) as? ObjCCheckpointPaywallPresentedResult
         )
@@ -192,7 +192,7 @@ final class CheckpointsManagerTests: TestCase {
         self.presenter.onPresent = { presentation in
             presentation.delegate.onCheckpointPaywallFinished(
                 callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome()
+                outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
 
@@ -213,7 +213,7 @@ final class CheckpointsManagerTests: TestCase {
             XCTAssertEqual(presentation.workflowPresentation.checkpoint.identifier, "soft_paywall")
             presentation.delegate.onCheckpointPaywallFinished(
                 callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome()
+                outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
 
@@ -259,7 +259,7 @@ final class CheckpointsManagerTests: TestCase {
         let presentation = try XCTUnwrap(self.presenter.presentations.first)
         presentation.delegate.onCheckpointPaywallFinished(
             callID: presentation.callID,
-            outcome: CheckpointPaywallDismissedOutcome()
+            outcome: CheckpointPaywallDismissedOutcome.shared
         )
         await self.fulfillment(of: [completion], timeout: 1)
 
@@ -283,7 +283,7 @@ final class CheckpointsManagerTests: TestCase {
         self.presenter.onPresent = { presentation in
             presentation.delegate.onCheckpointPaywallFinished(
                 callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome()
+                outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
 
@@ -328,7 +328,7 @@ final class CheckpointsManagerTests: TestCase {
         let presentation = try XCTUnwrap(self.presenter.presentations.first)
         presentation.delegate.onCheckpointPaywallFinished(
             callID: presentation.callID,
-            outcome: CheckpointPaywallDismissedOutcome()
+            outcome: CheckpointPaywallDismissedOutcome.shared
         )
         _ = try await firstCheckpoint.value
     }
@@ -337,7 +337,7 @@ final class CheckpointsManagerTests: TestCase {
         self.presenter.onPresent = { presentation in
             presentation.delegate.onCheckpointPaywallFinished(
                 callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome()
+                outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
 
@@ -375,7 +375,7 @@ final class CheckpointsManagerTests: TestCase {
         self.presenter.onPresent = { presentation in
             presentation.delegate.onCheckpointPaywallFinished(
                 callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome()
+                outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
         _ = try await self.manager.checkpoint(
@@ -391,11 +391,194 @@ final class CheckpointsManagerTests: TestCase {
 
         executor.onCheckpointPaywallFinished(
             callID: "unknown-call-id",
-            outcome: CheckpointPaywallDismissedOutcome()
+            outcome: CheckpointPaywallDismissedOutcome.shared
         )
 
         XCTAssertTrue(self.presenter.presentations.isEmpty)
         XCTAssertTrue(self.listener.events.isEmpty)
+    }
+
+}
+
+@MainActor
+final class RandomWorkflowCheckpointResolverTests: TestCase {
+
+    private let checkpoint = CheckpointInfo(identifier: "test_checkpoint", params: .init())
+    private let workflowID = "wf1234"
+    private let offeringID = "default"
+
+    private var provider: MockWorkflowsConfigProvider!
+    private var workflowManager: WorkflowManager!
+    private var offering: Offering!
+    private var offerings: Offerings!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.provider = MockWorkflowsConfigProvider()
+        self.workflowManager = WorkflowManager(
+            workflowsConfigProvider: self.provider,
+            paywallCache: nil,
+            operationDispatcher: MockOperationDispatcher()
+        )
+        self.provider.stubbedAvailableWorkflows = [self.workflowID: self.offeringID]
+        self.provider.stubbedGetWorkflowResult = [
+            self.workflowID: Self.workflowDataResult(id: self.workflowID)
+        ]
+        self.offering = Offering(
+            identifier: self.offeringID,
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        self.offerings = Self.offerings([self.offering])
+    }
+
+    func testSimulatedErrorCheckpointFailsWithConfigurationError() async {
+        let resolution = await self.makeResolver().resolve(
+            checkpoint: CheckpointInfo(identifier: "error_checkpoint", params: .init())
+        )
+
+        guard case let .failed(error) = resolution else {
+            return XCTFail("Expected a failed resolution")
+        }
+        XCTAssertEqual(error.errorCode, .configurationError)
+    }
+
+    func testSimulatedUnknownCheckpointResolvesNoMatch() async {
+        let resolution = await self.makeResolver().resolve(
+            checkpoint: CheckpointInfo(identifier: "unknown_checkpoint", params: .init())
+        )
+
+        XCTAssertEqual(Self.noMatchReason(resolution), .noMatch)
+    }
+
+    func testCheckpointResolvesDisabledWhenWorkflowManagerIsMissing() async {
+        let resolver = RandomWorkflowCheckpointResolver(
+            workflowManager: nil,
+            getOfferings: { self.offerings }
+        )
+
+        XCTAssertEqual(Self.noMatchReason(await resolver.resolve(checkpoint: self.checkpoint)), .disabled)
+    }
+
+    func testCheckpointResolvesConfigurationUnavailableWhenNoWorkflowsExist() async {
+        self.provider.stubbedAvailableWorkflows = [:]
+
+        XCTAssertEqual(
+            Self.noMatchReason(await self.makeResolver().resolve(checkpoint: self.checkpoint)),
+            .configurationUnavailable
+        )
+    }
+
+    func testCheckpointResolvesConfigurationUnavailableWhenWorkflowFailsToLoad() async {
+        self.provider.stubbedGetWorkflowResult = [:]
+        self.provider.stubbedGetWorkflowError = [self.workflowID: .notFound]
+
+        XCTAssertEqual(
+            Self.noMatchReason(await self.makeResolver().resolve(checkpoint: self.checkpoint)),
+            .configurationUnavailable
+        )
+    }
+
+    func testCheckpointResolvesConfigurationUnavailableWhenOfferingsFetchFails() async {
+        let resolver = self.makeResolver(getOfferings: {
+            throw ErrorUtils.networkError(message: "Offline")
+        })
+
+        XCTAssertEqual(
+            Self.noMatchReason(await resolver.resolve(checkpoint: self.checkpoint)),
+            .configurationUnavailable
+        )
+    }
+
+    func testCheckpointResolvesConfigurationUnavailableWhenOfferingIsMissing() async {
+        let resolver = self.makeResolver(getOfferings: { Self.offerings([]) })
+
+        XCTAssertEqual(
+            Self.noMatchReason(await resolver.resolve(checkpoint: self.checkpoint)),
+            .configurationUnavailable
+        )
+    }
+
+    func testCheckpointBuildsSuccessfulPayloadUsingOfferingFromTopicMetadata() async {
+        let resolution = await self.makeResolver().resolve(checkpoint: self.checkpoint)
+
+        guard case let .matched(presentation) = resolution,
+              let presentation = presentation as? ResolvedCheckpointWorkflowPresentation else {
+            return XCTFail("Expected a matched resolved-workflow presentation")
+        }
+        XCTAssertEqual(presentation.checkpoint, self.checkpoint)
+        XCTAssertEqual(presentation.workflow.id, self.workflowID)
+        XCTAssertEqual(presentation.uiConfig, .empty)
+        XCTAssertEqual(presentation.offering.identifier, self.offeringID)
+        XCTAssertEqual(self.provider.invokedGetWorkflowParameters, [self.workflowID])
+    }
+
+    func testCheckpointResolvesConfigurationUnavailableWithoutFetchingOfferingsWhenMetadataHasNone() async {
+        self.provider.stubbedAvailableWorkflows = [self.workflowID: nil]
+        let offeringsFetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver(getOfferings: {
+            offeringsFetchCount.modify { $0 += 1 }
+            return self.offerings
+        })
+
+        XCTAssertEqual(
+            Self.noMatchReason(await resolver.resolve(checkpoint: self.checkpoint)),
+            .configurationUnavailable
+        )
+        XCTAssertEqual(offeringsFetchCount.value, 0)
+    }
+
+    private func makeResolver(
+        getOfferings: RandomWorkflowCheckpointResolver.GetOfferings? = nil
+    ) -> RandomWorkflowCheckpointResolver {
+        return RandomWorkflowCheckpointResolver(
+            workflowManager: self.workflowManager,
+            getOfferings: getOfferings ?? { self.offerings },
+            chooseWorkflow: { workflows in
+                guard workflows.keys.contains(self.workflowID) else { return nil }
+                return (self.workflowID, workflows[self.workflowID] ?? nil)
+            }
+        )
+    }
+
+    private static func noMatchReason(_ resolution: CheckpointWorkflowResolution) -> CheckpointNoActionReason? {
+        guard case let .noMatch(reason) = resolution else { return nil }
+        return reason
+    }
+
+    private static func workflowDataResult(id: String) -> WorkflowDataResult {
+        return WorkflowDataResult(
+            workflow: PublishedWorkflow(
+                id: id,
+                displayName: "Test",
+                initialStepId: "step_1",
+                singleStepFallbackId: nil,
+                steps: ["step_1": WorkflowStep(id: "step_1", type: "screen", screenId: nil)],
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            enrolledVariants: nil
+        )
+    }
+
+    private static func offerings(_ offerings: [Offering]) -> Offerings {
+        let response = OfferingsResponse(
+            currentOfferingId: nil,
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        return Offerings(
+            offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
+            currentOfferingID: nil,
+            placements: nil,
+            targeting: nil,
+            contents: Offerings.Contents(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
     }
 
 }
