@@ -1,0 +1,119 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CheckpointWorkflowExecutor.swift
+//
+//  Created by Rick van der Linden.
+//
+
+import Foundation
+@_spi(Internal) import RevenueCat
+
+@MainActor
+protocol CheckpointWorkflowExecuting: AnyObject {
+
+    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome
+
+}
+
+@MainActor
+protocol CheckpointPresenting: AnyObject {
+
+    func present(
+        callID: String,
+        workflow: ResolvedCheckpointWorkflow,
+        delegate: CheckpointPresentationDelegate
+    )
+
+}
+
+protocol CheckpointPresentationDelegate: AnyObject {
+
+    func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome)
+
+}
+
+/// Executes a resolved workflow using RevenueCatUI's checkpoint presenter.
+@MainActor
+final class CheckpointWorkflowExecutor: CheckpointWorkflowExecuting, CheckpointPresentationDelegate {
+
+    typealias PresenterProvider = @MainActor () -> CheckpointPresenting?
+
+    private typealias Continuation = CheckedContinuation<CheckpointPaywallOutcome, Error>
+
+    private var pendingCalls: [String: Continuation] = [:]
+    private var activePresenter: CheckpointPresenting?
+    private let presenterProvider: PresenterProvider
+
+    init(presenterProvider: @escaping PresenterProvider = CheckpointPresenterFactory.makePresenter) {
+        self.presenterProvider = presenterProvider
+    }
+
+    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
+        guard self.pendingCalls.isEmpty else {
+            throw Self.operationAlreadyInProgressError
+        }
+        guard let presenter = self.presenterProvider() else {
+            throw Self.missingPresenterError
+        }
+
+        self.activePresenter = presenter
+        let callID = UUID().uuidString
+        return try await withTaskCancellationHandler {
+            try await withCheckedThrowingContinuation { continuation in
+                guard !Task.isCancelled else {
+                    self.activePresenter = nil
+                    continuation.resume(throwing: CancellationError())
+                    return
+                }
+                self.pendingCalls[callID] = continuation
+                presenter.present(callID: callID, workflow: workflow, delegate: self)
+            }
+        } onCancel: {
+            Task { @MainActor [weak self] in
+                self?.cancel(callID: callID)
+            }
+        }
+    }
+
+    nonisolated func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome) {
+        Task { @MainActor [weak self] in
+            self?.finish(callID: callID, outcome: outcome)
+        }
+    }
+
+    private func finish(callID: String, outcome: CheckpointPaywallOutcome) {
+        guard let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
+        self.activePresenter = nil
+        continuation.resume(returning: outcome)
+    }
+
+    private func cancel(callID: String) {
+        guard let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
+        self.activePresenter = nil
+        continuation.resume(throwing: CancellationError())
+    }
+
+    private static var missingPresenterError: PublicError {
+        return NSError(
+            domain: ErrorCode.errorDomain,
+            code: ErrorCode.configurationError.rawValue,
+            userInfo: [NSLocalizedDescriptionKey: "Cannot present checkpoint UI: no presentation handler was supplied."]
+        )
+    }
+
+    private static var operationAlreadyInProgressError: PublicError {
+        return NSError(
+            domain: ErrorCode.errorDomain,
+            code: ErrorCode.operationAlreadyInProgressForProductError.rawValue,
+            userInfo: [NSLocalizedDescriptionKey: "Another checkpoint experience is already being presented."]
+        )
+    }
+
+}

@@ -23,12 +23,12 @@ import UIKit
 /// Presents workflows resolved by the RevenueCat core module.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-@_spi(Internal) public final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
+@_spi(Internal) public final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenting {
 
     struct PresentedWorkflow: Identifiable {
         let id: String
-        let presentation: ResolvedCheckpointWorkflowPresentation
-        let delegate: CheckpointPresenterDelegate
+        let workflow: ResolvedCheckpointWorkflow
+        let delegate: CheckpointPresentationDelegate
     }
 
     private var activeCallID: String?
@@ -61,27 +61,18 @@ import UIKit
         super.init()
     }
 
-    /// Presents the resolved workflow using RevenueCatUI's workflow paywall renderer.
-    public func present(
+    func present(
         callID: String,
-        presentation: CheckpointWorkflowPresentation,
-        delegate: CheckpointPresenterDelegate
+        workflow: ResolvedCheckpointWorkflow,
+        delegate: CheckpointPresentationDelegate
     ) {
-        guard let presentation = presentation as? ResolvedCheckpointWorkflowPresentation else {
-            delegate.onCheckpointPaywallFinished(
-                callID: callID,
-                outcome: CheckpointPaywallErrorOutcome(error: WorkflowError.invalidPresentation as NSError)
-            )
-            return
-        }
-
-        self.callStore.store(callID: callID, presentation: presentation, delegate: delegate)
+        self.callStore.store(callID: callID, workflow: workflow, delegate: delegate)
         self.activeCallID = callID
 
         do {
             let presentedWorkflow = PresentedWorkflow(
                 id: callID,
-                presentation: presentation,
+                workflow: workflow,
                 delegate: delegate
             )
 
@@ -134,7 +125,7 @@ import UIKit
             #endif
         }
 
-        call.delegate.onCheckpointPaywallFinished(
+        call.delegate.checkpointPresentationFinished(
             callID: callID,
             outcome: call.stagedOutcome
         )
@@ -145,14 +136,12 @@ import UIKit
         guard let presentationContext = UIApplication.checkpointPresentationViewController else {
             return false
         }
-        guard let offering = presentedWorkflow.presentation.offering else {
-            throw WorkflowError.missingOffering
-        }
+        let offering = presentedWorkflow.workflow.offering
 
         let workflowContext = try WorkflowPreview.makeContext(
-            workflow: presentedWorkflow.presentation.workflow,
+            workflow: presentedWorkflow.workflow.workflow,
             offerings: [offering],
-            uiConfig: presentedWorkflow.presentation.uiConfig
+            uiConfig: presentedWorkflow.workflow.uiConfig
         )
         let rootView = PaywallView(
             workflowContext: workflowContext,
@@ -189,16 +178,10 @@ import UIKit
 
 private enum WorkflowError: LocalizedError {
 
-    case invalidPresentation
-    case missingOffering
     case noPresentationContext
 
     var errorDescription: String? {
         switch self {
-        case .invalidPresentation:
-            return "The checkpoint did not resolve to a renderable workflow."
-        case .missingOffering:
-            return "The checkpoint workflow's offering is unavailable."
         case .noPresentationContext:
             return "Unable to locate a view controller for checkpoint presentation."
         }

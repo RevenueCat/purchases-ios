@@ -20,16 +20,16 @@ import Foundation
 final class CheckpointCallStore {
 
     final class Call {
-        let presentation: ResolvedCheckpointWorkflowPresentation
-        let delegate: CheckpointPresenterDelegate
+        let workflow: ResolvedCheckpointWorkflow
+        let delegate: CheckpointPresentationDelegate
         fileprivate(set) var stagedOutcome: CheckpointPaywallOutcome
 
         init(
-            presentation: ResolvedCheckpointWorkflowPresentation,
-            delegate: CheckpointPresenterDelegate,
+            workflow: ResolvedCheckpointWorkflow,
+            delegate: CheckpointPresentationDelegate,
             stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
         ) {
-            self.presentation = presentation
+            self.workflow = workflow
             self.delegate = delegate
             self.stagedOutcome = stagedOutcome
         }
@@ -39,10 +39,10 @@ final class CheckpointCallStore {
 
     func store(
         callID: String,
-        presentation: ResolvedCheckpointWorkflowPresentation,
-        delegate: CheckpointPresenterDelegate
+        workflow: ResolvedCheckpointWorkflow,
+        delegate: CheckpointPresentationDelegate
     ) {
-        self.calls[callID] = Call(presentation: presentation, delegate: delegate)
+        self.calls[callID] = Call(workflow: workflow, delegate: delegate)
     }
 
     func call(for callID: String) -> Call? {

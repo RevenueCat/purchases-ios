@@ -1368,6 +1368,11 @@
 		73A610000000000000000002 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoints.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoints.swift */; };
 		73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointPaywallResult.swift */; };
+		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
+		73A640000000000000000002 /* CheckpointPresenterFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000012 /* CheckpointPresenterFactory.swift */; };
+		73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */; };
+		73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */; };
+		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
@@ -1932,6 +1937,13 @@
 		73A610000000000000000012 /* Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoints.swift"; sourceTree = "<group>"; };
 		73A610000000000000000014 /* CheckpointPaywallResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPaywallResult.swift; sourceTree = "<group>"; };
+		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
+		73A640000000000000000012 /* CheckpointPresenterFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPresenterFactory.swift; sourceTree = "<group>"; };
+		73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenter.swift; sourceTree = "<group>"; };
+		73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowExecutor.swift; sourceTree = "<group>"; };
+		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
+		73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenterTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -3418,7 +3430,21 @@
 			children = (
 				73A610000000000000000012 /* Checkpoints.swift */,
 				73A610000000000000000014 /* CheckpointPaywallResult.swift */,
+				73A640000000000000000011 /* CheckpointCallStore.swift */,
+				73A640000000000000000012 /* CheckpointPresenterFactory.swift */,
+				73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */,
+				73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */,
+				73A640000000000000000015 /* CheckpointsManager.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
+			);
+			path = Checkpoints;
+			sourceTree = "<group>";
+		};
+		73A650000000000000000020 /* Checkpoints */ = {
+			isa = PBXGroup;
+			children = (
+				73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */,
+				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -5993,6 +6019,7 @@
 		887A62242C1D168B00E1A461 /* RevenueCatUITests */ = {
 			isa = PBXGroup;
 			children = (
+				73A650000000000000000020 /* Checkpoints */,
 				1699BD612EEFC3FF002001FB /* AppStyleExtractorTests.swift */,
 				576F15482DD4ABB6003D8EEC /* Mocks */,
 				030890822D2B77DD0069677B /* PaywallsV2 */,
@@ -8181,6 +8208,11 @@
 			files = (
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
 				73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */,
+				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
+				73A640000000000000000002 /* CheckpointPresenterFactory.swift in Sources */,
+				73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */,
+				73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */,
+				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
