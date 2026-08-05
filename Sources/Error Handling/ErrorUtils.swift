@@ -252,9 +252,13 @@ enum ErrorUtils {
      * same product in progress.
      */
     static func operationAlreadyInProgressError(
+        message: String? = nil,
+        replaceDefaultMessage: Bool = false,
         fileName: String = #fileID, functionName: String = #function, line: UInt = #line
     ) -> PurchasesError {
         return error(with: ErrorCode.operationAlreadyInProgressForProductError,
+                     message: message,
+                     replaceDefaultMessage: replaceDefaultMessage,
                      fileName: fileName, functionName: functionName, line: line)
     }
 
@@ -623,6 +627,7 @@ private extension ErrorUtils {
 
     static func error(with code: ErrorCode,
                       message: String? = nil,
+                      replaceDefaultMessage: Bool = false,
                       underlyingError: Error? = nil,
                       extraUserInfo: [NSError.UserInfoKey: Any] = [:],
                       fileName: String = #fileID,
@@ -630,7 +635,9 @@ private extension ErrorUtils {
                       line: UInt = #line) -> PurchasesError {
         let localizedDescription: String
 
-        if let message = message, message != code.description {
+        if let message = message, replaceDefaultMessage {
+            localizedDescription = message
+        } else if let message = message, message != code.description {
             // Print both ErrorCode and message only if they're different
             localizedDescription = "\(code.description) \(message)"
         } else {

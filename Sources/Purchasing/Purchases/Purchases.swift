@@ -647,6 +647,19 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
+        let checkpointsManager = CheckpointsManager(
+            resolver: FirstWorkflowCheckpointResolver(
+                workflowManager: systemInfo.remoteConfigEnabled ? workflowManager : nil,
+                getOfferings: {
+                    try await withCheckedThrowingContinuation { continuation in
+                        offeringsManager.offerings(
+                            appUserID: identityManager.currentAppUserID,
+                            completion: { result in continuation.resume(with: result) }
+                        )
+                    }
+                }
+            )
+        )
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -705,7 +718,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointsManager: checkpointsManager
                 )
             } else {
                 return .init(
@@ -733,7 +747,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointsManager: checkpointsManager
                 )
             }
         }()
