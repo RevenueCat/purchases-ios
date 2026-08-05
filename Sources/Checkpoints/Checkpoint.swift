@@ -405,11 +405,8 @@ extension CheckpointNoActionReason: CustomStringConvertible {
     /// A checkpoint was hit, before evaluation.
     func onCheckpointHit(_ checkpoint: CheckpointInfo)
 
-    /// The checkpoint was resolved and the outcome was returned.
-    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult)
-
-    /// A checkpoint-presented paywall finished.
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome)
+    /// The checkpoint completed and its result was returned.
+    func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult)
 
 }
 
@@ -419,66 +416,7 @@ extension CheckpointNoActionReason: CustomStringConvertible {
     func onCheckpointHit(_ checkpoint: CheckpointInfo) {}
 
     /// Default no-op implementation.
-    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
-
-    /// Default no-op implementation.
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome) {}
-
-}
-
-/// Internal representation of why a checkpoint did not run anything.
-@_spi(Internal) public struct CheckpointEngineNoActionReason: Equatable, Sendable {
-
-    /// The raw no-action reason value.
-    public let value: String
-
-    /// No targeting rule matched the checkpoint.
-    public static let noMatch = Self(value: "NO_MATCH")
-    /// The customer belongs to the experiment holdout.
-    public static let holdout = Self(value: "HOLDOUT")
-    /// The checkpoint was frequency capped.
-    public static let frequencyCapped = Self(value: "FREQUENCY_CAPPED")
-    /// The checkpoint configuration could not be loaded.
-    public static let configurationUnavailable = Self(value: "CONFIGURATION_UNAVAILABLE")
-    /// Checkpoints are disabled.
-    public static let disabled = Self(value: "DISABLED")
-
-    /// Creates a no-action reason from its raw value.
-    public init(value: String) {
-        self.value = value
-    }
-
-}
-
-/// Internal checkpoint result returned to RevenueCatUI for conversion into its public result hierarchy.
-@_spi(Internal) public enum CheckpointEngineResult {
-
-    /// A paywall was presented and produced a terminal outcome.
-    case paywallPresented(checkpoint: CheckpointInfo, outcome: CheckpointEnginePaywallOutcome)
-    /// The checkpoint produced no action.
-    case noAction(checkpoint: CheckpointInfo, reason: CheckpointEngineNoActionReason)
-
-    /// Information about the checkpoint that produced the result.
-    public var checkpoint: CheckpointInfo {
-        switch self {
-        case let .paywallPresented(checkpoint, _), let .noAction(checkpoint, _):
-            return checkpoint
-        }
-    }
-
-}
-
-/// Internal terminal result of a checkpoint-presented paywall.
-@_spi(Internal) public enum CheckpointEnginePaywallOutcome {
-
-    /// The paywall was dismissed without a purchase or restore.
-    case dismissed
-    /// The customer completed a purchase.
-    case purchased(CustomerInfo)
-    /// The customer restored purchases.
-    case restored(CustomerInfo)
-    /// The paywall finished with an error.
-    case error(PublicError)
+    func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
 
 }
 
@@ -512,59 +450,6 @@ extension CheckpointNoActionReason: CustomStringConvertible {
 @_spi(Internal) public protocol CheckpointEnginePresenterDelegate: AnyObject {
 
     /// Reports the terminal outcome for a presented checkpoint paywall.
-    func onCheckpointPaywallFinished(callID: String, outcome: CheckpointEnginePaywallOutcome)
-
-}
-
-/// Receives checkpoint engine events for conversion into the RevenueCatUI public listener API.
-@_spi(Internal) public protocol CheckpointEngineListener: AnyObject {
-
-    /// Called when a checkpoint is hit.
-    func onCheckpointHit(_ checkpoint: CheckpointInfo)
-    /// Called when checkpoint resolution finishes.
-    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointEngineResult)
-    /// Called when a checkpoint paywall finishes.
-    func onCheckpointPaywallFinished(
-        _ checkpoint: CheckpointInfo,
-        outcome: CheckpointEnginePaywallOutcome
-    )
-
-}
-
-@_spi(Internal) public extension CheckpointResult {
-
-    /// Converts the internal engine result into its checkpoint API representation.
-    static func from(_ result: CheckpointEngineResult) -> CheckpointResult {
-        switch result {
-        case let .paywallPresented(checkpoint, outcome):
-            return CheckpointPaywallPresentedResult(
-                checkpoint: checkpoint,
-                paywallOutcome: CheckpointPaywallOutcome.from(outcome)
-            )
-        case let .noAction(checkpoint, reason):
-            return CheckpointNoActionResult(
-                checkpoint: checkpoint,
-                reason: CheckpointNoActionReason(value: reason.value)
-            )
-        }
-    }
-
-}
-
-@_spi(Internal) public extension CheckpointPaywallOutcome {
-
-    /// Converts the internal engine outcome into its checkpoint API representation.
-    static func from(_ outcome: CheckpointEnginePaywallOutcome) -> CheckpointPaywallOutcome {
-        switch outcome {
-        case .dismissed:
-            return CheckpointPaywallDismissedOutcome.shared
-        case let .purchased(customerInfo):
-            return CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo)
-        case let .restored(customerInfo):
-            return CheckpointPaywallRestoredOutcome(customerInfo: customerInfo)
-        case let .error(error):
-            return CheckpointPaywallErrorOutcome(error: error)
-        }
-    }
+    func onCheckpointPaywallFinished(callID: String, outcome: CheckpointPaywallOutcome)
 
 }

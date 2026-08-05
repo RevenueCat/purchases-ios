@@ -19,8 +19,8 @@ import Foundation
 
     /// Global listener for checkpoint activity.
     var checkpointListener: CheckpointListener? {
-        get { return (self.checkpointEngineListener as? CheckpointListenerAdapter)?.listener }
-        set { self.checkpointEngineListener = newValue.map(CheckpointListenerAdapter.init) }
+        get { return self.checkpointListenerInternal }
+        set { self.checkpointListenerInternal = newValue }
     }
 
     /// Registers that a checkpoint was hit.
@@ -39,10 +39,9 @@ import Foundation
         self.performCheckpoint(
             identifier: identifier,
             params: params,
-            presenter: nil
-        ) { result in
-            completion(result.map(CheckpointResult.from))
-        }
+            presenter: nil,
+            completion: completion
+        )
     }
 
     /// Registers that a checkpoint was hit.
@@ -58,43 +57,10 @@ import Foundation
         _ identifier: String,
         params: CheckpointParams = .init()
     ) async throws -> CheckpointResult {
-        return CheckpointResult.from(
-            try await self.performCheckpoint(
-                identifier: identifier,
-                params: params,
-                presenter: nil
-            )
-        )
-    }
-
-}
-
-private final class CheckpointListenerAdapter: CheckpointEngineListener {
-
-    let listener: CheckpointListener
-
-    init(listener: CheckpointListener) {
-        self.listener = listener
-    }
-
-    func onCheckpointHit(_ checkpoint: CheckpointInfo) {
-        self.listener.onCheckpointHit(checkpoint)
-    }
-
-    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointEngineResult) {
-        self.listener.onCheckpointResolved(
-            checkpoint,
-            result: CheckpointResult.from(result)
-        )
-    }
-
-    func onCheckpointPaywallFinished(
-        _ checkpoint: CheckpointInfo,
-        outcome: CheckpointEnginePaywallOutcome
-    ) {
-        self.listener.onCheckpointPaywallFinished(
-            checkpoint,
-            outcome: CheckpointPaywallOutcome.from(outcome)
+        return try await self.performCheckpoint(
+            identifier: identifier,
+            params: params,
+            presenter: nil
         )
     }
 

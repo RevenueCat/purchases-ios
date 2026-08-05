@@ -22,23 +22,13 @@ private final class CheckpointListenerAPITester: CheckpointListener {
         let _: CheckpointParams = checkpoint.params
     }
 
-    func onCheckpointResolved(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
+    func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
         let _: CheckpointInfo = result.checkpoint
 
         if let presented = result as? CheckpointPaywallPresentedResult {
             let _: CheckpointPaywallOutcome = presented.paywallOutcome
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
-        }
-    }
-
-    func onCheckpointPaywallFinished(_ checkpoint: CheckpointInfo, outcome: CheckpointPaywallOutcome) {
-        if let purchased = outcome as? CheckpointPaywallPurchasedOutcome {
-            let _: CustomerInfo = purchased.customerInfo
-        } else if let restored = outcome as? CheckpointPaywallRestoredOutcome {
-            let _: CustomerInfo = restored.customerInfo
-        } else if let error = outcome as? CheckpointPaywallErrorOutcome {
-            let _: PublicError = error.error
         }
     }
 
