@@ -297,6 +297,7 @@ final class PurchasesOrchestrator {
         self.checkpointsManager.checkpoint(
             identifier: identifier,
             params: params,
+            presenter: presenter,
             completion: completion
         )
     }
@@ -308,7 +309,8 @@ final class PurchasesOrchestrator {
     ) async throws -> CheckpointResult {
         return try await self.checkpointsManager.checkpoint(
             identifier: identifier,
-            params: params
+            params: params,
+            presenter: presenter
         )
     }
 
