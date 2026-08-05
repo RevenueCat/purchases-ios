@@ -28,17 +28,10 @@ final class CheckpointsManager {
 
     init(
         resolver: CheckpointWorkflowResolver? = nil,
-        executor: CheckpointWorkflowExecutor? = nil,
-        presenterProvider: (@MainActor () -> CheckpointPresenter?)? = nil
+        executor: CheckpointWorkflowExecutor? = nil
     ) {
         self.resolver = resolver ?? UnavailableCheckpointWorkflowResolver()
-        if let executor {
-            self.executor = executor
-        } else if let presenterProvider {
-            self.executor = UICheckpointWorkflowExecutor(presenterProvider: presenterProvider)
-        } else {
-            self.executor = UICheckpointWorkflowExecutor()
-        }
+        self.executor = executor ?? UICheckpointWorkflowExecutor()
     }
 
     func setResolver(_ resolver: CheckpointWorkflowResolver) {
@@ -47,12 +40,21 @@ final class CheckpointsManager {
 
     func checkpoint(
         identifier: String,
-        params: CheckpointParams?,
+        params: CheckpointParams,
+        presenter: CheckpointEnginePresenter?,
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
         Task { @MainActor in
             do {
-                completion(.success(try await self.checkpoint(identifier: identifier, params: params)))
+                completion(
+                    .success(
+                        try await self.checkpoint(
+                            identifier: identifier,
+                            params: params,
+                            presenter: presenter
+                        )
+                    )
+                )
             } catch {
                 completion(.failure((error as? PurchasesError)?.asPublicError ?? error as NSError))
             }
@@ -60,17 +62,21 @@ final class CheckpointsManager {
     }
 
     @MainActor
-    func checkpoint(identifier: String, params: CheckpointParams?) async throws -> CheckpointResult {
+    func checkpoint(
+        identifier: String,
+        params: CheckpointParams,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointResult {
         let checkpoint = CheckpointInfo(
             identifier: identifier,
-            params: params ?? CheckpointParams()
+            params: params
         )
         self.checkpointListener?.onCheckpointHit(checkpoint)
 
         let result: CheckpointResult
         switch await self.resolver.resolve(checkpoint: checkpoint) {
         case let .matched(presentation):
-            result = try await self.execute(presentation)
+            result = try await self.execute(presentation, presenter: presenter)
         case let .noMatch(reason):
             result = CheckpointNoActionResult(checkpoint: checkpoint, reason: reason)
         case let .failed(error):
@@ -82,8 +88,11 @@ final class CheckpointsManager {
     }
 
     @MainActor
-    private func execute(_ presentation: CheckpointWorkflowPresentation) async throws -> CheckpointResult {
-        switch try await self.executor.execute(presentation) {
+    private func execute(
+        _ presentation: CheckpointEnginePresentation,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointResult {
+        switch try await self.executor.execute(presentation, presenter: presenter) {
         case let .paywallFinished(outcome):
             return CheckpointPaywallPresentedResult(
                 checkpoint: presentation.checkpoint,

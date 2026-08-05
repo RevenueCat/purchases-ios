@@ -16,7 +16,10 @@
 protocol CheckpointWorkflowExecutor: AnyObject {
 
     @MainActor
-    func execute(_ presentation: CheckpointWorkflowPresentation) async throws -> CheckpointWorkflowOutcome
+    func execute(
+        _ presentation: CheckpointEnginePresentation,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointWorkflowOutcome
 
 }
 
