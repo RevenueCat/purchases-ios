@@ -40,6 +40,15 @@ class WorkflowManagerTests: TestCase {
 
     // MARK: - getWorkflow
 
+    func testFirstAvailableWorkflowIDDelegatesToProvider() async {
+        self.mockProvider.stubbedFirstAvailableWorkflowID = "wf_1"
+
+        let result = await self.manager.firstAvailableWorkflowID()
+
+        expect(result) == "wf_1"
+        expect(self.mockProvider.invokedFirstAvailableWorkflowIDCount) == 1
+    }
+
     func testGetWorkflowDelegatesToProviderAndSucceeds() async throws {
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]

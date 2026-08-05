@@ -11,6 +11,7 @@ import Foundation
 
 protocol WorkflowsConfigProviderType {
 
+    func firstAvailableWorkflowID() async -> String?
     func workflowId(forOfferingId offeringId: String) async -> String?
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
     func decodeCachedWorkflowForAssetPrewarming(
@@ -71,6 +72,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         self.manager = manager
         self.uiConfigProvider = uiConfigProvider ?? UiConfigProvider(manager: manager)
         self.workflowDecoder = workflowDecoder
+    }
+
+    /// Returns a stable first workflow until checkpoint targeting selects a specific workflow.
+    func firstAvailableWorkflowID() async -> String? {
+        return await self.manager.topic(.workflows)?.keys.sorted().first
     }
 
     /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the

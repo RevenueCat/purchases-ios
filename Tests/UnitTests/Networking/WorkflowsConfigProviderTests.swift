@@ -49,6 +49,17 @@ class WorkflowsConfigProviderTests: TestCase {
         )
     }
 
+    func testFirstAvailableWorkflowIDReturnsStableFirstIdentifier() async {
+        self.commit(workflows: [
+            "workflow-z": .init(blobRef: "z-ref", content: [:]),
+            "workflow-a": .init(blobRef: "a-ref", content: [:])
+        ])
+
+        let workflowID = await self.provider.firstAvailableWorkflowID()
+
+        expect(workflowID) == "workflow-a"
+    }
+
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(

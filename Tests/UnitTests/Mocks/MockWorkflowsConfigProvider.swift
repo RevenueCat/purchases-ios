@@ -16,6 +16,14 @@ import Foundation
 
 final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
+    var stubbedFirstAvailableWorkflowID: String?
+    private(set) var invokedFirstAvailableWorkflowIDCount = 0
+
+    func firstAvailableWorkflowID() async -> String? {
+        self.invokedFirstAvailableWorkflowIDCount += 1
+        return self.stubbedFirstAvailableWorkflowID
+    }
+
     var stubbedWorkflowIdForOfferingId: [String: String] = [:]
     private(set) var invokedWorkflowIdForOfferingIdParameters: [String] = []
 

@@ -77,7 +77,7 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
-    private let checkpointListenerStorage = Atomic<CheckpointListener?>(nil)
+    private let checkpointsManager: CheckpointsManager
 
     let notificationCenter: NotificationCenter
 
@@ -155,6 +155,7 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+                     checkpointsManager: CheckpointsManager = CheckpointsManager(),
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
     ) {
@@ -182,6 +183,7 @@ final class PurchasesOrchestrator {
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             eventsManager: eventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
+            checkpointsManager: checkpointsManager,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
         )
@@ -241,6 +243,7 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+         checkpointsManager: CheckpointsManager = CheckpointsManager(),
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {
@@ -267,6 +270,7 @@ final class PurchasesOrchestrator {
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
+        self.checkpointsManager = checkpointsManager
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
@@ -274,8 +278,8 @@ final class PurchasesOrchestrator {
     }
 
     var checkpointListenerInternal: CheckpointListener? {
-        get { self.checkpointListenerStorage.value }
-        set { self.checkpointListenerStorage.value = newValue }
+        get { self.checkpointsManager.checkpointListener }
+        set { self.checkpointsManager.checkpointListener = newValue }
     }
 
     func checkpoint(
@@ -284,7 +288,11 @@ final class PurchasesOrchestrator {
         presenter: CheckpointEnginePresenter?,
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
-        completion(.failure(Self.unsupportedCheckpointError.asPublicError))
+        self.checkpointsManager.checkpoint(
+            identifier: identifier,
+            params: params,
+            completion: completion
+        )
     }
 
     func checkpoint(
@@ -292,13 +300,9 @@ final class PurchasesOrchestrator {
         params: CheckpointParams,
         presenter: CheckpointEnginePresenter?
     ) async throws -> CheckpointResult {
-        throw Self.unsupportedCheckpointError
-    }
-
-    private static var unsupportedCheckpointError: PurchasesError {
-        return PurchasesError(
-            error: .unsupportedError,
-            userInfo: [NSLocalizedDescriptionKey: "Checkpoints are not implemented yet."]
+        return try await self.checkpointsManager.checkpoint(
+            identifier: identifier,
+            params: params
         )
     }
 
