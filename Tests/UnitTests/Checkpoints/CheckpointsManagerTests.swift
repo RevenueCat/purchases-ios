@@ -269,7 +269,7 @@ final class CheckpointsManagerTests: TestCase {
         let presentation = try XCTUnwrap(self.presenter.presentations.first)
         presentation.delegate.onCheckpointPaywallFinished(
             callID: presentation.callID,
-                outcome: CheckpointPaywallDismissedOutcome.shared
+            outcome: CheckpointPaywallDismissedOutcome.shared
         )
         _ = try await firstCheckpoint.value
     }
@@ -336,7 +336,7 @@ final class CheckpointsManagerTests: TestCase {
 
         executor.onCheckpointPaywallFinished(
             callID: "unknown-call-id",
-                outcome: CheckpointPaywallDismissedOutcome.shared
+            outcome: CheckpointPaywallDismissedOutcome.shared
         )
 
         XCTAssertTrue(self.presenter.presentations.isEmpty)
@@ -461,10 +461,8 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
             return self.offerings
         })
 
-        XCTAssertEqual(
-            Self.noMatchReason(await resolver.resolve(checkpoint: self.checkpoint)),
-            .configurationUnavailable
-        )
+        let resolution = await resolver.resolve(checkpoint: self.checkpoint)
+        XCTAssertEqual(Self.noMatchReason(resolution), .configurationUnavailable)
         XCTAssertEqual(offeringsFetchCount.value, 0)
     }
 
