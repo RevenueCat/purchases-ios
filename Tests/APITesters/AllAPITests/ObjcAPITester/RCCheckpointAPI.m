@@ -12,7 +12,7 @@
 //  Created by Rick van der Linden.
 //
 
-@import RevenueCat;
+@import RevenueCatUI;
 
 #import "RCCheckpointAPI.h"
 

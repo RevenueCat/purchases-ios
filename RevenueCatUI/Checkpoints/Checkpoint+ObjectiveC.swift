@@ -13,6 +13,7 @@
 //
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 #if ENABLE_CHECKPOINTS_OBJC
 

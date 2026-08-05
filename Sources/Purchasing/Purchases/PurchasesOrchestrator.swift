@@ -77,7 +77,7 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
-    private let checkpointListenerStorage = Atomic<CheckpointListener?>(nil)
+    private let checkpointListenerStorage = Atomic<CheckpointEngineListener?>(nil)
 
     let notificationCenter: NotificationCenter
 
@@ -273,20 +273,25 @@ final class PurchasesOrchestrator {
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
-    var checkpointListener: CheckpointListener? {
+    var checkpointEngineListener: CheckpointEngineListener? {
         get { self.checkpointListenerStorage.value }
         set { self.checkpointListenerStorage.value = newValue }
     }
 
     func checkpoint(
         identifier: String,
-        params: CheckpointParams?,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+        params: CheckpointEngineParams,
+        presenter: CheckpointEnginePresenter?,
+        completion: @escaping (Result<CheckpointEngineResult, PublicError>) -> Void
     ) {
         completion(.failure(Self.unsupportedCheckpointError.asPublicError))
     }
 
-    func checkpoint(identifier: String, params: CheckpointParams?) async throws -> CheckpointResult {
+    func checkpoint(
+        identifier: String,
+        params: CheckpointEngineParams,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointEngineResult {
         throw Self.unsupportedCheckpointError
     }
 
