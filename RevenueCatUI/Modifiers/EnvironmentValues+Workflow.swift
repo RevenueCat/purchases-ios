@@ -59,6 +59,18 @@ struct WorkflowRenderingContext {
         self.canNavigateBack = canNavigateBack
     }
 
+    /// For subtrees whose dismissal is local, like a bottom sheet: a `navigate_back` button there
+    /// closes that subtree rather than stepping back through the workflow, so it must not describe
+    /// itself as going back.
+    func withoutBackNavigation() -> Self {
+        return .init(
+            pageTransition: self.pageTransition,
+            pageHeaderSuppressed: self.pageHeaderSuppressed,
+            isHeader: self.isHeader,
+            canNavigateBack: false
+        )
+    }
+
     func markingHeader() -> Self {
         return .init(
             pageTransition: self.pageTransition,
