@@ -182,7 +182,6 @@ module ApiDiffHelper
     result
   end
 
-  # The orb default 0.10.1 has the consolidator bug; fixed upstream in 0.11.0.
   # 0.12.0
   PUBLIC_API_DIFF_REF = "06620ffe614773a43102ab8052077ae463908b78".freeze
 
