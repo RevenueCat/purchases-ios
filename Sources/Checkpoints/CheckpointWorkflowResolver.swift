@@ -80,20 +80,8 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
     }
 
     func resolve(checkpoint: CheckpointInfo) async -> CheckpointWorkflowResolution {
-        switch checkpoint.identifier {
-        case Self.simulatedErrorCheckpointIdentifier:
-            return .failed(
-                PurchasesError(
-                    error: .configurationError,
-                    userInfo: [
-                        NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
-                    ]
-                )
-            )
-        case Self.simulatedNoMatchCheckpointIdentifier:
-            return .noMatch(.noMatch)
-        default:
-            break
+        if let simulatedResolution = Self.simulatedResolution(for: checkpoint.identifier) {
+            return simulatedResolution
         }
 
         guard let workflowManager else {
@@ -137,6 +125,24 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
                 offering: offering
             )
         )
+    }
+
+    private static func simulatedResolution(for identifier: String) -> CheckpointWorkflowResolution? {
+        switch identifier {
+        case Self.simulatedErrorCheckpointIdentifier:
+            return .failed(
+                PurchasesError(
+                    error: .configurationError,
+                    userInfo: [
+                        NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
+                    ]
+                )
+            )
+        case Self.simulatedNoMatchCheckpointIdentifier:
+            return .noMatch(.noMatch)
+        default:
+            return nil
+        }
     }
 
     private static let simulatedNoMatchCheckpointIdentifier = "unknown_checkpoint"
