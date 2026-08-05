@@ -70,6 +70,16 @@ let storeKitConfigPath: Path = if Environment.storekitConfigPath != nil {
 
 let schemes: [Scheme] = [
     .scheme(
+        name: "PaywallsTesterUITests",
+        shared: true,
+        buildAction: .buildAction(targets: ["PaywallsTesterUITests"]),
+        testAction: .targets(["PaywallsTesterUITests"]),
+        runAction: .runAction(
+            configuration: "Debug",
+            executable: "PaywallsTester"
+        )
+    ),
+    .scheme(
         name: "PaywallsTester - SK Config",
         shared: true,
         buildAction: .buildAction(targets: ["PaywallsTester"]),
@@ -151,6 +161,22 @@ let project = Project(
                 .storeKit
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        // UI tests: the accessibility tree only exists for an assistive technology client, so
+        // screen reader behavior cannot be asserted from a unit test.
+        .target(
+            name: "PaywallsTesterUITests",
+            destinations: [.iPhone],
+            product: .uiTests,
+            bundleId: "com.revenuecat.PaywallsTesterUITests",
+            deploymentTargets: .iOS("17.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallsTesterUITests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallsTester")
+            ]
         )
     ],
     schemes: schemes,
