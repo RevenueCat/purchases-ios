@@ -647,18 +647,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
-        let checkpointsManager = CheckpointsManager(
-            resolver: RandomWorkflowCheckpointResolver(
-                workflowManager: systemInfo.remoteConfigEnabled ? workflowManager : nil,
-                getOfferings: {
-                    try await withCheckedThrowingContinuation { continuation in
-                        offeringsManager.offerings(
-                            appUserID: identityManager.currentAppUserID,
-                            completion: { result in continuation.resume(with: result) }
-                        )
-                    }
+        let checkpointResolver = RandomWorkflowCheckpointResolver(
+            workflowManager: systemInfo.remoteConfigEnabled ? workflowManager : nil,
+            getOfferings: {
+                try await withCheckedThrowingContinuation { continuation in
+                    offeringsManager.offerings(
+                        appUserID: identityManager.currentAppUserID,
+                        completion: { result in continuation.resume(with: result) }
+                    )
                 }
-            )
+            }
         )
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
@@ -719,7 +717,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager),
-                    checkpointsManager: checkpointsManager
+                    checkpointResolver: checkpointResolver
                 )
             } else {
                 return .init(
@@ -748,7 +746,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager),
-                    checkpointsManager: checkpointsManager
+                    checkpointResolver: checkpointResolver
                 )
             }
         }()
@@ -1075,6 +1073,18 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    /// Resolves a checkpoint against the current RevenueCat configuration.
+    @_spi(Internal)
+    func resolveCheckpoint(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.purchasesOrchestrator.resolveCheckpoint(
+            identifier: identifier,
+            params: params
+        )
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

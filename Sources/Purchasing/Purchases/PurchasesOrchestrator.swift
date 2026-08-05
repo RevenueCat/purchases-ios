@@ -78,7 +78,7 @@ final class PurchasesOrchestrator {
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
     private let checkpointStorage = Atomic<AnyObject?>(nil)
-    private let checkpointsManager: CheckpointsManager
+    private let checkpointResolver: CheckpointWorkflowResolver
 
     let notificationCenter: NotificationCenter
 
@@ -156,7 +156,7 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-                     checkpointsManager: CheckpointsManager = CheckpointsManager(),
+                     checkpointResolver: CheckpointWorkflowResolver = UnavailableCheckpointWorkflowResolver(),
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
     ) {
@@ -184,7 +184,7 @@ final class PurchasesOrchestrator {
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             eventsManager: eventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
-            checkpointsManager: checkpointsManager,
+            checkpointResolver: checkpointResolver,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
         )
@@ -244,7 +244,7 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-         checkpointsManager: CheckpointsManager = CheckpointsManager(),
+         checkpointResolver: CheckpointWorkflowResolver = UnavailableCheckpointWorkflowResolver(),
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {
@@ -271,7 +271,7 @@ final class PurchasesOrchestrator {
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
-        self.checkpointsManager = checkpointsManager
+        self.checkpointResolver = checkpointResolver
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
@@ -283,34 +283,13 @@ final class PurchasesOrchestrator {
         set { self.checkpointStorage.value = newValue }
     }
 
-    var checkpointListenerInternal: CheckpointListener? {
-        get { self.checkpointsManager.checkpointListener }
-        set { self.checkpointsManager.checkpointListener = newValue }
-    }
-
-    func checkpoint(
+    func resolveCheckpoint(
         identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
-    ) {
-        self.checkpointsManager.checkpoint(
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.checkpointResolver.resolve(
             identifier: identifier,
-            params: params,
-            presenter: presenter,
-            completion: completion
-        )
-    }
-
-    func checkpoint(
-        identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?
-    ) async throws -> CheckpointResult {
-        return try await self.checkpointsManager.checkpoint(
-            identifier: identifier,
-            params: params,
-            presenter: presenter
+            params: params
         )
     }
 

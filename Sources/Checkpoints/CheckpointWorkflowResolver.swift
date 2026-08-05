@@ -14,44 +14,57 @@
 
 import Foundation
 
-/// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
-protocol CheckpointWorkflowResolver: AnyObject {
+/// The result of resolving a checkpoint against RevenueCat configuration.
+@_spi(Internal) public enum CheckpointResolution {
 
-    func resolve(checkpoint: CheckpointInfo) async -> CheckpointWorkflowResolution
-
-}
-
-enum CheckpointWorkflowResolution {
-
-    case matched(CheckpointEnginePresentation)
-    case noMatch(CheckpointNoActionReason)
-    case failed(PurchasesError)
+    /// A workflow was selected for the checkpoint.
+    case workflow(ResolvedCheckpointWorkflow)
+    /// No workflow should run for the checkpoint.
+    case noAction(CheckpointResolutionReason)
 
 }
 
-/// A checkpoint presentation backed by a workflow resolved from RevenueCat configuration.
-@_spi(Internal) public final class ResolvedCheckpointWorkflowPresentation: CheckpointEnginePresentation {
+/// An extensible reason that checkpoint resolution selected no workflow.
+@_spi(Internal) public struct CheckpointResolutionReason: Equatable, Hashable, Sendable {
+
+    /// The raw reason value.
+    public let value: String
+
+    /// No targeting rule matched.
+    public static let noMatch = Self(value: "NO_MATCH")
+    /// Checkpoint configuration could not be loaded.
+    public static let configurationUnavailable = Self(value: "CONFIGURATION_UNAVAILABLE")
+    /// Checkpoints are disabled.
+    public static let disabled = Self(value: "DISABLED")
+
+    init(value: String) {
+        self.value = value
+    }
+
+}
+
+/// A workflow resolved from RevenueCat configuration and ready for RevenueCatUI to present.
+@_spi(Internal) public final class ResolvedCheckpointWorkflow: @unchecked Sendable {
 
     /// The workflow to render.
     public let workflow: PublishedWorkflow
-
     /// UI configuration used to render the workflow.
     public let uiConfig: UIConfig
-
     /// The offering referenced by the workflow.
     public let offering: Offering
 
-    init(
-        checkpoint: CheckpointInfo,
-        workflow: PublishedWorkflow,
-        uiConfig: UIConfig,
-        offering: Offering
-    ) {
+    init(workflow: PublishedWorkflow, uiConfig: UIConfig, offering: Offering) {
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offering = offering
-        super.init(checkpoint: checkpoint)
     }
+
+}
+
+/// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
+protocol CheckpointWorkflowResolver: AnyObject {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution
 
 }
 
@@ -79,18 +92,28 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         self.chooseWorkflow = chooseWorkflow
     }
 
-    func resolve(checkpoint: CheckpointInfo) async -> CheckpointWorkflowResolution {
-        if let simulatedResolution = Self.simulatedResolution(for: checkpoint.identifier) {
-            return simulatedResolution
+    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+        switch identifier {
+        case Self.simulatedErrorCheckpointIdentifier:
+            throw PurchasesError(
+                error: .configurationError,
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
+                ]
+            )
+        case Self.simulatedNoMatchCheckpointIdentifier:
+            return .noAction(.noMatch)
+        default:
+            break
         }
 
         guard let workflowManager else {
-            return .noMatch(.disabled)
+            return .noAction(.disabled)
         }
 
         let availableWorkflows = await workflowManager.availableWorkflows()
         guard let selectedWorkflow = self.chooseWorkflow(availableWorkflows) else {
-            return .noMatch(.configurationUnavailable)
+            return .noAction(.configurationUnavailable)
         }
 
         let workflowData: WorkflowDataResult
@@ -98,28 +121,27 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             workflowData = try await workflowManager.getWorkflow(workflowId: selectedWorkflow.workflowID)
         } catch {
             Logger.error(error.localizedDescription)
-            return .noMatch(.configurationUnavailable)
+            return .noAction(.configurationUnavailable)
         }
 
         guard let offeringID = selectedWorkflow.offeringID else {
-            return .noMatch(.configurationUnavailable)
+            return .noAction(.configurationUnavailable)
         }
 
         let offering: Offering
         do {
             let offerings = try await self.getOfferings()
             guard let resolvedOffering = offerings.offering(identifier: offeringID) else {
-                return .noMatch(.configurationUnavailable)
+                return .noAction(.configurationUnavailable)
             }
             offering = resolvedOffering
         } catch {
             Logger.error(error.localizedDescription)
-            return .noMatch(.configurationUnavailable)
+            return .noAction(.configurationUnavailable)
         }
 
-        return .matched(
-            ResolvedCheckpointWorkflowPresentation(
-                checkpoint: checkpoint,
+        return .workflow(
+            ResolvedCheckpointWorkflow(
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
                 offering: offering
@@ -127,25 +149,15 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         )
     }
 
-    private static func simulatedResolution(for identifier: String) -> CheckpointWorkflowResolution? {
-        switch identifier {
-        case Self.simulatedErrorCheckpointIdentifier:
-            return .failed(
-                PurchasesError(
-                    error: .configurationError,
-                    userInfo: [
-                        NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
-                    ]
-                )
-            )
-        case Self.simulatedNoMatchCheckpointIdentifier:
-            return .noMatch(.noMatch)
-        default:
-            return nil
-        }
-    }
-
     private static let simulatedNoMatchCheckpointIdentifier = "unknown_checkpoint"
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+
+}
+
+final class UnavailableCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+        return .noAction(.disabled)
+    }
 
 }
