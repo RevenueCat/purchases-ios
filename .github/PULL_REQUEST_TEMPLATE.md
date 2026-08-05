@@ -1,4 +1,5 @@
 <!-- Thank you for contributing to Purchases! Before pressing the "Create Pull Request" button, please provide the following: -->
+<!-- AI agents: fill in this template, and also follow the "Pull Requests" section in AGENTS.md. -->
 
 ### Checklist
 - [ ] If applicable, unit tests

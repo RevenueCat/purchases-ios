@@ -111,7 +111,31 @@ final class BackendGetRewardVerificationStatusTests: BaseBackendTests {
         }
 
         let response = try XCTUnwrap(result?.value)
-        expect(response.status) == .failed
+        expect(response.status) == .failed(.init(reason: nil, message: nil))
+    }
+
+    func testGetRewardVerificationStatusFailedForwardsReasonAndMessage() throws {
+        self.httpClient.mock(
+            requestPath: .rewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID
+            ),
+            response: .init(statusCode: .success, response: Self.failedWithReasonResponse)
+        )
+
+        let result = waitUntilValue { completed in
+            self.adsAPI.getRewardVerificationStatus(
+                appUserID: Self.userID,
+                clientTransactionID: Self.clientTransactionID,
+                completion: completed
+            )
+        }
+
+        let response = try XCTUnwrap(result?.value)
+        expect(response.status) == .failed(.init(
+            reason: "no_access",
+            message: "AdMob server-side reward verification is not enabled for this app."
+        ))
     }
 
     func testGetRewardVerificationStatusUnknownStatusDecodesAsUnknown() throws {
@@ -344,5 +368,11 @@ private extension BackendGetRewardVerificationStatusTests {
     ]
     static let pendingResponse: [String: Any] = ["status": "pending"]
     static let failedResponse: [String: Any] = ["status": "failed"]
+    static let failedWithReasonResponse: [String: Any] = [
+        "status": "failed",
+        "reward": NSNull(),
+        "failure_reason": "no_access",
+        "message": "AdMob server-side reward verification is not enabled for this app."
+    ]
 
 }

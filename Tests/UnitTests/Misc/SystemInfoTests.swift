@@ -185,6 +185,29 @@ class SystemInfoTests: TestCase {
         expect(SystemInfo.apiBaseURL) == customURL
     }
 
+    func testRemoteConfigEnabledByDefault() {
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    apiKey: "api_key",
+                                    dangerousSettings: DangerousSettings(),
+                                    preferredLocalesProvider: .mock())
+        expect(systemInfo.remoteConfigEnabled) == true
+    }
+
+    func testRemoteConfigDisabledUnderCustomEntitlementComputation() {
+        let dangerousSettings = DangerousSettings(
+            autoSyncPurchases: true,
+            customEntitlementComputation: true,
+            internalSettings: DangerousSettings.Internal.default
+        )
+        let systemInfo = SystemInfo(platformInfo: nil,
+                                    finishTransactions: true,
+                                    apiKey: "api_key",
+                                    dangerousSettings: dangerousSettings,
+                                    preferredLocalesProvider: .mock())
+        expect(systemInfo.remoteConfigEnabled) == false
+    }
+
 }
 
 private extension SystemInfo {

@@ -176,6 +176,22 @@ extension View {
             )
         )
     }
+
+    func presentCustomerCenter(
+        isPresented: Binding<Bool>,
+        purchaseHandler: PurchaseHandler,
+        onDismiss: (() -> Void)? = nil
+    ) -> some View {
+        self.modifier(
+            PresentingCustomerCenterModifier(
+                isPresented: isPresented,
+                onDismiss: onDismiss,
+                myAppPurchaseLogic: nil,
+                presentationMode: .default,
+                purchaseHandler: purchaseHandler
+            )
+        )
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

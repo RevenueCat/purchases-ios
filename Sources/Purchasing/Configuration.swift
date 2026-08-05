@@ -52,7 +52,7 @@ import Foundation
         let userDefaults: UserDefaults?
         let storeKitVersion: StoreKitVersion
         let dangerousSettings: DangerousSettings?
-        let networkTimeout: TimeInterval
+        let networkTimeout: NetworkTimeout
         let storeKit1Timeout: TimeInterval
         let platformInfo: Purchases.PlatformInfo?
         let entitlementVerificationMode: EntitlementVerificationMode
@@ -60,6 +60,7 @@ import Foundation
         let preferredLocale: String?
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
+        let iamEnabled: Bool
     }
 
     internal let storage: Storage
@@ -73,7 +74,7 @@ import Foundation
     var userDefaults: UserDefaults? { self.storage.userDefaults }
     var storeKitVersion: StoreKitVersion { self.storage.storeKitVersion }
     var dangerousSettings: DangerousSettings? { self.storage.dangerousSettings }
-    var networkTimeout: TimeInterval { self.storage.networkTimeout }
+    var networkTimeout: NetworkTimeout { self.storage.networkTimeout }
     var storeKit1Timeout: TimeInterval { self.storage.storeKit1Timeout }
     var platformInfo: Purchases.PlatformInfo? { self.storage.platformInfo }
     var showStoreMessagesAutomatically: Bool { self.storage.showStoreMessagesAutomatically }
@@ -82,6 +83,7 @@ import Foundation
         self.storage.automaticDeviceIdentifierCollectionEnabled
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
+    internal var iamEnabled: Bool { self.storage.iamEnabled }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -98,7 +100,8 @@ import Foundation
             showStoreMessagesAutomatically: builder.showStoreMessagesAutomatically,
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
-            diagnosticsEnabled: builder.diagnosticsEnabled
+            diagnosticsEnabled: builder.diagnosticsEnabled,
+            iamEnabled: builder.iamEnabled
         )
     }
 
@@ -143,12 +146,13 @@ import Foundation
         private(set) var purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat
         private(set) var userDefaults: UserDefaults?
         private(set) var dangerousSettings: DangerousSettings?
-        private(set) var networkTimeout = Configuration.networkTimeoutDefault
+        private(set) var networkTimeout: NetworkTimeout = .default
         private(set) var storeKit1Timeout = Configuration.storeKitRequestTimeoutDefault
         private(set) var platformInfo: Purchases.PlatformInfo?
         private(set) var entitlementVerificationMode: EntitlementVerificationMode = .informational
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
+        private(set) var iamEnabled: Bool = false
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -251,7 +255,7 @@ import Foundation
 
         /// Set `networkTimeout`.
         @objc public func with(networkTimeout: TimeInterval) -> Builder {
-            self.networkTimeout = clamped(timeout: networkTimeout)
+            self.networkTimeout = .custom(clamped(timeout: networkTimeout))
             return self
         }
 
@@ -359,6 +363,15 @@ import Foundation
             return self
         }
 
+        /// Set `iamEnabled`. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+        @_spi(Experimental)
+        @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
+            self.iamEnabled = iamEnabled
+            return self
+        }
+
         /// Generate a ``Configuration`` object given the values configured by this builder.
         @objc public func build() -> Configuration {
             return Configuration(with: self)
@@ -383,7 +396,7 @@ import Foundation
         /// - Parameter preferredUILocaleOverride: A locale string in the format "language_region" (e.g., "en_US").
         ///
         /// Defaults to `nil`, which means using the default user locale for RevenueCatUI components.
-        public func with(preferredUILocaleOverride: String?) -> Builder {
+        @objc public func with(preferredUILocaleOverride: String?) -> Builder {
             self.preferredLocale = preferredUILocaleOverride
             return self
         }

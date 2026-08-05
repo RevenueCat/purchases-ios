@@ -18,6 +18,7 @@ enum HTTPStatusCode {
 
     case success
     case createdSuccess
+    case noContent
     case redirect
     case notModified
     case temporaryRedirect
@@ -34,6 +35,7 @@ enum HTTPStatusCode {
     private static let knownStatus: Set<HTTPStatusCode> = [
         .success,
         .createdSuccess,
+        .noContent,
         .redirect,
         .notModified,
         .temporaryRedirect,
@@ -57,6 +59,7 @@ extension HTTPStatusCode: RawRepresentable {
         switch self {
         case .success: return 200
         case .createdSuccess: return 201
+        case .noContent: return 204
         case .redirect: return 300
         case .notModified: return 304
         case .temporaryRedirect: return 307

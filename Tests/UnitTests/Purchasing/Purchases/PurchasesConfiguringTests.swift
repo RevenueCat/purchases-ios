@@ -23,6 +23,31 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
+    func testRemoteConfigRefreshesDuringLifecycleCacheUpdatesByDefault() {
+        self.setupPurchases()
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount).toEventually(equal(1))
+
+        self.notificationCenter.fireNotifications()
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 1
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 1
+    }
+
+    func testRemoteConfigIsNoOpInCustomEntitlementsComputationMode() {
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+
+        self.initializePurchasesInstance(appUserId: Self.appUserID)
+
+        self.notificationCenter.fireNotifications()
+        self.purchases.logOut(completion: nil)
+        self.purchases.internalSwitchUser(to: "new-user")
+
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == 0
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigIfStaleCount) == 0
+    }
+
     #if !os(watchOS)
     func testUsingSharedInstanceWithoutInitializingThrowsAssertion() {
         expect {
@@ -53,6 +78,9 @@ class PurchasesConfiguringTests: BasePurchasesTests {
 
         expect(purchases.networkTimeout) == networkTimeoutSeconds
         expect(purchases.storeKitTimeout) == networkTimeoutSeconds
+        // The shared timeout manager must be built from the configured timeout too, otherwise every
+        // request would silently fall back to the built-in tiers.
+        expect(purchases.requestTimeoutManagerBaseTimeout) == networkTimeoutSeconds
     }
 
     func testSharedInstanceIsSetWhenConfiguring() {

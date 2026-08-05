@@ -34,7 +34,39 @@ final class RewardVerificationStatusResponseDecodingTests: TestCase {
 
     func testDecodesFailedStatus() throws {
         let response = try Self.decode(["status": "failed"])
-        expect(response.status) == .failed
+        expect(response.status) == .failed(.init(reason: nil, message: nil))
+    }
+
+    func testDecodesFailedStatusWithReasonAndMessage() throws {
+        let response = try Self.decode([
+            "status": "failed",
+            "failure_reason": "no_access",
+            "message": "AdMob server-side reward verification is not enabled for this app."
+        ])
+        expect(response.status) == .failed(.init(
+            reason: "no_access",
+            message: "AdMob server-side reward verification is not enabled for this app."
+        ))
+    }
+
+    func testDecodesFailedStatusWithNullReasonAndMessage() throws {
+        let json = #"{"status":"failed","reward":null,"failure_reason":null,"message":null}"#
+        let response = try RewardVerificationStatusResponse.create(with: Data(json.utf8))
+        expect(response.status) == .failed(.init(reason: nil, message: nil))
+    }
+
+    func testDecodesFailedStatusWithUnrecognizedReasonKeepsRawValue() throws {
+        // Forward compatibility: a `failure_reason` this SDK version doesn't know about must
+        // still decode (kept as the raw string) so the `failed` status and message survive.
+        let response = try Self.decode([
+            "status": "failed",
+            "failure_reason": "some_future_reason",
+            "message": "A brand new failure cause."
+        ])
+        expect(response.status) == .failed(.init(
+            reason: "some_future_reason",
+            message: "A brand new failure cause."
+        ))
     }
 
     func testDecodesUnrecognizedStatusAsUnknown() throws {

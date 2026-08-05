@@ -199,6 +199,33 @@ private extension WorkflowPageTransitionState.Direction {
 
 }
 
+/// Screen bounds for workflow page transitions. The `GeometryReader` behind them sits inside the
+/// safe area, so the clip mask and the slide distance both come from `screenWidth`. They have to
+/// match: a wider mask shows the off-screen page, a narrower one cuts the page off early.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WorkflowTransitionGeometry {
+
+    let size: CGSize
+    let safeAreaInsets: EdgeInsets
+
+    /// The whole screen. `size.width` is only the safe-area box the pages lay out in.
+    var screenWidth: CGFloat {
+        return self.size.width + self.safeAreaInsets.leading + self.safeAreaInsets.trailing
+    }
+
+    /// Grows a mask from the safe-area box out to the whole screen. One value per edge, so it also
+    /// works when the insets differ side to side, and in right-to-left layouts.
+    var maskPadding: EdgeInsets {
+        return EdgeInsets(
+            top: -self.safeAreaInsets.top,
+            leading: -self.safeAreaInsets.leading,
+            bottom: -self.safeAreaInsets.bottom,
+            trailing: -self.safeAreaInsets.trailing
+        )
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPaywallView: View {
 
@@ -206,6 +233,7 @@ struct WorkflowPaywallView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
+    @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -225,13 +253,25 @@ struct WorkflowPaywallView: View {
     private let onDismiss: () -> Void
 
     @StateObject private var navigator: WorkflowNavigator
+    /// One paywall state store per workflow presentation: all screens read and write the same
+    /// store, so values survive screen navigation and reset only when the presentation ends
+    /// (this view, and with it the `@StateObject`, is torn down). Seeded from every screen's
+    /// declarations: `PaywallsV2View` suppresses its own store inside a workflow, so nothing else
+    /// seeds this one.
+    @StateObject private var stateStore: PaywallStateStore
     // Held via PromoOfferCacheOwner so this view owns one cache shared across all workflow pages
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
     @State private var hasLoggedInvalidState = false
+    /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
+    /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
+    /// Android's per-impression `workflowTraceId`. Its sequence/gating is unit tested in
+    /// `WorkflowStepEventCoordinatorTests`.
+    @State private var stepEventCoordinator: WorkflowStepEventCoordinator
     @State private var transitionState: WorkflowPageTransitionState<RenderedPage>
     @State private var activeTransitionID: UUID?
+    @State private var hasCompletedWorkflowInSession = false
     /// Every step the user has seen, in first-seen order. Each page is kept mounted so its subtree,
     /// and the state it owns (a tab/toggle selection, the `PackageContext` that `PaywallsV2View`
     /// mutates by reference), survives navigating away and back. Also the per-step page cache:
@@ -254,6 +294,9 @@ struct WorkflowPaywallView: View {
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
+        self._stateStore = .init(
+            wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
+        )
         self._promoOfferCacheOwner = .init(wrappedValue: PromoOfferCacheOwner(
             cache: promoOfferCache ?? PaywallPromoOfferCache(
                 subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -273,22 +316,45 @@ struct WorkflowPaywallView: View {
             introEligibilityChecker: introEligibilityChecker,
             packageInput: initialPackageInput
         )
+        self._stepEventCoordinator = .init(
+            wrappedValue: WorkflowStepEventCoordinator(
+                workflow: context.workflow,
+                sink: { [purchaseHandler] event in purchaseHandler.track(event) }
+            )
+        )
         self._seenPages = .init(wrappedValue: initialPage.map { [$0] } ?? [])
         self._transitionState = .init(wrappedValue: .init(currentPage: initialPage))
     }
 
+    /// Merged across all screens so a key declared on a screen the user has not reached yet is
+    /// already seeded; sorted by id so a key two screens declare differently resolves the same way
+    /// every time.
+    static func mergedStateDeclarations(
+        in workflow: PublishedWorkflow
+    ) -> [String: PaywallComponent.StateDeclaration] {
+        var merged: [String: PaywallComponent.StateDeclaration] = [:]
+        for (_, screen) in workflow.screens.sorted(by: { $0.key < $1.key }) {
+            merged.merge(screen.stateDeclarations ?? [:]) { first, _ in first }
+        }
+        return merged
+    }
+
     var body: some View {
         GeometryReader { proxy in
+            let geometry = WorkflowTransitionGeometry(
+                size: proxy.size,
+                safeAreaInsets: proxy.safeAreaInsets
+            )
             ZStack {
                 // Render every seen page keyed by its stable per-step snapshot ID so SwiftUI
                 // preserves each subtree's identity (and the state it owns) across navigation.
                 // The current and outgoing pages animate; the rest stay mounted but hidden
                 // off-screen, non-interactive.
                 ForEach(self.seenPages) { page in
-                    self.seenPageView(for: page, proxy: proxy)
+                    self.seenPageView(for: page, geometry: geometry)
                 }
 
-                self.workflowHeaderOverlay(proxy: proxy)
+                self.workflowHeaderOverlay(geometry: geometry)
                     .zIndex(2)
 
                 if self.transitionState.currentPage == nil {
@@ -301,7 +367,7 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .transitionClipMask(proxy: proxy)
+            .transitionClipMask(geometry: geometry)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
         .workflowTransitionAnimationCompletion(
@@ -331,10 +397,47 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
             self.syncExitOfferBinding()
+            self.stepEventCoordinator.trackInitialStep(
+                self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil
+            )
+        }
+        // Terminal `stepCompleted` is anchored here, mirroring how `paywall_close` is tracked on
+        // PaywallsV2View.onDisappear. This is the single dismissal signal that catches every path the
+        // workflow can go away — close button, post-purchase auto-dismiss, swipe-to-dismiss on a sheet,
+        // and programmatic parent dismiss — without firing during inner step transitions (the outer
+        // view stays mounted while pages swap).
+        .onDisappear {
+            // Workflow abandonment: fires unless the workflow completed naturally before dismissal.
+            // The completion signal is explicit because UIKit can reset PurchaseHandler before this
+            // view disappears, and restore only completes a workflow when the presenter actually
+            // closes it.
+            self.stepEventCoordinator.trackAbandonment(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil,
+                hasCompletedInSession: Self.hasCompletedInSession(
+                    hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+                    hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
+                        self.workflowCompletedInSessionBinding.wrappedValue
+                )
+            )
+            self.stepEventCoordinator.trackTerminalCompletion(
+                currentStep: self.navigator.currentStep,
+                hasRenderedPage: self.transitionState.currentPage != nil
+            )
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
         }
+        // Workflow-level injection: every page (current, outgoing, and hidden-but-mounted) shares
+        // this presentation session's state store. PaywallsV2View only creates its own store when
+        // no store was injected from above (i.e. standalone presentation).
+        .environment(\.paywallStateStore, self.stateStore)
+        // Republish the shared store's snapshot to the whole workflow subtree. This view observes
+        // `stateStore` via `@StateObject`, so a state update re-runs this body and refreshes the
+        // values every page reads when re-resolving `state` conditions.
+        .environment(\.paywallStateValues, self.stateStore.values)
+        .environment(\.paywallStateDefaults, self.stateStore.defaults)
     }
 
     // MARK: - Helpers
@@ -359,7 +462,10 @@ struct WorkflowPaywallView: View {
     }
 
     @ViewBuilder
-    private func seenPageView(for page: RenderedPage, proxy: GeometryProxy) -> some View {
+    private func seenPageView(
+        for page: RenderedPage,
+        geometry: WorkflowTransitionGeometry
+    ) -> some View {
         // current and outgoing animate; every other seen page stays mounted but hidden off-screen
         // so its state is preserved until the user returns to it.
         let isCurrent = page.id == self.transitionState.currentPage?.id
@@ -367,7 +473,12 @@ struct WorkflowPaywallView: View {
         let isHidden = !isCurrent && !isOutgoing
         let transitionRole: WorkflowPageTransitionState<RenderedPage>.PageRole =
             isOutgoing ? .outgoing : .current
-        let pageOffset = isHidden ? 0 : self.transitionState.offset(for: transitionRole, width: proxy.size.width)
+        let pageOffset = Self.pageOffset(
+            isHidden: isHidden,
+            role: transitionRole,
+            transitionState: self.transitionState,
+            geometry: geometry
+        )
 
         self.pageView(for: page, isActive: isCurrent)
             .environment(
@@ -391,8 +502,8 @@ struct WorkflowPaywallView: View {
                     pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
                 )
             )
-            .frame(width: proxy.size.width, height: proxy.size.height)
-            .transitionClipMask(proxy: proxy)
+            .frame(width: geometry.size.width, height: geometry.size.height)
+            .transitionClipMask(geometry: geometry)
             .opacity(isHidden ? 0 : 1)
             .offset(x: pageOffset)
             .zIndex(isHidden ? -1 : self.transitionState.zIndex(for: transitionRole))
@@ -409,6 +520,7 @@ struct WorkflowPaywallView: View {
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices,
             workflowDefaultPackage: page.effectiveWorkflowPackageContext?.selectedPackage,
             workflowPackages: page.effectiveWorkflowPackageContext?.packages,
+            workflowPromoOfferProductCodes: page.effectiveWorkflowPackageContext?.promoOfferCodesByPackageId,
             displayCloseButton: page.showCloseButton,
             onDismiss: self.handleDismiss,
             closeWorkflowAction: self.onDismiss,
@@ -418,7 +530,15 @@ struct WorkflowPaywallView: View {
             introEligibilityContext: page.introOfferEligibilityContext,
             selectedPackageContextOverride: page.packageContext,
             // Drives per-visit paywall_viewed / paywall_close: this page is the current workflow step.
-            isActiveWorkflowPage: isActive
+            isActiveWorkflowPage: isActive,
+            // Gates paywall events: steps tagged as paywalls report; untagged steps fall back to the
+            // single-step-fallback rule.
+            workflowScreenType: page.screenType,
+            // Workflow purchase attribution, orthogonal to the screen_type gate.
+            workflowId: self.context.workflow.id,
+            stepId: page.stepId,
+            traceId: self.stepEventCoordinator.traceId,
+            isWorkflowSingleStepFallback: page.isSingleStepFallback
         )
         .environment(\.workflowPackageContext, page.effectiveWorkflowPackageContext)
         .environment(\.workflowTriggerAction, { componentId in
@@ -427,7 +547,7 @@ struct WorkflowPaywallView: View {
     }
 
     @ViewBuilder
-    private func workflowHeaderOverlay(proxy: GeometryProxy) -> some View {
+    private func workflowHeaderOverlay(geometry: WorkflowTransitionGeometry) -> some View {
         if self.shouldRenderWorkflowHeaderOverlay {
             ZStack(alignment: .top) {
                 ForEach(self.displayedPages) { displayedPage in
@@ -453,9 +573,9 @@ struct WorkflowPaywallView: View {
                     }
                 }
             }
-            .frame(width: proxy.size.width, height: proxy.size.height, alignment: .top)
-            .transitionClipMask(proxy: proxy)
-            .environment(\.safeAreaInsets, proxy.safeAreaInsets)
+            .frame(width: geometry.size.width, height: geometry.size.height, alignment: .top)
+            .transitionClipMask(geometry: geometry)
+            .environment(\.safeAreaInsets, geometry.safeAreaInsets)
             .ignoresSafeArea(edges: .top)
             .allowsHitTesting(false)
         }
@@ -477,14 +597,24 @@ struct WorkflowPaywallView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         ) {
         case .dismissWorkflow:
+            if self.purchaseHandler.hasPurchasedInSession {
+                self.markWorkflowCompletedInSession()
+            }
             self.onDismiss()
         case .navigateBack:
+            let fromStep = self.navigator.currentStep
             guard let destination = self.navigator.backNavigationDestination,
                   let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
                 return
             }
 
             self.navigator.navigateBack()
+            self.stepEventCoordinator.trackTransition(
+                from: fromStep,
+                to: destination.step,
+                renderedPageIsNil: false,
+                entryReason: .back
+            )
             self.startTransition(
                 to: page,
                 direction: .back
@@ -498,11 +628,49 @@ struct WorkflowPaywallView: View {
         )?.exitOfferOffering
     }
 
+    // MARK: - Workflow step event tracking
+
+    // Emission state and gating (trace id, fire-once, "only if a page rendered") live in
+    // `WorkflowStepEventCoordinator`, unit tested in `WorkflowStepEventCoordinatorTests`. The view only
+    // forwards its lifecycle/navigation signals to the coordinator: initial step on `onAppear`, forward/back
+    // in the navigation handlers, and terminal completion on `onDisappear` (the single dismissal signal that
+    // catches close, post-purchase auto-dismiss, swipe-to-dismiss, and programmatic parent dismiss). The
+    // binding of those four hooks to the coordinator is verified manually in PaywallsTester.
+
     static func exitOfferContext(
         for context: WorkflowContext,
         currentStepId: String
     ) -> WorkflowExitOfferContext? {
         return context.exitOfferContext(forStepId: currentStepId)
+    }
+
+    private func markWorkflowCompletedInSession() {
+        self.hasCompletedWorkflowInSession = true
+        self.workflowCompletedInSessionBinding.wrappedValue = true
+    }
+
+    /// Whether the workflow reached a natural completion (so dismissing it is not an abandonment).
+    /// Purchase state is kept as a fallback, while restore-driven completion comes from the presenter
+    /// only when restore actually dismisses the workflow.
+    static func hasCompletedInSession(
+        hasPurchasedInSession: Bool,
+        hasCompletedWorkflowInSession: Bool
+    ) -> Bool {
+        return hasPurchasedInSession || hasCompletedWorkflowInSession
+    }
+
+    /// How far a page moves sideways during a transition. Pages kept off-screen never move.
+    static func pageOffset<Page>(
+        isHidden: Bool,
+        role: WorkflowPageTransitionState<Page>.PageRole,
+        transitionState: WorkflowPageTransitionState<Page>,
+        geometry: WorkflowTransitionGeometry
+    ) -> CGFloat {
+        guard !isHidden else {
+            return 0
+        }
+
+        return transitionState.offset(for: role, width: geometry.screenWidth)
     }
 
     static func dismissalAction(
@@ -520,19 +688,29 @@ struct WorkflowPaywallView: View {
     }
 
     private func handleTriggeredNavigation(componentId: String) -> Bool {
-        guard !self.transitionState.isTransitioning,
-              let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+        guard !self.transitionState.isTransitioning else {
             return false
         }
 
-        self.startTransition(
-            to: self.renderedPageForForwardNavigation(
-                stepId: nextStep.id,
-                canNavigateBack: self.navigator.canNavigateBack,
-                carryForwardPackage: self.transitionState.currentPage?.packageContext.package
-            ),
-            direction: .forward
+        // Capture the step we are leaving before triggerAction mutates the navigator.
+        let fromStep = self.navigator.currentStep
+        guard let nextStep = self.navigator.triggerAction(componentId: componentId) else {
+            return false
+        }
+
+        let page = self.renderedPageForForwardNavigation(
+            stepId: nextStep.id,
+            canNavigateBack: self.navigator.canNavigateBack,
+            carryForwardPackage: self.transitionState.currentPage?.packageContext.package
         )
+
+        self.stepEventCoordinator.trackTransition(
+            from: fromStep,
+            to: nextStep,
+            renderedPageIsNil: page == nil,
+            entryReason: .forward
+        )
+        self.startTransition(to: page, direction: .forward)
 
         return true
     }
@@ -611,12 +789,15 @@ struct WorkflowPaywallView: View {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: context.workflow.uiConfig
+            uiConfig: context.uiConfig,
+            paywallId: screenId
         )
 
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
+            screenType: step.stepScreenType,
+            isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
             showCloseButton: showCloseButton,
             introOfferEligibilityContext: .init(introEligibilityChecker: introEligibilityChecker),
@@ -717,6 +898,12 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let stepId: String
     let content: CurrentStepContent
+    /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
+    /// this page reports paywall events. See `PaywallsV2View.shouldTrackPaywallEvents`.
+    let screenType: [String]?
+    /// Whether this step is the workflow's `singleStepFallbackId`. Only used to gate paywall events on
+    /// untagged steps (`nil` `screenType`), restoring the structural fallback-step-only rule.
+    let isSingleStepFallback: Bool
     let headerComponent: PaywallComponent.HeaderComponent?
     let showCloseButton: Bool
     /// Page-scoped so late async eligibility checks cannot overwrite another workflow step.
@@ -870,17 +1057,12 @@ struct RenderedPagePackageInput {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
-    // Keep workflow transitions clipped horizontally, but let page backgrounds render into safe areas.
-    // Pages already ignore the bottom safe area, but this GeometryReader is laid out inside the
-    // safe-area bounds. A plain `.clipped()` trims that page overflow and exposes the presenting view.
-    func transitionClipMask(proxy: GeometryProxy) -> some View {
-        self.mask(alignment: .top) {
+    // Clips transitions to the screen, but still lets page backgrounds paint into the safe areas. A
+    // plain `.clipped()` would cut those off and show whatever is behind the paywall.
+    func transitionClipMask(geometry: WorkflowTransitionGeometry) -> some View {
+        self.mask {
             Rectangle()
-                .frame(
-                    width: proxy.size.width,
-                    height: proxy.size.height + proxy.safeAreaInsets.top + proxy.safeAreaInsets.bottom
-                )
-                .offset(y: -proxy.safeAreaInsets.top)
+                .padding(geometry.maskPadding)
         }
     }
 

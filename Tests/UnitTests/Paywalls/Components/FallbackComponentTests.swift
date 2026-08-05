@@ -99,6 +99,8 @@ class FallbackComponentTests: TestCase {
             )
             expect(context.underlyingError.debugDescription).to(
                 contain("Failed to decode unknown type \\\"less_new_but_still_new_type\\\" without a fallback.")
+                // SE-0489 (Swift 6.3) changed DecodingError's debugDescription format to:
+                || contain("Failed to decode unknown type \"less_new_but_still_new_type\" without a fallback.")
             )
         } catch {
             XCTFail("Should have caught DecodingError.dataCorrupted")
@@ -129,6 +131,8 @@ class FallbackComponentTests: TestCase {
             )
             expect(context.underlyingError.debugDescription).to(
                 contain("No value associated with key CodingKeys(stringValue: \\\"textLid\\\"")
+                // SE-0489 (Swift 6.3) changed DecodingError's debugDescription format to:
+                || contain("Key 'textLid' not found in keyed decoding container")
             )
         } catch {
             XCTFail("Should have caught DecodingError.dataCorrupted")

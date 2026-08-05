@@ -53,21 +53,44 @@ class MockDeviceCache: DeviceCache {
     }
 
     // MARK: customerInfo
-    var cacheCustomerInfoCount = 0
-    var cachedCustomerInfoCount = 0
-    var clearCustomerInfoCacheTimestampCount = 0
-    var setCustomerInfoCacheTimestampToNowCount = 0
+    // Backed by `Atomic` because the SDK reads and writes this state from multiple threads
+    // concurrently (e.g. configuration + foreground-delegate sync), which would otherwise
+    // corrupt the underlying dictionary. Exposed via computed properties so call sites are unchanged.
+    private let _cacheCustomerInfoCount: Atomic<Int> = .init(0)
+    var cacheCustomerInfoCount: Int {
+        get { self._cacheCustomerInfoCount.value }
+        set { self._cacheCustomerInfoCount.value = newValue }
+    }
+    private let _cachedCustomerInfoCount: Atomic<Int> = .init(0)
+    var cachedCustomerInfoCount: Int {
+        get { self._cachedCustomerInfoCount.value }
+        set { self._cachedCustomerInfoCount.value = newValue }
+    }
+    private let _clearCustomerInfoCacheTimestampCount: Atomic<Int> = .init(0)
+    var clearCustomerInfoCacheTimestampCount: Int {
+        get { self._clearCustomerInfoCacheTimestampCount.value }
+        set { self._clearCustomerInfoCacheTimestampCount.value = newValue }
+    }
+    private let _setCustomerInfoCacheTimestampToNowCount: Atomic<Int> = .init(0)
+    var setCustomerInfoCacheTimestampToNowCount: Int {
+        get { self._setCustomerInfoCacheTimestampToNowCount.value }
+        set { self._setCustomerInfoCacheTimestampToNowCount.value = newValue }
+    }
     var stubbedIsCustomerInfoCacheStale = false
-    var cachedCustomerInfo = [String: Data]()
+    private let _cachedCustomerInfo: Atomic<[String: Data]> = .init([:])
+    var cachedCustomerInfo: [String: Data] {
+        get { self._cachedCustomerInfo.value }
+        set { self._cachedCustomerInfo.value = newValue }
+    }
 
     override func cache(customerInfo: Data, appUserID: String) {
-        cacheCustomerInfoCount += 1
-        cachedCustomerInfo[appUserID] = customerInfo as Data?
+        self._cacheCustomerInfoCount.modify { $0 += 1 }
+        self._cachedCustomerInfo.modify { $0[appUserID] = customerInfo }
     }
 
     override func cachedCustomerInfoData(appUserID: String) -> Data? {
-        cachedCustomerInfoCount += 1
-        return cachedCustomerInfo[appUserID]
+        self._cachedCustomerInfoCount.modify { $0 += 1 }
+        return self._cachedCustomerInfo.value[appUserID]
     }
 
     override func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
@@ -75,7 +98,7 @@ class MockDeviceCache: DeviceCache {
     }
 
     override func clearCustomerInfoCacheTimestamp(appUserID: String) {
-        clearCustomerInfoCacheTimestampCount += 1
+        self._clearCustomerInfoCacheTimestampCount.modify { $0 += 1 }
     }
 
     // MARK: offerings
@@ -83,24 +106,41 @@ class MockDeviceCache: DeviceCache {
     var cacheOfferingsCount = 0
     var latestCachePreferredLocales: [String]?
     var cacheOfferingsInMemoryCount = 0
+    var clearInMemoryOfferingsCacheCount = 0
     var clearCachedOfferingsCount = 0
     var clearOfferingsCacheTimestampCount = 0
     var setOfferingsCacheTimestampToNowCount = 0
     var stubbedIsOfferingsCacheStale = false
     var stubbedOfferings: Offerings?
     var stubbedCachedOfferingsData: Data?
+    var latestCachedOfferingsContents: Offerings.Contents?
+    var latestCachedOfferingsFetchResult: OfferingsFetchResult?
     var stubbedOfferingCacheStatus: CacheStatus?
 
     override var cachedOfferings: Offerings? {
         return stubbedOfferings
     }
 
-    override func cache(offerings: Offerings, preferredLocales: [String], appUserID: String) {
+    override func cache(
+        offerings: Offerings,
+        fetchResult: OfferingsFetchResult? = nil,
+        preferredLocales: [String],
+        appUserID: String
+    ) {
         self.cacheOfferingsCount += 1
         self.latestCachePreferredLocales = preferredLocales
+        self.latestCachedOfferingsContents = fetchResult?.contents ?? offerings.contents
+        self.latestCachedOfferingsFetchResult = fetchResult
+        self.stubbedOfferings = offerings
     }
     override func cacheInMemory(offerings: Offerings) {
         self.cacheOfferingsInMemoryCount += 1
+        self.stubbedOfferings = offerings
+    }
+
+    override func clearInMemoryOfferingsCache() {
+        self.clearInMemoryOfferingsCacheCount += 1
+        self.stubbedOfferings = nil
     }
 
     override func isOfferingsCacheStale(isAppBackgrounded: Bool) -> Bool {
@@ -113,37 +153,23 @@ class MockDeviceCache: DeviceCache {
 
     override func clearOfferingsCache(appUserID: String) {
         self.clearCachedOfferingsCount += 1
+        self.stubbedOfferings = nil
+        self.stubbedCachedOfferingsData = nil
     }
 
-    override func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+    override func cachedOfferingsContents(
+        appUserID: String,
+        decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents
+    ) -> Offerings.Contents? {
         if let stubbedCachedOfferingsData {
-            return try? JSONDecoder.default.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
+            let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
+            return try? decoder.decode(Offerings.Contents.self, from: stubbedCachedOfferingsData)
         }
         return nil
     }
 
     override func offeringsCacheStatus(isAppBackgrounded: Bool) -> CacheStatus {
         return self.stubbedOfferingCacheStatus ?? super.offeringsCacheStatus(isAppBackgrounded: isAppBackgrounded)
-    }
-
-    // MARK: Workflows list response
-
-    var cacheWorkflowsListResponseCount = 0
-    var clearWorkflowsListResponseCacheCount = 0
-    var stubbedCachedWorkflowsListResponse: WorkflowsListResponse?
-    var invokedCachedWorkflowsListResponse = false
-
-    override func cache(workflowsListResponse: WorkflowsListResponse) {
-        self.cacheWorkflowsListResponseCount += 1
-    }
-
-    override func cachedWorkflowsListResponse() -> WorkflowsListResponse? {
-        self.invokedCachedWorkflowsListResponse = true
-        return self.stubbedCachedWorkflowsListResponse
-    }
-
-    override func clearWorkflowsListResponseCache() {
-        self.clearWorkflowsListResponseCacheCount += 1
     }
 
     // MARK: SubscriberAttributes
@@ -251,7 +277,7 @@ class MockDeviceCache: DeviceCache {
     var invokedClearCustomerInfoCacheParametersList = [(appUserID: String, Void)]()
 
     override func clearCustomerInfoCache(appUserID: String) {
-        cachedCustomerInfo.removeValue(forKey: appUserID)
+        self._cachedCustomerInfo.modify { $0.removeValue(forKey: appUserID) }
         invokedClearCustomerInfoCache = true
         invokedClearCustomerInfoCacheCount += 1
         invokedClearCustomerInfoCacheParameters = (appUserID, ())

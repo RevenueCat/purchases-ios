@@ -86,6 +86,8 @@ NSURL *url;
     RCPackage *pack;
 
     [p invalidateCustomerInfoCache];
+    [p overridePreferredUILocale:@"de_DE"];
+    [p overridePreferredUILocale:nil];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
     RCAttribution __unused *attribution = p.attribution;

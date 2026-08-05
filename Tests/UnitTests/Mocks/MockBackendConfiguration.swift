@@ -24,7 +24,7 @@ class MockBackendConfiguration: BackendConfiguration {
         let httpClient = MockHTTPClient(systemInfo: systemInfo,
                                         eTagManager: MockETagManager(),
                                         diagnosticsTracker: diagnosticsTracker,
-                                        requestTimeout: 7)
+                                        networkTimeout: .custom(7))
 
         super.init(
             httpClient: httpClient,

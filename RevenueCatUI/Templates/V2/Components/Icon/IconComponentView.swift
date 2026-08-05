@@ -43,6 +43,11 @@ struct IconComponentView: View {
     @Environment(\.selectedPackageId)
     private var selectedPackageId
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     let viewModel: IconComponentViewModel
 
     var body: some View {
@@ -57,6 +62,8 @@ struct IconComponentView: View {
             ),
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

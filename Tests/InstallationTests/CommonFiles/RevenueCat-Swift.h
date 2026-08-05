@@ -1123,8 +1123,16 @@ SWIFT_CLASS_NAMED("Builder")
 /// With this option disabled you can still collect device identifiers
 /// by calling <code>Purchases/collectDeviceIdentifiers()</code>
 - (RCConfigurationBuilder * _Nonnull)withAutomaticDeviceIdentifierCollectionEnabled:(BOOL)automaticDeviceIdentifierCollectionEnabled SWIFT_WARN_UNUSED_RESULT;
+/// Set <code>iamEnabled</code>. This is <em>disabled</em> by default.
+/// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+- (RCConfigurationBuilder * _Nonnull)withIAMEnabled:(BOOL)iamEnabled SWIFT_WARN_UNUSED_RESULT;
 /// Generate a <code>Configuration</code> object given the values configured by this builder.
 - (RCConfiguration * _Nonnull)build SWIFT_WARN_UNUSED_RESULT;
+/// Overrides the preferred locale for RevenueCatUI components.
+/// Defaults to <code>nil</code>, which means using the default user locale for RevenueCatUI components.
+/// \param preferredUILocaleOverride A locale string in the format “language_region” (e.g., “en_US”).
+///
+- (RCConfigurationBuilder * _Nonnull)withPreferredUILocaleOverride:(NSString * _Nullable)preferredUILocaleOverride SWIFT_WARN_UNUSED_RESULT;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
@@ -1611,7 +1619,6 @@ SWIFT_CLASS_NAMED("EntitlementInfos")
 @property (nonatomic, readonly, copy) NSDictionary<NSString *, RCEntitlementInfo *> * _Nonnull activeInAnyEnvironment;
 @end
 
-/// Error codes used by the Purchases SDK
 typedef SWIFT_ENUM_NAMED(NSInteger, RCPurchasesErrorCode, "ErrorCode", open) {
   RCUnknownError SWIFT_COMPILE_NAME("unknownError") = 0,
   RCPurchaseCancelledError SWIFT_COMPILE_NAME("purchaseCancelledError") = 1,
@@ -1697,6 +1704,10 @@ SWIFT_CLASS("_TtC10RevenueCat37GetProductEntitlementMappingOperation")
 @interface GetProductEntitlementMappingOperation : CacheableNetworkOperation
 @end
 
+SWIFT_CLASS("_TtC10RevenueCat32GetRemoteConfigFallbackOperation")
+@interface GetRemoteConfigFallbackOperation : CacheableNetworkOperation
+@end
+
 SWIFT_CLASS("_TtC10RevenueCat24GetRemoteConfigOperation")
 @interface GetRemoteConfigOperation : CacheableNetworkOperation
 @end
@@ -1715,14 +1726,6 @@ SWIFT_CLASS("_TtC10RevenueCat30GetWebBillingProductsOperation")
 
 SWIFT_CLASS("_TtC10RevenueCat31GetWebOfferingProductsOperation")
 @interface GetWebOfferingProductsOperation : CacheableNetworkOperation
-@end
-
-SWIFT_CLASS("_TtC10RevenueCat20GetWorkflowOperation")
-@interface GetWorkflowOperation : CacheableNetworkOperation
-@end
-
-SWIFT_CLASS("_TtC10RevenueCat25GetWorkflowsListOperation")
-@interface GetWorkflowsListOperation : CacheableNetworkOperation
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat15HealthOperation")
@@ -3327,6 +3330,17 @@ SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, copy) NSString * _No
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
 @end
 
+@interface RCPurchases (SWIFT_EXTENSION(RevenueCat))
+/// Overrides the preferred locale for RevenueCatUI components.
+/// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
+/// important:
+/// This method only takes effect after <code>Purchases</code> has been configured.
+/// \param locale A locale string in the format “language_region” (e.g., “en_US”).
+/// Use <code>nil</code> to remove the override and use the default user locale determined by the system.
+///
+- (void)overridePreferredUILocale:(NSString * _Nullable)locale;
+@end
+
 SWIFT_PROTOCOL("_TtP10RevenueCat29PurchasesOrchestratorDelegate_")
 @protocol PurchasesOrchestratorDelegate
 - (void)readyForPromotedProduct:(RCStoreProduct * _Nonnull)product purchase:(void (^ _Nonnull)(void (^ _Nonnull)(RCStoreTransaction * _Nullable, RCCustomerInfo * _Nullable, NSError * _Nullable, BOOL)))startPurchase;
@@ -3961,6 +3975,36 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCRefundRequestStatus, "RefundRequestStatus"
   RCRefundRequestError SWIFT_COMPILE_NAME("error") = 2,
 };
 
+/// Indicates the reason for a transaction revocation.
+/// This mirrors StoreKit 2’s <code>Transaction.RevocationReason</code> (available on iOS 15+, macOS 12+,
+/// tvOS 15+, watchOS 8+).
+/// When the revocation reason cannot be determined, the property is <code>nil</code>. This happens for:
+/// <ul>
+///   <li>
+///     All StoreKit 1 transactions (SK1 does not expose revocation metadata).
+///   </li>
+///   <li>
+///     StoreKit 2 transactions that were not revoked.
+///   </li>
+/// </ul>
+SWIFT_CLASS_NAMED("RevocationReason")
+@interface RCRevocationReason : NSObject
+/// String representation of the revocation reason.
+@property (nonatomic, readonly, copy) NSString * _Nonnull rawValue;
+/// Creates a revocation reason with the specified raw value.
+- (nonnull instancetype)initWithRawValue:(NSString * _Nonnull)rawValue OBJC_DESIGNATED_INITIALIZER;
+/// The transaction was revoked because of an issue with the app.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCRevocationReason * _Nonnull RCDeveloperIssue;)
++ (RCRevocationReason * _Nonnull)RCDeveloperIssue SWIFT_WARN_UNUSED_RESULT;
+/// The transaction was revoked for another reason.
+SWIFT_CLASS_PROPERTY(@property (nonatomic, class, readonly, strong) RCRevocationReason * _Nonnull RCOther;)
++ (RCRevocationReason * _Nonnull)RCOther SWIFT_WARN_UNUSED_RESULT;
+- (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
+@property (nonatomic, readonly) NSUInteger hash;
+- (nonnull instancetype)init SWIFT_UNAVAILABLE;
++ (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
+@end
+
 /// Enum of supported stores
 typedef SWIFT_ENUM_NAMED(NSInteger, RCStore, "Store", open) {
 /// For entitlements granted via Apple App Store.
@@ -4337,6 +4381,8 @@ SWIFT_CLASS_NAMED("StoreTransaction")
 @property (nonatomic, readonly) NSInteger quantity;
 @property (nonatomic, readonly, strong) RCStorefront * _Nullable storefront;
 @property (nonatomic, readonly, copy) NSString * _Nullable jwsRepresentation;
+@property (nonatomic, readonly, copy) NSDate * _Nullable revocationDate;
+@property (nonatomic, readonly, strong) RCRevocationReason * _Nullable revocationReason;
 - (BOOL)isEqual:(id _Nullable)object SWIFT_WARN_UNUSED_RESULT;
 @property (nonatomic, readonly) NSUInteger hash;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
@@ -4413,6 +4459,9 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 /// Date when any grace period for this subscription expires/expired.
 /// nil if the customer has never been in a grace period.
 @property (nonatomic, readonly, copy) NSDate * _Nullable gracePeriodExpiresDate;
+/// Date when a paused subscription is expected to automatically resume.
+/// Only set for Google Play subscriptions that have been paused; nil otherwise.
+@property (nonatomic, readonly, copy) NSDate * _Nullable autoResumeDate;
 /// How the Customer received access to this subscription:
 /// <ul>
 ///   <li>
@@ -4450,6 +4499,9 @@ SWIFT_CLASS_NAMED("SubscriptionInfo")
 @property (nonatomic, readonly, strong) RCProductPaidPrice * _Nullable price;
 /// Management purchase URL
 @property (nonatomic, readonly, copy) NSURL * _Nullable managementURL;
+/// The base plan identifier that unlocked this subscription (Google Play base plans
+/// and Apple purchases with non-upfront billing plans).
+@property (nonatomic, readonly, copy) NSString * _Nullable productPlanIdentifier;
 @property (nonatomic, readonly, copy) NSString * _Nonnull description;
 - (nonnull instancetype)init SWIFT_UNAVAILABLE;
 + (nonnull instancetype)new SWIFT_UNAVAILABLE_MSG("-init is unavailable");
@@ -4484,12 +4536,12 @@ typedef SWIFT_ENUM_NAMED(NSInteger, RCSubscriptionPeriodUnit, "Unit", open) {
 };
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
+/// The number of units per subscription period
+@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
 @end
 
 @interface RCSubscriptionPeriod (SWIFT_EXTENSION(RevenueCat))
-/// The number of units per subscription period
-@property (nonatomic, readonly) NSInteger numberOfUnits SWIFT_AVAILABILITY(macos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(watchos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(tvos,unavailable,message="'numberOfUnits' has been renamed to 'value'") SWIFT_AVAILABILITY(ios,unavailable,message="'numberOfUnits' has been renamed to 'value'");
+@property (nonatomic, readonly, copy) NSString * _Nonnull debugDescription;
 @end
 
 SWIFT_CLASS("_TtC10RevenueCat20TrackingManagerProxy")

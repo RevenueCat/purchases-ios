@@ -112,6 +112,11 @@ import Foundation
     /// Exit offers configuration for this paywall.
     public var exitOffers: ExitOffers?
 
+    /// Declared paywall state keys (key → type + default), used to seed the presentation-session
+    /// state store. Declared at the root of the presentation unit; `nil` when the paywall declares
+    /// no state, which behaves identically to an empty declaration.
+    public private(set) var stateDeclarations: [String: PaywallComponent.StateDeclaration]?
+
     /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
     public var automaticallyScaleFontSize: Bool
 
@@ -131,6 +136,7 @@ import Foundation
         case zeroDecimalPlaceCountries
         case exitOffers
         case automaticallyScaleFontSize
+        case stateDeclarations
     }
 
     public init(id: String? = nil,
@@ -142,7 +148,8 @@ import Foundation
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
                 exitOffers: ExitOffers? = nil,
-                automaticallyScaleFontSize: Bool = true) {
+                automaticallyScaleFontSize: Bool = true,
+                stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -153,6 +160,7 @@ import Foundation
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.exitOffers = exitOffers
         self.automaticallyScaleFontSize = automaticallyScaleFontSize
+        self.stateDeclarations = stateDeclarations
     }
 
 }
@@ -218,6 +226,17 @@ import Foundation
 
         exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
+        // Resilient state decoding: malformed entries are dropped individually and a malformed
+        // map is ignored entirely, so a bad declaration can never fail the whole paywall.
+        //
+        // An empty result is normalized to `nil` so that a missing key, an empty `{}` object, and
+        // a map whose entries all fail to decode are all represented identically.
+        let decodedState = ((try? container.decodeIfPresent(
+            [String: FailableStateDeclaration].self,
+            forKey: .stateDeclarations
+        )) ?? nil)?.compactMapValues(\.declaration)
+        stateDeclarations = (decodedState?.isEmpty == false) ? decodedState : nil
+
         let shouldScale = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
         // default behavior should respect the dynamic type settings unless explicitly disabled
         automaticallyScaleFontSize = shouldScale ?? true
@@ -254,21 +273,62 @@ import Foundation
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
         try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
+        try container.encodeIfPresent(stateDeclarations, forKey: .stateDeclarations)
+    }
+
+}
+
+private extension PaywallComponentsData {
+
+    /// Wrapper that swallows per-entry decoding failures so one malformed state declaration
+    /// does not discard the rest of the map.
+    struct FailableStateDeclaration: Decodable {
+
+        let declaration: PaywallComponent.StateDeclaration?
+
+        init(from decoder: Decoder) throws {
+            self.declaration = try? PaywallComponent.StateDeclaration(from: decoder)
+        }
+
     }
 
 }
 
 @_spi(Internal) extension PaywallComponentsData {
 
-    public struct EquatableError: Equatable, Sendable {
-        let description: String
+    public struct EquatableError: Equatable, Sendable, CustomStringConvertible {
+        public let description: String
 
         init(_ error: Error) {
-            self.description = String(describing: error)
+            // For decoding errors, prefer the concise underlying message over the full
+            // `String(describing:)` dump (which also includes the type and coding path).
+            if let decodingError = error as? DecodingError {
+                self.description = decodingError.debugMessage
+            } else {
+                self.description = String(describing: error)
+            }
         }
 
         public static func == (lhs: EquatableError, rhs: EquatableError) -> Bool {
             return lhs.description == rhs.description
+        }
+    }
+
+}
+
+private extension DecodingError {
+
+    /// The concise, human-readable message from the error's context (e.g.
+    /// `Failed to decode unknown type "web_view"`), without the type or coding path noise.
+    var debugMessage: String {
+        switch self {
+        case let .typeMismatch(_, context),
+             let .valueNotFound(_, context),
+             let .keyNotFound(_, context),
+             let .dataCorrupted(context):
+            return context.debugDescription
+        @unknown default:
+            return String(describing: self)
         }
     }
 

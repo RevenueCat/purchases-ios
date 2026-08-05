@@ -1,0 +1,33 @@
+# Closing the FIRST workflow page must NOT surface the exit offer: the exit offer is gated to the
+# last (exit-offer) step. Closing page 1 should just dismiss the workflow back to the launcher.
+# Presents via `.presentPaywall`. The close control is an unlabeled icon, tapped by coordinate
+# (top-center on the first page).
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_exit_offer_not_on_first_page.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow exit offer is not shown when closing the first page
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow_presented
+- extendedWaitUntil: { visible: "Present Paywall", timeout: 15000 }
+- tapOn: { text: "Present Paywall" }
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+
+# Close the first page (unlabeled close icon, top-center).
+- tapOn: { point: "50%,16%" }
+- waitForAnimationToEnd: { timeout: 8000 }
+
+# The workflow is dismissed back to the launcher and the exit offer is NOT presented.
+- assertVisible: "Present Paywall"
+- assertNotVisible: "Paywall V2"
+- takeScreenshot: "workflow_exit_offer_not_on_first_page"

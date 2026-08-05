@@ -183,6 +183,9 @@ extension PaywallComponent {
         case variable(operator: EqualityOperator, variable: String, value: ConditionValue)
         case selectedPackage(operator: ArrayOperator, packages: [String])
 
+        // MARK: - Paywall component state (state-driven paywalls)
+        case state(operator: EqualityOperator, name: String, value: ConditionValue)
+
         // MARK: - Fallback for unknown conditions
         case unsupported
 
@@ -197,7 +200,7 @@ extension PaywallComponent {
             case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
                  .multipleIntroOffers, .unsupported:
                 return false
-            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage:
+            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state:
                 return true
             }
         }
@@ -212,7 +215,7 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
-            case .multipleIntroOffers, .variable, .selectedPackage, .unsupported: return .unsupported
+            case .multipleIntroOffers, .variable, .selectedPackage, .state, .unsupported: return .unsupported
             }
         }
 
@@ -266,61 +269,74 @@ extension PaywallComponent {
                 try container.encode(ConditionType.selectedPackageCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(packages, forKey: .packages)
+            case .state(let condOp, let name, let value):
+                try container.encode(ConditionType.stateCondition.rawValue, forKey: .type)
+                try container.encode(condOp, forKey: .operator)
+                try container.encode(name, forKey: .name)
+                try container.encode(value, forKey: .value)
             case .unsupported:
                 try container.encode("unsupported", forKey: .type)
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
         public init(from decoder: Decoder) throws {
             do {
-                let container = try decoder.container(keyedBy: CodingKeys.self)
-                let rawValue = try container.decode(String.self, forKey: .type)
-
-                guard let conditionType = ConditionType(rawValue: rawValue) else {
-                    Logger.warn(Strings.paywalls.unrecognized_condition_type(rawValue))
-                    self = .unsupported
-                    return
-                }
-
-                switch conditionType {
-                case .compact:
-                    self = .compact
-                case .medium:
-                    self = .medium
-                case .expanded:
-                    self = .expanded
-                case .selected:
-                    self = .selected
-                case .introOffer:
-                    self = .introOffer
-                case .introOfferCondition:
-                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
-                    self = .introOfferCondition(operator: condOp, value: value)
-                case .promoOffer:
-                    self = .promoOffer
-                case .promoOfferCondition:
-                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
-                    let value = try container.decode(Bool.self, forKey: .value)
-                    self = .promoOfferCondition(operator: condOp, value: value)
-                case .multipleIntroOffers:
-                    self = .multipleIntroOffers
-                case .variableCondition:
-                    let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
-                    let variable = try container.decode(String.self, forKey: .variable)
-                    let value = try container.decode(ConditionValue.self, forKey: .value)
-                    self = .variable(operator: condOp, variable: variable, value: value)
-                case .selectedPackageCondition:
-                    let condOp = try container.decode(ArrayOperator.self, forKey: .operator)
-                    let packages = try container.decode([String].self, forKey: .packages)
-                    self = .selectedPackage(operator: condOp, packages: packages)
-                }
+                self = try Self.decodeCondition(from: decoder)
             } catch {
                 let rawType = (try? decoder.container(keyedBy: CodingKeys.self)
                     .decode(String.self, forKey: .type)) ?? "unknown"
                 Logger.warn(Strings.paywalls.malformed_condition(rawType, error))
                 self = .unsupported
+            }
+        }
+
+        // swiftlint:disable:next cyclomatic_complexity
+        private static func decodeCondition(from decoder: Decoder) throws -> Self {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let rawValue = try container.decode(String.self, forKey: .type)
+
+            guard let conditionType = ConditionType(rawValue: rawValue) else {
+                Logger.warn(Strings.paywalls.unrecognized_condition_type(rawValue))
+                return .unsupported
+            }
+
+            switch conditionType {
+            case .compact:
+                return .compact
+            case .medium:
+                return .medium
+            case .expanded:
+                return .expanded
+            case .selected:
+                return .selected
+            case .introOffer:
+                return .introOffer
+            case .introOfferCondition:
+                let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                let value = try container.decode(Bool.self, forKey: .value)
+                return .introOfferCondition(operator: condOp, value: value)
+            case .promoOffer:
+                return .promoOffer
+            case .promoOfferCondition:
+                let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                let value = try container.decode(Bool.self, forKey: .value)
+                return .promoOfferCondition(operator: condOp, value: value)
+            case .multipleIntroOffers:
+                return .multipleIntroOffers
+            case .variableCondition:
+                let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                let variable = try container.decode(String.self, forKey: .variable)
+                let value = try container.decode(ConditionValue.self, forKey: .value)
+                return .variable(operator: condOp, variable: variable, value: value)
+            case .selectedPackageCondition:
+                let condOp = try container.decode(ArrayOperator.self, forKey: .operator)
+                let packages = try container.decode([String].self, forKey: .packages)
+                return .selectedPackage(operator: condOp, packages: packages)
+            case .stateCondition:
+                let condOp = try container.decode(EqualityOperator.self, forKey: .operator)
+                let name = try container.decode(String.self, forKey: .name)
+                let value = try container.decode(ConditionValue.self, forKey: .value)
+                return .state(operator: condOp, name: name, value: value)
             }
         }
 
@@ -332,6 +348,7 @@ extension PaywallComponent {
             case value
             case variable
             case packages
+            case name
 
         }
 
@@ -349,6 +366,7 @@ extension PaywallComponent {
             case selected
             case variableCondition = "variable_condition"
             case selectedPackageCondition = "selected_package_condition"
+            case stateCondition = "state_condition"
 
         }
 

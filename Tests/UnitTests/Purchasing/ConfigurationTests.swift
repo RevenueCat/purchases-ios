@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Experimental) import RevenueCat
 
 class ConfigurationTests: TestCase {
 
@@ -86,6 +86,14 @@ class ConfigurationTests: TestCase {
             .build()
 
         expect(configuration.diagnosticsEnabled) == true
+    }
+
+    func testIAMEnabled() throws {
+        let configuration = Configuration.Builder(withAPIKey: "test")
+            .with(iamEnabled: true)
+            .build()
+
+        expect(configuration.iamEnabled) == true
     }
 
     func testStoreKitVersionUsesStoreKit1ByDefault() {
@@ -315,6 +323,7 @@ class ConfigurationTests: TestCase {
             .with(entitlementVerificationMode: .disabled)
             .with(preferredUILocaleOverride: "en-US")
             .with(automaticDeviceIdentifierCollectionEnabled: true)
+            .with(iamEnabled: false)
     }
 
 }

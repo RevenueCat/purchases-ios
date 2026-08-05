@@ -13,18 +13,39 @@ struct RcMaestroApp: App {
             SystemInfo.apiBaseURL = apiBaseURL
         }
 
-        // Used in E2E tests
+        // Used in E2E tests. The strategy is read on every request rather than captured here, so that
+        // tests can change it mid-session through `ForceServerErrorStrategyStore`.
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
                         forceServerErrorStrategy: .init { request in
-                            switch Constants.forceServerErrorStrategy {
+                            switch ForceServerErrorStrategyStore.current {
                             case .never:
-                                return false
+                                return .performRequest
+
+                            case .remoteConfigKillswitch:
+                                // Let the backend serve the real kill-switch response for this request only,
+                                // so we can exercise the classic-paywall fallback for workflow offerings.
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .appendQueryItems([URLQueryItem(name: "force_killswitch", value: "true")])
+
                             case .primaryBackendDown:
-                                return request.fallbackUrlIndex == nil
+                                // Remote config uses a separate request path whose primary URL is already
+                                // the fallback backend, so it does not have a fallbackUrlIndex.
+                                if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
+                                   case .remoteConfig = fallbackPath {
+                                    return .performRequest
+                                }
+                                return request.fallbackUrlIndex == nil ? .defaultServerError : .performRequest
+
+                            case .remoteConfigNetworkError:
+                                // No network for /v1/config only; offerings still resolve so a paywall
+                                // is presentable and can degrade to the classic paywall. The unreachable
+                                // host makes the request fail with a transport error.
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .serverErrorURL(URL(string: "http://127.0.0.1:1")!)
                             }
                         }
                     )
@@ -59,7 +80,10 @@ struct RcMaestroApp: App {
 enum E2ETestFlow: String {
     case subscribeFromV1Paywall = "subscribe_from_v1_paywall"
     case subscribeFromV2Paywall = "subscribe_from_v2_paywall"
-    
+    case openWorkflow = "open_workflow"
+    case openNoPaywall = "open_no_paywall"
+    case openWorkflowPresented = "open_workflow_presented"
+
     @ViewBuilder
     var view: some View {
         switch self {
@@ -67,6 +91,12 @@ enum E2ETestFlow: String {
             E2ETestFlowView.SubscribeFromV1Paywall()
         case .subscribeFromV2Paywall:
             E2ETestFlowView.SubscribeFromV2Paywall()
+        case .openWorkflow:
+            E2ETestFlowView.OpenWorkflow()
+        case .openNoPaywall:
+            E2ETestFlowView.OpenNoPaywall()
+        case .openWorkflowPresented:
+            E2ETestFlowView.OpenWorkflowPresented()
         }
     }
 }

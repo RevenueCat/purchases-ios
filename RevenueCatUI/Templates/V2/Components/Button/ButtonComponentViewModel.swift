@@ -26,7 +26,7 @@ class ButtonComponentViewModel {
     enum Action {
         case restorePurchases
         case navigateTo(destination: Destination)
-        case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet)
+        case sheet(RevenueCat.PaywallComponent.ButtonComponent.Sheet?)
         case navigateBack
         case workflowTrigger
         case closeWorkflow

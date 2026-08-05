@@ -130,10 +130,12 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 case .navigateTo(let destination):
                     switch destination {
                     case .sheet(sheet: let sheet):
-                        urls += self.collectAllImageURLs(
-                            in: sheet.stack,
-                            includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
-                        )
+                        if let sheet {
+                            urls += self.collectAllImageURLs(
+                                in: sheet.stack,
+                                includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
+                            )
+                        }
                     case .customerCenter, .offerCode, .privacyPolicy, .terms, .webPaywallLink, .url, .unknown:
                         break
                     }
@@ -206,7 +208,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                         includeHighResInComponentHeirarchy: includeHighResInComponentHeirarchy
                     )
                 }
-            case .fallbackHeader:
+            case .webView, .fallbackHeader:
                 break
             }
         }
@@ -263,7 +265,7 @@ extension PaywallComponentsData.PaywallComponentsConfig {
                 if let fallback = countdown.fallback {
                     urls += self.collectAllVideoURLs(in: fallback)
                 }
-            case .fallbackHeader:
+            case .webView, .fallbackHeader:
                 break
             }
         }

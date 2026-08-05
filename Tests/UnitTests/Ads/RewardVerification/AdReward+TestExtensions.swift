@@ -26,4 +26,11 @@ extension AdReward {
         return .virtualCurrency(payload)
     }
 
+    static func entitlement(identifier: String, expiresAt: Date) -> AdReward {
+        guard let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
+            return .unsupportedReward
+        }
+        return .entitlement(payload)
+    }
+
 }

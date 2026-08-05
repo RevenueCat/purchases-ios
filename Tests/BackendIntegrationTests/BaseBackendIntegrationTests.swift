@@ -80,7 +80,7 @@ class BaseBackendIntegrationTests: TestCase {
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKitVersion: Self.storeKitVersion,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-                            networkTimeout: Configuration.networkTimeoutDefault,
+                            networkTimeout: .default,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false,
@@ -263,6 +263,7 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
+    var usesRemoteConfigAPISources: Bool { return false }
 
     final func serverDown() {
         self.forceServerErrorStrategy = .allServersDown

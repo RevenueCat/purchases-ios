@@ -210,6 +210,35 @@ struct PackageVisibilityPreview_Previews: PreviewProvider {
         PackageVisibilityPreview.paywallView(
             paywallComponents: PackageVisibilityPreview.paywallComponents(
                 packages: [
+                    .init(
+                        packageID: PackageVisibilityPreview.monthlyPackage.identifier,
+                        isSelectedByDefault: true,
+                        visible: false,
+                        applePromoOfferProductCode: nil,
+                        stack: PackageVisibilityPreview.packageStack(title: "monthly")
+                    ),
+                    PackageVisibilityPreview.packageComponent(
+                        packageID: PackageVisibilityPreview.annualPackage.identifier,
+                        title: "annual",
+                        isSelectedByDefault: false
+                    ),
+                    PackageVisibilityPreview.packageComponent(
+                        packageID: PackageVisibilityPreview.weeklyPackage.identifier,
+                        title: "weekly",
+                        isSelectedByDefault: false
+                    )
+                ]
+            ),
+            eligibility: .ineligible
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Package: static hidden default (Loading)")
+
+        PackageVisibilityPreview.paywallView(
+            paywallComponents: PackageVisibilityPreview.paywallComponents(
+                packages: [
                     PackageVisibilityPreview.packageComponent(
                         packageID: PackageVisibilityPreview.annualPackage.identifier,
                         title: "annual",

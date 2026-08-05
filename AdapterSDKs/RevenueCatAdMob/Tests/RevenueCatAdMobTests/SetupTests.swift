@@ -2,149 +2,113 @@ import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Internal) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 @testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 @MainActor
 final class SetupTests: AdapterTestCase {
 
-    private static let testAPIKey = "appl_test_api_key"
-    private static let testAppUserID = "user_test_42"
+    private static let testToken = RewardVerificationToken(
+        customData: "{\"client_transaction_id\":\"txn_42\"}",
+        clientTransactionID: "txn_42",
+        appUserID: "user_test_42"
+    )
 
-    // MARK: - install(on:apiKey:appUserID:)
+    // MARK: - install(on:token:)
 
-    func testInstallReturnsStateWithGeneratedClientTransactionID() {
+    func testInstallReturnsStateWithTokenClientTransactionID() {
         let fakeAd = FakeRewardedAd()
 
-        let state = RewardVerification.Setup.install(
-            on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
+        let state = RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
-        let unwrapped = try? XCTUnwrap(state)
-        XCTAssertNotNil(unwrapped?.clientTransactionID)
-        XCTAssertNotNil(UUID(uuidString: unwrapped?.clientTransactionID ?? ""),
-                        "client_transaction_id must be a valid UUID string")
+        XCTAssertEqual(state.clientTransactionID, Self.testToken.clientTransactionID)
     }
 
     func testInstallSetsServerSideVerificationOptionsWithUserIdentifier() throws {
         let fakeAd = FakeRewardedAd()
 
-        RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
         let options = try XCTUnwrap(fakeAd.serverSideVerificationOptions)
-        XCTAssertEqual(options.userIdentifier, Self.testAppUserID)
+        XCTAssertEqual(options.userIdentifier, Self.testToken.appUserID)
     }
 
-    func testInstallSetsCustomRewardTextWithApiKeyAndClientTransactionID() throws {
+    func testInstallSetsCustomRewardTextFromTokenCustomData() throws {
         let fakeAd = FakeRewardedAd()
 
-        let state = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
-        let customRewardText = try XCTUnwrap(fakeAd.serverSideVerificationOptions?.customRewardText)
-        let payload = try Self.parseJSONObject(customRewardText)
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
 
-        XCTAssertEqual(payload["api_key"], Self.testAPIKey)
-        XCTAssertEqual(payload["client_transaction_id"], state.clientTransactionID)
+        let customRewardText = try XCTUnwrap(fakeAd.serverSideVerificationOptions?.customRewardText)
+        XCTAssertEqual(customRewardText, Self.testToken.customData)
     }
 
     func testInstallStashesStateRetrievableViaStateStore() throws {
         let fakeAd = FakeRewardedAd()
 
-        let returnedState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
-        )
+        let returnedState = RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
         let stashedState = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
 
         XCTAssertTrue(returnedState === stashedState,
                       "RewardVerification.stateStore.retrieve(for:) must return the exact instance produced by install")
     }
 
-    func testInstallGeneratesUniqueClientTransactionIDPerCall() {
-        let firstAd = FakeRewardedAd()
-        let secondAd = FakeRewardedAd()
-
-        let firstState = RewardVerification.Setup.install(
-            on: firstAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
-        let secondState = RewardVerification.Setup.install(
-            on: secondAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID
-        )
-
-        XCTAssertNotEqual(firstState?.clientTransactionID, secondState?.clientTransactionID)
-    }
-
     // MARK: - install(on:)
 
-    func testInstallNoOpsWhenPurchasesIsNotConfigured() {
-        // The unit-test target never calls `Purchases.configure(...)`, so this assertion
-        // documents the invariant the test depends on. If a future test configures Purchases
-        // globally this XCTSkip will surface the breakage instead of silently passing.
-        try? XCTSkipUnless(!Purchases.isConfigured,
-                           "This test depends on Purchases not being configured")
+    func testInstallWhenConfiguredWiresTokenAndStashesState() throws {
         let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: true, token: Self.testToken)
 
-        RewardVerification.Setup.install(on: fakeAd)
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
+
+        let options = try XCTUnwrap(fakeAd.serverSideVerificationOptions)
+        XCTAssertEqual(options.customRewardText, Self.testToken.customData)
+        XCTAssertEqual(options.userIdentifier, Self.testToken.appUserID)
+
+        let state = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
+        XCTAssertEqual(state.clientTransactionID, Self.testToken.clientTransactionID)
+    }
+
+    func testInstallForwardsAdImpressionIdToTokenProvider() {
+        let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: true, token: Self.testToken)
+
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
+
+        XCTAssertEqual(provider.receivedImpressionIds,
+                       [Tracking.Adapter.impressionID(from: fakeAd.responseInfo)])
+    }
+
+    func testInstallNoOpsWhenTokenProviderNotConfigured() {
+        let fakeAd = FakeRewardedAd()
+        let provider = MockTokenProvider(isConfigured: false, token: Self.testToken)
+
+        RewardVerification.Setup.install(on: fakeAd, tokenProvider: provider)
 
         XCTAssertNil(fakeAd.serverSideVerificationOptions,
-                     "install(on:) must not wire SSV options when Purchases.isConfigured is false")
+                     "install(on:) must not wire SSV options when the provider is not configured")
         XCTAssertNil(RewardVerification.stateStore.retrieve(for: fakeAd),
-                     "install(on:) must not stash per-ad state when Purchases.isConfigured is false")
+                     "install(on:) must not stash per-ad state when the provider is not configured")
+        XCTAssertTrue(provider.receivedImpressionIds.isEmpty,
+                      "install(on:) must not request a token when not configured")
     }
 
     func testInstallOverwritesPreviouslyStashedStateOnSameAd() throws {
         let fakeAd = FakeRewardedAd()
 
-        let firstState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        let firstToken = RewardVerificationToken(
+            customData: "{}", clientTransactionID: "txn_first", appUserID: "user"
         )
-        let secondState = try XCTUnwrap(
-            RewardVerification.Setup.install(on: fakeAd, apiKey: Self.testAPIKey, appUserID: Self.testAppUserID)
+        let secondToken = RewardVerificationToken(
+            customData: "{}", clientTransactionID: "txn_second", appUserID: "user"
         )
+
+        let firstState = RewardVerification.Setup.install(on: fakeAd, token: firstToken)
+        let secondState = RewardVerification.Setup.install(on: fakeAd, token: secondToken)
         let stashedState = try XCTUnwrap(RewardVerification.stateStore.retrieve(for: fakeAd))
 
         XCTAssertFalse(firstState === secondState)
         XCTAssertTrue(stashedState === secondState)
-    }
-
-    // MARK: - makeCustomRewardText
-
-    func testMakeCustomRewardTextProducesValidJSONWithExpectedKeys() throws {
-        let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
-            apiKey: "key_123",
-            clientTransactionID: "txn_456",
-            impressionId: "imp_789"
-        ))
-        let payload = try Self.parseJSONObject(text)
-
-        XCTAssertEqual(payload, [
-            "api_key": "key_123",
-            "client_transaction_id": "txn_456",
-            "impression_id": "imp_789"
-        ])
-    }
-
-    func testMakeCustomRewardTextProducesSortedKeys() throws {
-        let text = try XCTUnwrap(RewardVerification.Setup.makeCustomRewardText(
-            apiKey: "key_123",
-            clientTransactionID: "txn_456",
-            impressionId: "imp_789"
-        ))
-
-        // .sortedKeys guarantees stable byte ordering — keep tests / logs / snapshots deterministic.
-        XCTAssertEqual(
-            text,
-            "{\"api_key\":\"key_123\",\"client_transaction_id\":\"txn_456\",\"impression_id\":\"imp_789\"}"
-        )
-    }
-
-    // MARK: - Helpers
-
-    private static func parseJSONObject(_ string: String) throws -> [String: String] {
-        let data = try XCTUnwrap(string.data(using: .utf8))
-        let object = try JSONSerialization.jsonObject(with: data)
-        return try XCTUnwrap(object as? [String: String])
     }
 }
 
@@ -154,6 +118,24 @@ final class SetupTests: AdapterTestCase {
 private final class FakeRewardedAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
     let responseInfo = GoogleMobileAds.ResponseInfo()
+}
+
+@available(iOS 15.0, *)
+private final class MockTokenProvider: RewardVerification.TokenProvider {
+
+    var isConfigured: Bool
+    let token: RewardVerificationToken
+    private(set) var receivedImpressionIds: [String] = []
+
+    init(isConfigured: Bool, token: RewardVerificationToken) {
+        self.isConfigured = isConfigured
+        self.token = token
+    }
+
+    func generateToken(impressionId: String) -> RewardVerificationToken {
+        self.receivedImpressionIds.append(impressionId)
+        return self.token
+    }
 }
 
 #endif

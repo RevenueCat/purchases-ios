@@ -18,16 +18,19 @@ enum WorkflowScreenMapper {
 
     static func toPaywallComponents(
         screen: WorkflowScreen,
-        uiConfig: UIConfig
+        uiConfig: UIConfig,
+        paywallId: String? = nil
     ) -> Offering.PaywallComponents {
         let data = PaywallComponentsData(
+            id: paywallId,
             templateName: screen.templateName,
             assetBaseURL: screen.assetBaseURL,
             componentsConfig: screen.componentsConfig,
             componentsLocalizations: screen.componentsLocalizations,
             revision: screen.revision,
             defaultLocaleIdentifier: screen.defaultLocale,
-            exitOffers: screen.exitOffers
+            exitOffers: screen.exitOffers,
+            stateDeclarations: screen.stateDeclarations
         )
         return .init(uiConfig: uiConfig, data: data)
     }

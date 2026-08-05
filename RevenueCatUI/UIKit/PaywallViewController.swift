@@ -113,6 +113,31 @@ public class PaywallViewController: UIViewController {
     /// The prefetched exit offer, loaded while the main paywall is showing.
     private var exitOfferOffering: Offering?
 
+    /// Whether the embedded workflow paywall has reported its own exit offer at least once
+    /// (even a `nil` one) for the current render, so a slower legacy `prefetchExitOffer` knows
+    /// not to overwrite it.
+    private var hasReceivedWorkflowExitOfferUpdate: Bool = false
+
+    // MARK: - Testing Hooks
+
+    /// Settable in tests to simulate remote config being enabled without a build flag.
+    var remoteConfigEnabledForTesting: Bool?
+
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    private var remoteConfigEnabled: Bool {
+        return self.remoteConfigEnabledForTesting ?? self.purchaseHandler.remoteConfigEnabled
+    }
+
+    var exitOfferOfferingForTesting: Offering? { self.exitOfferOffering }
+
+    func simulateWorkflowExitOfferUpdate(_ offering: Offering?) {
+        self.updateWorkflowExitOffer(offering)
+    }
+
+    func simulateOfferingBasedExitOfferPrefetchResult(_ offering: Offering?) {
+        self.applyOfferingBasedExitOffer(offering)
+    }
+
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
     private var isShowingExitOffer: Bool = false
 
@@ -352,6 +377,9 @@ public class PaywallViewController: UIViewController {
     /// - Warning: For internal use only
     @objc(updateWithOffering:)
     public func update(with offering: Offering) {
+        // Replacing the offering invalidates the previous workflow's exit offer; the rebuilt
+        // paywall re-emits its own.
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offering(offering)
     }
 
@@ -359,6 +387,7 @@ public class PaywallViewController: UIViewController {
     @available(*, deprecated, message: "use init with Offering instead")
     @objc(updateWithOfferingIdentifier:)
     public func update(with offeringIdentifier: String) {
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil)
     }
 
@@ -366,6 +395,7 @@ public class PaywallViewController: UIViewController {
     @_spi(Internal)
     @objc(updateWithOfferingIdentifier:presentedOfferingContext:)
     public func update(with offeringIdentifier: String, presentedOfferingContext: PresentedOfferingContext?) {
+        self.resetExitOfferStateForNewContent()
         self.configuration.content = .offeringIdentifier(offeringIdentifier,
                                                          presentedOfferingContext: presentedOfferingContext)
     }
@@ -416,20 +446,58 @@ public class PaywallViewController: UIViewController {
     // MARK: - Exit Offer Handling
 
     /// Prefetches the exit offer for the current offering.
+    ///
+    /// Always runs, even when workflows are enabled: the embedded workflow paywall normally supplies
+    /// its own exit offer via `updateWorkflowExitOffer`, making this redundant, but `PaywallViewController`
+    /// can't know ahead of time whether `resolvePaywallViewData` will fall back to the legacy (non-workflow)
+    /// paywall on a workflow-fetch failure, and that fallback still needs an exit offer.
     @MainActor
     private func prefetchExitOffer() async {
-        // When the workflows endpoint is enabled, the workflow exit offer is step-aware and
-        // emitted by the embedded SwiftUI WorkflowPaywallView, so this legacy up-front prefetch
-        // is skipped. Today only the SwiftUI presentation layer (View+PresentPaywall) consumes it;
-        // this UIKit controller does not yet bridge it, so swipe-to-dismiss here won't surface the
-        // workflow exit offer. A follow-up will bridge it into this controller (feeding
-        // exitOfferOffering from the WorkflowContext binding) so swipe-to-dismiss surfaces it.
-        guard !ProcessInfo.processInfo.workflowsEndpointEnabled else { return }
-
         guard let offering = await self.purchaseHandler.resolveOffering(for: self.configuration.content) else {
             return
         }
-        self.exitOfferOffering = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        let exitOffer = await ExitOfferHelper.fetchValidExitOffer(for: offering)
+        self.applyOfferingBasedExitOffer(exitOffer)
+    }
+
+    /// Writes an offering-based exit offer, unless the embedded workflow paywall has already
+    /// reported its own (even a `nil` one) for the current render. A plain `exitOfferOffering == nil`
+    /// check can't tell "nothing has set this yet" apart from "the workflow deliberately has no exit
+    /// offer for this step," so this uses a separate flag instead of the value itself.
+    ///
+    /// Known limitation: `prefetchExitOffer` is only ever started once, from `viewDidLoad`. If
+    /// `update(with:)` swaps in different content while that prefetch is still in flight, this can
+    /// still apply an offer fetched for the offering being replaced. Closing that gap properly needs
+    /// exit-offer resolution to key off the single resolved paywall render instead of a separate,
+    /// independently-timed prefetch; tracked as a follow-up rather than solved here.
+    private func applyOfferingBasedExitOffer(_ offering: Offering?) {
+        guard !self.hasReceivedWorkflowExitOfferUpdate else { return }
+        self.exitOfferOffering = offering
+    }
+
+    /// Clears stale exit-offer state before `update(with:)` swaps in new content. This is a fresh
+    /// render, not a report from the embedded workflow paywall, so it resets
+    /// `hasReceivedWorkflowExitOfferUpdate` rather than setting it: the new content may resolve to
+    /// the legacy path (or a workflow-fetch fallback), and `prefetchExitOffer` must still be free to
+    /// write once it resolves.
+    private func resetExitOfferStateForNewContent() {
+        guard self.remoteConfigEnabled else { return }
+        self.exitOfferOffering = nil
+        self.hasReceivedWorkflowExitOfferUpdate = false
+    }
+
+    /// Feeds the embedded workflow paywall's exit offer into `exitOfferOffering` so swipe/close can
+    /// surface it. Render-dependent, so verified manually like `prefetchExitOffer`.
+    private func updateWorkflowExitOffer(_ offering: Offering?) {
+        // The offering-based prefetch owns the offer when workflows are off; leave it alone.
+        guard self.remoteConfigEnabled else { return }
+
+        self.hasReceivedWorkflowExitOfferUpdate = true
+
+        // Keep the offer once we're presenting it, even if a late nil arrives mid-dismiss.
+        guard offering != nil || !self.isShowingExitOffer else { return }
+
+        self.exitOfferOffering = offering
     }
 
     /// Handles dismissal requests, checking for exit offers before calling the original handler.
@@ -657,6 +725,18 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that the user tapped a web checkout CTA and left the app to complete payment externally.
+    @objc(paywallViewControllerDidOpenWebCheckout:)
+    optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
+
+    /// Notifies that a ``PaywallViewController`` successfully opened a URL, either from a button with a URL
+    /// destination or from a link inside a text component.
+    ///
+    /// Not called for web checkout URLs. Use ``paywallViewControllerDidOpenWebCheckout(_:)`` for those.
+    @objc(paywallViewController:didOpenURL:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didOpenURL url: URL)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -729,6 +809,15 @@ private extension PaywallViewController {
             self.handleDismissalRequest()
         }
 
+        // Bridges the embedded paywall's workflow exit offer into `exitOfferOffering`.
+        // The embedded `WorkflowPaywallView` only ever writes through this binding, so the
+        // getter is unused in practice; it stays because `Binding` requires one and the
+        // SwiftUI presentation path injects a real two-way binding into the same env key.
+        let workflowExitOfferBinding = Binding<Offering?>(
+            get: { [weak self] in self?.exitOfferOffering },
+            set: { [weak self] offering in self?.updateWorkflowExitOffer(offering) }
+        )
+
         let container = PaywallContainerView(
             configuration: self.configuration,
             customVariables: self.customVariables,
@@ -747,6 +836,13 @@ private extension PaywallViewController {
             purchaseCancelled: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidCancelPurchase?(self)
+            },
+            webCheckoutOpened: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
+            },
+            urlOpened: { [weak self] url in
+                self?.notifyDelegateURLOpened(url)
             },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
@@ -770,7 +866,8 @@ private extension PaywallViewController {
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
             },
             purchaseInitiated: self.createPurchaseInitiatedHandler(),
-            restoreInitiated: self.createRestoreInitiatedHandler()
+            restoreInitiated: self.createRestoreInitiatedHandler(),
+            workflowExitOfferBinding: workflowExitOfferBinding
         )
 
         let controller = UIHostingController(rootView: container)
@@ -781,6 +878,12 @@ private extension PaywallViewController {
         controller.view.translatesAutoresizingMaskIntoConstraints = false
 
         return controller
+    }
+
+    /// Extracted from the `urlOpened` handler so that closure needs no `guard`, keeping
+    /// `createHostingController`'s cyclomatic complexity within the linter's limit.
+    private func notifyDelegateURLOpened(_ url: URL) {
+        self.delegate?.paywallViewController?(self, didOpenURL: url)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
@@ -878,6 +981,8 @@ private struct PaywallContainerView: View {
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
+    let webCheckoutOpened: WebCheckoutOpenedHandler
+    let urlOpened: URLOpenedHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -889,12 +994,17 @@ private struct PaywallContainerView: View {
     let purchaseInitiated: (Package, @escaping (Bool) -> Void) -> Void
     let restoreInitiated: (@escaping (Bool) -> Void) -> Void
 
+    /// Receives the workflow exit offer from the embedded paywall (binding + preference below).
+    let workflowExitOfferBinding: Binding<Offering?>
+
     var body: some View {
         PaywallView(configuration: self.configuration)
             .customPaywallVariables(self.customVariables)
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
+            .onURLOpened(self.urlOpened)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)
@@ -914,6 +1024,17 @@ private struct PaywallContainerView: View {
                         resumeAction(shouldProceed: shouldProceed)
                     }
                 }
+            }
+            // Binding is the reliable path; preference is a set-only fallback. Both feed `exitOfferOffering`.
+            .environment(\.workflowExitOfferOfferingBinding, self.workflowExitOfferBinding)
+            .onPreferenceChange(WorkflowExitOfferPreferenceKey.self) { context in
+                // Only forward a non-nil offer. Clears are owned by the direct binding
+                // (WorkflowPaywallView.syncExitOfferBinding fires on step change), so a nil here is
+                // either redundant or a transient default emitted while the host rebuilds (e.g. on
+                // update(with:displayCloseButton:) / updateFont). Forwarding it would momentarily drop
+                // a still-valid exit offer.
+                guard let offering = context?.exitOfferOffering else { return }
+                self.workflowExitOfferBinding.wrappedValue = offering
             }
     }
 

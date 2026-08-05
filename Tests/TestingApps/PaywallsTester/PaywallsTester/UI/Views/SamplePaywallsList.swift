@@ -182,6 +182,14 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
+
+                #if !os(tvOS)
+                Button {
+                    self.display = .componentPaywall(SamplePaywallLoader.tabStateComponentsData())
+                } label: {
+                    TemplateLabel(name: "State-driven tabs", icon: "rectangle.stack")
+                }
+                #endif
             }
             #endif
 

@@ -48,6 +48,7 @@ extension AdEventsRequest {
         var appUserId: String
         var appSessionId: String
         var timestamp: UInt64
+        var captureMethod: String?
         var networkName: String?
         var mediatorName: String
         var adFormat: String
@@ -109,6 +110,7 @@ extension AdEventsRequest.AdEventRequest {
                 appUserId: storedEvent.userID,
                 appSessionId: storedEvent.appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
+                captureMethod: creationData.captureMethod?.rawValue,
                 networkName: adEvent.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
                 adFormat: eventData.adFormat.rawValue,
@@ -172,6 +174,7 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case appUserId
         case appSessionId
         case timestamp = "timestampMs"
+        case captureMethod
         case networkName
         case mediatorName
         case adFormat

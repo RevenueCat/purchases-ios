@@ -102,7 +102,7 @@ private enum Template1Preview {
             .package(package)
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )
@@ -231,6 +231,24 @@ struct Template1Preview_Previews: PreviewProvider {
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
+
+        PaywallsV2View(
+            paywallComponents: Template1Preview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [package],
+                            webCheckoutUrl: nil),
+            purchaseHandler: PurchaseHandler.default(),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: { },
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Template 1 (Loading)")
     }
 }
 
