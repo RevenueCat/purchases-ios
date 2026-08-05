@@ -1,0 +1,55 @@
+# Closing the exit offer must dismiss it, when the paywall was presented through the UIKit
+# `PaywallViewController` and the host supplied a `dismissRequestedHandler`.
+#
+# The SDK presents the exit offer in a controller the host never created. It used to forward that
+# controller's dismissal to the host handler, so a host that dismisses its own captured controller
+# (see `OpenWorkflowUIKit`, which is written that way on purpose) left the exit offer stranded: the
+# close button highlighted on every tap and nothing happened.
+#
+# Navigation mirrors workflow_exit_offer_on_last_page.yaml, so it reuses the same app, offering and
+# steps that flow already exercises. Leaving the last page goes through the labeled button the
+# dashboard puts there. The exit offer is closed through the SDK's own close button, which carries an
+# accessibility label ("Dismiss", set in `PaywallsV2View.makeCloseButton`) rather than a coordinate,
+# so a shifted sheet cannot turn a miss into a false failure.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store Examples/rc-maestro/maestro/workflows/workflow_exit_offer_closes_uikit.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Workflow exit offer closes when presented from UIKit
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_workflow_uikit
+- extendedWaitUntil: { visible: "Present Paywall", timeout: 15000 }
+- tapOn: { text: "Present Paywall" }
+- extendedWaitUntil:
+    visible: "Start Your Free Week And Reclaim 30+ Minutes Daily"
+    timeout: 15000
+- tapOn: { text: "Continue 1/3" }
+- extendedWaitUntil:
+    visible: "Most People Feel Calmer After Just 3 Sessions"
+    timeout: 15000
+- tapOn: { text: "Continue 2/3" }
+- extendedWaitUntil:
+    visible: "People Who Meditate Daily Sleep 40% Better"
+    timeout: 15000
+
+# Close the last page -> the exit offer paywall is presented.
+- tapOn: { text: "Close Paywall" }
+- extendedWaitUntil:
+    visible: "Paywall V2"
+    timeout: 15000
+- takeScreenshot: "workflow_exit_offer_closes_uikit_presented"
+
+# Close the exit offer -> it goes away and we are back on the launcher, not stuck on the paywall.
+- tapOn: { text: "Dismiss" }
+- waitForAnimationToEnd: { timeout: 8000 }
+- assertNotVisible: "Paywall V2"
+- assertVisible: "Workflow paywall (UIKit)"
+- takeScreenshot: "workflow_exit_offer_closes_uikit_dismissed"
