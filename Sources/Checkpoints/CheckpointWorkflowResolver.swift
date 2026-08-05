@@ -68,37 +68,64 @@ enum CheckpointWorkflowResolution {
 }
 
 /// Temporary production resolver used until checkpoint targeting configuration is available.
-/// Every checkpoint currently resolves to the first configured workflow.
-final class FirstWorkflowCheckpointResolver: CheckpointWorkflowResolver {
+/// Every checkpoint currently resolves to a randomly selected configured workflow, except two identifiers that
+/// simulate the no-match and error resolutions the future checkpoints configuration will produce.
+final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
     typealias GetOfferings = @Sendable () async throws -> Offerings
+    typealias ChooseWorkflow = ([String: String?]) -> (workflowID: String, offeringID: String?)?
 
     private let workflowManager: WorkflowManager?
     private let getOfferings: GetOfferings
+    private let chooseWorkflow: ChooseWorkflow
 
-    init(workflowManager: WorkflowManager?, getOfferings: @escaping GetOfferings) {
+    init(
+        workflowManager: WorkflowManager?,
+        getOfferings: @escaping GetOfferings,
+        chooseWorkflow: @escaping ChooseWorkflow = { workflows in
+            return workflows.randomElement().map { ($0.key, $0.value) }
+        }
+    ) {
         self.workflowManager = workflowManager
         self.getOfferings = getOfferings
+        self.chooseWorkflow = chooseWorkflow
     }
 
     func resolve(checkpoint: CheckpointInfo) async -> CheckpointWorkflowResolution {
+        switch checkpoint.identifier {
+        case Self.simulatedErrorCheckpointIdentifier:
+            return .failed(
+                PurchasesError(
+                    error: .configurationError,
+                    userInfo: [
+                        NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
+                    ]
+                )
+            )
+        case Self.simulatedNoMatchCheckpointIdentifier:
+            return .noMatch(.noMatch)
+        default:
+            break
+        }
+
         guard let workflowManager else {
             return .noMatch(.disabled)
         }
 
-        guard let workflowID = await workflowManager.firstAvailableWorkflowID() else {
+        let availableWorkflows = await workflowManager.availableWorkflows()
+        guard let selectedWorkflow = self.chooseWorkflow(availableWorkflows) else {
             return .noMatch(.configurationUnavailable)
         }
 
         let workflowData: WorkflowDataResult
         do {
-            workflowData = try await workflowManager.getWorkflow(workflowId: workflowID)
+            workflowData = try await workflowManager.getWorkflow(workflowId: selectedWorkflow.workflowID)
         } catch {
             Logger.error(error.localizedDescription)
             return .noMatch(.configurationUnavailable)
         }
 
-        guard let offeringID = workflowData.workflow.initialOfferingIdentifier else {
+        guard let offeringID = selectedWorkflow.offeringID else {
             return .noMatch(.configurationUnavailable)
         }
 
@@ -124,18 +151,7 @@ final class FirstWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         )
     }
 
-}
-
-private extension PublishedWorkflow {
-
-    var initialOfferingIdentifier: String? {
-        guard let initialStep = self.steps[self.initialStepId],
-              let screenID = initialStep.screenId,
-              let screen = self.screens[screenID] else {
-            return nil
-        }
-
-        return screen.offeringIdentifier
-    }
+    private static let simulatedNoMatchCheckpointIdentifier = "unknown_checkpoint"
+    private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
 
 }

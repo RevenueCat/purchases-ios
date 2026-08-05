@@ -648,7 +648,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let notificationCenter: NotificationCenter = .default
         let checkpointsManager = CheckpointsManager(
-            resolver: FirstWorkflowCheckpointResolver(
+            resolver: RandomWorkflowCheckpointResolver(
                 workflowManager: systemInfo.remoteConfigEnabled ? workflowManager : nil,
                 getOfferings: {
                     try await withCheckedThrowingContinuation { continuation in

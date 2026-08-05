@@ -49,15 +49,21 @@ class WorkflowsConfigProviderTests: TestCase {
         )
     }
 
-    func testFirstAvailableWorkflowIDReturnsStableFirstIdentifier() async {
+    func testAvailableWorkflowsReturnsIdentifiersAndOfferingMetadata() async {
         self.commit(workflows: [
-            "workflow-z": .init(blobRef: "z-ref", content: [:]),
-            "workflow-a": .init(blobRef: "a-ref", content: [:])
+            "workflow-with-offering": .init(
+                blobRef: "offering-ref",
+                content: ["offeringIdentifier": "premium_annual"]
+            ),
+            "workflow-without-offering": .init(blobRef: "no-offering-ref", content: [:])
         ])
 
-        let workflowID = await self.provider.firstAvailableWorkflowID()
+        let workflows = await self.provider.availableWorkflows()
 
-        expect(workflowID) == "workflow-a"
+        expect(Set(workflows.keys)) == Set(["workflow-with-offering", "workflow-without-offering"])
+        expect(workflows["workflow-with-offering"] ?? nil) == "premium_annual"
+        expect(workflows.keys.contains("workflow-without-offering")) == true
+        expect(workflows["workflow-without-offering"] ?? nil).to(beNil())
     }
 
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {
