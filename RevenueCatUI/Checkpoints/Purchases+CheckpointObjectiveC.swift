@@ -17,7 +17,7 @@ import Foundation
 
 #if ENABLE_CHECKPOINTS_OBJC
 
-@_spi(Internal) public extension Purchases {
+public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
     @_disfavoredOverload

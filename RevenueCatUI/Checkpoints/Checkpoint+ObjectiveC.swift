@@ -18,7 +18,7 @@ import Foundation
 #if ENABLE_CHECKPOINTS_OBJC
 
 /// Objective-C representation of ``CheckpointParams``.
-@_spi(Internal) @objc(RCCheckpointParams)
+@objc(RCCheckpointParams)
 public final class ObjCCheckpointParams: NSObject {
 
     /// Custom properties usable in checkpoint targeting rules.
@@ -46,7 +46,7 @@ public final class ObjCCheckpointParams: NSObject {
 }
 
 /// Objective-C representation of ``CheckpointInfo``.
-@_spi(Internal) @objc(RCCheckpointInfo)
+@objc(RCCheckpointInfo)
 public final class ObjCCheckpointInfo: NSObject {
 
     /// The checkpoint identifier.
@@ -70,7 +70,7 @@ public final class ObjCCheckpointInfo: NSObject {
 }
 
 /// Objective-C representation of ``CheckpointNoActionReason``.
-@_spi(Internal) @objc(RCCheckpointNoActionReason)
+@objc(RCCheckpointNoActionReason)
 public final class ObjCCheckpointNoActionReason: NSObject {
 
     /// The raw no-action reason value.
@@ -86,7 +86,7 @@ public final class ObjCCheckpointNoActionReason: NSObject {
 }
 
 /// Base class for Objective-C checkpoint paywall outcomes.
-@_spi(Internal) @objc(RCCheckpointPaywallOutcome)
+@objc(RCCheckpointPaywallOutcome)
 public class ObjCCheckpointPaywallOutcome: NSObject {
 
     fileprivate override init() { super.init() }
@@ -109,11 +109,11 @@ public class ObjCCheckpointPaywallOutcome: NSObject {
 }
 
 /// Objective-C result indicating that the paywall was dismissed.
-@_spi(Internal) @objc(RCCheckpointPaywallDismissedOutcome)
+@objc(RCCheckpointPaywallDismissedOutcome)
 public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallOutcome {}
 
 /// Objective-C result indicating that the customer purchased from the paywall.
-@_spi(Internal) @objc(RCCheckpointPaywallPurchasedOutcome)
+@objc(RCCheckpointPaywallPurchasedOutcome)
 public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
     /// Customer information after the purchase.
@@ -127,7 +127,7 @@ public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallO
 }
 
 /// Objective-C result indicating that the customer restored purchases from the paywall.
-@_spi(Internal) @objc(RCCheckpointPaywallRestoredOutcome)
+@objc(RCCheckpointPaywallRestoredOutcome)
 public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
@@ -141,7 +141,7 @@ public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOu
 }
 
 /// Objective-C result indicating that the paywall ended with an error.
-@_spi(Internal) @objc(RCCheckpointPaywallErrorOutcome)
+@objc(RCCheckpointPaywallErrorOutcome)
 public final class ObjCCheckpointPaywallErrorOutcome: ObjCCheckpointPaywallOutcome {
 
     /// The error that ended the paywall.
@@ -155,7 +155,7 @@ public final class ObjCCheckpointPaywallErrorOutcome: ObjCCheckpointPaywallOutco
 }
 
 /// Base class for Objective-C checkpoint call results.
-@_spi(Internal) @objc(RCCheckpointResult)
+@objc(RCCheckpointResult)
 public class ObjCCheckpointResult: NSObject {
 
     /// Information about the checkpoint that produced this result.
@@ -187,7 +187,7 @@ public class ObjCCheckpointResult: NSObject {
 }
 
 /// Objective-C result indicating that a checkpoint-triggered paywall was presented.
-@_spi(Internal) @objc(RCCheckpointPaywallPresentedResult)
+@objc(RCCheckpointPaywallPresentedResult)
 public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 
     /// The terminal outcome of the presented paywall.
@@ -201,7 +201,7 @@ public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 }
 
 /// Objective-C result indicating that nothing was served for a checkpoint.
-@_spi(Internal) @objc(RCCheckpointNoActionResult)
+@objc(RCCheckpointNoActionResult)
 public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
 
     /// The reason nothing was served.
