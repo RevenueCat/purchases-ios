@@ -1012,6 +1012,7 @@ jobs:
     steps:
       - setup-git-credentials
       - checkout
+      - trust-github-key
       - install-bundle-dependencies
       - run:
           name: Build docs
