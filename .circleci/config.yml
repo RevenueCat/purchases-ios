@@ -1329,6 +1329,7 @@ jobs:
       - run:
           name: Mirror purchases-ios tags to purchases-ios-spm (main not mirrored)
           command: |
+            set -e
             git clone git@github.com:RevenueCat/purchases-ios.git
             cd purchases-ios
             git fetch --tags
