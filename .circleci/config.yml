@@ -1012,6 +1012,7 @@ jobs:
     steps:
       - setup-git-credentials
       - checkout
+      - trust-github-key
       - install-bundle-dependencies
       - run:
           name: Build docs
@@ -1257,6 +1258,7 @@ jobs:
   deploy-purchase-tester:
     executor:
       name: macos-executor
+      xcode_version: "26.5"
     steps:
       - checkout
       - setup-git-credentials
@@ -1322,10 +1324,17 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-rubydocker-dependencies
+      - setup-git-credentials
+      - trust-github-key
       - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
-          command: bundle exec fastlane deploy_to_spm
+          name: Mirror purchases-ios tags to purchases-ios-spm (main not mirrored)
+          command: |
+            set -e
+            git clone git@github.com:RevenueCat/purchases-ios.git
+            cd purchases-ios
+            git fetch --tags
+            git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
+            git push --tags
 
 workflows:
   version: 2

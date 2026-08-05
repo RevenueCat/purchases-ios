@@ -15,7 +15,10 @@ var dependencies: [Package.Dependency] = [
     .package(url: "git@github.com:pointfreeco/swift-snapshot-testing.git", .upToNextMinor(from: "1.12.0"))
 ]
 if shouldIncludeDocCPlugin {
-    dependencies.append(.package(url: "https://github.com/apple/swift-docc-plugin", from: "1.0.0"))
+    dependencies.append(.package(
+        url: "https://github.com/apple/swift-docc-plugin",
+        revision: "26ac5758409154cc448d7ab82389c520fa8a8247"
+    ))
 }
 
 // See https://github.com/RevenueCat/purchases-ios/pull/2989
