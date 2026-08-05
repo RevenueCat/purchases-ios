@@ -31,7 +31,8 @@ import UIKit
         let delegate: CheckpointPresenterDelegate
     }
 
-    private var activeWorkflow: PresentedWorkflow?
+    private var activeCallID: String?
+    private let callStore: CheckpointCallStore
     private let presentationHandler: ((PresentedWorkflow) throws -> Bool)?
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -40,11 +41,22 @@ import UIKit
 
     /// Creates a checkpoint workflow presenter.
     public override init() {
+        self.callStore = CheckpointCallStore()
         self.presentationHandler = nil
         super.init()
     }
 
     init(presentationHandler: @escaping (PresentedWorkflow) throws -> Bool) {
+        self.callStore = CheckpointCallStore()
+        self.presentationHandler = presentationHandler
+        super.init()
+    }
+
+    init(
+        callStore: CheckpointCallStore,
+        presentationHandler: @escaping (PresentedWorkflow) throws -> Bool
+    ) {
+        self.callStore = callStore
         self.presentationHandler = presentationHandler
         super.init()
     }
@@ -63,13 +75,15 @@ import UIKit
             return
         }
 
+        self.callStore.store(callID: callID, presentation: presentation, delegate: delegate)
+        self.activeCallID = callID
+
         do {
             let presentedWorkflow = PresentedWorkflow(
                 id: callID,
                 presentation: presentation,
                 delegate: delegate
             )
-            self.activeWorkflow = presentedWorkflow
 
             let didBeginPresentation = try self.presentationHandler?(presentedWorkflow)
                 ?? self.presentAutomatically(presentedWorkflow)
@@ -77,33 +91,53 @@ import UIKit
                 throw WorkflowError.noPresentationContext
             }
         } catch {
-            self.finish(with: CheckpointPaywallErrorOutcome(error: error as NSError))
+            self.stage(
+                outcome: CheckpointPaywallErrorOutcome(error: error as NSError),
+                callID: callID
+            )
+            self.complete(callID: callID)
         }
     }
 
-    func finish(with outcome: CheckpointPaywallOutcome) {
-        guard let activeWorkflow else {
-            return
-        }
+    func stage(outcome: CheckpointPaywallOutcome, callID: String? = nil) {
+        guard let callID = callID ?? self.activeCallID else { return }
+        self.callStore.stage(outcome: outcome, for: callID)
+    }
 
-        self.activeWorkflow = nil
+    func presentationDidDismiss(callID: String? = nil) {
+        guard let callID = callID ?? self.activeCallID else { return }
+        self.complete(callID: callID)
+    }
+
+    private func dismiss(callID: String) {
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         let viewController = self.presentedViewController
-        self.presentedViewController = nil
         if viewController?.presentingViewController != nil {
-            viewController?.dismiss(animated: true)
+            viewController?.dismiss(animated: true) { [weak self] in
+                self?.complete(callID: callID)
+            }
+            return
         }
         #endif
 
-        activeWorkflow.delegate.onCheckpointPaywallFinished(
-            callID: activeWorkflow.id,
-            outcome: outcome
-        )
+        self.complete(callID: callID)
     }
 
-    func presentationDidDismiss() {
-        self.finish(with: CheckpointPaywallDismissedOutcome())
+    private func complete(callID: String) {
+        guard let call = self.callStore.remove(callID: callID) else { return }
+
+        if self.activeCallID == callID {
+            self.activeCallID = nil
+            #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+            self.presentedViewController = nil
+            #endif
+        }
+
+        call.delegate.onCheckpointPaywallFinished(
+            callID: callID,
+            outcome: call.stagedOutcome
+        )
     }
 
     private func presentAutomatically(_ presentedWorkflow: PresentedWorkflow) throws -> Bool {
@@ -125,19 +159,20 @@ import UIKit
             displayCloseButton: true
         )
         .onPurchaseCompleted { [weak self] customerInfo in
-            self?.finish(with: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+            self?.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
         }
         .onRestoreCompleted { [weak self] customerInfo in
-            self?.finish(with: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
+            self?.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
         }
         .onPurchaseFailure { [weak self] error in
-            self?.finish(with: CheckpointPaywallErrorOutcome(error: error as NSError))
+            self?.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
         }
         .onRestoreFailure { [weak self] error in
-            self?.finish(with: CheckpointPaywallErrorOutcome(error: error as NSError))
+            self?.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
         }
         .onRequestedDismissal { [weak self] in
-            self?.finish(with: CheckpointPaywallDismissedOutcome())
+            guard let self, let callID = self.activeCallID else { return }
+            self.dismiss(callID: callID)
         }
 
         let viewController = UIHostingController(rootView: rootView)

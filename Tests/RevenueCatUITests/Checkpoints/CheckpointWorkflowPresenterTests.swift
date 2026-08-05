@@ -45,14 +45,74 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertTrue(delegate.outcome is CheckpointPaywallErrorOutcome)
     }
 
+    func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let error = NSError(domain: "test", code: 1)
+
+        presenter.present(
+            callID: "call-id",
+            presentation: Self.presentation(),
+            delegate: delegate
+        )
+        presenter.stage(outcome: CheckpointPaywallErrorOutcome(error: error), callID: "call-id")
+
+        XCTAssertNil(delegate.finishedCallID)
+        XCTAssertNotNil(store.call(for: "call-id"))
+
+        presenter.presentationDidDismiss(callID: "call-id")
+        presenter.presentationDidDismiss(callID: "call-id")
+
+        XCTAssertEqual(delegate.finishedCallID, "call-id")
+        XCTAssertEqual(delegate.finishCount, 1)
+        XCTAssertEqual((delegate.outcome as? CheckpointPaywallErrorOutcome)?.error, error)
+        XCTAssertNil(store.call(for: "call-id"))
+    }
+
+    func testCallStoreDefaultsToDismissedAndRemovesCallsIndependently() {
+        let store = CheckpointCallStore()
+        let firstDelegate = MockCheckpointPresenterDelegate()
+        let secondDelegate = MockCheckpointPresenterDelegate()
+        store.store(callID: "first", presentation: Self.presentation(), delegate: firstDelegate)
+        store.store(callID: "second", presentation: Self.presentation(), delegate: secondDelegate)
+
+        let first = store.remove(callID: "first")
+
+        XCTAssertTrue(first?.stagedOutcome is CheckpointPaywallDismissedOutcome)
+        XCTAssertTrue(first?.delegate === firstDelegate)
+        XCTAssertNil(store.call(for: "first"))
+        XCTAssertNotNil(store.call(for: "second"))
+    }
+
+    private static func presentation() -> ResolvedCheckpointWorkflowPresentation {
+        let checkpoint = CheckpointInfo(identifier: "test_checkpoint", params: .init())
+        let workflow = PublishedWorkflow(
+            id: "workflow-id",
+            displayName: "Test",
+            initialStepId: "step-id",
+            singleStepFallbackId: nil,
+            steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: nil)],
+            screens: [:]
+        )
+        return ResolvedCheckpointWorkflowPresentation(
+            checkpoint: checkpoint,
+            workflow: workflow,
+            uiConfig: .empty,
+            offering: nil
+        )
+    }
+
 }
 
 private final class MockCheckpointPresenterDelegate: CheckpointPresenterDelegate {
 
     private(set) var finishedCallID: String?
     private(set) var outcome: CheckpointPaywallOutcome?
+    private(set) var finishCount = 0
 
     func onCheckpointPaywallFinished(callID: String, outcome: CheckpointPaywallOutcome) {
+        self.finishCount += 1
         self.finishedCallID = callID
         self.outcome = outcome
     }
