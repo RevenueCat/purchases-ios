@@ -23,7 +23,7 @@ final class RegisteredWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         self.workflowDataByIdentifier = workflowDataByIdentifier
     }
 
-    func resolve(checkpoint: CheckpointEngineInfo) async -> CheckpointWorkflowResolution {
+    func resolve(checkpoint: CheckpointInfo) async -> CheckpointWorkflowResolution {
         if checkpoint.identifier == Self.simulatedErrorCheckpointIdentifier {
             return .failed(
                 ErrorUtils.configurationError(message: "Simulated error: checkpoint UI not presentable.")

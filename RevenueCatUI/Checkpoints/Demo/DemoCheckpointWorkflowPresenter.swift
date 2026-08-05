@@ -27,13 +27,13 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
 
     struct PresentedWorkflow: Identifiable {
         let id: String
-        let checkpoint: CheckpointEngineInfo
+        let checkpoint: CheckpointInfo
         let workflow: CheckpointWorkflow
         let delegate: CheckpointEnginePresenterDelegate
     }
 
     private var activeWorkflow: PresentedWorkflow?
-    private var stagedOutcome: CheckpointEnginePaywallOutcome = .dismissed
+    private var stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
     private var isFinishing = false
     private let presentationHandler: ((PresentedWorkflow) -> Bool)?
 
@@ -59,7 +59,7 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
         guard let presentation = presentation as? DemoCheckpointWorkflowPresentation else {
             delegate.onCheckpointPaywallFinished(
                 callID: callID,
-                outcome: .error(WorkflowError.invalidPresentation as NSError)
+                outcome: CheckpointPaywallErrorOutcome(error: WorkflowError.invalidPresentation as NSError)
             )
             return
         }
@@ -79,7 +79,7 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
                 delegate: delegate
             )
             self.activeWorkflow = presentedWorkflow
-            self.stagedOutcome = .dismissed
+            self.stagedOutcome = CheckpointPaywallDismissedOutcome.shared
 
             let didBeginPresentation = self.presentationHandler?(presentedWorkflow)
                 ?? self.presentAutomatically(presentedWorkflow)
@@ -87,11 +87,14 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
                 throw WorkflowError.noPresentationContext
             }
         } catch {
-            self.finish(with: .error(error as NSError), fallback: (callID, delegate))
+            self.finish(
+                with: CheckpointPaywallErrorOutcome(error: error as NSError),
+                fallback: (callID, delegate)
+            )
         }
     }
 
-    func finish(with outcome: CheckpointEnginePaywallOutcome) {
+    func finish(with outcome: CheckpointPaywallOutcome) {
         self.finish(with: outcome, fallback: nil)
     }
 
@@ -105,12 +108,12 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
             do {
                 let customerInfo = try await Purchases.shared.customerInfo()
                 if restored {
-                    self.finish(with: .restored(customerInfo))
+                    self.finish(with: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
                 } else {
-                    self.finish(with: .purchased(customerInfo))
+                    self.finish(with: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
                 }
             } catch {
-                self.finish(with: .error(error as NSError))
+                self.finish(with: CheckpointPaywallErrorOutcome(error: error as NSError))
             }
         }
     }
@@ -120,7 +123,7 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
     }
 
     private func finish(
-        with outcome: CheckpointEnginePaywallOutcome,
+        with outcome: CheckpointPaywallOutcome,
         fallback: (String, CheckpointEnginePresenterDelegate)?
     ) {
         guard self.activeWorkflow != nil else {

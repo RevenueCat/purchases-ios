@@ -20,7 +20,7 @@ import Foundation
     /// JSON data consumed by the PoC renderer in RevenueCatUI.
     public let workflowData: Data
 
-    init(checkpoint: CheckpointEngineInfo, workflowData: Data) {
+    init(checkpoint: CheckpointInfo, workflowData: Data) {
         self.workflowData = workflowData
         super.init(checkpoint: checkpoint)
     }

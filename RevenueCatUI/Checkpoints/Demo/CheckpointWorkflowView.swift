@@ -129,11 +129,11 @@ struct CheckpointWorkflowView: View {
         case .restore:
             self.presenter.finishWithCustomerInfo(restored: true)
         case .dismiss, .complete:
-            self.presenter.finish(with: .dismissed)
+            self.presenter.finish(with: CheckpointPaywallDismissedOutcome.shared)
         case .error:
             self.presenter.finish(
-                with: .error(
-                    NSError(
+                with: CheckpointPaywallErrorOutcome(
+                    error: NSError(
                         domain: "RevenueCatUI.CheckpointWorkflow",
                         code: 1,
                         userInfo: [

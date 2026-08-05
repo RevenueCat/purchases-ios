@@ -61,7 +61,7 @@ final class DemoCheckpointWorkflowTests: TestCase {
     func testPresenterReportsResultWhenWorkflowFinishes() {
         let presenter = DemoCheckpointWorkflowPresenter(presentationHandler: { _ in true })
         let delegate = DemoMockCheckpointPresenterDelegate()
-        let checkpoint = CheckpointEngineInfo(identifier: "test_checkpoint", params: .init())
+        let checkpoint = CheckpointInfo(identifier: "test_checkpoint", params: .init())
 
         presenter.present(
             callID: "call-id",
@@ -71,10 +71,10 @@ final class DemoCheckpointWorkflowTests: TestCase {
             ),
             delegate: delegate
         )
-        presenter.finish(with: .dismissed)
+        presenter.finish(with: CheckpointPaywallDismissedOutcome.shared)
 
         XCTAssertEqual(delegate.finishedCallID, "call-id")
-        guard case .dismissed = delegate.outcome else {
+        guard delegate.outcome is CheckpointPaywallDismissedOutcome else {
             return XCTFail("Expected a dismissed outcome")
         }
     }
@@ -99,9 +99,9 @@ final class DemoCheckpointWorkflowTests: TestCase {
 private final class DemoMockCheckpointPresenterDelegate: CheckpointEnginePresenterDelegate {
 
     private(set) var finishedCallID: String?
-    private(set) var outcome: CheckpointEnginePaywallOutcome?
+    private(set) var outcome: CheckpointPaywallOutcome?
 
-    func onCheckpointPaywallFinished(callID: String, outcome: CheckpointEnginePaywallOutcome) {
+    func onCheckpointPaywallFinished(callID: String, outcome: CheckpointPaywallOutcome) {
         self.finishedCallID = callID
         self.outcome = outcome
     }
