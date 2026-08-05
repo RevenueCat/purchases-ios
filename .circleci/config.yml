@@ -1322,10 +1322,16 @@ jobs:
     shell: /bin/bash --login -o pipefail
     steps:
       - checkout
-      - install-rubydocker-dependencies
+      - setup-git-credentials
+      - trust-github-key
       - run:
-          name: Clone purchases-ios and push to purchases-ios-spm
-          command: bundle exec fastlane deploy_to_spm
+          name: Mirror purchases-ios tags to purchases-ios-spm (main not mirrored)
+          command: |
+            git clone git@github.com:RevenueCat/purchases-ios.git
+            cd purchases-ios
+            git fetch --tags
+            git remote set-url origin git@github.com:RevenueCat/purchases-ios-spm.git
+            git push --tags
 
 workflows:
   version: 2
