@@ -1367,6 +1367,7 @@
 		73A610000000000000000003 /* Purchases+Checkpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoint.swift */; };
 		73A610000000000000000004 /* Purchases+CheckpointObjectiveC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* Purchases+CheckpointObjectiveC.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
+		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
 		FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */; };
 		FACD000C2F61A1230073D2DE /* PackageVisibilityPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */; };
@@ -1931,6 +1932,7 @@
 		73A610000000000000000013 /* Purchases+Checkpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoint.swift"; sourceTree = "<group>"; };
 		73A610000000000000000014 /* Purchases+CheckpointObjectiveC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+CheckpointObjectiveC.swift"; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
+		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		35109DAA2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostDiagnosticsTests.swift; sourceTree = "<group>"; };
 		35109DB82BC8143E001030C8 /* DiagnosticsEventsRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsEventsRequest.swift; sourceTree = "<group>"; };
@@ -3655,6 +3657,7 @@
 		2CD72940268A820E00BFC976 /* FoundationExtensions */ = {
 			isa = PBXGroup;
 			children = (
+				73A630000000000000000011 /* NSNumber+JSON.swift */,
 				572247D027BEC28E00C524A7 /* Array+Extensions.swift */,
 				57069A5328E3918400B86355 /* AsyncExtensions.swift */,
 				2CD72941268A823900BFC976 /* Data+Extensions.swift */,
@@ -7211,6 +7214,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				73A630000000000000000001 /* NSNumber+JSON.swift in Sources */,
 				1E30849C30178A2100236A34 /* SourceHealthChecker.swift in Sources */,
 				1E30849D30178A2100236A34 /* APISourceFailover.swift in Sources */,
 				2C9107E02CE2E33400189565 /* StoredFeatureEvent.swift in Sources */,
