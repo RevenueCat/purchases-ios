@@ -2,6 +2,9 @@
 # Used by generate_swiftinterface and check_api_changes lanes
 
 require 'fileutils'
+require 'json'
+require 'net/http'
+require 'uri'
 
 module ApiDiffHelper
   MODULES = ["RevenueCat", "RevenueCatUI"].freeze
@@ -565,6 +568,24 @@ module ApiDiffHelper
       headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{bot_token}" },
       body: { channel: channel, text: message }
     }
+  end
+
+  # `poster` exists so the tests can exercise the response handling without a network.
+  def post_slack_message(request, poster: nil)
+    poster ||= ->(url, body, headers) { Net::HTTP.post(URI.parse(url), body, headers) }
+
+    response = poster.call(request[:url], request[:body].to_json, request[:headers])
+    raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
+
+    # chat.postMessage answers 200 with ok:false, and a webhook answers with the bare string "ok".
+    parsed = begin
+      JSON.parse(response.body.to_s)
+    rescue JSON::ParserError
+      nil
+    end
+    raise "Slack rejected the message: #{parsed['error']}" if parsed.is_a?(Hash) && parsed["ok"] == false
+
+    nil
   end
 
   # `runner` exists so the tests can exercise this without a Swift toolchain or fastlane.

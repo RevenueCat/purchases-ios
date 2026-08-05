@@ -1357,6 +1357,50 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  SlackResponse = Struct.new(:code, :body)
+
+  def slack_request
+    { url: "https://slack.com/api/chat.postMessage", headers: { "Content-Type" => "application/json" }, body: { channel: "C1", text: "hi" } }
+  end
+
+  def test_post_slack_message_posts_the_request_body_as_json
+    posted = nil
+    poster = ->(url, body, headers) do
+      posted = { url: url, body: body, headers: headers }
+      SlackResponse.new("200", '{"ok":true}')
+    end
+
+    ApiDiffHelper.post_slack_message(slack_request, poster: poster)
+
+    assert_equal "https://slack.com/api/chat.postMessage", posted[:url]
+    assert_equal({ "channel" => "C1", "text" => "hi" }, JSON.parse(posted[:body]))
+    assert_equal "application/json", posted[:headers]["Content-Type"]
+  end
+
+  def test_post_slack_message_raises_on_a_non_success_status
+    poster = ->(_url, _body, _headers) { SlackResponse.new("500", "server error") }
+
+    error = assert_raises(RuntimeError) { ApiDiffHelper.post_slack_message(slack_request, poster: poster) }
+    assert_match(/500/, error.message)
+    assert_match(/server error/, error.message)
+  end
+
+  # chat.postMessage answers 200 with ok:false, so the status alone is not the verdict.
+  def test_post_slack_message_raises_when_slack_rejects_the_message
+    poster = ->(_url, _body, _headers) { SlackResponse.new("200", '{"ok":false,"error":"channel_not_found"}') }
+
+    error = assert_raises(RuntimeError) { ApiDiffHelper.post_slack_message(slack_request, poster: poster) }
+    assert_match(/channel_not_found/, error.message)
+  end
+
+  # Incoming webhooks answer with the bare string "ok", which is not JSON.
+  def test_post_slack_message_accepts_a_non_json_webhook_body
+    poster = ->(_url, _body, _headers) { SlackResponse.new("200", "ok") }
+
+    ApiDiffHelper.post_slack_message(slack_request, poster: poster)
+  end
+
+
   # --- One comment, two jobs ---
 
   # Two jobs write this comment, one per module. Before sections existed, whichever finished
@@ -1447,6 +1491,18 @@ class ApiDiffHelperTest < Minitest::Test
                  "reading the labels must degrade, not raise")
     assert_operator gate.index("upsert_api_diff_comment"), :>, gate.index("pr_labels_for_api_gate"),
                     "labels are read before publishing, so the read must not be able to abort it"
+  end
+
+
+  # The lane used to hand-roll the post. Keeping it in the helper is what puts the response
+  # handling (non-2xx, ok:false, non-JSON webhook body) under test at all.
+  def test_the_slack_post_lives_in_the_helper_not_in_the_lane
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
+
+    refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
+    refute_match(/Net::HTTP/, slack_lane, "the HTTP post belongs in ApiDiffHelper")
+    assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
   end
 
 

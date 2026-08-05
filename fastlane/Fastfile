@@ -2611,13 +2611,7 @@ platform :ios do
       next
     end
 
-    require 'net/http'
-    require 'json'
-    response = Net::HTTP.post(URI.parse(request[:url]), request[:body].to_json, request[:headers])
-    UI.user_error!("Slack returned #{response.code}: #{response.body}") unless response.is_a?(Net::HTTPSuccess)
-
-    parsed = (JSON.parse(response.body) rescue nil)
-    UI.user_error!("Slack rejected the message: #{parsed['error']}") if parsed.is_a?(Hash) && parsed["ok"] == false
+    ApiDiffHelper.post_slack_message(request)
     UI.success("Posted the API change summary to Slack")
   end
 
