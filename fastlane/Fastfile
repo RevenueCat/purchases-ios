@@ -823,7 +823,7 @@ platform :ios do
     scan(
       step_name: "scan - paywall accessibility UI tests",
       workspace: "RevenueCat-Tuist.xcworkspace",
-      scheme: "PaywallsTesterUITests",
+      scheme: "PaywallFixturesUITests",
       device: ENV['SCAN_DEVICE'] || "iPhone 16 Pro",
       ensure_devices_found: true,
       prelaunch_simulator: true,

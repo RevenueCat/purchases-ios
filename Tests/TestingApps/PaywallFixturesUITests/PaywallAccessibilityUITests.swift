@@ -25,7 +25,7 @@ final class PaywallAccessibilityUITests: XCTestCase {
     /// An icon-only button has no text to announce, so without a derived label VoiceOver reads it
     /// as a bare "button".
     func testIconOnlyButtonIsAnnounced() throws {
-        let app = self.openIconOnlyButtonSample()
+        let app = self.launch(fixture: "icon_only_button")
 
         XCTAssertTrue(
             app.buttons["Close"].waitForExistence(timeout: 10),
@@ -38,38 +38,21 @@ final class PaywallAccessibilityUITests: XCTestCase {
     /// exist yet. Deliberately does not assert on the label first, so the audit itself is what
     /// fails when a button stops being announced.
     func testIconOnlyButtonPaywallDescribesEveryElement() throws {
-        let app = self.openIconOnlyButtonSample()
+        let app = self.launch(fixture: "icon_only_button")
 
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])
     }
 
-    private func openIconOnlyButtonSample() -> XCUIApplication {
+    private func launch(fixture: String) -> XCUIApplication {
         let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
         app.launch()
-
-        // The Examples tab is not selected by default once the SDK is configured.
-        let examples = app.buttons["Examples"]
-        if examples.waitForExistence(timeout: 20) {
-            examples.tap()
-        }
-
-        // The row sits below the template samples, and SwiftUI does not materialize rows that have
-        // never been on screen.
-        let sample = app.buttons["Icon-only button"]
-        var scrolls = 0
-        while !sample.exists && scrolls < 20 {
-            app.swipeUp()
-            scrolls += 1
-        }
-
-        XCTAssertTrue(sample.exists, "Sample paywall row not found after \(scrolls) scrolls.")
-        sample.tap()
 
         // Waits on the paywall's body copy rather than the button, so a test asserting on the
         // button's label is not gated by that same label.
         XCTAssertTrue(
-            app.staticTexts["Everything you need, in one place."].waitForExistence(timeout: 20),
-            "Sample paywall did not render."
+            app.staticTexts["Everything you need, in one place."].waitForExistence(timeout: 30),
+            "Fixture did not render."
         )
 
         return app

@@ -1539,7 +1539,7 @@ jobs:
       - checkout
       - install-dependencies
       - tuist-generate-workspace:
-          query: "PaywallsTesterUITests"
+          query: "PaywallFixturesUITests"
       - run:
           name: Run paywall accessibility UI tests
           command: |

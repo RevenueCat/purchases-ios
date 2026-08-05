@@ -189,12 +189,6 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "State-driven tabs", icon: "rectangle.stack")
                 }
-
-                Button {
-                    self.display = .componentPaywall(SamplePaywallLoader.iconOnlyButtonComponentsData())
-                } label: {
-                    TemplateLabel(name: "Icon-only button", icon: "accessibility")
-                }
                 #endif
             }
             #endif
