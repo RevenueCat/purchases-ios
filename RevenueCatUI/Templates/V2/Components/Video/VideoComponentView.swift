@@ -41,8 +41,6 @@ struct VideoComponentView: View {
     @Environment(\.carouselState)
     private var carouselState
 
-    /// Workflow pages stay mounted off-screen to preserve their state, so playback must pause
-    /// while the page is inactive. Standalone paywalls get `.identity` (always active).
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
@@ -204,8 +202,7 @@ struct VideoComponentView: View {
                 ))
             }
             .onChangeOf(workflowRenderingContext.pageTransition.isPageActive) { isPageActive in
-                // The page stays mounted when the user navigates to another workflow step, so
-                // onDisappear never fires. Tear the player down off-screen and recreate it on return.
+                // A hidden workflow page stays mounted, so `onDisappear` never fires.
                 updatePlayableState(isPlayable: Self.isPlayable(
                     isActiveOrNeighbor: carouselState?.isActiveOrNeighbor ?? true,
                     isWorkflowPageActive: isPageActive
@@ -221,9 +218,7 @@ struct VideoComponentView: View {
         )
     }
 
-    /// A video plays only when it is the active (or neighboring) carousel page *and* its workflow
-    /// page is on-screen. Either condition being false pauses it, so a video in a carousel on a
-    /// hidden workflow page stays paused for both reasons.
+    /// Plays only on an active (or neighboring) carousel page *and* an on-screen workflow page.
     static func isPlayable(isActiveOrNeighbor: Bool, isWorkflowPageActive: Bool) -> Bool {
         return isActiveOrNeighbor && isWorkflowPageActive
     }

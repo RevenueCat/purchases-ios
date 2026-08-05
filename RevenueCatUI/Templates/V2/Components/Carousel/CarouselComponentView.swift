@@ -158,8 +158,6 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Environment
 
-    /// Workflow pages stay mounted off-screen to preserve their state, so the auto-advance timer
-    /// must pause while the page is inactive. Standalone paywalls get `.identity` (always active).
     @Environment(\.workflowRenderingContext)
     private var workflowRenderingContext
 
@@ -365,8 +363,8 @@ private struct CarouselView<Content: View>: View {
             }
         }
         .onChangeOf(workflowRenderingContext.pageTransition.isPageActive) { isPageActive in
-            // The page stays mounted when the user navigates to another workflow step, so onDisappear
-            // never fires. Drive the timer off the active flag instead: stop it off-screen, restart on return.
+            // A hidden workflow page stays mounted, so `onDisappear` never fires. Drive the timer
+            // off the flag instead.
             if isPageActive {
                 startAutoPlayIfNeeded()
             } else {

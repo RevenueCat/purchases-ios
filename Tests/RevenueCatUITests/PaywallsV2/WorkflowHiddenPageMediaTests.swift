@@ -16,11 +16,8 @@ import XCTest
 
 #if os(iOS)
 
-/// Workflow keeps every visited step mounted off-screen so its state survives back-navigation,
-/// which means a hidden page's `onDisappear` never fires and its auto-advancing carousel keeps
-/// ticking at opacity 0. These tests drive a real carousel through the `isPageActive` flag and
-/// read the rendered pixels, so they assert the timer actually stops rather than that a helper
-/// returns the right `Bool`.
+/// Drives real components through `isPageActive` and reads the rendered output, so these assert
+/// the timer and player actually stop rather than that a helper returns the right `Bool`.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class WorkflowHiddenPageMediaTests: TestCase {
@@ -30,8 +27,7 @@ final class WorkflowHiddenPageMediaTests: TestCase {
         let window = try Self.hostCarousel(activation: activation)
         defer { Self.tearDown(window) }
 
-        // Sanity check for the two tests below: with the page on-screen the timer runs, so the
-        // visible slide changes on its own. Without this the "it stopped" assertion is vacuous.
+        // Without this the "it stopped" assertions below would be vacuous.
         let initial = try Self.sampleSlideColor(window)
         XCTAssertTrue(
             try Self.slideChanges(from: initial, in: window, within: 1.5),
@@ -49,12 +45,11 @@ final class WorkflowHiddenPageMediaTests: TestCase {
             "Auto-advance never ran before hiding the page"
         )
 
-        // Navigate to another workflow step. The page stays mounted, it just goes off-screen.
+        // Navigate away. The page stays mounted, it just goes off-screen.
         activation.isActive = false
         Self.pump(Self.settleInterval)
 
-        // Anything already animating when the flag flipped has landed by now, so any further
-        // change is the timer still firing on a page the user cannot see.
+        // Any in-flight animation has landed, so a further change means the timer is still firing.
         let afterHiding = try Self.sampleSlideColor(window)
         XCTAssertFalse(
             try Self.slideChanges(from: afterHiding, in: window, within: Self.quiesceInterval),
@@ -76,7 +71,6 @@ final class WorkflowHiddenPageMediaTests: TestCase {
         Self.pump(Self.settleInterval)
         let whileHidden = try Self.sampleSlideColor(window)
 
-        // Navigate back to the step.
         activation.isActive = true
         XCTAssertTrue(
             try Self.slideChanges(from: whileHidden, in: window, within: 1.5),
@@ -84,11 +78,8 @@ final class WorkflowHiddenPageMediaTests: TestCase {
         )
     }
 
-    /// The carousel tests above cover the timer. This covers the other half of the fix, and the
-    /// worse offender: a video outside a carousel is unconditionally playable today
-    /// (`carouselState?.isActiveOrNeighbor ?? true`), so on a hidden page it keeps an `AVPlayer`
-    /// alive at opacity 0. `isPlayable == false` removes `VideoPlayerView` from the hierarchy
-    /// entirely, so the player view's presence is the observable signal, no real video needed.
+    /// `isPlayable == false` removes `VideoPlayerView` from the hierarchy, so the player view's
+    /// presence is the signal. No real video needed.
     func testVideoPlayerIsTornDownWhileTheWorkflowPageIsHidden() throws {
         let activation = PageActivation(isActive: true)
         let window = try Self.hostVideo(activation: activation)
@@ -121,8 +112,8 @@ final class WorkflowHiddenPageMediaTests: TestCase {
 
 // MARK: - Host
 
-/// Mirrors what `WorkflowPaywallView.seenPageView` does to a page it keeps mounted but hidden:
-/// same subtree, same environment, only `isPageActive` differs.
+/// Mirrors `WorkflowPaywallView.seenPageView`: same subtree and environment, only `isPageActive`
+/// differs.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class PageActivation: ObservableObject {
 
@@ -153,10 +144,8 @@ private struct HiddenPageCarouselHost: View {
                     )
                 )
             )
-            // Deliberately not `.opacity(0)` when inactive, even though that is what production
-            // does: the rendered pixels are how this test sees the timer, and hiding the subtree
-            // would make it pass whether or not the carousel stopped. Mounted-and-live is the part
-            // that matters, and that is unchanged either way.
+            // Deliberately not `.opacity(0)` like production: the pixels are the probe, so hiding
+            // the subtree would make the test pass whether or not the carousel stopped.
             .frame(width: WorkflowHiddenPageMediaTests.windowSize.width,
                    height: WorkflowHiddenPageMediaTests.windowSize.height)
     }
@@ -232,9 +221,8 @@ private extension WorkflowHiddenPageMediaTests {
         controller.view.layoutIfNeeded()
         Self.pump(0.2)
 
-        // Two of these tests assert the rendered slide *stops* changing. If the carousel never
-        // rendered at all, the sampled pixel would be a constant background and they would pass
-        // for the wrong reason, so refuse to hand back a host that isn't showing a real slide.
+        // A carousel that never rendered would sample a constant background, so the "stops
+        // changing" assertions would pass for the wrong reason.
         let rendered = try Self.sampleSlideColor(window)
         XCTAssertTrue(
             Self.slideColors.contains(rendered),
@@ -250,9 +238,7 @@ private extension WorkflowHiddenPageMediaTests {
                 light: .init(
                     width: 1080,
                     height: 1920,
-                    // A local path that does not exist: the component still takes its "nothing
-                    // cached" branch and mounts a player, it just never decodes anything. Keeps
-                    // the test off the network.
+                    // Nonexistent path: still mounts a player, never decodes, stays off the network.
                     url: URL(fileURLWithPath: "/dev/null/workflow-hidden-page.mp4"),
                     checksum: nil,
                     urlLowRes: nil,
@@ -294,8 +280,7 @@ private extension WorkflowHiddenPageMediaTests {
         return window
     }
 
-    /// `VideoPlayerView` renders through `PlayerLayerBackedView` when controls are hidden, so its
-    /// presence in the UIKit tree is a direct read on whether a player exists.
+    /// `VideoPlayerView` renders through `PlayerLayerBackedView` when controls are hidden.
     static func containsPlayerView(_ view: UIView) -> Bool {
         if view is PlayerLayerBackedView {
             return true
@@ -370,8 +355,7 @@ private extension WorkflowHiddenPageMediaTests {
         )
     }
 
-    /// Pumps the run loop until the centre pixel differs from `color`, or the timeout expires.
-    /// Returns whether it changed, so a caller can assert in either direction.
+    /// Returns whether the centre pixel changed, so callers can assert in either direction.
     static func slideChanges(
         from color: PixelColor,
         in window: UIWindow,
