@@ -569,6 +569,73 @@ private extension SamplePaywallLoader {
 
 }
 
+// MARK: - Accessibility demo: icon-only button
+
+#if !os(tvOS) // For Paywalls V2
+
+extension SamplePaywallLoader {
+
+    /// A button whose only content is an icon, so it has no text for a screen reader to announce.
+    /// Used by the accessibility UI tests, and useful by hand with VoiceOver on.
+    static func iconOnlyButtonComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "accessibility-icon-only-button-demo",
+            assetBaseURL: Self.paywallAssetBaseURL,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .button(.init(
+                            action: .navigateBack,
+                            stack: .init(
+                                components: [
+                                    .icon(.init(
+                                        baseUrl: "https://icons.pawwalls.com/icons",
+                                        iconName: "x",
+                                        formats: .init(
+                                            svg: "x.svg",
+                                            png: "x.png",
+                                            heic: "x.heic",
+                                            webp: "x.webp"
+                                        ),
+                                        size: .init(width: .fixed(24), height: .fixed(24)),
+                                        padding: .zero,
+                                        margin: .zero,
+                                        color: .init(light: .hex("#000000")),
+                                        iconBackground: nil
+                                    ))
+                                ],
+                                size: .init(width: .fit(nil), height: .fit(nil)),
+                                padding: .init(top: 8, bottom: 8, leading: 8, trailing: 8)
+                            )
+                        )),
+                        .text(.init(
+                            text: "body_lid",
+                            color: .init(light: .hex("#000000"))
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "body_lid": .string("Everything you need, in one place.")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+}
+
+#endif
+
 // MARK: - State-driven Paywalls demo: Tab selected-state
 
 
