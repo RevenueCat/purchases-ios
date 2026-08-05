@@ -23,26 +23,14 @@ protocol CheckpointWorkflowResolver: AnyObject {
 
 enum CheckpointWorkflowResolution {
 
-    case matched(CheckpointWorkflowPresentation)
+    case matched(CheckpointEnginePresentation)
     case noMatch(CheckpointNoActionReason)
     case failed(PurchasesError)
 
 }
 
-/// Input supplied to a checkpoint presenter.
-@_spi(Internal) public class CheckpointWorkflowPresentation {
-
-    /// The checkpoint that resolved this presentation.
-    public let checkpoint: CheckpointInfo
-
-    init(checkpoint: CheckpointInfo) {
-        self.checkpoint = checkpoint
-    }
-
-}
-
 /// A checkpoint presentation backed by a workflow resolved from RevenueCat configuration.
-@_spi(Internal) public final class ResolvedCheckpointWorkflowPresentation: CheckpointWorkflowPresentation {
+@_spi(Internal) public final class ResolvedCheckpointWorkflowPresentation: CheckpointEnginePresentation {
 
     /// The workflow to render.
     public let workflow: PublishedWorkflow
@@ -72,7 +60,7 @@ enum CheckpointWorkflowResolution {
 /// simulate the no-match and error resolutions the future checkpoints configuration will produce.
 final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
-    typealias GetOfferings = @Sendable () async throws -> Offerings
+    typealias GetOfferings = () async throws -> Offerings
     typealias ChooseWorkflow = ([String: String?]) -> (workflowID: String, offeringID: String?)?
 
     private let workflowManager: WorkflowManager?

@@ -15,28 +15,25 @@
 import Foundation
 
 /// Executes a checkpoint workflow by asking the linked RevenueCatUI module to present it.
-final class UICheckpointWorkflowExecutor: CheckpointWorkflowExecutor, CheckpointPresenterDelegate {
+final class UICheckpointWorkflowExecutor: CheckpointWorkflowExecutor, CheckpointEnginePresenterDelegate {
 
     private typealias PaywallContinuation = CheckedContinuation<CheckpointPaywallOutcome, Error>
 
-    private let presenterProvider: @MainActor () -> CheckpointPresenter?
     @MainActor
     private var pendingCalls: [String: PaywallContinuation] = [:]
     @MainActor
     private var presenting = false
-
-    init(
-        presenterProvider: @escaping @MainActor () -> CheckpointPresenter? =
-            CheckpointPresenterDiscovery.makePresenter
-    ) {
-        self.presenterProvider = presenterProvider
-    }
+    @MainActor
+    private var activePresenter: CheckpointEnginePresenter?
 
     @MainActor
-    func execute(_ presentation: CheckpointWorkflowPresentation) async throws -> CheckpointWorkflowOutcome {
-        guard let presenter = self.presenterProvider() else {
+    func execute(
+        _ presentation: CheckpointEnginePresentation,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointWorkflowOutcome {
+        guard let presenter else {
             throw ErrorUtils.configurationError(
-                message: "Cannot present checkpoint UI: the RevenueCatUI module is not present."
+                message: "Cannot present checkpoint UI: no presentation handler was supplied."
             )
         }
         guard !self.presenting else {
@@ -47,11 +44,12 @@ final class UICheckpointWorkflowExecutor: CheckpointWorkflowExecutor, Checkpoint
         }
 
         self.presenting = true
+        self.activePresenter = presenter
         let callID = UUID().uuidString
         let outcome = try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { (continuation: PaywallContinuation) in
                 guard !Task.isCancelled else {
-                    self.presenting = false
+                    self.releasePresentation()
                     continuation.resume(throwing: CancellationError())
                     return
                 }
@@ -81,7 +79,7 @@ final class UICheckpointWorkflowExecutor: CheckpointWorkflowExecutor, Checkpoint
         guard let continuation = self.pendingCalls.removeValue(forKey: callID) else {
             return
         }
-        self.presenting = false
+        self.releasePresentation()
         continuation.resume(returning: outcome)
     }
 
@@ -90,22 +88,14 @@ final class UICheckpointWorkflowExecutor: CheckpointWorkflowExecutor, Checkpoint
         guard let continuation = self.pendingCalls.removeValue(forKey: callID) else {
             return
         }
-        self.presenting = false
+        self.releasePresentation()
         continuation.resume(throwing: CancellationError())
     }
 
-}
-
-private enum CheckpointPresenterDiscovery {
-
     @MainActor
-    static func makePresenter() -> CheckpointPresenter? {
-        #if canImport(ObjectiveC)
-        return (NSClassFromString("RCCheckpointPresenterProvider") as? CheckpointPresenterProvider.Type)?
-            .makeCheckpointPresenter()
-        #else
-        return nil
-        #endif
+    private func releasePresentation() {
+        self.presenting = false
+        self.activePresenter = nil
     }
 
 }
