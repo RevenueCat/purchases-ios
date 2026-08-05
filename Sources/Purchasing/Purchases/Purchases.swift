@@ -124,10 +124,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
-    /// Internal listener bridge used by RevenueCatUI's public checkpoint listener.
-    @_spi(Internal) public var checkpointEngineListener: CheckpointEngineListener? {
-        get { self.purchasesOrchestrator.checkpointEngineListener }
-        set { self.purchasesOrchestrator.checkpointEngineListener = newValue }
+    /// Internal storage used by RevenueCatUI's checkpoint listener property.
+    @_spi(Internal) public var checkpointListenerInternal: CheckpointListener? {
+        get { self.purchasesOrchestrator.checkpointListenerInternal }
+        set { self.purchasesOrchestrator.checkpointListenerInternal = newValue }
     }
 
     private let operationDispatcher: OperationDispatcher
@@ -1068,7 +1068,7 @@ public extension Purchases {
         identifier: String,
         params: CheckpointParams,
         presenter: CheckpointEnginePresenter?,
-        completion: @escaping (Result<CheckpointEngineResult, PublicError>) -> Void
+        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
         self.purchasesOrchestrator.checkpoint(
             identifier: identifier,
@@ -1084,7 +1084,7 @@ public extension Purchases {
         identifier: String,
         params: CheckpointParams,
         presenter: CheckpointEnginePresenter?
-    ) async throws -> CheckpointEngineResult {
+    ) async throws -> CheckpointResult {
         return try await self.purchasesOrchestrator.checkpoint(
             identifier: identifier,
             params: params,
