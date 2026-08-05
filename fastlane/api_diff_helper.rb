@@ -183,9 +183,7 @@ module ApiDiffHelper
   end
 
   # The orb default 0.10.1 has the consolidator bug; fixed upstream in 0.11.0.
-  PUBLIC_API_DIFF_VERSION = "0.12.0".freeze
-
-  # A tag can move, so CI checks out the commit that 0.12.0 points at.
+  # 0.12.0
   PUBLIC_API_DIFF_REF = "06620ffe614773a43102ab8052077ae463908b78".freeze
 
   NO_CHANGES_MARKER = "✅ No changes detected".freeze

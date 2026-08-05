@@ -2101,7 +2101,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # A commit, not a tag, so the build cannot shift under us. This is 0.12.0.
+      # 0.12.0
       - revenuecat/install-public-api-diff:
           version: "06620ffe614773a43102ab8052077ae463908b78"
       - run:
@@ -2153,7 +2153,7 @@ jobs:
     steps:
       - checkout
       - install-dependencies
-      # A commit, not a tag, so the build cannot shift under us. This is 0.12.0.
+      # 0.12.0
       - revenuecat/install-public-api-diff:
           version: "06620ffe614773a43102ab8052077ae463908b78"
       - run:
