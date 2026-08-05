@@ -250,7 +250,7 @@ extension CheckpointNoActionReason: CustomStringConvertible {
     /// The terminal outcome of the presented paywall.
     public let paywallOutcome: CheckpointPaywallOutcome
 
-    fileprivate init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
+    init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
         self.paywallOutcome = paywallOutcome
         super.init(checkpoint: checkpoint)
     }
@@ -273,7 +273,7 @@ extension CheckpointNoActionReason: CustomStringConvertible {
     /// The reason no experience was served.
     public let reason: CheckpointNoActionReason
 
-    fileprivate init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
+    init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
         self.reason = reason
         super.init(checkpoint: checkpoint)
     }
