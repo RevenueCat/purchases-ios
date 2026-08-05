@@ -20,29 +20,25 @@ import XCTest
 @MainActor
 final class CheckpointWorkflowPresenterTests: TestCase {
 
-    func testRuntimePresenterProviderCanBeDiscovered() throws {
-        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        let provider = try XCTUnwrap(
-            NSClassFromString("RCCheckpointPresenterProvider") as? CheckpointPresenterProvider.Type
-        )
-
-        XCTAssertTrue(provider.makeCheckpointPresenter() is CheckpointWorkflowPresenter)
-        #endif
+    func testFactoryCreatesPresenterDirectly() {
+        XCTAssertTrue(CheckpointPresenterFactory.makePresenter() is CheckpointWorkflowPresenter)
     }
 
     func testPresenterRejectsAnUnresolvedPresentation() {
         let presenter = CheckpointWorkflowPresenter()
         let delegate = MockCheckpointPresenterDelegate()
-        let checkpoint = CheckpointInfo(identifier: "test_checkpoint", params: CheckpointParams())
+        let checkpoint = CheckpointInfo(identifier: "test_checkpoint", params: .init())
 
         presenter.present(
             callID: "call-id",
-            presentation: CheckpointWorkflowPresentation(checkpoint: checkpoint),
+            presentation: CheckpointEnginePresentation(checkpoint: checkpoint),
             delegate: delegate
         )
 
         XCTAssertEqual(delegate.finishedCallID, "call-id")
-        XCTAssertTrue(delegate.outcome is CheckpointPaywallErrorOutcome)
+        guard delegate.outcome is CheckpointPaywallErrorOutcome else {
+            return XCTFail("Expected an error outcome")
+        }
     }
 
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() {
@@ -66,7 +62,10 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         XCTAssertEqual(delegate.finishedCallID, "call-id")
         XCTAssertEqual(delegate.finishCount, 1)
-        XCTAssertEqual((delegate.outcome as? CheckpointPaywallErrorOutcome)?.error, error)
+        guard let errorOutcome = delegate.outcome as? CheckpointPaywallErrorOutcome else {
+            return XCTFail("Expected an error outcome")
+        }
+        XCTAssertEqual(errorOutcome.error, error)
         XCTAssertNil(store.call(for: "call-id"))
     }
 
@@ -79,7 +78,9 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         let first = store.remove(callID: "first")
 
-        XCTAssertTrue(first?.stagedOutcome is CheckpointPaywallDismissedOutcome)
+        guard first?.stagedOutcome is CheckpointPaywallDismissedOutcome else {
+            return XCTFail("Expected a dismissed outcome")
+        }
         XCTAssertTrue(first?.delegate === firstDelegate)
         XCTAssertNil(store.call(for: "first"))
         XCTAssertNotNil(store.call(for: "second"))
@@ -99,13 +100,18 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             checkpoint: checkpoint,
             workflow: workflow,
             uiConfig: .empty,
-            offering: nil
+            offering: Offering(
+                identifier: "offering-id",
+                serverDescription: "Test offering",
+                availablePackages: [],
+                webCheckoutUrl: nil
+            )
         )
     }
 
 }
 
-private final class MockCheckpointPresenterDelegate: CheckpointPresenterDelegate {
+private final class MockCheckpointPresenterDelegate: CheckpointEnginePresenterDelegate {
 
     private(set) var finishedCallID: String?
     private(set) var outcome: CheckpointPaywallOutcome?

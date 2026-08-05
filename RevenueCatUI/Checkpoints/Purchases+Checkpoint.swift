@@ -36,12 +36,14 @@ import Foundation
         params: CheckpointParams = .init(),
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
-        self.performCheckpoint(
-            identifier: identifier,
-            params: params,
-            presenter: nil,
-            completion: completion
-        )
+        Task { @MainActor in
+            self.performCheckpoint(
+                identifier: identifier,
+                params: params,
+                presenter: CheckpointPresenterFactory.makePresenter(),
+                completion: completion
+            )
+        }
     }
 
     /// Registers that a checkpoint was hit.
@@ -57,10 +59,11 @@ import Foundation
         _ identifier: String,
         params: CheckpointParams = .init()
     ) async throws -> CheckpointResult {
+        let presenter = await CheckpointPresenterFactory.makePresenter()
         return try await self.performCheckpoint(
             identifier: identifier,
             params: params,
-            presenter: nil
+            presenter: presenter
         )
     }
 

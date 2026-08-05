@@ -23,12 +23,12 @@ import UIKit
 /// Presents workflows resolved by the RevenueCat core module.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-@_spi(Internal) public final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
+@_spi(Internal) public final class CheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter {
 
     struct PresentedWorkflow: Identifiable {
         let id: String
         let presentation: ResolvedCheckpointWorkflowPresentation
-        let delegate: CheckpointPresenterDelegate
+        let delegate: CheckpointEnginePresenterDelegate
     }
 
     private var activeCallID: String?
@@ -64,8 +64,8 @@ import UIKit
     /// Presents the resolved workflow using RevenueCatUI's workflow paywall renderer.
     public func present(
         callID: String,
-        presentation: CheckpointWorkflowPresentation,
-        delegate: CheckpointPresenterDelegate
+        presentation: CheckpointEnginePresentation,
+        delegate: CheckpointEnginePresenterDelegate
     ) {
         guard let presentation = presentation as? ResolvedCheckpointWorkflowPresentation else {
             delegate.onCheckpointPaywallFinished(
@@ -145,9 +145,7 @@ import UIKit
         guard let presentationContext = UIApplication.checkpointPresentationViewController else {
             return false
         }
-        guard let offering = presentedWorkflow.presentation.offering else {
-            throw WorkflowError.missingOffering
-        }
+        let offering = presentedWorkflow.presentation.offering
 
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: presentedWorkflow.presentation.workflow,
@@ -190,15 +188,12 @@ import UIKit
 private enum WorkflowError: LocalizedError {
 
     case invalidPresentation
-    case missingOffering
     case noPresentationContext
 
     var errorDescription: String? {
         switch self {
         case .invalidPresentation:
             return "The checkpoint did not resolve to a renderable workflow."
-        case .missingOffering:
-            return "The checkpoint workflow's offering is unavailable."
         case .noPresentationContext:
             return "Unable to locate a view controller for checkpoint presentation."
         }
