@@ -107,16 +107,13 @@ extension CheckpointValue {
         }
 
         guard let number = foundationValue as? NSNumber else { return nil }
-        if CFGetTypeID(number) == CFBooleanGetTypeID() {
+        switch number.jsonNumberKind {
+        case .boolean:
             self = .boolean(number.boolValue)
-            return
-        }
-
-        switch String(cString: number.objCType) {
-        case "c", "i", "s", "l", "q", "C", "I", "S", "L", "Q":
+        case .integer:
             guard let value = Int64(number.stringValue) else { return nil }
             self = .integer(value)
-        default:
+        case .floatingPoint:
             self = .double(number.doubleValue)
         }
     }
