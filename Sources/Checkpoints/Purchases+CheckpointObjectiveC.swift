@@ -14,6 +14,8 @@
 
 import Foundation
 
+#if ENABLE_CHECKPOINTS_OBJC
+
 @_spi(Internal) public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
@@ -35,3 +37,5 @@ import Foundation
     }
 
 }
+
+#endif

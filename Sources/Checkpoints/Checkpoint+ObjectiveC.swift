@@ -14,6 +14,8 @@
 
 import Foundation
 
+#if ENABLE_CHECKPOINTS_OBJC
+
 /// Objective-C representation of ``CheckpointParams``.
 @_spi(Internal) @objc(RCCheckpointParams)
 public final class ObjCCheckpointParams: NSObject {
@@ -210,3 +212,5 @@ public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
     }
 
 }
+
+#endif
