@@ -58,7 +58,7 @@ final class DemoCheckpointWorkflowTests: TestCase {
         XCTAssertEqual(workflow.pages[1].actions[0].type, .complete)
     }
 
-    func testPresenterReportsResultImmediatelyWhenWorkflowFinishes() {
+    func testPresenterReportsResultWhenWorkflowFinishes() {
         let presenter = DemoCheckpointWorkflowPresenter(presentationHandler: { _ in true })
         let delegate = DemoMockCheckpointPresenterDelegate()
         let checkpoint = CheckpointEngineInfo(identifier: "test_checkpoint", params: .init())

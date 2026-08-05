@@ -33,6 +33,7 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
     }
 
     private var activeWorkflow: PresentedWorkflow?
+    private var stagedOutcome: CheckpointEnginePaywallOutcome = .dismissed
     private var isFinishing = false
     private let presentationHandler: ((PresentedWorkflow) -> Bool)?
 
@@ -78,6 +79,7 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
                 delegate: delegate
             )
             self.activeWorkflow = presentedWorkflow
+            self.stagedOutcome = .dismissed
 
             let didBeginPresentation = self.presentationHandler?(presentedWorkflow)
                 ?? self.presentAutomatically(presentedWorkflow)
@@ -114,33 +116,48 @@ final class DemoCheckpointWorkflowPresenter: NSObject, CheckpointEnginePresenter
     }
 
     func presentationDidDismiss() {
-        self.finish(with: .dismissed)
+        self.complete()
     }
 
     private func finish(
         with outcome: CheckpointEnginePaywallOutcome,
         fallback: (String, CheckpointEnginePresenterDelegate)?
     ) {
-        let activeWorkflow = self.activeWorkflow
-        self.activeWorkflow = nil
-        self.isFinishing = false
+        guard self.activeWorkflow != nil else {
+            if let fallback {
+                fallback.1.onCheckpointPaywallFinished(callID: fallback.0, outcome: outcome)
+            }
+            return
+        }
+
+        self.stagedOutcome = outcome
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         let viewController = self.presentedViewController
-        self.presentedViewController = nil
         if viewController?.presentingViewController != nil {
-            viewController?.dismiss(animated: true)
+            viewController?.dismiss(animated: true) { [weak self] in
+                self?.complete()
+            }
+            return
         }
         #endif
 
-        if let activeWorkflow {
-            activeWorkflow.delegate.onCheckpointPaywallFinished(
-                callID: activeWorkflow.id,
-                outcome: outcome
-            )
-        } else if let fallback {
-            fallback.1.onCheckpointPaywallFinished(callID: fallback.0, outcome: outcome)
-        }
+        self.complete()
+    }
+
+    private func complete() {
+        guard let activeWorkflow = self.activeWorkflow else { return }
+
+        self.activeWorkflow = nil
+        self.isFinishing = false
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+        self.presentedViewController = nil
+        #endif
+
+        activeWorkflow.delegate.onCheckpointPaywallFinished(
+            callID: activeWorkflow.id,
+            outcome: self.stagedOutcome
+        )
     }
 
     private func presentAutomatically(_ presentedWorkflow: PresentedWorkflow) -> Bool {
