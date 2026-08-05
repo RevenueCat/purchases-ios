@@ -124,10 +124,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
-    /// Global listener for checkpoint activity.
-    @_spi(Internal) public var checkpointListener: CheckpointListener? {
-        get { self.purchasesOrchestrator.checkpointListener }
-        set { self.purchasesOrchestrator.checkpointListener = newValue }
+    /// Internal listener bridge used by RevenueCatUI's public checkpoint listener.
+    @_spi(Internal) public var checkpointEngineListener: CheckpointEngineListener? {
+        get { self.purchasesOrchestrator.checkpointEngineListener }
+        set { self.purchasesOrchestrator.checkpointEngineListener = newValue }
     }
 
     private let operationDispatcher: OperationDispatcher
@@ -1062,42 +1062,34 @@ public extension Purchases {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
-    /// Registers that a checkpoint was hit.
-    ///
-    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
-    /// The call resolves when the experience finishes.
-    /// - Parameters:
-    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
-    ///   - params: Optional per-call parameters.
-    ///   - completion: Called with the result, or an error if the checkpoint could not be handled.
+    /// Internal checkpoint engine entry point used by RevenueCatUI.
     @_spi(Internal)
-    func checkpoint(
-        _ identifier: String,
-        params: CheckpointParams = .init(),
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+    func performCheckpoint(
+        identifier: String,
+        params: CheckpointEngineParams,
+        presenter: CheckpointEnginePresenter?,
+        completion: @escaping (Result<CheckpointEngineResult, PublicError>) -> Void
     ) {
         self.purchasesOrchestrator.checkpoint(
             identifier: identifier,
             params: params,
+            presenter: presenter,
             completion: completion
         )
     }
 
-    /// Registers that a checkpoint was hit.
-    ///
-    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
-    /// The call resolves when the experience finishes.
-    /// - Parameters:
-    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard.
-    ///   - params: Optional per-call parameters.
-    /// - Returns: The result for this checkpoint.
-    /// - Throws: An error if the checkpoint could not be handled.
+    /// Internal async checkpoint engine entry point used by RevenueCatUI.
     @_spi(Internal)
-    func checkpoint(
-        _ identifier: String,
-        params: CheckpointParams = .init()
-    ) async throws -> CheckpointResult {
-        return try await self.purchasesOrchestrator.checkpoint(identifier: identifier, params: params)
+    func performCheckpoint(
+        identifier: String,
+        params: CheckpointEngineParams,
+        presenter: CheckpointEnginePresenter?
+    ) async throws -> CheckpointEngineResult {
+        return try await self.purchasesOrchestrator.checkpoint(
+            identifier: identifier,
+            params: params,
+            presenter: presenter
+        )
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
