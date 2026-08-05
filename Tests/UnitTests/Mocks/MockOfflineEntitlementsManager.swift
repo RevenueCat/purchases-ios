@@ -44,4 +44,16 @@ class MockOfflineEntitlementsManager: OfflineEntitlementsManager {
         return self.stubbedShouldComputeOfflineCustomerInfo
     }
 
+    var invokedComputeOfflineCustomerInfo = false
+    var invokedComputeOfflineCustomerInfoCount = 0
+    var stubbedComputeOfflineCustomerInfoResult: Result<CustomerInfo, Error> = .failure(.notAvailable)
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    override func computeOfflineCustomerInfo(appUserID: String) async throws -> CustomerInfo {
+        self.invokedComputeOfflineCustomerInfo = true
+        self.invokedComputeOfflineCustomerInfoCount += 1
+
+        return try self.stubbedComputeOfflineCustomerInfoResult.get()
+    }
+
 }

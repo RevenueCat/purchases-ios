@@ -1538,6 +1538,7 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
     @objc public func with(networkTimeout: Foundation.TimeInterval) -> RevenueCat.Configuration.Builder
     @objc public func with(storeKit1Timeout: Foundation.TimeInterval) -> RevenueCat.Configuration.Builder
     @objc public func with(platformInfo: RevenueCat.Purchases.PlatformInfo) -> RevenueCat.Configuration.Builder
+    @objc public func with(unsyncedTransactionsWaitPolicy: RevenueCat.UnsyncedTransactionsWaitPolicy) -> RevenueCat.Configuration.Builder
     @objc public func with(showStoreMessagesAutomatically: Swift.Bool) -> RevenueCat.Configuration.Builder
     @objc public func with(entitlementVerificationMode mode: RevenueCat.Configuration.EntitlementVerificationMode) -> RevenueCat.Configuration.Builder
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -2904,6 +2905,16 @@ extension RevenueCat.TestStoreProductDiscount {
 @_hasMissingDesignatedInitializers @objc(RCWinBackOffer) final public class WinBackOffer : ObjectiveC.NSObject, Swift.Sendable {
   @objc final public let discount: RevenueCat.StoreProductDiscount
   @objc deinit
+}
+@_hasMissingDesignatedInitializers @objc(RCUnsyncedTransactionsWaitPolicy) final public class UnsyncedTransactionsWaitPolicy : ObjectiveC.NSObject {
+  @objc public static let wait: RevenueCat.UnsyncedTransactionsWaitPolicy
+  @objc public static let doNotWait: RevenueCat.UnsyncedTransactionsWaitPolicy
+  @objc override final public var description: Swift.String {
+    @objc get
+  }
+  @objc deinit
+}
+extension RevenueCat.UnsyncedTransactionsWaitPolicy : @unchecked Swift.Sendable {
 }
 @objc(RCVerificationResult) public enum VerificationResult : Swift.Int {
   case notRequested = 0

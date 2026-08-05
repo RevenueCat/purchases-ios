@@ -26,6 +26,8 @@ func checkConfigurationAPI() {
         .with(iamEnabled: false)
         .with(preferredUILocaleOverride: "de_DE")
         .with(preferredUILocaleOverride: nil)
+        .with(unsyncedTransactionsWaitPolicy: .wait)
+        .with(unsyncedTransactionsWaitPolicy: .doNotWait)
 
 
     let _: Configuration = builder.build()

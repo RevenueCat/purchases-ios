@@ -28,6 +28,7 @@ class Backend {
     let remoteConfigAPI: RemoteConfigAPI
 
     private let config: BackendConfiguration
+    private let receiptPostConfig: BackendConfiguration?
 
     convenience init(
         systemInfo: SystemInfo,
@@ -67,28 +68,46 @@ class Backend {
                                           systemInfo: systemInfo,
                                           offlineCustomerInfoCreator: offlineCustomerInfoCreator,
                                           dateProvider: dateProvider)
-        let remoteConfigConfig = BackendConfiguration(
-            httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
-                                               eTagManager: eTagManager,
-                                               diagnosticsTracker: diagnosticsTracker,
-                                               networkTimeout: httpClientTimeout,
-                                               apiSourceFailover: apiSourceFailover,
-                                               timeoutManager: timeoutManager),
-            operationDispatcher: operationDispatcher,
-            operationQueue: QueueProvider.createRemoteConfigQueue(),
-            diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
-            systemInfo: systemInfo,
-            offlineCustomerInfoCreator: offlineCustomerInfoCreator,
-            dateProvider: dateProvider)
+
+        // Each lane gets its own `HTTPClient`: a separate queue isn't enough, since requests also
+        // serialize on `HTTPClient.currentSerialRequest`.
+        func lane(on operationQueue: OperationQueue) -> BackendConfiguration {
+            return BackendConfiguration(
+                httpClient: .dedicatedLane(systemInfo: systemInfo,
+                                           eTagManager: eTagManager,
+                                           diagnosticsTracker: diagnosticsTracker,
+                                           networkTimeout: httpClientTimeout,
+                                           apiSourceFailover: apiSourceFailover,
+                                           timeoutManager: timeoutManager),
+                operationDispatcher: operationDispatcher,
+                operationQueue: operationQueue,
+                diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
+                systemInfo: systemInfo,
+                offlineCustomerInfoCreator: offlineCustomerInfoCreator,
+                dateProvider: dateProvider
+            )
+        }
+
+        // Only apps that opted out of waiting for unsynced transactions get the receipt post lane.
+        let receiptPostConfig: BackendConfiguration? =
+            systemInfo.unsyncedTransactionsWaitPolicy == .doNotWait
+            ? lane(on: QueueProvider.createReceiptPostQueue())
+            : nil
+        let remoteConfigConfig = lane(on: QueueProvider.createRemoteConfigQueue())
+
         self.init(backendConfig: config,
                   remoteConfigBackendConfig: remoteConfigConfig,
+                  receiptPostBackendConfig: receiptPostConfig,
                   attributionFetcher: attributionFetcher)
     }
 
     convenience init(backendConfig: BackendConfiguration,
                      remoteConfigBackendConfig: BackendConfiguration? = nil,
+                     receiptPostBackendConfig: BackendConfiguration? = nil,
                      attributionFetcher: AttributionFetcher) {
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        let customer = CustomerAPI(backendConfig: backendConfig,
+                                   receiptPostBackendConfig: receiptPostBackendConfig,
+                                   attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
         let webBilling = WebBillingAPI(backendConfig: backendConfig)
@@ -111,7 +130,8 @@ class Backend {
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
                   adsAPI: adsAPI,
-                  remoteConfigAPI: remoteConfigAPI)
+                  remoteConfigAPI: remoteConfigAPI,
+                  receiptPostBackendConfig: receiptPostBackendConfig)
     }
 
     required init(backendConfig: BackendConfiguration,
@@ -125,8 +145,10 @@ class Backend {
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
-                  remoteConfigAPI: RemoteConfigAPI) {
+                  remoteConfigAPI: RemoteConfigAPI,
+                  receiptPostBackendConfig: BackendConfiguration? = nil) {
         self.config = backendConfig
+        self.receiptPostConfig = receiptPostBackendConfig
 
         self.customer = customerAPI
         self.identity = identityAPI
@@ -143,6 +165,7 @@ class Backend {
 
     func clearHTTPClientCaches() {
         self.config.clearCache()
+        self.receiptPostConfig?.clearCache()
     }
 
     func post(attributionData: [String: Any],
@@ -295,6 +318,15 @@ extension Backend {
             return operationQueue
         }
 
+        static func createReceiptPostQueue() -> OperationQueue {
+            let operationQueue = OperationQueue()
+            operationQueue.name = "RC Receipt Post Queue"
+            // Serial, so receipt posts keep their existing ordering and de-duping among themselves.
+            // Only post-vs-read concurrency changes.
+            operationQueue.maxConcurrentOperationCount = 1
+            return operationQueue
+        }
+
         static func createRemoteConfigQueue() -> OperationQueue {
             let operationQueue = OperationQueue()
             operationQueue.name = "RC Remote Config Queue"
@@ -309,7 +341,7 @@ extension Backend {
 private extension HTTPClient {
 
     // swiftlint:disable:next function_parameter_count
-    static func dedicatedRemoteConfig(
+    static func dedicatedLane(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         diagnosticsTracker: DiagnosticsTrackerType?,

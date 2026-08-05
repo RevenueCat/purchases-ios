@@ -25,13 +25,18 @@ enum CustomerInfoStrings {
     case no_cached_customerinfo
     case cached_customerinfo_incompatible_schema
     case not_caching_offline_customer_info
+    case not_caching_staler_customer_info
     case customerinfo_stale_updating_in_background
     case customerinfo_stale_updating_in_foreground
     case customerinfo_updated_from_network
     case customerinfo_updated_from_network_error(BackendError)
     case customerinfo_updated_offline
+    case customerinfo_computed_on_device
     case posting_transactions_in_lieu_of_fetching_customerinfo([StoreTransaction])
     case posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(BackendError)
+    case not_waiting_for_unsynced_transactions([StoreTransaction])
+    case fetching_without_waiting_for_unsynced_transactions([StoreTransaction])
+    case computing_customerinfo_without_waiting_failed(Error)
     case updating_request_date(CustomerInfo, Date)
     case sending_latest_customerinfo_to_delegate
     case sending_updated_customerinfo_to_delegate
@@ -60,6 +65,8 @@ extension CustomerInfoStrings: LogMessage {
             return "Cached CustomerInfo has incompatible schema."
         case .not_caching_offline_customer_info:
             return "CustomerInfo was computed offline. Won't be stored in cache."
+        case .not_caching_staler_customer_info:
+            return "Received CustomerInfo is older than the cached one. Won't be stored in cache."
         case .customerinfo_stale_updating_in_background:
             return "CustomerInfo cache is stale, updating from network in background."
         case .customerinfo_stale_updating_in_foreground:
@@ -74,6 +81,8 @@ extension CustomerInfoStrings: LogMessage {
             }
 
             return result
+        case .customerinfo_computed_on_device:
+            return "CustomerInfo was computed on the device while unsynced transactions are posted."
         case .customerinfo_updated_offline:
             return "There was an error communicating with RevenueCat servers. " +
             "CustomerInfo was temporarily computed offline, and it will be posted again as soon as possible."
@@ -83,6 +92,15 @@ extension CustomerInfoStrings: LogMessage {
         case let .posting_receipt_for_unfinished_transaction_failed_falling_back_to_get_customerinfo(error):
             return "Posting receipt for unfinished transaction failed " +
             "(\(error.localizedDescription)); falling back to fetching CustomerInfo."
+        case let .fetching_without_waiting_for_unsynced_transactions(transactions):
+            return "Found \(transactions.count) unsynced transactions. Fetching CustomerInfo and posting " +
+            "them in the background, as configured by UnsyncedTransactionsWaitPolicy.doNotWait."
+        case let .not_waiting_for_unsynced_transactions(transactions):
+            return "Found \(transactions.count) unsynced transactions. Computing CustomerInfo on device " +
+            "and posting them in the background, as configured by UnsyncedTransactionsWaitPolicy.doNotWait."
+        case let .computing_customerinfo_without_waiting_failed(error):
+            return "Couldn't compute CustomerInfo on device (\(error.localizedDescription)); " +
+            "waiting for unsynced transactions to be posted instead."
         case let .updating_request_date(info, newRequestDate):
             return "Updating CustomerInfo '\(info.originalAppUserId)' request date: \(newRequestDate)"
         case .sending_latest_customerinfo_to_delegate:
