@@ -33,13 +33,14 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
-    /// Catches the whole class of bug rather than one string: fails on any element the tree exposes
-    /// without a label, including components that do not exist yet.
-    func testIconOnlyButtonPaywallHasNoUnlabelledElements() throws {
+    /// Catches the whole class of bug rather than one string: `.sufficientElementDescription` fails
+    /// on any element whose description is missing or unhelpful, including components that do not
+    /// exist yet. Deliberately does not assert on the label first, so the audit itself is what
+    /// fails when a button stops being announced.
+    func testIconOnlyButtonPaywallDescribesEveryElement() throws {
         let app = self.openIconOnlyButtonSample()
-        XCTAssertTrue(app.buttons["Close"].waitForExistence(timeout: 10))
 
-        try app.performAccessibilityAudit(for: [.elementDetection])
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription])
     }
 
     private func openIconOnlyButtonSample() -> XCUIApplication {
@@ -63,6 +64,13 @@ final class PaywallAccessibilityUITests: XCTestCase {
 
         XCTAssertTrue(sample.exists, "Sample paywall row not found after \(scrolls) scrolls.")
         sample.tap()
+
+        // Waits on the paywall's body copy rather than the button, so a test asserting on the
+        // button's label is not gated by that same label.
+        XCTAssertTrue(
+            app.staticTexts["Everything you need, in one place."].waitForExistence(timeout: 20),
+            "Sample paywall did not render."
+        )
 
         return app
     }
