@@ -12,15 +12,36 @@
 //  Created by Rick van der Linden.
 //
 
+import Foundation
+@_spi(Internal) import RevenueCat
+@_spi(Internal) import RevenueCatUI
 import SwiftUI
 
 struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
+    @State private var checkpointVariables = [
+        CheckpointVariable(name: "source", value: "CheckpointTester"),
+    ]
 
     var body: some View {
-        self.demoList
+        TabView {
+            self.demoList
+                .tabItem {
+                    Label("Use cases", systemImage: "list.bullet.rectangle")
+                }
+
+            self.variableEditor
+                .tabItem {
+                    Label("Variables", systemImage: "slider.horizontal.3")
+                }
+
+            self.listenerLog
+                .tabItem {
+                    Label("Listener", systemImage: "waveform.path.ecg")
+                }
+        }
         .alert(
             isPresented: Binding(
                 get: { self.model.outcomeAlert != nil },
@@ -48,7 +69,17 @@ struct ContentView: View {
                         subtitle: "Choose purchased, restored, dismissed, or error.",
                         systemImage: "rectangle.on.rectangle"
                     ) {
-                        self.model.runCheckpoint(identifier: "result_picker")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "result_picker",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
 
                     DemoButton(
@@ -56,7 +87,17 @@ struct ContentView: View {
                         subtitle: "An unknown identifier resolves without presenting UI.",
                         systemImage: "arrow.forward"
                     ) {
-                        self.model.runCheckpoint(identifier: "unknown_checkpoint")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "unknown_checkpoint",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
 
                     DemoButton(
@@ -64,7 +105,17 @@ struct ContentView: View {
                         subtitle: "The checkpoint call throws a configuration error.",
                         systemImage: "exclamationmark.triangle"
                     ) {
-                        self.model.runCheckpoint(identifier: "error_checkpoint")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "error_checkpoint",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
                 }
 
@@ -74,7 +125,17 @@ struct ContentView: View {
                         subtitle: "Can be dismissed without purchasing.",
                         systemImage: "rectangle.portrait.and.arrow.right"
                     ) {
-                        self.model.runCheckpoint(identifier: "soft_paywall")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "soft_paywall",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
 
                     DemoButton(
@@ -82,7 +143,17 @@ struct ContentView: View {
                         subtitle: "Interactive dismissal is disabled.",
                         systemImage: "lock.fill"
                     ) {
-                        self.model.runCheckpoint(identifier: "hard_paywall")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "hard_paywall",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
                 }
 
@@ -92,10 +163,56 @@ struct ContentView: View {
                         subtitle: "Completes a multi-step flow and displays the checkpoint result.",
                         systemImage: "sparkles"
                     ) {
-                        self.model.runCheckpoint(identifier: "onboarding")
+                        Task { @MainActor in
+                            do {
+                                let result = try await Purchases.shared.checkpoint(
+                                    "onboarding",
+                                    params: self.checkpointParams
+                                )
+                                self.model.showOutcome(result)
+                            } catch {
+                                self.model.showError(error)
+                            }
+                        }
                     }
                 }
+            }
+            .navigationTitle("Checkpoint Tester")
+        }
+    }
 
+    private var variableEditor: some View {
+        NavigationStack {
+            List {
+                Section {
+                    ForEach(self.$checkpointVariables) { $variable in
+                        HStack {
+                            TextField("Name", text: $variable.name)
+                            TextField("Value", text: $variable.value)
+                        }
+                    }
+                    .onDelete { offsets in
+                        self.checkpointVariables.remove(atOffsets: offsets)
+                    }
+
+                    Button {
+                        self.checkpointVariables.append(.init())
+                    } label: {
+                        Label("Add variable", systemImage: "plus")
+                    }
+                } header: {
+                    Text("Checkpoint variables")
+                } footer: {
+                    Text("These custom properties are passed to every checkpoint call.")
+                }
+            }
+            .navigationTitle("Variables")
+        }
+    }
+
+    private var listenerLog: some View {
+        NavigationStack {
+            List {
                 Section {
                     if self.analyticsTracker.events.isEmpty {
                         Text("Global listener events will appear here as checkpoints run.")
@@ -121,9 +238,30 @@ struct ContentView: View {
                     Text("A global analytics tracker can observe checkpoint hits and completed results here.")
                 }
             }
-            .navigationTitle("Checkpoint Tester")
+            .navigationTitle("Global Listener")
         }
     }
+
+    private var checkpointParams: CheckpointParams {
+        var customProperties: [String: RevenueCat.CheckpointValue] = [:]
+
+        for variable in self.checkpointVariables {
+            let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !name.isEmpty {
+                customProperties[name] = .string(variable.value)
+            }
+        }
+
+        return CheckpointParams(customProperties: customProperties)
+    }
+
+}
+
+private struct CheckpointVariable: Identifiable {
+
+    let id = UUID()
+    var name = ""
+    var value = ""
 
 }
 

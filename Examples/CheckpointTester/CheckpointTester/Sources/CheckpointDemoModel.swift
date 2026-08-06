@@ -29,27 +29,18 @@ final class CheckpointDemoModel: ObservableObject {
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
-    // MARK: - New checkpoint public API implementation
+    func showOutcome(_ result: CheckpointResult) {
+        self.showOutcomeAlert(
+            title: "Checkpoint result",
+            message: Self.describe(result)
+        )
+    }
 
-    // This call is the core integration an app makes when it reaches a checkpoint.
-    func runCheckpoint(identifier: String) {
-        Task { @MainActor in
-            do {
-                let result = try await Purchases.shared.checkpoint(
-                    identifier,
-                    params: CheckpointParams(customProperties: ["name": "Rick"])
-                )
-                self.showOutcomeAlert(
-                    title: "Checkpoint result",
-                    message: Self.describe(result)
-                )
-            } catch {
-                self.showOutcomeAlert(
-                    title: "Checkpoint failed",
-                    message: error.localizedDescription
-                )
-            }
-        }
+    func showError(_ error: Error) {
+        self.showOutcomeAlert(
+            title: "Checkpoint failed",
+            message: error.localizedDescription
+        )
     }
 
     // MARK: - Demo-only result presentation

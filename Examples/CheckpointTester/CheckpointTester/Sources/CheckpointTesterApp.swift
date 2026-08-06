@@ -46,7 +46,7 @@ struct CheckpointTesterApp: App {
 
     private static func configurePurchases(analyticsTracker: GlobalCheckpointAnalyticsTracker) {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
-              apiKey.hasPrefix("appl_"),
+              !apiKey.isEmpty,
               !apiKey.contains("$(") else {
             fatalError("Generate CheckpointTester with a valid TUIST_RC_API_KEY.")
         }
