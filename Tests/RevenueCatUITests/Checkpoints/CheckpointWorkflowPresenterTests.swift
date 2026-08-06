@@ -16,6 +16,10 @@
 @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+import UIKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class CheckpointWorkflowPresenterTests: TestCase {
@@ -86,6 +90,32 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertEqual(delegate.finishCount, 0)
     }
 
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+
+    func testDismissTargetsPresentedExitOfferController() {
+        let workflow = Self.workflow()
+        let presenter = CheckpointWorkflowPresenter { _ in true }
+        presenter.present(
+            callID: "call-id",
+            workflow: workflow,
+            delegate: MockCheckpointPresenterDelegate()
+        )
+        let originalController = PaywallViewController(offering: workflow.offering)
+        let exitOfferController = DismissRecordingPaywallController(
+            offering: workflow.offering
+        )
+
+        presenter.paywallViewController(
+            originalController,
+            willPresentExitOfferController: exitOfferController
+        )
+        presenter.dismiss(callID: "call-id") {}
+
+        XCTAssertEqual(exitOfferController.dismissCallCount, 1)
+    }
+
+    #endif
+
     private static func workflow() -> ResolvedCheckpointWorkflow {
         let workflow = PublishedWorkflow(
             id: "workflow-id",
@@ -108,6 +138,43 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
 }
+
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+
+@available(iOS 15.0, macOS 12.0, *)
+private final class DismissRecordingPaywallController: PaywallViewController {
+
+    private(set) var dismissCallCount = 0
+    private let stubbedPresentingViewController = UIViewController()
+
+    override var presentingViewController: UIViewController? {
+        return self.stubbedPresentingViewController
+    }
+
+    init(offering: Offering) {
+        super.init(
+            content: .offering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: false,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
+        self.dismissCallCount += 1
+        completion?()
+    }
+
+}
+
+#endif
 
 private final class MockCheckpointPresenterDelegate: CheckpointPresentationDelegate {
 

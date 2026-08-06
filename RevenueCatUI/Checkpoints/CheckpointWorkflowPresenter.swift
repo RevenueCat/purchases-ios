@@ -193,6 +193,13 @@ extension CheckpointWorkflowPresenter: @preconcurrency PaywallViewControllerDele
         self.presentationDidDismiss()
     }
 
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        willPresentExitOfferController exitOfferController: PaywallViewController
+    ) {
+        self.presentedViewController = exitOfferController
+    }
+
 }
 
 #endif
