@@ -47,4 +47,13 @@ import Foundation
         }
     }
 
+    /// Returns the current URL set and replaces it with an empty set.
+    public func take() -> Set<URLWithValidation> {
+        return self.lock.perform {
+            let urls = self.subject.value
+            self.subject.send([])
+            return urls
+        }
+    }
+
 }

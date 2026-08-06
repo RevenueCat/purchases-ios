@@ -79,4 +79,15 @@ final class WebBundleAssetBusTests: TestCase {
         expect(received) == []
     }
 
+    func testTakeReturnsPublishedSetAndClearsCurrentValue() {
+        let urls: Set<URLWithValidation> = [
+            .init(url: URL(string: "https://example.com/a")!, checksum: nil),
+            .init(url: URL(string: "https://example.com/b")!, checksum: nil)
+        ]
+        self.bus.publish(urls)
+
+        expect(self.bus.take()) == urls
+        expect(self.bus.take()) == []
+    }
+
 }
