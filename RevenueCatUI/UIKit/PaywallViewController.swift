@@ -180,10 +180,7 @@ public class PaywallViewController: UIViewController {
 
     #if !os(tvOS)
     /// Creates a paywall view controller from a pre-built workflow context.
-    ///
-    /// For internal use only.
-    @_spi(Internal)
-    public convenience init(
+    convenience init(
         workflowContext: WorkflowContext,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
