@@ -62,10 +62,10 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
         guard self.pendingCalls.isEmpty else {
-            throw Self.operationAlreadyInProgressError
+            throw CheckpointError.operationAlreadyInProgress
         }
         guard let presenter = self.presenterProvider() else {
-            throw Self.missingPresenterError
+            throw CheckpointError.missingPresenter
         }
 
         self.activePresenter = presenter
@@ -103,22 +103,6 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         guard let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
         self.activePresenter = nil
         continuation.resume(throwing: CancellationError())
-    }
-
-    private static var missingPresenterError: PublicError {
-        return NSError(
-            domain: ErrorCode.errorDomain,
-            code: ErrorCode.configurationError.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: "Cannot present checkpoint UI: no presentation handler was supplied."]
-        )
-    }
-
-    private static var operationAlreadyInProgressError: PublicError {
-        return NSError(
-            domain: ErrorCode.errorDomain,
-            code: ErrorCode.operationAlreadyInProgressForProductError.rawValue,
-            userInfo: [NSLocalizedDescriptionKey: "Another checkpoint experience is already being presented."]
-        )
     }
 
 }
