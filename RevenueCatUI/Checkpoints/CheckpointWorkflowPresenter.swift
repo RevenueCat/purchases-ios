@@ -20,10 +20,9 @@ import SwiftUI
 import UIKit
 #endif
 
-/// Presents workflows resolved by the RevenueCat core module.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
-@_spi(Internal) public final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenting {
+final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
     struct PresentedWorkflow: Identifiable {
         let id: String
@@ -39,8 +38,7 @@ import UIKit
     private weak var presentedViewController: UIViewController?
     #endif
 
-    /// Creates a checkpoint workflow presenter.
-    public override init() {
+    override init() {
         self.callStore = CheckpointCallStore()
         self.presentationHandler = nil
         super.init()
@@ -195,7 +193,7 @@ private enum WorkflowError: LocalizedError {
 extension CheckpointWorkflowPresenter: UIAdaptivePresentationControllerDelegate {
 
     /// Reports an interactive dismissal as the workflow's terminal result.
-    public func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
         self.presentationDidDismiss()
     }
 

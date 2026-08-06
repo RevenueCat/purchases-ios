@@ -236,7 +236,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 }
 
 @MainActor
-private final class MockCheckpointWorkflowExecutor: CheckpointWorkflowExecuting {
+private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
     private(set) var executedWorkflows: [ResolvedCheckpointWorkflow] = []
@@ -249,7 +249,7 @@ private final class MockCheckpointWorkflowExecutor: CheckpointWorkflowExecuting 
 }
 
 @MainActor
-private final class MockCheckpointPresenter: CheckpointPresenting {
+private final class MockCheckpointPresenter: CheckpointPresenter {
 
     struct Presentation {
         let callID: String

@@ -16,14 +16,14 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 @MainActor
-protocol CheckpointWorkflowExecuting: AnyObject {
+protocol CheckpointExecutor: AnyObject {
 
     func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome
 
 }
 
 @MainActor
-protocol CheckpointPresenting: AnyObject {
+protocol CheckpointPresenter: AnyObject {
 
     func present(
         callID: String,
@@ -41,17 +41,22 @@ protocol CheckpointPresentationDelegate: AnyObject {
 
 /// Executes a resolved workflow using RevenueCatUI's checkpoint presenter.
 @MainActor
-final class CheckpointWorkflowExecutor: CheckpointWorkflowExecuting, CheckpointPresentationDelegate {
+final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentationDelegate {
 
-    typealias PresenterProvider = @MainActor () -> CheckpointPresenting?
+    typealias PresenterProvider = @MainActor () -> CheckpointPresenter?
 
     private typealias Continuation = CheckedContinuation<CheckpointPaywallOutcome, Error>
 
     private var pendingCalls: [String: Continuation] = [:]
-    private var activePresenter: CheckpointPresenting?
+    private var activePresenter: CheckpointPresenter?
     private let presenterProvider: PresenterProvider
 
-    init(presenterProvider: @escaping PresenterProvider = CheckpointPresenterFactory.makePresenter) {
+    init(presenterProvider: @escaping PresenterProvider = {
+        guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) else {
+            return nil
+        }
+        return CheckpointWorkflowPresenter()
+    }) {
         self.presenterProvider = presenterProvider
     }
 

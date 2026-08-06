@@ -18,8 +18,6 @@ import Foundation
 /// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
 final class CheckpointsManager {
 
-    typealias ResolveCheckpoint = (String, CheckpointParams) async throws -> CheckpointResolution
-
     var listener: CheckpointListener? {
         get {
             self.listenerLock.lock()
@@ -35,12 +33,17 @@ final class CheckpointsManager {
 
     private let listenerLock = NSLock()
     private var storedListener: CheckpointListener?
-    private let resolveCheckpoint: ResolveCheckpoint
-    private var executor: CheckpointWorkflowExecuting?
+    private let resolveCheckpoint: (String, CheckpointParams) async throws -> CheckpointResolution
+    @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
+    init(resolveCheckpoint: @escaping (String, CheckpointParams) async throws -> CheckpointResolution) {
+        self.resolveCheckpoint = resolveCheckpoint
+    }
+
+    @MainActor
     init(
-        resolveCheckpoint: @escaping ResolveCheckpoint,
-        executor: CheckpointWorkflowExecuting? = nil
+        resolveCheckpoint: @escaping (String, CheckpointParams) async throws -> CheckpointResolution,
+        executor: CheckpointExecutor
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.executor = executor
@@ -78,9 +81,7 @@ final class CheckpointsManager {
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .workflow(workflow):
-            let executor = self.executor ?? CheckpointWorkflowExecutor()
-            self.executor = executor
-            let outcome = try await executor.execute(workflow)
+            let outcome = try await self.executor.execute(workflow)
             result = CheckpointPaywallPresentedResult(
                 checkpoint: checkpoint,
                 paywallOutcome: outcome

@@ -20,10 +20,6 @@ import XCTest
 @MainActor
 final class CheckpointWorkflowPresenterTests: TestCase {
 
-    func testFactoryCreatesPresenterDirectly() {
-        XCTAssertTrue(CheckpointPresenterFactory.makePresenter() is CheckpointWorkflowPresenter)
-    }
-
     func testPresenterStagesOutcomeUntilPresentationFinishesDismissing() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
