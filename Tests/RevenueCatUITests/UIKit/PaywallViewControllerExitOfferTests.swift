@@ -99,6 +99,71 @@ final class PaywallViewControllerExitOfferTests: TestCase {
         )
     }
 
+    // MARK: - Exit offer dismissal
+
+    // The exit-offer controller is created and presented by the SDK, so the SDK has to dismiss it.
+    // Forwarding to the host's handler alone strands the exit offer whenever that handler dismisses
+    // its own captured controller instead of the one it is handed — a common shape, since the host
+    // wrote it for the paywall it presented itself.
+    func testExitOfferIsDismissedEvenWhenHostHandlerIgnoresTheGivenController() {
+        var hostHandlerCallCount = 0
+        let handler = PaywallViewController.exitOfferDismissRequestedHandler(
+            originalHandler: { _ in
+                // Host dismisses whatever it captured for the first paywall; the argument is ignored.
+                hostHandlerCallCount += 1
+            }
+        )
+
+        let exitOffer = DismissRecordingPaywallViewController(offering: Self.makeOffering(identifier: "exit"))
+        handler(exitOffer)
+
+        expect(exitOffer.dismissCallCount).to(
+            equal(1),
+            description: "the SDK must dismiss the exit offer controller it presented"
+        )
+        expect(hostHandlerCallCount).to(
+            equal(1),
+            description: "the host handler must still be called, so existing close callbacks keep firing"
+        )
+    }
+
+    func testExitOfferIsDismissedWhenHostHasNoHandler() {
+        let handler = PaywallViewController.exitOfferDismissRequestedHandler(originalHandler: nil)
+
+        let exitOffer = DismissRecordingPaywallViewController(offering: Self.makeOffering(identifier: "exit"))
+        handler(exitOffer)
+
+        expect(exitOffer.dismissCallCount).to(equal(1))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+private final class DismissRecordingPaywallViewController: PaywallViewController {
+
+    private(set) var dismissCallCount = 0
+
+    init(offering: Offering) {
+        super.init(
+            content: .offering(offering),
+            fonts: DefaultPaywallFontProvider(),
+            displayCloseButton: false,
+            shouldBlockTouchEvents: false,
+            performPurchase: nil,
+            performRestore: nil,
+            dismissRequestedHandler: nil
+        )
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override func dismiss(animated flag: Bool, completion: (() -> Void)?) {
+        self.dismissCallCount += 1
+        completion?()
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
