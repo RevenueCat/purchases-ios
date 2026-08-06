@@ -159,7 +159,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, *)
-extension CheckpointWorkflowPresenter: @preconcurrency PaywallViewControllerDelegate {
+extension CheckpointWorkflowPresenter: PaywallViewControllerDelegate {
 
     func paywallViewController(
         _ controller: PaywallViewController,
