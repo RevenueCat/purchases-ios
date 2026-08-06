@@ -46,6 +46,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
     let safeAreaInsets: EdgeInsets
     let onSheetContentAppear: (() -> Void)?
 
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+
     @State private var parentHeight: CGFloat?
 
     var sheetHeight: CGFloat? {
@@ -96,6 +98,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             bottom: safeAreaInsets.bottom,
                             trailing: 0
                         )
+                    )
+                    // Dismissal in here closes the sheet, so a `navigate_back` button must not
+                    // inherit the workflow's back stack and call itself "Go back".
+                    .environment(
+                        \.workflowRenderingContext,
+                        self.workflowRenderingContext.withoutBackNavigation()
                     )
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)

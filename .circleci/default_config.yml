@@ -1526,6 +1526,28 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  run-paywall-accessibility-ui-tests:
+    description: "Assert paywall accessibility labels against the real accessibility tree"
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace:
+          query: "PaywallFixturesUITests"
+      - run:
+          name: Run paywall accessibility UI tests
+          command: |
+            bundle exec fastlane paywall_accessibility_ui_tests
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output
+
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
@@ -2393,6 +2415,8 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      # Needs no context: the paywall under test is a local sample, so no API key is involved.
+      - run-paywall-accessibility-ui-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
