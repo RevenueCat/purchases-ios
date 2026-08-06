@@ -77,6 +77,7 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
+    case sk2_queue_receipt_post_waiting_for_purchase(productID: String)
     case transaction_poster_handling_transaction(transactionID: String,
                                                  productID: String,
                                                  transactionDate: Date,
@@ -321,6 +322,10 @@ extension PurchaseStrings: LogMessage {
 
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
+
+        case let .sk2_queue_receipt_post_waiting_for_purchase(productID):
+            return "StoreKit.Transaction.updates: waiting for in-flight purchase receipt post to finish " +
+            "before posting queue transaction for product '\(productID)'"
 
         case let .transaction_poster_handling_transaction(transactionID,
                                                           productID,
