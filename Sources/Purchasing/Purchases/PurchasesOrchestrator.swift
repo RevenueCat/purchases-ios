@@ -77,7 +77,7 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
-    private let checkpointListenerStorage = Atomic<CheckpointListener?>(nil)
+    private let checkpointCoordinatorStorage = Atomic<AnyObject?>(nil)
 
     let notificationCenter: NotificationCenter
 
@@ -273,33 +273,9 @@ final class PurchasesOrchestrator {
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
-    var checkpointListenerInternal: CheckpointListener? {
-        get { self.checkpointListenerStorage.value }
-        set { self.checkpointListenerStorage.value = newValue }
-    }
-
-    func checkpoint(
-        identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
-    ) {
-        completion(.failure(Self.unsupportedCheckpointError.asPublicError))
-    }
-
-    func checkpoint(
-        identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?
-    ) async throws -> CheckpointResult {
-        throw Self.unsupportedCheckpointError
-    }
-
-    private static var unsupportedCheckpointError: PurchasesError {
-        return PurchasesError(
-            error: .unsupportedError,
-            userInfo: [NSLocalizedDescriptionKey: "Checkpoints are not implemented yet."]
-        )
+    var checkpointCoordinatorObject: AnyObject? {
+        get { self.checkpointCoordinatorStorage.value }
+        set { self.checkpointCoordinatorStorage.value = newValue }
     }
 
     deinit {

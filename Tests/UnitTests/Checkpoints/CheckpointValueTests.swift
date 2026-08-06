@@ -54,4 +54,12 @@ final class CheckpointValueTests: TestCase {
         XCTAssertNil(CheckpointValue(foundationValue: Date()))
     }
 
+    func testParamsPreserveValueEqualityAndHashing() {
+        let firstParams = CheckpointParams(customProperties: ["name": "Rick"])
+        let secondParams = CheckpointParams(customProperties: ["name": "Rick"])
+
+        XCTAssertEqual(firstParams, secondParams)
+        XCTAssertEqual(Set([firstParams, secondParams]).count, 1)
+    }
+
 }

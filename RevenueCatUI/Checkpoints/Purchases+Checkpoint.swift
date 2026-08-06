@@ -19,8 +19,8 @@ import Foundation
 
     /// Global listener for checkpoint activity.
     var checkpointListener: CheckpointListener? {
-        get { return self.checkpointListenerInternal }
-        set { self.checkpointListenerInternal = newValue }
+        get { return self.checkpointCoordinator.listener }
+        set { self.checkpointCoordinator.listener = newValue }
     }
 
     /// Registers that a checkpoint was hit.
@@ -36,12 +36,7 @@ import Foundation
         params: CheckpointParams = .init(),
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
-        self.performCheckpoint(
-            identifier: identifier,
-            params: params,
-            presenter: nil,
-            completion: completion
-        )
+        completion(.failure(Self.checkpointUnavailableError))
     }
 
     /// Registers that a checkpoint was hit.
@@ -57,11 +52,35 @@ import Foundation
         _ identifier: String,
         params: CheckpointParams = .init()
     ) async throws -> CheckpointResult {
-        return try await self.performCheckpoint(
-            identifier: identifier,
-            params: params,
-            presenter: nil
+        throw Self.checkpointUnavailableError
+    }
+
+}
+
+private extension Purchases {
+
+    var checkpointCoordinator: CheckpointCoordinator {
+        if let coordinator = self.checkpointCoordinatorObject as? CheckpointCoordinator {
+            return coordinator
+        }
+
+        let coordinator = CheckpointCoordinator()
+        self.checkpointCoordinatorObject = coordinator
+        return coordinator
+    }
+
+    static var checkpointUnavailableError: PublicError {
+        return NSError(
+            domain: "RevenueCat.Checkpoints",
+            code: 0,
+            userInfo: [NSLocalizedDescriptionKey: "Checkpoints are not implemented yet."]
         )
     }
+
+}
+
+private final class CheckpointCoordinator {
+
+    var listener: CheckpointListener?
 
 }

@@ -1362,7 +1362,6 @@
 		F5FCD3FC27DA2034003BDC04 /* PriceFormatterProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FCD3FB27DA2034003BDC04 /* PriceFormatterProviderTests.swift */; };
 		FA1CDF68EA3C6B2B9F77D5A6 /* Operators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 297C50EBB2B69A3F77D13E69 /* Operators.swift */; };
 		FA360650C0B87331F2EFF527 /* Checkpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346145E8EF291B0E8BB68D12 /* Checkpoint.swift */; };
-		73A610000000000000000001 /* Checkpoint+ObjectiveC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000011 /* Checkpoint+ObjectiveC.swift */; };
 		73A610000000000000000002 /* Checkpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoint.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoint.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoint.swift */; };
 		73A610000000000000000004 /* Purchases+CheckpointObjectiveC.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* Purchases+CheckpointObjectiveC.swift */; };
@@ -1927,7 +1926,6 @@
 		323A476D8518423CBF843BE1 /* WorkflowStepEventCoordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventCoordinator.swift; sourceTree = "<group>"; };
 		33FFC8744F2BAE7BD8889A4C /* Pods_RevenueCat.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RevenueCat.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		346145E8EF291B0E8BB68D12 /* Checkpoint.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Checkpoint.swift; sourceTree = "<group>"; };
-		73A610000000000000000011 /* Checkpoint+ObjectiveC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Checkpoint+ObjectiveC.swift"; sourceTree = "<group>"; };
 		73A610000000000000000012 /* Checkpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoint.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoint.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoint.swift"; sourceTree = "<group>"; };
 		73A610000000000000000014 /* Purchases+CheckpointObjectiveC.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+CheckpointObjectiveC.swift"; sourceTree = "<group>"; };
@@ -3410,7 +3408,6 @@
 		73A610000000000000000020 /* Checkpoints */ = {
 			isa = PBXGroup;
 			children = (
-				73A610000000000000000011 /* Checkpoint+ObjectiveC.swift */,
 				73A610000000000000000012 /* Checkpoint.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoint.swift */,
 				73A610000000000000000014 /* Purchases+CheckpointObjectiveC.swift */,
@@ -8170,7 +8167,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				73A610000000000000000001 /* Checkpoint+ObjectiveC.swift in Sources */,
 				73A610000000000000000002 /* Checkpoint.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoint.swift in Sources */,
 				73A610000000000000000004 /* Purchases+CheckpointObjectiveC.swift in Sources */,

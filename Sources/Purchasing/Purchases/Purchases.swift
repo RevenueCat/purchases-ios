@@ -124,10 +124,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
-    /// Internal storage used by RevenueCatUI's checkpoint listener property.
-    @_spi(Internal) public var checkpointListenerInternal: CheckpointListener? {
-        get { self.purchasesOrchestrator.checkpointListenerInternal }
-        set { self.purchasesOrchestrator.checkpointListenerInternal = newValue }
+    /// Opaque per-instance storage used by RevenueCatUI's checkpoint coordinator.
+    @_spi(Internal) public var checkpointCoordinatorObject: AnyObject? {
+        get { self.purchasesOrchestrator.checkpointCoordinatorObject }
+        set { self.purchasesOrchestrator.checkpointCoordinatorObject = newValue }
     }
 
     private let operationDispatcher: OperationDispatcher
@@ -1060,36 +1060,6 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
-    }
-
-    /// Internal checkpoint engine entry point used by RevenueCatUI.
-    @_spi(Internal)
-    func performCheckpoint(
-        identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
-    ) {
-        self.purchasesOrchestrator.checkpoint(
-            identifier: identifier,
-            params: params,
-            presenter: presenter,
-            completion: completion
-        )
-    }
-
-    /// Internal async checkpoint engine entry point used by RevenueCatUI.
-    @_spi(Internal)
-    func performCheckpoint(
-        identifier: String,
-        params: CheckpointParams,
-        presenter: CheckpointEnginePresenter?
-    ) async throws -> CheckpointResult {
-        return try await self.purchasesOrchestrator.checkpoint(
-            identifier: identifier,
-            params: params,
-            presenter: presenter
-        )
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {

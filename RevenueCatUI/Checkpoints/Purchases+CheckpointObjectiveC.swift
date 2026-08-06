@@ -17,20 +17,20 @@ import Foundation
 
 #if ENABLE_CHECKPOINTS_OBJC
 
-public extension Purchases {
+@_spi(Internal) public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
     @_disfavoredOverload
     @objc(checkpointWithIdentifier:params:completion:)
     func checkpoint(
         _ identifier: String,
-        params: ObjCCheckpointParams?,
-        completion: @escaping (ObjCCheckpointResult?, PublicError?) -> Void
+        params: CheckpointParams?,
+        completion: @escaping (CheckpointResult?, PublicError?) -> Void
     ) {
-        self.checkpoint(identifier, params: params?.swiftValue ?? .init()) { result in
+        self.checkpoint(identifier, params: params ?? .init()) { result in
             switch result {
             case let .success(result):
-                completion(.wrapping(result), nil)
+                completion(result, nil)
             case let .failure(error):
                 completion(nil, error)
             }
