@@ -62,8 +62,11 @@ extension E2ETestFlowView {
                                 let identifier = package.identifier
                                 Task { @MainActor in
                                     self.purchaseStartedPackage = identifier
-                                    // Declining keeps the StoreKit sheet from covering the label below.
+                                    // Declining keeps StoreKit out of the flow entirely.
                                     resume(shouldProceed: false)
+                                    // Declining does not dismiss the paywall, and while it is up it
+                                    // covers the label the flow asserts on.
+                                    self.presentPaywall = false
                                 }
                             }
                     }
