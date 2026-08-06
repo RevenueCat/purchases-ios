@@ -95,6 +95,39 @@ final class TabsWorkflowDefaultPackageTests: TestCase {
         XCTAssertEqual(packageContext.package?.identifier, annual.identifier)
     }
 
+    /// A switch is a tabs component with a `.toggle` control, so it runs through the same view and
+    /// is affected by the same bug and the same fix.
+    func testTogglingASwitchSelectsTheOtherSideOwnDefaultPackage() throws {
+        let (viewModel, tabControlContext, offering) = try Self.makeTabsViewModel(controlType: .toggle)
+        let annual = try XCTUnwrap(offering.package(identifier: "annual"))
+        let onetimeFirst = try XCTUnwrap(offering.package(identifier: "onetime1"))
+
+        let packageContext = PackageContext(package: nil, variableContext: .init(packages: []))
+        let (window, _) = Self.host(
+            Self.tabsView(
+                viewModel: viewModel,
+                packageContext: packageContext,
+                workflowDefaultPackage: annual,
+                tabControlContext: tabControlContext
+            )
+        )
+        defer {
+            window.isHidden = true
+            window.rootViewController = nil
+        }
+
+        XCTAssertEqual(packageContext.package?.identifier, annual.identifier)
+
+        tabControlContext.selectedTabId = Self.tab2Id
+        Self.settle(window)
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            onetimeFirst.identifier,
+            "Flipping the switch must select the other side's own default package"
+        )
+    }
+
 }
 
 // MARK: - Helpers
@@ -103,7 +136,9 @@ final class TabsWorkflowDefaultPackageTests: TestCase {
 private extension TabsWorkflowDefaultPackageTests {
 
     /// Tab 1: monthly + annual (annual is the default). Tab 2: onetime1 (default) + onetime2.
-    static func makeTabsViewModel() throws -> (TabsComponentViewModel, TabControlContext, Offering) {
+    static func makeTabsViewModel(
+        controlType: PaywallComponent.TabsComponent.TabControl.TabControlType = .buttons
+    ) throws -> (TabsComponentViewModel, TabControlContext, Offering) {
         let offering = Offering(
             identifier: "test_offering",
             serverDescription: "",
@@ -116,13 +151,31 @@ private extension TabsWorkflowDefaultPackageTests {
             webCheckoutUrl: nil
         )
 
-        let tabsComponent = PaywallComponent.TabsComponent(
-            control: .init(
-                type: .buttons,
-                stack: PaywallComponent.StackComponent(components: [
+        let controlStack: PaywallComponent.StackComponent = {
+            switch controlType {
+            case .toggle:
+                // A switch flips between the first two tabs.
+                return PaywallComponent.StackComponent(components: [
+                    .tabControlToggle(.init(
+                        defaultValue: false,
+                        thumbColorOn: .init(light: .hex("#000000")),
+                        thumbColorOff: .init(light: .hex("#ffffff")),
+                        trackColorOn: .init(light: .hex("#000000")),
+                        trackColorOff: .init(light: .hex("#ffffff"))
+                    ))
+                ])
+            case .buttons:
+                return PaywallComponent.StackComponent(components: [
                     .tabControlButton(.init(tabId: Self.tab1Id, stack: Self.textStack("Subscribe"))),
                     .tabControlButton(.init(tabId: Self.tab2Id, stack: Self.textStack("One-off")))
                 ])
+            }
+        }()
+
+        let tabsComponent = PaywallComponent.TabsComponent(
+            control: .init(
+                type: controlType,
+                stack: controlStack
             ),
             tabs: [
                 .init(id: Self.tab1Id, stack: PaywallComponent.StackComponent(components: [
