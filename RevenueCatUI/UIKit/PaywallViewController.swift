@@ -529,6 +529,19 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    /// Dismissal handling for the exit-offer controller. The SDK presents that controller itself, so it
+    /// also dismisses it: the host's handler was written for the paywall the host presented, and one that
+    /// dismisses its own captured controller instead of the one it is handed would strand the exit offer
+    /// on screen. The handler is still called afterwards so existing close callbacks keep firing.
+    static func exitOfferDismissRequestedHandler(
+        originalHandler: ((PaywallViewController) -> Void)?
+    ) -> (PaywallViewController) -> Void {
+        return { controller in
+            controller.dismiss(animated: true)
+            originalHandler?(controller)
+        }
+    }
+
     /// Presents the exit offer paywall as a sheet.
     private func presentExitOffer(for offering: Offering) {
         Logger.debug(Strings.presentingExitOffer(offering.identifier))
@@ -574,14 +587,9 @@ public class PaywallViewController: UIViewController {
                 shouldBlockTouchEvents: shouldBlock,
                 performPurchase: performPurchase,
                 performRestore: performRestore,
-                dismissRequestedHandler: { controller in
-                    // When exit offer is dismissed, call the original handler
-                    if let handler = originalDismissHandler {
-                        handler(controller)
-                    } else {
-                        controller.dismiss(animated: true)
-                    }
-                },
+                dismissRequestedHandler: Self.exitOfferDismissRequestedHandler(
+                    originalHandler: originalDismissHandler
+                ),
                 promoOfferCache: self.promoOfferCache
             )
 

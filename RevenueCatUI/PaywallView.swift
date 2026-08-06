@@ -138,6 +138,10 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         offering: Offering,
+        // Supplying this skips the `Purchases.shared.customerInfo()` fetch, whose failure would
+        // otherwise render the default paywall. Lets a host render a paywall with no configured
+        // project, which is how the fixture app in `Projects/PaywallFixtures` works.
+        customerInfo: CustomerInfo? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
@@ -150,6 +154,7 @@ public struct PaywallView: View {
         self.init(
             configuration: .init(
                 offering: offering,
+                customerInfo: customerInfo,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 introEligibility: introEligibility,
