@@ -655,6 +655,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(
                             appUserID: identityManager.currentAppUserID,
+                            trackDiagnostics: false,
                             completion: { result in continuation.resume(with: result) }
                         )
                     }
