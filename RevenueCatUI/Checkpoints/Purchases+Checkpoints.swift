@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Purchases+Checkpoint.swift
+//  Purchases+Checkpoints.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -56,6 +56,30 @@ import Foundation
     }
 
 }
+
+#if ENABLE_CHECKPOINTS_OBJC
+@_spi(Internal) public extension Purchases {
+
+    /// Objective-C-compatible checkpoint API.
+    @_disfavoredOverload
+    @objc(checkpointWithIdentifier:params:completion:)
+    func checkpoint(
+        _ identifier: String,
+        params: CheckpointParams?,
+        completion: @escaping (CheckpointResult?, PublicError?) -> Void
+    ) {
+        self.checkpoint(identifier, params: params ?? .init()) { result in
+            switch result {
+            case let .success(result):
+                completion(result, nil)
+            case let .failure(error):
+                completion(nil, error)
+            }
+        }
+    }
+
+}
+#endif
 
 private extension Purchases {
 

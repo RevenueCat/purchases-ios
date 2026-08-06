@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  Checkpoint.swift
+//  Checkpoints.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -146,7 +146,23 @@ extension CheckpointValue {
         super.init()
     }
 
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? CheckpointParams else { return false }
+        return self.customProperties == other.customProperties
+    }
+
+    public override var hash: Int { return self.customProperties.hashValue }
+
+    /// A debug description of the checkpoint parameters.
+    public override var description: String {
+        return "CheckpointParams(customProperties=\(self.customProperties))"
+    }
+
+}
+
 #if ENABLE_CHECKPOINTS_OBJC
+@objc extension CheckpointParams {
+
     /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
     @objc(initWithCustomProperties:)
     public convenience init(objcCustomProperties: NSDictionary) {
@@ -167,21 +183,9 @@ extension CheckpointValue {
     public var objcCustomProperties: NSDictionary {
         return self.customProperties.mapValues { $0.foundationValue } as NSDictionary
     }
-#endif
-
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointParams else { return false }
-        return self.customProperties == other.customProperties
-    }
-
-    public override var hash: Int { return self.customProperties.hashValue }
-
-    /// A debug description of the checkpoint parameters.
-    public override var description: String {
-        return "CheckpointParams(customProperties=\(self.customProperties))"
-    }
 
 }
+#endif
 
 private enum CheckpointStrings: LogMessage {
 
