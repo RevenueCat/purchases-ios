@@ -9,6 +9,9 @@ This base app demonstrates the application-facing integration:
 - handling checkpoint result subclasses and paywall outcomes;
 - displaying call results and a live analytics event log.
 
+The generated app shares PaywallsTester's bundle identifier and `Products.storekit` configuration so it can use
+the same local in-app purchase products and RevenueCat project.
+
 Generate the project from the repository root:
 
 ```sh

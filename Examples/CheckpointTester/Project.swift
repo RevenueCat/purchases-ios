@@ -15,6 +15,9 @@
 import ProjectDescription
 import ProjectDescriptionHelpers
 
+let storeKitConfigurationPath: Path =
+    "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Products.storekit"
+
 let project = Project(
     name: "CheckpointTester",
     organizationName: .revenueCatOrgName,
@@ -25,7 +28,7 @@ let project = Project(
             name: "CheckpointTester",
             destinations: [.iPhone, .iPad],
             product: .app,
-            bundleId: "com.revenuecat.PaywallsTester",
+            bundleId: Environment.paywallsTesterBundleId,
             deploymentTargets: .iOS("16.0"),
             infoPlist: .extendingDefault(
                 with: [
@@ -58,7 +61,10 @@ let project = Project(
             ),
             runAction: .runAction(
                 configuration: "Debug",
-                executable: "CheckpointTester"
+                executable: "CheckpointTester",
+                options: .options(
+                    storeKitConfigurationPath: storeKitConfigurationPath
+                )
             )
         ),
     ]
