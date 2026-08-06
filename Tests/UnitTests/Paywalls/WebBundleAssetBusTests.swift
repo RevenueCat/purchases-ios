@@ -11,7 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
 
-import Combine
+@preconcurrency import Combine
 import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
@@ -36,12 +36,12 @@ final class WebBundleAssetBusTests: TestCase {
         super.tearDown()
     }
 
-    func testLateSubscriberReceivesLastPublishedSet() {
+    func testLateSubscriberReceivesLastPublishedSet() async {
         let urls: Set<URLWithValidation> = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
         ]
-        self.bus.publish(urls)
+        await self.bus.publish(urls)
 
         var received: Set<URLWithValidation>?
         self.bus.publisher
@@ -51,7 +51,7 @@ final class WebBundleAssetBusTests: TestCase {
         expect(received) == urls
     }
 
-    func testPublishingReplacesPreviousValueForSubsequentSubscribers() {
+    func testPublishingReplacesPreviousValueForSubsequentSubscribers() async {
         let first: Set<URLWithValidation> = [
             .init(url: URL(string: "https://example.com/first")!, checksum: nil)
         ]
@@ -59,8 +59,8 @@ final class WebBundleAssetBusTests: TestCase {
             .init(url: URL(string: "https://example.com/second")!, checksum: nil)
         ]
 
-        self.bus.publish(first)
-        self.bus.publish(second)
+        await self.bus.publish(first)
+        await self.bus.publish(second)
 
         var received: Set<URLWithValidation>?
         self.bus.publisher
@@ -79,15 +79,45 @@ final class WebBundleAssetBusTests: TestCase {
         expect(received) == []
     }
 
-    func testTakeReturnsPublishedSetAndClearsCurrentValue() {
+    func testTakeReturnsPublishedSetAndClearsCurrentValue() async {
         let urls: Set<URLWithValidation> = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
         ]
-        self.bus.publish(urls)
+        let bus = self.bus!
+        await bus.publish(urls)
 
-        expect(self.bus.take()) == urls
-        expect(self.bus.take()) == []
+        let first = await bus.take()
+        let second = await bus.take()
+        expect(first) == urls
+        expect(second) == []
+    }
+
+    func testSubscriberCanPublishInResponseToValue() async {
+        let first: Set<URLWithValidation> = [
+            .init(url: URL(string: "https://example.com/first")!, checksum: nil)
+        ]
+        let second: Set<URLWithValidation> = [
+            .init(url: URL(string: "https://example.com/second")!, checksum: nil)
+        ]
+        let receivedSecond = self.expectation(description: "Received second publication")
+        let bus = self.bus!
+
+        bus.publisher
+            .dropFirst()
+            .sink { urls in
+                if urls == first {
+                    Task {
+                        await bus.publish(second)
+                    }
+                } else if urls == second {
+                    receivedSecond.fulfill()
+                }
+            }
+            .store(in: &self.cancellables)
+
+        await bus.publish(first)
+        await self.fulfillment(of: [receivedSecond], timeout: 1)
     }
 
 }

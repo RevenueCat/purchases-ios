@@ -19,41 +19,36 @@ import Foundation
 /// Uses a `CurrentValueSubject` so late subscribers (e.g. RevenueCatUI's pool) still receive
 /// the latest set even if they attach after the first warm.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-@_spi(Internal) public final class WebBundleAssetBus: @unchecked Sendable {
+@_spi(Internal) public actor WebBundleAssetBus {
 
     /// Shared bus used across modules. RevenueCatUI can subscribe without a `Purchases` instance.
     public static let shared = WebBundleAssetBus()
 
-    private let lock = Lock()
     private let subject: CurrentValueSubject<Set<URLWithValidation>, Never>
 
     /// Emits the latest set of web-view entry URLs. New subscribers immediately receive the
     /// current value (initially an empty set).
-    public var publisher: AnyPublisher<Set<URLWithValidation>, Never> {
-        return self.subject.eraseToAnyPublisher()
-    }
+    public nonisolated let publisher: AnyPublisher<Set<URLWithValidation>, Never>
 
     /// Creates a bus. Prefer ``shared`` outside of tests.
     public init() {
-        self.subject = CurrentValueSubject([])
+        let subject = CurrentValueSubject<Set<URLWithValidation>, Never>([])
+        self.subject = subject
+        self.publisher = subject.eraseToAnyPublisher()
     }
 
     /// Replaces the current URL set and notifies subscribers.
     ///
     /// Callers are responsible for validating URLs (e.g. HTTPS) before publishing.
     public func publish(_ urls: Set<URLWithValidation>) {
-        self.lock.perform {
-            self.subject.send(urls)
-        }
+        self.subject.send(urls)
     }
 
     /// Returns the current URL set and replaces it with an empty set.
     public func take() -> Set<URLWithValidation> {
-        return self.lock.perform {
-            let urls = self.subject.value
-            self.subject.send([])
-            return urls
-        }
+        let urls = self.subject.value
+        self.subject.send([])
+        return urls
     }
 
 }
