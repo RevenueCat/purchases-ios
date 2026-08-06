@@ -117,6 +117,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.paywallStateStore)
     private var stateStore
 
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
+
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -211,7 +214,10 @@ struct LoadedTabsComponentView: View {
                             parentPackage: parentPackageContext.package,
                             tabPackages: tabViewModel.packages,
                             workflowDefaultPackage: workflowDefaultPackage,
-                            tabDefaultPackage: tabViewModel.defaultSelectedPackage
+                            // Provisional: view `init` has no environment, so variable/eligibility rules
+                            // can't be evaluated yet. `reconcileSelection` corrects this once the body
+                            // resolves the real context.
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional)
                         ),
                         variableContext: .init(
                             packages: tabViewModel.packages,
@@ -226,6 +232,35 @@ struct LoadedTabsComponentView: View {
                 }
             }
         ))
+    }
+
+    private var packageSelectionContext: PackageSelectionContext {
+        return PackageSelectionContext(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                introOfferEligibilityContext.isEligible(package: $0)
+            },
+            isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+            }
+        )
+    }
+
+    /// Moves the selection off a package that isn't rendering.
+    ///
+    /// The selection seeded in `init` can't evaluate rules that depend on custom variables or offer
+    /// eligibility, and eligibility lands after first render, so the seeded package may turn out to be
+    /// hidden.
+    private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
+        guard let resolved = tabViewModel.reconciledSelection(
+            current: context.package,
+            in: self.packageSelectionContext
+        ) else {
+            return
+        }
+
+        context.update(package: resolved, variableContext: context.variableContext)
     }
 
     /// Determines the initial package selection for a tab that has its own packages.
@@ -281,9 +316,17 @@ struct LoadedTabsComponentView: View {
             .environmentObject(tierPackageContext)
             .environment(
                 \.planSelectionDefaultPackage,
-                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+                self.workflowDefaultPackage
+                    ?? activeTabViewModel.defaultSelectedPackage(in: self.packageSelectionContext)
             )
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
+            .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
             .onAppear {
+                // The provisional selection made in `init` couldn't evaluate variable/eligibility rules.
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 if !self.viewModel.didSeedInitialState {
                     self.viewModel.didSeedInitialState = true
                     // Seed the store with the initial selection so components that react to the tab
@@ -326,7 +369,8 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: self.workflowDefaultPackage
+                        ?? newTabViewModel.defaultSelectedPackage(in: self.packageSelectionContext)
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(

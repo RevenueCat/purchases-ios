@@ -63,6 +63,7 @@ enum Strings {
     case paywall_could_not_find_localization(String)
     case paywall_could_not_find_package(String)
     case paywall_could_not_find_default_package
+    case paywall_default_package_not_visible(defaultPackage: String, selectedPackage: String)
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
@@ -254,6 +255,11 @@ extension Strings: CustomStringConvertible {
             return "Could not find default package for paywall. Using first package instead. " +
             "This package will not show in the paywall. This could be caused by a package that doesn't have a " +
             "product on this platform or the product might not be available for this region."
+
+        case let .paywall_default_package_not_visible(defaultPackage, selectedPackage):
+            return "Package '\(defaultPackage)' is selected by default but is hidden by a visibility " +
+            "rule, so '\(selectedPackage)' was selected instead. Check the visibility rules on the " +
+            "default package if this isn't what you expected."
 
         case .paywall_could_not_find_any_packages:
             return "Could not find any packages for the paywall"
