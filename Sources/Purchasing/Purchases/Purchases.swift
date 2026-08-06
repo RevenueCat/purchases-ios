@@ -124,10 +124,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
-    /// Opaque per-instance storage used by RevenueCatUI's checkpoint coordinator.
-    @_spi(Internal) public var checkpointCoordinatorObject: AnyObject? {
-        get { self.purchasesOrchestrator.checkpointCoordinatorObject }
-        set { self.purchasesOrchestrator.checkpointCoordinatorObject = newValue }
+    /// Opaque per-instance storage used by RevenueCatUI's checkpoint APIs.
+    @_spi(Internal) public var checkpointStorageObject: AnyObject? {
+        get { self.purchasesOrchestrator.checkpointStorageObject }
+        set { self.purchasesOrchestrator.checkpointStorageObject = newValue }
     }
 
     private let operationDispatcher: OperationDispatcher

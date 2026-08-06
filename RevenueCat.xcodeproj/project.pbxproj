@@ -1364,7 +1364,7 @@
 		FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346145E8EF291B0E8BB68D12 /* Checkpoints.swift */; };
 		73A610000000000000000002 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoints.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoints.swift */; };
-		73A610000000000000000004 /* CheckpointPaywallResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointPaywallResults.swift */; };
+		73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointPaywallResult.swift */; };
 		73A620000000000000000001 /* CheckpointValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A620000000000000000011 /* CheckpointValueTests.swift */; };
 		73A630000000000000000001 /* NSNumber+JSON.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A630000000000000000011 /* NSNumber+JSON.swift */; };
 		FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */; };
@@ -1928,7 +1928,7 @@
 		346145E8EF291B0E8BB68D12 /* Checkpoints.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000012 /* Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoints.swift"; sourceTree = "<group>"; };
-		73A610000000000000000014 /* CheckpointPaywallResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPaywallResults.swift; sourceTree = "<group>"; };
+		73A610000000000000000014 /* CheckpointPaywallResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPaywallResult.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -3409,7 +3409,7 @@
 			isa = PBXGroup;
 			children = (
 				73A610000000000000000012 /* Checkpoints.swift */,
-				73A610000000000000000014 /* CheckpointPaywallResults.swift */,
+				73A610000000000000000014 /* CheckpointPaywallResult.swift */,
 				73A610000000000000000013 /* Purchases+Checkpoints.swift */,
 			);
 			path = Checkpoints;
@@ -8168,7 +8168,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
-				73A610000000000000000004 /* CheckpointPaywallResults.swift in Sources */,
+				73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */,
 				73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */,
 				88B1BB132C81479F001B7EE5 /* PaywallComponentTypeTransformers.swift in Sources */,
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,

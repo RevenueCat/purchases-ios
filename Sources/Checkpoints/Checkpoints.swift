@@ -20,14 +20,12 @@ import Foundation
 /// adding arbitrary result variants is not part of this type's extensibility contract.
 @_spi(Internal) public enum CheckpointValue: Equatable, Hashable, Sendable {
 
-    /// A string value.
+    // swiftlint:disable missing_docs
     case string(String)
-    /// An integer value.
     case integer(Int64)
-    /// A floating-point value.
     case double(Double)
-    /// A Boolean value.
     case boolean(Bool)
+    // swiftlint:enable missing_docs
 
 }
 

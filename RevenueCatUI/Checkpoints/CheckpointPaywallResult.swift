@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointPaywallResults.swift
+//  CheckpointPaywallResult.swift
 //
 //  Created by Rick van der Linden.
 //

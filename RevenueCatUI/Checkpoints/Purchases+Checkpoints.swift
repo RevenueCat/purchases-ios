@@ -19,8 +19,8 @@ import Foundation
 
     /// Global listener for checkpoint activity.
     var checkpointListener: CheckpointListener? {
-        get { return self.checkpointCoordinator.listener }
-        set { self.checkpointCoordinator.listener = newValue }
+        get { return self.checkpointStorageObject as? CheckpointListener }
+        set { self.checkpointStorageObject = newValue }
     }
 
     /// Registers that a checkpoint was hit.
@@ -83,16 +83,6 @@ import Foundation
 
 private extension Purchases {
 
-    var checkpointCoordinator: CheckpointCoordinator {
-        if let coordinator = self.checkpointCoordinatorObject as? CheckpointCoordinator {
-            return coordinator
-        }
-
-        let coordinator = CheckpointCoordinator()
-        self.checkpointCoordinatorObject = coordinator
-        return coordinator
-    }
-
     static var checkpointUnavailableError: PublicError {
         return NSError(
             domain: "RevenueCat.Checkpoints",
@@ -100,11 +90,5 @@ private extension Purchases {
             userInfo: [NSLocalizedDescriptionKey: "Checkpoints are not implemented yet."]
         )
     }
-
-}
-
-private final class CheckpointCoordinator {
-
-    var listener: CheckpointListener?
 
 }
