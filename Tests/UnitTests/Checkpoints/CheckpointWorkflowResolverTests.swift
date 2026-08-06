@@ -70,11 +70,8 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    func testCheckpointResolvesDisabledWhenWorkflowManagerIsMissing() async throws {
-        let resolver = RandomWorkflowCheckpointResolver(
-            workflowManager: nil,
-            offeringsProvider: { self.offerings }
-        )
+    func testDisabledResolverResolvesDisabled() async throws {
+        let resolver = DisabledCheckpointWorkflowResolver()
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
         XCTAssertEqual(Self.noActionReason(resolution), .disabled)

@@ -34,6 +34,7 @@ func main() -> Int {
     checkPromotionalOfferAPI()
 
     checkPurchasesAPI()
+    checkCheckpointCoreAPI()
 
     checkConfigurationAPI()
 

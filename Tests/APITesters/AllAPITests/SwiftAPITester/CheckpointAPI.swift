@@ -14,9 +14,9 @@
 
 @_spi(Internal) import RevenueCat
 
-func checkCheckpointCoreAPI(_ purchases: Purchases) {
+func checkCheckpointCoreAPI() {
     Task {
-        let resolution: CheckpointResolution = try await purchases.resolveCheckpoint(
+        let resolution: CheckpointResolution = try await Purchases.shared.resolveCheckpoint(
             identifier: "test_checkpoint",
             params: .init()
         )

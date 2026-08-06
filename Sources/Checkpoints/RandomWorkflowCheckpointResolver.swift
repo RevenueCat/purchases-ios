@@ -21,12 +21,12 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
     typealias WorkflowSelector = ([String: String?]) -> (workflowID: String, offeringID: String?)?
 
-    private let workflowManager: WorkflowManager?
+    private let workflowManager: WorkflowManager
     private let offeringsProvider: () async throws -> Offerings
     private let workflowSelector: WorkflowSelector
 
     init(
-        workflowManager: WorkflowManager?,
+        workflowManager: WorkflowManager,
         offeringsProvider: @escaping () async throws -> Offerings,
         workflowSelector: @escaping WorkflowSelector = RandomWorkflowCheckpointResolver.chooseRandomWorkflow
     ) {
@@ -50,18 +50,14 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             break
         }
 
-        guard let workflowManager else {
-            return .noAction(.disabled)
-        }
-
-        let offeringIdByWorkflowId = await workflowManager.offeringIdByWorkflowId()
+        let offeringIdByWorkflowId = await self.workflowManager.offeringIdByWorkflowId()
         guard let selectedWorkflow = self.workflowSelector(offeringIdByWorkflowId) else {
             return .noAction(.configurationUnavailable)
         }
 
         let workflowData: WorkflowDataResult
         do {
-            workflowData = try await workflowManager.getWorkflow(workflowId: selectedWorkflow.workflowID)
+            workflowData = try await self.workflowManager.getWorkflow(workflowId: selectedWorkflow.workflowID)
         } catch {
             Logger.error(error.localizedDescription)
             return .noAction(.configurationUnavailable)
