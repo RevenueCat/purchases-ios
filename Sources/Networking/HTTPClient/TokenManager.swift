@@ -76,11 +76,14 @@ class TokenManager {
         }
     }
 
-    var currentIdentitySource: IdentitySource? {
+    var currentIdentitySources: Array<IdentitySource>? {
         guard let currentIDToken else { return nil }
         guard let jwt = try? JWT(from: currentIDToken) else { return nil }
-        guard let amr = jwt.amr?.first else { return nil }
-        return IdentitySource(amr: amr)
+        return jwt.amr?.compactMap { IdentitySource(amr: $0) }
+    }
+
+    var currentIdentitySource: IdentitySource? {
+        currentIdentitySources?.last
     }
 
     func idToken(for user: String) -> String? {
