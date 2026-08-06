@@ -156,7 +156,7 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-                     checkpointResolver: CheckpointWorkflowResolver = UnavailableCheckpointWorkflowResolver(),
+                     checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
     ) {
@@ -244,7 +244,7 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
-         checkpointResolver: CheckpointWorkflowResolver = UnavailableCheckpointWorkflowResolver(),
+         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {

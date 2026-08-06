@@ -647,17 +647,22 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
-        let checkpointResolver = RandomWorkflowCheckpointResolver(
-            workflowManager: systemInfo.remoteConfigEnabled ? workflowManager : nil,
-            getOfferings: {
-                try await withCheckedThrowingContinuation { continuation in
-                    offeringsManager.offerings(
-                        appUserID: identityManager.currentAppUserID,
-                        completion: { result in continuation.resume(with: result) }
-                    )
+        let checkpointResolver: CheckpointWorkflowResolver
+        if systemInfo.remoteConfigEnabled {
+            checkpointResolver = RandomWorkflowCheckpointResolver(
+                workflowManager: workflowManager,
+                getOfferings: {
+                    try await withCheckedThrowingContinuation { continuation in
+                        offeringsManager.offerings(
+                            appUserID: identityManager.currentAppUserID,
+                            completion: { result in continuation.resume(with: result) }
+                        )
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            checkpointResolver = DisabledCheckpointWorkflowResolver()
+        }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -1075,7 +1080,6 @@ public extension Purchases {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
-    /// Resolves a checkpoint against the current RevenueCat configuration.
     @_spi(Internal)
     func resolveCheckpoint(
         identifier: String,
