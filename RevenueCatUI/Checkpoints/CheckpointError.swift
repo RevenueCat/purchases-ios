@@ -47,7 +47,7 @@ extension CheckpointError: CustomNSError {
         case .missingPresenter:
             return "Cannot present checkpoint UI: no presentation handler was supplied."
         case .operationAlreadyInProgress:
-            return "Another checkpoint experience is already being presented."
+            return "Another checkpoint UI is already being presented."
         case .noPresentationContext:
             return "Unable to locate a view controller for checkpoint presentation."
         }

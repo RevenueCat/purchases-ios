@@ -14,7 +14,6 @@
 
 import Foundation
 @_spi(Internal) import RevenueCat
-import SwiftUI
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
@@ -88,21 +87,6 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.complete(callID: callID)
     }
 
-    private func dismiss(callID: String) {
-
-        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        let viewController = self.presentedViewController
-        if viewController?.presentingViewController != nil {
-            viewController?.dismiss(animated: true) { [weak self] in
-                self?.complete(callID: callID)
-            }
-            return
-        }
-        #endif
-
-        self.complete(callID: callID)
-    }
-
     private func complete(callID: String) {
         guard let call = self.callStore.remove(callID: callID) else { return }
 
@@ -131,31 +115,13 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
             offerings: [offering],
             uiConfig: presentedWorkflow.workflow.uiConfig
         )
-        let rootView = PaywallView(
+        let viewController = PaywallViewController(
             workflowContext: workflowContext,
             displayCloseButton: true
         )
-        .onPurchaseCompleted { [weak self] customerInfo in
-            self?.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
-        }
-        .onRestoreCompleted { [weak self] customerInfo in
-            self?.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
-        }
-        .onPurchaseFailure { [weak self] error in
-            self?.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
-        }
-        .onRestoreFailure { [weak self] error in
-            self?.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
-        }
-        .onRequestedDismissal { [weak self] in
-            guard let self, let callID = self.activeCallID else { return }
-            self.dismiss(callID: callID)
-        }
-
-        let viewController = UIHostingController(rootView: rootView)
+        viewController.delegate = self
         self.presentedViewController = viewController
         presentationContext.present(viewController, animated: true)
-        viewController.presentationController?.delegate = self
         return true
         #else
         return false
@@ -167,10 +133,37 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
 @available(iOS 15.0, macOS 12.0, *)
-extension CheckpointWorkflowPresenter: UIAdaptivePresentationControllerDelegate {
+extension CheckpointWorkflowPresenter: @preconcurrency PaywallViewControllerDelegate {
 
-    /// Reports an interactive dismissal as the workflow's terminal result.
-    func presentationControllerDidDismiss(_ presentationController: UIPresentationController) {
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishPurchasingWith customerInfo: CustomerInfo
+    ) {
+        self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        self.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+    }
+
+    func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         self.presentationDidDismiss()
     }
 
