@@ -332,7 +332,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     var supportsSignatureVerification: Bool {
         switch self {
-        case
+        case .getCustomerInfo,
                 .logIn,
                 .postReceiptData,
                 .health,
@@ -345,8 +345,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .remoteConfig,
                 .rewardVerificationStatus:
             return true
-        case .getCustomerInfo,
-                .getIntroEligibility,
+        case .getIntroEligibility,
                 .postSubscriberAttributes,
                 .postAttributionData,
                 .postAdServicesToken,
