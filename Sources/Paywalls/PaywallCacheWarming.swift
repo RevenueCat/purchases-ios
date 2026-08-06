@@ -129,8 +129,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// IMPORTANT
     /// Video and Web Bundle assets will be warmed here in the future
     /// When done, we should use task groups so we can dispatch things asynchronously
-    /// Though we will need to ensure the task group is configured to proceed when an
-    /// individual task fails. Will do as part of: FUN-2274
+    /// Will do as part of: FUN-2274
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
         guard !self.hasLoadedPaywallAssets else { return }
         self.hasLoadedPaywallAssets = true
