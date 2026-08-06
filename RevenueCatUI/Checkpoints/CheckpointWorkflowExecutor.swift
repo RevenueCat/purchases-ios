@@ -15,6 +15,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// Bridges resolved checkpoint workflows into asynchronous UI outcomes.
 @MainActor
 protocol CheckpointExecutor: AnyObject {
 
@@ -22,6 +23,7 @@ protocol CheckpointExecutor: AnyObject {
 
 }
 
+/// Presents a resolved workflow and reports its terminal outcome through a delegate.
 @MainActor
 protocol CheckpointPresenter: AnyObject {
 
@@ -33,6 +35,7 @@ protocol CheckpointPresenter: AnyObject {
 
 }
 
+/// Receives the final staged outcome after checkpoint UI has fully dismissed.
 protocol CheckpointPresentationDelegate: AnyObject {
 
     func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome)

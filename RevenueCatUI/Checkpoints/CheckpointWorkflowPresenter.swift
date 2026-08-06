@@ -19,6 +19,10 @@ import Foundation
 import UIKit
 #endif
 
+/// Presents resolved checkpoint workflows using RevenueCatUI.
+///
+/// Purchase, restore, and error outcomes are staged as they occur and delivered
+/// only after the presented UI has fully dismissed.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
