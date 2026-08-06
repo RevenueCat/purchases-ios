@@ -443,35 +443,60 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
-    func testOfferingsImageAndVideoPrewarmingDownloadsEachAssetOnce() async throws {
+    func testOfferingsPrewarmingRetainsVideosAfterImagesAreReleased() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
             fileRepository: fileRepository
         )
-        let data = Self.paywallComponentsData(components: [
-            .image(.init(source: Self.cacheWarmingImage("offering-image"))),
-            .video(.init(source: Self.cacheWarmingVideo("offering-video")))
+        let initialOfferings = try Self.createOfferings(components: [
+            .image(.init(source: Self.cacheWarmingImage("initial-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("initial-video")))
         ])
-        let offering = Offering(
-            identifier: Self.offeringIdentifier,
-            serverDescription: "Test",
-            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
-        let offerings = try Self.createOfferings([offering])
+        let replacementOfferings = try Self.createOfferings(components: [
+            .image(.init(source: Self.cacheWarmingImage("replacement-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("replacement-video")))
+        ])
 
-        await cache.warmUpPaywallImagesCache(offerings: offerings)
-        await cache.warmUpPaywallVideosCache(offerings: offerings)
+        await cache.warmUpPaywallImagesCache(offerings: initialOfferings)
+        await cache.warmUpPaywallVideosCache(offerings: replacementOfferings)
 
         let requests = await fileRepository.requests
         XCTAssertEqual(requests.count, 2)
         XCTAssertEqual(Set(requests), [
-            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil),
+            .init(url: Self.cacheWarmingURL("initial-image-low.heic"), checksum: nil),
             .init(
-                url: Self.cacheWarmingURL("offering-video-low.mp4"),
-                checksum: .init(algorithm: .sha256, value: "offering-video-low")
+                url: Self.cacheWarmingURL("initial-video-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "initial-video-low")
+            )
+        ])
+    }
+
+    func testOfferingsPrewarmingRetainsImagesAfterVideosAreReleased() async throws {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let initialOfferings = try Self.createOfferings(components: [
+            .image(.init(source: Self.cacheWarmingImage("initial-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("initial-video")))
+        ])
+        let replacementOfferings = try Self.createOfferings(components: [
+            .image(.init(source: Self.cacheWarmingImage("replacement-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("replacement-video")))
+        ])
+
+        await cache.warmUpPaywallVideosCache(offerings: initialOfferings)
+        await cache.warmUpPaywallImagesCache(offerings: replacementOfferings)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.cacheWarmingURL("initial-image-low.heic"), checksum: nil),
+            .init(
+                url: Self.cacheWarmingURL("initial-video-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "initial-video-low")
             )
         ])
     }
@@ -819,6 +844,20 @@ private extension PaywallCacheWarmingTests {
             revision: 1,
             defaultLocaleIdentifier: "en_US"
         )
+    }
+
+    static func createOfferings(components: [PaywallComponent]) throws -> Offerings {
+        let offering = Offering(
+            identifier: Self.offeringIdentifier,
+            serverDescription: "Test",
+            paywallComponents: .init(
+                uiConfig: Self.emptyUIConfig,
+                data: Self.paywallComponentsData(components: components)
+            ),
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        return try Self.createOfferings([offering])
     }
 
     static func cacheWarmingImage(_ name: String) -> PaywallComponent.ThemeImageUrls {
