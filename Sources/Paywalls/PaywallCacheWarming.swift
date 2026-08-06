@@ -133,8 +133,18 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         guard !self.hasLoadedImages else { return }
         self.hasLoadedImages = true
 
-        let allImageSources = imageAssets(for: offerings)
-        self.releaseCacheAssets(releaseImages: true)
+        let cacheAssets = self.cacheAssets(for: offerings)
+        let imageSources: Set<URLWithValidation>
+        #if !os(tvOS)
+        imageSources = Set(cacheAssets.imageURLs.flatMap(\.sourcesToDownload))
+        #else
+        imageSources = []
+        #endif
+        let v1ImageSources = offerings.allImagesInPaywallsV1.map {
+            URLWithValidation(url: $0, checksum: nil)
+        }
+        let allImageSources = imageSources.union(v1ImageSources)
+        self.releaseCacheAssetsIfFinished()
 
         guard !allImageSources.isEmpty else { return }
 
@@ -162,7 +172,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let cacheAssets = self.cacheAssets(for: offerings)
         let videoURLs = Set(cacheAssets.videoURLs.compactMap(\.lowResURL))
-        self.releaseCacheAssets(releaseVideos: true)
+        self.releaseCacheAssetsIfFinished()
         guard !videoURLs.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
@@ -265,31 +275,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         return cacheAssets
     }
 
-    private func imageAssets(for offerings: Offerings) -> Set<URLWithValidation> {
-        let cacheAssets = self.cacheAssets(for: offerings)
-        let imageSources: Set<URLWithValidation>
-        #if !os(tvOS)
-        imageSources = Set(cacheAssets.imageURLs.flatMap(\.sourcesToDownload))
-        #else
-        imageSources = []
-        #endif
-        let v1ImageSources = offerings.allImagesInPaywallsV1.map {
-            URLWithValidation(url: $0, checksum: nil)
-        }
-        return imageSources.union(v1ImageSources)
-    }
-
-    private func releaseCacheAssets(
-        releaseImages: Bool = false,
-        releaseVideos: Bool = false,
-        releaseWebAssets: Bool = false
-    ) {
-        if let assets = paywallV2CacheAssets {
-            self.paywallV2CacheAssets = CacheAssetCollection(
-                imageURLs: releaseImages ? [] : assets.imageURLs,
-                videoURLs: releaseVideos ? [] : assets.videoURLs,
-                webViewURLs: releaseWebAssets ? [] : assets.webViewURLs
-            )
+    private func releaseCacheAssetsIfFinished() {
+        if self.hasLoadedImages && self.hasLoadedVideos {
+            self.paywallV2CacheAssets = nil
         }
     }
 
@@ -439,7 +427,6 @@ private extension Offerings {
     }
 
 #endif
-
     var allImagesInPaywallsV1: Set<URL> {
         return .init(
             self
