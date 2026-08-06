@@ -91,6 +91,28 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.complete(callID: callID)
     }
 
+    func dismiss(callID: String, completion: @escaping () -> Void) {
+        guard self.activeCallID == callID else {
+            completion()
+            return
+        }
+
+        _ = self.callStore.remove(callID: callID)
+        self.activeCallID = nil
+
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+        let viewController = self.presentedViewController
+        self.presentedViewController = nil
+        guard let viewController, viewController.presentingViewController != nil else {
+            completion()
+            return
+        }
+        viewController.dismiss(animated: true, completion: completion)
+        #else
+        completion()
+        #endif
+    }
+
     private func complete(callID: String) {
         guard let call = self.callStore.remove(callID: callID) else { return }
 

@@ -33,6 +33,8 @@ protocol CheckpointPresenter: AnyObject {
         delegate: CheckpointPresentationDelegate
     )
 
+    func dismiss(callID: String, completion: @escaping () -> Void)
+
 }
 
 /// Receives the final staged outcome after checkpoint UI has fully dismissed.
@@ -103,9 +105,15 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
     }
 
     private func cancel(callID: String) {
-        guard let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
-        self.activePresenter = nil
-        continuation.resume(throwing: CancellationError())
+        guard self.pendingCalls[callID] != nil,
+              let presenter = self.activePresenter else { return }
+
+        presenter.dismiss(callID: callID) { [weak self] in
+            guard let self,
+                  let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
+            self.activePresenter = nil
+            continuation.resume(throwing: CancellationError())
+        }
     }
 
 }

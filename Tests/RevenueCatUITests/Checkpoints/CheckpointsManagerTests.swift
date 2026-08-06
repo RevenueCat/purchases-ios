@@ -199,6 +199,40 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         _ = try await executor.execute(Self.workflow())
 
         XCTAssertEqual(presenter.presentations.count, 2)
+        XCTAssertEqual(presenter.dismissedCallIDs.count, 1)
+    }
+
+    func testCancellationKeepsExecutionActiveUntilPresentationFinishesDismissing() async throws {
+        let presenter = MockCheckpointPresenter()
+        presenter.automaticallyFinishesDismissing = false
+        let presentationStarted = self.expectation(description: "Presentation starts")
+        let dismissalStarted = self.expectation(description: "Dismissal starts")
+        presenter.onPresent = { _ in presentationStarted.fulfill() }
+        presenter.onDismiss = { _ in dismissalStarted.fulfill() }
+        let executor = CheckpointWorkflowExecutor { presenter }
+        let firstExecution = Task { try await executor.execute(Self.workflow()) }
+        await self.fulfillment(of: [presentationStarted], timeout: 1)
+
+        firstExecution.cancel()
+        await self.fulfillment(of: [dismissalStarted], timeout: 1)
+
+        do {
+            _ = try await executor.execute(Self.workflow())
+            XCTFail("Expected execution to remain active while dismissing")
+        } catch {
+            XCTAssertEqual(
+                (error as NSError).code,
+                ErrorCode.operationAlreadyInProgressForProductError.rawValue
+            )
+        }
+
+        presenter.finishDismissing()
+        do {
+            _ = try await firstExecution.value
+            XCTFail("Expected cancellation")
+        } catch is CancellationError {
+            // Expected.
+        }
     }
 
     func testUnknownPresentationCompletionIsIgnored() {
@@ -258,7 +292,11 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
     }
 
     var onPresent: ((Presentation) -> Void)?
+    var onDismiss: ((String) -> Void)?
+    var automaticallyFinishesDismissing = true
     private(set) var presentations: [Presentation] = []
+    private(set) var dismissedCallIDs: [String] = []
+    private var dismissalCompletions: [() -> Void] = []
 
     func present(
         callID: String,
@@ -268,6 +306,20 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
         let presentation = Presentation(callID: callID, workflow: workflow, delegate: delegate)
         self.presentations.append(presentation)
         self.onPresent?(presentation)
+    }
+
+    func dismiss(callID: String, completion: @escaping () -> Void) {
+        self.dismissedCallIDs.append(callID)
+        self.onDismiss?(callID)
+        if self.automaticallyFinishesDismissing {
+            completion()
+        } else {
+            self.dismissalCompletions.append(completion)
+        }
+    }
+
+    func finishDismissing() {
+        self.dismissalCompletions.removeFirst()()
     }
 
 }

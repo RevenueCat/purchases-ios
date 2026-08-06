@@ -65,6 +65,27 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertNotNil(store.call(for: "second"))
     }
 
+    func testDismissRemovesCallWithoutReportingAnOutcome() {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        var didFinishDismissing = false
+        presenter.present(
+            callID: "call-id",
+            workflow: Self.workflow(),
+            delegate: delegate
+        )
+
+        presenter.dismiss(callID: "call-id") {
+            didFinishDismissing = true
+        }
+        presenter.presentationDidDismiss(callID: "call-id")
+
+        XCTAssertTrue(didFinishDismissing)
+        XCTAssertNil(store.call(for: "call-id"))
+        XCTAssertEqual(delegate.finishCount, 0)
+    }
+
     private static func workflow() -> ResolvedCheckpointWorkflow {
         let workflow = PublishedWorkflow(
             id: "workflow-id",
