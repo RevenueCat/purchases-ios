@@ -651,7 +651,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if systemInfo.remoteConfigEnabled {
             checkpointResolver = RandomWorkflowCheckpointResolver(
                 workflowManager: workflowManager,
-                getOfferings: {
+                offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(
                             appUserID: identityManager.currentAppUserID,

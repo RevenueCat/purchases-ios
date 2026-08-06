@@ -42,7 +42,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
             paywallCache: nil,
             operationDispatcher: MockOperationDispatcher()
         )
-        self.provider.stubbedAvailableWorkflows = [self.workflowID: self.offeringID]
+        self.provider.stubbedOfferingIdByWorkflowId = [self.workflowID: self.offeringID]
         self.provider.stubbedGetWorkflowResult = [
             self.workflowID: Self.workflowDataResult(id: self.workflowID)
         ]
@@ -73,7 +73,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     func testCheckpointResolvesDisabledWhenWorkflowManagerIsMissing() async throws {
         let resolver = RandomWorkflowCheckpointResolver(
             workflowManager: nil,
-            getOfferings: { self.offerings }
+            offeringsProvider: { self.offerings }
         )
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
@@ -81,7 +81,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointResolvesConfigurationUnavailableWhenNoWorkflowsExist() async throws {
-        self.provider.stubbedAvailableWorkflows = [:]
+        self.provider.stubbedOfferingIdByWorkflowId = [:]
 
         let resolution = try await self.resolve()
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
@@ -109,7 +109,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointResolvesConfigurationUnavailableWhenOfferingsFetchFails() async throws {
-        let resolver = self.makeResolver(getOfferings: {
+        let resolver = self.makeResolver(offeringsProvider: {
             throw ErrorUtils.networkError(message: "Offline")
         })
 
@@ -118,7 +118,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointResolvesConfigurationUnavailableWhenOfferingIsMissing() async throws {
-        let resolver = self.makeResolver(getOfferings: { Self.offerings([]) })
+        let resolver = self.makeResolver(offeringsProvider: { Self.offerings([]) })
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
@@ -137,9 +137,9 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointResolvesConfigurationUnavailableWithoutFetchingOfferingsWhenMetadataHasNone() async throws {
-        self.provider.stubbedAvailableWorkflows = [self.workflowID: nil]
+        self.provider.stubbedOfferingIdByWorkflowId = [self.workflowID: nil]
         let offeringsFetchCount = Atomic<Int>(0)
-        let resolver = self.makeResolver(getOfferings: {
+        let resolver = self.makeResolver(offeringsProvider: {
             offeringsFetchCount.modify { $0 += 1 }
             return self.offerings
         })
@@ -157,12 +157,12 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     private func makeResolver(
-        getOfferings: RandomWorkflowCheckpointResolver.GetOfferings? = nil
+        offeringsProvider: (() async throws -> Offerings)? = nil
     ) -> RandomWorkflowCheckpointResolver {
         return RandomWorkflowCheckpointResolver(
             workflowManager: self.workflowManager,
-            getOfferings: getOfferings ?? { self.offerings },
-            chooseWorkflow: { workflows in
+            offeringsProvider: offeringsProvider ?? { self.offerings },
+            workflowSelector: { workflows in
                 guard workflows.keys.contains(self.workflowID) else { return nil }
                 return (self.workflowID, workflows[self.workflowID] ?? nil)
             }

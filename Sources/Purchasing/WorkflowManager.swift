@@ -74,8 +74,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         }
     }
 
-    func availableWorkflows() async -> [String: String?] {
-        return await self.workflowsConfigProvider.availableWorkflows()
+    func offeringIdByWorkflowId() async -> [String: String?] {
+        return await self.workflowsConfigProvider.offeringIdByWorkflowId()
     }
 
     func workflowId(forOfferingId offeringId: String) async -> String? {

@@ -11,7 +11,7 @@ import Foundation
 
 protocol WorkflowsConfigProviderType {
 
-    func availableWorkflows() async -> [String: String?]
+    func offeringIdByWorkflowId() async -> [String: String?]
     func workflowId(forOfferingId offeringId: String) async -> String?
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
     func decodeCachedWorkflowForAssetPrewarming(
@@ -75,7 +75,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     /// Returns every workflow and the offering identifier from its topic metadata, when present.
-    func availableWorkflows() async -> [String: String?] {
+    func offeringIdByWorkflowId() async -> [String: String?] {
         guard let topic = await self.manager.topic(.workflows) else { return [:] }
 
         return Dictionary(uniqueKeysWithValues: topic.map { workflowID, item in

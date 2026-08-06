@@ -16,12 +16,12 @@ import Foundation
 
 final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
-    var stubbedAvailableWorkflows: [String: String?] = [:]
-    private(set) var invokedAvailableWorkflowsCount = 0
+    var stubbedOfferingIdByWorkflowId: [String: String?] = [:]
+    private(set) var invokedOfferingIdByWorkflowIdCount = 0
 
-    func availableWorkflows() async -> [String: String?] {
-        self.invokedAvailableWorkflowsCount += 1
-        return self.stubbedAvailableWorkflows
+    func offeringIdByWorkflowId() async -> [String: String?] {
+        self.invokedOfferingIdByWorkflowIdCount += 1
+        return self.stubbedOfferingIdByWorkflowId
     }
 
     var stubbedWorkflowIdForOfferingId: [String: String] = [:]

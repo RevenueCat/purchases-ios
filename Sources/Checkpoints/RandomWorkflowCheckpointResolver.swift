@@ -19,21 +19,20 @@ import Foundation
 /// simulate the no-match and error resolutions the future checkpoints configuration will produce.
 final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
-    typealias GetOfferings = () async throws -> Offerings
-    typealias ChooseWorkflow = ([String: String?]) -> (workflowID: String, offeringID: String?)?
+    typealias WorkflowSelector = ([String: String?]) -> (workflowID: String, offeringID: String?)?
 
     private let workflowManager: WorkflowManager?
-    private let getOfferings: GetOfferings
-    private let chooseWorkflow: ChooseWorkflow
+    private let offeringsProvider: () async throws -> Offerings
+    private let workflowSelector: WorkflowSelector
 
     init(
         workflowManager: WorkflowManager?,
-        getOfferings: @escaping GetOfferings,
-        chooseWorkflow: @escaping ChooseWorkflow = RandomWorkflowCheckpointResolver.chooseRandomWorkflow
+        offeringsProvider: @escaping () async throws -> Offerings,
+        workflowSelector: @escaping WorkflowSelector = RandomWorkflowCheckpointResolver.chooseRandomWorkflow
     ) {
         self.workflowManager = workflowManager
-        self.getOfferings = getOfferings
-        self.chooseWorkflow = chooseWorkflow
+        self.offeringsProvider = offeringsProvider
+        self.workflowSelector = workflowSelector
     }
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
@@ -55,8 +54,8 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             return .noAction(.disabled)
         }
 
-        let availableWorkflows = await workflowManager.availableWorkflows()
-        guard let selectedWorkflow = self.chooseWorkflow(availableWorkflows) else {
+        let offeringIdByWorkflowId = await workflowManager.offeringIdByWorkflowId()
+        guard let selectedWorkflow = self.workflowSelector(offeringIdByWorkflowId) else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -74,7 +73,7 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
         let offering: Offering
         do {
-            let offerings = try await self.getOfferings()
+            let offerings = try await self.offeringsProvider()
             guard let resolvedOffering = offerings.offering(identifier: offeringID) else {
                 return .noAction(.configurationUnavailable)
             }
