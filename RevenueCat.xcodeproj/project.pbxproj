@@ -3427,6 +3427,7 @@
 			isa = PBXGroup;
 			children = (
 				73A620000000000000000011 /* CheckpointValueTests.swift */,
+				C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -3886,7 +3887,6 @@
 			children = (
 				73A620000000000000000020 /* Checkpoints */,
 				9094B43F2E96AA140094AD5F /* Ads */,
-				C0DE00000000000000000301 /* Checkpoints */,
 				356E2DE62CD3CF890055AABB /* Events */,
 				1EFA950E2CDB7F8800CA5951 /* DeepLink */,
 				357348FE2C3BEAF8000EEB86 /* CustomerCenter */,
@@ -3914,14 +3914,6 @@
 				83CAA0FAB8525D1A4F81EDC0 /* RulesEngine */,
 			);
 			path = UnitTests;
-			sourceTree = "<group>";
-		};
-		C0DE00000000000000000301 /* Checkpoints */ = {
-			isa = PBXGroup;
-			children = (
-				C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */,
-			);
-			path = Checkpoints;
 			sourceTree = "<group>";
 		};
 		2DD02D5924AD128A00419CD9 /* LocalReceiptParsing */ = {

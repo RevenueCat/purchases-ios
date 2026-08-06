@@ -87,6 +87,19 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testDefaultChooserOnlySelectsWorkflowsWithOfferingMetadata() {
+        let workflows = [
+            "eligible": Optional("offering"),
+            "missing-offering": nil
+        ]
+
+        for _ in 0..<10 {
+            let selected = RandomWorkflowCheckpointResolver.chooseRandomWorkflow(from: workflows)
+            XCTAssertEqual(selected?.workflowID, "eligible")
+            XCTAssertEqual(selected?.offeringID, "offering")
+        }
+    }
+
     func testCheckpointResolvesConfigurationUnavailableWhenWorkflowFailsToLoad() async throws {
         self.provider.stubbedGetWorkflowResult = [:]
         self.provider.stubbedGetWorkflowError = [self.workflowID: .notFound]

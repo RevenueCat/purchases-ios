@@ -24,21 +24,19 @@ import Foundation
 
 }
 
-/// An extensible reason that checkpoint resolution selected no workflow.
-@_spi(Internal) public struct CheckpointResolutionReason: Equatable, Hashable, Sendable {
-
-    /// The raw reason value.
-    public let value: String
+/// The reason that checkpoint resolution selected no workflow.
+@_spi(Internal) public enum CheckpointResolutionReason: String, Sendable {
 
     /// No targeting rule matched.
-    public static let noMatch = Self(value: "NO_MATCH")
+    case noMatch = "NO_MATCH"
     /// Checkpoint configuration could not be loaded.
-    public static let configurationUnavailable = Self(value: "CONFIGURATION_UNAVAILABLE")
+    case configurationUnavailable = "CONFIGURATION_UNAVAILABLE"
     /// Checkpoints are disabled.
-    public static let disabled = Self(value: "DISABLED")
+    case disabled = "DISABLED"
 
-    init(value: String) {
-        self.value = value
+    /// The raw reason value.
+    public var value: String {
+        return self.rawValue
     }
 
 }

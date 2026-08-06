@@ -29,9 +29,7 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
     init(
         workflowManager: WorkflowManager?,
         getOfferings: @escaping GetOfferings,
-        chooseWorkflow: @escaping ChooseWorkflow = { workflows in
-            return workflows.randomElement().map { ($0.key, $0.value) }
-        }
+        chooseWorkflow: @escaping ChooseWorkflow = RandomWorkflowCheckpointResolver.chooseRandomWorkflow
     ) {
         self.workflowManager = workflowManager
         self.getOfferings = getOfferings
@@ -97,5 +95,13 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
     private static let simulatedNoMatchCheckpointIdentifier = "unknown_checkpoint"
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+
+    static func chooseRandomWorkflow(
+        from workflows: [String: String?]
+    ) -> (workflowID: String, offeringID: String?)? {
+        return workflows.compactMap { workflowID, offeringID in
+            return offeringID.map { (workflowID, $0) }
+        }.randomElement()
+    }
 
 }
