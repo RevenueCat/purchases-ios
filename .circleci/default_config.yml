@@ -1526,6 +1526,28 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  run-paywall-accessibility-ui-tests:
+    description: "Assert paywall accessibility labels against the real accessibility tree"
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace:
+          query: "PaywallFixturesUITests"
+      - run:
+          name: Run paywall accessibility UI tests
+          command: |
+            bundle exec fastlane paywall_accessibility_ui_tests
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output
+
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
@@ -1880,6 +1902,9 @@ jobs:
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
           no_output_timeout: 5m
+      - run:
+          name: Run api diff helper unit tests
+          command: ruby fastlane/api_diff_helper_test.rb
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2098,12 +2123,20 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      # 0.12.0
+      - revenuecat/install-public-api-diff:
+          version: "06620ffe614773a43102ab8052077ae463908b78"
+      - run:
+          name: Fetch main for the merge base
+          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
           name: Generate RevenueCat swiftinterface
           command: |
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
@@ -2142,12 +2175,20 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      # 0.12.0
+      - revenuecat/install-public-api-diff:
+          version: "06620ffe614773a43102ab8052077ae463908b78"
+      - run:
+          name: Fetch main for the merge base
+          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
           name: Generate RevenueCatUI swiftinterface
           command: |
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
       - store_artifacts:
@@ -2341,9 +2382,11 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
@@ -2372,6 +2415,8 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      # Needs no context: the paywall under test is a local sample, so no API key is involved.
+      - run-paywall-accessibility-ui-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2781,9 +2826,11 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
