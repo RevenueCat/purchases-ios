@@ -76,7 +76,7 @@
 		164681D22E6B577600854AA5 /* VideoComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681C92E6B577600854AA5 /* VideoComponentViewModel.swift */; };
 		164681D62E6B577600854AA5 /* VideoPlayerLayerUIView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164681D52E6B577600854AA5 /* VideoPlayerLayerUIView.swift */; };
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
-		166B9F0D30251A4A0037DDCB /* WebViewWarmingBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F0C30251A4A0037DDCB /* WebViewWarmingBus.swift */; };
+		166B9F0D30251A4A0037DDCB /* WebBundleAssetBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F0C30251A4A0037DDCB /* WebBundleAssetBus.swift */; };
 		166B9F0F30251A4A0037DDCB /* WebBundleAssetBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F0E30251A4A0037DDCB /* WebBundleAssetBusTests.swift */; };
 		166BA79A2F84022400BB46C9 /* PaywallEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
@@ -1630,7 +1630,7 @@
 		166B9F07302519FA0037DDCB /* UnitTestsHostApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = UnitTestsHostApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		166B9F08302519FA0037DDCB /* StoreKitUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StoreKitUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		166B9F09302519FA0037DDCB /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		166B9F0C30251A4A0037DDCB /* WebViewWarmingBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewWarmingBus.swift; sourceTree = "<group>"; };
+		166B9F0C30251A4A0037DDCB /* WebBundleAssetBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleAssetBus.swift; sourceTree = "<group>"; };
 		166B9F0E30251A4A0037DDCB /* WebBundleAssetBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleAssetBusTests.swift; sourceTree = "<group>"; };
 		166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTracker.swift; sourceTree = "<group>"; };
 		166BA7A02F84028600BB46C9 /* ControlInteractionLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlInteractionLoggerTests.swift; sourceTree = "<group>"; };
@@ -4948,7 +4948,7 @@
 				57B1D7B32F2A213800A77E21 /* PaywallSource.swift */,
 				4F89A55C2A6ABADF008A411E /* PaywallViewMode.swift */,
 				65279ABC122869A50AEB8A27 /* ExitOffer.swift */,
-				166B9F0C30251A4A0037DDCB /* WebViewWarmingBus.swift */,
+				166B9F0C30251A4A0037DDCB /* WebBundleAssetBus.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
@@ -7226,7 +7226,7 @@
 				5723FBBE28EDE1360003BA16 /* InternalAPI.swift in Sources */,
 				A55D5D66282ECCC100FA7623 /* PostAdServicesTokenOperation.swift in Sources */,
 				1E42CC6C2D7F1A0500E0EE8D /* CacheStatus.swift in Sources */,
-				166B9F0D30251A4A0037DDCB /* WebViewWarmingBus.swift in Sources */,
+				166B9F0D30251A4A0037DDCB /* WebBundleAssetBus.swift in Sources */,
 				B3B5FBB4269CED4B00104A0C /* BackendErrorCode.swift in Sources */,
 				FDC892FE2CD157F1000AEB9F /* WinBackOffer.swift in Sources */,
 				2DDF41B624F6F387005BC22D /* ASN1ObjectIdentifierBuilder.swift in Sources */,
