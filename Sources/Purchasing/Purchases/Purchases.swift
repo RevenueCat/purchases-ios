@@ -2890,7 +2890,7 @@ private extension Purchases {
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
-            await cache.warmUpPaywallImagesCache(offerings: offerings)
+            await cache.warmUpPaywallAssetsCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallFontsCache(offerings: offerings)

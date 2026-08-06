@@ -25,10 +25,7 @@ protocol PaywallCacheWarmingType: Sendable {
     func clearEligibilityCache() async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallImagesCache(offerings: Offerings) async
-
-    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-    func warmUpPaywallVideosCache(offerings: Offerings) async
+    func warmUpPaywallAssetsCache(offerings: Offerings) async
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func warmUpPaywallFontsCache(offerings: Offerings) async
@@ -65,9 +62,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let fileRepository: FileRepositoryType
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
-    private var hasLoadedImages = false
-    private var hasLoadedVideos = false
-    private var paywallV2CacheAssets: CacheAssetCollection?
+    private var hasLoadedPaywallAssets = false
     private var workflowIDsWithAssetPrewarmingStarted: Set<String> = []
     private var workflowFontAssetsWithPrewarmingAttempted: Set<DownloadableFont> = []
     private var ongoingFontDownloads: [URL: Task<Void, Never>] = [:]
@@ -129,11 +124,19 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    func warmUpPaywallImagesCache(offerings: Offerings) async {
-        guard !self.hasLoadedImages else { return }
-        self.hasLoadedImages = true
+    /// Walks paywall component trees once, then downloads images, videos, and web view assets
+    ///
+    /// IMPORTANT
+    /// Video and Web Bundle assets will be warmed here in the future
+    /// When done, we should use task groups so we can dispatch things asynchronously
+    /// Though we will need to ensure the task group is configured to proceed when an
+    /// individual task fails. Will do as part of: FUN-2274
+    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        guard !self.hasLoadedPaywallAssets else { return }
+        self.hasLoadedPaywallAssets = true
 
-        let cacheAssets = self.cacheAssets(for: offerings)
+        let cacheAssets = offerings.allPaywallV2CacheAssets
+
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)
         imageSources = Set(cacheAssets.imageURLs.flatMap(\.sourcesToDownload))
@@ -144,47 +147,10 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             URLWithValidation(url: $0, checksum: nil)
         }
         let allImageSources = imageSources.union(v1ImageSources)
-        self.releaseCacheAssetsIfFinished()
 
-        guard !allImageSources.isEmpty else { return }
-
-        let imageURLs = Set(allImageSources.map(\.url))
-
-        Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: imageURLs))
-
-        await withTaskGroup(of: Void.self) { group in
-            for source in allImageSources {
-                group.addTask { [weak self] in
-                    guard let self = self else { return }
-                    // Preferred method - load with FileRepository
-                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
-                        for: source.url,
-                        withChecksum: source.checksum
-                    )
-                }
-            }
-        }
-    }
-
-    func warmUpPaywallVideosCache(offerings: Offerings) async {
-        guard !self.hasLoadedVideos else { return }
-        self.hasLoadedVideos = true
-
-        let cacheAssets = self.cacheAssets(for: offerings)
-        let videoURLs = Set(cacheAssets.videoURLs.compactMap(\.lowResURL))
-        self.releaseCacheAssetsIfFinished()
-        guard !videoURLs.isEmpty else { return }
-
-        Logger.verbose(Strings.paywalls.warming_up_videos(videoURLs: videoURLs))
-        await withTaskGroup(of: Void.self) { group in
-            for source in videoURLs {
-                group.addTask { [weak self] in
-                    _ = try? await self?.fileRepository.generateOrGetCachedFileURL(
-                        for: source.url,
-                        withChecksum: source.checksum
-                    )
-                }
-            }
+        if !allImageSources.isEmpty {
+            Logger.verbose(Strings.paywalls.warming_up_images(imageURLs: Set(allImageSources.map(\.url))))
+            await self.download(allImageSources)
         }
     }
 
@@ -234,20 +200,12 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         await withTaskGroup(of: Void.self) { group in
             for source in imageURLs {
                 group.addTask { [weak self] in
-                    guard let self = self else { return }
-                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
-                        for: source.url,
-                        withChecksum: source.checksum
-                    )
+                    await self?.download(source)
                 }
             }
             for source in videoURLs {
                 group.addTask { [weak self] in
-                    guard let self = self else { return }
-                    _ = try? await self.fileRepository.generateOrGetCachedFileURL(
-                        for: source.url,
-                        withChecksum: source.checksum
-                    )
+                    await self?.download(source)
                 }
             }
             #if !os(tvOS)
@@ -265,20 +223,21 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         return self.workflowIDsWithAssetPrewarmingStarted.contains(workflowID)
     }
 
-    private func cacheAssets(for offerings: Offerings) -> CacheAssetCollection {
-        if let cacheAssets = self.paywallV2CacheAssets {
-            return cacheAssets
+    private func download(_ sources: Set<URLWithValidation>) async {
+        await withTaskGroup(of: Void.self) { group in
+            for source in sources {
+                group.addTask { [weak self] in
+                    await self?.download(source)
+                }
+            }
         }
-
-        let cacheAssets = offerings.allPaywallV2CacheAssets
-        self.paywallV2CacheAssets = cacheAssets
-        return cacheAssets
     }
 
-    private func releaseCacheAssetsIfFinished() {
-        if self.hasLoadedImages && self.hasLoadedVideos {
-            self.paywallV2CacheAssets = nil
-        }
+    private func download(_ source: URLWithValidation) async {
+        _ = try? await self.fileRepository.generateOrGetCachedFileURL(
+            for: source.url,
+            withChecksum: source.checksum
+        )
     }
 
 #if !os(tvOS)

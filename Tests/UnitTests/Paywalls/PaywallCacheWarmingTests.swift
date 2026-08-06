@@ -443,7 +443,7 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
-    func testOfferingsImageAndVideoPrewarmingDownloadsEachAssetOnce() async throws {
+    func testOfferingsAssetPrewarmingDownloadsImagesOnlyOnce() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
@@ -451,7 +451,12 @@ final class PaywallCacheWarmingTests: TestCase {
         )
         let data = Self.paywallComponentsData(components: [
             .image(.init(source: Self.cacheWarmingImage("offering-image"))),
-            .video(.init(source: Self.cacheWarmingVideo("offering-video")))
+            .video(.init(source: Self.cacheWarmingVideo("offering-video"))),
+            .webView(.init(
+                id: "webview",
+                protocolVersion: 1,
+                url: "https://example.com/cache"
+            ))
         ])
         let offering = Offering(
             identifier: Self.offeringIdentifier,
@@ -462,18 +467,18 @@ final class PaywallCacheWarmingTests: TestCase {
         )
         let offerings = try Self.createOfferings([offering])
 
-        await cache.warmUpPaywallImagesCache(offerings: offerings)
-        await cache.warmUpPaywallVideosCache(offerings: offerings)
+        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.warmUpPaywallAssetsCache(offerings: offerings)
 
         let requests = await fileRepository.requests
-        XCTAssertEqual(requests.count, 2)
+        XCTAssertEqual(requests.count, 1)
         XCTAssertEqual(Set(requests), [
-            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil),
-            .init(
-                url: Self.cacheWarmingURL("offering-video-low.mp4"),
-                checksum: .init(algorithm: .sha256, value: "offering-video-low")
-            )
+            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil)
         ])
+        XCTAssertEqual(
+            data.allCacheAssets.webViewURLs,
+            [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
+        )
     }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
