@@ -26,7 +26,19 @@ private final class CheckpointListenerAPITester: CheckpointListener {
         let _: CheckpointInfo = result.checkpoint
 
         if let presented = result as? CheckpointPaywallPresentedResult {
-            let _: CheckpointPaywallOutcome = presented.paywallOutcome
+            let outcome: CheckpointPaywallOutcome = presented.paywallOutcome
+
+            if let purchased = outcome as? CheckpointPaywallPurchasedOutcome {
+                let _: CustomerInfo = purchased.customerInfo
+            } else if let restored = outcome as? CheckpointPaywallRestoredOutcome {
+                let _: CustomerInfo = restored.customerInfo
+            } else if let failed = outcome as? CheckpointPaywallErrorOutcome {
+                let _: PublicError = failed.error
+            } else {
+                let _: Bool = outcome is CheckpointPaywallDismissedOutcome
+            }
+
+            let _: String = outcome.description
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
         }
@@ -64,17 +76,4 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: CheckpointNoActionReason = .frequencyCapped
     let _: CheckpointNoActionReason = .configurationUnavailable
     let _: CheckpointNoActionReason = .disabled
-}
-
-func checkCheckpointPaywallOutcomeAPI(customerInfo: CustomerInfo, error: PublicError) {
-    let dismissed: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
-    let purchased: CheckpointPaywallOutcome = CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo)
-    let restored: CheckpointPaywallOutcome = CheckpointPaywallRestoredOutcome(customerInfo: customerInfo)
-    let failed: CheckpointPaywallOutcome = CheckpointPaywallErrorOutcome(error: error)
-
-    let _: String = dismissed.description
-    let _: String = purchased.description
-    let _: String = restored.description
-    let _: String = failed.description
-    let _: Bool = dismissed == CheckpointPaywallDismissedOutcome.shared
 }

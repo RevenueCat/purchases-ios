@@ -76,8 +76,7 @@ import Foundation
 #endif
 @_spi(Internal) public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
-    /// The dismissed paywall outcome.
-    public static let shared = CheckpointPaywallDismissedOutcome()
+    static let shared = CheckpointPaywallDismissedOutcome()
 
     private override init() { super.init() }
 
@@ -97,8 +96,7 @@ import Foundation
 #endif
     public let customerInfo: CustomerInfo
 
-    /// Creates a purchased outcome with the latest customer information.
-    public init(customerInfo: CustomerInfo) {
+    init(customerInfo: CustomerInfo) {
         self.customerInfo = customerInfo
         super.init()
     }
@@ -125,8 +123,7 @@ import Foundation
 #endif
     public let customerInfo: CustomerInfo
 
-    /// Creates a restored outcome with the latest customer information.
-    public init(customerInfo: CustomerInfo) {
+    init(customerInfo: CustomerInfo) {
         self.customerInfo = customerInfo
         super.init()
     }
@@ -153,8 +150,7 @@ import Foundation
 #endif
     public let error: PublicError
 
-    /// Creates a paywall error outcome.
-    public init(error: PublicError) {
+    init(error: PublicError) {
         self.error = error
         super.init()
     }
