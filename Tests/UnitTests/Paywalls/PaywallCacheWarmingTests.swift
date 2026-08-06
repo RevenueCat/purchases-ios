@@ -230,7 +230,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let assets = data.allCacheAssets
 
         XCTAssertEqual(
-            Set(assets.imageURLs),
+            Set(assets.images),
             Set(
                 Self.imageMedia("image", dark: true) +
                 Self.imageMedia("image-override") +
@@ -240,24 +240,24 @@ final class PaywallCacheWarmingTests: TestCase {
             )
         )
         XCTAssertEqual(
-            Set(assets.videoURLs),
+            Set(assets.videos),
             Set(
                 Self.videoMedia("video", dark: true, darkHasLowRes: false) +
                 Self.videoMedia("video-override")
             )
         )
         XCTAssertEqual(
-            assets.webViewURLs,
+            assets.webBundles,
             [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
         )
 
         XCTAssertEqual(
             Set(data.allImageURLs),
-            Set(assets.imageURLs.map { ($0.lowResURL ?? $0.highResURL).url })
+            Set(assets.images.map { ($0.lowResURL ?? $0.highResURL).url })
         )
         XCTAssertEqual(
             Set(data.allLowResVideoUrls),
-            Set(assets.videoURLs.compactMap(\.lowResURL))
+            Set(assets.videos.compactMap(\.lowResURL))
         )
     }
 
@@ -323,18 +323,18 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let assets = data.allCacheAssets
         let synchronousImageNames = Set(
-            assets.imageURLs
+            assets.images
                 .filter(\.rendersSynchronously)
                 .map(\.highResURL.url.lastPathComponent)
         )
 
         XCTAssertEqual(synchronousImageNames, ["sheet-high.heic", "sheet-button-high.heic"])
         XCTAssertEqual(
-            Set(assets.videoURLs.filter(\.rendersSynchronously).map(\.highResURL.url.lastPathComponent)),
+            Set(assets.videos.filter(\.rendersSynchronously).map(\.highResURL.url.lastPathComponent)),
             ["sheet-video-high.mp4"]
         )
         XCTAssertEqual(
-            Set(assets.videoURLs.map(\.highResURL.url.lastPathComponent)),
+            Set(assets.videos.map(\.highResURL.url.lastPathComponent)),
             ["sheet-video-high.mp4", "tab-control-high.mp4"]
         )
 
@@ -344,7 +344,7 @@ final class PaywallCacheWarmingTests: TestCase {
             "countdown", "countdown-end", "countdown-fallback"
         ]
         XCTAssertEqual(
-            Set(assets.imageURLs.map(\.highResURL.url.lastPathComponent)),
+            Set(assets.images.map(\.highResURL.url.lastPathComponent)),
             Set(expectedContainerImages.map { "\($0)-high.heic" })
         )
         XCTAssertTrue(data.allImageURLs.contains(Self.assetURL("sheet-high.heic")))
@@ -382,7 +382,7 @@ final class PaywallCacheWarmingTests: TestCase {
         let assets = config.allCacheAssets
 
         XCTAssertEqual(
-            Set(assets.imageURLs.map(\.highResURL.url.lastPathComponent)),
+            Set(assets.images.map(\.highResURL.url.lastPathComponent)),
             [
                 "stack-fallback-high.heic",
                 "header-high.heic",
@@ -391,7 +391,7 @@ final class PaywallCacheWarmingTests: TestCase {
             ]
         )
         XCTAssertEqual(
-            Set(assets.videoURLs.map(\.highResURL.url.lastPathComponent)),
+            Set(assets.videos.map(\.highResURL.url.lastPathComponent)),
             ["stack-background-high.mp4", "root-background-high.mp4"]
         )
     }
@@ -476,7 +476,7 @@ final class PaywallCacheWarmingTests: TestCase {
             .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil)
         ])
         XCTAssertEqual(
-            data.allCacheAssets.webViewURLs,
+            data.allCacheAssets.webBundles,
             [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
         )
     }

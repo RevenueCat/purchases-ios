@@ -24,11 +24,11 @@ extension PaywallComponentsData {
     }
 
     var allImageURLs: [URL] {
-        return self.allCacheAssets.preferredImageURLs
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        return self.allCacheAssets.lowResVideoURLs
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
 }
@@ -44,11 +44,11 @@ extension WorkflowScreen {
     }
 
     var allImageURLs: [URL] {
-        return self.allCacheAssets.preferredImageURLs
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        return self.allCacheAssets.lowResVideoURLs
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
 }
@@ -71,9 +71,9 @@ private func cacheAssets(
     }
 
     return .init(
-        imageURLs: componentAssets.imageURLs + localizedImages,
-        videoURLs: componentAssets.videoURLs,
-        webViewURLs: componentAssets.webViewURLs
+        images: componentAssets.images + localizedImages,
+        videos: componentAssets.videos,
+        webBundles: componentAssets.webBundles
     )
 }
 
@@ -96,11 +96,11 @@ extension PaywallComponentsData.PaywallComponentsConfig {
     }
 
     var allImageURLs: [URL] {
-        return self.allCacheAssets.preferredImageURLs
+        return self.allCacheAssets.imageSourcesToDownload.map(\.url)
     }
 
     var allLowResVideoUrls: [URLWithValidation] {
-        return self.allCacheAssets.lowResVideoURLs
+        return self.allCacheAssets.videoSourcesToDownload
     }
 
     // swiftlint:disable:next cyclomatic_complexity function_body_length
@@ -252,9 +252,9 @@ private struct AssetCollector {
 
     var assets: CacheAssetCollection {
         return .init(
-            imageURLs: self.imageURLs,
-            videoURLs: self.videoURLs,
-            webViewURLs: self.webViewURLs
+            images: self.imageURLs,
+            videos: self.videoURLs,
+            webBundles: self.webViewURLs
         )
     }
 
@@ -271,25 +271,6 @@ private struct AssetCollector {
             self.videoURLs += videoURLs.cacheMedia(rendersSynchronously: rendersSynchronously)
             self.imageURLs += fallbackImageURLs.cacheMedia(rendersSynchronously: rendersSynchronously)
         }
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-private extension CacheAssetCollection {
-
-    var preferredImageURLs: [URL] {
-        return self.imageURLs.flatMap { media in
-            var urls = [(media.lowResURL ?? media.highResURL).url]
-            if media.rendersSynchronously, media.lowResURL != nil {
-                urls.append(media.highResURL.url)
-            }
-            return urls
-        }
-    }
-
-    var lowResVideoURLs: [URLWithValidation] {
-        return self.videoURLs.compactMap(\.lowResURL)
     }
 
 }

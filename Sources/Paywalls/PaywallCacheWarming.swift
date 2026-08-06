@@ -124,7 +124,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         }
     }
 
-    /// Walks paywall component trees once, then downloads images, videos, and web view assets
+    /// Walks paywall component trees once, then downloads images.
     ///
     /// IMPORTANT
     /// Video and Web Bundle assets will be warmed here in the future
@@ -139,7 +139,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)
-        imageSources = Set(cacheAssets.imageURLs.flatMap(\.sourcesToDownload))
+        imageSources = Set(cacheAssets.imageSourcesToDownload)
         #else
         imageSources = []
         #endif
@@ -187,8 +187,8 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         Logger.verbose(Strings.paywalls.warming_up_workflow(screenCount: screens.count))
 
         let screenAssets = screens.map(\.allCacheAssets)
-        let imageURLs = Set(screenAssets.flatMap(\.imageURLs).flatMap(\.sourcesToDownload))
-        let videoURLs = Set(screenAssets.flatMap(\.videoURLs).compactMap(\.lowResURL))
+        let imageURLs = Set(screenAssets.flatMap(\.imageSourcesToDownload))
+        let videoURLs = Set(screenAssets.flatMap(\.videoSourcesToDownload))
         #if !os(tvOS)
         let fonts = uiConfig.app.allDownloadableFonts.filter {
             // Background prewarming is best-effort once per shared font asset. Presentation-time font loading
@@ -282,9 +282,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 struct CacheAssetCollection {
-    let imageURLs: [Media]
-    let videoURLs: [Media]
-    let webViewURLs: [URLWithValidation]
+    let images: [Media]
+    let videos: [Media]
+    let webBundles: [URLWithValidation]
 
     struct Media: Hashable {
         let highResURL: URLWithValidation
@@ -294,14 +294,20 @@ struct CacheAssetCollection {
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
-private extension CacheAssetCollection.Media {
+extension CacheAssetCollection {
 
-    var sourcesToDownload: [URLWithValidation] {
-        var sources = [self.lowResURL ?? self.highResURL]
-        if self.rendersSynchronously, self.lowResURL != nil {
-            sources.append(self.highResURL)
+    var imageSourcesToDownload: [URLWithValidation] {
+        return self.images.flatMap { media in
+            var sources = [media.lowResURL ?? media.highResURL]
+            if media.rendersSynchronously, media.lowResURL != nil {
+                sources.append(media.highResURL)
+            }
+            return sources
         }
-        return sources
+    }
+
+    var videoSourcesToDownload: [URLWithValidation] {
+        return self.videos.compactMap(\.lowResURL)
     }
 
 }
@@ -400,9 +406,9 @@ private extension Offerings {
     var allPaywallV2CacheAssets: CacheAssetCollection {
         let assets = self.all.values.compactMap(\.internalPaywallComponents).map(\.data.allCacheAssets)
         return .init(
-            imageURLs: assets.flatMap(\.imageURLs),
-            videoURLs: assets.flatMap(\.videoURLs),
-            webViewURLs: assets.flatMap(\.webViewURLs)
+            images: assets.flatMap(\.images),
+            videos: assets.flatMap(\.videos),
+            webBundles: assets.flatMap(\.webBundles)
         )
     }
 
