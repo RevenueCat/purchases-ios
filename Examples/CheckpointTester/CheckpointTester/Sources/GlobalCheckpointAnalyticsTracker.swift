@@ -24,7 +24,7 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
     @Published private(set) var events: [String] = []
 
     private static let logger = Logger(
-        subsystem: "com.revenuecat.PaywallsTester",
+        subsystem: "com.revenuecat.CheckpointTester",
         category: "GlobalCheckpointListener"
     )
 

@@ -28,6 +28,7 @@ let project = Project(
             name: "CheckpointTester",
             destinations: [.iPhone, .iPad],
             product: .app,
+            // Reuse PaywallsTester's existing products, workflows, and StoreKit configuration for this test app.
             bundleId: Environment.paywallsTesterBundleId,
             deploymentTargets: .iOS("16.0"),
             infoPlist: .extendingDefault(
