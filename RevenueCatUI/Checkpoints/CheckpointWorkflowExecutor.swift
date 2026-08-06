@@ -38,6 +38,7 @@ protocol CheckpointPresenter: AnyObject {
 }
 
 /// Receives the final staged outcome after checkpoint UI has fully dismissed.
+@MainActor
 protocol CheckpointPresentationDelegate: AnyObject {
 
     func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome)
@@ -92,10 +93,8 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         }
     }
 
-    nonisolated func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome) {
-        Task { @MainActor [weak self] in
-            self?.finish(callID: callID, outcome: outcome)
-        }
+    func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome) {
+        self.finish(callID: callID, outcome: outcome)
     }
 
     private func finish(callID: String, outcome: CheckpointPaywallOutcome) {

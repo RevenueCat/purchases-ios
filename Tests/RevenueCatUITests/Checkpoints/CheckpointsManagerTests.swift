@@ -235,6 +235,30 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         }
     }
 
+    func testCompletedOutcomeWinsBeforeScheduledCancellationRuns() async throws {
+        let presenter = MockCheckpointPresenter()
+        let expectedError = NSError(domain: "test", code: 42)
+        let expectedOutcome = CheckpointPaywallErrorOutcome(error: expectedError)
+        var execution: Task<CheckpointPaywallOutcome, Error>?
+        presenter.onPresent = { presentation in
+            execution?.cancel()
+            presentation.delegate.checkpointPresentationFinished(
+                callID: presentation.callID,
+                outcome: expectedOutcome
+            )
+        }
+        let executor = CheckpointWorkflowExecutor { presenter }
+
+        execution = Task { try await executor.execute(Self.workflow()) }
+        let outcome = try await XCTUnwrap(execution).value
+
+        guard let errorOutcome = outcome as? CheckpointPaywallErrorOutcome else {
+            return XCTFail("Expected the completed presentation outcome")
+        }
+        XCTAssertEqual(errorOutcome.error, expectedError)
+        XCTAssertTrue(presenter.dismissedCallIDs.isEmpty)
+    }
+
     func testUnknownPresentationCompletionIsIgnored() {
         let presenter = MockCheckpointPresenter()
         let executor = CheckpointWorkflowExecutor { presenter }
