@@ -54,6 +54,23 @@ final class CheckpointValueTests: TestCase {
         XCTAssertNil(CheckpointValue(foundationValue: Date()))
     }
 
+    func testFoundationNumberStorageTypesMatchJSONParsingBehavior() {
+        let integers: [NSNumber] = [
+            NSNumber(value: Int8(1)), NSNumber(value: Int16(2)), NSNumber(value: Int32(3)),
+            NSNumber(value: Int64(4)), NSNumber(value: UInt8(5)), NSNumber(value: UInt16(6)),
+            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8))
+        ]
+
+        for number in integers {
+            guard case .integer = CheckpointValue(foundationValue: number) else {
+                return XCTFail("Expected NSNumber with objCType \(String(cString: number.objCType)) to be an integer")
+            }
+        }
+
+        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: Float(1.5))), .double(1.5))
+        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: Double(2.5))), .double(2.5))
+    }
+
     func testParamsPreserveValueEqualityAndHashing() {
         let firstParams = CheckpointParams(customProperties: ["name": "Rick"])
         let secondParams = CheckpointParams(customProperties: ["name": "Rick"])

@@ -27,24 +27,15 @@ extension NSNumber {
     /// The JSON primitive represented by this Foundation number.
     ///
     /// Swift casts cannot distinguish `NSNumber(true)` from `NSNumber(1)` because both bridge to Boolean and
-    /// numeric Swift types. Core Foundation preserves the original storage type.
+    /// numeric Swift types. Core Foundation preserves booleans, while `objCType` preserves the numeric storage
+    /// type used by `JSONSerialization`.
     var jsonNumberKind: JSONNumberKind {
         if CFGetTypeID(self) == CFBooleanGetTypeID() {
             return .boolean
         }
 
-        switch CFNumberGetType(self as CFNumber) {
-        case .sInt8Type,
-             .sInt16Type,
-             .sInt32Type,
-             .sInt64Type,
-             .charType,
-             .shortType,
-             .intType,
-             .longType,
-             .longLongType,
-             .cfIndexType,
-             .nsIntegerType:
+        switch String(cString: self.objCType) {
+        case "c", "i", "s", "l", "q", "C", "I", "S", "L", "Q":
             return .integer
         default:
             return .floatingPoint
