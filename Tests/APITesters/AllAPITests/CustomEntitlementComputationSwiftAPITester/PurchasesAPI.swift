@@ -256,11 +256,13 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let _: [String: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(productIdentifiers: [""])
         let _: [Package: IntroEligibility] = await purchases.checkTrialOrIntroDiscountEligibility(packages: [pack])
         let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(product: stp)
+        let _: IntroEligibilityStatus = await purchases.checkTrialOrIntroDiscountEligibility(package: pack)
     } catch {}
 }
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
     let storeProduct: StoreProduct! = nil
+    let package: Package! = nil
 
     if #available(iOS 15.0, *) {
 #if os(iOS)
@@ -281,6 +283,9 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
         }
     )
     purchases.checkTrialOrIntroDiscountEligibility(product: storeProduct) { introEligibilityStatus in
+        let _: IntroEligibilityStatus = introEligibilityStatus
+    }
+    purchases.checkTrialOrIntroDiscountEligibility(package: package) { introEligibilityStatus in
         let _: IntroEligibilityStatus = introEligibilityStatus
     }
 }

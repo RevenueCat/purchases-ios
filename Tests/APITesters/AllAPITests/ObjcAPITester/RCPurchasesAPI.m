@@ -194,6 +194,7 @@ NSURL *url;
     [p syncPurchasesWithCompletion:^(RCCustomerInfo *i, NSError *e) {}];
     
     [p checkTrialOrIntroDiscountEligibilityForProduct:storeProduct completion:^(RCIntroEligibilityStatus status) { }];
+    [p checkTrialOrIntroDiscountEligibilityForPackage:pack completion:^(RCIntroEligibilityStatus status) { }];
     [p checkTrialOrIntroDiscountEligibility:@[@""] completion:^(NSDictionary<NSString *,RCIntroEligibility *> *d) { }];
     [p getPromotionalOfferForProductDiscount:stpd
                                  withProduct:storeProduct
