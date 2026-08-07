@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS
+
 @_spi(Internal) @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import XCTest
@@ -206,3 +208,5 @@ private final class MockCheckpointPresenterDelegate: CheckpointPresentationDeleg
     }
 
 }
+
+#endif
