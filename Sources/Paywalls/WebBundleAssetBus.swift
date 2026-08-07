@@ -10,27 +10,22 @@
 //  WebBundleAssetBus.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
+// swiftlint:disable missing_docs
 
-import Combine
+@preconcurrency import Combine
 import Foundation
 
 /// Publishes validated web-view entry URLs discovered during paywall cache warming.
-///
-/// Uses a `CurrentValueSubject` so late subscribers (e.g. RevenueCatUI's pool) still receive
-/// the latest set even if they attach after the first warm.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 @_spi(Internal) public actor WebBundleAssetBus {
 
-    /// Shared bus used across modules. RevenueCatUI can subscribe without a `Purchases` instance.
     public static let shared = WebBundleAssetBus()
 
     private let subject: CurrentValueSubject<Set<URLWithValidation>, Never>
 
-    /// Emits the latest set of web-view entry URLs. New subscribers immediately receive the
-    /// current value (initially an empty set).
+    /// Emits the latest set of web-view entry URLs.
     public nonisolated let publisher: AnyPublisher<Set<URLWithValidation>, Never>
 
-    /// Creates a bus. Prefer ``shared`` outside of tests.
     public init() {
         let subject = CurrentValueSubject<Set<URLWithValidation>, Never>([])
         self.subject = subject
@@ -38,8 +33,6 @@ import Foundation
     }
 
     /// Replaces the current URL set and notifies subscribers.
-    ///
-    /// Callers are responsible for validating URLs (e.g. HTTPS) before publishing.
     public func publish(_ urls: Set<URLWithValidation>) {
         self.subject.send(urls)
     }
