@@ -712,6 +712,8 @@ struct LoadedOfferingPaywallView: View {
                 ? Constants.purchaseInProgressButtonOpacity
                 : 1
             )
+            .accessibilityLabel("Dismiss")
+            .accessibilityIdentifier("paywall_close_button")
         }
     }
 
