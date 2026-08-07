@@ -1055,6 +1055,25 @@ jobs:
           no_output_timeout: 30m
       - slack-notify-on-fail
 
+  build-checkpoint-tester:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "CheckpointTester"
+      - run:
+          name: Build CheckpointTester
+          command: >-
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme CheckpointTester
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
   check-app-extension-safe-api-usage:
     executor:
       name: macos-executor
@@ -2396,6 +2415,9 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
+      - build-checkpoint-tester:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2578,6 +2600,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
+            - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
