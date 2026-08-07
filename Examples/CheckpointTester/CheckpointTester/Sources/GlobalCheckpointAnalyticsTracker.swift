@@ -32,11 +32,15 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
 
     // These callbacks demonstrate an app-wide analytics integration using CheckpointListener.
     func onCheckpointHit(_ checkpoint: CheckpointInfo) {
-        self.track("Hit · \(checkpoint.identifier)")
+        self.track(
+            "Hit · \(checkpoint.identifier) · params=\(checkpoint.params.customProperties)"
+        )
     }
 
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
-        self.track("Completed · \(Self.describe(result))")
+        self.track(
+            "Completed · \(Self.describe(result)) · params=\(checkpoint.params.customProperties)"
+        )
     }
 
     // MARK: - Demo-only event display

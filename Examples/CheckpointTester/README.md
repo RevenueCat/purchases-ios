@@ -2,12 +2,15 @@
 
 `CheckpointTester` is a Tuist-generated example for the experimental checkpoint APIs.
 
-This base app demonstrates the application-facing integration:
+The app demonstrates how application behavior can respond to checkpoint results:
 
 - configuring `Purchases` and installing a global `CheckpointListener`;
-- calling a checkpoint with custom properties;
-- handling checkpoint result subclasses and paywall outcomes;
-- displaying call results and a live analytics event log.
+- keeping premium content locked unless a checkpoint returns purchased or restored;
+- presenting a soft paywall without blocking its content;
+- completing an onboarding flow regardless of the checkpoint result;
+- skipping a checkpoint when `CustomerInfo` already contains an active entitlement;
+- exercising deterministic no-action and error results;
+- editing custom checkpoint properties and displaying a live analytics event log.
 
 The generated app shares PaywallsTester's bundle identifier and `Products.storekit` configuration so it can use
 the same local in-app purchase products and RevenueCat project.
