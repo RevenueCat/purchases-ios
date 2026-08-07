@@ -16,10 +16,10 @@ import Foundation
 
 /// Temporary production resolver used until checkpoint targeting configuration is available.
 /// Every checkpoint currently resolves to a randomly selected configured workflow, except two identifiers that
-/// simulate the no-match and error resolutions the future checkpoints configuration will produce.
+/// simulate the unknown-checkpoint and error resolutions the future checkpoints configuration will produce.
 final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
 
-    typealias WorkflowSelector = ([String: String?]) -> (workflowID: String, offeringID: String?)?
+    typealias WorkflowSelector = ([String: String]) -> (workflowID: String, offeringID: String)?
 
     private let workflowManager: WorkflowManager
     private let offeringsProvider: () async throws -> Offerings
@@ -41,8 +41,8 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             throw ErrorUtils.configurationError(
                 message: "Simulated error: checkpoint workflow not presentable."
             )
-        case Self.simulatedNoMatchCheckpointIdentifier:
-            return .noAction(.noMatch)
+        case Self.simulatedUnknownCheckpointIdentifier:
+            return .noAction(.unknownCheckpoint)
         default:
             break
         }
@@ -60,15 +60,11 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        guard let offeringID = selectedWorkflow.offeringID else {
-            return .noAction(.configurationUnavailable)
-        }
-
         let offering: Offering
         let offerings: Offerings
         do {
             let resolvedOfferings = try await self.offeringsProvider()
-            guard let resolvedOffering = resolvedOfferings.offering(identifier: offeringID) else {
+            guard let resolvedOffering = resolvedOfferings.offering(identifier: selectedWorkflow.offeringID) else {
                 return .noAction(.configurationUnavailable)
             }
             offering = resolvedOffering
@@ -88,15 +84,13 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         )
     }
 
-    private static let simulatedNoMatchCheckpointIdentifier = "unknown_checkpoint"
+    private static let simulatedUnknownCheckpointIdentifier = "unknown_checkpoint"
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
 
     static func chooseRandomWorkflow(
-        from workflows: [String: String?]
-    ) -> (workflowID: String, offeringID: String?)? {
-        return workflows.compactMap { workflowID, offeringID in
-            return offeringID.map { (workflowID, $0) }
-        }.randomElement()
+        from workflows: [String: String]
+    ) -> (workflowID: String, offeringID: String)? {
+        return workflows.randomElement().map { ($0.key, $0.value) }
     }
 
 }

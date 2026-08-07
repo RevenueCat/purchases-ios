@@ -76,4 +76,5 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: CheckpointNoActionReason = .frequencyCapped
     let _: CheckpointNoActionReason = .configurationUnavailable
     let _: CheckpointNoActionReason = .disabled
+    let _: CheckpointNoActionReason = .unknownCheckpoint
 }

@@ -60,10 +60,7 @@ class WorkflowsConfigProviderTests: TestCase {
 
         let workflows = await self.provider.offeringIdByWorkflowId()
 
-        expect(Set(workflows.keys)) == Set(["workflow-with-offering", "workflow-without-offering"])
-        expect(workflows["workflow-with-offering"] ?? nil) == "premium_annual"
-        expect(workflows.keys.contains("workflow-without-offering")) == true
-        expect(workflows["workflow-without-offering"] ?? nil).to(beNil())
+        expect(workflows) == ["workflow-with-offering": "premium_annual"]
     }
 
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {

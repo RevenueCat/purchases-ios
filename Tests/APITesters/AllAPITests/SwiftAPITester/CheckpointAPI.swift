@@ -36,9 +36,10 @@ func checkCheckpointResolutionReasonAPI(_ reason: CheckpointResolutionReason) {
     let _: CheckpointResolutionReason = .noMatch
     let _: CheckpointResolutionReason = .configurationUnavailable
     let _: CheckpointResolutionReason = .disabled
+    let _: CheckpointResolutionReason = .unknownCheckpoint
 
     switch reason {
-    case .noMatch, .configurationUnavailable, .disabled:
+    case .noMatch, .configurationUnavailable, .disabled, .unknownCheckpoint:
         break
     @unknown default:
         break
