@@ -108,6 +108,12 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
+        let offering = Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
@@ -118,12 +124,8 @@ final class CheckpointsManagerTests: TestCase {
                 screens: [:]
             ),
             uiConfig: .empty,
-            offering: Offering(
-                identifier: "offering-id",
-                serverDescription: "Test offering",
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
+            offering: offering,
+            offerings: .preview(offerings: [offering])
         )
     }
 
@@ -152,7 +154,6 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 
         let presentation = try XCTUnwrap(presenter.presentations.first)
         presentation.delegate.checkpointPresentationFinished(
-            callID: presentation.callID,
             outcome: CheckpointPaywallDismissedOutcome.shared
         )
         _ = try await firstExecution.value
@@ -162,7 +163,6 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presenter = MockCheckpointPresenter()
         presenter.onPresent = { presentation in
             presentation.delegate.checkpointPresentationFinished(
-                callID: presentation.callID,
                 outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
@@ -192,14 +192,13 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 
         presenter.onPresent = { presentation in
             presentation.delegate.checkpointPresentationFinished(
-                callID: presentation.callID,
                 outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
         _ = try await executor.execute(Self.workflow())
 
         XCTAssertEqual(presenter.presentations.count, 2)
-        XCTAssertEqual(presenter.dismissedCallIDs.count, 1)
+        XCTAssertEqual(presenter.dismissCallCount, 1)
     }
 
     func testCancellationKeepsExecutionActiveUntilPresentationFinishesDismissing() async throws {
@@ -208,7 +207,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presentationStarted = self.expectation(description: "Presentation starts")
         let dismissalStarted = self.expectation(description: "Dismissal starts")
         presenter.onPresent = { _ in presentationStarted.fulfill() }
-        presenter.onDismiss = { _ in dismissalStarted.fulfill() }
+        presenter.onDismiss = { dismissalStarted.fulfill() }
         let executor = CheckpointWorkflowExecutor { presenter }
         let firstExecution = Task { try await executor.execute(Self.workflow()) }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
@@ -243,7 +242,6 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         presenter.onPresent = { presentation in
             execution?.cancel()
             presentation.delegate.checkpointPresentationFinished(
-                callID: presentation.callID,
                 outcome: expectedOutcome
             )
         }
@@ -256,15 +254,14 @@ final class CheckpointWorkflowExecutorTests: TestCase {
             return XCTFail("Expected the completed presentation outcome")
         }
         XCTAssertEqual(errorOutcome.error, expectedError)
-        XCTAssertTrue(presenter.dismissedCallIDs.isEmpty)
+        XCTAssertEqual(presenter.dismissCallCount, 0)
     }
 
-    func testUnknownPresentationCompletionIsIgnored() {
+    func testPresentationCompletionWithoutPendingExecutionIsIgnored() {
         let presenter = MockCheckpointPresenter()
         let executor = CheckpointWorkflowExecutor { presenter }
 
         executor.checkpointPresentationFinished(
-            callID: "unknown-call-id",
             outcome: CheckpointPaywallDismissedOutcome.shared
         )
 
@@ -272,6 +269,12 @@ final class CheckpointWorkflowExecutorTests: TestCase {
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
+        let offering = Offering(
+            identifier: "offering-id",
+            serverDescription: "Test offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
@@ -282,12 +285,8 @@ final class CheckpointWorkflowExecutorTests: TestCase {
                 screens: [:]
             ),
             uiConfig: .empty,
-            offering: Offering(
-                identifier: "offering-id",
-                serverDescription: "Test offering",
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
+            offering: offering,
+            offerings: .preview(offerings: [offering])
         )
     }
 
@@ -310,31 +309,29 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 private final class MockCheckpointPresenter: CheckpointPresenter {
 
     struct Presentation {
-        let callID: String
         let workflow: ResolvedCheckpointWorkflow
         let delegate: CheckpointPresentationDelegate
     }
 
     var onPresent: ((Presentation) -> Void)?
-    var onDismiss: ((String) -> Void)?
+    var onDismiss: (() -> Void)?
     var automaticallyFinishesDismissing = true
     private(set) var presentations: [Presentation] = []
-    private(set) var dismissedCallIDs: [String] = []
+    private(set) var dismissCallCount = 0
     private var dismissalCompletions: [() -> Void] = []
 
     func present(
-        callID: String,
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
     ) {
-        let presentation = Presentation(callID: callID, workflow: workflow, delegate: delegate)
+        let presentation = Presentation(workflow: workflow, delegate: delegate)
         self.presentations.append(presentation)
         self.onPresent?(presentation)
     }
 
-    func dismiss(callID: String, completion: @escaping () -> Void) {
-        self.dismissedCallIDs.append(callID)
-        self.onDismiss?(callID)
+    func dismiss(completion: @escaping () -> Void) {
+        self.dismissCallCount += 1
+        self.onDismiss?()
         if self.automaticallyFinishesDismissing {
             completion()
         } else {

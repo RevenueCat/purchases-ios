@@ -28,12 +28,11 @@ protocol CheckpointExecutor: AnyObject {
 protocol CheckpointPresenter: AnyObject {
 
     func present(
-        callID: String,
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
     )
 
-    func dismiss(callID: String, completion: @escaping () -> Void)
+    func dismiss(completion: @escaping () -> Void)
 
 }
 
@@ -41,7 +40,7 @@ protocol CheckpointPresenter: AnyObject {
 @MainActor
 protocol CheckpointPresentationDelegate: AnyObject {
 
-    func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome)
+    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome)
 
 }
 
@@ -53,7 +52,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     private typealias Continuation = CheckedContinuation<CheckpointPaywallOutcome, Error>
 
-    private var pendingCalls: [String: Continuation] = [:]
+    private var pendingContinuation: Continuation?
     private var activePresenter: CheckpointPresenter?
     private let presenterProvider: PresenterProvider
 
@@ -67,7 +66,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
     }
 
     func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
-        guard self.pendingCalls.isEmpty else {
+        guard self.pendingContinuation == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
         guard let presenter = self.presenterProvider() else {
@@ -75,7 +74,6 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         }
 
         self.activePresenter = presenter
-        let callID = UUID().uuidString
         return try await withTaskCancellationHandler {
             try await withCheckedThrowingContinuation { continuation in
                 guard !Task.isCancelled else {
@@ -83,40 +81,45 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                     continuation.resume(throwing: CancellationError())
                     return
                 }
-                self.store(continuation: continuation, for: callID)
-                presenter.present(callID: callID, workflow: workflow, delegate: self)
+                self.store(continuation: continuation)
+                presenter.present(workflow: workflow, delegate: self)
             }
         } onCancel: {
             Task { @MainActor [weak self] in
-                self?.cancel(callID: callID)
+                self?.cancel()
             }
         }
     }
 
-    func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome) {
-        self.finish(callID: callID, outcome: outcome)
+    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome) {
+        self.finish(outcome: outcome)
     }
 
-    private func store(continuation: Continuation, for callID: String) {
-        self.pendingCalls[callID] = continuation
+    private func store(continuation: Continuation) {
+        self.pendingContinuation = continuation
     }
 
-    private func finish(callID: String, outcome: CheckpointPaywallOutcome) {
-        guard let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
+    private func finish(outcome: CheckpointPaywallOutcome) {
+        guard let continuation = self.takePendingContinuation() else { return }
         self.activePresenter = nil
         continuation.resume(returning: outcome)
     }
 
-    private func cancel(callID: String) {
-        guard self.pendingCalls[callID] != nil,
+    private func cancel() {
+        guard self.pendingContinuation != nil,
               let presenter = self.activePresenter else { return }
 
-        presenter.dismiss(callID: callID) { [weak self] in
+        presenter.dismiss { [weak self] in
             guard let self,
-                  let continuation = self.pendingCalls.removeValue(forKey: callID) else { return }
+                  let continuation = self.takePendingContinuation() else { return }
             self.activePresenter = nil
             continuation.resume(throwing: CancellationError())
         }
+    }
+
+    private func takePendingContinuation() -> Continuation? {
+        defer { self.pendingContinuation = nil }
+        return self.pendingContinuation
     }
 
 }

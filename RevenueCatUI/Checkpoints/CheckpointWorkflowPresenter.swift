@@ -27,15 +27,8 @@ import UIKit
 @MainActor
 final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
-    typealias PresentationHandler = (PresentedWorkflow) throws -> Bool
+    typealias PresentationHandler = (ResolvedCheckpointWorkflow) throws -> Bool
 
-    struct PresentedWorkflow: Identifiable {
-        let id: String
-        let workflow: ResolvedCheckpointWorkflow
-        let delegate: CheckpointPresentationDelegate
-    }
-
-    private var activeCallID: String?
     private let callStore: CheckpointCallStore
     private let presentationHandler: PresentationHandler?
 
@@ -53,52 +46,36 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
     }
 
     func present(
-        callID: String,
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
     ) {
-        self.callStore.store(callID: callID, workflow: workflow, delegate: delegate)
-        self.activeCallID = callID
+        self.callStore.store(workflow: workflow, delegate: delegate)
 
         do {
-            let presentedWorkflow = PresentedWorkflow(
-                id: callID,
-                workflow: workflow,
-                delegate: delegate
-            )
-
-            let didBeginPresentation = try self.presentationHandler?(presentedWorkflow)
-                ?? self.presentAutomatically(presentedWorkflow)
+            let didBeginPresentation = try self.presentationHandler?(workflow)
+                ?? self.presentAutomatically(workflow)
             guard didBeginPresentation else {
                 throw CheckpointError.noPresentationContext
             }
         } catch {
-            self.stage(
-                outcome: CheckpointPaywallErrorOutcome(error: error as NSError),
-                callID: callID
-            )
-            self.complete(callID: callID)
+            self.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
+            self.complete()
         }
     }
 
-    func stage(outcome: CheckpointPaywallOutcome, callID: String? = nil) {
-        guard let callID = callID ?? self.activeCallID else { return }
-        self.callStore.stage(outcome: outcome, for: callID)
+    func stage(outcome: CheckpointPaywallOutcome) {
+        self.callStore.stage(outcome: outcome)
     }
 
-    func presentationDidDismiss(callID: String? = nil) {
-        guard let callID = callID ?? self.activeCallID else { return }
-        self.complete(callID: callID)
+    func presentationDidDismiss() {
+        self.complete()
     }
 
-    func dismiss(callID: String, completion: @escaping () -> Void) {
-        guard self.activeCallID == callID else {
+    func dismiss(completion: @escaping () -> Void) {
+        guard self.callStore.remove() != nil else {
             completion()
             return
         }
-
-        _ = self.callStore.remove(callID: callID)
-        self.activeCallID = nil
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         let viewController = self.presentedViewController
@@ -113,33 +90,25 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
     }
 
-    private func complete(callID: String) {
-        guard let call = self.callStore.remove(callID: callID) else { return }
+    private func complete() {
+        guard let call = self.callStore.remove() else { return }
 
-        if self.activeCallID == callID {
-            self.activeCallID = nil
-            #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-            self.presentedViewController = nil
-            #endif
-        }
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+        self.presentedViewController = nil
+        #endif
 
-        call.delegate.checkpointPresentationFinished(
-            callID: callID,
-            outcome: call.stagedOutcome
-        )
+        call.delegate.checkpointPresentationFinished(outcome: call.stagedOutcome)
     }
 
-    private func presentAutomatically(_ presentedWorkflow: PresentedWorkflow) throws -> Bool {
+    private func presentAutomatically(_ workflow: ResolvedCheckpointWorkflow) throws -> Bool {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             return false
         }
-        let offering = presentedWorkflow.workflow.offering
-
         let workflowContext = try WorkflowPreview.makeContext(
-            workflow: presentedWorkflow.workflow.workflow,
-            offerings: [offering],
-            uiConfig: presentedWorkflow.workflow.uiConfig
+            workflow: workflow.workflow,
+            offerings: workflow.offerings,
+            uiConfig: workflow.uiConfig
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,

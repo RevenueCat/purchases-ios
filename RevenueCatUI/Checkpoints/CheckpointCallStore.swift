@@ -35,26 +35,22 @@ final class CheckpointCallStore {
         }
     }
 
-    private var calls: [String: Call] = [:]
+    private(set) var call: Call?
 
     func store(
-        callID: String,
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
     ) {
-        self.calls[callID] = Call(workflow: workflow, delegate: delegate)
+        self.call = Call(workflow: workflow, delegate: delegate)
     }
 
-    func call(for callID: String) -> Call? {
-        return self.calls[callID]
+    func stage(outcome: CheckpointPaywallOutcome) {
+        self.call?.stagedOutcome = outcome
     }
 
-    func stage(outcome: CheckpointPaywallOutcome, for callID: String) {
-        self.calls[callID]?.stagedOutcome = outcome
-    }
-
-    func remove(callID: String) -> Call? {
-        return self.calls.removeValue(forKey: callID)
+    func remove() -> Call? {
+        defer { self.call = nil }
+        return self.call
     }
 
 }
