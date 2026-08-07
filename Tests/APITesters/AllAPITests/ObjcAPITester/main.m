@@ -10,7 +10,9 @@
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
 #import "RCBillingPlanTypeAPI.h"
+#if ENABLE_CHECKPOINTS
 #import "RCCheckpointAPI.h"
+#endif
 #import "RCConfigurationAPI.h"
 #import "RCCustomerInfoAPI.h"
 #import "RCDangerousSettingsAPI.h"
@@ -105,7 +107,9 @@ int main(int argc, const char * argv[]) {
         }
 
         [RCBillingPlanTypeAPI checkAPI];
+        #if ENABLE_CHECKPOINTS
         [RCCheckpointAPI checkAPI];
+        #endif
     }
     return 0;
 }

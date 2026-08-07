@@ -546,6 +546,7 @@ commands:
           name: Generate Tuist workspace
           command: |
             export TUIST_INCLUDE_TEST_DEPENDENCIES=<< parameters.include_test_dependencies >>
+            export TUIST_SWIFT_CONDITIONS="${TUIST_SWIFT_CONDITIONS:+${TUIST_SWIFT_CONDITIONS} }ENABLE_CHECKPOINTS"
             # --skip-tools: tuist is already installed by install-mise-tools above;
             # without it, `mise run` re-verifies every declared tool (ruby, xcbeautify, etc.)
             # on every call.
@@ -637,7 +638,7 @@ jobs:
       name: macos-executor
       xcode_version: "16.4"
     environment:
-      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS
       TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
@@ -1058,6 +1059,8 @@ jobs:
   build-checkpoint-tester:
     executor:
       name: macos-executor
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS
     steps:
       - checkout
       - tuist-generate-workspace:

@@ -829,7 +829,8 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots
+      fail_build: !generate_snapshots,
+      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
     )
   end
 
@@ -934,6 +935,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    ENV["TUIST_SWIFT_CONDITIONS"] = [ENV["TUIST_SWIFT_CONDITIONS"], "ENABLE_CHECKPOINTS"]
+      .compact
+      .join(" ")
 
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
@@ -948,7 +952,10 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
+        xcargs: [
+          generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI",
+          "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
+        ].join(" ")
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
