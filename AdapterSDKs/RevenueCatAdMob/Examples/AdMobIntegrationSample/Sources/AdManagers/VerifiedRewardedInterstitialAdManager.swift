@@ -1,5 +1,6 @@
 import Foundation
 import GoogleMobileAds
+@_spi(Experimental) import RevenueCat
 @_spi(Experimental) import RevenueCatAdMob
 
 final class VerifiedRewardedInterstitialAdManager: NSObject, ObservableObject {
