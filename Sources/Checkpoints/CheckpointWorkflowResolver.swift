@@ -25,19 +25,14 @@ import Foundation
 }
 
 /// The reason that checkpoint resolution selected no workflow.
-@_spi(Internal) public enum CheckpointResolutionReason: String, Sendable {
+@_spi(Internal) public enum CheckpointResolutionReason: Sendable {
 
     /// No targeting rule matched.
-    case noMatch = "NO_MATCH"
+    case noMatch
     /// Checkpoint configuration could not be loaded.
-    case configurationUnavailable = "CONFIGURATION_UNAVAILABLE"
+    case configurationUnavailable
     /// Checkpoints are disabled.
-    case disabled = "DISABLED"
-
-    /// The raw reason value.
-    public var value: String {
-        return self.rawValue
-    }
+    case disabled
 
 }
 

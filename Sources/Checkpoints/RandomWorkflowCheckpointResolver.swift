@@ -38,11 +38,8 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
     func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
         switch identifier {
         case Self.simulatedErrorCheckpointIdentifier:
-            throw PurchasesError(
-                error: .configurationError,
-                userInfo: [
-                    NSLocalizedDescriptionKey: "Simulated error: checkpoint workflow not presentable."
-                ]
+            throw ErrorUtils.configurationError(
+                message: "Simulated error: checkpoint workflow not presentable."
             )
         case Self.simulatedNoMatchCheckpointIdentifier:
             return .noAction(.noMatch)

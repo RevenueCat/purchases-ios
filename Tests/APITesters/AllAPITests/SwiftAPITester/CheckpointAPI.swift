@@ -33,7 +33,6 @@ func checkCheckpointCoreAPI() {
 }
 
 func checkCheckpointResolutionReasonAPI(_ reason: CheckpointResolutionReason) {
-    let _: String = reason.value
     let _: CheckpointResolutionReason = .noMatch
     let _: CheckpointResolutionReason = .configurationUnavailable
     let _: CheckpointResolutionReason = .disabled
