@@ -15,9 +15,9 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-#if os(iOS) && !targetEnvironment(macCatalyst)
+#if ENABLE_CHECKPOINTS && os(iOS) && !targetEnvironment(macCatalyst)
 
-@_spi(Internal) public extension Purchases {
+public extension Purchases {
 
     /// Global listener for checkpoint activity.
     var checkpointListener: CheckpointListener? {
@@ -66,8 +66,7 @@ import Foundation
 
 }
 
-#if ENABLE_CHECKPOINTS_OBJC
-@_spi(Internal) public extension Purchases {
+public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
     @_disfavoredOverload
@@ -88,7 +87,6 @@ import Foundation
     }
 
 }
-#endif
 
 private extension Purchases {
 

@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -235,5 +237,7 @@ extension CheckpointWorkflowPresenter {
 
 @available(iOS 15.0, macOS 12.0, *)
 extension CheckpointWorkflowPresenter: PaywallViewControllerDelegate {}
+
+#endif
 
 #endif
