@@ -30,8 +30,7 @@ final class CheckpointRulesTests: TestCase {
             {
               "id": "chkptrule_1a2b3c4d5e6f7a8b",
               "audience": "aud_4412",
-              "workflow_id": "wf-1",
-              "schedule": { "start": "2026-11-25T00:00:00Z", "end": "2026-11-30T00:00:00Z" }
+              "workflow_id": "wf-1"
             },
             {
               "id": "chkptrule_9z8y7x6w5v4u3t2s",
@@ -48,12 +47,8 @@ final class CheckpointRulesTests: TestCase {
         let first = try XCTUnwrap(ruleSet.rules.first)
         expect(first.id) == "chkptrule_1a2b3c4d5e6f7a8b"
         expect(first.audienceId) == "aud_4412"
-        expect(first.schedule?.start) == Self.date("2026-11-25T00:00:00Z")
-        expect(first.schedule?.end) == Self.date("2026-11-30T00:00:00Z")
 
-        let second = try XCTUnwrap(ruleSet.rules.last)
-        expect(second.audienceId) == "aud_4419"
-        expect(second.schedule).to(beNil())
+        expect(ruleSet.rules.last?.audienceId) == "aud_4419"
     }
 
     func testDecodesACheckpointWithNoRules() throws {
@@ -126,42 +121,6 @@ final class CheckpointRulesTests: TestCase {
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
     }
 
-    // MARK: - Schedule
-
-    func testDecodesAScheduleWithOnlyOneBound() throws {
-        let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a",
-                      "schedule": { "start": "2026-11-25T00:00:00Z" } }] }
-        """)
-
-        let schedule = try XCTUnwrap(ruleSet.rules.onlyElement?.schedule)
-        expect(schedule.start) == Self.date("2026-11-25T00:00:00Z")
-        expect(schedule.end).to(beNil())
-    }
-
-    func testDecodesFractionalSecondsInASchedule() throws {
-        let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a",
-                      "schedule": { "start": "2026-11-25T00:00:00.251Z" } }] }
-        """)
-
-        expect(ruleSet.rules.onlyElement?.schedule?.start) == Self.date("2026-11-25T00:00:00.251Z")
-    }
-
-    /// A bound that's present but unparseable drops the whole rule. Letting it read as `nil` would widen the
-    /// window and run the rule outside the dates it was scheduled for.
-    func testSkipsARuleWhoseScheduleHasAnUnparseableBound() throws {
-        let ruleSet = try Self.decode("""
-        { "rules": [
-            { "audience": "aud_4412", "workflow_id": "wf-broken",
-              "schedule": { "start": "not-a-date", "end": "2026-11-30T00:00:00Z" } },
-            \(Self.rule("wf-valid"))
-        ] }
-        """)
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
-    }
-
     // MARK: - Helpers
 
     private static func decode(_ json: String) throws -> CheckpointRuleSet {
@@ -170,10 +129,6 @@ final class CheckpointRulesTests: TestCase {
 
     private static func rule(_ workflowId: String) -> String {
         return #"{ "audience": "aud_4412", "workflow_id": "\#(workflowId)" }"#
-    }
-
-    private static func date(_ string: String) -> Date? {
-        return ISO8601DateFormatter.default.date(from: string)
     }
 
 }

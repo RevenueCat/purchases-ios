@@ -29,33 +29,11 @@ struct CheckpointRule: Equatable, Sendable {
     /// can never end up targeting everyone by omission.
     let audienceId: String
     let workflowId: String
-    /// Rules are published ahead of their start date, so this window is resolved on device.
-    let schedule: CheckpointRuleSchedule?
 
-    init(
-        id: String? = nil,
-        audienceId: String,
-        workflowId: String,
-        schedule: CheckpointRuleSchedule? = nil
-    ) {
+    init(id: String? = nil, audienceId: String, workflowId: String) {
         self.id = id
         self.audienceId = audienceId
         self.workflowId = workflowId
-        self.schedule = schedule
-    }
-
-}
-
-/// Either bound absent means open-ended on that side. A bound that's present but unparseable fails the whole
-/// rule rather than reading as open-ended, which would run it outside its dates.
-struct CheckpointRuleSchedule: Equatable, Sendable {
-
-    let start: Date?
-    let end: Date?
-
-    init(start: Date? = nil, end: Date? = nil) {
-        self.start = start
-        self.end = end
     }
 
 }
@@ -87,12 +65,9 @@ extension CheckpointRule: Decodable {
         case id
         case audienceId = "audience"
         case workflowId
-        case schedule
     }
 
 }
-
-extension CheckpointRuleSchedule: Decodable {}
 
 /// Turns a rule that fails to decode into `nil` instead of failing its enclosing array.
 private struct SkippableRule: Decodable {
