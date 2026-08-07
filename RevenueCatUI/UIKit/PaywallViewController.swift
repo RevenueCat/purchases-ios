@@ -178,6 +178,33 @@ public class PaywallViewController: UIViewController {
         )
     }
 
+    #if !os(tvOS)
+    /// Creates a paywall view controller from a pre-built workflow context.
+    convenience init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(
+            content: .offering(workflowContext.initialOffering),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.introEligibility = introEligibility
+        configuration.injectedWorkflowContext = workflowContext
+        self.configuration = configuration
+    }
+    #endif
+
     /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// `Offerings.current` will be used by default.
@@ -529,6 +556,19 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    /// Dismissal handling for the exit-offer controller. The SDK presents that controller itself, so it
+    /// also dismisses it: the host's handler was written for the paywall the host presented, and one that
+    /// dismisses its own captured controller instead of the one it is handed would strand the exit offer
+    /// on screen. The handler is still called afterwards so existing close callbacks keep firing.
+    static func exitOfferDismissRequestedHandler(
+        originalHandler: ((PaywallViewController) -> Void)?
+    ) -> (PaywallViewController) -> Void {
+        return { controller in
+            controller.dismiss(animated: true)
+            originalHandler?(controller)
+        }
+    }
+
     /// Presents the exit offer paywall as a sheet.
     private func presentExitOffer(for offering: Offering) {
         Logger.debug(Strings.presentingExitOffer(offering.identifier))
@@ -574,14 +614,9 @@ public class PaywallViewController: UIViewController {
                 shouldBlockTouchEvents: shouldBlock,
                 performPurchase: performPurchase,
                 performRestore: performRestore,
-                dismissRequestedHandler: { controller in
-                    // When exit offer is dismissed, call the original handler
-                    if let handler = originalDismissHandler {
-                        handler(controller)
-                    } else {
-                        controller.dismiss(animated: true)
-                    }
-                },
+                dismissRequestedHandler: Self.exitOfferDismissRequestedHandler(
+                    originalHandler: originalDismissHandler
+                ),
                 promoOfferCache: self.promoOfferCache
             )
 

@@ -48,6 +48,37 @@ class StackComponentViewModel {
         }
     }
 
+    /// Whether this stack renders anything a screen reader can announce, at any depth.
+    /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
+    var containsAnnounceableContent: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
+        return self.viewModels.contains(where: Self.announces)
+            || self.badgeViewModels.contains(where: Self.announces)
+    }
+
+    private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
+        switch viewModel {
+        case .text(let text):
+            return text.announcesText
+        case .stack(let stack):
+            return stack.containsAnnounceableContent
+        case .stickyFooter(let footer):
+            return footer.stackViewModel.containsAnnounceableContent
+
+        // Composites that own text of their own, or a subtree we do not walk.
+        case .root, .button, .package, .purchaseButton, .timeline, .tabs, .tabControl,
+             .tabControlButton, .tabControlToggle, .carousel, .countdown:
+            return true
+
+        // Purely visual.
+        case .icon, .image, .video, .webView:
+            return false
+        }
+    }
+
     private let discardRules: Bool
 
     init(

@@ -56,24 +56,42 @@ struct WorkflowRenderingContext {
     let pageHeaderSuppressed: Bool
     /// Marks the header subtree so only header buttons consume workflow page transition context.
     let isHeader: Bool
+    /// Whether the workflow has a step to go back to. Lets a `navigate_back` button describe itself
+    /// as going back rather than closing, matching where `onDismiss` will actually take the user.
+    let canNavigateBack: Bool
 
     static let identity = Self()
 
     init(
         pageTransition: WorkflowPageTransitionContext = .identity,
         pageHeaderSuppressed: Bool = false,
-        isHeader: Bool = false
+        isHeader: Bool = false,
+        canNavigateBack: Bool = false
     ) {
         self.pageTransition = pageTransition
         self.pageHeaderSuppressed = pageHeaderSuppressed
         self.isHeader = isHeader
+        self.canNavigateBack = canNavigateBack
+    }
+
+    /// For subtrees whose dismissal is local, like a bottom sheet: a `navigate_back` button there
+    /// closes that subtree rather than stepping back through the workflow, so it must not describe
+    /// itself as going back.
+    func withoutBackNavigation() -> Self {
+        return .init(
+            pageTransition: self.pageTransition,
+            pageHeaderSuppressed: self.pageHeaderSuppressed,
+            isHeader: self.isHeader,
+            canNavigateBack: false
+        )
     }
 
     func markingHeader() -> Self {
         return .init(
             pageTransition: self.pageTransition,
             pageHeaderSuppressed: self.pageHeaderSuppressed,
-            isHeader: true
+            isHeader: true,
+            canNavigateBack: self.canNavigateBack
         )
     }
 

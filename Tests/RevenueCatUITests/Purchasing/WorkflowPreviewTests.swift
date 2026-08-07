@@ -46,6 +46,17 @@ final class WorkflowPreviewTests: TestCase {
         expect(context.presentedOfferingContext?.offeringIdentifier) == "offering_a"
     }
 
+    func testMakeContextPreservesCompleteOfferingsBundle() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let secondaryOffering = Self.makeOffering(identifier: "offering_b")
+        let offerings = Offerings.preview(offerings: [baseOffering, secondaryOffering])
+        let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_a")
+
+        let context = try WorkflowPreview.makeContext(workflow: workflow, offerings: offerings)
+
+        expect(context.offering(for: "offering_b")?.identifier) == "offering_b"
+    }
+
     func testMakeContextThrowsWhenScreenOfferingMissingFromOfferings() throws {
         // The workflow screen resolves to "offering_b", but only "offering_a" is supplied.
         let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_b")

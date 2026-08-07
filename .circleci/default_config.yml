@@ -636,6 +636,9 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: "16.4"
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
       - install-dependencies
@@ -1049,6 +1052,25 @@ jobs:
       - run:
           name: Build RevenueCatUI with Xcode 26.5
           command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
+  build-checkpoint-tester:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "CheckpointTester"
+      - run:
+          name: Build CheckpointTester
+          command: >-
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme CheckpointTester
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
           no_output_timeout: 30m
       - slack-notify-on-fail
 
@@ -1526,6 +1548,28 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  run-paywall-accessibility-ui-tests:
+    description: "Assert paywall accessibility labels against the real accessibility tree"
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace:
+          query: "PaywallFixturesUITests"
+      - run:
+          name: Run paywall accessibility UI tests
+          command: |
+            bundle exec fastlane paywall_accessibility_ui_tests
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output
+
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
@@ -1880,6 +1924,9 @@ jobs:
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
           no_output_timeout: 5m
+      - run:
+          name: Run api diff helper unit tests
+          command: ruby fastlane/api_diff_helper_test.rb
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2098,12 +2145,20 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      # 0.12.0
+      - revenuecat/install-public-api-diff:
+          version: "06620ffe614773a43102ab8052077ae463908b78"
+      - run:
+          name: Fetch main for the merge base
+          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
           name: Generate RevenueCat swiftinterface
           command: |
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
@@ -2142,12 +2197,20 @@ jobs:
     steps:
       - checkout
       - install-dependencies
+      # 0.12.0
+      - revenuecat/install-public-api-diff:
+          version: "06620ffe614773a43102ab8052077ae463908b78"
+      - run:
+          name: Fetch main for the merge base
+          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
           name: Generate RevenueCatUI swiftinterface
           command: |
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
+          environment:
+            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
       - store_artifacts:
@@ -2341,13 +2404,18 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
       - build-xcode-265:
+          context:
+            - slack-secrets
+      - build-checkpoint-tester:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2372,6 +2440,8 @@ workflows:
           context:
             - e2e-tests
             - slack-secrets
+      # Needs no context: the paywall under test is a local sample, so no API key is involved.
+      - run-paywall-accessibility-ui-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2530,6 +2600,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
+            - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
@@ -2781,9 +2852,11 @@ workflows:
       - check-api-changes-revenuecat:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - check-api-changes-revenuecatui:
           context:
             - slack-secrets-ios
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
