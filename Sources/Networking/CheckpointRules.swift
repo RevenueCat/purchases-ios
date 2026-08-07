@@ -27,14 +27,14 @@ struct CheckpointRule: Equatable, Sendable {
     let id: String?
     /// Reference to the targeted audience, whose predicate arrives in a separate topic. Required, so a rule
     /// can never end up targeting everyone by omission.
-    let audienceId: Int
+    let audienceId: String
     let workflowId: String
     /// Rules are published ahead of their start date, so this window is resolved on device.
     let schedule: CheckpointRuleSchedule?
 
     init(
         id: String? = nil,
-        audienceId: Int,
+        audienceId: String,
         workflowId: String,
         schedule: CheckpointRuleSchedule? = nil
     ) {

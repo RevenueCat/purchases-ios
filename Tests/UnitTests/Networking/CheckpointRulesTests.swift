@@ -29,13 +29,13 @@ final class CheckpointRulesTests: TestCase {
           "rules": [
             {
               "id": "chkptrule_1a2b3c4d5e6f7a8b",
-              "audience": 4412,
+              "audience": "aud_4412",
               "workflow_id": "wf-1",
               "schedule": { "start": "2026-11-25T00:00:00Z", "end": "2026-11-30T00:00:00Z" }
             },
             {
               "id": "chkptrule_9z8y7x6w5v4u3t2s",
-              "audience": 4419,
+              "audience": "aud_4419",
               "workflow_id": "wf-2"
             }
           ]
@@ -47,12 +47,12 @@ final class CheckpointRulesTests: TestCase {
 
         let first = try XCTUnwrap(ruleSet.rules.first)
         expect(first.id) == "chkptrule_1a2b3c4d5e6f7a8b"
-        expect(first.audienceId) == 4412
+        expect(first.audienceId) == "aud_4412"
         expect(first.schedule?.start) == Self.date("2026-11-25T00:00:00Z")
         expect(first.schedule?.end) == Self.date("2026-11-30T00:00:00Z")
 
         let second = try XCTUnwrap(ruleSet.rules.last)
-        expect(second.audienceId) == 4419
+        expect(second.audienceId) == "aud_4419"
         expect(second.schedule).to(beNil())
     }
 
@@ -68,7 +68,7 @@ final class CheckpointRulesTests: TestCase {
         {
           "id": "chkpt_abc",
           "something_the_backend_added_later": true,
-          "rules": [{ "audience": 4412, "workflow_id": "wf-a", "state": "active", "frequency_cap": null }]
+          "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a", "state": "active", "frequency_cap": null }]
         }
         """)
 
@@ -96,7 +96,7 @@ final class CheckpointRulesTests: TestCase {
     /// One bad rule shouldn't take out the whole checkpoint, and it shouldn't shift the others either.
     func testSkipsAMalformedRuleAndKeepsTheRest() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [\(Self.rule("wf-a")), { "audience": 4412 }, \(Self.rule("wf-b"))] }
+        { "rules": [\(Self.rule("wf-a")), { "audience": "aud_4412" }, \(Self.rule("wf-b"))] }
         """)
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-a", "wf-b"]
@@ -112,7 +112,7 @@ final class CheckpointRulesTests: TestCase {
 
     func testSkipsRulesMissingAWorkflowId() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": 4412 }, \(Self.rule("wf-valid"))] }
+        { "rules": [{ "audience": "aud_4412" }, \(Self.rule("wf-valid"))] }
         """)
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
@@ -130,7 +130,7 @@ final class CheckpointRulesTests: TestCase {
 
     func testDecodesAScheduleWithOnlyOneBound() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": 4412, "workflow_id": "wf-a",
+        { "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a",
                       "schedule": { "start": "2026-11-25T00:00:00Z" } }] }
         """)
 
@@ -141,7 +141,7 @@ final class CheckpointRulesTests: TestCase {
 
     func testDecodesFractionalSecondsInASchedule() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": 4412, "workflow_id": "wf-a",
+        { "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a",
                       "schedule": { "start": "2026-11-25T00:00:00.251Z" } }] }
         """)
 
@@ -153,7 +153,7 @@ final class CheckpointRulesTests: TestCase {
     func testSkipsARuleWhoseScheduleHasAnUnparseableBound() throws {
         let ruleSet = try Self.decode("""
         { "rules": [
-            { "audience": 4412, "workflow_id": "wf-broken",
+            { "audience": "aud_4412", "workflow_id": "wf-broken",
               "schedule": { "start": "not-a-date", "end": "2026-11-30T00:00:00Z" } },
             \(Self.rule("wf-valid"))
         ] }
@@ -169,7 +169,7 @@ final class CheckpointRulesTests: TestCase {
     }
 
     private static func rule(_ workflowId: String) -> String {
-        return #"{ "audience": 4412, "workflow_id": "\#(workflowId)" }"#
+        return #"{ "audience": "aud_4412", "workflow_id": "\#(workflowId)" }"#
     }
 
     private static func date(_ string: String) -> Date? {

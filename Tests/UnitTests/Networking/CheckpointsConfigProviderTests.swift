@@ -187,7 +187,7 @@ class CheckpointsConfigProviderTests: TestCase {
     }
 
     private static func payload(id: String? = nil, workflowIds: [String]) -> Data {
-        let rules = workflowIds.map { #"{ "workflow_id": "\#($0)", "audience": 4412 }"# }.joined(separator: ", ")
+        let rules = workflowIds.map { #"{ "workflow_id": "\#($0)", "audience": "aud_4412" }"# }.joined(separator: ", ")
         let idField = id.map { #""id": "\#($0)", "# } ?? ""
         return Data(#"{ \#(idField)"rules": [\#(rules)] }"#.utf8)
     }
