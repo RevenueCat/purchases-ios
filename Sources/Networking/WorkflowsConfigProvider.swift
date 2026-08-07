@@ -11,7 +11,7 @@ import Foundation
 
 protocol WorkflowsConfigProviderType {
 
-    func offeringIdByWorkflowId() async -> [String: String?]
+    func offeringIdByWorkflowId() async -> [String: String]
     func workflowId(forOfferingId offeringId: String) async -> String?
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError>
     func decodeCachedWorkflowForAssetPrewarming(
@@ -74,16 +74,13 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         self.workflowDecoder = workflowDecoder
     }
 
-    /// Returns every workflow and the offering identifier from its topic metadata, when present.
-    func offeringIdByWorkflowId() async -> [String: String?] {
+    /// Returns workflows that contain an offering identifier in their topic metadata.
+    func offeringIdByWorkflowId() async -> [String: String] {
         guard let topic = await self.manager.topic(.workflows) else { return [:] }
 
-        return Dictionary(uniqueKeysWithValues: topic.map { workflowID, item in
-            let offeringID: String?
-            if case let .string(value)? = item.content[Self.offeringIdentifierKey] {
-                offeringID = value
-            } else {
-                offeringID = nil
+        return Dictionary(uniqueKeysWithValues: topic.compactMap { workflowID, item in
+            guard case let .string(offeringID)? = item.content[Self.offeringIdentifierKey] else {
+                return nil
             }
             return (workflowID, offeringID)
         })

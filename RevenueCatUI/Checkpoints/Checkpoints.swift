@@ -88,6 +88,8 @@ import Foundation
     public static let configurationUnavailable = CheckpointNoActionReason(value: "CONFIGURATION_UNAVAILABLE")
     /// Checkpoints are disabled.
     public static let disabled = CheckpointNoActionReason(value: "DISABLED")
+    /// The checkpoint identifier is not configured.
+    public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
 
     init(value: String) {
         self.value = value

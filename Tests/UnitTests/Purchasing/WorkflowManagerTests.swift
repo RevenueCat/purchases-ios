@@ -41,7 +41,7 @@ class WorkflowManagerTests: TestCase {
     // MARK: - getWorkflow
 
     func testOfferingIdByWorkflowIdDelegatesToProvider() async {
-        self.mockProvider.stubbedOfferingIdByWorkflowId = ["wf_1": "offering_1", "wf_2": nil]
+        self.mockProvider.stubbedOfferingIdByWorkflowId = ["wf_1": "offering_1"]
 
         let result = await self.manager.offeringIdByWorkflowId()
 

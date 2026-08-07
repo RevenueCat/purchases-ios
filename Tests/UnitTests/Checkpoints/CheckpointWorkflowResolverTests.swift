@@ -64,10 +64,10 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
         }
     }
 
-    func testSimulatedUnknownCheckpointResolvesNoMatch() async throws {
+    func testSimulatedUnknownCheckpointResolvesUnknownCheckpoint() async throws {
         let resolution = try await self.resolve(identifier: "unknown_checkpoint")
 
-        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+        XCTAssertEqual(Self.noActionReason(resolution), .unknownCheckpoint)
     }
 
     func testDisabledResolverResolvesDisabled() async throws {
@@ -84,11 +84,8 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
-    func testDefaultChooserOnlySelectsWorkflowsWithOfferingMetadata() {
-        let workflows = [
-            "eligible": Optional("offering"),
-            "missing-offering": nil
-        ]
+    func testDefaultChooserSelectsAWorkflowAndItsOfferingMetadata() {
+        let workflows = ["eligible": "offering"]
 
         for _ in 0..<10 {
             let selected = RandomWorkflowCheckpointResolver.chooseRandomWorkflow(from: workflows)
@@ -143,7 +140,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointResolvesConfigurationUnavailableWithoutFetchingOfferingsWhenMetadataHasNone() async throws {
-        self.provider.stubbedOfferingIdByWorkflowId = [self.workflowID: nil]
+        self.provider.stubbedOfferingIdByWorkflowId = [:]
         let offeringsFetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver(offeringsProvider: {
             offeringsFetchCount.modify { $0 += 1 }
@@ -169,8 +166,8 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
             workflowManager: self.workflowManager,
             offeringsProvider: offeringsProvider ?? { self.offerings },
             workflowSelector: { workflows in
-                guard workflows.keys.contains(self.workflowID) else { return nil }
-                return (self.workflowID, workflows[self.workflowID] ?? nil)
+                guard let offeringID = workflows[self.workflowID] else { return nil }
+                return (self.workflowID, offeringID)
             }
         )
     }

@@ -20,7 +20,7 @@ import XCTest
 final class CheckpointsManagerTests: TestCase {
 
     func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {
-        let manager = CheckpointsManager { _, _ in .noAction(.noMatch) }
+        let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
         let listener = ListenerRecorder()
         manager.listener = listener
 
@@ -32,7 +32,7 @@ final class CheckpointsManagerTests: TestCase {
         guard let noAction = result as? CheckpointNoActionResult else {
             return XCTFail("Expected a no-action result")
         }
-        XCTAssertEqual(noAction.reason, .noMatch)
+        XCTAssertEqual(noAction.reason, .unknownCheckpoint)
         XCTAssertEqual(noAction.checkpoint.identifier, "unknown_checkpoint")
         XCTAssertEqual(noAction.checkpoint.params.customProperties["name"], "Rick")
         XCTAssertEqual(

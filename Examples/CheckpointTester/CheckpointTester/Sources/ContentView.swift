@@ -83,7 +83,7 @@ struct ContentView: View {
                     }
 
                     DemoButton(
-                        title: "No match",
+                        title: "Unknown checkpoint",
                         subtitle: "An unknown identifier resolves without presenting UI.",
                         systemImage: "arrow.forward"
                     ) {

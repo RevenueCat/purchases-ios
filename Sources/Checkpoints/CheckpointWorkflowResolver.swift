@@ -33,6 +33,8 @@ import Foundation
     case configurationUnavailable
     /// Checkpoints are disabled.
     case disabled
+    /// The checkpoint identifier is not configured.
+    case unknownCheckpoint
 
 }
 
