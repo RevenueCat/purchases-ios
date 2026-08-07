@@ -243,7 +243,7 @@ struct ContentView: View {
     }
 
     private var checkpointParams: CheckpointParams {
-        var customProperties: [String: RevenueCat.CheckpointValue] = [:]
+        var customProperties: [String: CheckpointValue] = [:]
 
         for variable in self.checkpointVariables {
             let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)

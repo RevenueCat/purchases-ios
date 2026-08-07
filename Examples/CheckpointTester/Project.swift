@@ -47,9 +47,11 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI,
             ],
-            settings: .appTarget(including: [
-                "DEVELOPMENT_TEAM": "",
-            ])
+            settings: .appTarget(
+                including: ([
+                    "DEVELOPMENT_TEAM": "",
+                ] as SettingsDictionary).appendingTuistSwiftConditions()
+            )
         ),
     ],
     schemes: [

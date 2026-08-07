@@ -17,10 +17,153 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Core-owned checkpoint custom value, surfaced through RevenueCatUI.
-public typealias CheckpointValue = RevenueCat.CheckpointValue
-/// Core-owned checkpoint parameters, surfaced through RevenueCatUI.
-public typealias CheckpointParams = RevenueCat.CheckpointParams
+/// A custom value supplied when a checkpoint is hit.
+public struct CheckpointValue: Equatable, Hashable, Sendable {
+
+    fileprivate let coreValue: RevenueCat.CheckpointValue
+
+    private init(coreValue: RevenueCat.CheckpointValue) {
+        self.coreValue = coreValue
+    }
+
+    /// Creates a string checkpoint value.
+    public static func string(_ value: String) -> Self { return .init(coreValue: .string(value)) }
+    /// Creates an integer checkpoint value.
+    public static func integer(_ value: Int64) -> Self { return .init(coreValue: .integer(value)) }
+    /// Creates a floating-point checkpoint value.
+    public static func double(_ value: Double) -> Self { return .init(coreValue: .double(value)) }
+    /// Creates a Boolean checkpoint value.
+    public static func boolean(_ value: Bool) -> Self { return .init(coreValue: .boolean(value)) }
+
+}
+
+extension CheckpointValue: ExpressibleByStringLiteral {
+
+    /// Creates a string checkpoint value from a string literal.
+    public init(stringLiteral value: String) { self = .string(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByIntegerLiteral {
+
+    /// Creates an integer checkpoint value from an integer literal.
+    public init(integerLiteral value: Int64) { self = .integer(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByFloatLiteral {
+
+    /// Creates a floating-point checkpoint value from a floating-point literal.
+    public init(floatLiteral value: Double) { self = .double(value) }
+
+}
+
+extension CheckpointValue: ExpressibleByBooleanLiteral {
+
+    /// Creates a Boolean checkpoint value from a Boolean literal.
+    public init(booleanLiteral value: Bool) { self = .boolean(value) }
+
+}
+
+extension CheckpointValue: Codable {
+
+    /// Creates a checkpoint value by decoding a primitive JSON value.
+    public init(from decoder: Decoder) throws {
+        self.init(coreValue: try RevenueCat.CheckpointValue(from: decoder))
+    }
+
+    /// Encodes the checkpoint value as a primitive JSON value.
+    public func encode(to encoder: Encoder) throws {
+        try self.coreValue.encode(to: encoder)
+    }
+
+}
+
+extension CheckpointValue {
+
+    /// Creates a checkpoint value from a supported Foundation primitive.
+    public init?(foundationValue: Any) {
+        guard let coreValue = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
+        self.init(coreValue: coreValue)
+    }
+
+    /// The equivalent Foundation primitive value.
+    public var foundationValue: Any {
+        return self.coreValue.foundationValue
+    }
+
+}
+
+/// Per-call parameters for a checkpoint.
+@objc(RCCheckpointParams)
+public final class CheckpointParams: NSObject, @unchecked Sendable {
+
+    /// Custom properties usable in checkpoint targeting rules and feature events.
+    public let customProperties: [String: CheckpointValue]
+
+    /// Creates checkpoint parameters with the supplied custom properties.
+    public init(customProperties: [String: CheckpointValue] = [:]) {
+        self.customProperties = customProperties
+        super.init()
+    }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? CheckpointParams else { return false }
+        return self.customProperties == other.customProperties
+    }
+
+    public override var hash: Int { return self.customProperties.hashValue }
+
+    /// A debug description of the checkpoint parameters.
+    public override var description: String {
+        return "CheckpointParams(customProperties=\(self.customProperties))"
+    }
+
+    var coreParams: RevenueCat.CheckpointParams {
+        return .init(customProperties: self.customProperties.mapValues(\.coreValue))
+    }
+
+}
+
+@objc extension CheckpointParams {
+
+    /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
+    @objc(initWithCustomProperties:)
+    public convenience init(objcCustomProperties: NSDictionary) {
+        var values: [String: CheckpointValue] = [:]
+        for (rawKey, rawValue) in objcCustomProperties {
+            guard let key = rawKey as? String,
+                  let value = CheckpointValue(foundationValue: rawValue) else {
+                Logger.warning(CheckpointStrings.invalidObjectiveCCustomProperty(type(of: rawValue)))
+                continue
+            }
+            values[key] = value
+        }
+        self.init(customProperties: values)
+    }
+
+    /// The custom properties as Objective-C Foundation primitive values.
+    @objc(customProperties)
+    public var objcCustomProperties: NSDictionary {
+        return self.customProperties.mapValues { $0.foundationValue } as NSDictionary
+    }
+
+}
+
+private enum CheckpointStrings: LogMessage {
+
+    case invalidObjectiveCCustomProperty(Any.Type)
+
+    var description: String {
+        switch self {
+        case let .invalidObjectiveCCustomProperty(type):
+            return "Dropping invalid Objective-C checkpoint custom property: \(String(reflecting: type))"
+        }
+    }
+
+    var category: String { return "checkpoints" }
+
+}
 
 /// Information about a checkpoint that was hit.
 @objc(RCCheckpointInfo)

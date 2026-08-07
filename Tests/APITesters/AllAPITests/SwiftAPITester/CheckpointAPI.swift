@@ -12,24 +12,4 @@
 //  Created by Rick van der Linden.
 //
 
-#if ENABLE_CHECKPOINTS
-
-import RevenueCat
-
-func checkCheckpointCoreAPI() {
-    let string: CheckpointValue = .string("value")
-    let integer: CheckpointValue = .integer(2)
-    let double: CheckpointValue = .double(4.5)
-    let boolean: CheckpointValue = .boolean(true)
-    let _: Any = string.foundationValue
-
-    let params = CheckpointParams(customProperties: [
-        "string": string,
-        "integer": integer,
-        "double": double,
-        "boolean": boolean
-    ])
-    let _: [String: CheckpointValue] = params.customProperties
-}
-
-#endif
+// Checkpoint developer APIs are exposed by RevenueCatUI, not RevenueCat.
