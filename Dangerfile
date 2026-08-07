@@ -4,7 +4,11 @@ require 'pathname'
 require 'set'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
-  'Tests/APITesters/'
+  'Tests/APITesters/',
+  # Tuist-only: these targets exist solely in Projects/PaywallFixtures/Project.swift and are
+  # deliberately absent from RevenueCat.xcodeproj.
+  'Tests/TestingApps/PaywallFixtures/',
+  'Tests/TestingApps/PaywallFixturesUITests/'
 ].freeze
 
 COMMENT_MARKER = "<!-- purchases-ios-danger -->"
