@@ -55,6 +55,13 @@ final class MockLargeItemCache: LargeItemCacheType {
         return storage[url] != nil
     }
 
+    func cachedFileExists(at url: URL) -> Bool {
+        lock.lock()
+        defer { lock.unlock() }
+
+        return storage[url] != nil
+    }
+
     func loadFile(at url: URL) throws -> Data {
         lock.lock()
         defer { lock.unlock() }
