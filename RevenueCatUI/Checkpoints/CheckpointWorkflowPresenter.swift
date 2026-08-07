@@ -139,6 +139,7 @@ extension CheckpointWorkflowPresenter {
 
     // `PaywallViewController` delivers these UI lifecycle and purchase callbacks
     // synchronously from main-actor-isolated UI paths.
+    #if compiler(>=5.9)
     nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFinishPurchasingWith customerInfo: CustomerInfo
@@ -189,6 +190,46 @@ extension CheckpointWorkflowPresenter {
             self.presentedViewController = exitOfferController
         }
     }
+    #else
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishPurchasingWith customerInfo: CustomerInfo
+    ) {
+        self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        self.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+    }
+
+    func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
+        self.presentationDidDismiss()
+    }
+
+    func paywallViewController(
+        _ controller: PaywallViewController,
+        willPresentExitOfferController exitOfferController: PaywallViewController
+    ) {
+        self.presentedViewController = exitOfferController
+    }
+    #endif
 
 }
 
