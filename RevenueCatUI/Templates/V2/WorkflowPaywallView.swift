@@ -931,6 +931,9 @@ private struct WorkflowHeaderOverlayPageView: View {
 
     @StateObject private var stateManager: WorkflowHeaderOverlayStateManager
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     private let page: RenderedPage
     private let purchaseHandler: PurchaseHandler
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -1005,7 +1008,18 @@ private struct WorkflowHeaderOverlayPageView: View {
         if let headerViewModel = paywallState.rootViewModel.headerViewModel {
             let contentLocale = paywallState.rootViewModel.localizationProvider.locale
             let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
-                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage(
+                    in: PackageSelectionContext(
+                        condition: ScreenCondition.from(self.horizontalSizeClass),
+                        customVariables: self.customVariables,
+                        isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                            introOfferEligibilityContext.isEligible(package: $0)
+                        },
+                        isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                            paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+                        }
+                    )
+                ),
                 workflowDefaultPackage: self.page.effectiveWorkflowPackageContext?.selectedPackage
             )
 

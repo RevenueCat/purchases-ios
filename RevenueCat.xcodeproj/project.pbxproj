@@ -208,6 +208,7 @@
 		2CC791562CC0452100FBE120 /* PackageComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */; };
 		2CC791592CC0452100FBE120 /* PurchaseButtonComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC791512CC0452100FBE120 /* PurchaseButtonComponentView.swift */; };
 		2CC7915A2CC0452100FBE120 /* PackageComponentViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC7914C2CC0452100FBE120 /* PackageComponentViewModel.swift */; };
+		FA11D0C22E4A000100AB0002 /* PackageVisibilityResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA11D0C12E4A000100AB0001 /* PackageVisibilityResolver.swift */; };
 		2CC791622CC0493600FBE120 /* PaywallComponentPropertyTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC7915F2CC0493600FBE120 /* PaywallComponentPropertyTypes.swift */; };
 		2CC791632CC0493600FBE120 /* PaywallComponentLocalization.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC7915E2CC0493600FBE120 /* PaywallComponentLocalization.swift */; };
 		2CC791642CC0493600FBE120 /* Border.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CC7915B2CC0493600FBE120 /* Border.swift */; };
@@ -1782,6 +1783,7 @@
 		2CB8CF9227BF538F00C34DE3 /* PlatformInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformInfo.swift; sourceTree = "<group>"; };
 		2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentView.swift; sourceTree = "<group>"; };
 		2CC7914C2CC0452100FBE120 /* PackageComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewModel.swift; sourceTree = "<group>"; };
+		FA11D0C12E4A000100AB0001 /* PackageVisibilityResolver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityResolver.swift; sourceTree = "<group>"; };
 		2CC791512CC0452100FBE120 /* PurchaseButtonComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentView.swift; sourceTree = "<group>"; };
 		2CC791522CC0452100FBE120 /* PurchaseButtonComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentViewModel.swift; sourceTree = "<group>"; };
 		2CC7915B2CC0493600FBE120 /* Border.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Border.swift; sourceTree = "<group>"; };
@@ -3660,6 +3662,7 @@
 				2C8EC71A2CCDD43500D6CCF8 /* ComponentViewState.swift */,
 				2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */,
 				2CC7914C2CC0452100FBE120 /* PackageComponentViewModel.swift */,
+				FA11D0C12E4A000100AB0001 /* PackageVisibilityResolver.swift */,
 			);
 			path = Package;
 			sourceTree = "<group>";
@@ -8513,6 +8516,7 @@
 				2CC791562CC0452100FBE120 /* PackageComponentView.swift in Sources */,
 				2CC791592CC0452100FBE120 /* PurchaseButtonComponentView.swift in Sources */,
 				2CC7915A2CC0452100FBE120 /* PackageComponentViewModel.swift in Sources */,
+				FA11D0C22E4A000100AB0002 /* PackageVisibilityResolver.swift in Sources */,
 				887A60772C1D037000E1A461 /* TemplateViewConfiguration+Images.swift in Sources */,
 				0387D4AE2EC58AA5008E4A6B /* CountdownComponentViewModel.swift in Sources */,
 				0387D4AF2EC58AA5008E4A6B /* CountdownComponentView.swift in Sources */,
