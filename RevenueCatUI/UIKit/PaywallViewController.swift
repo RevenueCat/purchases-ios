@@ -733,6 +733,7 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
 /// Delegate for ``PaywallViewController``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
+@MainActor
 @objc(RCPaywallViewControllerDelegate)
 public protocol PaywallViewControllerDelegate: AnyObject {
 
