@@ -636,6 +636,9 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: "16.4"
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
       - install-dependencies
