@@ -178,12 +178,7 @@ extension CheckpointWorkflowPresenter {
 
 }
 
-#if compiler(>=6.0)
-@available(iOS 15.0, macOS 12.0, *)
-extension CheckpointWorkflowPresenter: @preconcurrency PaywallViewControllerDelegate {}
-#else
 @available(iOS 15.0, macOS 12.0, *)
 extension CheckpointWorkflowPresenter: PaywallViewControllerDelegate {}
-#endif
 
 #endif
