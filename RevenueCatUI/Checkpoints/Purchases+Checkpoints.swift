@@ -15,6 +15,8 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+#if os(iOS) && !targetEnvironment(macCatalyst)
+
 @_spi(Internal) public extension Purchases {
 
     /// Global listener for checkpoint activity.
@@ -115,3 +117,5 @@ private enum CheckpointsManagerStorage {
     static let lock = NSLock()
 
 }
+
+#endif
