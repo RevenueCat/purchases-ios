@@ -89,12 +89,27 @@ final class CheckpointsManager {
         case let .noAction(reason):
             result = CheckpointNoActionResult(
                 checkpoint: checkpoint,
-                reason: CheckpointNoActionReason(value: reason.value)
+                reason: reason.noActionReason
             )
         }
 
         self.listener?.onCheckpointCompleted(checkpoint, result: result)
         return result
+    }
+
+}
+
+private extension CheckpointResolutionReason {
+
+    var noActionReason: CheckpointNoActionReason {
+        switch self {
+        case .noMatch:
+            return .noMatch
+        case .configurationUnavailable:
+            return .configurationUnavailable
+        case .disabled:
+            return .disabled
+        }
     }
 
 }
