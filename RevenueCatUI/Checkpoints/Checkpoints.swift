@@ -12,36 +12,30 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
 /// Core-owned checkpoint custom value, surfaced through RevenueCatUI.
-@_spi(Internal) public typealias CheckpointValue = RevenueCat.CheckpointValue
+public typealias CheckpointValue = RevenueCat.CheckpointValue
 /// Core-owned checkpoint parameters, surfaced through RevenueCatUI.
-@_spi(Internal) public typealias CheckpointParams = RevenueCat.CheckpointParams
+public typealias CheckpointParams = RevenueCat.CheckpointParams
 
 /// Information about a checkpoint that was hit.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointInfo)
-#endif
-@_spi(Internal) public final class CheckpointInfo: NSObject, @unchecked Sendable {
+public final class CheckpointInfo: NSObject, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let identifier: String
 
     /// The parameters supplied when the checkpoint was hit.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let params: CheckpointParams
 
     /// Creates checkpoint information for an identifier and its parameters.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public init(identifier: String, params: CheckpointParams) {
         self.identifier = identifier
         self.params = params
@@ -67,15 +61,11 @@ import Foundation
 }
 
 /// The reason no experience was served for a checkpoint.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointNoActionReason)
-#endif
-@_spi(Internal) public final class CheckpointNoActionReason: NSObject, @unchecked Sendable {
+public final class CheckpointNoActionReason: NSObject, @unchecked Sendable {
 
     /// The value identifying the reason.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let value: String
 
     /// No targeting rule matched.
@@ -104,15 +94,11 @@ import Foundation
 }
 
 /// Base class for the result of hitting a checkpoint.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointResult)
-#endif
-@_spi(Internal) public class CheckpointResult: NSObject {
+public class CheckpointResult: NSObject {
 
     /// Information about the checkpoint that produced this result.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let checkpoint: CheckpointInfo
 
     init(checkpoint: CheckpointInfo) {
@@ -139,15 +125,11 @@ import Foundation
 }
 
 /// Nothing was served for a checkpoint.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointNoActionResult)
-#endif
-@_spi(Internal) public final class CheckpointNoActionResult: CheckpointResult {
+public final class CheckpointNoActionResult: CheckpointResult {
 
     /// The reason no experience was served.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let reason: CheckpointNoActionReason
 
     init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
@@ -174,7 +156,7 @@ import Foundation
 }
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
-@_spi(Internal) public protocol CheckpointListener: AnyObject {
+public protocol CheckpointListener: AnyObject {
 
     /// A checkpoint was hit, before evaluation.
     func onCheckpointHit(_ checkpoint: CheckpointInfo)
@@ -183,7 +165,7 @@ import Foundation
 
 }
 
-@_spi(Internal) public extension CheckpointListener {
+public extension CheckpointListener {
 
     /// Default no-op implementation.
     func onCheckpointHit(_ checkpoint: CheckpointInfo) {}
@@ -191,3 +173,5 @@ import Foundation
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
 
 }
+
+#endif

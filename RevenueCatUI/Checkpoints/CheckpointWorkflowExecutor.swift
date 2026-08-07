@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -133,3 +135,5 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
     }
 
 }
+
+#endif

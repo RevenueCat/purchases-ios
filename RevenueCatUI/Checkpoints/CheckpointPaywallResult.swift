@@ -12,19 +12,17 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS
+
 import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A checkpoint-triggered paywall was presented and finished.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallPresentedResult)
-#endif
-@_spi(Internal) public final class CheckpointPaywallPresentedResult: CheckpointResult {
+public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
     /// The terminal outcome of the presented paywall.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let paywallOutcome: CheckpointPaywallOutcome
 
     init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
@@ -51,10 +49,8 @@ import Foundation
 }
 
 /// Base class for the terminal result of a checkpoint-presented paywall.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallOutcome)
-#endif
-@_spi(Internal) public class CheckpointPaywallOutcome: NSObject {
+public class CheckpointPaywallOutcome: NSObject {
 
     fileprivate override init() { super.init() }
 
@@ -71,10 +67,8 @@ import Foundation
 }
 
 /// The customer dismissed the paywall.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallDismissedOutcome)
-#endif
-@_spi(Internal) public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
+public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
     static let shared = CheckpointPaywallDismissedOutcome()
 
@@ -85,15 +79,11 @@ import Foundation
 }
 
 /// The customer completed a purchase.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallPurchasedOutcome)
-#endif
-@_spi(Internal) public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
+public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after the completed purchase.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let customerInfo: CustomerInfo
 
     init(customerInfo: CustomerInfo) {
@@ -112,15 +102,11 @@ import Foundation
 }
 
 /// The customer restored purchases.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallRestoredOutcome)
-#endif
-@_spi(Internal) public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
+public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let customerInfo: CustomerInfo
 
     init(customerInfo: CustomerInfo) {
@@ -139,15 +125,11 @@ import Foundation
 }
 
 /// The paywall ended with an error.
-#if ENABLE_CHECKPOINTS_OBJC
 @objc(RCCheckpointPaywallErrorOutcome)
-#endif
-@_spi(Internal) public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
+public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     /// The error that ended the checkpoint experience.
-#if ENABLE_CHECKPOINTS_OBJC
     @objc
-#endif
     public let error: PublicError
 
     init(error: PublicError) {
@@ -164,3 +146,5 @@ import Foundation
     public override var hash: Int { return self.error.hash }
 
 }
+
+#endif

@@ -12,8 +12,10 @@
 //  Created by Rick van der Linden.
 //
 
-@_spi(Internal) import RevenueCat
-@_spi(Internal) import RevenueCatUI
+#if ENABLE_CHECKPOINTS
+
+import RevenueCat
+import RevenueCatUI
 
 private final class CheckpointListenerAPITester: CheckpointListener {
 
@@ -77,3 +79,5 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: CheckpointNoActionReason = .configurationUnavailable
     let _: CheckpointNoActionReason = .disabled
 }
+
+#endif

@@ -13,8 +13,8 @@
 //
 
 import Foundation
-@_spi(Internal) import RevenueCat
-@_spi(Internal) import RevenueCatUI
+import RevenueCat
+import RevenueCatUI
 import SwiftUI
 
 struct ContentView: View {

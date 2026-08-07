@@ -18,7 +18,11 @@ import Foundation
 ///
 /// This is a closed set because checkpoint properties support JSON primitive values only. Unlike checkpoint results,
 /// adding arbitrary result variants is not part of this type's extensibility contract.
-@_spi(Internal) public enum CheckpointValue: Equatable, Hashable, Sendable {
+#if !ENABLE_CHECKPOINTS
+@_spi(Internal)
+#endif
+// swiftlint:disable:next no_new_public_enums
+public enum CheckpointValue: Equatable, Hashable, Sendable {
 
     // swiftlint:disable missing_docs
     case string(String)
@@ -130,10 +134,13 @@ extension CheckpointValue {
 }
 
 /// Per-call parameters for a checkpoint.
-#if ENABLE_CHECKPOINTS_OBJC
+#if ENABLE_CHECKPOINTS
 @objc(RCCheckpointParams)
 #endif
-@_spi(Internal) public final class CheckpointParams: NSObject, @unchecked Sendable {
+#if !ENABLE_CHECKPOINTS
+@_spi(Internal)
+#endif
+public final class CheckpointParams: NSObject, @unchecked Sendable {
 
     /// Custom properties usable in checkpoint targeting rules and feature events.
     public let customProperties: [String: CheckpointValue]
@@ -158,7 +165,7 @@ extension CheckpointValue {
 
 }
 
-#if ENABLE_CHECKPOINTS_OBJC
+#if ENABLE_CHECKPOINTS
 @objc extension CheckpointParams {
 
     /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.

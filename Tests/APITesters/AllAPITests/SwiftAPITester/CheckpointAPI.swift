@@ -12,42 +12,24 @@
 //  Created by Rick van der Linden.
 //
 
-@_spi(Internal) import RevenueCat
+#if ENABLE_CHECKPOINTS
+
+import RevenueCat
 
 func checkCheckpointCoreAPI() {
-    Task {
-        let resolution: CheckpointResolution = try await Purchases.shared.resolveCheckpoint(
-            identifier: "test_checkpoint",
-            params: .init()
-        )
+    let string: CheckpointValue = .string("value")
+    let integer: CheckpointValue = .integer(2)
+    let double: CheckpointValue = .double(4.5)
+    let boolean: CheckpointValue = .boolean(true)
+    let _: Any = string.foundationValue
 
-        switch resolution {
-        case let .workflow(workflow):
-            checkResolvedCheckpointWorkflowAPI(workflow)
-        case let .noAction(reason):
-            checkCheckpointResolutionReasonAPI(reason)
-        @unknown default:
-            break
-        }
-    }
+    let params = CheckpointParams(customProperties: [
+        "string": string,
+        "integer": integer,
+        "double": double,
+        "boolean": boolean
+    ])
+    let _: [String: CheckpointValue] = params.customProperties
 }
 
-func checkCheckpointResolutionReasonAPI(_ reason: CheckpointResolutionReason) {
-    let _: CheckpointResolutionReason = .noMatch
-    let _: CheckpointResolutionReason = .configurationUnavailable
-    let _: CheckpointResolutionReason = .disabled
-
-    switch reason {
-    case .noMatch, .configurationUnavailable, .disabled:
-        break
-    @unknown default:
-        break
-    }
-}
-
-func checkResolvedCheckpointWorkflowAPI(_ resolvedWorkflow: ResolvedCheckpointWorkflow) {
-    let _: PublishedWorkflow = resolvedWorkflow.workflow
-    let _: UIConfig = resolvedWorkflow.uiConfig
-    let _: Offering = resolvedWorkflow.offering
-    let _: Offerings = resolvedWorkflow.offerings
-}
+#endif
