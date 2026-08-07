@@ -74,6 +74,27 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(listener.events, [.hit("error_checkpoint")])
     }
 
+    func testPresentationErrorIsForwardedWithoutPresentedResultOrCompletedListenerEvent() async {
+        let expectedError = NSError(domain: "test", code: 42)
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.error = expectedError
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .workflow(Self.workflow()) },
+            executor: executor
+        )
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        do {
+            _ = try await manager.checkpoint(identifier: "soft_paywall", params: .init())
+            XCTFail("Expected checkpoint to throw")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
+        }
+
+        XCTAssertEqual(listener.events, [.hit("soft_paywall")])
+    }
+
     func testCompletionAPIForwardsResult() {
         let completion = self.expectation(description: "Checkpoint completes")
         let manager = CheckpointsManager { _, _ in .noAction(.disabled) }
@@ -133,6 +154,30 @@ final class CheckpointsManagerTests: TestCase {
 
 @MainActor
 final class CheckpointWorkflowExecutorTests: TestCase {
+
+    func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
+        let presenter = MockCheckpointPresenter()
+        let expectedError = NSError(domain: "test", code: 42)
+        presenter.presentationError = expectedError
+        let executor = CheckpointWorkflowExecutor { presenter }
+
+        do {
+            _ = try await executor.execute(Self.workflow())
+            XCTFail("Expected presentation failure")
+        } catch {
+            XCTAssertEqual(error as NSError, expectedError)
+        }
+
+        presenter.presentationError = nil
+        presenter.onPresent = { presentation in
+            presentation.delegate.checkpointPresentationFinished(
+                outcome: CheckpointPaywallDismissedOutcome.shared
+            )
+        }
+        _ = try await executor.execute(Self.workflow())
+
+        XCTAssertEqual(presenter.presentations.count, 1)
+    }
 
     func testConcurrentExecutionFailsWhilePresentationIsActive() async throws {
         let presenter = MockCheckpointPresenter()
@@ -296,10 +341,14 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
+    var error: Error?
     private(set) var executedWorkflows: [ResolvedCheckpointWorkflow] = []
 
     func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
         self.executedWorkflows.append(workflow)
+        if let error {
+            throw error
+        }
         return self.outcome
     }
 
@@ -316,6 +365,7 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
     var onPresent: ((Presentation) -> Void)?
     var onDismiss: (() -> Void)?
     var automaticallyFinishesDismissing = true
+    var presentationError: Error?
     private(set) var presentations: [Presentation] = []
     private(set) var dismissCallCount = 0
     private var dismissalCompletions: [() -> Void] = []
@@ -323,7 +373,10 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
     func present(
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
-    ) {
+    ) throws {
+        if let presentationError {
+            throw presentationError
+        }
         let presentation = Presentation(workflow: workflow, delegate: delegate)
         self.presentations.append(presentation)
         self.onPresent?(presentation)

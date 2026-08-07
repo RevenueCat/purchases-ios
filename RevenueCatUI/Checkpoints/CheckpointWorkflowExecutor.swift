@@ -30,7 +30,7 @@ protocol CheckpointPresenter: AnyObject {
     func present(
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
-    )
+    ) throws
 
     func dismiss(completion: @escaping () -> Void)
 
@@ -82,7 +82,11 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                     return
                 }
                 self.store(continuation: continuation)
-                presenter.present(workflow: workflow, delegate: self)
+                do {
+                    try presenter.present(workflow: workflow, delegate: self)
+                } catch {
+                    self.fail(error: error)
+                }
             }
         } onCancel: {
             Task { @MainActor [weak self] in
@@ -103,6 +107,12 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         guard let continuation = self.takePendingContinuation() else { return }
         self.activePresenter = nil
         continuation.resume(returning: outcome)
+    }
+
+    private func fail(error: Error) {
+        guard let continuation = self.takePendingContinuation() else { return }
+        self.activePresenter = nil
+        continuation.resume(throwing: error)
     }
 
     private func cancel() {

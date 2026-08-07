@@ -48,18 +48,23 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
     func present(
         workflow: ResolvedCheckpointWorkflow,
         delegate: CheckpointPresentationDelegate
-    ) {
+    ) throws {
         self.callStore.store(workflow: workflow, delegate: delegate)
 
         do {
-            let didBeginPresentation = try self.presentationHandler?(workflow)
-                ?? self.presentAutomatically(workflow)
-            guard didBeginPresentation else {
-                throw CheckpointError.noPresentationContext
+            if let presentationHandler = self.presentationHandler {
+                guard try presentationHandler(workflow) else {
+                    throw CheckpointError.presentationFailed
+                }
+            } else {
+                try self.presentAutomatically(workflow)
             }
         } catch {
-            self.stage(outcome: CheckpointPaywallErrorOutcome(error: error as NSError))
-            self.complete()
+            _ = self.callStore.remove()
+            #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+            self.presentedViewController = nil
+            #endif
+            throw error
         }
     }
 
@@ -100,10 +105,10 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         call.delegate.checkpointPresentationFinished(outcome: call.stagedOutcome)
     }
 
-    private func presentAutomatically(_ workflow: ResolvedCheckpointWorkflow) throws -> Bool {
+    private func presentAutomatically(_ workflow: ResolvedCheckpointWorkflow) throws {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
-            return false
+            throw CheckpointError.noPresentationContext
         }
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: workflow.workflow,
@@ -117,9 +122,11 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         viewController.delegate = self
         self.presentedViewController = viewController
         presentationContext.present(viewController, animated: true)
-        return true
+        guard viewController.presentingViewController != nil else {
+            throw CheckpointError.presentationFailed
+        }
         #else
-        return false
+        throw CheckpointError.noPresentationContext
         #endif
     }
 
