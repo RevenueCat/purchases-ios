@@ -18,10 +18,7 @@ import Foundation
 ///
 /// This is a closed set because checkpoint properties support JSON primitive values only. Unlike checkpoint results,
 /// adding arbitrary result variants is not part of this type's extensibility contract.
-#if !ENABLE_CHECKPOINTS
 @_spi(Internal)
-#endif
-// swiftlint:disable:next no_new_public_enums
 public enum CheckpointValue: Equatable, Hashable, Sendable {
 
     // swiftlint:disable missing_docs
@@ -134,12 +131,7 @@ extension CheckpointValue {
 }
 
 /// Per-call parameters for a checkpoint.
-#if ENABLE_CHECKPOINTS
-@objc(RCCheckpointParams)
-#endif
-#if !ENABLE_CHECKPOINTS
 @_spi(Internal)
-#endif
 public final class CheckpointParams: NSObject, @unchecked Sendable {
 
     /// Custom properties usable in checkpoint targeting rules and feature events.
@@ -162,47 +154,5 @@ public final class CheckpointParams: NSObject, @unchecked Sendable {
     public override var description: String {
         return "CheckpointParams(customProperties=\(self.customProperties))"
     }
-
-}
-
-#if ENABLE_CHECKPOINTS
-@objc extension CheckpointParams {
-
-    /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
-    @objc(initWithCustomProperties:)
-    public convenience init(objcCustomProperties: NSDictionary) {
-        var values: [String: CheckpointValue] = [:]
-        for (rawKey, rawValue) in objcCustomProperties {
-            guard let key = rawKey as? String,
-                  let value = CheckpointValue(foundationValue: rawValue) else {
-                Logger.warn(CheckpointStrings.invalidObjectiveCCustomProperty(type(of: rawValue)))
-                continue
-            }
-            values[key] = value
-        }
-        self.init(customProperties: values)
-    }
-
-    /// The custom properties as Objective-C Foundation primitive values.
-    @objc(customProperties)
-    public var objcCustomProperties: NSDictionary {
-        return self.customProperties.mapValues { $0.foundationValue } as NSDictionary
-    }
-
-}
-#endif
-
-private enum CheckpointStrings: LogMessage {
-
-    case invalidObjectiveCCustomProperty(Any.Type)
-
-    var description: String {
-        switch self {
-        case let .invalidObjectiveCCustomProperty(type):
-            return "Dropping invalid Objective-C checkpoint custom property: \(String(reflecting: type))"
-        }
-    }
-
-    var category: String { return "checkpoints" }
 
 }

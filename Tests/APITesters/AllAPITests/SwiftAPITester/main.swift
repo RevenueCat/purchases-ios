@@ -34,9 +34,6 @@ func main() -> Int {
     checkPromotionalOfferAPI()
 
     checkPurchasesAPI()
-    #if ENABLE_CHECKPOINTS
-    checkCheckpointCoreAPI()
-    #endif
     #if os(iOS) || os(tvOS) || VISION_OS
     checkUIApplicationSPIAPI()
     #endif

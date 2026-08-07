@@ -102,7 +102,7 @@ private extension Purchases {
             guard let self else {
                 throw CancellationError()
             }
-            return try await self.resolveCheckpoint(identifier: identifier, params: params)
+            return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
         }
         self.checkpointStorageObject = manager
         return manager

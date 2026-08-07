@@ -1059,6 +1059,8 @@ jobs:
   build-checkpoint-tester:
     executor:
       name: macos-executor
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS
     steps:
       - checkout
       - tuist-generate-workspace:
