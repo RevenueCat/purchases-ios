@@ -13,7 +13,7 @@ protocol CheckpointsConfigProviderType {
 
 }
 
-/// The topic-specific front door for checkpoints, reading through `RemoteConfigManager`'s `checkpoints` topic.
+/// The topic-specific front door for checkpoints, reading through `RemoteConfigManager`'s `checkpoint_rules` topic.
 ///
 /// Items are keyed by checkpoint name, so a checkpoint resolves with a single `blobData` read: no topic-index
 /// scan, and `blobData` already handles inlined versus downloaded blobs and identity invalidation.

@@ -41,6 +41,12 @@ class CheckpointsConfigProviderTests: TestCase {
         self.provider = CheckpointsConfigProvider(manager: self.manager)
     }
 
+    /// Pinned as a literal: every other fixture derives the key from the enum, so a wrong wire name would be
+    /// invisible here and would read as an absent topic forever.
+    func testTopicWireNameMatchesTheBackend() {
+        expect(RemoteConfigTopic.checkpointRules.wireName) == "checkpoint_rules"
+    }
+
     func testResolvesACheckpointFromItsPayload() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]], ids: ["onboarding": "checkpoint-abc"])
 
