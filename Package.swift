@@ -143,6 +143,7 @@ let package = Package(
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
-                    ])
+                    ],
+                    swiftSettings: additionalCompilerFlags)
     ]
 )
