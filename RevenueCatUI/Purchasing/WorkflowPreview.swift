@@ -32,11 +32,29 @@ import Foundation
         ),
         presentedOfferingContext: PresentedOfferingContext? = nil
     ) throws -> WorkflowContext {
-        let allOfferings = Offerings.preview(offerings: offerings)
+        return try self.makeContext(
+            workflow: workflow,
+            offerings: .preview(offerings: offerings),
+            uiConfig: uiConfig,
+            presentedOfferingContext: presentedOfferingContext
+        )
+    }
+
+    /// Builds a render-ready ``WorkflowContext`` while preserving the complete offerings bundle.
+    @_spi(Internal) public static func makeContext(
+        workflow: PublishedWorkflow,
+        offerings: Offerings,
+        uiConfig: UIConfig = UIConfig(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        ),
+        presentedOfferingContext: PresentedOfferingContext? = nil
+    ) throws -> WorkflowContext {
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
-            allOfferings: allOfferings,
+            allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
             triggerOfferingIdentifier: workflow.id
         )

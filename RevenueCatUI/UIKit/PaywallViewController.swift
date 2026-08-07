@@ -178,6 +178,33 @@ public class PaywallViewController: UIViewController {
         )
     }
 
+    #if !os(tvOS)
+    /// Creates a paywall view controller from a pre-built workflow context.
+    convenience init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(
+            content: .offering(workflowContext.initialOffering),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.introEligibility = introEligibility
+        configuration.injectedWorkflowContext = workflowContext
+        self.configuration = configuration
+    }
+    #endif
+
     /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
     /// `Offerings.current` will be used by default.
