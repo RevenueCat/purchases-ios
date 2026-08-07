@@ -50,9 +50,7 @@ class CheckpointsConfigProviderTests: TestCase {
     func testResolvesACheckpointFromItsPayload() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
 
-        let ruleSetResult = await self.provider.getCheckpoint("onboarding")
-
-        let ruleSet = try XCTUnwrap(ruleSetResult)
+        let ruleSet = try await self.ruleSet("onboarding")
 
         expect(ruleSet.rules.onlyElement?.workflowId) == "wf-a"
     }
@@ -60,9 +58,7 @@ class CheckpointsConfigProviderTests: TestCase {
     func testKeepsRulesInServedOrder() async throws {
         self.commit(rules: ["onboarding": ["wf-c", "wf-a", "wf-b"]])
 
-        let ruleSetResult = await self.provider.getCheckpoint("onboarding")
-
-        let ruleSet = try XCTUnwrap(ruleSetResult)
+        let ruleSet = try await self.ruleSet("onboarding")
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-c", "wf-a", "wf-b"]
     }
@@ -70,61 +66,66 @@ class CheckpointsConfigProviderTests: TestCase {
     func testResolvesEachCheckpointIndependently() async throws {
         self.commit(rules: ["onboarding": ["wf-a"], "paywall_close": ["wf-exit"]])
 
-        let onboardingResult = await self.provider.getCheckpoint("onboarding")
-        let paywallCloseResult = await self.provider.getCheckpoint("paywall_close")
-
-        let onboarding = try XCTUnwrap(onboardingResult)
-        let paywallClose = try XCTUnwrap(paywallCloseResult)
+        let onboarding = try await self.ruleSet("onboarding")
+        let paywallClose = try await self.ruleSet("paywall_close")
 
         expect(onboarding.rules.onlyElement?.workflowId) == "wf-a"
         expect(paywallClose.rules.onlyElement?.workflowId) == "wf-exit"
     }
 
-    func testReturnsNilForACheckpointThatHasNoItem() async {
+    func testReturnsNilForACheckpointThatHasNoItem() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
 
-        let ruleSet = await self.provider.getCheckpoint("never_registered")
+        let rules = try await self.provider.rules(for: "never_registered")
 
-        expect(ruleSet).to(beNil())
+        expect(rules).to(beNil())
     }
 
-    func testReturnsNilWhenTheTopicIsAbsent() async {
+    func testReturnsNilWhenTheTopicIsAbsent() async throws {
         self.commit(rules: [:])
 
-        let ruleSet = await self.provider.getCheckpoint("onboarding")
+        let rules = try await self.provider.rules(for: "onboarding")
 
-        expect(ruleSet).to(beNil())
+        expect(rules).to(beNil())
     }
 
-    func testReturnsNilWhenThePayloadIsMissing() async {
+    func testReturnsUnavailableWhenThePayloadIsMissing() async {
         self.commit(checkpoints: ["onboarding": .init(blobRef: "missing-ref", prefetch: true)])
 
-        let ruleSet = await self.provider.getCheckpoint("onboarding")
+        let error = await self.providerError(for: "onboarding")
 
-        expect(ruleSet).to(beNil())
+        XCTAssertEqual(error, .payloadUnavailable)
     }
 
-    func testReturnsNilWhenThePayloadIsntJSON() async {
+    func testReturnsUnavailableWhenThePayloadIsntJSON() async {
         self.commit(
             checkpoints: ["onboarding": .init(blobRef: "onboarding-ref", prefetch: true)],
             blobs: ["onboarding-ref": Data("not-json".utf8)]
         )
 
-        let ruleSet = await self.provider.getCheckpoint("onboarding")
+        let error = await self.providerError(for: "onboarding")
 
-        expect(ruleSet).to(beNil())
+        XCTAssertEqual(error, .payloadUnavailable)
     }
 
-    func testReturnsNilForAnItemWithoutABlobRef() async {
+    func testReturnsUnavailableForAnItemWithoutABlobRef() async {
         self.commit(checkpoints: [
             "onboarding": .init(content: ["rules": .array([
                 .object(["workflow_id": .string("wf-metadata")])
             ])])
         ])
 
-        let ruleSet = await self.provider.getCheckpoint("onboarding")
+        let error = await self.providerError(for: "onboarding")
 
-        expect(ruleSet).to(beNil())
+        XCTAssertEqual(error, .payloadUnavailable)
+    }
+
+    func testReturnsDisabledWhenRemoteConfigIsDisabled() async {
+        let provider = CheckpointsConfigProvider(manager: NoOpRemoteConfigManager())
+
+        let error = await self.providerError(for: "onboarding", provider: provider)
+
+        XCTAssertEqual(error, .remoteConfigDisabled)
     }
 
     func testResolvesACheckpointWhosePayloadHasNoRules() async throws {
@@ -133,9 +134,7 @@ class CheckpointsConfigProviderTests: TestCase {
             blobs: ["onboarding-ref": Data(#"{ "id": "checkpoint-abc" }"#.utf8)]
         )
 
-        let ruleSetResult = await self.provider.getCheckpoint("onboarding")
-
-        let ruleSet = try XCTUnwrap(ruleSetResult)
+        let ruleSet = try await self.ruleSet("onboarding")
 
         expect(ruleSet.rules).to(beEmpty())
     }
@@ -143,21 +142,42 @@ class CheckpointsConfigProviderTests: TestCase {
     /// The provider holds no state of its own, so a config replacement is picked up on the next read.
     func testPicksUpANewPayloadAfterTheConfigIsReplaced() async throws {
         self.commit(rules: ["onboarding": ["wf-a"]])
-        let beforeResult = await self.provider.getCheckpoint("onboarding")
-
-        let before = try XCTUnwrap(beforeResult)
+        let before = try await self.ruleSet("onboarding")
         expect(before.rules.onlyElement?.workflowId) == "wf-a"
 
         self.manager.clearCache(forAppUserID: "someone-else")
         self.commit(rules: ["onboarding": ["wf-b"]])
 
-        let afterResult = await self.provider.getCheckpoint("onboarding")
-
-        let after = try XCTUnwrap(afterResult)
+        let after = try await self.ruleSet("onboarding")
         expect(after.rules.onlyElement?.workflowId) == "wf-b"
     }
 
     // MARK: - Helpers
+
+    private func ruleSet(_ identifier: String) async throws -> CheckpointRuleSet {
+        guard let ruleSet = try await self.provider.rules(for: identifier) else {
+            throw NSError(
+                domain: "CheckpointsConfigProviderTests",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Expected checkpoint rules"]
+            )
+        }
+        return ruleSet
+    }
+
+    private func providerError(
+        for identifier: String,
+        provider: CheckpointsConfigProviderType? = nil
+    ) async -> CheckpointRulesProviderError? {
+        do {
+            _ = try await (provider ?? self.provider).rules(for: identifier)
+            return nil
+        } catch let error as CheckpointRulesProviderError {
+            return error
+        } catch {
+            return nil
+        }
+    }
 
     /// One blob-backed item per checkpoint, each payload carrying one rule per workflow id.
     private func commit(rules: [String: [String]]) {

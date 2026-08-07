@@ -9,13 +9,20 @@ import Foundation
 
 protocol CheckpointsConfigProviderType {
 
-    func getCheckpoint(_ identifier: String) async -> CheckpointRuleSet?
+    func rules(for identifier: String) async throws -> CheckpointRuleSet?
+
+}
+
+enum CheckpointRulesProviderError: Error, Equatable {
+
+    case remoteConfigDisabled
+    case payloadUnavailable
 
 }
 
 /// The topic-specific front door for checkpoints, reading through `RemoteConfigManager`'s `checkpoint_rules` topic.
 ///
-/// Items are keyed by checkpoint name, so a checkpoint resolves with a single `blobData` read: no topic-index
+/// Items are keyed by checkpoint identifier, so rules load with a single `blobData` read: no topic-index
 /// scan, and `blobData` already handles inlined versus downloaded blobs and identity invalidation.
 final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
 
@@ -25,19 +32,32 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         self.manager = manager
     }
 
-    /// `nil` covers no item, an unresolvable or undecodable payload and remote config being disabled:
-    /// indistinguishable here, and all mean there are no rules to run.
-    func getCheckpoint(_ identifier: String) async -> CheckpointRuleSet? {
+    func rules(for identifier: String) async throws -> CheckpointRuleSet? {
         do {
-            return try await self.manager.blobData(
+            if let checkpoint = try await self.manager.blobData(
                 for: .checkpointRules,
                 itemKey: identifier,
                 as: CheckpointRuleSet.self
-            )
+            ) {
+                return checkpoint
+            }
         } catch {
             Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
-            return nil
         }
+
+        // The blob read above self-primes remote config on a cold cache. Classifying afterwards prevents an
+        // existing checkpoint from briefly looking unconfigured while that initial refresh is still in flight.
+        if self.manager.isDisabled {
+            throw CheckpointRulesProviderError.remoteConfigDisabled
+        }
+
+        let topic = await self.manager.topic(.checkpointRules)
+        if self.manager.isDisabled {
+            throw CheckpointRulesProviderError.remoteConfigDisabled
+        }
+
+        guard topic?[identifier] != nil else { return nil }
+        throw CheckpointRulesProviderError.payloadUnavailable
     }
 
 }
