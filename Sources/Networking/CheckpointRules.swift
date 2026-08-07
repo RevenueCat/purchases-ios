@@ -67,6 +67,25 @@ extension CheckpointRule: Decodable {
         case workflowId
     }
 
+    /// An empty reference is treated the same as a missing one: it can't resolve to anything, so the rule is
+    /// better dropped at ingest than left to fail later.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.audienceId = try container.decode(String.self, forKey: .audienceId)
+        self.workflowId = try container.decode(String.self, forKey: .workflowId)
+
+        for (key, value) in [(CodingKeys.audienceId, self.audienceId), (.workflowId, self.workflowId)]
+        where value.isEmpty {
+            throw DecodingError.dataCorruptedError(
+                forKey: key,
+                in: container,
+                debugDescription: "'\(key.rawValue)' is empty"
+            )
+        }
+    }
+
 }
 
 /// Turns a rule that fails to decode into `nil` instead of failing its enclosing array.

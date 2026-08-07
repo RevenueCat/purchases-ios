@@ -113,6 +113,19 @@ final class CheckpointRulesTests: TestCase {
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
     }
 
+    /// An empty reference can't resolve to anything, so it's dropped at ingest like a missing one.
+    func testSkipsRulesWithAnEmptyReference() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [
+            { "audience": "aud_4412", "workflow_id": "" },
+            { "audience": "", "workflow_id": "wf-no-audience" },
+            \(Self.rule("wf-valid"))
+        ] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
+    }
+
     func testSkipsRuleEntriesThatArentObjects() throws {
         let ruleSet = try Self.decode("""
         { "rules": ["not-a-rule", \(Self.rule("wf-valid"))] }
