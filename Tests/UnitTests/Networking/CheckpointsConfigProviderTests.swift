@@ -48,13 +48,12 @@ class CheckpointsConfigProviderTests: TestCase {
     }
 
     func testResolvesACheckpointFromItsPayload() async throws {
-        self.commit(rules: ["onboarding": ["wf-a"]], ids: ["onboarding": "checkpoint-abc"])
+        self.commit(rules: ["onboarding": ["wf-a"]])
 
         let ruleSetResult = await self.provider.getCheckpoint("onboarding")
 
         let ruleSet = try XCTUnwrap(ruleSetResult)
 
-        expect(ruleSet.id) == "checkpoint-abc"
         expect(ruleSet.rules.onlyElement?.workflowId) == "wf-a"
     }
 
@@ -138,7 +137,6 @@ class CheckpointsConfigProviderTests: TestCase {
 
         let ruleSet = try XCTUnwrap(ruleSetResult)
 
-        expect(ruleSet.id) == "checkpoint-abc"
         expect(ruleSet.rules).to(beEmpty())
     }
 
@@ -162,14 +160,14 @@ class CheckpointsConfigProviderTests: TestCase {
     // MARK: - Helpers
 
     /// One blob-backed item per checkpoint, each payload carrying one rule per workflow id.
-    private func commit(rules: [String: [String]], ids: [String: String] = [:]) {
+    private func commit(rules: [String: [String]]) {
         var items: [String: RemoteConfiguration.ConfigItem] = [:]
         var blobs: [String: Data] = [:]
 
         for (identifier, workflowIds) in rules {
             let ref = "\(identifier)-\(workflowIds.joined(separator: "-"))-ref"
             items[identifier] = .init(blobRef: ref, prefetch: true)
-            blobs[ref] = Self.payload(id: ids[identifier], workflowIds: workflowIds)
+            blobs[ref] = Self.payload(workflowIds: workflowIds)
         }
 
         self.commit(checkpoints: items, blobs: blobs)
@@ -192,10 +190,10 @@ class CheckpointsConfigProviderTests: TestCase {
         self.blobStore.stubbedData = blobs
     }
 
-    private static func payload(id: String? = nil, workflowIds: [String]) -> Data {
-        let rules = workflowIds.map { #"{ "workflow_id": "\#($0)", "audience": "aud_4412" }"# }.joined(separator: ", ")
-        let idField = id.map { #""id": "\#($0)", "# } ?? ""
-        return Data(#"{ \#(idField)"rules": [\#(rules)] }"#.utf8)
+    private static func payload(workflowIds: [String]) -> Data {
+        let rules = workflowIds.map { #"{ "workflow_id": "\#($0)", "audience_id": "aud_4412" }"# }
+            .joined(separator: ", ")
+        return Data(#"{ "rules": [\#(rules)] }"#.utf8)
     }
 
 }

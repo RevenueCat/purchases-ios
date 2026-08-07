@@ -29,19 +29,18 @@ final class CheckpointRulesTests: TestCase {
           "rules": [
             {
               "id": "chkptrule_1a2b3c4d5e6f7a8b",
-              "audience": "aud_4412",
+              "audience_id": "aud_4412",
               "workflow_id": "wf-1"
             },
             {
               "id": "chkptrule_9z8y7x6w5v4u3t2s",
-              "audience": "aud_4419",
+              "audience_id": "aud_4419",
               "workflow_id": "wf-2"
             }
           ]
         }
         """)
 
-        expect(ruleSet.id) == "chkpt_a1b2c3d4e5f6a7b8"
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-1", "wf-2"]
 
         let first = try XCTUnwrap(ruleSet.rules.first)
@@ -52,10 +51,7 @@ final class CheckpointRulesTests: TestCase {
     }
 
     func testDecodesACheckpointWithNoRules() throws {
-        let ruleSet = try Self.decode(#"{ "id": "chkpt_abc" }"#)
-
-        expect(ruleSet.id) == "chkpt_abc"
-        expect(ruleSet.rules).to(beEmpty())
+        expect(try Self.decode(#"{ "id": "chkpt_abc" }"#).rules).to(beEmpty())
     }
 
     func testIgnoresUnknownFields() throws {
@@ -63,7 +59,7 @@ final class CheckpointRulesTests: TestCase {
         {
           "id": "chkpt_abc",
           "something_the_backend_added_later": true,
-          "rules": [{ "audience": "aud_4412", "workflow_id": "wf-a", "state": "active", "frequency_cap": null }]
+          "rules": [{ "audience_id": "aud_4412", "workflow_id": "wf-a", "state": "active", "frequency_cap": null }]
         }
         """)
 
@@ -91,7 +87,7 @@ final class CheckpointRulesTests: TestCase {
     /// One bad rule shouldn't take out the whole checkpoint, and it shouldn't shift the others either.
     func testSkipsAMalformedRuleAndKeepsTheRest() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [\(Self.rule("wf-a")), { "audience": "aud_4412" }, \(Self.rule("wf-b"))] }
+        { "rules": [\(Self.rule("wf-a")), { "audience_id": "aud_4412" }, \(Self.rule("wf-b"))] }
         """)
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-a", "wf-b"]
@@ -107,7 +103,7 @@ final class CheckpointRulesTests: TestCase {
 
     func testSkipsRulesMissingAWorkflowId() throws {
         let ruleSet = try Self.decode("""
-        { "rules": [{ "audience": "aud_4412" }, \(Self.rule("wf-valid"))] }
+        { "rules": [{ "audience_id": "aud_4412" }, \(Self.rule("wf-valid"))] }
         """)
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
@@ -117,8 +113,8 @@ final class CheckpointRulesTests: TestCase {
     func testSkipsRulesWithAnEmptyReference() throws {
         let ruleSet = try Self.decode("""
         { "rules": [
-            { "audience": "aud_4412", "workflow_id": "" },
-            { "audience": "", "workflow_id": "wf-no-audience" },
+            { "audience_id": "aud_4412", "workflow_id": "" },
+            { "audience_id": "", "workflow_id": "wf-no-audience" },
             \(Self.rule("wf-valid"))
         ] }
         """)
@@ -141,7 +137,7 @@ final class CheckpointRulesTests: TestCase {
     }
 
     private static func rule(_ workflowId: String) -> String {
-        return #"{ "audience": "aud_4412", "workflow_id": "\#(workflowId)" }"#
+        return #"{ "audience_id": "aud_4412", "workflow_id": "\#(workflowId)" }"#
     }
 
 }

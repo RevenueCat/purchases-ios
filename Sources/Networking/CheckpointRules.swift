@@ -10,13 +10,10 @@ import Foundation
 /// One checkpoint's rules, which decide whether it resolves to a workflow. Parsed only, not evaluated.
 struct CheckpointRuleSet: Equatable, Sendable {
 
-    /// The checkpoint's backend id, as opposed to its name, which is the topic item key.
-    let id: String?
     /// Served in priority order, first match wins. Never re-sorted here.
     let rules: [CheckpointRule]
 
-    init(id: String? = nil, rules: [CheckpointRule]) {
-        self.id = id
+    init(rules: [CheckpointRule]) {
         self.rules = rules
     }
 
@@ -43,7 +40,6 @@ struct CheckpointRule: Equatable, Sendable {
 extension CheckpointRuleSet: Decodable {
 
     private enum CodingKeys: String, CodingKey {
-        case id
         case rules
     }
 
@@ -52,7 +48,6 @@ extension CheckpointRuleSet: Decodable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        self.id = try container.decodeIfPresent(String.self, forKey: .id)
         self.rules = (try container.decodeIfPresent([SkippableRule].self, forKey: .rules) ?? [])
             .compactMap(\.rule)
     }
@@ -63,7 +58,7 @@ extension CheckpointRule: Decodable {
 
     private enum CodingKeys: String, CodingKey {
         case id
-        case audienceId = "audience"
+        case audienceId
         case workflowId
     }
 
