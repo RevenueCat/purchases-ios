@@ -83,7 +83,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                     continuation.resume(throwing: CancellationError())
                     return
                 }
-                self.pendingCalls[callID] = continuation
+                self.store(continuation: continuation, for: callID)
                 presenter.present(callID: callID, workflow: workflow, delegate: self)
             }
         } onCancel: {
@@ -95,6 +95,10 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     func checkpointPresentationFinished(callID: String, outcome: CheckpointPaywallOutcome) {
         self.finish(callID: callID, outcome: outcome)
+    }
+
+    private func store(continuation: Continuation, for callID: String) {
+        self.pendingCalls[callID] = continuation
     }
 
     private func finish(callID: String, outcome: CheckpointPaywallOutcome) {
