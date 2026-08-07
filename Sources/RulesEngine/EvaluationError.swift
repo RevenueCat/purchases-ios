@@ -13,7 +13,7 @@ extension RulesEngine {
     /// Note on missing variables: the evaluator does **not** raise an error
     /// for them — per the JSON Logic spec, they resolve to `null` and a warning
     /// is logged instead.
-    enum EvaluationError: Error, Equatable {
+    enum EvaluationError: Error, Equatable, Sendable {
 
         /// The predicate JSON could not be parsed.
         case parse(message: String)
