@@ -137,43 +137,57 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 @available(iOS 15.0, macOS 12.0, *)
 extension CheckpointWorkflowPresenter {
 
-    func paywallViewController(
+    // `PaywallViewController` delivers these UI lifecycle and purchase callbacks
+    // synchronously from main-actor-isolated UI paths.
+    nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFinishPurchasingWith customerInfo: CustomerInfo
     ) {
-        self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+        MainActor.assumeIsolated {
+            self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+        }
     }
 
-    func paywallViewController(
+    nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFinishRestoringWith customerInfo: CustomerInfo
     ) {
-        self.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
+        MainActor.assumeIsolated {
+            self.stage(outcome: CheckpointPaywallRestoredOutcome(customerInfo: customerInfo))
+        }
     }
 
-    func paywallViewController(
+    nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFailPurchasingWith error: NSError
     ) {
-        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+        MainActor.assumeIsolated {
+            self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+        }
     }
 
-    func paywallViewController(
+    nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         didFailRestoringWith error: NSError
     ) {
-        self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+        MainActor.assumeIsolated {
+            self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+        }
     }
 
-    func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
-        self.presentationDidDismiss()
+    nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
+        MainActor.assumeIsolated {
+            self.presentationDidDismiss()
+        }
     }
 
-    func paywallViewController(
+    nonisolated func paywallViewController(
         _ controller: PaywallViewController,
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
-        self.presentedViewController = exitOfferController
+        MainActor.assumeIsolated {
+            self.presentedViewController = exitOfferController
+        }
     }
 
 }
