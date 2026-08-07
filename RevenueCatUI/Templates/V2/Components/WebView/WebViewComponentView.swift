@@ -150,6 +150,11 @@ typealias PlatformWebView = WKWebView
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebViewRepresentable: PlatformViewRepresentable {
 
+    private static let websiteDataStoreIdentifier = UUID(uuid: (
+        0x3f, 0x7a, 0x91, 0xd5, 0x2b, 0x4e, 0x4c, 0xb8,
+        0xa6, 0x10, 0x73, 0x29, 0x55, 0x14, 0x20, 0xce
+    ))
+
     let url: URL
     let instance: WebViewInstance
 
@@ -221,7 +226,13 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     static func makeConfiguration(session: WebViewSession?) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .nonPersistent()
+        if #available(iOS 17.0, macOS 14.0, *) {
+            configuration.websiteDataStore = WKWebsiteDataStore(
+                forIdentifier: Self.websiteDataStoreIdentifier
+            )
+        } else {
+            configuration.websiteDataStore = .nonPersistent()
+        }
         configuration.userContentController = WKUserContentController()
 
         if let session {

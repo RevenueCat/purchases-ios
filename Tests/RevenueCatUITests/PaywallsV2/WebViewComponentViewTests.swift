@@ -395,6 +395,23 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         XCTAssertTrue(configuration.mediaTypesRequiringUserActionForPlayback.isEmpty)
     }
 
+    func testConfigurationUsesIsolatedPersistentWebsiteDataStoreWhenAvailable() {
+        let firstConfiguration = WebViewRepresentable.makeConfiguration(session: nil)
+        let secondConfiguration = WebViewRepresentable.makeConfiguration(session: nil)
+
+        if #available(iOS 17.0, macOS 14.0, *) {
+            XCTAssertTrue(firstConfiguration.websiteDataStore.isPersistent)
+            XCTAssertNotNil(firstConfiguration.websiteDataStore.identifier)
+            XCTAssertEqual(
+                firstConfiguration.websiteDataStore.identifier,
+                secondConfiguration.websiteDataStore.identifier
+            )
+        } else {
+            XCTAssertFalse(firstConfiguration.websiteDataStore.isPersistent)
+            XCTAssertFalse(secondConfiguration.websiteDataStore.isPersistent)
+        }
+    }
+
     func testProcessTerminationInvokesCallbackOncePerCall() {
         let coordinator = WebViewRepresentable.Coordinator(
             expectedOrigin: WebViewOrigin(string: "https://example.com")!
