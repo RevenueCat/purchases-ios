@@ -45,11 +45,14 @@ import Foundation
     public let uiConfig: UIConfig
     /// The offering referenced by the workflow.
     public let offering: Offering
+    /// All offerings available while executing the workflow.
+    public let offerings: Offerings
 
-    init(workflow: PublishedWorkflow, uiConfig: UIConfig, offering: Offering) {
+    init(workflow: PublishedWorkflow, uiConfig: UIConfig, offering: Offering, offerings: Offerings) {
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.offering = offering
+        self.offerings = offerings
     }
 
 }

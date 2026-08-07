@@ -122,6 +122,14 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
     }
 
     func testCheckpointBuildsSuccessfulPayloadUsingOfferingFromTopicMetadata() async throws {
+        let secondaryOffering = Offering(
+            identifier: "secondary",
+            serverDescription: "Secondary offering",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        self.offerings = Self.offerings([self.offering, secondaryOffering])
+
         let resolution = try await self.resolve()
 
         guard case let .workflow(resolvedWorkflow) = resolution else {
@@ -130,6 +138,7 @@ final class RandomWorkflowCheckpointResolverTests: TestCase {
         XCTAssertEqual(resolvedWorkflow.workflow.id, self.workflowID)
         XCTAssertEqual(resolvedWorkflow.uiConfig, .empty)
         XCTAssertEqual(resolvedWorkflow.offering.identifier, self.offeringID)
+        XCTAssertEqual(Set(resolvedWorkflow.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
         XCTAssertEqual(self.provider.invokedGetWorkflowParameters, [self.workflowID])
     }
 

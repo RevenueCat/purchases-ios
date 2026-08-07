@@ -49,4 +49,5 @@ func checkResolvedCheckpointWorkflowAPI(_ resolvedWorkflow: ResolvedCheckpointWo
     let _: PublishedWorkflow = resolvedWorkflow.workflow
     let _: UIConfig = resolvedWorkflow.uiConfig
     let _: Offering = resolvedWorkflow.offering
+    let _: Offerings = resolvedWorkflow.offerings
 }

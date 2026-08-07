@@ -65,12 +65,14 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
         }
 
         let offering: Offering
+        let offerings: Offerings
         do {
-            let offerings = try await self.offeringsProvider()
-            guard let resolvedOffering = offerings.offering(identifier: offeringID) else {
+            let resolvedOfferings = try await self.offeringsProvider()
+            guard let resolvedOffering = resolvedOfferings.offering(identifier: offeringID) else {
                 return .noAction(.configurationUnavailable)
             }
             offering = resolvedOffering
+            offerings = resolvedOfferings
         } catch {
             Logger.error(error.localizedDescription)
             return .noAction(.configurationUnavailable)
@@ -80,7 +82,8 @@ final class RandomWorkflowCheckpointResolver: CheckpointWorkflowResolver {
             ResolvedCheckpointWorkflow(
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
-                offering: offering
+                offering: offering,
+                offerings: offerings
             )
         )
     }
