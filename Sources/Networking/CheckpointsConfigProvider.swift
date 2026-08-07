@@ -25,14 +25,19 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         self.manager = manager
     }
 
-    /// `nil` covers no item, an unresolvable payload and remote config being disabled: indistinguishable here,
-    /// and all mean there are no rules to run.
+    /// `nil` covers no item, an unresolvable or undecodable payload and remote config being disabled:
+    /// indistinguishable here, and all mean there are no rules to run.
     func getCheckpoint(_ identifier: String) async -> CheckpointRuleSet? {
-        guard let data = await self.manager.blobData(for: .checkpointRules, itemKey: identifier) else {
+        do {
+            return try await self.manager.blobData(
+                for: .checkpointRules,
+                itemKey: identifier,
+                as: CheckpointRuleSet.self
+            )
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
             return nil
         }
-
-        return CheckpointRuleSet.parse(identifier: identifier, blob: data)
     }
 
 }

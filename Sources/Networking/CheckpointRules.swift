@@ -10,15 +10,12 @@ import Foundation
 /// One checkpoint's rules, which decide whether it resolves to a workflow. Parsed only, not evaluated.
 struct CheckpointRuleSet: Equatable, Sendable {
 
-    /// The checkpoint name, which is also the topic item key.
-    let identifier: String
-    /// The checkpoint's backend id, as opposed to its name.
+    /// The checkpoint's backend id, as opposed to its name, which is the topic item key.
     let id: String?
     /// Served in priority order, first match wins. Never re-sorted here.
     let rules: [CheckpointRule]
 
-    init(identifier: String, id: String? = nil, rules: [CheckpointRule]) {
-        self.identifier = identifier
+    init(id: String? = nil, rules: [CheckpointRule]) {
         self.id = id
         self.rules = rules
     }
@@ -49,7 +46,8 @@ struct CheckpointRule: Equatable, Sendable {
 
 }
 
-/// Either bound absent means open-ended on that side.
+/// Either bound absent means open-ended on that side. A bound that's present but unparseable fails the whole
+/// rule rather than reading as open-ended, which would run it outside its dates.
 struct CheckpointRuleSchedule: Equatable, Sendable {
 
     let start: Date?
@@ -62,115 +60,52 @@ struct CheckpointRuleSchedule: Equatable, Sendable {
 
 }
 
-// MARK: - Parsing
+// MARK: - Decodable
 
-extension CheckpointRuleSet {
+extension CheckpointRuleSet: Decodable {
 
-    /// `nil` when the bytes aren't a JSON object.
-    static func parse(identifier: String, blob data: Data) -> CheckpointRuleSet? {
-        guard let fields = Self.fields(fromBlob: data) else { return nil }
-        return Self.parse(identifier: identifier, fields: fields)
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case rules
     }
 
-    /// A malformed rule is skipped rather than failing the checkpoint, and unknown fields are ignored so the
-    /// backend can extend the schema without a client release.
-    static func parse(identifier: String, fields: [String: AnyDecodable]) -> CheckpointRuleSet {
-        var id: String?
-        if case let .string(value)? = fields[Self.idKey] {
-            id = value
-        }
+    /// A rule the SDK can't make sense of is skipped rather than failing the checkpoint, so one bad rule
+    /// can't take out the rest.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-        return CheckpointRuleSet(
-            identifier: identifier,
-            id: id,
-            rules: Self.parseRules(from: fields, checkpoint: identifier)
-        )
+        self.id = try container.decodeIfPresent(String.self, forKey: .id)
+        self.rules = (try container.decodeIfPresent([SkippableRule].self, forKey: .rules) ?? [])
+            .compactMap(\.rule)
     }
 
-    private static func parseRules(
-        from fields: [String: AnyDecodable],
-        checkpoint: String
-    ) -> [CheckpointRule] {
-        guard let rules = fields[Self.rulesKey] else { return [] }
-        guard case let .array(entries) = rules else {
-            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(
-                checkpoint: checkpoint,
-                reason: "expected '\(Self.rulesKey)' to be an array"
-            ))
-            return []
-        }
+}
 
-        return entries.compactMap { Self.parseRule($0, checkpoint: checkpoint) }
+extension CheckpointRule: Decodable {
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case audienceId = "audience"
+        case workflowId
+        case schedule
     }
 
-    private static func parseRule(_ entry: AnyDecodable, checkpoint: String) -> CheckpointRule? {
-        guard case let .object(fields) = entry else {
-            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(
-                checkpoint: checkpoint,
-                reason: "expected each rule to be an object"
-            ))
-            return nil
-        }
-        guard case let .string(workflowId)? = fields[Self.workflowIdKey], !workflowId.isEmpty else {
-            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(
-                checkpoint: checkpoint,
-                reason: "missing '\(Self.workflowIdKey)'"
-            ))
-            return nil
-        }
+}
 
-        guard case let .int(audienceId)? = fields[Self.audienceKey] else {
-            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(
-                checkpoint: checkpoint,
-                reason: "missing '\(Self.audienceKey)'"
-            ))
-            return nil
-        }
+extension CheckpointRuleSchedule: Decodable {}
 
-        var id: String?
-        if case let .string(value)? = fields[Self.idKey] {
-            id = value
-        }
+/// Turns a rule that fails to decode into `nil` instead of failing its enclosing array.
+private struct SkippableRule: Decodable {
 
-        return CheckpointRule(
-            id: id,
-            audienceId: audienceId,
-            workflowId: workflowId,
-            schedule: Self.parseSchedule(fields[Self.scheduleKey])
-        )
-    }
+    let rule: CheckpointRule?
 
-    /// Dropped rather than kept as open-ended, which would run the rule outside its dates.
-    private static func parseSchedule(_ field: AnyDecodable?) -> CheckpointRuleSchedule? {
-        guard case let .object(fields)? = field else { return nil }
-
-        let start = Self.parseDate(fields[Self.startKey])
-        let end = Self.parseDate(fields[Self.endKey])
-        guard start != nil || end != nil else { return nil }
-
-        return CheckpointRuleSchedule(start: start, end: end)
-    }
-
-    private static func parseDate(_ field: AnyDecodable?) -> Date? {
-        guard case let .string(value)? = field else { return nil }
-        return ISO8601DateFormatter.default.date(from: value)
-    }
-
-    private static func fields(fromBlob data: Data) -> [String: AnyDecodable]? {
+    init(from decoder: Decoder) throws {
         do {
-            return try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+            self.rule = try CheckpointRule(from: decoder)
         } catch {
-            Logger.error(Strings.codable.decoding_error(error, [String: AnyDecodable].self))
-            return nil
+            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(reason: "\(error)"))
+            self.rule = nil
         }
     }
-
-    private static let idKey = "id"
-    private static let rulesKey = "rules"
-    private static let audienceKey = "audience"
-    private static let workflowIdKey = "workflow_id"
-    private static let scheduleKey = "schedule"
-    private static let startKey = "start"
-    private static let endKey = "end"
 
 }

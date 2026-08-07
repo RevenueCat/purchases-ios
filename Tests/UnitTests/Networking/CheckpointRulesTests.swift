@@ -16,37 +16,37 @@ import Nimble
 @testable import RevenueCat
 import XCTest
 
+/// Decoding tests for a checkpoint's payload, run through `JSONDecoder.default` so the key and date
+/// strategies the topic manager uses are exercised for real.
 final class CheckpointRulesTests: TestCase {
 
     // MARK: - Wire contract
 
-    func testParsesTheDocumentedExamplePayload() throws {
-        let blob = Data("""
+    func testDecodesTheDocumentedExamplePayload() throws {
+        let ruleSet = try Self.decode("""
         {
-          "id": "checkpoint-abc",
+          "id": "chkpt_a1b2c3d4e5f6a7b8",
           "rules": [
             {
-              "id": "rule-1",
+              "id": "chkptrule_1a2b3c4d5e6f7a8b",
               "audience": 4412,
               "workflow_id": "wf-1",
               "schedule": { "start": "2026-11-25T00:00:00Z", "end": "2026-11-30T00:00:00Z" }
             },
             {
-              "id": "rule-2",
+              "id": "chkptrule_9z8y7x6w5v4u3t2s",
               "audience": 4419,
               "workflow_id": "wf-2"
             }
           ]
         }
-        """.utf8)
-        let ruleSet = try XCTUnwrap(CheckpointRuleSet.parse(identifier: "app_open", blob: blob))
+        """)
 
-        expect(ruleSet.identifier) == "app_open"
-        expect(ruleSet.id) == "checkpoint-abc"
+        expect(ruleSet.id) == "chkpt_a1b2c3d4e5f6a7b8"
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-1", "wf-2"]
 
         let first = try XCTUnwrap(ruleSet.rules.first)
-        expect(first.id) == "rule-1"
+        expect(first.id) == "chkptrule_1a2b3c4d5e6f7a8b"
         expect(first.audienceId) == 4412
         expect(first.schedule?.start) == Self.date("2026-11-25T00:00:00Z")
         expect(first.schedule?.end) == Self.date("2026-11-30T00:00:00Z")
@@ -56,170 +56,120 @@ final class CheckpointRulesTests: TestCase {
         expect(second.schedule).to(beNil())
     }
 
-    func testKeepsPayloadKeysVerbatimWhileItemMetadataIsCamelCased() throws {
-        let blob = Data(#"{ "rules": [{ "workflow_id": "wf-1", "audience": 4412 }] }"#.utf8)
-        let ruleSet = try XCTUnwrap(CheckpointRuleSet.parse(identifier: "app_open", blob: blob))
+    func testDecodesACheckpointWithNoRules() throws {
+        let ruleSet = try Self.decode(#"{ "id": "chkpt_abc" }"#)
 
-        let rule = try XCTUnwrap(ruleSet.rules.onlyElement)
-        expect(rule.workflowId) == "wf-1"
-        expect(rule.audienceId) == 4412
-
-        let payload = """
-        {
-          "domain": "app",
-          "manifest": "v1.1710000100.checkpoint_rules:etag",
-          "active_topics": ["checkpoint_rules"],
-          "topics": {
-            "checkpoint_rules": {
-              "app_open": { "blob_ref": "app-open-ref", "prefetch": true, "first_seen": "2026-06-17T08:44:26Z" }
-            }
-          }
-        }
-        """
-        let response = try JSONDecoder.default.decode(RemoteConfiguration.self, from: Data(payload.utf8))
-        let item = try XCTUnwrap(
-            response.topics.entries[RemoteConfigTopic.checkpointRules.wireName]?["app_open"]
-        )
-
-        expect(item.blobRef) == "app-open-ref"
-        expect(item.prefetch) == true
-        expect(item.content.keys.sorted()) == ["firstSeen"]
-    }
-
-    func testReturnsNilForAPayloadThatIsntAJSONObject() {
-        expect(CheckpointRuleSet.parse(identifier: "app_open", blob: Data("not-json".utf8))).to(beNil())
-        expect(CheckpointRuleSet.parse(identifier: "app_open", blob: Data(#"["an", "array"]"#.utf8))).to(beNil())
-    }
-
-    // MARK: - Ordering
-
-    func testPreservesTheServedRuleOrder() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            Self.rule(workflowId: "wf-c"),
-            Self.rule(workflowId: "wf-a"),
-            Self.rule(workflowId: "wf-b")
-        ])])
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-c", "wf-a", "wf-b"]
-    }
-
-    func testKeepsServedOrderWhenARuleInTheMiddleIsSkipped() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            Self.rule(workflowId: "wf-a"),
-            .object(["id": .string("no-workflow")]),
-            Self.rule(workflowId: "wf-b")
-        ])])
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-a", "wf-b"]
-    }
-
-    // MARK: - Malformed data
-
-    func testSkipsRulesMissingAnAudience() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .object(["workflow_id": .string("wf-no-audience")]),
-            Self.rule(workflowId: "wf-valid")
-        ])])
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
-    }
-
-    func testSkipsRulesMissingAWorkflowId() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .object(["id": .string("rule-1"), "audience": .int(4412)]),
-            Self.rule(workflowId: "wf-valid"),
-            .object(["workflow_id": .string(""), "audience": .int(4412)])
-        ])])
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
-    }
-
-    func testSkipsRuleEntriesThatArentObjects() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .string("not-a-rule"),
-            Self.rule(workflowId: "wf-valid")
-        ])])
-
-        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
-    }
-
-    func testKeepsCheckpointWithNoRulesWhenRulesArentAnArray() {
-        expect(Self.ruleSet(["rules": .string("nope")]).rules).to(beEmpty())
-    }
-
-    func testKeepsCheckpointWithNoRulesKeyAtAll() {
-        let ruleSet = Self.ruleSet(["id": .string("checkpoint-xyz")])
-
-        expect(ruleSet.identifier) == "app_open"
-        expect(ruleSet.id) == "checkpoint-xyz"
+        expect(ruleSet.id) == "chkpt_abc"
         expect(ruleSet.rules).to(beEmpty())
     }
 
-    func testIgnoresUnknownFields() {
-        let ruleSet = Self.ruleSet([
-            "something_the_backend_added_later": .bool(true),
-            "rules": .array([
-                .object([
-                    "workflow_id": .string("wf-a"),
-                    "audience": .int(4412),
-                    "state": .string("active"),
-                    "something_else_new": .bool(true)
-                ])
-            ])
-        ])
+    func testIgnoresUnknownFields() throws {
+        let ruleSet = try Self.decode("""
+        {
+          "id": "chkpt_abc",
+          "something_the_backend_added_later": true,
+          "rules": [{ "audience": 4412, "workflow_id": "wf-a", "state": "active", "frequency_cap": null }]
+        }
+        """)
 
         expect(ruleSet.rules.map(\.workflowId)) == ["wf-a"]
     }
 
-    // MARK: - Optional rule fields
-
-    func testParsesAScheduleWithOnlyOneBound() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .object([
-                "workflow_id": .string("wf-a"),
-                "audience": .int(4412),
-                "schedule": .object(["start": .string("2026-11-25T00:00:00Z")])
-            ])
-        ])])
-
-        expect(ruleSet.rules.onlyElement?.schedule?.start) == Self.date("2026-11-25T00:00:00Z")
-        expect(ruleSet.rules.onlyElement?.schedule?.end).to(beNil())
+    func testThrowsForAPayloadThatIsntAJSONObject() {
+        expect { try Self.decode("not-json") }.to(throwError())
+        expect { try Self.decode(#"["an", "array"]"#) }.to(throwError())
     }
 
-    /// Dropped rather than kept as open-ended, which would run the rule outside its dates.
-    func testDropsAScheduleWhoseDatesCantBeParsed() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .object([
-                "workflow_id": .string("wf-a"),
-                "audience": .int(4412),
-                "schedule": .object(["start": .string("not-a-date"), "end": .string("nope")])
-            ])
-        ])])
+    // MARK: - Ordering
 
-        expect(ruleSet.rules.onlyElement?.workflowId) == "wf-a"
-        expect(ruleSet.rules.onlyElement?.schedule).to(beNil())
+    /// Rules are served in priority order, so decoding must not reorder them.
+    func testPreservesTheServedRuleOrder() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [\(Self.rule("wf-c")), \(Self.rule("wf-a")), \(Self.rule("wf-b"))] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-c", "wf-a", "wf-b"]
     }
 
-    func testParsesFractionalSecondsInASchedule() {
-        let ruleSet = Self.ruleSet(["rules": .array([
-            .object([
-                "workflow_id": .string("wf-a"),
-                "audience": .int(4412),
-                "schedule": .object(["start": .string("2026-11-25T00:00:00.251Z")])
-            ])
-        ])])
+    // MARK: - Skipping malformed rules
+
+    /// One bad rule shouldn't take out the whole checkpoint, and it shouldn't shift the others either.
+    func testSkipsAMalformedRuleAndKeepsTheRest() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [\(Self.rule("wf-a")), { "audience": 4412 }, \(Self.rule("wf-b"))] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-a", "wf-b"]
+    }
+
+    func testSkipsRulesMissingAnAudience() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [{ "workflow_id": "wf-no-audience" }, \(Self.rule("wf-valid"))] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
+    }
+
+    func testSkipsRulesMissingAWorkflowId() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [{ "audience": 4412 }, \(Self.rule("wf-valid"))] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
+    }
+
+    func testSkipsRuleEntriesThatArentObjects() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": ["not-a-rule", \(Self.rule("wf-valid"))] }
+        """)
+
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
+    }
+
+    // MARK: - Schedule
+
+    func testDecodesAScheduleWithOnlyOneBound() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [{ "audience": 4412, "workflow_id": "wf-a",
+                      "schedule": { "start": "2026-11-25T00:00:00Z" } }] }
+        """)
+
+        let schedule = try XCTUnwrap(ruleSet.rules.onlyElement?.schedule)
+        expect(schedule.start) == Self.date("2026-11-25T00:00:00Z")
+        expect(schedule.end).to(beNil())
+    }
+
+    func testDecodesFractionalSecondsInASchedule() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [{ "audience": 4412, "workflow_id": "wf-a",
+                      "schedule": { "start": "2026-11-25T00:00:00.251Z" } }] }
+        """)
 
         expect(ruleSet.rules.onlyElement?.schedule?.start) == Self.date("2026-11-25T00:00:00.251Z")
     }
 
-    // MARK: - Helpers
+    /// A bound that's present but unparseable drops the whole rule. Letting it read as `nil` would widen the
+    /// window and run the rule outside the dates it was scheduled for.
+    func testSkipsARuleWhoseScheduleHasAnUnparseableBound() throws {
+        let ruleSet = try Self.decode("""
+        { "rules": [
+            { "audience": 4412, "workflow_id": "wf-broken",
+              "schedule": { "start": "not-a-date", "end": "2026-11-30T00:00:00Z" } },
+            \(Self.rule("wf-valid"))
+        ] }
+        """)
 
-    private static func ruleSet(_ fields: [String: AnyDecodable]) -> CheckpointRuleSet {
-        return CheckpointRuleSet.parse(identifier: "app_open", fields: fields)
+        expect(ruleSet.rules.map(\.workflowId)) == ["wf-valid"]
     }
 
-    private static func rule(workflowId: String) -> AnyDecodable {
-        return .object(["workflow_id": .string(workflowId), "audience": .int(4412)])
+    // MARK: - Helpers
+
+    private static func decode(_ json: String) throws -> CheckpointRuleSet {
+        return try JSONDecoder.default.decode(CheckpointRuleSet.self, from: Data(json.utf8))
+    }
+
+    private static func rule(_ workflowId: String) -> String {
+        return #"{ "audience": 4412, "workflow_id": "\#(workflowId)" }"#
     }
 
     private static func date(_ string: String) -> Date? {

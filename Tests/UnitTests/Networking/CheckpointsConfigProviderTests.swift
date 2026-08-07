@@ -48,7 +48,6 @@ class CheckpointsConfigProviderTests: TestCase {
 
         let ruleSet = try XCTUnwrap(ruleSetResult)
 
-        expect(ruleSet.identifier) == "onboarding"
         expect(ruleSet.id) == "checkpoint-abc"
         expect(ruleSet.rules.onlyElement?.workflowId) == "wf-a"
     }
