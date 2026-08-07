@@ -12,6 +12,7 @@
 //  Created by Rick van der Linden.
 //
 
+import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
@@ -124,7 +125,7 @@ struct ContentView: View {
                         Task { @MainActor in
                             do {
                                 let result = try await Purchases.shared.checkpoint(
-                                    "unknown_checkpoint",
+                                    "this-checkpoint-does-not-exist-\(UUID().uuidString.prefix(4))",
                                     params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)

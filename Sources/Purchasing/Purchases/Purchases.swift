@@ -598,6 +598,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             manager: remoteConfigManager,
             uiConfigProvider: uiConfigProvider
         )
+        let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -651,7 +652,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
-            checkpointResolver = RandomWorkflowCheckpointResolver(
+            checkpointResolver = DefaultCheckpointWorkflowResolver(
+                checkpointsConfigProvider: checkpointsConfigProvider,
                 workflowManager: workflowManager,
                 offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in

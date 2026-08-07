@@ -11,6 +11,7 @@ enum RemoteConfigStrings {
 
     case cacheURLNotAvailable
     case checkpointRuleSkipped(reason: String)
+    case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
     case failedToReadBlob(String, Error)
@@ -52,6 +53,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Remote config cache URL is not available."
         case let .checkpointRuleSkipped(reason):
             return "Skipping malformed checkpoint rule: \(reason)."
+        case let .checkpointWorkflowRuleSkipped(workflowID, reason):
+            return "Skipping checkpoint rule for workflow '\(workflowID)': \(reason)."
         case let .failedToClearBlobStore(error):
             return "Failed to clear remote config blob store: \(error.localizedDescription)"
         case let .failedToDeleteBlob(ref, error):
