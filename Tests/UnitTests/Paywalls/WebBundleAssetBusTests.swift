@@ -79,7 +79,7 @@ final class WebBundleAssetBusTests: TestCase {
         expect(received) == []
     }
 
-    func testTakeReturnsPublishedSetAndClearsCurrentValue() async {
+    func testClearReplacesCurrentValueWithEmptySet() async {
         let urls: Set<URLWithValidation> = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
@@ -87,10 +87,14 @@ final class WebBundleAssetBusTests: TestCase {
         let bus = self.bus!
         await bus.publish(urls)
 
-        let first = await bus.take()
-        let second = await bus.take()
-        expect(first) == urls
-        expect(second) == []
+        await bus.clear()
+
+        var received: Set<URLWithValidation>?
+        bus.publisher
+            .sink { received = $0 }
+            .store(in: &self.cancellables)
+
+        expect(received) == []
     }
 
     func testSubscriberCanPublishInResponseToValue() async {

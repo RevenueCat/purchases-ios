@@ -44,11 +44,9 @@ import Foundation
         self.subject.send(urls)
     }
 
-    /// Returns the current URL set and replaces it with an empty set.
-    public func take() -> Set<URLWithValidation> {
-        let urls = self.subject.value
+    /// Replaces the current URL set with an empty set and notifies subscribers.
+    public func clear() {
         self.subject.send([])
-        return urls
     }
 
 }
