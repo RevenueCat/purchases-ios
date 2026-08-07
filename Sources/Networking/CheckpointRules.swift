@@ -28,40 +28,23 @@ struct CheckpointRuleSet: Equatable, Sendable {
 struct CheckpointRule: Equatable, Sendable {
 
     let id: String?
-    /// Reference to the targeted audience, whose predicate arrives in a separate topic. `nil` targets everyone.
-    let audienceId: String?
+    /// Reference to the targeted audience, whose predicate arrives in a separate topic. Required, so a rule
+    /// can never end up targeting everyone by omission.
+    let audienceId: Int
     let workflowId: String
-    let frequencyCap: CheckpointFrequencyCap?
     /// Rules are published ahead of their start date, so this window is resolved on device.
     let schedule: CheckpointRuleSchedule?
 
     init(
         id: String? = nil,
-        audienceId: String? = nil,
+        audienceId: Int,
         workflowId: String,
-        frequencyCap: CheckpointFrequencyCap? = nil,
         schedule: CheckpointRuleSchedule? = nil
     ) {
         self.id = id
         self.audienceId = audienceId
         self.workflowId = workflowId
-        self.frequencyCap = frequencyCap
         self.schedule = schedule
-    }
-
-}
-
-/// `type` stays the raw wire value: frequency capping is out of V1 scope and its vocabulary isn't settled.
-struct CheckpointFrequencyCap: Equatable, Sendable {
-
-    let type: String
-    let count: Int?
-    let window: String?
-
-    init(type: String, count: Int? = nil, window: String? = nil) {
-        self.type = type
-        self.count = count
-        self.window = window
     }
 
 }
@@ -136,40 +119,25 @@ extension CheckpointRuleSet {
             return nil
         }
 
+        guard case let .int(audienceId)? = fields[Self.audienceKey] else {
+            Logger.warn(Strings.remoteConfig.checkpointRuleSkipped(
+                checkpoint: checkpoint,
+                reason: "missing '\(Self.audienceKey)'"
+            ))
+            return nil
+        }
+
         var id: String?
         if case let .string(value)? = fields[Self.idKey] {
             id = value
-        }
-        var audienceId: String?
-        if case let .string(value)? = fields[Self.audienceKey] {
-            audienceId = value
         }
 
         return CheckpointRule(
             id: id,
             audienceId: audienceId,
             workflowId: workflowId,
-            frequencyCap: Self.parseFrequencyCap(fields[Self.frequencyCapKey]),
             schedule: Self.parseSchedule(fields[Self.scheduleKey])
         )
-    }
-
-    private static func parseFrequencyCap(_ field: AnyDecodable?) -> CheckpointFrequencyCap? {
-        guard case let .object(fields)? = field,
-              case let .string(type)? = fields[Self.typeKey] else {
-            return nil
-        }
-
-        var count: Int?
-        if case let .int(value)? = fields[Self.countKey] {
-            count = value
-        }
-        var window: String?
-        if case let .string(value)? = fields[Self.windowKey] {
-            window = value
-        }
-
-        return CheckpointFrequencyCap(type: type, count: count, window: window)
     }
 
     /// Dropped rather than kept as open-ended, which would run the rule outside its dates.
@@ -201,10 +169,6 @@ extension CheckpointRuleSet {
     private static let rulesKey = "rules"
     private static let audienceKey = "audience"
     private static let workflowIdKey = "workflow_id"
-    private static let frequencyCapKey = "frequency_cap"
-    private static let typeKey = "type"
-    private static let countKey = "count"
-    private static let windowKey = "window"
     private static let scheduleKey = "schedule"
     private static let startKey = "start"
     private static let endKey = "end"
