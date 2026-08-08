@@ -104,7 +104,7 @@ Updates paywall-preview-resources-commit to point to latest commit on main and c
 [bundle exec] fastlane ios record_and_upload_v2_snapshots
 ```
 
-Records Paywall template screenshots once and distributes them to the provided target_repository_path and/or Emerge
+Records Paywall template screenshots once and distributes them to the provided target_repository_path, Emerge, and/or Sentry
 
 ### ios record_paywall_screenshots
 
@@ -114,13 +114,13 @@ Records Paywall template screenshots once and distributes them to the provided t
 
 Records screenshots for paywalls
 
-### ios build_paywalls_tester_for_emerge
+### ios build_and_upload_paywalls_tester_snapshots
 
 ```sh
-[bundle exec] fastlane ios build_paywalls_tester_for_emerge
+[bundle exec] fastlane ios build_and_upload_paywalls_tester_snapshots
 ```
 
-Build the Paywalls Test app for Emerge Snapshots
+Build PaywallsTester Preview snapshots and upload to Emerge and Sentry
 
 ### ios record_and_upload_v1_snapshots
 
@@ -128,7 +128,7 @@ Build the Paywalls Test app for Emerge Snapshots
 [bundle exec] fastlane ios record_and_upload_v1_snapshots
 ```
 
-Record V1 template snapshots and upload to Emerge
+Record V1 template snapshots and upload to Emerge and Sentry
 
 ### ios upload_v1_snapshots_to_emerge
 
@@ -138,13 +138,13 @@ Record V1 template snapshots and upload to Emerge
 
 Upload V1 template snapshots to Emerge using BYOS
 
-### ios build_paywalls_tester_for_emerge_ios
+### ios upload_v1_snapshots_to_sentry
 
 ```sh
-[bundle exec] fastlane ios build_paywalls_tester_for_emerge_ios
+[bundle exec] fastlane ios upload_v1_snapshots_to_sentry
 ```
 
-
+Upload V1 template snapshots to Sentry
 
 ### ios test_ios
 
