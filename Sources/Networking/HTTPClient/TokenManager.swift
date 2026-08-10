@@ -23,12 +23,19 @@ class TokenManager {
         }
     }
 
+    private struct CurrentTokenRefreshState {
+        let request: HTTPRequest
+        var completions: Array<(VerifiedHTTPResponse<TokenResponse>.Result) -> Void>
+    }
+
     let enabled: Bool
     private let storage: any SecureItemStorage
 
     weak var currentUserProvider: CurrentUserProvider?
 
     private var currentUser: String? { currentUserProvider?.currentAppUserID }
+
+    private let currentRefreshState: Atomic<CurrentTokenRefreshState?> = Atomic(nil)
 
     init(enabled: Bool, storage: any SecureItemStorage) {
         self.enabled = enabled
@@ -120,39 +127,66 @@ class TokenManager {
 
     // MARK: - Refreshing Tokens
 
+    enum TokenRefreshAction {
+        case noAction
+        case refresh(HTTPRequest)
+        case waitingForOtherRequest
+    }
+
     func tokenRefreshRequest(for initialRequest: HTTPClient.Request,
-                             response: HTTPURLResponse?) -> HTTPRequest? {
-        guard self.enabled else { return nil }
+                             response: HTTPURLResponse?,
+                             duplicateRequestHandler: @escaping (VerifiedHTTPResponse<TokenResponse>.Result) -> Void)
+    -> TokenRefreshAction {
+
+        guard self.enabled else { return .noAction }
 
         // IAM requests do not trigger a token refresh
-        if initialRequest.httpRequest.path.isIAMPath { return nil }
+        if initialRequest.httpRequest.path.isIAMPath { return .noAction }
 
         // only "401 Unauthorized" responses will trigger a refresh
-        guard let response else { return nil }
-        guard response.httpStatusCode == .unauthorized else { return nil }
+        guard let response else { return .noAction }
+        guard response.httpStatusCode == .unauthorized else { return .noAction }
 
         // we can only refresh if we have a refresh token
-        guard let currentRefreshToken else { return nil }
+        guard let currentRefreshToken else { return .noAction }
 
-        let body = TokenRefreshOperation.Body(refreshToken: currentRefreshToken)
-        let request = HTTPRequest(method: .post(body), path: .tokenRefresh, isRetryable: false)
-
-        return request
+        return self.currentRefreshState.modify {
+            if $0 != nil {
+                $0?.completions.append(duplicateRequestHandler)
+                return .waitingForOtherRequest
+            } else {
+                let body = TokenRefreshOperation.Body(refreshToken: currentRefreshToken)
+                let request = HTTPRequest(method: .post(body), path: .tokenRefresh, isRetryable: false)
+                $0 = .init(request: request, completions: [])
+                return .refresh(request)
+            }
+        }
     }
 
     func handleTokenRefreshResponse(_ result: VerifiedHTTPResponse<TokenResponse>.Result) -> Bool {
         guard self.enabled else { return false }
 
         // make sure this response is a successful one
-        guard case .success(let response) = result else { return false }
-        guard response.httpStatusCode == .success else { return false }
+        let didHandle: Bool
+        if case .success(let response) = result, response.httpStatusCode == .success {
+            let tokens = response.body
 
-        let tokens = response.body
+            self.currentRefreshToken = tokens.refreshToken
+            self.currentAccessToken = tokens.accessToken
+            self.currentIDToken = tokens.idToken
+            didHandle = true
+        } else {
+            didHandle = false
+        }
 
-        self.currentRefreshToken = tokens.refreshToken
-        self.currentAccessToken = tokens.accessToken
-        self.currentIDToken = tokens.idToken
-        return true
+        let handlers = self.currentRefreshState.modify { state in
+            let handlers = state?.completions ?? []
+            state = nil
+            return handlers
+        }
+
+        handlers.forEach { $0(result) }
+        return didHandle
     }
 
 }

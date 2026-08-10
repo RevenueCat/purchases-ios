@@ -263,10 +263,11 @@ internal extension HTTPClient {
 internal extension HTTPClient {
 
     struct State {
+        var paused: Bool
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
 
-        static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
+        static let initial: Self = .init(paused: false, queuedRequests: [], currentSerialRequest: nil)
     }
 
     /// The API-source resolution state of a request, modeled as one value so an inconsistent
@@ -440,6 +441,12 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.serial_request_queued(httpMethod: request.method.httpMethod,
                                                                        path: request.path,
                                                                        queuedRequestsCount: $0.queuedRequests.count))
+
+                    $0.queuedRequests.append(request)
+                    return true
+                } else if $0.paused == true {
+                    Logger.debug(Strings.network.serial_request_paused(httpMethod: request.method.httpMethod,
+                                                                       path: request.path))
 
                     $0.queuedRequests.append(request)
                     return true
@@ -759,6 +766,8 @@ private extension HTTPClient {
 
     func beginNextRequest() {
         let nextRequest: Request? = self.state.modify {
+            if $0.paused == true { return nil }
+
             Logger.debug(Strings.network.serial_request_done(httpMethod: $0.currentSerialRequest?.method.httpMethod,
                                                              path: $0.currentSerialRequest?.path,
                                                              queuedRequestsCount: $0.queuedRequests.count))
@@ -975,28 +984,39 @@ extension HTTPClient {
                                              basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
                                              response: HTTPURLResponse?) -> Bool {
 
-        guard let reauthRequest = self.tokenManager.tokenRefreshRequest(for: request, response: response) else {
-            return false
-        }
-
-        let clientRequest = Request(httpRequest: reauthRequest,
-                                    authHeaders: self.authHeaders,
-                                    defaultHeaders: self.defaultHeaders,
-                                    verificationMode: self.systemInfo.responseVerificationMode,
-                                    preferIAMPath: self.tokenManager.enabled,
-                                    internalSettings: self.systemInfo.dangerousSettings.internalSettings,
-                                    completionHandler: { (result: VerifiedHTTPResponse<TokenResponse>.Result) in
-
+        let completion: (VerifiedHTTPResponse<TokenResponse>.Result) -> Void = { result in
             self.handleReauthorizationResponse(reauthResult: result,
                                                originalRequest: request,
                                                originalResult: originalResult)
-        })
 
-        self.state.modify {
-            $0.queuedRequests.insert(clientRequest, at: 0)
         }
+        let reauthAction = self.tokenManager.tokenRefreshRequest(for: request,
+                                                                 response: response,
+                                                                 duplicateRequestHandler: completion)
 
-        return true
+        switch reauthAction {
+        case .noAction:
+            return false
+        case .refresh(let reauthRequest):
+            let clientRequest = Request(httpRequest: reauthRequest,
+                                        authHeaders: self.authHeaders,
+                                        defaultHeaders: self.defaultHeaders,
+                                        verificationMode: self.systemInfo.responseVerificationMode,
+                                        preferIAMPath: self.tokenManager.enabled,
+                                        internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                        completionHandler: completion)
+
+            self.state.modify {
+                $0.queuedRequests.insert(clientRequest, at: 0)
+            }
+            return true
+        case .waitingForOtherRequest:
+            self.state.modify {
+                $0.paused = true
+            }
+            // return true to indicate that the request *will* be retried
+            return true
+        }
     }
 
     private func handleReauthorizationResponse(reauthResult: VerifiedHTTPResponse<TokenResponse>.Result,
@@ -1004,17 +1024,30 @@ extension HTTPClient {
                                                originalResult: VerifiedHTTPResponse<Data>.Result) {
 
         let handled = self.tokenManager.handleTokenRefreshResponse(reauthResult)
+        let needsToRestart: Bool
 
         if handled {
             let retried = originalRequest.retriedRequest()
 
-            self.state.modify {
+            needsToRestart = self.state.modify {
+                let shouldRestart = $0.paused == true
+                $0.paused = false
                 $0.queuedRequests.insert(retried, at: 0)
+                return shouldRestart
             }
         } else {
+            needsToRestart = self.state.modify {
+                let shouldRestart = $0.paused == true
+                $0.paused = false
+                return shouldRestart
+            }
             // the original request needs to be failed
             // re-use the original 401 Unauthorized
             originalRequest.completionHandler?(originalResult)
+        }
+
+        if needsToRestart {
+            self.beginNextRequest()
         }
 
     }
