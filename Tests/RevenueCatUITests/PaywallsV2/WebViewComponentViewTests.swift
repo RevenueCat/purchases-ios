@@ -365,6 +365,20 @@ import WebKit
 @MainActor
 final class WebViewCoordinatorLifecycleTests: TestCase {
 
+    private let websiteDataStoreIdentifier = UUID()
+    private var createdPersistentWebsiteDataStore = false
+
+    override func tearDown() async throws {
+        if #available(iOS 17.0, macOS 14.0, *), self.createdPersistentWebsiteDataStore {
+            let identifiers = await WKWebsiteDataStore.allDataStoreIdentifiers
+            if identifiers.contains(self.websiteDataStoreIdentifier) {
+                try await WKWebsiteDataStore.remove(forIdentifier: self.websiteDataStoreIdentifier)
+            }
+        }
+
+        try await super.tearDown()
+    }
+
     func testDidCommitResetsConnectedSessionChannel() {
         let session = WebViewSession(
             componentID: "web",
@@ -391,25 +405,61 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
     }
 
     func testConfigurationAllowsMediaPlaybackWithoutUserGesture() {
-        let configuration = WebViewRepresentable.makeConfiguration(session: nil)
-        XCTAssertTrue(configuration.mediaTypesRequiringUserActionForPlayback.isEmpty)
+        autoreleasepool {
+            let configuration = self.makeConfiguration()
+            XCTAssertTrue(configuration.mediaTypesRequiringUserActionForPlayback.isEmpty)
+        }
     }
 
     func testConfigurationUsesIsolatedPersistentWebsiteDataStoreWhenAvailable() {
-        let firstConfiguration = WebViewRepresentable.makeConfiguration(session: nil)
-        let secondConfiguration = WebViewRepresentable.makeConfiguration(session: nil)
+        autoreleasepool {
+            let firstConfiguration = self.makeConfiguration()
+            let secondConfiguration = self.makeConfiguration()
 
-        if #available(iOS 17.0, macOS 14.0, *) {
-            XCTAssertTrue(firstConfiguration.websiteDataStore.isPersistent)
-            XCTAssertNotNil(firstConfiguration.websiteDataStore.identifier)
-            XCTAssertEqual(
-                firstConfiguration.websiteDataStore.identifier,
-                secondConfiguration.websiteDataStore.identifier
-            )
-        } else {
-            XCTAssertFalse(firstConfiguration.websiteDataStore.isPersistent)
-            XCTAssertFalse(secondConfiguration.websiteDataStore.isPersistent)
+            if #available(iOS 17.0, macOS 14.0, *) {
+                XCTAssertTrue(firstConfiguration.websiteDataStore.isPersistent)
+                XCTAssertNotNil(firstConfiguration.websiteDataStore.identifier)
+                XCTAssertEqual(
+                    firstConfiguration.websiteDataStore.identifier,
+                    secondConfiguration.websiteDataStore.identifier
+                )
+            } else {
+                XCTAssertFalse(firstConfiguration.websiteDataStore.isPersistent)
+                XCTAssertFalse(secondConfiguration.websiteDataStore.isPersistent)
+            }
         }
+    }
+
+    func testPersistentWebsiteDataStoreSharesCookiesAcrossConfigurations() async throws {
+        guard #available(iOS 17.0, macOS 14.0, *) else {
+            throw XCTSkip("Persistent website data stores are unavailable.")
+        }
+
+        let cookieName = "revenuecat-persistent-store-test"
+        let cookieValue = UUID().uuidString
+        let cookie = try XCTUnwrap(HTTPCookie(properties: [
+            .domain: "revenuecat.test",
+            .path: "/",
+            .name: cookieName,
+            .value: cookieValue
+        ]))
+
+        let firstConfiguration = self.makeConfiguration()
+        XCTAssertTrue(firstConfiguration.websiteDataStore.isPersistent)
+        await firstConfiguration.websiteDataStore.httpCookieStore.setCookie(cookie)
+
+        let secondConfiguration = self.makeConfiguration()
+        let persistentCookies = await secondConfiguration.websiteDataStore.httpCookieStore.allCookies()
+        XCTAssertEqual(
+            persistentCookies.first { $0.name == cookieName }?.value,
+            cookieValue
+        )
+
+        let firstEphemeralStore = WKWebsiteDataStore.nonPersistent()
+        await firstEphemeralStore.httpCookieStore.setCookie(cookie)
+        let secondEphemeralStore = WKWebsiteDataStore.nonPersistent()
+        let ephemeralCookies = await secondEphemeralStore.httpCookieStore.allCookies()
+        XCTAssertFalse(ephemeralCookies.contains { $0.name == cookieName })
     }
 
     func testProcessTerminationInvokesCallbackOncePerCall() {
@@ -464,6 +514,17 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
     // navigation responses), both exhaustively covered in WebViewNavigationPolicyTests. `WKNavigationAction`
     // and `WKNavigationResponse` cannot be constructed or safely subclassed for a unit test, so the
     // delegation itself is not re-tested here.
+
+    private func makeConfiguration() -> WKWebViewConfiguration {
+        if #available(iOS 17.0, macOS 14.0, *) {
+            self.createdPersistentWebsiteDataStore = true
+        }
+
+        return WebViewRepresentable.makeConfiguration(
+            session: nil,
+            websiteDataStoreIdentifier: self.websiteDataStoreIdentifier
+        )
+    }
 
 }
 

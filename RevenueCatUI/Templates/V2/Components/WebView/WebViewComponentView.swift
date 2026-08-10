@@ -225,7 +225,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     @MainActor
-    static func makeConfiguration(session: WebViewSession?) -> WKWebViewConfiguration {
+    static func makeConfiguration(
+        session: WebViewSession?,
+        websiteDataStoreIdentifier: UUID = Self.websiteDataStoreIdentifier
+    ) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         // In order for us to optimize paywall and workflow load times we need to be able to effectively
         // warm a cache. You'll note that this is only supported on iOS 17, Mac OS 14, or greater.
@@ -234,7 +237,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         // and our SDK. Instead of giving older versions the default store—which is shared.
         if #available(iOS 17.0, macOS 14.0, *) {
             configuration.websiteDataStore = WKWebsiteDataStore(
-                forIdentifier: Self.websiteDataStoreIdentifier
+                forIdentifier: websiteDataStoreIdentifier
             )
         } else {
             configuration.websiteDataStore = .nonPersistent()
