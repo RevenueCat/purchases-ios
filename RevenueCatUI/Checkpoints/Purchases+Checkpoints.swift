@@ -91,28 +91,20 @@ public extension Purchases {
 private extension Purchases {
 
     var checkpointsManager: CheckpointsManager {
-        CheckpointsManagerStorage.lock.lock()
-        defer { CheckpointsManagerStorage.lock.unlock() }
-
-        if let manager = self.checkpointStorageObject as? CheckpointsManager {
-            return manager
+        return self.getOrCreateCheckpointsManager {
+            self.createCheckpointsManager()
         }
+    }
 
-        let manager = CheckpointsManager { [weak self] identifier, params in
+    func createCheckpointsManager() -> CheckpointsManager {
+        return CheckpointsManager(resolveCheckpoint: { [weak self] identifier, params in
             guard let self else {
                 throw CancellationError()
             }
+
             return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
-        }
-        self.checkpointStorageObject = manager
-        return manager
+        })
     }
-
-}
-
-private enum CheckpointsManagerStorage {
-
-    static let lock = NSLock()
 
 }
 
