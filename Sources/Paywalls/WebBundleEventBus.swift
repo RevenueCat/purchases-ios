@@ -48,7 +48,7 @@ import Foundation
 
 }
 
-@_spi(Internal) public enum WebBundleEvent: Equatable {
+@_spi(Internal) public enum WebBundleEvent: Equatable, Sendable {
     case empty
     case receivedAssetURLs(Set<URLWithValidation>)
     case cacheClearRequested
