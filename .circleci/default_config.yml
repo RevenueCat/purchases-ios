@@ -636,6 +636,9 @@ jobs:
     executor:
       name: macos-executor
       xcode_version: "16.4"
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
       - install-dependencies
@@ -1049,6 +1052,25 @@ jobs:
       - run:
           name: Build RevenueCatUI with Xcode 26.5
           command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
+          no_output_timeout: 30m
+      - slack-notify-on-fail
+
+  build-checkpoint-tester:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "CheckpointTester"
+      - run:
+          name: Build CheckpointTester
+          command: >-
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme CheckpointTester
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
           no_output_timeout: 30m
       - slack-notify-on-fail
 
@@ -2393,6 +2415,9 @@ workflows:
       - build-xcode-265:
           context:
             - slack-secrets
+      - build-checkpoint-tester:
+          context:
+            - slack-secrets
       - pod-lib-lint:
           context:
             - slack-secrets
@@ -2575,6 +2600,7 @@ workflows:
             - check-api-changes-revenuecatui
             - run-test-ios-26
             - build-xcode-265
+            - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             - emerge_purchases_ui_snapshot_tests
