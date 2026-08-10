@@ -326,7 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])

@@ -38,25 +38,12 @@ extension RulesEngine.Value {
             return .null
         }
         if let number = object as? NSNumber {
-            // CoreFoundation booleans (`kCFBooleanTrue` / `kCFBooleanFalse`)
-            // are bridged to NSNumber but carry the boolean type ID, so
-            // `CFGetTypeID` is the only reliable way to tell them apart from
-            // a JSON integer of value 0 or 1.
-            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+            switch number.jsonNumberKind {
+            case .boolean:
                 return .bool(number.boolValue)
-            }
-            // `objCType` reports the NSNumber storage type using Objective-C
-            // type encodings. See:
-            // swiftlint:disable:next line_length
-            // https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/ObjCRuntimeGuide/Articles/ocrtTypeEncodings.html
-            // JSONSerialization typically uses 'q' for whole numbers and 'd'
-            // for fractional ones — that's how we keep `100` → .int(100) and
-            // `100.0` → .float(100.0).
-            let type = String(cString: number.objCType)
-            switch type {
-            case "c", "i", "s", "l", "q", "C", "I", "S", "L", "Q":
+            case .integer:
                 return .int(number.int64Value)
-            default:
+            case .floatingPoint:
                 return .float(number.doubleValue)
             }
         }

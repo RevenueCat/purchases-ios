@@ -6,7 +6,7 @@ GIT
 
 GIT
   remote: https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal
-  revision: b4e1e7fa7fe4e0a53ca357305e6bd716a7dbe084
+  revision: 7fbbe6656995ac24dddb0c426843c870301074c7
   specs:
     fastlane-plugin-revenuecat_internal (0.1.0)
       nokogiri
@@ -320,7 +320,7 @@ GEM
     io-event (1.11.2)
     io-stream (0.10.0)
     jmespath (1.6.2)
-    json (2.20.0)
+    json (2.21.2)
     jwt (3.2.0)
       base64
     kramdown (2.5.2)
