@@ -150,12 +150,6 @@ typealias PlatformWebView = WKWebView
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WebViewRepresentable: PlatformViewRepresentable {
 
-    /// Creates a stable, non-optional UUID for the webview cache
-    private static let websiteDataStoreIdentifier = UUID(uuid: (
-        0x3f, 0x7a, 0x91, 0xd5, 0x2b, 0x4e, 0x4c, 0xb8,
-        0xa6, 0x10, 0x73, 0x29, 0x55, 0x14, 0x20, 0xce
-    )) // The uuidString initializer returns an optional
-
     let url: URL
     let instance: WebViewInstance
 
@@ -227,17 +221,17 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     static func makeConfiguration(
         session: WebViewSession?,
-        websiteDataStoreIdentifier: UUID = Self.websiteDataStoreIdentifier
+        websiteDataStoreIdentifier: () -> UUID = { return WebViewDataStoreIdentifierStore.identifier() }
     ) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         // In order for us to optimize paywall and workflow load times we need to be able to effectively
-        // warm a cache. You'll note that this is only supported on iOS 17, Mac OS 14, or greater.
+        // warm a cache. You'll note that this is only supported on iOS 17, macOS 14, or greater.
         // Because of this, older versions fall back to an ephemeral store and do not get cache warming
         // this is preferred because then we still maintain an isolation boundary between a consuming application
         // and our SDK. Instead of giving older versions the default store—which is shared.
         if #available(iOS 17.0, macOS 14.0, *) {
             configuration.websiteDataStore = WKWebsiteDataStore(
-                forIdentifier: websiteDataStoreIdentifier
+                forIdentifier: websiteDataStoreIdentifier()
             )
         } else {
             configuration.websiteDataStore = .nonPersistent()

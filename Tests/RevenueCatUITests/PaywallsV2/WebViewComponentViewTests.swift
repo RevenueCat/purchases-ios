@@ -372,7 +372,10 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         if #available(iOS 17.0, macOS 14.0, *), self.createdPersistentWebsiteDataStore {
             let identifiers = await WKWebsiteDataStore.allDataStoreIdentifiers
             if identifiers.contains(self.websiteDataStoreIdentifier) {
-                try await WKWebsiteDataStore.remove(forIdentifier: self.websiteDataStoreIdentifier)
+                await WKWebsiteDataStore(forIdentifier: websiteDataStoreIdentifier).removeData(
+                    ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                    modifiedSince: .distantPast
+                )
             }
         }
 
@@ -522,7 +525,7 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
 
         return WebViewRepresentable.makeConfiguration(
             session: nil,
-            websiteDataStoreIdentifier: self.websiteDataStoreIdentifier
+            websiteDataStoreIdentifier: { self.websiteDataStoreIdentifier }
         )
     }
 
