@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
 // swiftlint:disable missing_docs
 
-@preconcurrency import Combine
+import Combine
 import Foundation
 
 /// Publishes validated web-view entry URLs discovered during paywall cache warming.
