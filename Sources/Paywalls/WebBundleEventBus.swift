@@ -17,29 +17,39 @@ import Foundation
 
 /// Publishes validated web-view entry URLs discovered during paywall cache warming.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-@_spi(Internal) public actor WebBundleAssetBus {
+@_spi(Internal) public actor WebBundleEventBus {
 
-    public static let shared = WebBundleAssetBus()
+    public static let shared = WebBundleEventBus()
 
-    private let subject: CurrentValueSubject<Set<URLWithValidation>, Never>
+    private let subject: CurrentValueSubject<WebBundleEvent, Never>
 
-    /// Emits the latest set of web-view entry URLs.
-    public nonisolated let publisher: AnyPublisher<Set<URLWithValidation>, Never>
+    public nonisolated let publisher: AnyPublisher<WebBundleEvent, Never>
 
     public init() {
-        let subject = CurrentValueSubject<Set<URLWithValidation>, Never>([])
+        let subject = CurrentValueSubject<WebBundleEvent, Never>(.empty)
         self.subject = subject
         self.publisher = subject.eraseToAnyPublisher()
     }
 
     /// Replaces the current URL set and notifies subscribers.
     public func publish(_ urls: Set<URLWithValidation>) {
-        self.subject.send(urls)
+        self.subject.send(.receivedAssetURLs(urls))
     }
 
-    /// Replaces the current URL set with an empty set and notifies subscribers.
-    public func clear() {
-        self.subject.send([])
+    /// Sets the state back to empty
+    public func empty() {
+        self.subject.send(.empty)
     }
 
+    /// Notifies observers to clear their caches
+    public func clearCache() {
+        self.subject.send(.cacheClearRequested)
+    }
+
+}
+
+@_spi(Internal) public enum WebBundleEvent: Equatable {
+    case empty
+    case receivedAssetURLs(Set<URLWithValidation>)
+    case cacheClearRequested
 }

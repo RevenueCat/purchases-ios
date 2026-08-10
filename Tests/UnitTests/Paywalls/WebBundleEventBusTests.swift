@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebBundleAssetBusTests.swift
+//  WebBundleEventBusTests.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
 
@@ -17,15 +17,15 @@ import Nimble
 import XCTest
 
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-final class WebBundleAssetBusTests: TestCase {
+final class WebBundleEventBusTests: TestCase {
 
-    private var bus: WebBundleAssetBus!
+    private var bus: WebBundleEventBus!
     private var cancellables: Set<AnyCancellable>!
 
     override func setUp() {
         super.setUp()
 
-        self.bus = WebBundleAssetBus()
+        self.bus = WebBundleEventBus()
         self.cancellables = []
     }
 
@@ -43,12 +43,12 @@ final class WebBundleAssetBusTests: TestCase {
         ]
         await self.bus.publish(urls)
 
-        var received: Set<URLWithValidation>?
+        var received: WebBundleEvent?
         self.bus.publisher
             .sink { received = $0 }
             .store(in: &self.cancellables)
 
-        expect(received) == urls
+        expect(received) == .receivedAssetURLs(urls)
     }
 
     func testPublishingReplacesPreviousValueForSubsequentSubscribers() async {
@@ -62,24 +62,34 @@ final class WebBundleAssetBusTests: TestCase {
         await self.bus.publish(first)
         await self.bus.publish(second)
 
-        var received: Set<URLWithValidation>?
+        var received: WebBundleEvent?
         self.bus.publisher
             .sink { received = $0 }
             .store(in: &self.cancellables)
 
-        expect(received) == second
+        expect(received) == .receivedAssetURLs(second)
     }
 
     func testInitialSubscriberReceivesEmptySet() {
-        var received: Set<URLWithValidation>?
+        var received: WebBundleEvent?
         self.bus.publisher
             .sink { received = $0 }
             .store(in: &self.cancellables)
 
-        expect(received) == []
+        expect(received) == .empty
     }
 
-    func testClearReplacesCurrentValueWithEmptySet() async {
+    func testClearCache() async {
+        await self.bus.clearCache()
+
+        var received: WebBundleEvent?
+        self.bus.publisher
+            .sink { received = $0 }
+            .store(in: &self.cancellables)
+        expect(received) == .cacheClearRequested
+    }
+
+    func testEmptyReplacesCurrentValueWithEmptySet() async {
         let urls: Set<URLWithValidation> = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
@@ -87,14 +97,14 @@ final class WebBundleAssetBusTests: TestCase {
         let bus = self.bus!
         await bus.publish(urls)
 
-        await bus.clear()
+        await bus.empty()
 
-        var received: Set<URLWithValidation>?
+        var received: WebBundleEvent?
         bus.publisher
             .sink { received = $0 }
             .store(in: &self.cancellables)
 
-        expect(received) == []
+        expect(received) == .empty
     }
 
     func testSubscriberCanPublishInResponseToValue() async {
@@ -109,12 +119,12 @@ final class WebBundleAssetBusTests: TestCase {
 
         bus.publisher
             .dropFirst()
-            .sink { urls in
-                if urls == first {
+            .sink { event in
+                if event == .receivedAssetURLs(first) {
                     Task {
                         await bus.publish(second)
                     }
-                } else if urls == second {
+                } else if event == .receivedAssetURLs(second) {
                     receivedSecond.fulfill()
                 }
             }
