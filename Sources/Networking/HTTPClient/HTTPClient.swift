@@ -983,16 +983,14 @@ extension HTTPClient {
     internal func reauthorizeRequestIfNeeded(request: HTTPClient.Request,
                                              basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
                                              response: HTTPURLResponse?) -> Bool {
-
-        let completion: (VerifiedHTTPResponse<TokenResponse>.Result) -> Void = { result in
-            self.handleReauthorizationResponse(reauthResult: result,
-                                               originalRequest: request,
-                                               originalResult: originalResult)
-
-        }
+        
         let reauthAction = self.tokenManager.tokenRefreshRequest(for: request,
                                                                  response: response,
-                                                                 duplicateRequestHandler: completion)
+                                                                 duplicateRequestHandler: { wasSuccessful in
+            self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                            originalRequest: request,
+                                            originalResult: originalResult)
+        })
 
         switch reauthAction {
         case .noAction:
@@ -1004,7 +1002,12 @@ extension HTTPClient {
                                         verificationMode: self.systemInfo.responseVerificationMode,
                                         preferIAMPath: self.tokenManager.enabled,
                                         internalSettings: self.systemInfo.dangerousSettings.internalSettings,
-                                        completionHandler: completion)
+                                        completionHandler: { result in
+                let wasSuccessful = self.tokenManager.handleTokenRefreshResponse(result)
+                self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                                originalRequest: request,
+                                                originalResult: originalResult)
+            })
 
             self.state.modify {
                 $0.queuedRequests.insert(clientRequest, at: 0)
@@ -1019,25 +1022,26 @@ extension HTTPClient {
         }
     }
 
-    private func handleReauthorizationResponse(reauthResult: VerifiedHTTPResponse<TokenResponse>.Result,
-                                               originalRequest: HTTPClient.Request,
-                                               originalResult: VerifiedHTTPResponse<Data>.Result) {
-
-        let handled = self.tokenManager.handleTokenRefreshResponse(reauthResult)
+    private func reauthorizationDidComplete(wasSuccessful: Bool,
+                                            originalRequest: HTTPClient.Request,
+                                            originalResult: VerifiedHTTPResponse<Data>.Result) {
         let needsToRestart: Bool
 
-        if handled {
+        if wasSuccessful {
             let retried = originalRequest.retriedRequest()
 
             needsToRestart = self.state.modify {
-                let shouldRestart = $0.paused == true
+                let shouldRestart = ($0.paused == true)
                 $0.paused = false
                 $0.queuedRequests.insert(retried, at: 0)
                 return shouldRestart
             }
         } else {
+            // the token manager did not get new tokens
+            // therefore, the original request should be failed
+            
             needsToRestart = self.state.modify {
-                let shouldRestart = $0.paused == true
+                let shouldRestart = ($0.paused == true)
                 $0.paused = false
                 return shouldRestart
             }

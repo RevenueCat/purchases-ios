@@ -25,7 +25,7 @@ class TokenManager {
 
     private struct CurrentTokenRefreshState {
         let request: HTTPRequest
-        var completions: Array<(VerifiedHTTPResponse<TokenResponse>.Result) -> Void>
+        var completions: Array<(Bool) -> Void>
     }
 
     let enabled: Bool
@@ -135,7 +135,7 @@ class TokenManager {
 
     func tokenRefreshRequest(for initialRequest: HTTPClient.Request,
                              response: HTTPURLResponse?,
-                             duplicateRequestHandler: @escaping (VerifiedHTTPResponse<TokenResponse>.Result) -> Void)
+                             duplicateRequestHandler: @escaping (Bool) -> Void)
     -> TokenRefreshAction {
 
         guard self.enabled else { return .noAction }
@@ -185,7 +185,7 @@ class TokenManager {
             return handlers
         }
 
-        handlers.forEach { $0(result) }
+        handlers.forEach { $0(didHandle) }
         return didHandle
     }
 
