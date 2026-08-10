@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  WebBundleAssetBus.swift
+//  WebBundleEventBus.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
 // swiftlint:disable missing_docs

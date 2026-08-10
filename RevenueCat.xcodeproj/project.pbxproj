@@ -5013,6 +5013,7 @@
 		4F87610D2A5C9E330006FA14 /* Paywalls */ = {
 			isa = PBXGroup;
 			children = (
+				166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */,
 				032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */,
 				7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */,
 				88AD010B2C740CF400AA1F2B /* Components */,
@@ -5041,6 +5042,7 @@
 				162170142EBE50F0008ACFE9 /* LocaleComparisonTests.swift */,
 				3D26169F24D341F77345716D /* ExitOfferTests.swift */,
 				FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */,
+				166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
