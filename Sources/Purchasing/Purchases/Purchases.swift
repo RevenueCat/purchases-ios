@@ -124,6 +124,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
+    /// Opaque per-instance storage used by RevenueCatUI's checkpoint APIs.
+    @_spi(Internal) public var checkpointStorageObject: AnyObject? {
+        get { self.purchasesOrchestrator.checkpointStorageObject }
+        set { self.purchasesOrchestrator.checkpointStorageObject = newValue }
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -647,6 +653,23 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
+        let checkpointResolver: CheckpointWorkflowResolver
+        if systemInfo.remoteConfigEnabled {
+            checkpointResolver = RandomWorkflowCheckpointResolver(
+                workflowManager: workflowManager,
+                offeringsProvider: {
+                    try await withCheckedThrowingContinuation { continuation in
+                        offeringsManager.offerings(
+                            appUserID: identityManager.currentAppUserID,
+                            trackDiagnostics: false,
+                            completion: { result in continuation.resume(with: result) }
+                        )
+                    }
+                }
+            )
+        } else {
+            checkpointResolver = DisabledCheckpointWorkflowResolver()
+        }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -705,7 +728,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             } else {
                 return .init(
@@ -733,7 +757,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             }
         }()
@@ -1068,6 +1093,17 @@ public extension Purchases {
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func resolveCheckpoint(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.purchasesOrchestrator.resolveCheckpoint(
+            identifier: identifier,
+            params: params
+        )
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
