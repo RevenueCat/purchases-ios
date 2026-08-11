@@ -20,11 +20,7 @@ import Foundation
     private static let key = "com.revenuecat.webViewDataStoreIdentifier"
     private static let lock = Lock()
 
-    private static let defaults: UserDefaults = {
-        let defaults = UserDefaults(suiteName: "com.revenuecat.webViewData")
-        assert(defaults != nil)
-        return defaults ?? .standard
-    }()
+    private static let defaults = UserDefaults.revenueCatSuite
 
     /// Returns the stable identifier used by RevenueCat web views.
     public static func identifier() -> UUID {
