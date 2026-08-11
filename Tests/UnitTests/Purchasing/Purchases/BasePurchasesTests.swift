@@ -696,6 +696,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
+    private(set) var invokedCommittedTopicAfterInFlightRefreshCount = 0
     private(set) var invokedClearCacheCount = 0
     private(set) var invokedCloseCount = 0
     private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
@@ -753,6 +754,15 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
             self._storedTopicContinuations.modify { $0.append(continuation) }
             self._invokedTopicCount.modify { $0 += 1 }
         }
+    }
+
+    var committedTopicAfterInFlightRefreshHandler:
+    ((RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?)?
+
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        self.invokedCommittedTopicAfterInFlightRefreshCount += 1
+        return self.committedTopicAfterInFlightRefreshHandler?(topic) ?? self.stubbedTopics[topic]
     }
 
     /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
