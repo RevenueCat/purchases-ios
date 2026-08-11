@@ -899,6 +899,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         super.init()
 
+        WebBundleCacheCoordinator.initializeIfAvailable()
+
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
             guard let self else { return }
