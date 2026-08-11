@@ -65,10 +65,9 @@ struct RulesVariableResolver: Sendable {
             }
 
             let namespace = provider.namespace.rawValue
-            var namespaceValues: [String: RulesEngine.Value] = if case .object(let existing) = values[namespace] {
-                existing
-            } else {
-                [String: RulesEngine.Value]()
+            var namespaceValues: [String: RulesEngine.Value] = [:]
+            if case .object(let existing) = values[namespace] {
+                namespaceValues = existing
             }
 
             for (name, value) in providerValues {
