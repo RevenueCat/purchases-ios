@@ -14,14 +14,14 @@
 import Foundation
 
 /// A URL paired with an optional checksum for cache validation.
-@_spi(Internal) public struct URLWithValidation: Hashable, Sendable {
+struct URLWithValidation: Hashable, Sendable {
     /// The remote URL to fetch or warm.
-    public let url: URL
+    let url: URL
     /// Optional checksum used to validate a cached copy of ``url``.
-    public let checksum: Checksum?
+    let checksum: Checksum?
 
     /// Creates a validated URL wrapper.
-    public init(url: URL, checksum: Checksum?) {
+    init(url: URL, checksum: Checksum?) {
         self.url = url
         self.checksum = checksum
     }
