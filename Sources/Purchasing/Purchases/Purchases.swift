@@ -293,6 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
+    private let webBundleEventBus: WebBundleEventBus
 
     private var _adTracker: Any?
 
@@ -804,7 +805,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                  currentConfiguration: currentConfiguration
+                  currentConfiguration: currentConfiguration,
+                  webBundleEventBus: .shared
         )
     }
 
@@ -840,7 +842,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
-         currentConfiguration: Configuration?
+         currentConfiguration: Configuration?,
+         webBundleEventBus: WebBundleEventBus
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -896,6 +899,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
+        self.webBundleEventBus = webBundleEventBus
 
         super.init()
 
@@ -2888,6 +2892,12 @@ private extension Purchases {
                 isAppBackgrounded: isAppBackgrounded,
                 completion: nil
             )
+        }
+
+        if fetchContext == .identityChange {
+            Task {
+                await webBundleEventBus.clearCache()
+            }
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
