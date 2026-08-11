@@ -25,12 +25,13 @@ import WebKit
 @_spi(Internal) public final class WebBundleCacheCoordinator {
     static let shared = WebBundleCacheCoordinator()
 
-    private let job: AnyCancellable
+    private var job: AnyCancellable?
 
     init(
         events: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher,
         websiteDataStoreIdentifier: () -> UUID = { return WebViewDataStoreIdentifierStore.identifier() }
     ) {
+        let identifier = websiteDataStoreIdentifier()
         self.job = events
             .removeDuplicates()
             .receive(on: DispatchQueue(label: "web-bundle-cache-coordinator"))
@@ -39,8 +40,9 @@ import WebKit
                 switch event {
                 case .empty: break
                 case .cacheClearRequested:
-                    clearWebCache(for: websiteDataStoreIdentifier())
+                    clearWebCache(for: identifier)
                 case .receivedAssetURLs:
+                    break
                     // Will do in a coming PR
                 }
             }
