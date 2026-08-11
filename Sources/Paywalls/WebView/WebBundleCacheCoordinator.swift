@@ -17,7 +17,7 @@ import Foundation
 
 #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
 
-import WebKit
+internal import WebKit
 
 #endif
 
