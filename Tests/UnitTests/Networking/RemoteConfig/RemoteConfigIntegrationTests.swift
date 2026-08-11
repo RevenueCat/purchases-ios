@@ -128,6 +128,61 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(missingData).to(beNil())
     }
 
+    func testAudiencesProviderDecodesRawAudiencePayloadPreservingKeys() async throws {
+        let payload = #"""
+        {
+            "id": "aud_123",
+            "created_via": "dashboard",
+            "condition": {
+                "operator": "and",
+                "operands": [
+                    { "attribute": "country", "values": ["ES", "US"] }
+                ]
+            }
+        }
+        """#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+        let expected: [String: AnyDecodable] = [
+            "id": "aud_123",
+            "created_via": "dashboard",
+            "condition": [
+                "operator": "and",
+                "operands": [
+                    ["attribute": "country", "values": ["ES", "US"]]
+                ]
+            ]
+        ]
+
+        expect(audience) == expected
+    }
+
+    func testAudiencesProviderReturnsNilForMalformedPayload() async throws {
+        let payload = Data("not-json".utf8)
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience).to(beNil())
+    }
+
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
         let blob = #"{"workflow":"inline"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
