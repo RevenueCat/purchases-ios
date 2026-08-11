@@ -585,6 +585,60 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
     }
 
+    func testCommittedTopicAfterInFlightRefreshReturnsLatestTopic() async throws {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": [:]])
+        )
+        self.diskCache.writeHandler = { configuration in
+            self.diskCache.stubbedRead = configuration
+            return true
+        }
+        let response = """
+        {
+          "domain": "app",
+          "manifest": "v1.1710000100.sources:etag2",
+          "active_topics": ["sources"],
+          "topics": {
+            "sources": {
+              "api": { "url": "https://api.revenuecat.com" }
+            }
+          }
+        }
+        """
+        self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
+        let completed: Atomic<Bool> = false
+
+        let topic = Task {
+            let result = await self.manager.committedTopicAfterInFlightRefresh(.sources)
+            completed.value = true
+            return result
+        }
+        await self.waitForRemoteConfigRequestCount(1)
+        await self.yield()
+        expect(completed.value) == false
+        self.remoteConfigAPI.complete(
+            with: .success(.test(container: try Self.container(config: response)))
+        )
+
+        let refreshedTopic = await topic.value
+        expect(completed.value) == true
+        expect(refreshedTopic?["api"]?.content["url"]) == "https://api.revenuecat.com"
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 1
+    }
+
+    func testCommittedTopicAfterInFlightRefreshDoesNotStartRefresh() async {
+        self.diskCache.stubbedRead = Self.persisted(
+            manifest: "v1.1710000100.sources:etag1",
+            topics: .init(entries: ["sources": [:]])
+        )
+
+        let topic = await self.manager.committedTopicAfterInFlightRefresh(.sources)
+
+        expect(topic).to(beEmpty())
+        expect(self.remoteConfigAPI.invokedGetRemoteConfigCount) == 0
+    }
+
     func testTopicReturnsNilWhenRemoteConfigIsDisabledDuringCommittedRead() async {
         let item = RemoteConfiguration.ConfigItem(content: ["url": "https://api.revenuecat.com"])
         let persisted = Self.persisted(
