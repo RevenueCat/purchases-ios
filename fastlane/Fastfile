@@ -510,6 +510,9 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+    ENV["TUIST_SWIFT_CONDITIONS"] = [ENV["TUIST_SWIFT_CONDITIONS"], "ENABLE_CHECKPOINTS"]
+      .compact
+      .join(" ")
 
     begin
       xcodebuild(
@@ -521,7 +524,10 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/v1-snapshots/tests.xml',
         test: true,
-        xcargs: "-testPlan CI-V1-Snapshots"
+        xcargs: [
+          "-testPlan CI-V1-Snapshots",
+          "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
+        ].join(" ")
       )
     rescue => e
       snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
