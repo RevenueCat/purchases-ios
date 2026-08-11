@@ -29,13 +29,19 @@ public final class Authentication: NSObject {
     internal weak var internalDelegate: InternalAuthenticatorDelegate?
 
     public weak var delegate: AuthenticationDelegate?
+    private let ongoingUserInitiatedRequestCount = Atomic(0)
 
-    internal init(backend: Backend, identityManager: IdentityManager, operationDispatcher: OperationDispatcher, systemInfo: SystemInfo, internalDelegate: InternalAuthenticatorDelegate? = nil) {
+    internal init(backend: Backend, identityManager: IdentityManager, tokenManager: TokenManager, operationDispatcher: OperationDispatcher, systemInfo: SystemInfo, internalDelegate: InternalAuthenticatorDelegate? = nil) {
         self.backend = backend
         self.identityManager = identityManager
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
         self.internalDelegate = internalDelegate
+        super.init()
+
+        tokenManager.reportError = { [weak self] in
+            self?.reportAuthenticationError($0)
+        }
     }
 
     @available(*, deprecated, message: """
@@ -55,10 +61,12 @@ public final class Authentication: NSObject {
                                     completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
+        self.ongoingUserInitiatedRequestCount.increment()
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
+            self.ongoingUserInitiatedRequestCount.decrement()
 
             guard case .success = result else {
                 return
@@ -83,7 +91,7 @@ public final class Authentication: NSObject {
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             completion?(NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
             return
-       }
+        }
 
         self.identityManager.revokeCurrentAccessToken { error in
             if let completion = completion {
@@ -158,7 +166,10 @@ public final class Authentication: NSObject {
             return
         }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logIn(identity: identity) { result in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let completion {
                 self.operationDispatcher.dispatchOnMainThread {
                     completion(result.value?.info, result.error?.asPublicError)
@@ -185,9 +196,12 @@ public final class Authentication: NSObject {
             completion?(nil, error)
             if userInitiated == false { self.reportAuthenticationError(error) }
             return
-       }
+        }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logOut { error in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let error {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
@@ -207,6 +221,10 @@ public final class Authentication: NSObject {
 
     internal func reportAuthenticationError(_ error: PublicError) {
         guard let delegate else { return }
+
+        // if we currently have user initiated requests going, then skip reporting this error via the delegate
+        if self.ongoingUserInitiatedRequestCount.value > 0 { return }
+
         self.operationDispatcher.dispatchOnMainThread {
             delegate.authenticatorDidEncounterError(error)
         }

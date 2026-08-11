@@ -42,6 +42,8 @@ class TokenManager {
         self.storage = storage
     }
 
+    var reportError: ((PublicError) -> Void)?
+
     var hasCurrentAccessToken: Bool { currentAccessToken != nil }
 
     var currentRefreshToken: String? {
@@ -168,14 +170,25 @@ class TokenManager {
 
         // make sure this response is a successful one
         let didHandle: Bool
-        if case .success(let response) = result, response.httpStatusCode == .success {
-            let tokens = response.body
+        let reportedError: PublicError?
+        switch result {
+        case .success(let response):
+            if response.httpStatusCode == .success {
+                let tokens = response.body
 
-            self.currentRefreshToken = tokens.refreshToken
-            self.currentAccessToken = tokens.accessToken
-            self.currentIDToken = tokens.idToken
-            didHandle = true
-        } else {
+                self.currentRefreshToken = tokens.refreshToken
+                self.currentAccessToken = tokens.accessToken
+                self.currentIDToken = tokens.idToken
+
+                reportedError = nil
+                didHandle = true
+            } else {
+                // a non-successful response that somehow didn't get turned into an actual error
+                reportedError = ErrorUtils.unknownError().asPublicError
+                didHandle = false
+            }
+        case .failure(let error):
+            reportedError = error.asPublicError
             didHandle = false
         }
 
@@ -183,6 +196,12 @@ class TokenManager {
             let handlers = state?.completions ?? []
             state = nil
             return handlers
+        }
+
+        defer {
+            if let reportedError, let reportError {
+                reportError(reportedError)
+            }
         }
 
         handlers.forEach { $0(didHandle) }

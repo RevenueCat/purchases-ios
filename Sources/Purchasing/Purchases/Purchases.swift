@@ -905,7 +905,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
-        self._authentication = Authentication(backend: backend, identityManager: identityManager, operationDispatcher: operationDispatcher, systemInfo: systemInfo)
+        self._authentication = Authentication(backend: backend,
+                                              identityManager: identityManager,
+                                              tokenManager: tokenManager,
+                                              operationDispatcher: operationDispatcher,
+                                              systemInfo: systemInfo)
 
         super.init()
         self._authentication.internalDelegate = self
