@@ -77,12 +77,12 @@ class TokenAPI {
     }
 
     func revokeAccessTokens(for appUserID: String, completion: @escaping (BackendError?) -> Void) {
-        if let refreshToken = tokenManager.currentAccessToken {
+        if let accessToken = tokenManager.currentAccessToken {
             let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                     appUserID: appUserID)
 
             let factory = TokenRevocationOperation.createFactory(configuration: config,
-                                                                 refreshToken: refreshToken,
+                                                                 accessToken: accessToken,
                                                                  appUserID: appUserID,
                                                                  callbackCache: self.revokeCallbacksCache)
 
