@@ -132,7 +132,7 @@ extension CheckpointValue {
 
 /// Per-call parameters for a checkpoint.
 @_spi(Internal)
-public final class CheckpointParams: NSObject, @unchecked Sendable {
+public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom properties usable in checkpoint targeting rules and feature events.
     public let customProperties: [String: CheckpointValue]
@@ -140,18 +140,20 @@ public final class CheckpointParams: NSObject, @unchecked Sendable {
     /// Creates checkpoint parameters with the supplied custom properties.
     public init(customProperties: [String: CheckpointValue] = [:]) {
         self.customProperties = customProperties
-        super.init()
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointParams else { return false }
-        return self.customProperties == other.customProperties
+    /// Returns whether two parameter collections contain the same custom properties.
+    public static func == (lhs: CheckpointParams, rhs: CheckpointParams) -> Bool {
+        return lhs.customProperties == rhs.customProperties
     }
 
-    public override var hash: Int { return self.customProperties.hashValue }
+    /// Hashes the checkpoint parameters.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.customProperties)
+    }
 
     /// A debug description of the checkpoint parameters.
-    public override var description: String {
+    public var description: String {
         return "CheckpointParams(customProperties=\(self.customProperties))"
     }
 

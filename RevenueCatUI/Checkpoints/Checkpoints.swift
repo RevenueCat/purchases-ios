@@ -12,12 +12,11 @@
 //  Created by Rick van der Linden.
 //
 
-#if ENABLE_CHECKPOINTS
-
 import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A custom value supplied when a checkpoint is hit.
+@_spi(Checkpoints)
 public struct CheckpointValue: Equatable, Hashable, Sendable {
 
     fileprivate let coreValue: RevenueCat.CheckpointValue
@@ -95,8 +94,8 @@ extension CheckpointValue {
 }
 
 /// Per-call parameters for a checkpoint.
-@objc(RCCheckpointParams)
-public final class CheckpointParams: NSObject, @unchecked Sendable {
+@_spi(Checkpoints)
+public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom properties usable in checkpoint targeting rules and feature events.
     public let customProperties: [String: CheckpointValue]
@@ -104,18 +103,20 @@ public final class CheckpointParams: NSObject, @unchecked Sendable {
     /// Creates checkpoint parameters with the supplied custom properties.
     public init(customProperties: [String: CheckpointValue] = [:]) {
         self.customProperties = customProperties
-        super.init()
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointParams else { return false }
-        return self.customProperties == other.customProperties
+    /// Returns whether two parameter collections contain the same custom properties.
+    public static func == (lhs: CheckpointParams, rhs: CheckpointParams) -> Bool {
+        return lhs.customProperties == rhs.customProperties
     }
 
-    public override var hash: Int { return self.customProperties.hashValue }
+    /// Hashes the checkpoint parameters.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.customProperties)
+    }
 
     /// A debug description of the checkpoint parameters.
-    public override var description: String {
+    public var description: String {
         return "CheckpointParams(customProperties=\(self.customProperties))"
     }
 
@@ -125,90 +126,45 @@ public final class CheckpointParams: NSObject, @unchecked Sendable {
 
 }
 
-@objc extension CheckpointParams {
-
-    /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
-    @objc(initWithCustomProperties:)
-    public convenience init(objcCustomProperties: NSDictionary) {
-        var values: [String: CheckpointValue] = [:]
-        for (rawKey, rawValue) in objcCustomProperties {
-            guard let key = rawKey as? String,
-                  let value = CheckpointValue(foundationValue: rawValue) else {
-                Logger.warning(CheckpointStrings.invalidObjectiveCCustomProperty(type(of: rawValue)))
-                continue
-            }
-            values[key] = value
-        }
-        self.init(customProperties: values)
-    }
-
-    /// The custom properties as Objective-C Foundation primitive values.
-    @objc(customProperties)
-    public var objcCustomProperties: NSDictionary {
-        return self.customProperties.mapValues { $0.foundationValue } as NSDictionary
-    }
-
-}
-
-private enum CheckpointStrings: LogMessage {
-
-    case invalidObjectiveCCustomProperty(Any.Type)
-
-    var description: String {
-        switch self {
-        case let .invalidObjectiveCCustomProperty(type):
-            return "Dropping invalid Objective-C checkpoint custom property: \(String(reflecting: type))"
-        }
-    }
-
-    var category: String { return "checkpoints" }
-
-}
-
 /// Information about a checkpoint that was hit.
-@objc(RCCheckpointInfo)
-public final class CheckpointInfo: NSObject, @unchecked Sendable {
+@_spi(Checkpoints)
+public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
-    @objc
     public let identifier: String
 
     /// The parameters supplied when the checkpoint was hit.
-    @objc
     public let params: CheckpointParams
 
     /// Creates checkpoint information for an identifier and its parameters.
-    @objc
     public init(identifier: String, params: CheckpointParams) {
         self.identifier = identifier
         self.params = params
-        super.init()
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointInfo else { return false }
-        return self.identifier == other.identifier && self.params == other.params
+    /// Returns whether two checkpoint information values are equal.
+    public static func == (lhs: CheckpointInfo, rhs: CheckpointInfo) -> Bool {
+        return lhs.identifier == rhs.identifier && lhs.params == rhs.params
     }
 
-    public override var hash: Int {
-        var hasher = Hasher()
+    /// Hashes the checkpoint information.
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(self.identifier)
         hasher.combine(self.params)
-        return hasher.finalize()
     }
 
-    public override var description: String {
+    /// A debug description of the checkpoint information.
+    public var description: String {
         return "CheckpointInfo(identifier='\(self.identifier)', params=\(self.params))"
     }
 
 }
 
 /// The reason no experience was served for a checkpoint.
-@objc(RCCheckpointNoActionReason)
-public final class CheckpointNoActionReason: NSObject, @unchecked Sendable {
+@_spi(Checkpoints)
+public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The value identifying the reason.
-    @objc
     public let value: String
 
     /// No targeting rule matched.
@@ -226,55 +182,59 @@ public final class CheckpointNoActionReason: NSObject, @unchecked Sendable {
 
     init(value: String) {
         self.value = value
-        super.init()
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? CheckpointNoActionReason)?.value == self.value
+    /// Returns whether two no-action reasons have the same value.
+    public static func == (lhs: CheckpointNoActionReason, rhs: CheckpointNoActionReason) -> Bool {
+        return lhs.value == rhs.value
     }
 
-    public override var hash: Int { return self.value.hashValue }
-    public override var description: String { return self.value }
+    /// Hashes the no-action reason.
+    public func hash(into hasher: inout Hasher) { hasher.combine(self.value) }
+
+    /// A debug description of the no-action reason.
+    public var description: String { return self.value }
 
 }
 
 /// Base class for the result of hitting a checkpoint.
-@objc(RCCheckpointResult)
-public class CheckpointResult: NSObject {
+@_spi(Checkpoints)
+public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
     /// Information about the checkpoint that produced this result.
-    @objc
     public let checkpoint: CheckpointInfo
 
     init(checkpoint: CheckpointInfo) {
         self.checkpoint = checkpoint
-        super.init()
     }
 
-    public override var description: String {
+    /// A debug description of the checkpoint result.
+    public var description: String {
         return "CheckpointResult(checkpoint=\(self.checkpoint))"
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointResult else { return false }
+    /// Returns whether two checkpoint results are equal.
+    public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
+        return lhs.isEqual(to: rhs)
+    }
+
+    func isEqual(to other: CheckpointResult) -> Bool {
         return type(of: self) == type(of: other) && self.checkpoint == other.checkpoint
     }
 
-    public override var hash: Int {
-        var hasher = Hasher()
+    /// Hashes the checkpoint result.
+    public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(type(of: self)))
         hasher.combine(self.checkpoint)
-        return hasher.finalize()
     }
 
 }
 
 /// Nothing was served for a checkpoint.
-@objc(RCCheckpointNoActionResult)
+@_spi(Checkpoints)
 public final class CheckpointNoActionResult: CheckpointResult {
 
     /// The reason no experience was served.
-    @objc
     public let reason: CheckpointNoActionReason
 
     init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
@@ -286,21 +246,20 @@ public final class CheckpointNoActionResult: CheckpointResult {
         return "NoAction(checkpoint=\(self.checkpoint), reason=\(self.reason))"
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointNoActionResult else { return false }
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointNoActionResult else { return false }
         return self.checkpoint == other.checkpoint && self.reason == other.reason
     }
 
-    public override var hash: Int {
-        var hasher = Hasher()
+    public override func hash(into hasher: inout Hasher) {
         hasher.combine(self.checkpoint)
         hasher.combine(self.reason)
-        return hasher.finalize()
     }
 
 }
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
+@_spi(Checkpoints)
 public protocol CheckpointListener: AnyObject {
 
     /// A checkpoint was hit, before evaluation.
@@ -310,6 +269,7 @@ public protocol CheckpointListener: AnyObject {
 
 }
 
+@_spi(Checkpoints)
 public extension CheckpointListener {
 
     /// Default no-op implementation.
@@ -318,5 +278,3 @@ public extension CheckpointListener {
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
 
 }
-
-#endif

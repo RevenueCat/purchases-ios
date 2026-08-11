@@ -12,14 +12,11 @@
 //  Created by Rick van der Linden.
 //
 
-#if ENABLE_CHECKPOINTS
-
 import Foundation
 @_spi(Internal) import RevenueCat
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
-#endif
 
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///

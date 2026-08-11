@@ -12,8 +12,6 @@
 //  Created by Rick van der Linden.
 //
 
-#if ENABLE_CHECKPOINTS
-
 import Foundation
 @_spi(Internal) import RevenueCat
 
@@ -59,5 +57,3 @@ extension CheckpointError: CustomNSError {
     }
 
 }
-
-#endif

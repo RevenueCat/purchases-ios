@@ -12,17 +12,14 @@
 //  Created by Rick van der Linden.
 //
 
-#if ENABLE_CHECKPOINTS
-
 import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A checkpoint-triggered paywall was presented and finished.
-@objc(RCCheckpointPaywallPresentedResult)
+@_spi(Checkpoints)
 public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
     /// The terminal outcome of the presented paywall.
-    @objc
     public let paywallOutcome: CheckpointPaywallOutcome
 
     init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
@@ -34,40 +31,45 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
         return "PaywallPresented(checkpoint=\(self.checkpoint), paywallOutcome=\(self.paywallOutcome))"
     }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointPaywallPresentedResult else { return false }
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointPaywallPresentedResult else { return false }
         return self.checkpoint == other.checkpoint && self.paywallOutcome == other.paywallOutcome
     }
 
-    public override var hash: Int {
-        var hasher = Hasher()
+    public override func hash(into hasher: inout Hasher) {
         hasher.combine(self.checkpoint)
         hasher.combine(self.paywallOutcome)
-        return hasher.finalize()
     }
 
 }
 
 /// Base class for the terminal result of a checkpoint-presented paywall.
-@objc(RCCheckpointPaywallOutcome)
-public class CheckpointPaywallOutcome: NSObject {
+@_spi(Checkpoints)
+public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {
 
-    fileprivate override init() { super.init() }
+    fileprivate init() {}
 
     /// A debug description of the paywall outcome.
-    public override var description: String { return "CheckpointPaywallOutcome" }
+    public var description: String { return "CheckpointPaywallOutcome" }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        guard let other = object as? CheckpointPaywallOutcome else { return false }
+    /// Returns whether two paywall outcomes are equal.
+    public static func == (lhs: CheckpointPaywallOutcome, rhs: CheckpointPaywallOutcome) -> Bool {
+        return lhs.isEqual(to: rhs)
+    }
+
+    func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
         return type(of: self) == type(of: other)
     }
 
-    public override var hash: Int { return ObjectIdentifier(type(of: self)).hashValue }
+    /// Hashes the paywall outcome.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(type(of: self)))
+    }
 
 }
 
 /// The customer dismissed the paywall.
-@objc(RCCheckpointPaywallDismissedOutcome)
+@_spi(Checkpoints)
 public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
     static let shared = CheckpointPaywallDismissedOutcome()
@@ -79,11 +81,10 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 }
 
 /// The customer completed a purchase.
-@objc(RCCheckpointPaywallPurchasedOutcome)
+@_spi(Checkpoints)
 public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after the completed purchase.
-    @objc
     public let customerInfo: CustomerInfo
 
     init(customerInfo: CustomerInfo) {
@@ -93,20 +94,19 @@ public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     public override var description: String { return "Purchased" }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? CheckpointPaywallPurchasedOutcome)?.customerInfo.isEqual(self.customerInfo) == true
+    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        return (other as? CheckpointPaywallPurchasedOutcome)?.customerInfo.isEqual(self.customerInfo) == true
     }
 
-    public override var hash: Int { return self.customerInfo.hash }
+    public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
 
 }
 
 /// The customer restored purchases.
-@objc(RCCheckpointPaywallRestoredOutcome)
+@_spi(Checkpoints)
 public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
-    @objc
     public let customerInfo: CustomerInfo
 
     init(customerInfo: CustomerInfo) {
@@ -116,20 +116,19 @@ public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     public override var description: String { return "Restored" }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? CheckpointPaywallRestoredOutcome)?.customerInfo.isEqual(self.customerInfo) == true
+    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        return (other as? CheckpointPaywallRestoredOutcome)?.customerInfo.isEqual(self.customerInfo) == true
     }
 
-    public override var hash: Int { return self.customerInfo.hash }
+    public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
 
 }
 
 /// The paywall ended with an error.
-@objc(RCCheckpointPaywallErrorOutcome)
+@_spi(Checkpoints)
 public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     /// The error that ended the checkpoint experience.
-    @objc
     public let error: PublicError
 
     init(error: PublicError) {
@@ -139,12 +138,10 @@ public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     public override var description: String { return "Error(error=\(self.error))" }
 
-    public override func isEqual(_ object: Any?) -> Bool {
-        return (object as? CheckpointPaywallErrorOutcome)?.error.isEqual(self.error) == true
+    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+        return (other as? CheckpointPaywallErrorOutcome)?.error.isEqual(self.error) == true
     }
 
-    public override var hash: Int { return self.error.hash }
+    public override func hash(into hasher: inout Hasher) { hasher.combine(self.error.hash) }
 
 }
-
-#endif

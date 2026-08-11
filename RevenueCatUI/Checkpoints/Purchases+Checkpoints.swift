@@ -15,8 +15,9 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-#if ENABLE_CHECKPOINTS && os(iOS) && !targetEnvironment(macCatalyst)
+#if os(iOS) && !targetEnvironment(macCatalyst)
 
+@_spi(Checkpoints)
 public extension Purchases {
 
     /// Global listener for checkpoint activity.
@@ -66,6 +67,9 @@ public extension Purchases {
 
 }
 
+#if ENABLE_CHECKPOINTS_OBJC
+
+@_spi(Checkpoints)
 public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
@@ -73,13 +77,13 @@ public extension Purchases {
     @objc(checkpointWithIdentifier:params:completion:)
     func checkpoint(
         _ identifier: String,
-        params: CheckpointParams?,
-        completion: @escaping (CheckpointResult?, PublicError?) -> Void
+        objcParams: ObjCCheckpointParams?,
+        completion: @escaping (ObjCCheckpointResult?, PublicError?) -> Void
     ) {
-        self.checkpoint(identifier, params: params ?? .init()) { result in
+        self.checkpoint(identifier, params: objcParams?.value ?? .init()) { result in
             switch result {
             case let .success(result):
-                completion(result, nil)
+                completion(ObjCCheckpointResult.wrapping(result), nil)
             case let .failure(error):
                 completion(nil, error)
             }
@@ -87,6 +91,8 @@ public extension Purchases {
     }
 
 }
+
+#endif
 
 private extension Purchases {
 

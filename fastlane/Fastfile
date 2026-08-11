@@ -510,10 +510,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-    ENV["TUIST_SWIFT_CONDITIONS"] = [ENV["TUIST_SWIFT_CONDITIONS"], "ENABLE_CHECKPOINTS"]
-      .compact
-      .join(" ")
-
     begin
       xcodebuild(
         workspace: '.',
@@ -524,10 +520,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/v1-snapshots/tests.xml',
         test: true,
-        xcargs: [
-          "-testPlan CI-V1-Snapshots",
-          "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
-        ].join(" ")
+        xcargs: "-testPlan CI-V1-Snapshots"
       )
     rescue => e
       snapshots_path = File.expand_path("../Tests/RevenueCatUITests/Templates/__Snapshots__")
@@ -835,8 +828,7 @@ platform :ios do
       configuration: 'Debug',
       output_directory: "fastlane/test_output/xctest/ios",
       number_of_retries: generate_snapshots ? 0 : 5, # Number of retries in an xcodebuild run
-      fail_build: !generate_snapshots,
-      xcargs: "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
+      fail_build: !generate_snapshots
     )
   end
 
@@ -941,10 +933,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-    ENV["TUIST_SWIFT_CONDITIONS"] = [ENV["TUIST_SWIFT_CONDITIONS"], "ENABLE_CHECKPOINTS"]
-      .compact
-      .join(" ")
-
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
@@ -958,10 +946,7 @@ platform :ios do
         report_formats: [:junit],
         report_path: 'fastlane/test_output/revenuecatui/tests.xml',
         test: true,
-        xcargs: [
-          generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI",
-          "SWIFT_ACTIVE_COMPILATION_CONDITIONS='$(inherited) ENABLE_CHECKPOINTS'"
-        ].join(" ")
+        xcargs: generate_snapshots ? "-testPlan CI-Snapshots" : "-testPlan CI-RevenueCatUI"
       )
     rescue => e
       # Equivalent to `fail_build: !generate_snapshots`
