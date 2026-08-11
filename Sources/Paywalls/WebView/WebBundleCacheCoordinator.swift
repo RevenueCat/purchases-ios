@@ -10,52 +10,60 @@
 //  WebBundleCacheCoordinator.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/11/26.
-// swiftlint:disable missing_docs
+//
 
 import Combine
 import Foundation
-@_spi(Internal) import RevenueCat
-import SwiftUI
 
-#if !os(tvOS) && !os(watchOS) && canImport(WebKit) // For Paywalls V2
+#if !os(tvOS) && !os(watchOS) && canImport(WebKit)
 
 import WebKit
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@_spi(Internal) public final class WebBundleCacheCoordinator {
+final class WebBundleCacheCoordinator {
+
     static let shared = WebBundleCacheCoordinator()
 
-    private var job: AnyCancellable?
+    private let job: AnyCancellable
+
+    static func initializeIfAvailable() {
+        _ = Self.shared
+    }
 
     init(
         events: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher,
-        websiteDataStoreIdentifier: () -> UUID = { return WebViewDataStoreIdentifierStore.identifier() }
+        websiteDataStoreIdentifier: () -> UUID = { WebViewDataStoreIdentifierStore.identifier() },
+        clearWebsiteData: @escaping (UUID) -> Void = WebBundleCacheCoordinator.clearWebsiteData
     ) {
         let identifier = websiteDataStoreIdentifier()
         self.job = events
-            .removeDuplicates()
-            .receive(on: DispatchQueue(label: "web-bundle-cache-coordinator"))
-            .sink { [weak self] event in
-                guard let self else { return }
+            .receive(on: DispatchQueue(label: "com.revenuecat.web-bundle-cache-coordinator"))
+            .sink { event in
                 switch event {
-                case .empty: break
-                case .cacheClearRequested:
-                    clearWebCache(for: identifier)
-                case .receivedAssetURLs:
+                case .empty, .receivedAssetURLs:
                     break
-                    // Will do in a coming PR
+                case .cacheClearRequested:
+                    clearWebsiteData(identifier)
                 }
             }
     }
 
-    private func clearWebCache(for storeID: UUID) {
+    private static func clearWebsiteData(for storeIdentifier: UUID) {
         if #available(iOS 17.0, macOS 14.0, *) {
             Task {
-                await WKWebsiteDataStore(forIdentifier: storeID)
+                await WKWebsiteDataStore(forIdentifier: storeIdentifier)
                     .removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast)
             }
         }
     }
+
+}
+
+#else
+
+enum WebBundleCacheCoordinator {
+
+    static func initializeIfAvailable() {}
+
 }
 
 #endif

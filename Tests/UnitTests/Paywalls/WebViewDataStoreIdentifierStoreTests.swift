@@ -10,8 +10,9 @@
 //  WebViewDataStoreIdentifierStoreTests.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/10/26.
+//
 
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class WebViewDataStoreIdentifierStoreTests: TestCase {
@@ -44,7 +45,7 @@ final class WebViewDataStoreIdentifierStoreTests: TestCase {
 
     private func makeUserDefaults() throws -> (UserDefaults, String) {
         let suiteName = "com.revenuecat.WebViewDataStoreIdentifierStoreTests.\(UUID().uuidString)"
-        let defaults =  try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
 
         addTeardownBlock { [weak defaults] in
             defaults?.removePersistentDomain(forName: suiteName)

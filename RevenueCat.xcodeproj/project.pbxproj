@@ -122,6 +122,8 @@
 		16E4A3C89791426AAD027A49 /* PlatformInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043FB8686FEB4A31B9CF48C8 /* PlatformInfoTests.swift */; };
 		16E75103302A38730090562C /* WebViewDataStoreIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */; };
 		16E751A3302B50A30090562C /* WebBundleCacheCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */; };
+		16E75200302B60000090562C /* WebViewDataStoreIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */; };
+		16E75201302B60000090562C /* WebBundleCacheCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */; };
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232493C1C6A935B7FE1C6873 /* RulesEngineLogger.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
@@ -1699,6 +1701,7 @@
 		16E751A0302B4A030090562C /* StoreKitUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StoreKitUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		16E751A1302B4A030090562C /* RevenueCatUI.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = RevenueCatUI.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleCacheCoordinator.swift; sourceTree = "<group>"; };
+		16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleCacheCoordinatorTests.swift; sourceTree = "<group>"; };
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		19B7F3F7BB1256FB17221052 /* CarouselState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CarouselState.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
@@ -3256,7 +3259,6 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
-				16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */,
 				E7EB64E9D44783DD16A28B05 /* WebViewComponentViewTests.swift */,
 				C3E609D42BFA15783D609EB2 /* WebViewInstanceTests.swift */,
 				9E7AD021B4580265DFDF6A02 /* WebViewNavigationPolicyTests.swift */,
@@ -3484,8 +3486,6 @@
 		2561352F00BE1ECE1BAC4E9A /* WebView */ = {
 			isa = PBXGroup;
 			children = (
-				16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */,
-				16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */,
 				28661C6CE3F64078A0138080 /* WebViewOriginPolicy.swift */,
 				9D0C57ECDF0E7F1A5B4418FF /* PaywallWebViewValue.swift */,
 				89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */,
@@ -3494,6 +3494,15 @@
 				D0A2779D02050D28BF369658 /* WebViewComponentView.swift */,
 				047CB41107F93D74B35CED61 /* WebViewScrollGestureArbitration.swift */,
 				6F6E5F9ABE99E8F2BC1DE237 /* WebViewComponentViewModel.swift */,
+			);
+			path = WebView;
+			sourceTree = "<group>";
+		};
+		16E75203302B60000090562C /* WebView */ = {
+			isa = PBXGroup;
+			children = (
+				16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */,
+				16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -5001,6 +5010,7 @@
 		4F87610D2A5C9E330006FA14 /* Paywalls */ = {
 			isa = PBXGroup;
 			children = (
+				16E75203302B60000090562C /* WebView */,
 				166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */,
 				032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */,
 				7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */,
@@ -5031,6 +5041,8 @@
 				3D26169F24D341F77345716D /* ExitOfferTests.swift */,
 				FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */,
 				166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */,
+				16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */,
+				16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
@@ -7633,6 +7645,8 @@
 				B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */,
 				359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */,
+				16E751A3302B50A30090562C /* WebBundleCacheCoordinator.swift in Sources */,
+				16E75103302A38730090562C /* WebViewDataStoreIdentifierStore.swift in Sources */,
 				1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */,
 				B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */,
 				4F0BBA812A1D0524000E75AB /* DefaultDecodable.swift in Sources */,
@@ -8081,6 +8095,8 @@
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */,
+				16E75201302B60000090562C /* WebBundleCacheCoordinatorTests.swift in Sources */,
+				16E75200302B60000090562C /* WebViewDataStoreIdentifierStoreTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
@@ -8494,7 +8510,6 @@
 				5798C95B2DF1985700F44400 /* CustomerCenterActionWrapper.swift in Sources */,
 				5798C95C2DF1985700F44400 /* CustomerCenterActionViewModifier.swift in Sources */,
 				5798C95D2DF1985700F44400 /* PromotionalOfferView.swift in Sources */,
-				16E75103302A38730090562C /* WebViewDataStoreIdentifierStore.swift in Sources */,
 				5798C95E2DF1985700F44400 /* CustomerCenterViewController.swift in Sources */,
 				5798C95F2DF1985700F44400 /* PurchaseInformation.swift in Sources */,
 				5798C9602DF1985700F44400 /* CustomerCenterLocalizationStrings.swift in Sources */,
@@ -8510,7 +8525,6 @@
 				5798C96A2DF1985700F44400 /* ErrorView.swift in Sources */,
 				DBE7C6552F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift in Sources */,
 				5798C96B2DF1985700F44400 /* View+PresentCustomerCenter.swift in Sources */,
-				16E751A3302B50A30090562C /* WebBundleCacheCoordinator.swift in Sources */,
 				5798C96C2DF1985700F44400 /* ScrollViewSection.swift in Sources */,
 				8025937E2FE06FA1005AF6DF /* PaywallStateStore.swift in Sources */,
 				1699BC362EEB4EAE002001FB /* DefaultPaywallView.swift in Sources */,
