@@ -272,7 +272,8 @@ class BasePurchasesTests: TestCase {
 
     func initializePurchasesInstance(
         appUserId: String?,
-        withDelegate: Bool = true
+        withDelegate: Bool = true,
+        webBundleEventBus: WebBundleEventBus = .shared
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -361,7 +362,8 @@ class BasePurchasesTests: TestCase {
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                                   currentConfiguration: nil)
+                                   currentConfiguration: nil,
+                                   webBundleEventBus: webBundleEventBus)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

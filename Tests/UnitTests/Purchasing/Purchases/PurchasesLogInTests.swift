@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 8/15/22.
 
+import Combine
 import Nimble
 import StoreKit
 import XCTest
@@ -101,6 +102,33 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigRefreshCount + 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
+    }
+
+    func testLogOutClearsWebBundleCache() {
+        let webBundleEventBus = WebBundleEventBus()
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            webBundleEventBus: webBundleEventBus
+        )
+        self.identityManager.mockLogOutError = nil
+        self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
+
+        let cacheCleared = self.expectation(description: "Web bundle cache cleared")
+        let cancellable = webBundleEventBus.publisher
+            .filter { $0 == .cacheClearRequested }
+            .prefix(1)
+            .sink { _ in cacheCleared.fulfill() }
+
+        let result = waitUntilValue { completed in
+            self.purchases.logOut { customerInfo, error in
+                completed(Result(customerInfo, error))
+            }
+        }
+
+        expect(result).to(beSuccess())
+        self.wait(for: [cacheCleared], timeout: 1)
+        withExtendedLifetime(cancellable) {}
     }
 
     func testLogOutWithFailure() {

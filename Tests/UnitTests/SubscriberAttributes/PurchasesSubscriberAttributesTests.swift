@@ -271,7 +271,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                              currentConfiguration: nil)
+                              currentConfiguration: nil,
+                              webBundleEventBus: .shared)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
