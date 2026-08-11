@@ -531,12 +531,11 @@ private extension HTTPClient {
                 #endif
                 return cachedResponse.verify(
                     signing: self.signing(for: request.httpRequest),
-                    request: request.httpRequest,
-                    requestHeaders: requestHeaders,
+                    request: request,
+                    urlRequest: urlRequest,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
                     isFallbackUrlResponse: isFallbackUrlResponse,
-                    isIAMEnabled: self.tokenManager.enabled,
                 )
             }
             // Fetch from ETagManager if available

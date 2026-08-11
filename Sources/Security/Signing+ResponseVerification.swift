@@ -18,30 +18,29 @@ extension HTTPResponse where Body == Data? {
     // swiftlint:disable:next function_parameter_count
     func verify(
         signing: SigningType,
-        request: HTTPRequest,
-        requestHeaders: HTTPRequest.Headers,
+        request: HTTPClient.Request,
+        urlRequest: URLRequest,
         publicKey: Signing.PublicKey?,
         isLoadShedderResponse: Bool,
-        isFallbackUrlResponse: Bool,
-        isIAMEnabled: Bool
+        isFallbackUrlResponse: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
             statusCode: self.httpStatusCode,
-            requestHeaders: requestHeaders,
+            requestHeaders: urlRequest.allHTTPHeaderFields ?? [:],
             responseHeaders: self.responseHeaders,
             requestDate: self.requestDate,
-            request: request,
+            request: request.httpRequest,
             publicKey: publicKey,
             signing: signing,
-            iamEnabled: isIAMEnabled,
+            iamEnabled: request.preferIAMPath,
             isFallbackUrlResponse: isFallbackUrlResponse
         )
 
         #if DEBUG
         if verificationResult == .failed, ProcessInfo.isRunningRevenueCatTests {
             Logger.warn(Strings.signing.invalid_signature_data(
-                request,
+                request.httpRequest,
                 self.body,
                 self.responseHeaders,
                 self.httpStatusCode

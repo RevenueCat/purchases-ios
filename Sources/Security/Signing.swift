@@ -96,9 +96,21 @@ final class Signing: SigningType {
             return false
         }
 
+        let authValue: String
+        if let authHeader = parameters.requestHeaders[HTTPClient.RequestHeader.authorization.rawValue] {
+            if let firstSpaceIndex = authHeader.firstIndex(of: " ") {
+                let afterSpace = authHeader.index(after: firstSpaceIndex)
+                authValue = String(authHeader[afterSpace...])
+            } else {
+                authValue = authHeader
+            }
+        } else {
+            authValue = self.apiKey
+        }
+
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)
-        let messageToVerify = parameters.signature(salt: salt, apiKey: self.apiKey)
+        let messageToVerify = parameters.signature(salt: salt, authValue: authValue)
 
         #if DEBUG
         Logger.verbose(Strings.signing.verifying_signature(
@@ -261,9 +273,9 @@ extension Signing.SignatureParameters {
         self.useFallbackPath = useFallbackPath
     }
 
-    func signature(salt: Data, apiKey: String) -> Data {
-        let apiKey = self.path.authenticated ? apiKey : ""
-        return salt + apiKey.asData + self.asData
+    func signature(salt: Data, authValue: String) -> Data {
+        let auth = self.path.authenticated ? authValue : ""
+        return salt + auth.asData + self.asData
     }
 
     var asData: Data {
