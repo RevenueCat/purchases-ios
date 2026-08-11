@@ -210,7 +210,10 @@ struct PaywallsV2View: View {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
                 defaultPackage: Self.effectiveDefaultPackage(
-                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                    // Provisional: `init` has no environment, so variable/eligibility rules can't be
+                    // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator
+                        .defaultSelectedPackage(in: .provisional),
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
                 workflowPackages: workflowPackages,
@@ -263,16 +266,14 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
-        let defaultPackage = Self.effectiveDefaultPackage(
-            pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
-        )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
-            defaultPackage: defaultPackage,
+            // Resolved inside the loaded view, where the render environment (custom variables, screen
+            // condition) and the eligibility contexts are available.
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage,
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
@@ -584,7 +585,19 @@ private struct LoadedPaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
-    private let defaultPackage: Package?
+    private let workflowDefaultPackage: Package?
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -594,7 +607,7 @@ private struct LoadedPaywallsV2View: View {
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
-        defaultPackage: Package?,
+        workflowDefaultPackage: Package?,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil
     ) {
@@ -602,9 +615,54 @@ private struct LoadedPaywallsV2View: View {
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
-        self.defaultPackage = defaultPackage
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
+    }
+
+    private var packageSelectionContext: PackageSelectionContext {
+        return PackageSelectionContext(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                introOfferEligibilityContext.isEligible(package: $0)
+            },
+            isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+            }
+        )
+    }
+
+    private var defaultPackage: Package? {
+        return PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: self.paywallState.viewModelFactory.packageValidator
+                .defaultSelectedPackage(in: self.packageSelectionContext),
+            workflowDefaultPackage: self.workflowDefaultPackage
+        )
+    }
+
+    /// Moves the selection off a package that isn't rendering.
+    private func reconcileSelection() {
+        let packageValidator = self.paywallState.viewModelFactory.packageValidator
+
+        // Selection is tab-local, so a tabbed paywall reconciles inside `LoadedTabsComponentView`.
+        // Resolving here would walk document order across every tab and could select a package from a
+        // tab the user isn't on.
+        guard !packageValidator.containsTabScopedPackages else {
+            return
+        }
+
+        guard let resolved = packageValidator.reconciledSelection(
+            current: self.selectedPackageContext.package,
+            in: self.packageSelectionContext
+        ) else {
+            return
+        }
+
+        self.selectedPackageContext.update(
+            package: resolved,
+            variableContext: self.selectedPackageContext.variableContext
+        )
     }
 
     var body: some View {
@@ -642,6 +700,14 @@ private struct LoadedPaywallsV2View: View {
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
+            .onAppear {
+                self.reconcileSelection()
+            }
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
+            .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection()
+            }
         }
     }
 
