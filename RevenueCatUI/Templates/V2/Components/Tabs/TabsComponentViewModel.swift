@@ -126,8 +126,11 @@ class TabViewModel {
     let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
     let stackViewModel: StackComponentViewModel
-    let defaultSelectedPackage: Package?
     let packages: [Package]
+
+    /// Held rather than pre-resolved because a package's visibility can depend on custom variables and
+    /// offer eligibility, which are only known at render time.
+    private let packageValidator: PackageValidator
 
     var name: String? {
         return self.tab.name
@@ -136,15 +139,22 @@ class TabViewModel {
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
-        defaultSelectedPackage: Package?,
-        packages: [Package],
+        packageValidator: PackageValidator,
         uiConfigProvider: UIConfigProvider
     ) {
         self.tab = tab
         self.stackViewModel = stackViewModel
-        self.defaultSelectedPackage = defaultSelectedPackage
-        self.packages = packages
+        self.packageValidator = packageValidator
+        self.packages = packageValidator.packages
         self.uiConfigProvider = uiConfigProvider
+    }
+
+    func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
+        return self.packageValidator.defaultSelectedPackage(in: context)
+    }
+
+    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
+        return self.packageValidator.reconciledSelection(current: current, in: context)
     }
 
 }

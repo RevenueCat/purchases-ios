@@ -194,6 +194,24 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
+            // Recorded before walking the stack so ordering is pre-order, matching Android's
+            // `StyleFactory.recordPackage`. Both platforms resolve the default package by document
+            // order, so the two walks have to agree. Nothing here depends on the stack.
+            if let package = offering.package(identifier: component.packageID) {
+                packageValidator.add(
+                    PackageValidator.PackageInfo(
+                        package: package,
+                        isSelectedByDefault: component.isSelectedByDefault,
+                        visibilityResolver: PackageVisibilityResolver(
+                            component: component,
+                            uiConfigProvider: uiConfigProvider,
+                            discardRules: discardRules
+                        ),
+                        promotionalOfferProductCode: component.applePromoOfferProductCode
+                    )
+                )
+            }
+
             // Specifically override the parent PurchaseButtonCollector so that
             // we can see if the package has a purchase button inside of it
             let packagePurchaseButtonCollector = PurchaseButtonCollector()
@@ -218,20 +236,6 @@ struct ViewModelFactory {
                 uiConfigProvider: uiConfigProvider,
                 discardRules: discardRules
             )
-
-            if let package = viewModel.package {
-                let packageInfo = PackageValidator.PackageInfo(
-                    package: package,
-                    isSelectedByDefault: viewModel.isSelectedByDefault,
-                    // Only the static `visible` flag is considered here; override-based visibility
-                    // is evaluated at render time and is not used for default package selection.
-                    // The paywall builder enforces that the default-selected package cannot be
-                    // statically hidden (`visible: false`), so this is safe.
-                    isStaticallyVisible: component.visible ?? true,
-                    promotionalOfferProductCode: viewModel.promotionalOfferProductCode
-                )
-                packageValidator.add(packageInfo)
-            }
 
             return .package(viewModel)
         case .purchaseButton(let component):
@@ -385,14 +389,13 @@ struct ViewModelFactory {
 
                 // Merging into entire paywall package validator
                 for packageInfo in tabPackageValidator.packageInfos {
-                    packageValidator.add(packageInfo)
+                    packageValidator.addTabScoped(packageInfo)
                 }
 
                 return .init(
                     tab: tab,
                     stackViewModel: tabsStackViewModel.copy(withViewModels: [.stack(stackViewModel)]),
-                    defaultSelectedPackage: tabPackageValidator.defaultSelectedPackage,
-                    packages: tabPackageValidator.packages,
+                    packageValidator: tabPackageValidator,
                     uiConfigProvider: uiConfigProvider
                 )
             }
