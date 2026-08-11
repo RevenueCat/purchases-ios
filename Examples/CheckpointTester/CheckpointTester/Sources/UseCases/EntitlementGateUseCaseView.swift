@@ -19,7 +19,7 @@ import SwiftUI
 
 struct EntitlementGateUseCaseView: View {
 
-    let checkpointParams: CheckpointParams
+    @ObservedObject var checkpointVariables: CheckpointVariables
 
     @State private var isRunning = false
     @State private var didLoad = false
@@ -135,7 +135,7 @@ struct EntitlementGateUseCaseView: View {
     }
 
     private var entitlementCheckpointParams: CheckpointParams {
-        var customProperties = self.checkpointParams.customProperties
+        var customProperties = self.checkpointVariables.checkpointParams.customProperties
         customProperties["gate"] = .string("entitlement")
         return CheckpointParams(customProperties: customProperties)
     }

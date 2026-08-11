@@ -12,7 +12,6 @@
 //  Created by Rick van der Linden.
 //
 
-import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
@@ -21,9 +20,7 @@ struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
-    @State private var checkpointVariables = [
-        CheckpointVariable(name: "source", value: "CheckpointTester"),
-    ]
+    @StateObject private var checkpointVariables = CheckpointVariables()
 
     var body: some View {
         TabView {
@@ -65,7 +62,7 @@ struct ContentView: View {
             List {
                 Section("App-driven use cases") {
                     NavigationLink {
-                        HardPaywallUseCaseView(checkpointParams: self.checkpointParams)
+                        HardPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
                     } label: {
                         DemoLabel(
                             title: "Hard paywall",
@@ -75,7 +72,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        SoftPaywallUseCaseView(checkpointParams: self.checkpointParams)
+                        SoftPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
                     } label: {
                         DemoLabel(
                             title: "Soft paywall",
@@ -85,7 +82,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        OnboardingUseCaseView(checkpointParams: self.checkpointParams)
+                        OnboardingUseCaseView(checkpointVariables: self.checkpointVariables)
                     } label: {
                         DemoLabel(
                             title: "Onboarding",
@@ -95,7 +92,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        EntitlementGateUseCaseView(checkpointParams: self.checkpointParams)
+                        EntitlementGateUseCaseView(checkpointVariables: self.checkpointVariables)
                     } label: {
                         DemoLabel(
                             title: "Entitlement gate",
@@ -107,7 +104,7 @@ struct ContentView: View {
                     NavigationLink {
                         CustomCheckpointUseCaseView(
                             model: self.model,
-                            checkpointParams: self.checkpointParams
+                            checkpointVariables: self.checkpointVariables
                         )
                     } label: {
                         DemoLabel(
@@ -128,7 +125,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "unknown_checkpoint",
-                                    params: self.checkpointParams
+                                    params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -146,7 +143,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "error_checkpoint",
-                                    params: self.checkpointParams
+                                    params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -165,18 +162,18 @@ struct ContentView: View {
         NavigationStack {
             List {
                 Section {
-                    ForEach(self.$checkpointVariables) { $variable in
+                    ForEach(self.$checkpointVariables.variables) { $variable in
                         HStack {
                             TextField("Name", text: $variable.name)
                             TextField("Value", text: $variable.value)
                         }
                     }
                     .onDelete { offsets in
-                        self.checkpointVariables.remove(atOffsets: offsets)
+                        self.checkpointVariables.variables.remove(atOffsets: offsets)
                     }
 
                     Button {
-                        self.checkpointVariables.append(.init())
+                        self.checkpointVariables.variables.append(.init())
                     } label: {
                         Label("Add variable", systemImage: "plus")
                     }
@@ -221,27 +218,6 @@ struct ContentView: View {
             .navigationTitle("Global Listener")
         }
     }
-
-    private var checkpointParams: CheckpointParams {
-        var customProperties: [String: CheckpointValue] = [:]
-
-        for variable in self.checkpointVariables {
-            let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !name.isEmpty {
-                customProperties[name] = .string(variable.value)
-            }
-        }
-
-        return CheckpointParams(customProperties: customProperties)
-    }
-
-}
-
-private struct CheckpointVariable: Identifiable {
-
-    let id = UUID()
-    var name = ""
-    var value = ""
 
 }
 

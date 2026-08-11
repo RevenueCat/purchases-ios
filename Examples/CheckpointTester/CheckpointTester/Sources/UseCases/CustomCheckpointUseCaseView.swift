@@ -19,8 +19,7 @@ import SwiftUI
 struct CustomCheckpointUseCaseView: View {
 
     @ObservedObject var model: CheckpointDemoModel
-
-    let checkpointParams: CheckpointParams
+    @ObservedObject var checkpointVariables: CheckpointVariables
 
     @State private var identifier = ""
     @State private var isRunning = false
@@ -59,7 +58,7 @@ struct CustomCheckpointUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 self.trimmedIdentifier,
-                params: self.checkpointParams
+                params: self.checkpointVariables.checkpointParams
             )
             self.model.showOutcome(result)
         } catch {

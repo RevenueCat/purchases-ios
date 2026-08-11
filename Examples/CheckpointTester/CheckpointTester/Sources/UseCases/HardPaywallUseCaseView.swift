@@ -19,7 +19,7 @@ import SwiftUI
 
 struct HardPaywallUseCaseView: View {
 
-    let checkpointParams: CheckpointParams
+    @ObservedObject var checkpointVariables: CheckpointVariables
 
     @State private var isRunning = false
     @State private var didLoad = false
@@ -122,7 +122,7 @@ struct HardPaywallUseCaseView: View {
     @MainActor
     private func paramsForNextAttempt() -> CheckpointParams {
         self.attempts += 1
-        var customProperties = self.checkpointParams.customProperties
+        var customProperties = self.checkpointVariables.checkpointParams.customProperties
         customProperties["gate"] = .string("hard")
         customProperties["attempt"] = .integer(Int64(self.attempts))
         return CheckpointParams(customProperties: customProperties)
