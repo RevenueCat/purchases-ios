@@ -82,6 +82,43 @@ class UiConfigProviderTests: TestCase {
         expect(uiConfig).to(beNil())
     }
 
+    func testEmptyTopicReturnsNilWithoutAttemptingBlobMergeOrLoggingWarning() async {
+        self.mockManager.stubbedTopics[.uiConfig] = [:]
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig).to(beNil())
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters).to(beEmpty())
+        expect(self.mockManager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        self.logger.verifyMessageWasNotLogged(
+            Strings.remoteConfig.uiConfigMissingRequiredPart,
+            level: .warn,
+            allowNoMessages: true
+        )
+    }
+
+    func testEmptyTopicUsesPartsCommittedByInFlightRefresh() async throws {
+        self.stub(
+            app: #"{"colors": {}, "fonts": {}}"#,
+            localizations: #"{"en_US": {"day": "Day"}}"#,
+            variableConfig: #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#,
+            customVariables: #"{}"#
+        )
+        let refreshedTopic = try XCTUnwrap(self.mockManager.stubbedTopics[.uiConfig])
+        self.mockManager.stubbedTopics[.uiConfig] = [:]
+        self.mockManager.committedTopicAfterInFlightRefreshHandler = { [mockManager] topic in
+            mockManager?.configGeneration += 1
+            mockManager?.stubbedTopics[topic] = refreshedTopic
+            return refreshedTopic
+        }
+
+        let uiConfig = await self.provider.getUiConfig()
+
+        expect(uiConfig?.localizations["en_US"]?["day"]) == "Day"
+        expect(self.mockManager.invokedCommittedTopicAfterInFlightRefreshCount) == 1
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 1
+    }
+
     func testMalformedVariableConfigReturnsNil() async throws {
         self.stub(app: #"{"colors": {}, "fonts": {}}"#, localizations: #"{"en_US": {"day": "Day"}}"#,
                   variableConfig: #"{"variable_compatibility_map": "not-a-dictionary"}"#,
