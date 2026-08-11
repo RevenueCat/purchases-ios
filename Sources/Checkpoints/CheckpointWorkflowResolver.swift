@@ -111,7 +111,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
-                return .noAction(.noMatch)
+                return .noAction(.unknownCheckpoint)
             }
             rulesSnapshot = snapshot
         } catch CheckpointRulesProviderError.remoteConfigDisabled {
