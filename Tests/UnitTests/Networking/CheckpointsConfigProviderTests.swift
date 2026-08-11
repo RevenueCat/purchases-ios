@@ -23,6 +23,7 @@ class CheckpointsConfigProviderTests: TestCase {
 
     private var diskCache: FakeCheckpointsDiskCache!
     private var blobStore: FakeCheckpointsBlobStore!
+    private var remoteConfigAPI: FakeCheckpointsRemoteConfigAPI!
     private var manager: RemoteConfigManager!
     private var provider: CheckpointsConfigProvider!
 
@@ -31,8 +32,9 @@ class CheckpointsConfigProviderTests: TestCase {
 
         self.diskCache = FakeCheckpointsDiskCache()
         self.blobStore = FakeCheckpointsBlobStore()
+        self.remoteConfigAPI = FakeCheckpointsRemoteConfigAPI()
         self.manager = RemoteConfigManager(
-            remoteConfigAPI: FakeCheckpointsRemoteConfigAPI(),
+            remoteConfigAPI: self.remoteConfigAPI,
             diskCache: self.diskCache,
             blobStore: self.blobStore,
             blobFetcher: FakeCheckpointsBlobFetcher(blobStore: self.blobStore),
@@ -87,6 +89,14 @@ class CheckpointsConfigProviderTests: TestCase {
         let rules = try await self.provider.rules(for: "onboarding")
 
         expect(rules).to(beNil())
+    }
+
+    func testReturnsUnavailableWhenColdFetchFails() async {
+        self.remoteConfigAPI.result = .failure(.networkError(.unexpectedResponse(nil)))
+
+        let error = await self.providerError(for: "onboarding")
+
+        XCTAssertEqual(error, .payloadUnavailable)
     }
 
     func testReturnsUnavailableWhenThePayloadIsMissing() async {
@@ -234,6 +244,17 @@ class CheckpointsConfigProviderTests: TestCase {
 
 private final class FakeCheckpointsRemoteConfigAPI: RemoteConfigAPIType {
 
+    var result: Result<RemoteConfigFetchResult, BackendError> = .success(RemoteConfigFetchResult(
+        response: VerifiedHTTPResponse(
+            httpStatusCode: .noContent,
+            responseHeaders: [:],
+            body: nil,
+            verificationResult: .verified,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+    ))
+
     func getRemoteConfig(
         request: RemoteConfigRequest,
         isAppBackgrounded: Bool,
@@ -241,15 +262,9 @@ private final class FakeCheckpointsRemoteConfigAPI: RemoteConfigAPIType {
     ) {
         // Must always settle rather than hang, since a missing item triggers a refresh-and-wait. Must also
         // dispatch asynchronously: `RemoteConfigManager` calls this from inside a lock.
+        let result = self.result
         DispatchQueue.global().async {
-            completion(.success(RemoteConfigFetchResult(response: VerifiedHTTPResponse(
-                httpStatusCode: .noContent,
-                responseHeaders: [:],
-                body: nil,
-                verificationResult: .verified,
-                isLoadShedderResponse: false,
-                isFallbackUrlResponse: false
-            ))))
+            completion(result)
         }
     }
 

@@ -17,6 +17,9 @@ protocol RemoteConfigManagerType: AnyObject {
     /// Monotonically increases whenever committed remote config state is replaced or invalidated.
     var configGeneration: Int { get }
 
+    /// Whether a remote configuration has been committed and is available to read.
+    func hasCommittedConfig() async -> Bool
+
     var onRemoteConfigDisabled: (() -> Void)? { get set }
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
@@ -219,6 +222,10 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
+    func hasCommittedConfig() async -> Bool {
+        return false
+    }
+
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         return nil
     }
@@ -358,6 +365,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
     var configGeneration: Int {
         return self.lock.perform {
             self.generation
+        }
+    }
+
+    func hasCommittedConfig() async -> Bool {
+        return await self.performRead {
+            self.diskCache.read() != nil
         }
     }
 

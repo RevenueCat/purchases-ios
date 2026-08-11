@@ -87,7 +87,14 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
             throw CheckpointRulesProviderError.remoteConfigDisabled
         }
 
-        guard topic?[identifier] != nil else { return nil }
+        guard let topic else {
+            guard await self.manager.hasCommittedConfig() else {
+                throw CheckpointRulesProviderError.payloadUnavailable
+            }
+            return nil
+        }
+
+        guard topic[identifier] != nil else { return nil }
         throw CheckpointRulesProviderError.payloadUnavailable
     }
 

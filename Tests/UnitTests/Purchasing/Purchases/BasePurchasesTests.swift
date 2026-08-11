@@ -693,6 +693,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         }
     }
     private var configGenerationStorage = 0
+    var stubbedHasCommittedConfig = true
 
     private(set) var invokedRefreshRemoteConfigCount = 0
     private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
@@ -715,6 +716,10 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         self.invokedRefreshRemoteConfigIfStaleParametersList.append(
             .init(fetchContext: fetchContext, isAppBackgrounded: isAppBackgrounded)
         )
+    }
+
+    func hasCommittedConfig() async -> Bool {
+        return self.stubbedHasCommittedConfig
     }
 
     var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
