@@ -108,19 +108,19 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     private func resolveConfiguredWorkflow(identifier: String) async -> CheckpointResolution {
-        let ruleSet: CheckpointRuleSet
+        let rulesSnapshot: CheckpointRulesSnapshot
         do {
-            guard let rules = try await self.checkpointsConfigProvider.rules(for: identifier) else {
+            guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
                 return .noAction(.noMatch)
             }
-            ruleSet = rules
+            rulesSnapshot = snapshot
         } catch CheckpointRulesProviderError.remoteConfigDisabled {
             return .noAction(.disabled)
         } catch {
             return .noAction(.configurationUnavailable)
         }
 
-        guard let rule = self.matchingRule(in: ruleSet.rules) else { return .noAction(.noMatch) }
+        guard let rule = self.matchingRule(in: rulesSnapshot.ruleSet.rules) else { return .noAction(.noMatch) }
         guard let offeringID = await self.offeringID(for: rule) else {
             return .noAction(.configurationUnavailable)
         }
@@ -129,7 +129,12 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        return await self.resolve(rule, offeringID: offeringID, offerings: offerings)
+        let resolution = await self.resolve(rule, offeringID: offeringID, offerings: offerings)
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        return resolution
     }
 
     private func matchingRule(in rules: [CheckpointRule]) -> CheckpointRule? {

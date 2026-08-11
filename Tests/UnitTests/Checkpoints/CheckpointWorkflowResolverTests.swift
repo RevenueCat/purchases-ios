@@ -199,6 +199,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Set(resolved.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
     }
 
+    func testConfigGenerationChangeDuringResolutionReturnsConfigurationUnavailable() async throws {
+        let resolver = self.makeResolver {
+            self.checkpointsProvider.configGeneration += 1
+            return self.offerings
+        }
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
         let unavailableWorkflowID = "wf_unavailable"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
@@ -296,11 +307,18 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
+    var configGeneration = 0
     private(set) var requestedIdentifiers: [String] = []
 
-    func rules(for identifier: String) async throws -> CheckpointRuleSet? {
+    func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
         self.requestedIdentifiers.append(identifier)
-        return try self.result.get()
+        return try self.result.get().map {
+            CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
+        }
+    }
+
+    func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {
+        return snapshot.configGeneration == self.configGeneration
     }
 
 }

@@ -9,7 +9,15 @@ import Foundation
 
 protocol CheckpointsConfigProviderType {
 
-    func rules(for identifier: String) async throws -> CheckpointRuleSet?
+    func rules(for identifier: String) async throws -> CheckpointRulesSnapshot?
+    func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool
+
+}
+
+struct CheckpointRulesSnapshot {
+
+    let ruleSet: CheckpointRuleSet
+    let configGeneration: Int
 
 }
 
@@ -32,7 +40,30 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
         self.manager = manager
     }
 
-    func rules(for identifier: String) async throws -> CheckpointRuleSet? {
+    func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
+        while true {
+            try Task.checkCancellation()
+            let configGeneration = self.manager.configGeneration
+
+            do {
+                let rules = try await self.loadRules(for: identifier)
+                guard self.manager.configGeneration == configGeneration else { continue }
+
+                return rules.map {
+                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: configGeneration)
+                }
+            } catch {
+                guard self.manager.configGeneration == configGeneration else { continue }
+                throw error
+            }
+        }
+    }
+
+    func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {
+        return self.manager.configGeneration == snapshot.configGeneration
+    }
+
+    private func loadRules(for identifier: String) async throws -> CheckpointRuleSet? {
         do {
             if let checkpoint = try await self.manager.blobData(
                 for: .checkpointRules,

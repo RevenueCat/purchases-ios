@@ -152,17 +152,29 @@ class CheckpointsConfigProviderTests: TestCase {
         expect(after.rules.onlyElement?.workflowId) == "wf-b"
     }
 
+    func testRulesSnapshotBecomesStaleAfterTheConfigIsReplaced() async throws {
+        self.commit(rules: ["onboarding": ["wf-a"]])
+        let rulesSnapshot = try await self.provider.rules(for: "onboarding")
+        let snapshot = try XCTUnwrap(rulesSnapshot)
+
+        XCTAssertTrue(self.provider.isCurrent(snapshot))
+
+        self.manager.clearCache(forAppUserID: "someone-else")
+
+        XCTAssertFalse(self.provider.isCurrent(snapshot))
+    }
+
     // MARK: - Helpers
 
     private func ruleSet(_ identifier: String) async throws -> CheckpointRuleSet {
-        guard let ruleSet = try await self.provider.rules(for: identifier) else {
+        guard let snapshot = try await self.provider.rules(for: identifier) else {
             throw NSError(
                 domain: "CheckpointsConfigProviderTests",
                 code: 1,
                 userInfo: [NSLocalizedDescriptionKey: "Expected checkpoint rules"]
             )
         }
-        return ruleSet
+        return snapshot.ruleSet
     }
 
     private func providerError(
