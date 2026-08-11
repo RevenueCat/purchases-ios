@@ -19,15 +19,17 @@ import Foundation
 
 import WebKit
 
+#endif
+
 final class WebBundleCacheCoordinator {
+    private let job: AnyCancellable?
 
     static let shared = WebBundleCacheCoordinator()
 
-    private let job: AnyCancellable
+    // static variables are lazy, the side effects from the initializer require a runtime reference
+    static func start() { _ = Self.shared }
 
-    static func initializeIfAvailable() {
-        _ = Self.shared
-    }
+    #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
 
     init(
         events: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher,
@@ -39,8 +41,10 @@ final class WebBundleCacheCoordinator {
             .receive(on: DispatchQueue(label: "com.revenuecat.web-bundle-cache-coordinator"))
             .sink { event in
                 switch event {
-                case .empty, .receivedAssetURLs:
+                case .empty:
                     break
+                case .receivedAssetURLs:
+                    break // Will do in a future PR
                 case .cacheClearRequested:
                     clearWebsiteData(identifier)
                 }
@@ -56,14 +60,12 @@ final class WebBundleCacheCoordinator {
         }
     }
 
+    #else
+
+    init() {
+        self.job = nil
+    }
+
+    #endif
+
 }
-
-#else
-
-enum WebBundleCacheCoordinator {
-
-    static func initializeIfAvailable() {}
-
-}
-
-#endif
