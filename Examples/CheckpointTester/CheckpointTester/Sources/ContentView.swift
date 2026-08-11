@@ -125,7 +125,7 @@ struct ContentView: View {
                         Task { @MainActor in
                             do {
                                 let result = try await Purchases.shared.checkpoint(
-                                    "this-checkpoint-does-not-exist-\(UUID().uuidString.prefix(4))",
+                                    "this-checkpoint-does-not-exist",
                                     params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
