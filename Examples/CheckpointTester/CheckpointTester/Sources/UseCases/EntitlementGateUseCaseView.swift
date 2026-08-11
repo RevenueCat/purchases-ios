@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-import RevenueCatUI
+@_spi(Checkpoints) import RevenueCatUI
 import SwiftUI
 
 struct EntitlementGateUseCaseView: View {

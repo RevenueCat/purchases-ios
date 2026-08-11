@@ -14,7 +14,7 @@
 
 import Combine
 import Foundation
-import RevenueCatUI
+@_spi(Checkpoints) import RevenueCatUI
 
 final class CheckpointVariables: ObservableObject {
 
