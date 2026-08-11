@@ -167,7 +167,7 @@ public typealias ProductIdentifier = String
             "firstSeen=\(String(describing: self.firstSeen))",
             "originalAppUserId=\(self.originalAppUserId)",
             "entitlements=\(allEntitlementsDescription)",
-            "verification=\(verificationResult)",
+            "verification=\(verificationResult)"
         ]
         if let attributes = self.data.response.subscriber.subscriberAttributes {
             parts.append("attributes=\(attributes)")

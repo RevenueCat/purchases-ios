@@ -908,7 +908,7 @@ private extension HTTPClient {
             )
             headers = headers.merging(eTagHeader)
         }
-        
+
         if request.httpRequest.path.authenticated {
             // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
             // because it's how the API key is sent up
@@ -982,7 +982,7 @@ extension HTTPClient {
     internal func reauthorizeRequestIfNeeded(request: HTTPClient.Request,
                                              basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
                                              response: HTTPURLResponse?) -> Bool {
-        
+
         let reauthAction = self.tokenManager.tokenRefreshRequest(for: request,
                                                                  response: response,
                                                                  duplicateRequestHandler: { wasSuccessful in
@@ -1038,7 +1038,7 @@ extension HTTPClient {
         } else {
             // the token manager did not get new tokens
             // therefore, the original request should be failed
-            
+
             needsToRestart = self.state.modify {
                 let shouldRestart = ($0.paused == true)
                 $0.paused = false
@@ -1056,7 +1056,6 @@ extension HTTPClient {
     }
 
 }
-
 
 // MARK: - Request Retry Logic
 extension HTTPClient {

@@ -1121,7 +1121,7 @@ public extension Purchases {
 public extension Purchases {
 
     @_spi(Experimental)
-    public var authentication: Authentication { _authentication }
+    var authentication: Authentication { _authentication }
 
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
@@ -1141,6 +1141,11 @@ public extension Purchases {
         _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
+    @available(*, deprecated, message: """
+    The appUserID passed to logIn is a constant string known at compile time.
+    This is likely a programmer error. This ID is used to identify the current user.
+    See https://docs.revenuecat.com/docs/user-ids for more information.
+    """)
     func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         try await _authentication.identifyCurrentUser(as: appUserID)
     }

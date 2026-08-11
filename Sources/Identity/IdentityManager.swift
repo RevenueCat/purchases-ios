@@ -140,7 +140,7 @@ class IdentityManager: CurrentUserProvider {
             completion(ErrorUtils.unsupportedInUIPreviewModeError())
             return
         }
-        
+
         if self.backend.token.enabled {
             self.performAccessTokenRevocation(for: self.currentAppUserID, completion: completion)
         } else {

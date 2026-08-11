@@ -144,11 +144,11 @@ extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomSt
     }
 
     init(from decoder: any Decoder) throws {
-        var container = try decoder.container(keyedBy: AnyCodingKey.self)
+        let container = try decoder.container(keyedBy: AnyCodingKey.self)
 
-        var attributes = Array<SubscriberAttribute>()
+        var attributes = [SubscriberAttribute]()
         for key in container.allKeys {
-            var child = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
+            let child = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
             let time = try child.decode(Double.self, forKey: "updatedAtMs")
             let attribute = SubscriberAttribute(withKey: key.stringValue,
                                                 value: try child.decodeIfPresent(String.self, forKey: "value"),

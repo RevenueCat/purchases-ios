@@ -24,7 +24,7 @@ internal struct AnyCodingKey: CodingKey, CodingKeyRepresentable {
         self.intValue = Int(stringValue)
     }
 
-    init?<T>(codingKey: T) where T : CodingKey {
+    init?<T>(codingKey: T) where T: CodingKey {
         self.stringValue = codingKey.stringValue
         self.intValue = codingKey.intValue
     }

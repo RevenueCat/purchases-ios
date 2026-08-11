@@ -7,6 +7,11 @@
 
 import Foundation
 
+/// The delegate for ``Authentication``, responsible for responding to authentication errors that occuring
+/// during passive SDK use.
+///
+/// Typically, getting an authentication error means that the SDK needs a new ``Identity`` token provided
+/// to the ``Authentication.logIn(using:)`` method
 @_spi(Experimental)
 @objc(RCPurchasesAuthenticationDelegate)
 public protocol AuthenticationDelegate: NSObjectProtocol {
@@ -18,6 +23,7 @@ internal protocol InternalAuthenticatorDelegate: AnyObject {
     func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
 }
 
+/// A namespace for providing authentication-related functionality to the ``Purchases`` instance
 @_spi(Experimental)
 @objc(RCPurchasesAuthentication)
 public final class Authentication: NSObject {
@@ -28,6 +34,14 @@ public final class Authentication: NSObject {
     private let systemInfo: SystemInfo
     internal weak var internalDelegate: InternalAuthenticatorDelegate?
 
+    /// The delegate responsible for responding to any authentication errors that occur
+    /// during operations that do not explicitly report their own errors.
+    ///
+    /// For example, if an authentication error occurs while updating the ``CustomerInfo``,
+    /// that will be reported to the delegate.
+    ///
+    /// However, if an error occurs during an explicit ``logIn(using:)`` call, that will be reported
+    /// via the corresponding completion handler (or thrown when called using `await`).
     public weak var delegate: AuthenticationDelegate?
     private let ongoingUserInitiatedRequestCount = Atomic(0)
 
@@ -60,6 +74,11 @@ public final class Authentication: NSObject {
         self.identifyCurrentUser(as: appUserID.description, completion: completion)
     }
 
+    /// Provide an app-specific alias for the current user
+    /// - Parameters:
+    ///   - appUserID: The user's alias
+    ///   - completion: A completion handler that is invoked with the updated ``CustomerInfo`` (if any),
+    ///   a boolean indicating whether the user was created or restored, and an optional ``PublicError``
     @_disfavoredOverload
     @objc(identifyCurrentUserAsID:completion:)
     public func identifyCurrentUser(as appUserID: String,
@@ -82,11 +101,22 @@ public final class Authentication: NSObject {
 
     }
 
+    /// Log in to the SDK using the provided identity token
+    ///
+    /// - Warning: If the SDK is already logged in using a non-anonymous identity,
+    /// then a subsequent invocation of this method will *link* the two identities together.
+    /// - Parameters:
+    ///   - token: The ``Identity`` token for the user
+    ///   - completion: A handler invoked after logging in has finished.
     @objc(logInUsingToken:completion:)
     public func logIn(using token: Identity, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
         self.logIn(using: token, userInitiated: true, completion: completion)
     }
 
+    /// Log the current identity out
+    ///
+    /// Invoking this reverts the SDK to an anonymous identity
+    /// - Parameter completion: A handler invoked after logging out has finished
     @objc
     public func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         self.logOut(userInitiated: true, completion: completion)

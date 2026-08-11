@@ -25,7 +25,7 @@ class TokenManager {
 
     private struct CurrentTokenRefreshState {
         let request: HTTPRequest
-        var completions: Array<(Bool) -> Void>
+        var completions: [(Bool) -> Void]
     }
 
     let enabled: Bool
@@ -85,7 +85,7 @@ class TokenManager {
         }
     }
 
-    var currentIdentitySources: Array<IdentitySource>? {
+    var currentIdentitySources: [IdentitySource]? {
         guard let currentIDToken else { return nil }
         guard let jwt = try? JWT(from: currentIDToken) else { return nil }
         return jwt.amr?.compactMap { IdentitySource.source(with: $0) }

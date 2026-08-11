@@ -90,6 +90,7 @@ extension BackendErrorCode: ExpressibleByIntegerLiteral {
 extension BackendErrorCode {
 
     // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable function_body_length
     /// Turns ``BackendErrorCode``(RCBackendErrorCode) codes into ``ErrorCode``(RCPurchasesErrorCode) error codes
     func toPurchasesErrorCode() -> ErrorCode {
     // swiftlint:enable cyclomatic_complexity

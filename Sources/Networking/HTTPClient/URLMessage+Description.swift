@@ -11,21 +11,19 @@ import Foundation
 
 extension URLRequest {
 
-    private var sortedHeaders: Array<(String, String)> {
+    private var sortedHeaders: [(String, String)] {
         guard let headers = allHTTPHeaderFields else { return [] }
         return headers.sorted(by: { $0.key < $1.key })
     }
 
     internal func httpDescription(maxBodySize: Int = 2048) -> String {
-        var lines = Array<String>()
+        var lines = [String]()
         lines.append("\(httpMethod ?? "GET") \(url?.absoluteString ?? "<none>")")
         for (key, value) in sortedHeaders {
             lines.append("\(key): \(value)")
         }
-        if let body = self.httpBody {
+        if let body = self.httpBody, let str = String(bytes: body.prefix(maxBodySize), encoding: .utf8) {
             lines.append("")
-            let start = body.prefix(maxBodySize)
-            let str = String(decoding: start, as: UTF8.self)
             lines.append(str)
         }
 
@@ -36,14 +34,14 @@ extension URLRequest {
 
 extension URLResponse {
 
-    private var sortedHeaders: Array<(AnyHashable, Any)> {
+    private var sortedHeaders: [(AnyHashable, Any)] {
         guard let http = self as? HTTPURLResponse else { return [] }
         let headers = http.allHeaderFields
         return headers.sorted(by: { $0.key.description < $1.key.description })
     }
 
     internal func httpDescription(with body: Data?, maxBodySize: Int = 2048) -> String {
-        var lines = Array<String>()
+        var lines = [String]()
 
         if let http = self as? HTTPURLResponse {
             lines.append("\(http.statusCode) \(HTTPURLResponse.localizedString(forStatusCode: http.statusCode))")
@@ -59,10 +57,9 @@ extension URLResponse {
             if let suggestedFilename { lines.append("Suggested-File-Name: \(suggestedFilename)") }
         }
 
-        if let body, body.count > 0 {
+        if let body, body.count > 0, let str = String(bytes: body.prefix(maxBodySize), encoding: .utf8) {
             lines.append("")
-            let start = body.prefix(maxBodySize)
-            lines.append(String(decoding: start, as: UTF8.self))
+            lines.append(str)
         }
 
         return lines.joined(separator: "\n")

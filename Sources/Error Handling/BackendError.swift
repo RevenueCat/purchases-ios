@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 4/7/22.
 
 // swiftlint:disable multiline_parameters
+// swiftlint:disable file_length
 
 import Foundation
 

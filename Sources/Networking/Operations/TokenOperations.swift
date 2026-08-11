@@ -80,28 +80,28 @@ private extension TokenLogInOperation {
         case .oidc(let token):
             body = StandardBody(method: "oidc",
                                 scope: "openid offline_access",
-                                idToken: String(decoding: token, as: UTF8.self),
+                                idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 linkToID: linkToID)
         case .google(let token):
             body = StandardBody(method: "google",
                                 scope: "openid offline_access",
-                                idToken: String(decoding: token, as: UTF8.self),
+                                idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 linkToID: linkToID)
         case .signInWithApple(let token):
             body = StandardBody(method: "apple",
                                 scope: "openid offline_access",
-                                idToken: String(decoding: token, as: UTF8.self),
+                                idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 linkToID: linkToID)
         case .facebook(let token, let email):
             body = FacebookBody(method: "facebook",
                                 scope: "openid offline_access",
-                                idToken: String(decoding: token, as: UTF8.self),
+                                idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 email: email,
                                 linkToID: linkToID)
         case .firebase(let token):
             body = StandardBody(method: "firebase",
                                 scope: "openid offline_access",
-                                idToken: String(decoding: token, as: UTF8.self),
+                                idToken: String(bytes: token, encoding: .utf8) ?? token.base64EncodedString(),
                                 linkToID: linkToID)
         }
 
@@ -240,8 +240,8 @@ extension TokenLogInOperation {
         // because the CodingKeys are also used for request signing via `contentForSignature`.
         // swiftlint:disable:next nesting
         private enum CodingKeys: String, CodingKey {
-            case method = "method"
-            case scope = "scope"
+            case method
+            case scope
         }
 
         let method: String
