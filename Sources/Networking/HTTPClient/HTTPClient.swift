@@ -535,7 +535,7 @@ private extension HTTPClient {
                     urlRequest: urlRequest,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
-                    isFallbackUrlResponse: isFallbackUrlResponse,
+                    isFallbackUrlResponse: isFallbackUrlResponse
                 )
             }
             // Fetch from ETagManager if available

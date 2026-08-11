@@ -31,7 +31,12 @@ public final class Authentication: NSObject {
     public weak var delegate: AuthenticationDelegate?
     private let ongoingUserInitiatedRequestCount = Atomic(0)
 
-    internal init(backend: Backend, identityManager: IdentityManager, tokenManager: TokenManager, operationDispatcher: OperationDispatcher, systemInfo: SystemInfo, internalDelegate: InternalAuthenticatorDelegate? = nil) {
+    internal init(backend: Backend,
+                  identityManager: IdentityManager,
+                  tokenManager: TokenManager,
+                  operationDispatcher: OperationDispatcher,
+                  systemInfo: SystemInfo,
+                  internalDelegate: InternalAuthenticatorDelegate? = nil) {
         self.backend = backend
         self.identityManager = identityManager
         self.operationDispatcher = operationDispatcher
@@ -87,21 +92,6 @@ public final class Authentication: NSObject {
         self.logOut(userInitiated: true, completion: completion)
     }
 
-    public func _revokeCurrentAccessToken(completion: ((PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            completion?(NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
-            return
-        }
-
-        self.identityManager.revokeCurrentAccessToken { error in
-            if let completion = completion {
-                self.operationDispatcher.dispatchOnMainThread {
-                    completion(error?.asPublicError)
-                }
-            }
-        }
-    }
-
     // MARK: - Async
 
     @available(*, deprecated, message: """
@@ -109,7 +99,9 @@ public final class Authentication: NSObject {
     This is likely a programmer error. This ID is used to identify the current user.
     See https://docs.revenuecat.com/docs/user-ids for more information.
     """)
-    public func identifyCurrentUser(as appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+    public func identifyCurrentUser(as appUserID: StaticString) async throws ->
+        (customerInfo: CustomerInfo, created: Bool) {
+
         Logger.warn(Strings.identity.logging_in_with_static_string)
         return try await identifyCurrentUser(as: appUserID.description)
     }
@@ -136,15 +128,6 @@ public final class Authentication: NSObject {
         return try await withUnsafeThrowingContinuation { continuation in
             self.logOut(completion: { customerInfo, error in
                 continuation.resume(with: Result(customerInfo, error))
-            })
-        }
-    }
-
-    public func _revokeCurrentAccessToken() async throws {
-        try await withUnsafeThrowingContinuation { continuation in
-            self._revokeCurrentAccessToken(completion: { error in
-                let result: Result<Void, Error> = error.map { .failure($0) } ?? .success(())
-                continuation.resume(with: result)
             })
         }
     }

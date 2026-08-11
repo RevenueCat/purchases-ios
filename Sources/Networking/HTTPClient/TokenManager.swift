@@ -88,7 +88,7 @@ class TokenManager {
     var currentIdentitySources: Array<IdentitySource>? {
         guard let currentIDToken else { return nil }
         guard let jwt = try? JWT(from: currentIDToken) else { return nil }
-        return jwt.amr?.compactMap { IdentitySource(amr: $0) }
+        return jwt.amr?.compactMap { IdentitySource.source(with: $0) }
     }
 
     var currentIdentitySource: IdentitySource? {

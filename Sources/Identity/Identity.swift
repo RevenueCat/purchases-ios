@@ -51,24 +51,28 @@ public final class Identity: NSObject {
 
 @_spi(Experimental)
 @objc(RCIdentitySource)
-public enum IdentitySource: Int {
-    case anonymous
-    case oidc
-    case google
-    case signInWithApple
-    case facebook
-    case firebase
+public final class IdentitySource: NSObject, CaseIterable {
+    public static let allCases: [IdentitySource] = [
+        .anonymous, .oidc, .google, .signInWithApple, .facebook, .firebase
+    ]
 
-    internal init?(amr: String) {
-        switch amr {
-        case "anonymous": self = .anonymous
-        case "oidc": self = .oidc
-        case "google": self = .google
-        case "apple": self = .signInWithApple
-        case "facebook": self = .facebook
-        case "firebase": self = .firebase
-        default: return nil
-        }
+    public static let anonymous = IdentitySource("anonymous")
+    public static let oidc = IdentitySource("oidc")
+    public static let google = IdentitySource("google")
+    public static let signInWithApple = IdentitySource("signInWithApple")
+    public static let facebook = IdentitySource("facebook")
+    public static let firebase = IdentitySource("firebase")
+
+    internal static func source(with rawValue: String) -> IdentitySource? {
+        return allCases.first(where: { $0.rawValue == rawValue })
+    }
+
+    public let rawValue: String
+
+    public override var description: String { rawValue }
+
+    private init(_ rawValue: String) {
+        self.rawValue = rawValue
     }
 }
 
