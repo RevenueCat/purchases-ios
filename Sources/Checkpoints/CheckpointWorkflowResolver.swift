@@ -104,16 +104,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
         #endif
 
-        return await self.resolveConfiguredWorkflow(identifier: identifier)
+        return try await self.resolveConfiguredWorkflow(identifier: identifier)
     }
 
-    private func resolveConfiguredWorkflow(identifier: String) async -> CheckpointResolution {
+    private func resolveConfiguredWorkflow(identifier: String) async throws -> CheckpointResolution {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
                 return .noAction(.unknownCheckpoint)
             }
             rulesSnapshot = snapshot
+        } catch let error as CancellationError {
+            throw error
         } catch CheckpointRulesProviderError.remoteConfigDisabled {
             return .noAction(.disabled)
         } catch {

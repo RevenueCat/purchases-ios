@@ -95,6 +95,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testCancellationWhileLoadingRulesPropagates() async {
+        self.checkpointsProvider.error = CancellationError()
+
+        do {
+            _ = try await self.resolve()
+            XCTFail("Expected resolution to throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Expected CancellationError, got \(error)")
+        }
+    }
+
     func testCheckpointWithNoRulesResolvesNoMatch() async throws {
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
 
@@ -307,11 +320,15 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
+    var error: Error?
     var configGeneration = 0
     private(set) var requestedIdentifiers: [String] = []
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
         self.requestedIdentifiers.append(identifier)
+        if let error = self.error {
+            throw error
+        }
         return try self.result.get().map {
             CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
         }
