@@ -54,40 +54,21 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
-    private let _invokedWarmUpPaywallImagesCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallImagesCacheOfferings: Atomic<Offerings?> = nil
+    private let _invokedWarmUpPaywallAssetsCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallAssetsCacheOfferings: Atomic<Offerings?> = nil
 
-    var invokedWarmUpPaywallImagesCache: Bool {
-        get { return self._invokedWarmUpPaywallImagesCache.value }
-        set { self._invokedWarmUpPaywallImagesCache.value = newValue }
+    var invokedWarmUpPaywallAssetsCache: Bool {
+        get { return self._invokedWarmUpPaywallAssetsCache.value }
+        set { self._invokedWarmUpPaywallAssetsCache.value = newValue }
     }
-    var invokedWarmUpPaywallImagesCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallImagesCacheOfferings.value }
-        set { self._invokedWarmUpPaywallImagesCacheOfferings.value = newValue }
-    }
-
-    func warmUpPaywallImagesCache(offerings: Offerings) {
-        self.invokedWarmUpPaywallImagesCache = true
-        self.invokedWarmUpPaywallImagesCacheOfferings = offerings
+    var invokedWarmUpPaywallAssetsCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallAssetsCacheOfferings.value }
+        set { self._invokedWarmUpPaywallAssetsCacheOfferings.value = newValue }
     }
 
-    // MARK: -
-
-    private let _invokedWarmUpPaywallVideosCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallVideosCacheOfferings: Atomic<Offerings?> = nil
-
-    var invokedWarmUpPaywallVideosCache: Bool {
-        get { return self._invokedWarmUpPaywallVideosCache.value }
-        set { self._invokedWarmUpPaywallVideosCache.value = newValue }
-    }
-    var invokedWarmUpPaywallVideosCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallVideosCacheOfferings.value }
-        set { self._invokedWarmUpPaywallVideosCacheOfferings.value = newValue }
-    }
-
-    func warmUpPaywallVideosCache(offerings: Offerings) async {
-        self.invokedWarmUpPaywallVideosCache = true
-        self.invokedWarmUpPaywallVideosCacheOfferings = offerings
+    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        self.invokedWarmUpPaywallAssetsCache = true
+        self.invokedWarmUpPaywallAssetsCacheOfferings = offerings
     }
 
     // MARK: -
