@@ -97,6 +97,37 @@ final class RemoteConfigIntegrationTests: TestCase {
         try super.tearDownWithError()
     }
 
+    func testAudiencesTopicWireNameMatchesBackend() {
+        expect(RemoteConfigTopic.audiences.wireName) == "audiences"
+    }
+
+    func testAudiencesTopicPrefetchesOpaquePayloadWithoutRequiringEveryItemBody() async throws {
+        let opaquePayload = Data("not-json".utf8)
+        let ref = RCContainerTestData.blobRef(for: opaquePayload)
+        let source = Self.blobSource("primary")
+        let audiences: RemoteConfiguration.ConfigTopic = [
+            "aud_valid": .init(blobRef: ref, prefetch: true),
+            "aud_missing": .init(prefetch: true)
+        ]
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.sources.wireName: Self.sourcesTopic(blobSources: [source]),
+            RemoteConfigTopic.audiences.wireName: audiences
+        ]))
+        await self.downloader.setResponse(.success(opaquePayload), for: source, ref: ref)
+
+        await self.refresh(with: container)
+        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences)
+        let prefetchedData = self.blobStore.read(ref: ref)
+        let validData = await self.manager.blobData(for: .audiences, itemKey: "aud_valid")
+        let missingData = await self.manager.blobData(for: .audiences, itemKey: "aud_missing")
+
+        expect(topic?.keys.sorted()) == ["aud_missing", "aud_valid"]
+        expect(topic?["aud_valid"]?.prefetch) == true
+        expect(prefetchedData) == opaquePayload
+        expect(validData) == opaquePayload
+        expect(missingData).to(beNil())
+    }
+
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
         let blob = #"{"workflow":"inline"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
