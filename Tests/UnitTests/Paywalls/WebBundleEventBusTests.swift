@@ -80,13 +80,26 @@ final class WebBundleEventBusTests: TestCase {
     }
 
     func testClearCache() async {
+        var received: [WebBundleEvent] = []
+        self.bus.publisher
+            .sink { received.append($0) }
+            .store(in: &self.cancellables)
+
+        await self.bus.clearCache()
+
+        expect(received).to(contain(.cacheClearRequested))
+        expect(received.last) == .empty
+    }
+
+    func testLateSubscriberAfterClearDoesNotReceiveClear() async {
         await self.bus.clearCache()
 
         var received: WebBundleEvent?
         self.bus.publisher
             .sink { received = $0 }
             .store(in: &self.cancellables)
-        expect(received) == .cacheClearRequested
+
+        expect(received) == .empty
     }
 
     func testEmptyReplacesCurrentValueWithEmptySet() async {
