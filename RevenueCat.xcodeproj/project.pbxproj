@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000002 /* CustomVariableKeyValidator.swift */; };
+		C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */; };
 		A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000001 /* LocalRulesEvaluator.swift */; };
 		A0D100000000000000000002 /* DimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000002 /* DimensionProvider.swift */; };
 		A0D100000000000000000006 /* DeviceDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000006 /* DeviceDimensionProvider.swift */; };
@@ -1572,6 +1574,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		C05A00000000000000000002 /* CustomVariableKeyValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidator.swift; sourceTree = "<group>"; };
+		C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidatorTests.swift; sourceTree = "<group>"; };
 		A0D200000000000000000001 /* LocalRulesEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRulesEvaluator.swift; sourceTree = "<group>"; };
 		A0D200000000000000000002 /* DimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionProvider.swift; sourceTree = "<group>"; };
 		A0D200000000000000000006 /* DeviceDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDimensionProvider.swift; sourceTree = "<group>"; };
@@ -3251,6 +3255,7 @@
 		A0D300000000000000000002 /* LocalRules */ = {
 			isa = PBXGroup;
 			children = (
+				C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */,
 				A0D200000000000000000005 /* LocalRulesEvaluatorTests.swift */,
 				A0D200000000000000000007 /* DeviceDimensionProviderTests.swift */,
 			);
@@ -4289,6 +4294,7 @@
 		2DDA3E4524DB0B4500EDFE5B /* Misc */ = {
 			isa = PBXGroup;
 			children = (
+				C05A00000000000000000002 /* CustomVariableKeyValidator.swift */,
 				35F38B492C32BC2800CD29FD /* Locale */,
 				57F3C0CA29B7A08F0004FD7E /* Codable */,
 				57F3C0CB29B7A0B10004FD7E /* Concurrency */,
@@ -7309,6 +7315,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */,
 				73A630000000000000000001 /* NSNumber+JSON.swift in Sources */,
 				1E30849C30178A2100236A34 /* SourceHealthChecker.swift in Sources */,
 				1E30849D30178A2100236A34 /* APISourceFailover.swift in Sources */,
@@ -7814,6 +7821,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,
 				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
 				1E3084A930178A9100236A34 /* SourceHealthCheckerTests.swift in Sources */,

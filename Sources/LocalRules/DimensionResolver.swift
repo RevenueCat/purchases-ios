@@ -83,9 +83,10 @@ struct DimensionResolver: Sendable {
             values[namespace] = .object(namespaceValues)
         }
 
-        if !customVariables.isEmpty {
+        let validCustomVariables = CustomVariableKeyValidator.validateAndFilter(customVariables)
+        if !validCustomVariables.isEmpty {
             values[DimensionNamespace.custom.rawValue] = .object(
-                customVariables.mapValues(\.rulesEngineValue)
+                validCustomVariables.mapValues(\.rulesEngineValue)
             )
         }
 
