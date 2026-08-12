@@ -91,6 +91,13 @@ class TokenManager {
         return jwt.amr?.compactMap { IdentitySource.source(with: $0) }
     }
 
+    var isCurrentIdentityAnonymous: Bool {
+        // returns true iff all (1+) the amr claim values are "anonymous"
+        guard let sources = currentIdentitySources else { return false }
+        if sources.isEmpty { return false }
+        return sources.allSatisfy { $0 == .anonymous }
+    }
+
     var currentIdentitySource: IdentitySource? {
         currentIdentitySources?.last
     }
