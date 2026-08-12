@@ -11,6 +11,8 @@
 //
 //  Created by RevenueCat on 8/12/26.
 
+#if DEBUG
+
 import Nimble
 import XCTest
 
@@ -180,3 +182,5 @@ class URLResponseDescriptionTests: TestCase {
     }
 
 }
+
+#endif
