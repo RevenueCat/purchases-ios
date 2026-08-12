@@ -58,13 +58,13 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
-    let params = CheckpointParams(customProperties: [
+    let params = CheckpointParams(customVariables: [
         "name": string,
         "attempts": integer,
         "score": double,
         "subscriber": boolean
     ])
-    let _: [String: CheckpointValue] = params.customProperties
+    let _: [String: CheckpointValue] = params.customVariables
 
     purchases.checkpoint(
         "test_checkpoint",

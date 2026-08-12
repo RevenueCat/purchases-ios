@@ -23,11 +23,11 @@
 
 + (void)checkAPI {
     RCPurchases *purchases = RCPurchases.sharedPurchases;
-    RCCheckpointParams *params = [[RCCheckpointParams alloc] initWithCustomProperties:@{
+    RCCheckpointParams *params = [[RCCheckpointParams alloc] initWithCustomVariables:@{
         @"name": @"Rick",
         @"subscriber": @YES,
     }];
-    NSDictionary * __unused customProperties = params.customProperties;
+    NSDictionary * __unused customVariables = params.customVariables;
 
     [purchases checkpointWithIdentifier:@"test_checkpoint"
                                   params:params

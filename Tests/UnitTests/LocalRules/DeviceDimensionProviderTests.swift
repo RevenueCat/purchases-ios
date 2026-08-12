@@ -25,7 +25,7 @@ import Testing
 struct DeviceDimensionProviderTests {
 
     @Test
-    func providesDeviceVariablesInDeviceNamespace() async throws {
+    func providesDeviceDimensionsInDeviceNamespace() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
             localeProvider: { "NL-nl" },
