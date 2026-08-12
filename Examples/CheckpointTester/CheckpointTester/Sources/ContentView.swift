@@ -12,7 +12,6 @@
 //  Created by Rick van der Linden.
 //
 
-import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
@@ -21,9 +20,7 @@ struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
-    @State private var checkpointVariables = [
-        CheckpointVariable(name: "source", value: "CheckpointTester"),
-    ]
+    @StateObject private var checkpointVariables = CheckpointVariables()
 
     var body: some View {
         TabView {
@@ -63,25 +60,62 @@ struct ContentView: View {
     private var demoList: some View {
         NavigationStack {
             List {
-                Section("Checkpoint outcomes") {
-                    DemoButton(
-                        title: "Mock checkpoint UI",
-                        subtitle: "Choose purchased, restored, dismissed, or error.",
-                        systemImage: "rectangle.on.rectangle"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "result_picker",
-                                    params: self.checkpointParams
-                                )
-                                self.model.showOutcome(result)
-                            } catch {
-                                self.model.showError(error)
-                            }
-                        }
+                Section("App-driven use cases") {
+                    NavigationLink {
+                        HardPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
+                    } label: {
+                        DemoLabel(
+                            title: "Hard paywall",
+                            subtitle: "Keeps content locked unless this checkpoint returns purchased or restored.",
+                            systemImage: "lock.fill"
+                        )
                     }
 
+                    NavigationLink {
+                        SoftPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
+                    } label: {
+                        DemoLabel(
+                            title: "Soft paywall",
+                            subtitle: "Always shows the content and uses the result only to update its status.",
+                            systemImage: "rectangle.portrait.and.arrow.right"
+                        )
+                    }
+
+                    NavigationLink {
+                        OnboardingUseCaseView(checkpointVariables: self.checkpointVariables)
+                    } label: {
+                        DemoLabel(
+                            title: "Onboarding",
+                            subtitle: "Runs a checkpoint before the final step and always completes.",
+                            systemImage: "sparkles"
+                        )
+                    }
+
+                    NavigationLink {
+                        EntitlementGateUseCaseView(checkpointVariables: self.checkpointVariables)
+                    } label: {
+                        DemoLabel(
+                            title: "Entitlement gate",
+                            subtitle: "Checks CustomerInfo first and skips the checkpoint for subscribers.",
+                            systemImage: "person.badge.key.fill"
+                        )
+                    }
+
+                    NavigationLink {
+                        CustomCheckpointUseCaseView(
+                            model: self.model,
+                            checkpointVariables: self.checkpointVariables
+                        )
+                    } label: {
+                        DemoLabel(
+                            title: "Custom checkpoint",
+                            subtitle: "Enter any checkpoint identifier and hit it.",
+                            systemImage: "text.cursor"
+                        )
+                    }
+                }
+
+                Section("Checkpoint outcomes") {
                     DemoButton(
                         title: "Unknown checkpoint",
                         subtitle: "An unknown identifier resolves without presenting UI.",
@@ -91,7 +125,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "unknown_checkpoint",
-                                    params: self.checkpointParams
+                                    params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -109,7 +143,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "error_checkpoint",
-                                    params: self.checkpointParams
+                                    params: self.checkpointVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -119,63 +153,6 @@ struct ContentView: View {
                     }
                 }
 
-                Section("Paywalls") {
-                    DemoButton(
-                        title: "Soft paywall",
-                        subtitle: "Can be dismissed without purchasing.",
-                        systemImage: "rectangle.portrait.and.arrow.right"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "soft_paywall",
-                                    params: self.checkpointParams
-                                )
-                                self.model.showOutcome(result)
-                            } catch {
-                                self.model.showError(error)
-                            }
-                        }
-                    }
-
-                    DemoButton(
-                        title: "Hard paywall",
-                        subtitle: "Interactive dismissal is disabled.",
-                        systemImage: "lock.fill"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "hard_paywall",
-                                    params: self.checkpointParams
-                                )
-                                self.model.showOutcome(result)
-                            } catch {
-                                self.model.showError(error)
-                            }
-                        }
-                    }
-                }
-
-                Section("Onboarding") {
-                    DemoButton(
-                        title: "Onboarding workflow",
-                        subtitle: "Completes a multi-step flow and displays the checkpoint result.",
-                        systemImage: "sparkles"
-                    ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "onboarding",
-                                    params: self.checkpointParams
-                                )
-                                self.model.showOutcome(result)
-                            } catch {
-                                self.model.showError(error)
-                            }
-                        }
-                    }
-                }
             }
             .navigationTitle("Checkpoint Tester")
         }
@@ -185,18 +162,18 @@ struct ContentView: View {
         NavigationStack {
             List {
                 Section {
-                    ForEach(self.$checkpointVariables) { $variable in
+                    ForEach(self.$checkpointVariables.variables) { $variable in
                         HStack {
                             TextField("Name", text: $variable.name)
                             TextField("Value", text: $variable.value)
                         }
                     }
                     .onDelete { offsets in
-                        self.checkpointVariables.remove(atOffsets: offsets)
+                        self.checkpointVariables.variables.remove(atOffsets: offsets)
                     }
 
                     Button {
-                        self.checkpointVariables.append(.init())
+                        self.checkpointVariables.variables.append(.init())
                     } label: {
                         Label("Add variable", systemImage: "plus")
                     }
@@ -242,27 +219,6 @@ struct ContentView: View {
         }
     }
 
-    private var checkpointParams: CheckpointParams {
-        var customProperties: [String: CheckpointValue] = [:]
-
-        for variable in self.checkpointVariables {
-            let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
-            if !name.isEmpty {
-                customProperties[name] = .string(variable.value)
-            }
-        }
-
-        return CheckpointParams(customProperties: customProperties)
-    }
-
-}
-
-private struct CheckpointVariable: Identifiable {
-
-    let id = UUID()
-    var name = ""
-    var value = ""
-
 }
 
 private struct DemoButton: View {
@@ -274,21 +230,37 @@ private struct DemoButton: View {
 
     var body: some View {
         Button(action: self.action) {
-            Label {
-                VStack(alignment: .leading, spacing: 3) {
-                    Text(self.title)
-                        .font(.headline)
-                    Text(self.subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            } icon: {
-                Image(systemName: self.systemImage)
-                    .frame(width: 28)
-            }
+            DemoLabel(
+                title: self.title,
+                subtitle: self.subtitle,
+                systemImage: self.systemImage
+            )
         }
         .buttonStyle(.plain)
         .padding(.vertical, 4)
+    }
+
+}
+
+private struct DemoLabel: View {
+
+    let title: String
+    let subtitle: String
+    let systemImage: String
+
+    var body: some View {
+        Label {
+            VStack(alignment: .leading, spacing: 3) {
+                Text(self.title)
+                    .font(.headline)
+                Text(self.subtitle)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        } icon: {
+            Image(systemName: self.systemImage)
+                .frame(width: 28)
+        }
     }
 
 }
