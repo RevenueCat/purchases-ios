@@ -7,37 +7,37 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  RulesVariableResolver.swift
+//  DimensionResolver.swift
 //
 //  Created by Rick van der Linden on 7/28/26.
 //
 
 import Foundation
 
-struct RulesVariableSnapshot: Equatable, Sendable {
+struct DimensionSnapshot: Equatable, Sendable {
 
     let values: [String: RulesEngine.Value]
     let evaluationDate: Date
 }
 
-enum RulesVariableResolutionError: Error, Equatable, Sendable {
+enum DimensionResolutionError: Error, Equatable, Sendable {
 
     case providerFailed(identifier: String, message: String)
     case conflictingValue(path: String)
 }
 
-/// Builds immutable, point-in-time variable scopes for local rule evaluation.
-struct RulesVariableResolver: Sendable {
+/// Builds immutable, point-in-time dimension scopes for local rule evaluation.
+struct DimensionResolver: Sendable {
 
-    private let providers: [any RulesVariableProvider]
+    private let dimensionProviders: [any DimensionProvider]
     private let dateProvider: DateProvider
 
     /// Creates a resolver from injected providers and a clock.
     init(
-        providers: [any RulesVariableProvider],
+        dimensionProviders: [any DimensionProvider],
         dateProvider: DateProvider = DateProvider()
     ) {
-        self.providers = providers
+        self.dimensionProviders = dimensionProviders
         self.dateProvider = dateProvider
     }
 
@@ -45,20 +45,20 @@ struct RulesVariableResolver: Sendable {
     ///
     /// For example, device `app_version: "1.2.3"` becomes
     /// `device.app_version: "1.2.3"` in the RulesEngine input.
-    func snapshot() async throws -> RulesVariableSnapshot {
+    func snapshot() async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
         var values: [String: RulesEngine.Value] = [:]
 
-        for provider in self.providers {
+        for provider in self.dimensionProviders {
             try Task.checkCancellation()
 
-            let providerValues: [String: RulesVariableValue]
+            let providerValues: [String: DimensionValue]
             do {
-                providerValues = try await provider.variables(at: date)
+                providerValues = try await provider.dimensions(at: date)
             } catch let error as CancellationError {
                 throw error
             } catch {
-                throw RulesVariableResolutionError.providerFailed(
+                throw DimensionResolutionError.providerFailed(
                     identifier: provider.identifier,
                     message: String(describing: error)
                 )
@@ -72,7 +72,7 @@ struct RulesVariableResolver: Sendable {
 
             for (name, value) in providerValues {
                 guard namespaceValues[name] == nil else {
-                    throw RulesVariableResolutionError.conflictingValue(
+                    throw DimensionResolutionError.conflictingValue(
                         path: "\(namespace).\(name)"
                     )
                 }
@@ -85,11 +85,11 @@ struct RulesVariableResolver: Sendable {
 
         try Task.checkCancellation()
 
-        return RulesVariableSnapshot(values: values, evaluationDate: date)
+        return DimensionSnapshot(values: values, evaluationDate: date)
     }
 }
 
-private extension RulesVariableValue {
+private extension DimensionValue {
 
     /// Converts a provider scalar into its RulesEngine equivalent.
     ///

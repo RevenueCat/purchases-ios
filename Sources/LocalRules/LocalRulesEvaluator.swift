@@ -30,17 +30,17 @@ enum LocalRulesEvaluationError: Error, Equatable, Sendable {
     case predicateEvaluation(ruleIndex: Int, error: RulesEngine.EvaluationError)
 }
 
-/// Evaluates rules against fresh, locally collected variables.
+/// Evaluates rules against fresh, locally collected dimensions.
 final class LocalRulesEvaluator: Sendable {
 
-    private let variableResolver: RulesVariableResolver
+    private let dimensionResolver: DimensionResolver
 
     init(
-        providers: [any RulesVariableProvider],
+        dimensionProviders: [any DimensionProvider],
         dateProvider: DateProvider = DateProvider()
     ) {
-        self.variableResolver = RulesVariableResolver(
-            providers: providers,
+        self.dimensionResolver = DimensionResolver(
+            dimensionProviders: dimensionProviders,
             dateProvider: dateProvider
         )
     }
@@ -53,7 +53,7 @@ final class LocalRulesEvaluator: Sendable {
             return nil
         }
 
-        let snapshot = try await self.variableResolver.snapshot()
+        let snapshot = try await self.dimensionResolver.snapshot()
 
         var firstEvaluationError: LocalRulesEvaluationError?
 

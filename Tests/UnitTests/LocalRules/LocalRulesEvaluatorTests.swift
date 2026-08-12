@@ -27,7 +27,7 @@ struct LocalRulesEvaluatorTests {
     @Test
     func batchUsesOneFreshSnapshotForEveryRule() async throws {
         let date = Date(timeIntervalSince1970: 1_234)
-        let provider = TestRulesVariableProvider(
+        let provider = TestDimensionProvider(
             identifier: "device-info",
             namespace: .device,
             snapshots: [
@@ -35,7 +35,7 @@ struct LocalRulesEvaluatorTests {
                 ["launch_count": .int(2)]
             ]
         )
-        let evaluator = Self.evaluator(providers: [provider], date: date)
+        let evaluator = Self.evaluator(dimensionProviders: [provider], date: date)
 
         let identifier = try await evaluator.match(in: [
             TestLocalRule(
@@ -59,7 +59,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func subsequentEvaluationPullsProviderAgain() async throws {
-        let provider = TestRulesVariableProvider(
+        let provider = TestDimensionProvider(
             identifier: "session",
             namespace: .session,
             snapshots: [
@@ -67,7 +67,7 @@ struct LocalRulesEvaluatorTests {
                 ["count": .int(2)]
             ]
         )
-        let evaluator = Self.evaluator(providers: [provider])
+        let evaluator = Self.evaluator(dimensionProviders: [provider])
 
         let first = try await evaluator.match(in: [
             TestLocalRule(id: "first", predicate: #"{"==":[{"var":"session.count"},1]}"#)
@@ -84,17 +84,17 @@ struct LocalRulesEvaluatorTests {
     @Test
     func allProvidersReceiveSameDate() async throws {
         let date = Date(timeIntervalSince1970: 9_876)
-        let device = TestRulesVariableProvider(
+        let device = TestDimensionProvider(
             identifier: "device",
             namespace: .device,
             snapshots: [["ready": .bool(true)]]
         )
-        let session = TestRulesVariableProvider(
+        let session = TestDimensionProvider(
             identifier: "session",
             namespace: .session,
             snapshots: [["ready": .bool(true)]]
         )
-        let evaluator = Self.evaluator(providers: [device, session], date: date)
+        let evaluator = Self.evaluator(dimensionProviders: [device, session], date: date)
 
         _ = try await evaluator.match(in: [
             TestLocalRule(id: "test", predicate: "true")
@@ -107,7 +107,7 @@ struct LocalRulesEvaluatorTests {
     @Test
     func mergesProviderValuesByNamespace() async throws {
         let date = Date(timeIntervalSince1970: 5_432)
-        let identity = TestRulesVariableProvider(
+        let identity = TestDimensionProvider(
             identifier: "identity",
             namespace: .device,
             snapshots: [[
@@ -116,19 +116,19 @@ struct LocalRulesEvaluatorTests {
                 "screen_scale": .double(3)
             ]]
         )
-        let environment = TestRulesVariableProvider(
+        let environment = TestDimensionProvider(
             identifier: "environment",
             namespace: .device,
             snapshots: [["tracking_enabled": .bool(false)]]
         )
-        let client = TestRulesVariableProvider(
+        let client = TestDimensionProvider(
             identifier: "client",
             namespace: .client,
             snapshots: [["shoe_size": .int(42)]]
         )
 
-        let snapshot = try await RulesVariableResolver(
-            providers: [identity, environment, client],
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [identity, environment, client],
             dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot()
 
@@ -146,21 +146,21 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func duplicateLeafIsAConfigurationError() async {
-        let first = TestRulesVariableProvider(
+        let first = TestDimensionProvider(
             identifier: "first",
             namespace: .device,
             snapshots: [["app_version": .string("1.2.3")]]
         )
-        let second = TestRulesVariableProvider(
+        let second = TestDimensionProvider(
             identifier: "second",
             namespace: .device,
             snapshots: [["app_version": .string("2.0.0")]]
         )
 
         do {
-            _ = try await RulesVariableResolver(providers: [first, second]).snapshot()
+            _ = try await DimensionResolver(dimensionProviders: [first, second]).snapshot()
             Issue.record("Expected duplicate ownership to fail")
-        } catch let error as RulesVariableResolutionError {
+        } catch let error as DimensionResolutionError {
             #expect(error == .conflictingValue(path: "device.app_version"))
         } catch {
             Issue.record("Unexpected error: \(error)")
@@ -169,8 +169,8 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func providerFailureIsThrown() async {
-        let evaluator = Self.evaluator(providers: [
-            FailingRulesVariableProvider(identifier: "broken", namespace: .session)
+        let evaluator = Self.evaluator(dimensionProviders: [
+            FailingDimensionProvider(identifier: "broken", namespace: .session)
         ])
 
         do {
@@ -178,7 +178,7 @@ struct LocalRulesEvaluatorTests {
                 TestLocalRule(id: "test", predicate: "true")
             ])
             Issue.record("Expected provider failure to be thrown")
-        } catch let error as RulesVariableResolutionError {
+        } catch let error as DimensionResolutionError {
             guard case .providerFailed(let identifier, _) = error else {
                 Issue.record("Unexpected resolution error: \(error)")
                 return
@@ -191,7 +191,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func invalidRuleDoesNotPreventLaterRuleFromMatching() async throws {
-        let evaluator = Self.evaluator(providers: [])
+        let evaluator = Self.evaluator(dimensionProviders: [])
 
         let identifier = try await evaluator.match(in: [
             TestLocalRule(id: "invalid", predicate: "{not-json"),
@@ -203,7 +203,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func matchesAnyReturnsWhetherARuleMatches() async throws {
-        let evaluator = Self.evaluator(providers: [])
+        let evaluator = Self.evaluator(dimensionProviders: [])
 
         let matches = try await evaluator.matchesAny(in: [
             TestLocalRule(id: "false", predicate: "false"),
@@ -215,7 +215,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func unsupportedOperatorIsThrown() async {
-        let evaluator = Self.evaluator(providers: [])
+        let evaluator = Self.evaluator(dimensionProviders: [])
 
         do {
             _ = try await evaluator.match(in: [
@@ -234,8 +234,8 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func omittedVariableRetainsRulesEngineNullSemantics() async throws {
-        let evaluator = Self.evaluator(providers: [
-            TestRulesVariableProvider(
+        let evaluator = Self.evaluator(dimensionProviders: [
+            TestDimensionProvider(
                 identifier: "device",
                 namespace: .device,
                 snapshots: [["known": .bool(true)]]
@@ -254,12 +254,12 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func emptyBatchDoesNotCollectVariables() async throws {
-        let provider = TestRulesVariableProvider(
+        let provider = TestDimensionProvider(
             identifier: "unused",
             namespace: .device,
             snapshots: [["value": .int(1)]]
         )
-        let evaluator = Self.evaluator(providers: [provider])
+        let evaluator = Self.evaluator(dimensionProviders: [provider])
 
         let identifier = try await evaluator.match(in: [TestLocalRule<String>]())
         #expect(identifier == nil)
@@ -268,7 +268,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func successfulFalseRulesReturnNil() async throws {
-        let evaluator = Self.evaluator(providers: [])
+        let evaluator = Self.evaluator(dimensionProviders: [])
 
         let identifier = try await evaluator.match(in: [
             TestLocalRule(id: "false", predicate: "false")
@@ -279,7 +279,7 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func matchesAnyThrowsEvaluationFailure() async {
-        let evaluator = Self.evaluator(providers: [])
+        let evaluator = Self.evaluator(dimensionProviders: [])
 
         do {
             _ = try await evaluator.matchesAny(in: [
@@ -295,8 +295,8 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func cancellationIsThrownByMatch() async {
-        let evaluator = Self.evaluator(providers: [
-            CancellingRulesVariableProvider(identifier: "cancelled", namespace: .session)
+        let evaluator = Self.evaluator(dimensionProviders: [
+            CancellingDimensionProvider(identifier: "cancelled", namespace: .session)
         ])
 
         do {
@@ -313,8 +313,8 @@ struct LocalRulesEvaluatorTests {
 
     @Test
     func cancellationIsThrownByMatchesAny() async {
-        let evaluator = Self.evaluator(providers: [
-            CancellingRulesVariableProvider(identifier: "cancelled", namespace: .session)
+        let evaluator = Self.evaluator(dimensionProviders: [
+            CancellingDimensionProvider(identifier: "cancelled", namespace: .session)
         ])
 
         do {
@@ -333,11 +333,11 @@ struct LocalRulesEvaluatorTests {
 private extension LocalRulesEvaluatorTests {
 
     static func evaluator(
-        providers: [any RulesVariableProvider],
+        dimensionProviders: [any DimensionProvider],
         date: Date = Date(timeIntervalSince1970: 100)
     ) -> LocalRulesEvaluator {
         LocalRulesEvaluator(
-            providers: providers,
+            dimensionProviders: dimensionProviders,
             dateProvider: MockDateProvider(stubbedNow: date)
         )
     }
@@ -356,26 +356,26 @@ private enum TestRuleID: Sendable {
     case notEvaluated
 }
 
-private actor TestRulesVariableProvider: RulesVariableProvider {
+private actor TestDimensionProvider: DimensionProvider {
 
     nonisolated let identifier: String
-    nonisolated let namespace: RulesVariableNamespace
+    nonisolated let namespace: DimensionNamespace
 
-    private let snapshots: [[String: RulesVariableValue]]
+    private let snapshots: [[String: DimensionValue]]
     private(set) var invocationCount = 0
     private(set) var receivedDates: [Date] = []
 
     init(
         identifier: String,
-        namespace: RulesVariableNamespace,
-        snapshots: [[String: RulesVariableValue]]
+        namespace: DimensionNamespace,
+        snapshots: [[String: DimensionValue]]
     ) {
         self.identifier = identifier
         self.namespace = namespace
         self.snapshots = snapshots
     }
 
-    func variables(at date: Date) -> [String: RulesVariableValue] {
+    func dimensions(at date: Date) -> [String: DimensionValue] {
         self.receivedDates.append(date)
         defer { self.invocationCount += 1 }
         guard !self.snapshots.isEmpty else { return [:] }
@@ -383,24 +383,24 @@ private actor TestRulesVariableProvider: RulesVariableProvider {
     }
 }
 
-private struct FailingRulesVariableProvider: RulesVariableProvider {
+private struct FailingDimensionProvider: DimensionProvider {
 
     struct ProviderError: Error {}
 
     let identifier: String
-    let namespace: RulesVariableNamespace
+    let namespace: DimensionNamespace
 
-    func variables(at date: Date) async throws -> [String: RulesVariableValue] {
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
         throw ProviderError()
     }
 }
 
-private struct CancellingRulesVariableProvider: RulesVariableProvider {
+private struct CancellingDimensionProvider: DimensionProvider {
 
     let identifier: String
-    let namespace: RulesVariableNamespace
+    let namespace: DimensionNamespace
 
-    func variables(at date: Date) async throws -> [String: RulesVariableValue] {
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
         throw CancellationError()
     }
 }
