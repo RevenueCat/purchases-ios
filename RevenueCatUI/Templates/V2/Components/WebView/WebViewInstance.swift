@@ -5,6 +5,7 @@
 //  Created by Antonio Pallares on 30/7/26.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 import SwiftUI
@@ -27,11 +28,13 @@ final class WebViewInstance: ObservableObject {
     @Published private(set) var loadFailed = false
 
     var isUnusable: Bool {
-        self.processTerminated || self.loadFailed
+        self.processTerminated || self.loadFailed || self.retiredByCacheClear
     }
 
     private var webView: PlatformWebView?
     private var navigationDelegateObject: AnyObject?
+    private var cacheClearSubscription: AnyCancellable?
+    private var retiredByCacheClear = false
 
     private weak var attachedHost: WebViewHostView?
 
@@ -47,7 +50,8 @@ final class WebViewInstance: ObservableObject {
         componentID: String,
         expectedOrigin: WebViewOrigin,
         fitsWidth: Bool,
-        fitsHeight: Bool
+        fitsHeight: Bool,
+        cacheClearEvents: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher
     ) {
         // `evaluateJavaScript`/`currentURL` are rebound to the live web view in `webView(creatingWith:)`;
         // the no-op defaults only cover the window before it is created.
@@ -71,6 +75,14 @@ final class WebViewInstance: ObservableObject {
             self?.measuredWidth = nil
             self?.measuredHeight = nil
         }
+
+        self.cacheClearSubscription = cacheClearEvents
+            .sink { [weak self] event in
+                guard event == .cacheClearRequested else { return }
+                Task { @MainActor in
+                    self?.retireForIdentityChange()
+                }
+            }
     }
 
     func navigationDelegate<Delegate: AnyObject>(creating factory: () -> Delegate) -> Delegate {
@@ -199,6 +211,8 @@ final class WebViewInstance: ObservableObject {
     }
 
     func tearDown() {
+        self.cacheClearSubscription?.cancel()
+        self.cacheClearSubscription = nil
         self.navigationDelegateObject = nil
         self.attachedHost = nil
         self.pendingHost = nil
@@ -219,6 +233,11 @@ final class WebViewInstance: ObservableObject {
         webView.stopLoading()
         webView.removeFromSuperview()
         self.webView = nil
+    }
+
+    private func retireForIdentityChange() {
+        self.retiredByCacheClear = true
+        self.tearDown()
     }
 
 }

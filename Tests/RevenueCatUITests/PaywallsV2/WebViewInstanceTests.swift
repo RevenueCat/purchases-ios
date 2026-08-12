@@ -11,6 +11,7 @@
 //
 //  Created by Antonio Pallares on 7/30/26.
 
+import Combine
 @_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
@@ -320,6 +321,30 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
 
         instance.tearDown()
 
+        XCTAssertNil(webView.superview)
+    }
+
+    func testCacheClearRequestTearsDownTheWebViewAndMarksItUnusable() async {
+        let events = PassthroughSubject<WebBundleEvent, Never>()
+        let instance = WebViewInstance(
+            componentID: "faq",
+            expectedOrigin: WebViewOrigin(string: "https://example.com")!,
+            fitsWidth: false,
+            fitsHeight: true,
+            cacheClearEvents: events.eraseToAnyPublisher()
+        )
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let host = self.makeWindowedHost()
+        instance.hostDidEnterWindow(host)
+
+        events.send(.cacheClearRequested)
+
+        let deadline = Date().addingTimeInterval(1)
+        while !instance.isUnusable && Date() < deadline {
+            await Task.yield()
+        }
+
+        XCTAssertTrue(instance.isUnusable)
         XCTAssertNil(webView.superview)
     }
 
