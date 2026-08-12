@@ -14,7 +14,7 @@
 
 import Foundation
 import RevenueCat
-@_spi(Checkpoints) import RevenueCatUI
+@_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
 
 @main

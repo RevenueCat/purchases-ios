@@ -17,7 +17,7 @@ import Foundation
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public extension Purchases {
 
     /// Global listener for checkpoint activity.
@@ -69,7 +69,7 @@ public extension Purchases {
 
 #if ENABLE_CHECKPOINTS_OBJC
 
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.

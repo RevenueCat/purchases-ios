@@ -13,7 +13,7 @@
 //
 
 import RevenueCat
-@_spi(Checkpoints) import RevenueCatUI
+@_spi(CheckpointsInternal) import RevenueCatUI
 
 private final class CheckpointListenerAPITester: CheckpointListener {
 

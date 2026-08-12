@@ -15,7 +15,7 @@
 import Combine
 import Foundation
 import RevenueCat
-@_spi(Checkpoints) import RevenueCatUI
+@_spi(CheckpointsInternal) import RevenueCatUI
 
 final class CheckpointDemoModel: ObservableObject {
 

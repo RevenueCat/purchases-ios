@@ -16,7 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A checkpoint-triggered paywall was presented and finished.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
     /// The terminal outcome of the presented paywall.
@@ -44,7 +44,7 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 }
 
 /// Base class for the terminal result of a checkpoint-presented paywall.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {
 
     fileprivate init() {}
@@ -69,7 +69,7 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
 }
 
 /// The customer dismissed the paywall.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
     static let shared = CheckpointPaywallDismissedOutcome()
@@ -81,7 +81,7 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 }
 
 /// The customer completed a purchase.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after the completed purchase.
@@ -103,7 +103,7 @@ public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 }
 
 /// The customer restored purchases.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
@@ -125,7 +125,7 @@ public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 }
 
 /// The paywall ended with an error.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     /// The error that ended the checkpoint experience.

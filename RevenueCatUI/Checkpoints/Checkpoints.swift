@@ -16,7 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// A custom value supplied when a checkpoint is hit.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public struct CheckpointValue: Equatable, Hashable, Sendable {
 
     fileprivate let coreValue: RevenueCat.CheckpointValue
@@ -94,7 +94,7 @@ extension CheckpointValue {
 }
 
 /// Per-call parameters for a checkpoint.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom properties usable in checkpoint targeting rules and feature events.
@@ -127,7 +127,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
 }
 
 /// Information about a checkpoint that was hit.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
@@ -161,7 +161,7 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 }
 
 /// The reason no experience was served for a checkpoint.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The value identifying the reason.
@@ -198,7 +198,7 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 }
 
 /// Base class for the result of hitting a checkpoint.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
     /// Information about the checkpoint that produced this result.
@@ -231,7 +231,7 @@ public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 }
 
 /// Nothing was served for a checkpoint.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public final class CheckpointNoActionResult: CheckpointResult {
 
     /// The reason no experience was served.
@@ -259,7 +259,7 @@ public final class CheckpointNoActionResult: CheckpointResult {
 }
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public protocol CheckpointListener: AnyObject {
 
     /// A checkpoint was hit, before evaluation.
@@ -269,7 +269,7 @@ public protocol CheckpointListener: AnyObject {
 
 }
 
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 public extension CheckpointListener {
 
     /// Default no-op implementation.

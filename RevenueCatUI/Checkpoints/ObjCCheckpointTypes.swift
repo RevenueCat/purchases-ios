@@ -33,7 +33,7 @@ private enum CheckpointStrings: LogMessage {
 }
 
 /// Objective-C-compatible checkpoint parameters.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointParams)
 public final class ObjCCheckpointParams: NSObject {
 
@@ -69,7 +69,7 @@ public final class ObjCCheckpointParams: NSObject {
 }
 
 /// Objective-C-compatible checkpoint information.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointInfo)
 public final class ObjCCheckpointInfo: NSObject {
 
@@ -88,7 +88,7 @@ public final class ObjCCheckpointInfo: NSObject {
 }
 
 /// Objective-C-compatible reason that no experience was served.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointNoActionReason)
 public final class ObjCCheckpointNoActionReason: NSObject {
 
@@ -103,7 +103,7 @@ public final class ObjCCheckpointNoActionReason: NSObject {
 }
 
 /// Objective-C-compatible base checkpoint result.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointResult)
 public class ObjCCheckpointResult: NSObject {
 
@@ -129,7 +129,7 @@ public class ObjCCheckpointResult: NSObject {
 }
 
 /// Objective-C-compatible no-action checkpoint result.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointNoActionResult)
 public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
 
@@ -144,7 +144,7 @@ public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
 }
 
 /// Objective-C-compatible checkpoint-triggered paywall result.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallPresentedResult)
 public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 
@@ -159,7 +159,7 @@ public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 }
 
 /// Objective-C-compatible base paywall outcome.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallOutcome)
 public class ObjCCheckpointPaywallOutcome: NSObject {
 
@@ -181,12 +181,12 @@ public class ObjCCheckpointPaywallOutcome: NSObject {
 }
 
 /// Objective-C-compatible dismissed paywall outcome.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallDismissedOutcome)
 public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallOutcome {}
 
 /// Objective-C-compatible purchased paywall outcome.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallPurchasedOutcome)
 public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
@@ -201,7 +201,7 @@ public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallO
 }
 
 /// Objective-C-compatible restored paywall outcome.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallRestoredOutcome)
 public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOutcome {
 
@@ -216,7 +216,7 @@ public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOu
 }
 
 /// Objective-C-compatible error paywall outcome.
-@_spi(Checkpoints)
+@_spi(CheckpointsInternal)
 @objc(RCCheckpointPaywallErrorOutcome)
 public final class ObjCCheckpointPaywallErrorOutcome: ObjCCheckpointPaywallOutcome {
 
