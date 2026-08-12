@@ -3,8 +3,8 @@ import ProjectDescriptionHelpers
 import Foundation
 
 /// Unlike other Tuist projects in this repo, BinarySizeTest manages its own dependency integration
-/// independently of `Environment.dependencyMode`. Each case produces a separate binary uploaded to
-/// Emerge for size tracking, so they each have a distinct bundle ID.
+/// independently of `Environment.dependencyMode`. Each case produces a separate binary for size
+/// tracking, so they each have a distinct bundle ID.
 ///
 /// - `localSource`: Uses Xcode project target references (`.project(target:path:)`).
 ///   Requires `TUIST_RC_XCODE_PROJECT=true` so that `Workspace.swift` includes the
@@ -82,7 +82,7 @@ extension BinarySizeTestIntegrationMethod {
     }
 
     var provisioningProfileSpecifier: String {
-        return "match AppStore \(bundleId)"
+        return "match AdHoc \(bundleId)"
     }
 
     var provisioningProfileSettingValue: SettingValue {
