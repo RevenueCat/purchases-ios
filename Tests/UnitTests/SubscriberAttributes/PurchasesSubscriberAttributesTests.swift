@@ -14,7 +14,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesSubscriberAttributesTests: TestCase {
 
@@ -272,7 +272,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                               currentConfiguration: nil,
-                              webBundleCacheCoordinator: WebBundleCacheCoordinator { $0() })
+                              webBundleCacheCoordinator: WebBundleCacheCoordinator(retireCurrentStore: {}))
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

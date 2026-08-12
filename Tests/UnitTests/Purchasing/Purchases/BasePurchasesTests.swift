@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesTests: TestCase {
 
@@ -273,7 +273,7 @@ class BasePurchasesTests: TestCase {
     func initializePurchasesInstance(
         appUserId: String?,
         withDelegate: Bool = true,
-        webBundleCacheCoordinator: WebBundleCacheCoordinator = WebBundleCacheCoordinator(clearData: { $0() })
+        webBundleCacheCoordinator: WebBundleCacheCoordinator = WebBundleCacheCoordinator(retireCurrentStore: {})
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
