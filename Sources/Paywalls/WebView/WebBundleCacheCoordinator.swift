@@ -33,11 +33,7 @@ final class WebBundleCacheCoordinator {
 
     init(
         events: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher,
-        clearWebsiteData: @escaping () -> Void = {
-            let id = WebViewDataStoreIdentifierStore.identifier()
-            WebBundleCacheCoordinator.clearWebsiteData(for: id)
-            WebViewDataStoreIdentifierStore.clearIdentifier()
-        }
+        clearWebsiteData: @escaping () -> Void = WebBundleCacheCoordinator.clearWebsiteData
     ) {
         self.job = events
             .receive(on: DispatchQueue(label: "com.revenuecat.web-bundle-cache-coordinator"))
@@ -53,11 +49,26 @@ final class WebBundleCacheCoordinator {
             }
     }
 
-    private static func clearWebsiteData(for storeIdentifier: UUID) {
+    private static func clearWebsiteData() {
+        if let id = WebViewDataStoreIdentifierStore.clearIdentifier() {
+            Task { @MainActor in
+                clearWebKitStore(for: id)
+            }
+        }
+    }
+
+    /// Attempts to remove the whole store but falls back to wiping the data it contains if removal fails
+    @MainActor
+    private static func clearWebKitStore(for id: UUID) {
         if #available(iOS 17.0, macOS 14.0, *) {
-            Task {
-                await WKWebsiteDataStore(forIdentifier: storeIdentifier)
-                    .removeData(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(), modifiedSince: .distantPast)
+            WKWebsiteDataStore.remove(forIdentifier: id) { error in
+                if error != nil {
+                    WKWebsiteDataStore(forIdentifier: id)
+                        .removeData(
+                            ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
+                            modifiedSince: .distantPast
+                        ) {}
+                }
             }
         }
     }
