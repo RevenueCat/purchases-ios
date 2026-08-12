@@ -27,19 +27,66 @@ final class WebViewDataStoreIdentifierStoreTests: TestCase {
         XCTAssertEqual(firstIdentifier, secondIdentifier)
     }
 
-    func testClearingIdentifierRotatesItOnNextUse() throws {
+    func testRetiringIdentifierEnqueuesItAndRotatesOnNextUse() throws {
         let (userDefaults, suiteName) = try makeUserDefaults()
         defer { userDefaults.removePersistentDomain(forName: suiteName) }
 
         let firstIdentifier = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
 
         XCTAssertEqual(
-            WebViewDataStoreIdentifierStore.clearIdentifier(in: userDefaults),
+            WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults),
             firstIdentifier
+        )
+        XCTAssertEqual(
+            WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults),
+            [firstIdentifier]
         )
         XCTAssertNotEqual(
             WebViewDataStoreIdentifierStore.identifier(in: userDefaults),
             firstIdentifier
+        )
+    }
+
+    func testRetireDoesNotCreateAnIdentifierWhenNoneExists() throws {
+        let (userDefaults, suiteName) = try makeUserDefaults()
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        XCTAssertNil(WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults))
+        XCTAssertTrue(WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults).isEmpty)
+    }
+
+    func testMultipleRetiresAccumulatePendingIdentifiers() throws {
+        let (userDefaults, suiteName) = try makeUserDefaults()
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        let first = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+        let second = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+
+        XCTAssertEqual(
+            WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults),
+            [first, second]
+        )
+    }
+
+    func testKeepPendingOnlyReplacesThePendingSet() throws {
+        let (userDefaults, suiteName) = try makeUserDefaults()
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        let first = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+        let second = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+
+        WebViewDataStoreIdentifierStore.keepPendingOnly([second], in: userDefaults)
+
+        XCTAssertEqual(
+            WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults),
+            [second]
+        )
+        XCTAssertFalse(
+            WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults).contains(first)
         )
     }
 

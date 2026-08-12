@@ -17,7 +17,8 @@ import Foundation
 /// Persists the identifier for RevenueCat's isolated website data store.
 @_spi(Internal) public enum WebViewDataStoreIdentifierStore {
 
-    private static let key = "com.revenuecat.webViewDataStoreIdentifier"
+    private static let currentKey = "com.revenuecat.webViewDataStoreIdentifier"
+    private static let pendingKey = "com.revenuecat.webViewDataStorePendingRemovalIdentifiers"
     private static let lock = Lock()
 
     private static let defaults = UserDefaults.revenueCatSuite
@@ -29,28 +30,70 @@ import Foundation
 
     static func identifier(in userDefaults: UserDefaults) -> UUID {
         return Self.lock.perform {
-            if let value = userDefaults.string(forKey: Self.key),
+            if let value = userDefaults.string(forKey: Self.currentKey),
                let identifier = UUID(uuidString: value) {
                 return identifier
             }
 
             let identifier = UUID()
-            userDefaults.set(identifier.uuidString, forKey: Self.key)
+            userDefaults.set(identifier.uuidString, forKey: Self.currentKey)
             return identifier
         }
     }
 
+    /// Moves the current identifier into the pending-removal set without creating one.
     @discardableResult
-    static func clearIdentifier() -> UUID? {
-        return clearIdentifier(in: defaults)
+    static func retireCurrentIdentifier() -> UUID? {
+        return self.retireCurrentIdentifier(in: Self.defaults)
     }
 
-    static func clearIdentifier(in userDefaults: UserDefaults) -> UUID? {
+    @discardableResult
+    static func retireCurrentIdentifier(in userDefaults: UserDefaults) -> UUID? {
         return Self.lock.perform {
-            defer { userDefaults.removeObject(forKey: Self.key) }
-
-            return userDefaults.string(forKey: Self.key)
+            let current = userDefaults.string(forKey: Self.currentKey)
                 .flatMap(UUID.init(uuidString:))
+            userDefaults.removeObject(forKey: Self.currentKey)
+
+            if let current {
+                var pending = Self.pendingIdentifiersLocked(in: userDefaults)
+                pending.insert(current)
+                Self.setPendingIdentifiersLocked(pending, in: userDefaults)
+            }
+
+            return current
+        }
+    }
+
+    static func pendingRemovalIdentifiers() -> Set<UUID> {
+        return self.pendingRemovalIdentifiers(in: Self.defaults)
+    }
+
+    static func pendingRemovalIdentifiers(in userDefaults: UserDefaults) -> Set<UUID> {
+        return Self.lock.perform {
+            return Self.pendingIdentifiersLocked(in: userDefaults)
+        }
+    }
+
+    static func keepPendingOnly(_ identifiers: Set<UUID>) {
+        self.keepPendingOnly(identifiers, in: Self.defaults)
+    }
+
+    static func keepPendingOnly(_ identifiers: Set<UUID>, in userDefaults: UserDefaults) {
+        Self.lock.perform {
+            Self.setPendingIdentifiersLocked(identifiers, in: userDefaults)
+        }
+    }
+
+    private static func pendingIdentifiersLocked(in userDefaults: UserDefaults) -> Set<UUID> {
+        let strings = userDefaults.stringArray(forKey: Self.pendingKey) ?? []
+        return Set(strings.compactMap(UUID.init(uuidString:)))
+    }
+
+    private static func setPendingIdentifiersLocked(_ identifiers: Set<UUID>, in userDefaults: UserDefaults) {
+        if identifiers.isEmpty {
+            userDefaults.removeObject(forKey: Self.pendingKey)
+        } else {
+            userDefaults.set(identifiers.map(\.uuidString), forKey: Self.pendingKey)
         }
     }
 
