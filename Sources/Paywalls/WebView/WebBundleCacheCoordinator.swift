@@ -24,11 +24,6 @@ internal import WebKit
 final class WebBundleCacheCoordinator {
     private let job: AnyCancellable?
 
-    static let shared = WebBundleCacheCoordinator()
-
-    // static variables are lazy, the side effects from the initializer require a runtime reference
-    static func start() { _ = Self.shared }
-
     #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
 
     init(

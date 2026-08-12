@@ -294,6 +294,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
     private let webBundleEventBus: WebBundleEventBus
+    private let webBundleCacheCoordinator: WebBundleCacheCoordinator
 
     private var _adTracker: Any?
 
@@ -900,10 +901,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
         self.webBundleEventBus = webBundleEventBus
+        self.webBundleCacheCoordinator = WebBundleCacheCoordinator(events: webBundleEventBus.publisher)
 
         super.init()
-
-        WebBundleCacheCoordinator.start()
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
