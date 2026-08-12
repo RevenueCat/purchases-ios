@@ -40,6 +40,11 @@ import Foundation
         }
     }
 
+    @discardableResult
+    static func clearIdentifier() -> UUID? {
+        return clearIdentifier(in: defaults)
+    }
+
     static func clearIdentifier(in userDefaults: UserDefaults) -> UUID? {
         return Self.lock.perform {
             defer { userDefaults.removeObject(forKey: Self.key) }

@@ -33,10 +33,12 @@ final class WebBundleCacheCoordinator {
 
     init(
         events: AnyPublisher<WebBundleEvent, Never> = WebBundleEventBus.shared.publisher,
-        websiteDataStoreIdentifier: () -> UUID = { WebViewDataStoreIdentifierStore.identifier() },
-        clearWebsiteData: @escaping (UUID) -> Void = WebBundleCacheCoordinator.clearWebsiteData
+        clearWebsiteData: @escaping () -> Void = {
+            let id = WebViewDataStoreIdentifierStore.identifier()
+            WebBundleCacheCoordinator.clearWebsiteData(for: id)
+            WebViewDataStoreIdentifierStore.clearIdentifier()
+        }
     ) {
-        let identifier = websiteDataStoreIdentifier()
         self.job = events
             .receive(on: DispatchQueue(label: "com.revenuecat.web-bundle-cache-coordinator"))
             .sink { event in
@@ -46,7 +48,7 @@ final class WebBundleCacheCoordinator {
                 case .receivedAssetURLs:
                     break // Will do in a future PR
                 case .cacheClearRequested:
-                    clearWebsiteData(identifier)
+                    clearWebsiteData()
                 }
             }
     }
