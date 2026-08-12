@@ -2724,6 +2724,7 @@ private extension Purchases {
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
+        self.webBundleCacheCoordinator.sweepPendingStores()
         self.dispatchSyncSubscriberAttributes()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
@@ -2786,6 +2787,8 @@ private extension Purchases {
     private func performInitialForegroundSetup() {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
+
+            self.webBundleCacheCoordinator.sweepPendingStores()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(
@@ -2885,12 +2888,9 @@ private extension Purchases {
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                                isAppBackgrounded: isAppBackgrounded) { @Sendable res in
                 if fetchContext == .identityChange {
-                    self.webBundleCacheCoordinator.clearData {
-                        completion?(res.mapError { $0.asPublicError })
-                    }
-                } else {
-                    completion?(res.mapError { $0.asPublicError })
+                    self.webBundleCacheCoordinator.retireCurrentStore()
                 }
+                completion?(res.mapError { $0.asPublicError })
             }
 
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(

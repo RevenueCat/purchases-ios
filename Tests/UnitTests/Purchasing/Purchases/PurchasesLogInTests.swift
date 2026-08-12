@@ -16,7 +16,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesLogInTests: BasePurchasesTests {}
 
@@ -104,16 +104,15 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
     }
 
-    func testLogOutClearsWebBundleCache() {
-        let cacheCleared = self.expectation(description: "Web bundle cache cleared")
+    func testLogOutRetiresWebBundleStore() {
+        let storeRetired = self.expectation(description: "Web bundle store retired")
 
         Purchases.clearSingleton()
         self.initializePurchasesInstance(
             appUserId: Self.appUserID,
-            webBundleCacheCoordinator: .init { completion in
-                completion()
-                cacheCleared.fulfill()
-            }
+            webBundleCacheCoordinator: .init(retireCurrentStore: {
+                storeRetired.fulfill()
+            })
         )
         self.identityManager.mockLogOutError = nil
         self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
@@ -125,7 +124,29 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         }
 
         expect(result).to(beSuccess())
-        self.wait(for: [cacheCleared], timeout: 1)
+        self.wait(for: [storeRetired], timeout: 1)
+    }
+
+    func testLogInDoesNotRetireWebBundleStore() {
+        var retired = false
+
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(
+            appUserId: nil,
+            webBundleCacheCoordinator: .init(retireCurrentStore: {
+                retired = true
+            })
+        )
+        self.identityManager.mockIsAnonymous = true
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID) { _, _, _ in
+                completed()
+            }
+        }
+
+        expect(retired) == false
     }
 
     func testLogOutWithFailure() {
