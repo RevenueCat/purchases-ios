@@ -14,62 +14,66 @@
 
 import Foundation
 
-#if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+/// Isolates web-view storage on identity change, then deletes retired stores later.
+///
+/// Logout only retires the current identifier and notifies live web views. Actual
+/// `WKWebsiteDataStore` removal happens on a later main-thread pass (configure / foreground)
+/// so `logOut` is not blocked on WebKit and in-use stores can be retried after they are released.
+@_spi(Internal) public final class WebBundleCacheCoordinator {
 
-internal import WebKit
+    let retireCurrentStore: () -> Void
+    let sweepPendingStores: () -> Void
 
-#endif
-
-final class WebBundleCacheCoordinator {
-    typealias FunctionWithCallback = (@escaping () -> Void) -> Void
-
-    let clearData: FunctionWithCallback
-
-    init(clearData: @escaping FunctionWithCallback) {
-        self.clearData = clearData
+    /// Creates a coordinator. Tests inject no-op closures; production uses ``shared``.
+    public init(
+        retireCurrentStore: @escaping () -> Void,
+        sweepPendingStores: @escaping () -> Void = {}
+    ) {
+        self.retireCurrentStore = retireCurrentStore
+        self.sweepPendingStores = sweepPendingStores
     }
 
-#if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+    /// Production coordinator that retires identifiers on logout and sweeps on a later main-thread pass.
+    public static let shared = WebBundleCacheCoordinator(
+        retireCurrentStore: WebBundleCacheCoordinator.retireCurrentStoreAndNotify,
+        sweepPendingStores: WebBundleCacheCoordinator.scheduleSweep
+    )
 
-    static let shared = WebBundleCacheCoordinator(clearData: WebBundleCacheCoordinator.clearWebsiteData(completion:))
+    static func retireCurrentStoreAndNotify() {
+        WebViewDataStoreIdentifierStore.retireCurrentIdentifier()
 
-    static func clearWebsiteData(completion: @escaping () -> Void) {
         Task {
-            await clearWebsiteData()
-            completion()
+            await WebBundleEventBus.shared.clearCache()
         }
     }
 
-    static func clearWebsiteData() async {
-        if let id = WebViewDataStoreIdentifierStore.clearIdentifier() {
-            await clearWebKitStore(for: id)
+    static func scheduleSweep() {
+        Task { @MainActor in
+            await WebViewWebsiteDataStoreSweeper.sweepPendingStores()
         }
     }
 
-    /// Attempts to remove the whole store but falls back to wiping the data it contains if removal fails
-    @MainActor
-    private static func clearWebKitStore(for id: UUID) async {
-        if #available(iOS 17.0, macOS 14.0, *) {
-            await withCheckedContinuation { @MainActor continuation in
-                WKWebsiteDataStore.remove(forIdentifier: id) { error in
-                    if error != nil {
-                        WKWebsiteDataStore(forIdentifier: id)
-                            .removeData(
-                                ofTypes: WKWebsiteDataStore.allWebsiteDataTypes(),
-                                modifiedSince: .distantPast
-                            ) { continuation.resume() }
-                    } else {
-                        continuation.resume()
-                    }
-                }
+    /// Drops pending IDs whose stores are already gone. Only calls `remove` for IDs that still exist.
+    /// Failed removals stay pending so they can be retried later.
+    static func sweep(
+        pending: Set<UUID>,
+        existing: Set<UUID>,
+        remove: (UUID) async -> Bool
+    ) async -> Set<UUID> {
+        var remaining = pending
+
+        for identifier in pending {
+            if !existing.contains(identifier) {
+                remaining.remove(identifier)
+                continue
+            }
+
+            if await remove(identifier) {
+                remaining.remove(identifier)
             }
         }
+
+        return remaining
     }
-
-    #else
-
-    static let shared = WebBundleCacheCoordinator(clearData: { $0() })
-
-    #endif
 
 }
