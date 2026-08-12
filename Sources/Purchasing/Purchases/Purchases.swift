@@ -293,7 +293,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
-    private let webBundleEventBus: WebBundleEventBus
     private let webBundleCacheCoordinator: WebBundleCacheCoordinator
 
     private var _adTracker: Any?
@@ -354,7 +353,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
-                     currentConfiguration: Configuration?
+                     currentConfiguration: Configuration?,
+                     webBundleCacheCoordinator: WebBundleCacheCoordinator = .shared
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -807,7 +807,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                   currentConfiguration: currentConfiguration,
-                  webBundleEventBus: .shared
+                  webBundleCacheCoordinator: webBundleCacheCoordinator
         )
     }
 
@@ -844,7 +844,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
          currentConfiguration: Configuration?,
-         webBundleEventBus: WebBundleEventBus
+         webBundleCacheCoordinator: WebBundleCacheCoordinator
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -900,8 +900,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
-        self.webBundleEventBus = webBundleEventBus
-        self.webBundleCacheCoordinator = WebBundleCacheCoordinator(events: webBundleEventBus.publisher)
+        self.webBundleCacheCoordinator = webBundleCacheCoordinator
 
         super.init()
 
@@ -2884,20 +2883,20 @@ private extension Purchases {
             }
         } else {
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
-                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable in
-                completion?($0.mapError { $0.asPublicError })
+                                                               isAppBackgrounded: isAppBackgrounded) { @Sendable res in
+                if fetchContext == .identityChange {
+                    self.webBundleCacheCoordinator.clearData {
+                        completion?(res.mapError { $0.asPublicError })
+                    }
+                } else {
+                    completion?(res.mapError { $0.asPublicError })
+                }
             }
 
             self.offlineEntitlementsManager.updateProductsEntitlementsCacheIfStale(
                 isAppBackgrounded: isAppBackgrounded,
                 completion: nil
             )
-        }
-
-        if fetchContext == .identityChange {
-            Task {
-                await webBundleEventBus.clearCache()
-            }
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)

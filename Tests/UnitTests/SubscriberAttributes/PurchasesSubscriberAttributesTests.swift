@@ -272,7 +272,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                               currentConfiguration: nil,
-                              webBundleEventBus: .shared)
+                              webBundleCacheCoordinator: WebBundleCacheCoordinator { $0() })
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

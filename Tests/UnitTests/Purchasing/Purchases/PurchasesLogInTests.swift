@@ -105,20 +105,18 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogOutClearsWebBundleCache() {
-        let webBundleEventBus = WebBundleEventBus()
+        let cacheCleared = self.expectation(description: "Web bundle cache cleared")
+
         Purchases.clearSingleton()
         self.initializePurchasesInstance(
             appUserId: Self.appUserID,
-            webBundleEventBus: webBundleEventBus
+            webBundleCacheCoordinator: .init { completion in
+                completion()
+                cacheCleared.fulfill()
+            }
         )
         self.identityManager.mockLogOutError = nil
         self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
-
-        let cacheCleared = self.expectation(description: "Web bundle cache cleared")
-        let cancellable = webBundleEventBus.publisher
-            .filter { $0 == .cacheClearRequested }
-            .prefix(1)
-            .sink { _ in cacheCleared.fulfill() }
 
         let result = waitUntilValue { completed in
             self.purchases.logOut { customerInfo, error in
@@ -128,7 +126,6 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
         expect(result).to(beSuccess())
         self.wait(for: [cacheCleared], timeout: 1)
-        withExtendedLifetime(cancellable) {}
     }
 
     func testLogOutWithFailure() {

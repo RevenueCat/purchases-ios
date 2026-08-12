@@ -45,10 +45,8 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         let initialCookies = await websiteDataStore.httpCookieStore.allCookies()
         XCTAssertTrue(initialCookies.contains { $0.name == cookieName })
 
-        let coordinator = WebBundleCacheCoordinator()
-
         // When
-        await WebBundleEventBus.shared.clearCache()
+        await WebBundleCacheCoordinator.clearWebsiteData()
 
         // Then
 
@@ -61,44 +59,7 @@ final class WebBundleCacheCoordinatorTests: TestCase {
 
         XCTAssertTrue(cookies.isEmpty)
         XCTAssertNil(WebViewDataStoreIdentifierStore.clearIdentifier())
-        withExtendedLifetime(coordinator) {}
     }
-
-    func testEveryCacheClearRequestIsHandled() {
-        let subject = PassthroughSubject<WebBundleEvent, Never>()
-        let cacheCleared = self.expectation(description: "Website data cleared")
-        cacheCleared.expectedFulfillmentCount = 2
-        let coordinator = WebBundleCacheCoordinator(
-            events: subject.eraseToAnyPublisher(),
-            clearWebsiteData: { cacheCleared.fulfill() }
-        )
-
-        subject.send(.cacheClearRequested)
-        subject.send(.cacheClearRequested)
-
-        self.wait(for: [cacheCleared], timeout: 1)
-        withExtendedLifetime(coordinator) {}
-    }
-
-    func testReceivedAssetURLsDoesNotClearWebsiteData() {
-        let subject = PassthroughSubject<WebBundleEvent, Never>()
-        let cacheCleared = self.expectation(description: "Website data not cleared")
-        cacheCleared.isInverted = true
-        let coordinator = WebBundleCacheCoordinator(
-            events: subject.eraseToAnyPublisher(),
-            clearWebsiteData: { cacheCleared.fulfill() }
-        )
-
-        subject.send(
-            .receivedAssetURLs([
-                .init(url: URL(string: "https://example.com/index.html")!, checksum: nil)
-            ])
-        )
-
-        self.wait(for: [cacheCleared], timeout: 0.1)
-        withExtendedLifetime(coordinator) {}
-    }
-
 }
 
 #endif
