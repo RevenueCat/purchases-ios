@@ -28,34 +28,36 @@ struct DeviceDimensionProviderTests {
     func providesDeviceVariablesInDeviceNamespace() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
-            localeProvider: { "nl_NL" },
+            localeProvider: { "NL-nl" },
             platform: "iOS",
-            platformVersion: "Version 26.3 (Build 23D127)",
-            sdkVersion: "5.84.0"
+            platformVersion: Self.platformVersion,
+            sdkVersion: "5.84.0-SNAPSHOT"
         )
 
         #expect(provider.identifier == "device")
         #expect(provider.namespace == .device)
         #expect(try await provider.dimensions(at: Date()) == [
             "app_version": .string("1.2.3"),
-            "locale": .string("nl_NL"),
-            "platform": .string("iOS"),
-            "platform_version": .string("Version 26.3 (Build 23D127)"),
+            "locale": .string("nl_nl"),
+            "platform": .string("ios"),
+            "platform_version": .string("26.3.0"),
             "sdk_version": .string("5.84.0")
         ])
     }
 
     @Test
-    func omitsUnavailableValues() async throws {
+    func omitsUnavailableOptionalValues() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "",
             localeProvider: { "" },
             platform: "",
-            platformVersion: "",
-            sdkVersion: ""
+            platformVersion: Self.platformVersion,
+            sdkVersion: "invalid"
         )
 
-        #expect(try await provider.dimensions(at: Date()).isEmpty)
+        #expect(try await provider.dimensions(at: Date()) == [
+            "platform_version": .string("26.3.0")
+        ])
     }
 
     @Test
@@ -65,15 +67,15 @@ struct DeviceDimensionProviderTests {
             appVersion: "1.2.3",
             localeProvider: { locale.value },
             platform: "iOS",
-            platformVersion: "Version 26.3 (Build 23D127)"
+            platformVersion: Self.platformVersion
         )
 
         let first = try await provider.dimensions(at: Date())
         locale.value = "nl_NL"
         let second = try await provider.dimensions(at: Date())
 
-        #expect(first["locale"] == .string("en_US"))
-        #expect(second["locale"] == .string("nl_NL"))
+        #expect(first["locale"] == .string("en_us"))
+        #expect(second["locale"] == .string("nl_nl"))
     }
 
     @Test
@@ -84,7 +86,7 @@ struct DeviceDimensionProviderTests {
                     appVersion: "1.2.3",
                     localeProvider: { "en_US" },
                     platform: "iOS",
-                    platformVersion: "Version 26.3 (Build 23D127)"
+                    platformVersion: Self.platformVersion
                 )
             ]
         )
@@ -96,7 +98,7 @@ struct DeviceDimensionProviderTests {
             )
         ])
 
-        #expect(match == "matching-rule")
+        #expect(match?.id == "matching-rule")
     }
 
     @Test
@@ -107,7 +109,7 @@ struct DeviceDimensionProviderTests {
                     appVersion: "1.2.3",
                     localeProvider: { "nl-NL" },
                     platform: "iOS",
-                    platformVersion: "Version 26.3 (Build 23D127)"
+                    platformVersion: Self.platformVersion
                 )
             ]
         )
@@ -115,11 +117,11 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.locale"},"nl-NL"]}"#
+                predicate: #"{"==":[{"var":"device.locale"},"nl_nl"]}"#
             )
         ])
 
-        #expect(match == "matching-rule")
+        #expect(match?.id == "matching-rule")
     }
 
     @Test
@@ -130,7 +132,7 @@ struct DeviceDimensionProviderTests {
                     appVersion: "1.2.3",
                     localeProvider: { "en-US" },
                     platform: "iOS",
-                    platformVersion: "Version 26.3 (Build 23D127)"
+                    platformVersion: Self.platformVersion
                 )
             ]
         )
@@ -138,11 +140,22 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.platform"},"iOS"]}"#
+                predicate: #"{"==":[{"var":"device.platform"},"ios"]}"#
             )
         ])
 
-        #expect(match == "matching-rule")
+        #expect(match?.id == "matching-rule")
+    }
+
+    @Test
+    func platformUsesCompileTargetWhenUniversalAppStoreIsForced() async throws {
+        let previousValue = SystemInfo.forceUniversalAppStore
+        defer { SystemInfo.forceUniversalAppStore = previousValue }
+        SystemInfo.forceUniversalAppStore = true
+
+        let dimensions = try await DeviceDimensionProvider().dimensions(at: Date())
+
+        #expect(dimensions["platform"] == .string(SystemInfo.platformHeaderConstant.lowercased()))
     }
 
     @Test
@@ -153,7 +166,7 @@ struct DeviceDimensionProviderTests {
                     appVersion: "1.2.3",
                     localeProvider: { "en-US" },
                     platform: "iOS",
-                    platformVersion: "Version 26.3 (Build 23D127)"
+                    platformVersion: Self.platformVersion
                 )
             ]
         )
@@ -161,11 +174,11 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.platform_version"},"Version 26.3 (Build 23D127)"]}"#
+                predicate: #"{"==":[{"var":"device.platform_version"},"26.3.0"]}"#
             )
         ])
 
-        #expect(match == "matching-rule")
+        #expect(match?.id == "matching-rule")
     }
 
     @Test
@@ -176,8 +189,8 @@ struct DeviceDimensionProviderTests {
                     appVersion: "1.2.3",
                     localeProvider: { "en-US" },
                     platform: "iOS",
-                    platformVersion: "Version 26.3 (Build 23D127)",
-                    sdkVersion: "5.84.0"
+                    platformVersion: Self.platformVersion,
+                    sdkVersion: "5.84.0-SNAPSHOT"
                 )
             ]
         )
@@ -189,8 +202,14 @@ struct DeviceDimensionProviderTests {
             )
         ])
 
-        #expect(match == "matching-rule")
+        #expect(match?.id == "matching-rule")
     }
+
+    private static let platformVersion = OperatingSystemVersion(
+        majorVersion: 26,
+        minorVersion: 3,
+        patchVersion: 0
+    )
 
 }
 

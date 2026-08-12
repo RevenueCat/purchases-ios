@@ -23,14 +23,14 @@ struct DeviceDimensionProvider: DimensionProvider {
     private let appVersion: String
     private let localeProvider: @Sendable () -> String?
     private let platform: String
-    private let platformVersion: String
+    private let platformVersion: OperatingSystemVersion
     private let sdkVersion: String
 
     init(
         appVersion: String = SystemInfo.appVersion,
         localeProvider: @escaping @Sendable () -> String? = { Locale.preferredLanguages.first },
-        platform: String = SystemInfo.platformHeader,
-        platformVersion: String = SystemInfo.systemVersion,
+        platform: String = SystemInfo.platformHeaderConstant,
+        platformVersion: OperatingSystemVersion = ProcessInfo.processInfo.operatingSystemVersion,
         sdkVersion: String = SystemInfo.frameworkVersion
     ) {
         self.appVersion = appVersion
@@ -48,22 +48,39 @@ struct DeviceDimensionProvider: DimensionProvider {
         }
 
         if let locale = self.localeProvider(), !locale.isEmpty {
-            variables["locale"] = .string(locale)
+            variables["locale"] = .string(locale.lowercased().replacingOccurrences(of: "-", with: "_"))
         }
 
         if !self.platform.isEmpty {
-            variables["platform"] = .string(self.platform)
+            variables["platform"] = .string(self.platform.lowercased())
         }
 
-        if !self.platformVersion.isEmpty {
-            variables["platform_version"] = .string(self.platformVersion)
-        }
+        variables["platform_version"] = .string(Self.semanticVersion(self.platformVersion))
 
-        if !self.sdkVersion.isEmpty {
-            variables["sdk_version"] = .string(self.sdkVersion)
+        if let sdkVersion = Self.semanticVersion(self.sdkVersion) {
+            variables["sdk_version"] = .string(sdkVersion)
         }
 
         return variables
+    }
+
+    private static func semanticVersion(_ version: OperatingSystemVersion) -> String {
+        return "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+    }
+
+    private static func semanticVersion(_ version: String) -> String? {
+        let numericComponents = version
+            .split(separator: ".", omittingEmptySubsequences: false)
+            .prefix(3)
+            .map { $0.prefix(while: { $0.isNumber }) }
+
+        guard !numericComponents.isEmpty,
+              numericComponents.allSatisfy({ !$0.isEmpty }) else {
+            return nil
+        }
+
+        return (numericComponents.map(String.init) + Array(repeating: "0", count: 3 - numericComponents.count))
+            .joined(separator: ".")
     }
 
 }
