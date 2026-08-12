@@ -510,7 +510,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
     begin
       xcodebuild(
         workspace: '.',
@@ -934,7 +933,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')

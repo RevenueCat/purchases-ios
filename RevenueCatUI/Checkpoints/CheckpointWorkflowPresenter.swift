@@ -17,7 +17,6 @@ import Foundation
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
-#endif
 
 /// Presents resolved checkpoint workflows using RevenueCatUI.
 ///
@@ -235,5 +234,7 @@ extension CheckpointWorkflowPresenter {
 
 @available(iOS 15.0, macOS 12.0, *)
 extension CheckpointWorkflowPresenter: PaywallViewControllerDelegate {}
+
+#endif
 
 #endif

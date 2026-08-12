@@ -77,7 +77,7 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
-    private let checkpointStorage = Atomic<AnyObject?>(nil)
+    private let checkpointsManager = Atomic<AnyObject?>(nil)
     private let checkpointResolver: CheckpointWorkflowResolver
 
     let notificationCenter: NotificationCenter
@@ -278,9 +278,18 @@ final class PurchasesOrchestrator {
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
     }
 
-    var checkpointStorageObject: AnyObject? {
-        get { self.checkpointStorage.value }
-        set { self.checkpointStorage.value = newValue }
+    func getOrCreateCheckpointsManager<Manager: AnyObject>(
+        _ create: () -> Manager
+    ) -> Manager {
+        return self.checkpointsManager.modify { storedManager in
+            if let existingManager = storedManager as? Manager {
+                return existingManager
+            }
+
+            let newManager = create()
+            storedManager = newManager
+            return newManager
+        }
     }
 
     func resolveCheckpoint(

@@ -57,10 +57,14 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
     private let presenterProvider: PresenterProvider
 
     init(presenterProvider: @escaping PresenterProvider = {
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) else {
             return nil
         }
         return CheckpointWorkflowPresenter()
+        #else
+        return nil
+        #endif
     }) {
         self.presenterProvider = presenterProvider
     }

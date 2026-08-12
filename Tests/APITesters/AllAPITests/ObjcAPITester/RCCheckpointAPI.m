@@ -12,6 +12,8 @@
 //  Created by Rick van der Linden.
 //
 
+#if ENABLE_CHECKPOINTS_OBJC
+
 @import RevenueCat;
 @import RevenueCatUI;
 
@@ -60,3 +62,5 @@
 }
 
 @end
+
+#endif

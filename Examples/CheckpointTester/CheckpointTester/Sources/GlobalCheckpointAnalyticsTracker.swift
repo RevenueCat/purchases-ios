@@ -15,8 +15,8 @@
 import Combine
 import Foundation
 import OSLog
-@_spi(Internal) import RevenueCat
-@_spi(Internal) import RevenueCatUI
+import RevenueCat
+@_spi(CheckpointsInternal) import RevenueCatUI
 
 /// Example app-wide analytics consumer for the SDK's global checkpoint listener API.
 final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListener {

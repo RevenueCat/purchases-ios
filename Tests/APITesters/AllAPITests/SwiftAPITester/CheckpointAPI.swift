@@ -12,43 +12,4 @@
 //  Created by Rick van der Linden.
 //
 
-@_spi(Internal) import RevenueCat
-
-func checkCheckpointCoreAPI() {
-    Task {
-        let resolution: CheckpointResolution = try await Purchases.shared.resolveCheckpoint(
-            identifier: "test_checkpoint",
-            params: .init()
-        )
-
-        switch resolution {
-        case let .workflow(workflow):
-            checkResolvedCheckpointWorkflowAPI(workflow)
-        case let .noAction(reason):
-            checkCheckpointResolutionReasonAPI(reason)
-        @unknown default:
-            break
-        }
-    }
-}
-
-func checkCheckpointResolutionReasonAPI(_ reason: CheckpointResolutionReason) {
-    let _: CheckpointResolutionReason = .noMatch
-    let _: CheckpointResolutionReason = .configurationUnavailable
-    let _: CheckpointResolutionReason = .disabled
-    let _: CheckpointResolutionReason = .unknownCheckpoint
-
-    switch reason {
-    case .noMatch, .configurationUnavailable, .disabled, .unknownCheckpoint:
-        break
-    @unknown default:
-        break
-    }
-}
-
-func checkResolvedCheckpointWorkflowAPI(_ resolvedWorkflow: ResolvedCheckpointWorkflow) {
-    let _: PublishedWorkflow = resolvedWorkflow.workflow
-    let _: UIConfig = resolvedWorkflow.uiConfig
-    let _: Offering = resolvedWorkflow.offering
-    let _: Offerings = resolvedWorkflow.offerings
-}
+// Checkpoint developer APIs are exposed by RevenueCatUI, not RevenueCat.

@@ -17,7 +17,8 @@ import Foundation
 
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
-@_spi(Internal) public extension Purchases {
+@_spi(CheckpointsInternal)
+public extension Purchases {
 
     /// Global listener for checkpoint activity.
     var checkpointListener: CheckpointListener? {
@@ -67,20 +68,22 @@ import Foundation
 }
 
 #if ENABLE_CHECKPOINTS_OBJC
-@_spi(Internal) public extension Purchases {
+
+@_spi(CheckpointsInternal)
+public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
     @_disfavoredOverload
     @objc(checkpointWithIdentifier:params:completion:)
     func checkpoint(
         _ identifier: String,
-        params: CheckpointParams?,
-        completion: @escaping (CheckpointResult?, PublicError?) -> Void
+        objcParams: ObjCCheckpointParams?,
+        completion: @escaping (ObjCCheckpointResult?, PublicError?) -> Void
     ) {
-        self.checkpoint(identifier, params: params ?? .init()) { result in
+        self.checkpoint(identifier, params: objcParams?.value ?? .init()) { result in
             switch result {
             case let .success(result):
-                completion(result, nil)
+                completion(ObjCCheckpointResult.wrapping(result), nil)
             case let .failure(error):
                 completion(nil, error)
             }
@@ -88,33 +91,26 @@ import Foundation
     }
 
 }
+
 #endif
 
 private extension Purchases {
 
     var checkpointsManager: CheckpointsManager {
-        CheckpointsManagerStorage.lock.lock()
-        defer { CheckpointsManagerStorage.lock.unlock() }
-
-        if let manager = self.checkpointStorageObject as? CheckpointsManager {
-            return manager
+        return self.getOrCreateCheckpointsManager {
+            self.createCheckpointsManager()
         }
+    }
 
-        let manager = CheckpointsManager { [weak self] identifier, params in
+    func createCheckpointsManager() -> CheckpointsManager {
+        return CheckpointsManager(resolveCheckpoint: { [weak self] identifier, params in
             guard let self else {
                 throw CancellationError()
             }
-            return try await self.resolveCheckpoint(identifier: identifier, params: params)
-        }
-        self.checkpointStorageObject = manager
-        return manager
+
+            return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
+        })
     }
-
-}
-
-private enum CheckpointsManagerStorage {
-
-    static let lock = NSLock()
 
 }
 

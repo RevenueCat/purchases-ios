@@ -124,10 +124,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
-    /// Opaque per-instance storage used by RevenueCatUI's checkpoint APIs.
-    @_spi(Internal) public var checkpointStorageObject: AnyObject? {
-        get { self.purchasesOrchestrator.checkpointStorageObject }
-        set { self.purchasesOrchestrator.checkpointStorageObject = newValue }
+    /// Returns the existing per-instance checkpoints manager, or creates and stores one.
+    @_spi(Internal)
+    public func getOrCreateCheckpointsManager<Manager: AnyObject>(
+        _ create: () -> Manager
+    ) -> Manager {
+        return self.purchasesOrchestrator.getOrCreateCheckpointsManager(create)
     }
 
     private let operationDispatcher: OperationDispatcher

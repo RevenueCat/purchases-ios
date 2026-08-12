@@ -13,12 +13,11 @@
 //
 
 @_spi(Internal) @testable import RevenueCat
-@_spi(Internal) @testable import RevenueCatUI
+@_spi(CheckpointsInternal) @_spi(Internal) @testable import RevenueCatUI
 import XCTest
 
 #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 import UIKit
-#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
@@ -206,3 +205,5 @@ private final class MockCheckpointPresenterDelegate: CheckpointPresentationDeleg
     }
 
 }
+
+#endif
