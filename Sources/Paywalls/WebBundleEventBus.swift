@@ -10,44 +10,48 @@
 //  WebBundleEventBus.swift
 //
 //  Created by Jacob Zivan Rakidzich on 8/6/26.
+// swiftlint:disable missing_docs
 
-import Combine
+@preconcurrency import Combine
 import Foundation
 
-/// Publishes validated web-view entry URLs discovered during paywall cache warming.
+/// Publishes validated web-view entry URLs discovered during paywall cache warming,
+/// and a best-effort signal for live web views to drop in-memory `WKWebView`s on logout.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
-actor WebBundleEventBus {
+@_spi(Internal) public actor WebBundleEventBus {
 
-    static let shared = WebBundleEventBus()
+    public static let shared = WebBundleEventBus()
 
     private let subject: CurrentValueSubject<WebBundleEvent, Never>
 
-    nonisolated let publisher: AnyPublisher<WebBundleEvent, Never>
+    public nonisolated let publisher: AnyPublisher<WebBundleEvent, Never>
 
-    init() {
+    public init() {
         let subject = CurrentValueSubject<WebBundleEvent, Never>(.empty)
         self.subject = subject
         self.publisher = subject.eraseToAnyPublisher()
     }
 
     /// Replaces the current URL set and notifies subscribers.
-    func publish(_ urls: Set<URLWithValidation>) {
+    public func publish(_ urls: Set<URLWithValidation>) {
         self.subject.send(.receivedAssetURLs(urls))
     }
 
     /// Sets the state back to empty
-    func empty() {
+    public func empty() {
         self.subject.send(.empty)
     }
 
-    /// Notifies observers to clear their caches
-    func clearCache() {
+    /// Notifies observers to clear their caches, then returns to empty so late subscribers
+    /// (new web views created after identity change) do not immediately tear down.
+    public func clearCache() {
         self.subject.send(.cacheClearRequested)
+        self.subject.send(.empty)
     }
 
 }
 
-enum WebBundleEvent: Equatable, Sendable {
+@_spi(Internal) public enum WebBundleEvent: Equatable, Sendable {
     case empty
     case receivedAssetURLs(Set<URLWithValidation>)
     case cacheClearRequested
