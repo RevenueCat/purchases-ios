@@ -15,6 +15,14 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 final class PaywallCacheWarmingTests: TestCase {
 
@@ -645,6 +653,205 @@ final class PaywallCacheWarmingTests: TestCase {
 
         expect(session.dataFromURLCallCount).to(equal(1))
         expect(registrar.registerFontCallCount).to(equal(2))
+    }
+
+    // MARK: - fontIsAlreadyInstalled
+
+    func testFontIsAlreadyInstalled_WhenServerFamilyDoesNotMatchSystemFamily() throws {
+        let font = try Self.fontWithMultiWordFamily()
+
+        // The backend derives the family from the PostScript name prefix, dropping the
+        // spaces the system family name has (e.g. "Avenir Next" -> "AvenirNext").
+        let derivedFamily = font.family.replacingOccurrences(of: " ", with: "")
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: derivedFamily)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyMatchesSystemFamily() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: font.family)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyIsNil() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: nil)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyIsEmpty() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: "")).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyBelongsToADifferentInstalledFont() throws {
+        let font = try Self.anyInstalledFont()
+        let otherFamily = try Self.installedFamilyName(otherThan: font.family)
+
+        // A wrong-but-real family must not stop us from resolving the face by name.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: otherFamily)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_IsCaseInsensitiveForFontName() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name.uppercased(),
+                                                        fontFamily: font.family)).to(beTrue())
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name.lowercased(),
+                                                        fontFamily: font.family)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseForUnknownFontName() {
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: Self.unknownFamilyName)).to(beFalse())
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: nil)).to(beFalse())
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseWhenOnlyTheFamilyIsInstalled() throws {
+        let font = try Self.anyInstalledFont()
+
+        // The family exists, but no face in it is named `unknownFontName`.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: font.family)).to(beFalse())
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseForEmptyFontName() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: "", fontFamily: nil)).to(beFalse())
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: "", fontFamily: font.family)).to(beFalse())
+    }
+
+#if !os(tvOS)
+
+    func testTriggerFontDownload_SkipsDownloadWhenInstalledUnderADifferentFamily() async throws {
+        let font = try Self.fontWithMultiWordFamily()
+        let derivedFamily = font.family.replacingOccurrences(of: " ", with: "")
+
+        let session = MockSession()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: Self.makeFontsManager(session: session)
+        )
+        let fontsConfig = try Self.fontsConfig(fontName: font.name, family: derivedFamily)
+
+        await cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+
+        expect(session.dataFromURLCallCount).to(equal(0))
+    }
+
+    func testTriggerFontDownload_DownloadsWhenFontIsNotInstalled() async throws {
+        let data = Data("valid font".utf8)
+        let session = MockSession()
+        session.dataFromURL = data
+        session.urlResponse = HTTPURLResponse(
+            url: Self.fontURL,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: Self.makeFontsManager(session: session)
+        )
+
+        let fontsConfig = try Self.fontsConfig(fontName: Self.unknownFontName,
+                                               family: Self.unknownFamilyName,
+                                               hash: data.md5String)
+
+        await cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+
+        expect(session.dataFromURLCallCount).to(equal(1))
+    }
+
+#endif
+
+    // MARK: - Font test helpers
+
+    private static let unknownFontName = "RevenueCatNotAnInstalledFont-Regular"
+    private static let unknownFamilyName = "RevenueCatNotAnInstalledFont"
+    private static let fontURL = URL(string: "https://example.com/font.ttf")!
+
+    private static let fontsManager = PaywallCacheWarmingTests.makeFontsManager()
+
+    private static func makeFontsManager(session: MockSession = MockSession()) -> DefaultPaywallFontsManager {
+        return DefaultPaywallFontsManager(
+            fileManager: MockFileManager(),
+            session: session,
+            registrar: MockRegistrar()
+        )
+    }
+
+    private static func fontsConfig(
+        fontName: String,
+        family: String,
+        hash: String = "abc123"
+    ) throws -> UIConfig.FontsConfig {
+        let json = """
+        {"family": "\(family)", "url": "\(Self.fontURL.absoluteString)", "hash": "\(hash)"}
+        """
+        let webFontInfo = try JSONDecoder().decode(UIConfig.WebFontInfo.self, from: Data(json.utf8))
+
+        return UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: fontName, webFontInfo: webFontInfo))
+    }
+
+    /// Every installed family and its face names on the current platform.
+    private static func installedFontFamilies() -> [(family: String, names: [String])] {
+        #if canImport(UIKit)
+        return UIFont.familyNames.map { ($0, UIFont.fontNames(forFamilyName: $0)) }
+        #elseif canImport(AppKit)
+        return NSFontManager.shared.availableFontFamilies.map { family in
+            let names = (NSFontManager.shared.availableMembers(ofFontFamily: family) ?? [])
+                .compactMap { $0.first as? String }
+            return (family, names)
+        }
+        #else
+        return []
+        #endif
+    }
+
+    private static func anyInstalledFont() throws -> (family: String, name: String) {
+        for entry in Self.installedFontFamilies() {
+            if let name = entry.names.first {
+                return (entry.family, name)
+            }
+        }
+
+        throw XCTSkip("No installed fonts on this platform")
+    }
+
+    private static func installedFamilyName(otherThan family: String) throws -> String {
+        let other = Self.installedFontFamilies()
+            .first { $0.family.caseInsensitiveCompare(family) != .orderedSame && !$0.names.isEmpty }
+
+        guard let other = other else {
+            throw XCTSkip("Only one installed font family on this platform")
+        }
+        return other.family
+    }
+
+    /// An installed font whose family name contains spaces, so that removing them produces a
+    /// family the system does not know about.
+    private static func fontWithMultiWordFamily() throws -> (family: String, name: String) {
+        let families = Self.installedFontFamilies()
+        let knownFamilies = Set(families.map { $0.family.lowercased() })
+
+        for entry in families where entry.family.contains(" ") {
+            let derived = entry.family.replacingOccurrences(of: " ", with: "").lowercased()
+            // Skip families where dropping spaces happens to produce another known family.
+            guard !knownFamilies.contains(derived), let name = entry.names.first else { continue }
+            return (entry.family, name)
+        }
+
+        throw XCTSkip("No installed font with a multi-word family name on this platform")
     }
 }
 
