@@ -1,17 +1,30 @@
+## RevenueCat SDK
+### 🐞 Bugfixes
+* fix(remote-config): Fix misleading ui_config warnings for projects without paywalls (#7389) via Rick (@rickvdl)
+
 ## RevenueCatUI SDK
+### 🐞 Bugfixes
+* fix(paywalls): don't leave a hidden package selected by default (#7380) via Facundo Menzella (@facumenzella)
+* Add accessibility labels for some paywall buttons (#7357) via Facundo Menzella (@facumenzella)
+* fix(paywalls): dismiss the UIKit exit offer instead of deferring to the host (#7371) via Facundo Menzella (@facumenzella)
 ### Paywallsv2
 #### 🐞 Bugfixes
-* Fix web_view component flashing on paywall load (#7318) via Antonio Pallares (@ajpallares)
-* fix(paywalls): apply tab state rules on workflow-backed paywalls (#7347) via Álvaro Brey (@AlvaroBrey)
+* fix(paywalls-v2): select each tab's own default package on workflows (#7373) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* ci: report public API changes and pings to #feed-sdk-new-api (#7309) via Facundo Menzella (@facumenzella)
-* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `dd577ee` to `b4e1e7f` (#7358) via dependabot[bot] (@dependabot[bot])
-* Use internalPaywallComponents property in tests (#7346) via Rick (@rickvdl)
-* Bound blob downloads with per-source timeouts (#7185) via Antonio Pallares (@ajpallares)
-* Re-tier HTTP request timeouts around per-host memory (#7179) via Antonio Pallares (@ajpallares)
-* Chore(deps): Bump danger from 9.6.0 to 9.6.1 (#7350) via dependabot[bot] (@dependabot[bot])
-* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `3421c88` to `dd577ee` (#7351) via dependabot[bot] (@dependabot[bot])
-* Add a Maestro flow for the config kill switch tripping mid-session (#7324) via Antonio Pallares (@ajpallares)
-* Fix `fastlane setup_dev` in submodule checkouts and with PATH-installed swiftlint (#7330) via Álvaro Brey (@AlvaroBrey)
-* fix(remote-config): improve logging when remote config is disabled through to killswitch (#7337) via Rick (@rickvdl)
+* feat(checkpoints): Add local rules evaluation foundation (#7306) via Rick (@rickvdl)
+* feat(checkpoints): Resolve checkpoints from remote configuration (#7385) via Rick (@rickvdl)
+* feat(checkpoints): Expand CheckpointTester use cases (#7382) via Rick (@rickvdl)
+* refactor(checkpoints): Only expose APIs behind a feature flag (#7381) via Rick (@rickvdl)
+* Chore: reduce component tree traversals on cache warming (#7379) via Jacob Rakidzich (@JZDesign)
+* Ingest audiences config topic (#7390) via Cesar de la Vega (@vegaro)
+* Chore: Create WebBundleEventBus (#7386) via Jacob Rakidzich (@JZDesign)
+* Chore(deps): Bump json from 2.20.0 to 2.21.2 (#7387) via dependabot[bot] (@dependabot[bot])
+* fix(checkpoints): Refine unknown checkpoint and workflow resolution (#7384) via Rick (@rickvdl)
+* Ingest the checkpoints config topic (#7370) via Facundo Menzella (@facumenzella)
+* feat(checkpoints): UI presentation (#7368) via Rick (@rickvdl)
+* feat(checkpoints): core engine (#7365) via Rick (@rickvdl)
+* feat(checkpoints): CheckpointTester app (#7375) via Rick (@rickvdl)
+* feat(checkpoints): public API surface (#7361) via Rick (@rickvdl)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `b4e1e7f` to `7fbbe66` (#7378) via dependabot[bot] (@dependabot[bot])
+* test(paywalls): Maestro flow for closing the exit offer from UIKit (#7372) via Facundo Menzella (@facumenzella)
