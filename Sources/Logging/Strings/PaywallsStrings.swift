@@ -70,6 +70,8 @@ enum PaywallsStrings {
     case unrecognized_condition_type(String)
     case malformed_condition(String, Error)
 
+    case web_view_data_store_removal_failed(UUID, Error)
+
 }
 
 extension PaywallsStrings: LogMessage {
@@ -197,6 +199,9 @@ extension PaywallsStrings: LogMessage {
         case let .malformed_condition(conditionType, error):
             return "Paywall contains malformed condition of type '\(conditionType)': \(error). " +
             "Please update to the latest SDK version."
+
+        case let .web_view_data_store_removal_failed(identifier, error):
+            return "Failed to remove web view data store \(identifier): \(error.localizedDescription)"
 
         }
     }
