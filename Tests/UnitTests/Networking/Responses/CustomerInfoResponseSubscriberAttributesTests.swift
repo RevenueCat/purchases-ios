@@ -130,4 +130,71 @@ class CustomerInfoResponseSubscriberAttributesTests: TestCase {
         expect(subscriberAttributes.description) == [attribute].description
     }
 
+    // MARK: - JSONDecoder.default / JSONEncoder.default
+    //
+    // These decode/encode with the same `.convertFromSnakeCase` / `.convertToSnakeCase` configured
+    // decoder and encoder actually used in production (e.g. when decoding `CustomerInfoResponse`).
+    // A plain `JSONDecoder()`/`JSONEncoder()` (as used by the tests above) never rewrites keys, so it
+    // can't catch attribute names getting mangled by that key strategy -- these tests can.
+
+    func testDecodeThroughProductionDecoderPreservesUnderscoredAttributeKeys() throws {
+        let json = """
+        {
+          "custom_key": {"value": "custom value", "updated_at_ms": 1650000000000}
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+
+        let attributes = try JSONDecoder.default.decode(CustomerInfoResponse.SubscriberAttributes.self, from: data)
+
+        let attribute = try XCTUnwrap(attributes.attributes.first)
+        expect(attribute.key) == "custom_key"
+        expect(attribute.value) == "custom value"
+        expect(attribute.setTime) == Date(timeIntervalSince1970: 1_650_000_000)
+    }
+
+    func testEncodeThroughProductionEncoderPreservesUnderscoredAttributeKeys() throws {
+        let attribute = SubscriberAttribute(withKey: "custom_key",
+                                            value: "custom value",
+                                            isSynced: true,
+                                            setTime: Date(timeIntervalSince1970: 1_650_000_000))
+        let subscriberAttributes = CustomerInfoResponse.SubscriberAttributes(attributes: [attribute])
+
+        let data = try JSONEncoder.default.encode(subscriberAttributes)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+
+        let entry = try XCTUnwrap(json["custom_key"] as? [String: Any])
+        expect(entry["value"] as? String) == "custom value"
+        expect(entry["updated_at_ms"] as? Double) == 1_650_000_000_000
+    }
+
+    func testProductionEncodeDecodeRoundTripPreservesUnderscoredAttributeKeys() throws {
+        let attribute = SubscriberAttribute(withKey: "custom_key",
+                                            value: "custom value",
+                                            isSynced: true,
+                                            setTime: Date(timeIntervalSince1970: 1_650_000_000))
+        let original = CustomerInfoResponse.SubscriberAttributes(attributes: [attribute])
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(CustomerInfoResponse.SubscriberAttributes.self, from: data)
+
+        expect(Set(decoded.attributes)) == Set(original.attributes)
+    }
+
+    func testProductionEncodeDecodeRoundTripPreservesCamelCaseAttributeKeys() throws {
+        // A camelCase attribute name shouldn't be turned into snake_case on the way out either.
+        let attribute = SubscriberAttribute(withKey: "myCustomAttribute",
+                                            value: "value",
+                                            isSynced: true,
+                                            setTime: Date(timeIntervalSince1970: 1_650_000_000))
+        let original = CustomerInfoResponse.SubscriberAttributes(attributes: [attribute])
+
+        let data = try JSONEncoder.default.encode(original)
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        expect(json.keys.contains("myCustomAttribute")) == true
+
+        let decoded = try JSONDecoder.default.decode(CustomerInfoResponse.SubscriberAttributes.self, from: data)
+        expect(decoded.attributes.first?.key) == "myCustomAttribute"
+    }
+
 }

@@ -139,37 +139,43 @@ extension CustomerInfoResponse.Entitlement: Decodable {
 
 extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomStringConvertible {
 
+    /// The wire representation of a single subscriber attribute, decoded/encoded as the *value*
+    /// of a `[String: Entry]` dictionary (see below for why).
+    private struct Entry: Codable {
+        var value: String?
+        var updatedAtMs: Double
+    }
+
     var description: String {
         attributes.description
     }
 
+    // Note: attribute names are arbitrary, developer-chosen strings (they can contain underscores,
+    // `$`, mixed case, etc.), so they must never be run through `JSONDecoder`/`JSONEncoder`'s
+    // snake_case <-> camelCase key strategy conversion (`JSONDecoder.default` / `JSONEncoder.default`
+    // both configure this). A `KeyedDecodingContainer`/`KeyedEncodingContainer` keyed by a custom
+    // `CodingKey` type (like `AnyCodingKey`) is *not* exempt from that conversion, so using one here
+    // would silently mangle attribute names containing underscores (e.g. "custom_key" -> "customKey").
+    // Swift's native `Dictionary<String, Value>` Codable conformance *is* specifically exempted from
+    // the key strategy, so decoding/encoding through `[String: Entry]` keeps attribute names intact.
     init(from decoder: any Decoder) throws {
-        let container = try decoder.container(keyedBy: AnyCodingKey.self)
+        let entries = try [String: Entry](from: decoder)
 
-        var attributes = [SubscriberAttribute]()
-        for key in container.allKeys {
-            let child = try container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
-            let time = try child.decode(Double.self, forKey: "updatedAtMs")
-            let attribute = SubscriberAttribute(withKey: key.stringValue,
-                                                value: try child.decodeIfPresent(String.self, forKey: "value"),
-                                                isSynced: true,
-                                                setTime: Date(timeIntervalSince1970: time / 1000))
-
-            attributes.append(attribute)
-        }
-
-        self.init(attributes: attributes)
+        self.init(attributes: entries.map { key, entry in
+            SubscriberAttribute(withKey: key,
+                                value: entry.value,
+                                isSynced: true,
+                                setTime: Date(timeIntervalSince1970: entry.updatedAtMs / 1000))
+        })
     }
 
     func encode(to encoder: any Encoder) throws {
-        var container = encoder.container(keyedBy: AnyCodingKey.self)
+        let entries = Dictionary(uniqueKeysWithValues: self.attributes.map { attribute in
+            (attribute.key, Entry(value: attribute.value,
+                                  updatedAtMs: attribute.setTime.timeIntervalSince1970 * 1000))
+        })
 
-        for attribute in self.attributes {
-            let key = AnyCodingKey(stringValue: attribute.key)
-            var nested = container.nestedContainer(keyedBy: AnyCodingKey.self, forKey: key)
-            try nested.encode(attribute.value, forKey: "value")
-            try nested.encode(attribute.setTime.timeIntervalSince1970 * 1000, forKey: "updatedAtMs")
-        }
+        try entries.encode(to: encoder)
     }
 
 }

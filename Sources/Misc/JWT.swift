@@ -22,7 +22,11 @@ struct JWT {
     var amr: [String]? { payload["amr"] as? [String] }
 
     init(from token: String) throws {
-        let slices = token.split(separator: ".")
+        // `omittingEmptySubsequences: false` is required: JWTs signed with `alg: "none"` are
+        // formatted as `header.payload.` with an empty signature segment. The default
+        // `omittingEmptySubsequences: true` would drop that empty trailing segment, leaving
+        // only 2 slices and incorrectly failing the count check below.
+        let slices = token.split(separator: ".", omittingEmptySubsequences: false)
         guard slices.count == 3 else { throw Error.invalidJWT }
 
         self.header = try decode(slices[0])

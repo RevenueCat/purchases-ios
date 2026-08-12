@@ -115,6 +115,34 @@ class JWTTests: TestCase {
         expect { try JWT(from: token) }.to(throwError())
     }
 
+    // MARK: - "none"-alg tokens (empty signature segment)
+    //
+    // Tokens signed with `alg: "none"` are formatted as `header.payload.` -- i.e. the
+    // signature segment is present but empty. `split(separator:)` defaults to
+    // `omittingEmptySubsequences: true`, which would silently drop that empty trailing
+    // segment and leave only 2 slices, incorrectly failing the `slices.count == 3` check.
+
+    func testInitParsesTokenWithEmptyNoneAlgSignature() throws {
+        let header = try Self.base64URL(from: "{\"alg\":\"none\",\"typ\":\"JWT\"}")
+        let payload = try Self.base64URL(from: "{\"sub\":\"abc\"}")
+
+        let token = "\(header).\(payload)."
+
+        let jwt = try JWT(from: token)
+
+        expect(jwt.header["alg"] as? String) == "none"
+        expect(jwt.payload["sub"] as? String) == "abc"
+        expect(jwt.signature).to(beEmpty())
+    }
+
+    func testInitDoesNotThrowInvalidJWTForEmptyTrailingSignatureSegment() throws {
+        let token = try Self.makeToken(header: ["alg": "none"], payload: ["sub": "abc"])
+        let parts = token.split(separator: ".")
+        let noneAlgToken = "\(parts[0]).\(parts[1])."
+
+        expect { try JWT(from: noneAlgToken) }.notTo(throwError())
+    }
+
 }
 
 private extension JWTTests {

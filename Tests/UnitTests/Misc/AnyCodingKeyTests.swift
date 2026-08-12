@@ -51,7 +51,8 @@ class AnyCodingKeyTests: TestCase {
         let key = try XCTUnwrap(AnyCodingKey(codingKey: other))
 
         expect(key.stringValue) == other.stringValue
-        expect(key.intValue) == other.intValue
+        expect(key.intValue).to(beNil())
+        expect(other.intValue).to(beNil())
     }
 
     func testCodingKeyPropertyReturnsSelf() {
