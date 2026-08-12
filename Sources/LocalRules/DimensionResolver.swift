@@ -22,7 +22,7 @@ struct DimensionSnapshot: Equatable, Sendable {
 
 enum DimensionResolutionError: Error, Equatable, Sendable {
 
-    case providerFailed(identifier: String, message: String)
+    case providerFailed(namespace: DimensionNamespace, message: String)
     case conflictingValue(path: String)
 }
 
@@ -59,7 +59,7 @@ struct DimensionResolver: Sendable {
                 throw error
             } catch {
                 throw DimensionResolutionError.providerFailed(
-                    identifier: provider.identifier,
+                    namespace: provider.namespace,
                     message: String(describing: error)
                 )
             }

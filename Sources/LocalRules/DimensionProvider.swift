@@ -39,9 +39,6 @@ enum DimensionValue: Equatable, Sendable {
 /// pulled only when a rules evaluation requests a new snapshot.
 protocol DimensionProvider: Sendable {
 
-    /// Stable identifier used only for configuration diagnostics.
-    var identifier: String { get }
-
     /// Root namespace containing the returned dimensions.
     var namespace: DimensionNamespace { get }
 

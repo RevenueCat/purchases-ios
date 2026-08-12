@@ -17,7 +17,6 @@ import Foundation
 /// Supplies app and device information to the local rules engine.
 struct DeviceDimensionProvider: DimensionProvider {
 
-    let identifier = "device"
     let namespace = DimensionNamespace.device
 
     private let appVersion: String

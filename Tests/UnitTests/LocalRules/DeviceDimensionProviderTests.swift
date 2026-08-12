@@ -34,7 +34,6 @@ struct DeviceDimensionProviderTests {
             sdkVersion: "5.84.0-SNAPSHOT"
         )
 
-        #expect(provider.identifier == "device")
         #expect(provider.namespace == .device)
         #expect(try await provider.dimensions(at: Date()) == [
             "app_version": .string("1.2.3"),
