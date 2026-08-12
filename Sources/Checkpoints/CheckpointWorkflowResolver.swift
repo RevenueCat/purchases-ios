@@ -73,3 +73,132 @@ final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
 }
+
+/// Resolves checkpoints through the ordered rules served by the `checkpoint_rules` remote-config topic.
+///
+/// Audience evaluation is not available yet. Until it is, the first rule supplied by the backend is treated as
+/// the match.
+final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    private let checkpointsConfigProvider: CheckpointsConfigProviderType
+    private let workflowManager: WorkflowManager
+    private let offeringsProvider: () async throws -> Offerings
+
+    init(
+        checkpointsConfigProvider: CheckpointsConfigProviderType,
+        workflowManager: WorkflowManager,
+        offeringsProvider: @escaping () async throws -> Offerings
+    ) {
+        self.checkpointsConfigProvider = checkpointsConfigProvider
+        self.workflowManager = workflowManager
+        self.offeringsProvider = offeringsProvider
+    }
+
+    func resolve(identifier: String, params _: CheckpointParams) async throws -> CheckpointResolution {
+        #if DEBUG
+        // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
+        if identifier == Self.simulatedErrorCheckpointIdentifier {
+            throw ErrorUtils.configurationError(
+                message: "Simulated error: checkpoint workflow not presentable."
+            )
+        }
+        #endif
+
+        return try await self.resolveConfiguredWorkflow(identifier: identifier)
+    }
+
+    private func resolveConfiguredWorkflow(identifier: String) async throws -> CheckpointResolution {
+        let rulesSnapshot: CheckpointRulesSnapshot
+        do {
+            guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
+                return .noAction(.unknownCheckpoint)
+            }
+            rulesSnapshot = snapshot
+        } catch let error as CancellationError {
+            throw error
+        } catch CheckpointRulesProviderError.remoteConfigDisabled {
+            return .noAction(.disabled)
+        } catch {
+            return .noAction(.configurationUnavailable)
+        }
+
+        guard let rule = self.matchingRule(in: rulesSnapshot.ruleSet.rules) else { return .noAction(.noMatch) }
+        guard let offeringID = await self.offeringID(for: rule) else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        guard let offerings = await self.loadOfferings() else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        let resolution = await self.resolve(rule, offeringID: offeringID, offerings: offerings)
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        return resolution
+    }
+
+    private func matchingRule(in rules: [CheckpointRule]) -> CheckpointRule? {
+        // Audience rules will be evaluated here later. Until then, the first backend-ordered rule always matches.
+        return rules.first
+    }
+
+    private func offeringID(for rule: CheckpointRule) async -> String? {
+        let offeringIdByWorkflowId = await self.workflowManager.offeringIdByWorkflowId()
+        guard let offeringID = offeringIdByWorkflowId[rule.workflowId] ?? nil else {
+            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+                workflowID: rule.workflowId,
+                reason: "no offering identifier is configured"
+            ))
+            return nil
+        }
+        return offeringID
+    }
+
+    private func loadOfferings() async -> Offerings? {
+        do {
+            return try await self.offeringsProvider()
+        } catch {
+            Logger.error(error.localizedDescription)
+            return nil
+        }
+    }
+
+    private func resolve(
+        _ rule: CheckpointRule,
+        offeringID: String,
+        offerings: Offerings
+    ) async -> CheckpointResolution {
+        guard let offering = offerings.offering(identifier: offeringID) else {
+            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+                workflowID: rule.workflowId,
+                reason: "offering '\(offeringID)' is unavailable"
+            ))
+            return .noAction(.configurationUnavailable)
+        }
+
+        do {
+            let workflowData = try await self.workflowManager.getWorkflow(workflowId: rule.workflowId)
+            return .workflow(
+                ResolvedCheckpointWorkflow(
+                    workflow: workflowData.workflow,
+                    uiConfig: workflowData.uiConfig,
+                    offering: offering,
+                    offerings: offerings
+                )
+            )
+        } catch {
+            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+                workflowID: rule.workflowId,
+                reason: error.localizedDescription
+            ))
+            return .noAction(.configurationUnavailable)
+        }
+    }
+
+    #if DEBUG
+    private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
+    #endif
+
+}
