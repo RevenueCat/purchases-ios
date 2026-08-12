@@ -37,7 +37,7 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(dimensionProviders: [provider], date: date)
 
-        let identifier = try await evaluator.match(in: [
+        let rule = try await evaluator.match(in: [
             TestLocalRule(
                 id: TestRuleID.doesNotMatch,
                 predicate: #"{"==":[{"var":"device.launch_count"},2]}"#
@@ -52,7 +52,7 @@ struct LocalRulesEvaluatorTests {
             )
         ])
 
-        #expect(identifier == .matches)
+        #expect(rule?.id == .matches)
         #expect(await provider.invocationCount == 1)
         #expect(await provider.receivedDates == [date])
     }
@@ -76,8 +76,8 @@ struct LocalRulesEvaluatorTests {
             TestLocalRule(id: "second", predicate: #"{"==":[{"var":"session.count"},2]}"#)
         ])
 
-        #expect(first == "first")
-        #expect(second == "second")
+        #expect(first?.id == "first")
+        #expect(second?.id == "second")
         #expect(await provider.invocationCount == 2)
     }
 
@@ -193,24 +193,12 @@ struct LocalRulesEvaluatorTests {
     func invalidRuleDoesNotPreventLaterRuleFromMatching() async throws {
         let evaluator = Self.evaluator(dimensionProviders: [])
 
-        let identifier = try await evaluator.match(in: [
+        let rule = try await evaluator.match(in: [
             TestLocalRule(id: "invalid", predicate: "{not-json"),
             TestLocalRule(id: "valid", predicate: "true")
         ])
 
-        #expect(identifier == "valid")
-    }
-
-    @Test
-    func matchesAnyReturnsWhetherARuleMatches() async throws {
-        let evaluator = Self.evaluator(dimensionProviders: [])
-
-        let matches = try await evaluator.matchesAny(in: [
-            TestLocalRule(id: "false", predicate: "false"),
-            TestLocalRule(id: "true", predicate: "true")
-        ])
-
-        #expect(matches)
+        #expect(rule?.id == "valid")
     }
 
     @Test
@@ -242,14 +230,14 @@ struct LocalRulesEvaluatorTests {
             )
         ])
 
-        let identifier = try await evaluator.match(in: [
+        let rule = try await evaluator.match(in: [
             TestLocalRule(
                 id: "missing-is-null",
                 predicate: #"{"==":[{"var":"device.unknown"},null]}"#
             )
         ])
 
-        #expect(identifier == "missing-is-null")
+        #expect(rule?.id == "missing-is-null")
     }
 
     @Test
@@ -261,8 +249,8 @@ struct LocalRulesEvaluatorTests {
         )
         let evaluator = Self.evaluator(dimensionProviders: [provider])
 
-        let identifier = try await evaluator.match(in: [TestLocalRule<String>]())
-        #expect(identifier == nil)
+        let rule = try await evaluator.match(in: [TestLocalRule<String>]())
+        #expect(rule?.id == nil)
         #expect(await provider.invocationCount == 0)
     }
 
@@ -270,27 +258,11 @@ struct LocalRulesEvaluatorTests {
     func successfulFalseRulesReturnNil() async throws {
         let evaluator = Self.evaluator(dimensionProviders: [])
 
-        let identifier = try await evaluator.match(in: [
+        let rule = try await evaluator.match(in: [
             TestLocalRule(id: "false", predicate: "false")
         ])
 
-        #expect(identifier == nil)
-    }
-
-    @Test
-    func matchesAnyThrowsEvaluationFailure() async {
-        let evaluator = Self.evaluator(dimensionProviders: [])
-
-        do {
-            _ = try await evaluator.matchesAny(in: [
-                TestLocalRule(id: "invalid", predicate: "{not-json")
-            ])
-            Issue.record("Expected predicate failure to be thrown")
-        } catch is LocalRulesEvaluationError {
-            // Expected
-        } catch {
-            Issue.record("Unexpected error: \(error)")
-        }
+        #expect(rule?.id == nil)
     }
 
     @Test
@@ -301,24 +273,6 @@ struct LocalRulesEvaluatorTests {
 
         do {
             _ = try await evaluator.match(in: [
-                TestLocalRule(id: "test", predicate: "true")
-            ])
-            Issue.record("Expected cancellation to be thrown")
-        } catch is CancellationError {
-            // Expected
-        } catch {
-            Issue.record("Unexpected error: \(error)")
-        }
-    }
-
-    @Test
-    func cancellationIsThrownByMatchesAny() async {
-        let evaluator = Self.evaluator(dimensionProviders: [
-            CancellingDimensionProvider(identifier: "cancelled", namespace: .session)
-        ])
-
-        do {
-            _ = try await evaluator.matchesAny(in: [
                 TestLocalRule(id: "test", predicate: "true")
             ])
             Issue.record("Expected cancellation to be thrown")

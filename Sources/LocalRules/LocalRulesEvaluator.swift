@@ -14,13 +14,9 @@
 
 import Foundation
 
-/// An identified rule that can be evaluated against locally collected variables.
+/// A rule that can be evaluated against locally collected dimensions.
 protocol LocalRule: Sendable {
 
-    // swiftlint:disable:next type_name
-    associatedtype ID: Sendable
-
-    var id: ID { get }
     var predicate: String { get }
 }
 
@@ -45,10 +41,10 @@ final class LocalRulesEvaluator: Sendable {
         )
     }
 
-    /// Returns the first matching rule identifier, using one snapshot for the full call.
+    /// Returns the first matching rule, using one snapshot for the full call.
     ///
-    /// For example, rules `[("a", false), ("b", true)]` return `"b"`.
-    func match<Rule: LocalRule>(in rules: [Rule]) async throws -> Rule.ID? {
+    /// For example, rules `[("a", false), ("b", true)]` return the second rule.
+    func match<Rule: LocalRule>(in rules: [Rule]) async throws -> Rule? {
         guard !rules.isEmpty else {
             return nil
         }
@@ -63,7 +59,7 @@ final class LocalRulesEvaluator: Sendable {
                 variables: snapshot.values
             ) {
             case .success(true):
-                return rule.id
+                return rule
             case .success(false):
                 continue
             case .failure(let error):
@@ -78,10 +74,5 @@ final class LocalRulesEvaluator: Sendable {
         }
 
         return nil
-    }
-
-    /// Returns whether any rule matches.
-    func matchesAny<Rule: LocalRule>(in rules: [Rule]) async throws -> Bool {
-        try await self.match(in: rules) != nil
     }
 }
