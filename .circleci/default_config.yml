@@ -852,7 +852,7 @@ jobs:
           install_xcbeautify: false
       - update-spm-installation-commit
       - run:
-          name: Record V1 snapshots and upload to Emerge
+          name: Record V1 snapshots and upload to Emerge and Sentry
           command: bundle exec fastlane record_and_upload_v1_snapshots
           no_output_timeout: 15m
           environment:
@@ -2022,7 +2022,7 @@ jobs:
           command: bundle exec fastlane deploy_rct_tester dry_run:<< parameters.dry_run >>
       - slack-notify-on-fail
 
-  emerge_purchases_ui_snapshot_tests:
+  purchases_ui_snapshot_tests:
     executor:
       name: macos-executor
     steps:
@@ -2032,8 +2032,11 @@ jobs:
       - install-dependencies
       - update-spm-installation-commit
       - run:
-          name: Build Paywalls Tester
-          command: bundle exec fastlane build_paywalls_tester_for_emerge
+          name: Build and upload PaywallsTester snapshots
+          command: |
+            # Sentry CLI uploads snapshots concurrently, so the default macOS file limit is too low for this suite.
+            ulimit -n 4096
+            bundle exec fastlane build_and_upload_paywalls_tester_snapshots
       - slack-notify-on-fail
 
   binary_size_analysis:
@@ -2081,12 +2084,15 @@ jobs:
           command: bundle exec fastlane build_and_upload_binary_size_analysis integration_method:SPM
 
   record-and-upload-paywalls-v2-snapshots:
-    description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository and/or Emerge"
+    description: "Record paywall template screenshots and distribute them to the paywall-rendering-validation repository, Emerge, and/or Sentry"
     parameters:
       push_to_validation_repo:
         type: boolean
         default: false
       upload_to_emerge:
+        type: boolean
+        default: false
+      upload_to_sentry:
         type: boolean
         default: false
     executor:
@@ -2119,7 +2125,7 @@ jobs:
           name: Record and upload paywall template screenshots
           # target_repository_path is only set when push_to_validation_repo is true; the lane pushes
           # to the validation repo only when it receives a non-empty target_repository_path.
-          command: bundle exec fastlane record_and_upload_v2_snapshots upload_to_emerge:<< parameters.upload_to_emerge >> target_repository_path:"${PAYWALL_VALIDATION_REPO_PATH:-}"
+          command: bundle exec fastlane record_and_upload_v2_snapshots upload_to_emerge:<< parameters.upload_to_emerge >> upload_to_sentry:<< parameters.upload_to_sentry >> target_repository_path:"${PAYWALL_VALIDATION_REPO_PATH:-}"
           no_output_timeout: 30m
       - store_artifacts:
           path: fastlane/test_output
@@ -2424,9 +2430,10 @@ workflows:
       - run-revenuecat-ui-ios-26:
           context:
             - slack-secrets
-      - emerge_purchases_ui_snapshot_tests:
+      - purchases_ui_snapshot_tests:
           context:
             - slack-secrets
+            - sentry
       - binary_size_analysis:
           context:
             - slack-secrets
@@ -2536,13 +2543,16 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+            - sentry
       - record-and-upload-paywalls-v2-snapshots:
           push_to_validation_repo: false
           upload_to_emerge: true
+          upload_to_sentry: true
           requires:
             - approve-full-tests
           context:
             - slack-secrets
+            - sentry
 
       # Installation Tests
       - installation-tests-all-but-carthage:
@@ -2604,7 +2614,7 @@ workflows:
             - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
+            - purchases_ui_snapshot_tests
             - binary_size_analysis
             - build-tv-watch-mac-and-visionos
             - run-workflow-maestro-tests
@@ -2792,9 +2802,11 @@ workflows:
       - record-and-upload-paywalls-v2-snapshots:
           push_to_validation_repo: true
           upload_to_emerge: true
+          upload_to_sentry: true
           context:
             - paywall-rendering-validation-pr-rw
             - slack-secrets
+            - sentry
 
   update-paywall-templates:
     when:
@@ -2919,6 +2931,7 @@ workflows:
       - record-and-upload-paywalls-v1-snapshots:
           context:
             - slack-secrets
+            - sentry
       - installation-tests-all-but-carthage:
           context:
             - slack-secrets
@@ -2954,9 +2967,10 @@ workflows:
       - run-revenuecat-ui-ios-26:
           context:
             - slack-secrets
-      - emerge_purchases_ui_snapshot_tests:
+      - purchases_ui_snapshot_tests:
           context:
             - slack-secrets
+            - sentry
 
       # =============================================================
       # All tests gate for release branches
@@ -2971,7 +2985,7 @@ workflows:
             - build-xcode-265
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
-            - emerge_purchases_ui_snapshot_tests
+            - purchases_ui_snapshot_tests
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
             - backend-integration-tests-custom-entitlements
