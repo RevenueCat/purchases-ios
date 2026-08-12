@@ -16,13 +16,7 @@ import Foundation
 
 #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
 
-    // swiftlint:disable duplicate_imports
-#if compiler(>=6.0)
-internal import WebKit
-#else
 import WebKit
-#endif
-    // swiftlint:enable duplicate_imports
 
 #endif
 
