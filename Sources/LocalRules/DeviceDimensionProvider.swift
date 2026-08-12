@@ -43,7 +43,7 @@ struct DeviceDimensionProvider: DimensionProvider {
         var variables: [String: DimensionValue] = [:]
 
         if !self.appVersion.isEmpty {
-            variables["app_version"] = .string(self.appVersion)
+            variables["appVersion"] = .string(self.appVersion)
         }
 
         if let locale = self.localeProvider(), !locale.isEmpty {
@@ -54,10 +54,10 @@ struct DeviceDimensionProvider: DimensionProvider {
             variables["platform"] = .string(self.platform.lowercased())
         }
 
-        variables["platform_version"] = .string(Self.semanticVersion(self.platformVersion))
+        variables["platformVersion"] = .string(Self.semanticVersion(self.platformVersion))
 
         if let sdkVersion = Self.semanticVersion(self.sdkVersion) {
-            variables["sdk_version"] = .string(sdkVersion)
+            variables["sdkVersion"] = .string(sdkVersion)
         }
 
         return variables

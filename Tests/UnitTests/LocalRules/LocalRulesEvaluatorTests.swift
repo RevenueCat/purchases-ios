@@ -30,8 +30,8 @@ struct LocalRulesEvaluatorTests {
         let provider = TestDimensionProvider(
             namespace: .device,
             snapshots: [
-                ["launch_count": .int(1)],
-                ["launch_count": .int(2)]
+                ["launchCount": .int(1)],
+                ["launchCount": .int(2)]
             ]
         )
         let evaluator = Self.evaluator(dimensionProviders: [provider], date: date)
@@ -39,11 +39,11 @@ struct LocalRulesEvaluatorTests {
         let rule = try await evaluator.match(in: [
             TestLocalRule(
                 id: TestRuleID.doesNotMatch,
-                predicate: #"{"==":[{"var":"device.launch_count"},2]}"#
+                predicate: #"{"==":[{"var":"device.launchCount"},2]}"#
             ),
             TestLocalRule(
                 id: TestRuleID.matches,
-                predicate: #"{"==":[{"var":"device.launch_count"},1]}"#
+                predicate: #"{"==":[{"var":"device.launchCount"},1]}"#
             ),
             TestLocalRule(
                 id: TestRuleID.notEvaluated,
@@ -106,18 +106,18 @@ struct LocalRulesEvaluatorTests {
         let identity = TestDimensionProvider(
             namespace: .device,
             snapshots: [[
-                "app_version": .string("1.2.3"),
-                "is_debug_build": .bool(true),
-                "screen_scale": .double(3)
+                "appVersion": .string("1.2.3"),
+                "isDebugBuild": .bool(true),
+                "screenScale": .double(3)
             ]]
         )
         let environment = TestDimensionProvider(
             namespace: .device,
-            snapshots: [["tracking_enabled": .bool(false)]]
+            snapshots: [["trackingEnabled": .bool(false)]]
         )
         let client = TestDimensionProvider(
             namespace: .client,
-            snapshots: [["shoe_size": .int(42)]]
+            snapshots: [["shoeSize": .int(42)]]
         )
 
         let snapshot = try await DimensionResolver(
@@ -128,12 +128,12 @@ struct LocalRulesEvaluatorTests {
         #expect(snapshot.evaluationDate == date)
         #expect(snapshot.values == [
             "device": .object([
-                "app_version": .string("1.2.3"),
-                "is_debug_build": .bool(true),
-                "screen_scale": .float(3),
-                "tracking_enabled": .bool(false)
+                "appVersion": .string("1.2.3"),
+                "isDebugBuild": .bool(true),
+                "screenScale": .float(3),
+                "trackingEnabled": .bool(false)
             ]),
-            "client": .object(["shoe_size": .int(42)])
+            "client": .object(["shoeSize": .int(42)])
         ])
     }
 
@@ -141,18 +141,18 @@ struct LocalRulesEvaluatorTests {
     func duplicateLeafIsAConfigurationError() async {
         let first = TestDimensionProvider(
             namespace: .device,
-            snapshots: [["app_version": .string("1.2.3")]]
+            snapshots: [["appVersion": .string("1.2.3")]]
         )
         let second = TestDimensionProvider(
             namespace: .device,
-            snapshots: [["app_version": .string("2.0.0")]]
+            snapshots: [["appVersion": .string("2.0.0")]]
         )
 
         do {
             _ = try await DimensionResolver(dimensionProviders: [first, second]).snapshot()
             Issue.record("Expected duplicate ownership to fail")
         } catch let error as DimensionResolutionError {
-            #expect(error == .conflictingValue(path: "device.app_version"))
+            #expect(error == .conflictingValue(path: "device.appVersion"))
         } catch {
             Issue.record("Unexpected error: \(error)")
         }

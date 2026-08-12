@@ -43,8 +43,8 @@ struct DimensionResolver: Sendable {
 
     /// Collects each provider once and merges its values under its namespace.
     ///
-    /// For example, device `app_version: "1.2.3"` becomes
-    /// `device.app_version: "1.2.3"` in the RulesEngine input.
+    /// For example, device `appVersion: "1.2.3"` becomes
+    /// `device.appVersion: "1.2.3"` in the RulesEngine input.
     func snapshot() async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
         var values: [String: RulesEngine.Value] = [:]
