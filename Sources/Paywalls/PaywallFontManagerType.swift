@@ -32,8 +32,8 @@ struct SystemFontRegistry: FontRegistrar {
 
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
             let error = errorRef?.takeUnretainedValue()
-            if Self.isAlreadyRegisteredError(error) {
-                // Font is already registered for the process; treat as success.
+            if Self.isRecoverableRegistrationError(error) {
+                // Font is already available to the process; treat as success.
                 return
             }
 
@@ -41,11 +41,24 @@ struct SystemFontRegistry: FontRegistrar {
         }
     }
 
-    static func isAlreadyRegisteredError(_ error: Error?) -> Bool {
+    /// Whether registration failed only because the face is already available to the process.
+    static func isRecoverableRegistrationError(_ error: Error?) -> Bool {
         guard let error = error else { return false }
+
         let nsError = error as NSError
-        return nsError.domain == (kCTFontManagerErrorDomain as String)
-            && nsError.code == CTFontManagerError.alreadyRegistered.rawValue
+        guard nsError.domain == (kCTFontManagerErrorDomain as String) else { return false }
+
+        switch nsError.code {
+        case CTFontManagerError.alreadyRegistered.rawValue:
+            // This exact file is already registered.
+            return true
+        case CTFontManagerError.duplicatedName.rawValue:
+            // Another file already provides a face with this name, e.g. one bundled
+            // through `UIAppFonts` or downloaded from a different URL.
+            return true
+        default:
+            return false
+        }
     }
 }
 
