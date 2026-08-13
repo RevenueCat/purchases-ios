@@ -19,6 +19,7 @@ enum DimensionNamespace: String, CaseIterable, Sendable {
 
     case custom
     case device
+    case store
     case session
     case client
 }

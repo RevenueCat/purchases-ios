@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000002 /* StoreDimensionProvider.swift */; };
+		D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000004 /* StoreDimensionProviderTests.swift */; };
 		C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000002 /* CustomVariableKeyValidator.swift */; };
 		C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */; };
 		A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000001 /* LocalRulesEvaluator.swift */; };
@@ -1574,6 +1576,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		D17A00000000000000000002 /* StoreDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProvider.swift; sourceTree = "<group>"; };
+		D17A00000000000000000004 /* StoreDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProviderTests.swift; sourceTree = "<group>"; };
 		C05A00000000000000000002 /* CustomVariableKeyValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidator.swift; sourceTree = "<group>"; };
 		C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidatorTests.swift; sourceTree = "<group>"; };
 		A0D200000000000000000001 /* LocalRulesEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRulesEvaluator.swift; sourceTree = "<group>"; };
@@ -3246,6 +3250,7 @@
 			children = (
 				A0D200000000000000000001 /* LocalRulesEvaluator.swift */,
 				A0D200000000000000000006 /* DeviceDimensionProvider.swift */,
+				D17A00000000000000000002 /* StoreDimensionProvider.swift */,
 				A0D200000000000000000002 /* DimensionProvider.swift */,
 				A0D200000000000000000003 /* DimensionResolver.swift */,
 			);
@@ -3258,6 +3263,7 @@
 				C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */,
 				A0D200000000000000000005 /* LocalRulesEvaluatorTests.swift */,
 				A0D200000000000000000007 /* DeviceDimensionProviderTests.swift */,
+				D17A00000000000000000004 /* StoreDimensionProviderTests.swift */,
 			);
 			path = LocalRules;
 			sourceTree = "<group>";
@@ -7810,6 +7816,7 @@
 				B2D1A168EB359D71CAD9D64D /* StringArrayOperators.swift in Sources */,
 				A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */,
 				A0D100000000000000000006 /* DeviceDimensionProvider.swift in Sources */,
+				D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */,
 				A0D100000000000000000002 /* DimensionProvider.swift in Sources */,
 				A0D100000000000000000003 /* DimensionResolver.swift in Sources */,
 				FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */,
@@ -8236,6 +8243,7 @@
 				6ACB35318F329FCE9195865D /* Value+Decodable.swift in Sources */,
 				A0D100000000000000000005 /* LocalRulesEvaluatorTests.swift in Sources */,
 				A0D100000000000000000007 /* DeviceDimensionProviderTests.swift in Sources */,
+				D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
