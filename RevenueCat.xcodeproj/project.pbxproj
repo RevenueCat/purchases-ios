@@ -573,6 +573,7 @@
 		552CE1022FEF22AC006E41B4 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552CE1012FEF22AC006E41B4 /* Keychain.swift */; };
 		55DACDEC302BC2D1005EE017 /* TokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDEA302BC2D1005EE017 /* TokenManager.swift */; };
 		55DACDED302BC2D1005EE017 /* URLMessage+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDEB302BC2D1005EE017 /* URLMessage+Description.swift */; };
+		55DACDEF302BC2DF005EE017 /* Identity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDEE302BC2DF005EE017 /* Identity.swift */; };
 		55DACDF7302BC331005EE017 /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF6302BC331005EE017 /* JWT.swift */; };
 		55DACDFA302BC356005EE017 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF8302BC356005EE017 /* Authentication.swift */; };
 		55DACDFC302BC381005EE017 /* AnyCodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDFB302BC381005EE017 /* AnyCodingKey.swift */; };
@@ -2257,6 +2258,7 @@
 		552CE1012FEF22AC006E41B4 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		55DACDEA302BC2D1005EE017 /* TokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManager.swift; sourceTree = "<group>"; };
 		55DACDEB302BC2D1005EE017 /* URLMessage+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLMessage+Description.swift"; sourceTree = "<group>"; };
+		55DACDEE302BC2DF005EE017 /* Identity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Identity.swift; sourceTree = "<group>"; };
 		55DACDF6302BC331005EE017 /* JWT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWT.swift; sourceTree = "<group>"; };
 		55DACDF8302BC356005EE017 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
 		55DACDFB302BC381005EE017 /* AnyCodingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKey.swift; sourceTree = "<group>"; };
@@ -6614,6 +6616,7 @@
 				4F15B4A02A6774C9005BEFE8 /* CustomerInfo+NonSubscriptions.swift */,
 				B3A36AAD26BC76340059EDEA /* CustomerInfoManager.swift */,
 				B3852F9F26C1ED1F005384F8 /* IdentityManager.swift */,
+				55DACDEE302BC2DF005EE017 /* Identity.swift */,
 			);
 			path = Identity;
 			sourceTree = "<group>";
@@ -7729,6 +7732,7 @@
 				2DDF41A424F6F331005BC22D /* InstallmentsInfoFactory.swift in Sources */,
 				57CCC6EC2984496D001CE9B6 /* Box.swift in Sources */,
 				80442DA42FDF0B2E0085069A /* StateDeclaration.swift in Sources */,
+				55DACDEF302BC2DF005EE017 /* Identity.swift in Sources */,
 				4F6ABC7E2A81700900250E63 /* PaywallsStrings.swift in Sources */,
 				75B6DFFD2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift in Sources */,
 				575137CF27F50D2F0064AB2C /* HTTPResponseBody.swift in Sources */,
