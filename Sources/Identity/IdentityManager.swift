@@ -30,6 +30,7 @@ class IdentityManager: CurrentUserProvider {
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
+    private let tokenManager: TokenManager
     private let attributeSyncing: AttributeSyncing
     // Weak because RemoteConfigManager keeps IdentityManager as its CurrentUserProvider.
     weak var remoteConfigManager: RemoteConfigManagerType?
@@ -41,12 +42,14 @@ class IdentityManager: CurrentUserProvider {
         systemInfo: SystemInfo,
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
+        tokenManager: TokenManager,
         attributeSyncing: AttributeSyncing,
         appUserID: String?
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
+        self.tokenManager = tokenManager
         self.attributeSyncing = attributeSyncing
 
         let finalAppUserID: String
