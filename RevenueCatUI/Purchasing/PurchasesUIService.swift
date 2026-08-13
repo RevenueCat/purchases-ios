@@ -47,7 +47,7 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
         Self.purchasesDidConfigure()
     }
 
-    /// Cheap wake-up. Must stay cheap: start publishers here later, do not create WebKit.
+    /// Cheap wake-up. Must stay cheap: start subsciptions here later, do not perform heavy work synchronously here.
     @objc static func purchasesDidConfigure() {
         lock.withLock {
             guard !didConfigure else { return }
