@@ -572,6 +572,42 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    /// A tab that isn't showing can carry the same identifier as the hidden page default. That copy is not
+    /// on screen, so it must not count as proof the selection is still rendering.
+    func testReconcileMovesOffAHiddenPageDefaultDuplicatedOnlyInATab() {
+        let validator = Self.canTrialValidator()
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(customVariables: ["can_trial": .bool(false)])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// The mirror case: the page's own copy is visible, so the selection stays put.
+    func testReconcileKeepsASelectionWhosePageCopyIsVisible() {
+        let validator = Self.canTrialValidator()
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertNil(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(customVariables: ["can_trial": .bool(true)])
+            )
+        )
+    }
+
     // MARK: - Warnings
 
     /// `defaultSelectedPackage(in:)` is read from view bodies, so an unconditional warning repeats on

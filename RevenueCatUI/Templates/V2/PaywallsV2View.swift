@@ -577,7 +577,7 @@ struct PaywallsV2View: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct LoadedPaywallsV2View: View {
+struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -702,6 +702,11 @@ private struct LoadedPaywallsV2View: View {
             // Intro and promo eligibility both land after first render and can flip a package's
             // visibility. `isPaywallLoading` goes false once both have resolved.
             .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection()
+            }
+            // Leaving a tab restores the page's own selection, which can be a package a rule hides.
+            // Reconciling here catches that without depending on `onAppear` ordering.
+            .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
                 self.reconcileSelection()
             }
         }

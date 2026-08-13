@@ -74,6 +74,71 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         XCTAssertEqual(packageContext.package?.identifier, TestData.weeklyPackage.identifier)
     }
 
+    /// Leaving a tab that holds packages for one that doesn't restores the page's own selection
+    /// (`TabsComponentView.parentOwnedPackage`), which is seeded from the provisional hidden default in
+    /// `init`. The page must not end up holding that hidden package again.
+    func testLeavingATabWithPackagesDoesNotRestoreTheHiddenDefault() throws {
+        let (paywallState, tabControlContext) = try Self.mixedLayoutState(tabs: .packagesInFirstTab)
+        let packageContext = Self.provisionallySeededContext()
+
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        tabControlContext.selectedTabId = Self.tab2Id
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            TestData.monthlyPackage.identifier,
+            "Switching to a package-less tab must not restore the hidden default"
+        )
+    }
+
+    /// The showing tab's own package is hidden by the same rule, so the page takes the selection back.
+    ///
+    /// Also pins the price basis: a tab propagates its own variable context, and relative prices for a
+    /// package outside the tabs would be wrong if the page kept it. It holds today because the page
+    /// reconciles before the tab propagates, which is ordering this doesn't control, so this is a
+    /// characterization test, not proof that reconciling repairs the basis.
+    func testReconcilingOffAHiddenTabPackageKeepsThePagePriceBasis() throws {
+        let (paywallState, _) = try Self.mixedLayoutState(tabs: .hiddenPackageInFirstTab)
+        let packageContext = Self.provisionallySeededContext()
+
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        // The tab's monthly card is hidden too, so the page's weekly card takes the selection.
+        XCTAssertEqual(packageContext.package?.identifier, TestData.weeklyPackage.identifier)
+
+        let pageBasis = PackageContext.VariableContext(
+            packages: paywallState.packages,
+            showZeroDecimalPlacePrices: false
+        )
+        let tabOnlyBasis = PackageContext.VariableContext(
+            packages: [TestData.monthlyPackage],
+            showZeroDecimalPlacePrices: false
+        )
+        XCTAssertNotEqual(
+            pageBasis.mostExpensivePricePerMonth,
+            tabOnlyBasis.mostExpensivePricePerMonth,
+            "Fixture must make the two package sets disagree, otherwise this test proves nothing"
+        )
+        XCTAssertEqual(
+            packageContext.variableContext.mostExpensivePricePerMonth,
+            pageBasis.mostExpensivePricePerMonth
+        )
+    }
+
     /// The same paywall without the tabs component, which already worked: pins that the fix doesn't
     /// change the non-tabbed path.
     func testPageSelectionMovesOffHiddenDefaultWithoutTabs() throws {
@@ -102,6 +167,18 @@ private extension MixedTabsDefaultPackageVisibilityTests {
         case none
         case packagesInFirstTab
         case packagesInSecondTab
+        /// The showing tab's package is hidden by the same rule, so the page has to take the selection
+        /// back. Uses monthly in the tab and weekly on the page so the two package sets disagree on
+        /// the most expensive price per month.
+        case hiddenPackageInFirstTab
+
+        var pageFallbackPackage: Package {
+            return self == .hiddenPackageInFirstTab ? TestData.weeklyPackage : TestData.monthlyPackage
+        }
+
+        var tabPackage: Package {
+            return self == .hiddenPackageInFirstTab ? TestData.monthlyPackage : TestData.weeklyPackage
+        }
     }
 
     static func settle() {
@@ -125,6 +202,57 @@ private extension MixedTabsDefaultPackageVisibilityTests {
             package: TestData.annualPackage,
             variableContext: .init(packages: Self.offering.availablePackages)
         )
+    }
+
+    /// Builds the real `PaywallState` and hands back the tabs component's own `TabControlContext`, the
+    /// only way to drive a tab switch without simulating a tap.
+    static func mixedLayoutState(tabs: TabsShape) throws -> (PaywallState, TabControlContext) {
+        let components = Self.paywallComponents(tabs: tabs)
+        let state = try PaywallsV2View.createPaywallState(
+            componentsConfig: components.data.componentsConfig.base,
+            componentsLocalizations: components.data.componentsLocalizations,
+            preferredLocales: [Locale(identifier: "en_US")],
+            defaultLocale: "en_US",
+            uiConfigProvider: UIConfigProvider(uiConfig: components.uiConfig),
+            offering: Self.offering,
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            colorScheme: .light
+        ).get()
+
+        let tabsViewModel = try XCTUnwrap(
+            state.rootViewModel.stackViewModel.viewModels.compactMap { viewModel -> TabsComponentViewModel? in
+                guard case .tabs(let tabsViewModel) = viewModel else { return nil }
+                return tabsViewModel
+            }.first
+        )
+
+        return (state, tabsViewModel.tabControlContext)
+    }
+
+    static func loadedPaywallView(
+        paywallState: PaywallState,
+        packageContext: PackageContext
+    ) -> some View {
+        return LoadedPaywallsV2View(
+            introOfferEligibilityContext: IntroOfferEligibilityContext(
+                introEligibilityChecker: .producing(eligibility: .eligible)
+            ),
+            paywallState: paywallState,
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            selectedPackageContext: packageContext,
+            workflowDefaultPackage: nil,
+            onDismiss: {}
+        )
+        .environmentObject(PurchaseHandler.mock())
+        .environmentObject(IntroOfferEligibilityContext(
+            introEligibilityChecker: .producing(eligibility: .eligible)
+        ))
+        .environmentObject(PaywallPromoOfferCache(
+            subscriptionHistoryTracker: SubscriptionHistoryTracker()
+        ))
+        .environment(\.screenCondition, .compact)
+        .customPaywallVariables(["can_trial": .bool(false)])
     }
 
     static func paywallView(
@@ -155,7 +283,7 @@ private extension MixedTabsDefaultPackageVisibilityTests {
             ),
             // Package B: the only page package on screen in that case.
             Self.packageComponent(
-                packageID: TestData.monthlyPackage.identifier,
+                packageID: tabs.pageFallbackPackage.identifier,
                 isSelectedByDefault: false
             )
         ]
@@ -165,8 +293,11 @@ private extension MixedTabsDefaultPackageVisibilityTests {
             // renders the page's own selection.
             let packageStack: PaywallComponent.StackComponent = .init(components: [
                 Self.packageComponent(
-                    packageID: TestData.weeklyPackage.identifier,
-                    isSelectedByDefault: false
+                    packageID: tabs.tabPackage.identifier,
+                    isSelectedByDefault: false,
+                    overrides: tabs == .hiddenPackageInFirstTab
+                        ? [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+                        : nil
                 )
             ])
             let emptyStack: PaywallComponent.StackComponent = .init(

@@ -144,13 +144,24 @@ class PackageValidator {
             return nil
         }
 
-        let visiblePackageInfos = self.visiblePackageInfos(among: self.packageInfos, in: context)
-
-        if let current, visiblePackageInfos.contains(where: { $0.package.identifier == current.identifier }) {
+        if let current, self.isRendering(current, in: context) {
             return nil
         }
 
         return self.defaultSelectedPackage(among: pageScopedPackageInfos, in: context)
+    }
+
+    /// Whether a card for `package` is on screen.
+    ///
+    /// Where the page declares the package, only those occurrences count: a page card a rule hides isn't
+    /// on screen just because some tab repeats the same identifier. Packages the page doesn't declare are
+    /// left to the tabs, which is as close to "the active tab renders it" as this can get.
+    private func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
+        let occurrences = self.scopedPackageInfos.filter { $0.info.package.identifier == package.identifier }
+        let pageOccurrences = occurrences.filter { $0.scope == .page }
+        let deciding = pageOccurrences.isEmpty ? occurrences : pageOccurrences
+
+        return !self.visiblePackageInfos(among: deciding.map(\.info), in: context).isEmpty
     }
 
     private func defaultSelectedPackage(
