@@ -75,6 +75,10 @@ class PackageValidator {
         self.scopedPackageInfos.map(\.info)
     }
 
+    private var hasPageScopedPackages: Bool {
+        self.scopedPackageInfos.contains { $0.scope == .page }
+    }
+
     private var pageScopedPackageInfos: [PackageInfo] {
         self.scopedPackageInfos.filter { $0.scope == .page }.map(\.info)
     }
@@ -92,30 +96,32 @@ class PackageValidator {
     }
 
     var isValid: Bool {
-        !packageInfos.isEmpty
+        !self.scopedPackageInfos.isEmpty
     }
 
     var packages: [Package] {
-        packageInfos.map(\.package)
+        self.scopedPackageInfos.map(\.info.package)
+    }
+
+    private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
+        return info.visibilityResolver.visible(
+            // Selection is what's being resolved, so nothing is selected yet. Pinning these two
+            // inputs keeps resolution independent of its own output — otherwise a paywall with
+            // `selected` or `selected_package` visibility rules could oscillate.
+            state: .default,
+            condition: context.condition,
+            isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
+            isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
+            selectedPackageId: nil,
+            customVariables: context.customVariables
+        )
     }
 
     private func visiblePackageInfos(
         among packageInfos: [PackageInfo],
         in context: PackageSelectionContext
     ) -> [PackageInfo] {
-        return packageInfos.filter { info in
-            info.visibilityResolver.visible(
-                // Selection is what's being resolved, so nothing is selected yet. Pinning these two
-                // inputs keeps resolution independent of its own output — otherwise a paywall with
-                // `selected` or `selected_package` visibility rules could oscillate.
-                state: .default,
-                condition: context.condition,
-                isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
-                isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
-                selectedPackageId: nil,
-                customVariables: context.customVariables
-            )
-        }
+        return packageInfos.filter { self.isVisible($0, in: context) }
     }
 
     /// The packages that actually render for the given context, in document order.
@@ -137,9 +143,7 @@ class PackageValidator {
     /// Only moves a selection nothing is rendering, so it can't discard a tap, and only to a package
     /// declared outside the tabs, since a page selection can't point into a tab the user isn't on.
     func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
-        let pageScopedPackageInfos = self.pageScopedPackageInfos
-
-        guard !pageScopedPackageInfos.isEmpty else {
+        guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.
             return nil
         }
@@ -148,7 +152,7 @@ class PackageValidator {
             return nil
         }
 
-        return self.defaultSelectedPackage(among: pageScopedPackageInfos, in: context)
+        return self.defaultSelectedPackage(among: self.pageScopedPackageInfos, in: context)
     }
 
     /// Whether a card for `package` is on screen.
@@ -161,7 +165,7 @@ class PackageValidator {
         let pageOccurrences = occurrences.filter { $0.scope == .page }
         let deciding = pageOccurrences.isEmpty ? occurrences : pageOccurrences
 
-        return !self.visiblePackageInfos(among: deciding.map(\.info), in: context).isEmpty
+        return deciding.contains { self.isVisible($0.info, in: context) }
     }
 
     private func defaultSelectedPackage(

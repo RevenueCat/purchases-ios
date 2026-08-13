@@ -274,6 +274,7 @@ struct PaywallsV2View: View {
             // Resolved inside the loaded view, where the render environment (custom variables, screen
             // condition) and the eligibility contexts are available.
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage,
+            workflowPackages: self.workflowPackages,
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
@@ -577,6 +578,8 @@ struct PaywallsV2View: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+/// Internal rather than private so a test can host it with a `PaywallState` it built itself, which is
+/// the only way to reach the tabs component's `TabControlContext` and drive a tab switch.
 struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -586,6 +589,8 @@ struct LoadedPaywallsV2View: View {
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
     private let workflowDefaultPackage: Package?
+    /// Only used to rebuild the variable context on a reconcile, matching what `init` seeded.
+    private let workflowPackages: [Package]?
 
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -608,6 +613,7 @@ struct LoadedPaywallsV2View: View {
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
         workflowDefaultPackage: Package?,
+        workflowPackages: [Package]? = nil,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil
     ) {
@@ -616,6 +622,7 @@ struct LoadedPaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
         self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowPackages = workflowPackages
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
     }
@@ -655,9 +662,15 @@ struct LoadedPaywallsV2View: View {
             return
         }
 
+        // A tab propagates its own variable context up, and relative prices for a package outside the
+        // tabs have to be computed against the page's packages, so rebuild it the way `init` seeded it.
         self.selectedPackageContext.update(
             package: resolved,
-            variableContext: self.selectedPackageContext.variableContext
+            variableContext: .init(
+                packages: self.workflowPackages ?? self.paywallState.packages,
+                showZeroDecimalPlacePrices: self.selectedPackageContext.variableContext
+                    .showZeroDecimalPlacePrices
+            )
         )
     }
 
