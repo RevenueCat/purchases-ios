@@ -573,6 +573,7 @@
 		552CE1022FEF22AC006E41B4 /* Keychain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 552CE1012FEF22AC006E41B4 /* Keychain.swift */; };
 		55DACDED302BC2D1005EE017 /* URLMessage+Description.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDEB302BC2D1005EE017 /* URLMessage+Description.swift */; };
 		55DACDF7302BC331005EE017 /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF6302BC331005EE017 /* JWT.swift */; };
+		55DACDFA302BC356005EE017 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF8302BC356005EE017 /* Authentication.swift */; };
 		55DACDFC302BC381005EE017 /* AnyCodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDFB302BC381005EE017 /* AnyCodingKey.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
@@ -2245,6 +2246,7 @@
 		552CE1012FEF22AC006E41B4 /* Keychain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Keychain.swift; sourceTree = "<group>"; };
 		55DACDEB302BC2D1005EE017 /* URLMessage+Description.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "URLMessage+Description.swift"; sourceTree = "<group>"; };
 		55DACDF6302BC331005EE017 /* JWT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWT.swift; sourceTree = "<group>"; };
+		55DACDF8302BC356005EE017 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
 		55DACDFB302BC381005EE017 /* AnyCodingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKey.swift; sourceTree = "<group>"; };
 		55FCA85B959807F2D3DD175A /* TransactionReason.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionReason.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
@@ -3953,6 +3955,7 @@
 			isa = PBXGroup;
 			children = (
 				9094B4192E96A9A70094AD5F /* Ads */,
+				55DACDF9302BC356005EE017 /* Authentication */,
 				353DE0042CCA4EA600A8F632 /* Events */,
 				1E8A60402CDBD73E0034ACF3 /* WebPurchaseRedemption */,
 				1ED4CA4F2CC1517D0021AB8F /* DeepLink */,
@@ -5174,6 +5177,14 @@
 				AA110003AABB0001CCDD0001 /* EventsRequest+CustomPaywallImpression.swift */,
 			);
 			path = Networking;
+			sourceTree = "<group>";
+		};
+		55DACDF9302BC356005EE017 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				55DACDF8302BC356005EE017 /* Authentication.swift */,
+			);
+			path = Authentication;
 			sourceTree = "<group>";
 		};
 		571E7AD0279F2CE9003B3606 /* TestHelpers */ = {
@@ -7630,6 +7641,7 @@
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
 				1D291F722F154834008E4FDA /* CacheStrings.swift in Sources */,
 				1E98EC092CDE567100A751C0 /* URL+WebPurchaseRedemption.swift in Sources */,
+				55DACDFA302BC356005EE017 /* Authentication.swift in Sources */,
 				903A058D2EB3AE29009B9CE4 /* StoredAdEvent.swift in Sources */,
 				903A058E2EB3AE29009B9CE4 /* StoredAdEventSerializer.swift in Sources */,
 				903A058F2EB3AE29009B9CE4 /* AdEventStore.swift in Sources */,

@@ -281,6 +281,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
+    private let _authentication: Authentication
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
@@ -900,8 +901,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
+        self._authentication = Authentication(backend: backend,
+                                              identityManager: identityManager,
+                                              operationDispatcher: operationDispatcher,
+                                              systemInfo: systemInfo)
 
         super.init()
+        self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
@@ -1106,15 +1112,16 @@ public extension Purchases {
 
 public extension Purchases {
 
+    @_spi(Experimental)
+    var authentication: Authentication { _authentication }
+
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
     This is likely a programmer error. This ID is used to identify the current user.
     See https://docs.revenuecat.com/docs/user-ids for more information.
     """)
     func logIn(_ appUserID: StaticString, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        Logger.warn(Strings.identity.logging_in_with_static_string)
-
-        self.logIn("\(appUserID)", completion: completion)
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1123,31 +1130,16 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
-
-        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
-            }
-
-            guard case .success = result else {
-                return
-            }
-
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                self.remoteConfigManager.refreshRemoteConfig(
-                    fetchContext: .identityChange,
-                    isAppBackgrounded: isAppBackgrounded
-                )
-            }
-        }
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
+    @available(*, deprecated, message: """
+    The appUserID passed to logIn is a constant string known at compile time.
+    This is likely a programmer error. This ID is used to identify the current user.
+    See https://docs.revenuecat.com/docs/user-ids for more information.
+    """)
     func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        Logger.warn(Strings.identity.logging_in_with_static_string)
-
-        return try await self.logIn("\(appUserID)")
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1155,33 +1147,15 @@ public extension Purchases {
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        return try await self.logInAsync(appUserID)
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
-            return
-       }
-
-        self.identityManager.logOut { error in
-            guard error == nil else {
-                if let completion = completion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(nil, error?.asPublicError)
-                    }
-                }
-                return
-            }
-
-            self.updateAllCaches(fetchContext: .identityChange) {
-                completion?($0.value, $0.error)
-            }
-        }
+        _authentication.logOut(completion: completion)
     }
 
     func logOut() async throws -> CustomerInfo {
-        return try await logOutAsync()
+        return try await _authentication.logOut()
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
@@ -1223,6 +1197,24 @@ public extension Purchases {
 
     func getStorefront() async -> Storefront? {
         return await getStorefrontAsync()
+    }
+
+}
+
+extension Purchases: InternalAuthenticatorDelegate {
+
+    func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?) {
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                fetchContext: .identityChange,
+                isAppBackgrounded: isAppBackgrounded
+            )
+        }
+    }
+
+    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
+        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
     }
 
 }
