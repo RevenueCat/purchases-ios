@@ -42,11 +42,13 @@ public struct CustomVariableKeyValidator {
         return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
     }
 
-    /// Drops invalid keys and logs a warning for each removed entry.
+    /// Drops invalid keys and, in debug builds, logs a warning for each removed entry.
     public static func validateAndFilter<Value>(_ variables: [String: Value]) -> [String: Value] {
         return variables.filter { key, _ in
             guard Self.isValidKey(key) else {
+                #if DEBUG
                 Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key))
+                #endif
                 return false
             }
 
