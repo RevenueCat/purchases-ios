@@ -272,7 +272,11 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                               currentConfiguration: nil,
-                              webBundleCacheCoordinator: WebBundleCacheCoordinator(retireCurrentStore: {}))
+                              webViewDataStoreManager: WebViewDataStoreManager(
+                                userDefaults: UserDefaults(
+                                    suiteName: "com.revenuecat.tests.webview.\(UUID().uuidString)"
+                                )!
+                              ))
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)

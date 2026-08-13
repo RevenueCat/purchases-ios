@@ -293,7 +293,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
     private let remoteConfigManager: RemoteConfigManagerType
-    private let webBundleCacheCoordinator: WebBundleCacheCoordinator
+    private let webViewDataStoreManager: WebViewDataStoreManager
 
     private var _adTracker: Any?
 
@@ -354,7 +354,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
                      currentConfiguration: Configuration?,
-                     webBundleCacheCoordinator: WebBundleCacheCoordinator = .shared
+                     webViewDataStoreManager: WebViewDataStoreManager = .shared
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -807,7 +807,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                   currentConfiguration: currentConfiguration,
-                  webBundleCacheCoordinator: webBundleCacheCoordinator
+                  webViewDataStoreManager: webViewDataStoreManager
         )
     }
 
@@ -844,7 +844,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
          currentConfiguration: Configuration?,
-         webBundleCacheCoordinator: WebBundleCacheCoordinator
+         webViewDataStoreManager: WebViewDataStoreManager
     ) {
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
@@ -900,7 +900,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
-        self.webBundleCacheCoordinator = webBundleCacheCoordinator
+        self.webViewDataStoreManager = webViewDataStoreManager
 
         super.init()
 
@@ -1175,7 +1175,7 @@ public extension Purchases {
                 return
             }
 
-            self.webBundleCacheCoordinator.retireCurrentStore()
+            self.webViewDataStoreManager.retireCurrentStore()
             self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
@@ -2725,7 +2725,7 @@ private extension Purchases {
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
         self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
-        self.webBundleCacheCoordinator.sweepPendingStores()
+        self.webViewDataStoreManager.sweepPendingStores()
         self.dispatchSyncSubscriberAttributes()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
@@ -2789,7 +2789,7 @@ private extension Purchases {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
 
-            self.webBundleCacheCoordinator.sweepPendingStores()
+            self.webViewDataStoreManager.sweepPendingStores()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(

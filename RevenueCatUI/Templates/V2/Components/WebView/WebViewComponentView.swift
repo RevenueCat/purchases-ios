@@ -41,10 +41,8 @@ struct WebViewComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
-    let viewModel: WebViewComponentViewModel
-
-    /// Changed when the live instance becomes unusable so `webViewInstance()` can mint a replacement.
-    @State private var webViewRecoveryGeneration = UUID()
+    @ObservedObject
+    var viewModel: WebViewComponentViewModel
 
     private var style: WebViewComponentStyle {
         let currentPackage = self.packageContext.package
@@ -72,10 +70,9 @@ struct WebViewComponentView: View {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                instance: instance,
-                recoveryGeneration: self.$webViewRecoveryGeneration
+                instance: instance
             )
-            .id(self.webViewRecoveryGeneration)
+            .id(ObjectIdentifier(instance))
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
             // this renders nothing, so surface why instead of leaving authors with a silent blank.
@@ -126,31 +123,20 @@ private struct HostedWebViewComponentView: View {
     @ObservedObject
     var instance: WebViewInstance
 
-    @Binding
-    var recoveryGeneration: UUID
-
     var body: some View {
-        Group {
-            if !self.instance.isUnusable {
-                WebViewRepresentable(
-                    url: self.url,
-                    instance: self.instance
-                )
-                .webViewSize(
-                    self.size,
-                    measuredWidth: self.instance.measuredWidth,
-                    measuredHeight: self.instance.measuredHeight
-                )
-                // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
-                // placeholder -> measured); never paint outside the component's box.
-                .clipped()
-            }
-        }
-        .id(self.recoveryGeneration)
-        .onChangeOf(self.instance.retiredByCacheClear) { retiredByCacheClear in
-            if retiredByCacheClear {
-                self.recoveryGeneration = .init()
-            }
+        if !self.instance.isUnusable {
+            WebViewRepresentable(
+                url: self.url,
+                instance: self.instance
+            )
+            .webViewSize(
+                self.size,
+                measuredWidth: self.instance.measuredWidth,
+                measuredHeight: self.instance.measuredHeight
+            )
+            // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
+            // placeholder -> measured); never paint outside the component's box.
+            .clipped()
         }
     }
 
@@ -245,7 +231,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     static func makeConfiguration(
         session: WebViewSession?,
-        websiteDataStoreIdentifier: () -> UUID = { return WebViewDataStoreIdentifierStore.identifier() }
+        websiteDataStoreIdentifier: () -> UUID = { return WebViewDataStoreManager.shared.currentIdentifier() }
     ) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
         // In order for us to optimize paywall and workflow load times we need to be able to effectively

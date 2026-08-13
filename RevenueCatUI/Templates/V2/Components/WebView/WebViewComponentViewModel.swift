@@ -2,6 +2,7 @@
 //  Copyright RevenueCat Inc. All Rights Reserved.
 //
 
+import Combine
 import Foundation
 @_spi(Internal) import RevenueCat
 #if !os(tvOS) // For Paywalls V2
@@ -9,7 +10,7 @@ import Foundation
 typealias PresentedWebViewPartial = PaywallComponent.PartialWebViewComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-final class WebViewComponentViewModel: Hashable {
+final class WebViewComponentViewModel: ObservableObject, Hashable {
 
     let componentID: String
 
@@ -20,17 +21,30 @@ final class WebViewComponentViewModel: Hashable {
     #if !os(watchOS) && canImport(WebKit)
     @MainActor
     private var storedWebViewInstance: WebViewInstance?
+    private var storeRetiredSubscription: AnyCancellable?
     #endif
 
     init(
         component: PaywallComponent.WebViewComponent,
         uiConfigProvider: UIConfigProvider,
-        discardRules: Bool = false
+        discardRules: Bool = false,
+        storeRetired: AnyPublisher<Void, Never> = WebViewDataStoreManager.shared.storeRetired
     ) {
         self.component = component
         self.componentID = component.id
         self.uiConfigProvider = uiConfigProvider
         self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+
+        #if !os(watchOS) && canImport(WebKit)
+        self.storeRetiredSubscription = storeRetired
+            .sink { [weak self] in
+                Task { @MainActor in
+                    self?.replaceInstanceAfterStoreRetirement()
+                }
+            }
+        #else
+        _ = storeRetired
+        #endif
     }
 
     #if !os(watchOS) && canImport(WebKit)
@@ -53,6 +67,22 @@ final class WebViewComponentViewModel: Hashable {
             self.storedWebViewInstance = nil
         }
 
+        return self.mintInstance()
+    }
+
+    @MainActor
+    private func replaceInstanceAfterStoreRetirement() {
+        guard let storedWebViewInstance = self.storedWebViewInstance else {
+            return
+        }
+
+        self.objectWillChange.send()
+        storedWebViewInstance.retire()
+        self.storedWebViewInstance = self.mintInstance()
+    }
+
+    @MainActor
+    private func mintInstance() -> WebViewInstance? {
         guard let expectedOrigin = self.expectedOrigin else {
             return nil
         }

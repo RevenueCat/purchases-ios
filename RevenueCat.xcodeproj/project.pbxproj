@@ -120,11 +120,8 @@
 		16E146B22E99FC7E0089B609 /* PurchaseResultComparator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */; };
 		16E2B7F12EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */; };
 		16E4A3C89791426AAD027A49 /* PlatformInfoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 043FB8686FEB4A31B9CF48C8 /* PlatformInfoTests.swift */; };
-		16E75103302A38730090562C /* WebViewDataStoreIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */; };
-		16E751A3302B50A30090562C /* WebBundleCacheCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */; };
-		16E75311302C70000090562C /* WebViewWebsiteDataStoreSweeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75310302C70000090562C /* WebViewWebsiteDataStoreSweeper.swift */; };
-		16E75200302B60000090562C /* WebViewDataStoreIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */; };
-		16E75201302B60000090562C /* WebBundleCacheCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */; };
+		16E75103302A38730090562C /* WebViewDataStoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75102302A38730090562C /* WebViewDataStoreManager.swift */; };
+		16E75200302B60000090562C /* WebViewDataStoreManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E75109302A38EB0090562C /* WebViewDataStoreManagerTests.swift */; };
 		16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */; };
 		1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 232493C1C6A935B7FE1C6873 /* RulesEngineLogger.swift */; };
 		1D20E1D62EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */; };
@@ -1694,11 +1691,8 @@
 		16E146B12E99FC7E0089B609 /* PurchaseResultComparator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseResultComparator.swift; sourceTree = "<group>"; };
 		16E146B42E99FF640089B609 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		16E2B7F02EA01DFA00F04A7A /* SynchronizedLargeItemCacheTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedLargeItemCacheTests.swift; sourceTree = "<group>"; };
-		16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewDataStoreIdentifierStore.swift; sourceTree = "<group>"; };
-		16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewDataStoreIdentifierStoreTests.swift; sourceTree = "<group>"; };
-		16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleCacheCoordinator.swift; sourceTree = "<group>"; };
-		16E75310302C70000090562C /* WebViewWebsiteDataStoreSweeper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewWebsiteDataStoreSweeper.swift; sourceTree = "<group>"; };
-		16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleCacheCoordinatorTests.swift; sourceTree = "<group>"; };
+		16E75102302A38730090562C /* WebViewDataStoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewDataStoreManager.swift; sourceTree = "<group>"; };
+		16E75109302A38EB0090562C /* WebViewDataStoreManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewDataStoreManagerTests.swift; sourceTree = "<group>"; };
 		16F376252E93F1E300ADF649 /* LargeItemCacheTypeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LargeItemCacheTypeTests.swift; sourceTree = "<group>"; };
 		19B7F3F7BB1256FB17221052 /* CarouselState.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CarouselState.swift; sourceTree = "<group>"; };
 		1D20E1D52EBCF80E00ABE4CD /* HTTPRequestTimeoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HTTPRequestTimeoutManager.swift; sourceTree = "<group>"; };
@@ -3529,9 +3523,7 @@
 		16E75203302B60000090562C /* WebView */ = {
 			isa = PBXGroup;
 			children = (
-				16E751A2302B50A30090562C /* WebBundleCacheCoordinator.swift */,
-				16E75102302A38730090562C /* WebViewDataStoreIdentifierStore.swift */,
-				16E75310302C70000090562C /* WebViewWebsiteDataStoreSweeper.swift */,
+				16E75102302A38730090562C /* WebViewDataStoreManager.swift */,
 			);
 			path = WebView;
 			sourceTree = "<group>";
@@ -5064,8 +5056,7 @@
 				3D26169F24D341F77345716D /* ExitOfferTests.swift */,
 				FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */,
 				166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */,
-				16E75202302B60000090562C /* WebBundleCacheCoordinatorTests.swift */,
-				16E75109302A38EB0090562C /* WebViewDataStoreIdentifierStoreTests.swift */,
+				16E75109302A38EB0090562C /* WebViewDataStoreManagerTests.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
@@ -7638,9 +7629,7 @@
 				B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */,
 				359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */,
-				16E751A3302B50A30090562C /* WebBundleCacheCoordinator.swift in Sources */,
-				16E75103302A38730090562C /* WebViewDataStoreIdentifierStore.swift in Sources */,
-				16E75311302C70000090562C /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
+				16E75103302A38730090562C /* WebViewDataStoreManager.swift in Sources */,
 				1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */,
 				B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */,
 				4F0BBA812A1D0524000E75AB /* DefaultDecodable.swift in Sources */,
@@ -8089,8 +8078,7 @@
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */,
-				16E75201302B60000090562C /* WebBundleCacheCoordinatorTests.swift in Sources */,
-				16E75200302B60000090562C /* WebViewDataStoreIdentifierStoreTests.swift in Sources */,
+				16E75200302B60000090562C /* WebViewDataStoreManagerTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,

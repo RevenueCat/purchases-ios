@@ -91,7 +91,7 @@ final class WebViewInstanceTests: TestCase {
         let instance = Self.makeInstance()
         XCTAssertFalse(instance.processTerminated)
         XCTAssertFalse(instance.loadFailed)
-        XCTAssertFalse(instance.retiredByCacheClear)
+        XCTAssertFalse(instance.storeRetired)
 
         instance.markProcessTerminated()
         instance.markLoadFailed()
@@ -110,6 +110,33 @@ final class WebViewInstanceTests: TestCase {
         XCTAssertFalse(replacement === terminated)
         XCTAssertFalse(replacement.isUnusable)
         _ = replacement.webView { WKWebView(frame: .zero) }
+    }
+
+    func testViewModelRemintsInstanceWhenStoreIsRetired() async throws {
+        let events = PassthroughSubject<Void, Never>()
+        let viewModel = Self.makeViewModel(storeRetired: events.eraseToAnyPublisher())
+        let first = try XCTUnwrap(viewModel.webViewInstance())
+        let webView = first.webView { WKWebView(frame: .zero) }
+
+        let reminted = self.expectation(description: "view model remints after store retirement")
+        var objectWillChangeCount = 0
+        let cancellable = viewModel.objectWillChange.sink { _ in
+            objectWillChangeCount += 1
+            Task { @MainActor in
+                reminted.fulfill()
+            }
+        }
+
+        events.send(())
+        await fulfillment(of: [reminted], timeout: 1)
+
+        let replacement = try XCTUnwrap(viewModel.webViewInstance())
+        XCTAssertFalse(replacement === first)
+        XCTAssertTrue(first.storeRetired)
+        XCTAssertFalse(replacement.isUnusable)
+        XCTAssertGreaterThan(objectWillChangeCount, 0)
+        XCTAssertNil(webView.superview)
+        _ = cancellable
     }
 
     // MARK: - Ownership
@@ -164,7 +191,10 @@ final class WebViewInstanceTests: TestCase {
     private static let origin = WebViewOrigin(string: "https://example.com")!
     private static let url = URL(string: "https://example.com/index.html")!
 
-    private static func makeViewModel(url: String = "https://example.com/index.html") -> WebViewComponentViewModel {
+    private static func makeViewModel(
+        url: String = "https://example.com/index.html",
+        storeRetired: AnyPublisher<Void, Never> = Empty().eraseToAnyPublisher()
+    ) -> WebViewComponentViewModel {
         return WebViewComponentViewModel(
             component: .init(
                 id: "faq",
@@ -172,7 +202,8 @@ final class WebViewInstanceTests: TestCase {
                 url: url,
                 size: .init(width: .fill, height: .fit(nil))
             ),
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            storeRetired: storeRetired
         )
     }
 
@@ -326,15 +357,8 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertNil(webView.superview)
     }
 
-    func testCacheClearRequestTearsDownTheWebViewAndMarksItUnusable() async {
-        let events = PassthroughSubject<WebBundleEvent, Never>()
-        let instance = WebViewInstance(
-            componentID: "faq",
-            expectedOrigin: WebViewOrigin(string: "https://example.com")!,
-            fitsWidth: false,
-            fitsHeight: true,
-            cacheClearEvents: events.eraseToAnyPublisher()
-        )
+    func testRetireTearsDownTheWebViewAndMarksItUnusable() {
+        let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let host = self.makeWindowedHost()
         instance.hostDidEnterWindow(host)
@@ -342,15 +366,10 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         var published = false
         let cancellable = instance.objectWillChange.sink { published = true }
 
-        events.send(.cacheClearRequested)
-
-        let deadline = Date().addingTimeInterval(1)
-        while !instance.isUnusable && Date() < deadline {
-            await Task.yield()
-        }
+        instance.retire()
 
         XCTAssertTrue(instance.isUnusable)
-        XCTAssertTrue(instance.retiredByCacheClear)
+        XCTAssertTrue(instance.storeRetired)
         XCTAssertTrue(published)
         XCTAssertNil(webView.superview)
         _ = cancellable

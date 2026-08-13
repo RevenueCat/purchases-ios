@@ -273,7 +273,9 @@ class BasePurchasesTests: TestCase {
     func initializePurchasesInstance(
         appUserId: String?,
         withDelegate: Bool = true,
-        webBundleCacheCoordinator: WebBundleCacheCoordinator = WebBundleCacheCoordinator(retireCurrentStore: {})
+        webViewDataStoreManager: WebViewDataStoreManager = WebViewDataStoreManager(
+            userDefaults: UserDefaults(suiteName: "com.revenuecat.tests.webview.\(UUID().uuidString)")!
+        )
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -363,7 +365,7 @@ class BasePurchasesTests: TestCase {
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                                    currentConfiguration: nil,
-                                   webBundleCacheCoordinator: webBundleCacheCoordinator)
+                                   webViewDataStoreManager: webViewDataStoreManager)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -372,6 +374,15 @@ class BasePurchasesTests: TestCase {
         }
 
         Purchases.setDefaultInstance(self.purchases)
+    }
+
+    func makeWebViewDataStoreManager() throws -> WebViewDataStoreManager {
+        let suiteName = "com.revenuecat.tests.webview.\(UUID().uuidString)"
+        let defaults = try XCTUnwrap(UserDefaults(suiteName: suiteName))
+        addTeardownBlock { [weak defaults] in
+            defaults?.removePersistentDomain(forName: suiteName)
+        }
+        return WebViewDataStoreManager(userDefaults: defaults)
     }
 
     func makeAPurchase() {
