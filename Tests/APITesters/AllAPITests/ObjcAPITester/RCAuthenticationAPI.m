@@ -19,6 +19,8 @@
     RCPurchases *p = [RCPurchases configureWithAPIKey:@""];
 
     RCPurchasesAuthentication *auth = p.authentication;
+    auth.delegate = nil;
+
     [auth identifyCurrentUserAsID:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *error) { }];
     [auth logOutWithCompletion:^(RCCustomerInfo *i, NSError *error) { }];
 
