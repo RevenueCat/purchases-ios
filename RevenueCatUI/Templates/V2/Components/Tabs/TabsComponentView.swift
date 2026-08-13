@@ -327,6 +327,11 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
+                    // A package-less tab shares the parent's context, so this would write back what it
+                    // just observed. Skipping it keeps that redundant write from clearing state the
+                    // parent set, which would otherwise depend on which observer SwiftUI calls first.
+                    guard context !== self.packageContext else { return }
+
                     self.packageContext.update(
                         package: context.package,
                         variableContext: context.variableContext
