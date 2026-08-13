@@ -30,6 +30,7 @@ public final class Authentication: NSObject {
 
     private let backend: Backend
     private let identityManager: IdentityManager
+    private let tokenManager: TokenManager
     private let operationDispatcher: OperationDispatcher
     private let systemInfo: SystemInfo
     internal weak var internalDelegate: InternalAuthenticatorDelegate?
@@ -45,11 +46,13 @@ public final class Authentication: NSObject {
     public weak var delegate: AuthenticationDelegate?
     internal init(backend: Backend,
                   identityManager: IdentityManager,
+                  tokenManager: TokenManager,
                   operationDispatcher: OperationDispatcher,
                   systemInfo: SystemInfo,
                   internalDelegate: InternalAuthenticatorDelegate? = nil) {
         self.backend = backend
         self.identityManager = identityManager
+        self.tokenManager = tokenManager
         self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
         self.internalDelegate = internalDelegate
@@ -75,6 +78,16 @@ public final class Authentication: NSObject {
     @objc(identifyCurrentUserAsID:completion:)
     public func identifyCurrentUser(as appUserID: String,
                                     completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        guard tokenManager.enabled == false else {
+            self.operationDispatcher.dispatchOnMainThread {
+                let error = NewErrorUtils.unsupportedError(message:
+                    "Providing an alias for the current user is unsupported when using IAM identities"
+                )
+                completion(nil, false, error.asPublicError)
+            }
+            return
+        }
+
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
