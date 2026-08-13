@@ -119,12 +119,29 @@ public class ObjCCheckpointResult: NSObject {
         switch value {
         case let result as CheckpointPaywallPresentedResult:
             return ObjCCheckpointPaywallPresentedResult(result)
+        case let result as CheckpointReceivedOfferingResult:
+            return ObjCCheckpointReceivedOfferingResult(result)
         case let result as CheckpointNoActionResult:
             return ObjCCheckpointNoActionResult(result)
         default:
             return ObjCCheckpointResult(value)
         }
     }
+
+}
+
+/// Objective-C-compatible checkpoint result carrying an app-owned offering.
+@_spi(CheckpointsInternal)
+@objc(RCCheckpointReceivedOfferingResult)
+public final class ObjCCheckpointReceivedOfferingResult: ObjCCheckpointResult {
+
+    init(_ value: CheckpointReceivedOfferingResult) {
+        self.offering = value.offering
+        super.init(value)
+    }
+
+    /// The offering the checkpoint selected.
+    @objc public let offering: Offering
 
 }
 

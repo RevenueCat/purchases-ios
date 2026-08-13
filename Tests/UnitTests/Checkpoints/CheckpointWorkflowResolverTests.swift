@@ -145,11 +145,15 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             Self.rule(workflowID: unservableWorkflowID),
             Self.rule(workflowID: self.workflowID)
         ]))
+        self.workflowsProvider.stubbedGetWorkflowResult[unservableWorkflowID] = Self.workflowDataResult(
+            id: unservableWorkflowID
+        )
 
         let resolution = try await self.resolve()
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+        // The body is read before the offering mapping now, since its shape decides what else the rule needs.
+        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [unservableWorkflowID])
     }
 
     func testFirstRuleWhoseOfferingIsMissingDoesNotFallThrough() async throws {
@@ -159,11 +163,14 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             Self.rule(workflowID: self.workflowID)
         ]))
         self.workflowsProvider.stubbedOfferingIdByWorkflowId[unservableWorkflowID] = "missing"
+        self.workflowsProvider.stubbedGetWorkflowResult[unservableWorkflowID] = Self.workflowDataResult(
+            id: unservableWorkflowID
+        )
 
         let resolution = try await self.resolve()
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [unservableWorkflowID])
     }
 
     func testFirstRuleWhoseWorkflowFailsToLoadDoesNotFallThrough() async throws {
@@ -224,13 +231,15 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
-        let unavailableWorkflowID = "wf_unavailable"
+        let secondWorkflowID = "wf5678"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: unavailableWorkflowID),
-            Self.rule(workflowID: self.workflowID)
+            Self.rule(workflowID: self.workflowID),
+            Self.rule(workflowID: secondWorkflowID)
         ]))
-        self.workflowsProvider.stubbedOfferingIdByWorkflowId[unavailableWorkflowID] = self.offeringID
-        self.workflowsProvider.stubbedGetWorkflowError[unavailableWorkflowID] = .notFound
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId[secondWorkflowID] = self.offeringID
+        self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
+            id: secondWorkflowID
+        )
         let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
             fetchCount.modify { $0 += 1 }
@@ -240,6 +249,153 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(fetchCount.value, 1)
+    }
+
+    func testUnservableWorkflowIsNotWorthAnOfferingsFetch() async throws {
+        self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .notFound
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            return self.offerings
+        }
+
+        _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(fetchCount.value, 0)
+    }
+
+    // MARK: - Terminal offering workflows
+
+    func testTerminalOfferingWorkflowResolvesItsOfferingWithoutAWorkflowToPresent() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, self.offeringID)
+        XCTAssertNil(Self.resolvedWorkflow(resolution))
+    }
+
+    func testTerminalOfferingWorkflowReadsItsOfferingFromTheStepInsteadOfTheWorkflowsMap() async throws {
+        let secondaryOffering = Self.offering(id: "secondary")
+        self.offerings = Self.offerings([self.offering, secondaryOffering])
+        // The workflows topic maps this workflow to a different offering, which the step must win over.
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId = [self.workflowID: self.offeringID]
+        self.stubOfferingWorkflow(offeringID: secondaryOffering.identifier)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, secondaryOffering.identifier)
+        XCTAssertEqual(self.workflowsProvider.invokedOfferingIdByWorkflowIdCount, 0)
+    }
+
+    func testTerminalOfferingWorkflowWhoseOfferingIsUnavailableResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(offeringID: "missing")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepWithoutAnOfferingIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(offeringID: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepWithABlankOfferingIdentifierResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(offeringID: "   ")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepThatIsNotTheInitialStepResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID, initialStepID: "somewhere_else")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepReferencingAScreenResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID, screenID: "screen_1")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepWithTriggersResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            triggers: [WorkflowTrigger(name: nil, type: .onPress, actionId: "action_1", componentId: "component_1")]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testOfferingStepWithTriggerActionsResolvesConfigurationUnavailable() async throws {
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            triggerActions: ["action_1": .step(stepId: "step_1")]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    private func stubOfferingWorkflow(
+        offeringID: String?,
+        initialStepID: String? = nil,
+        extraSteps: [String: WorkflowStep] = [:],
+        screenID: String? = nil,
+        triggers: [WorkflowTrigger] = [],
+        triggerActions: [String: WorkflowTriggerAction] = [:]
+    ) {
+        let stepID = "step_1"
+        var step = WorkflowStep(
+            id: stepID,
+            type: "offering",
+            screenId: screenID,
+            triggers: triggers,
+            triggerActions: triggerActions
+        )
+        if let offeringID {
+            step.paramValues = ["offering_identifier": .string(offeringID)]
+        }
+
+        var steps = extraSteps
+        steps[stepID] = step
+
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
+            workflow: PublishedWorkflow(
+                id: self.workflowID,
+                displayName: "Test",
+                initialStepId: initialStepID ?? stepID,
+                singleStepFallbackId: nil,
+                steps: steps,
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            enrolledVariants: nil
+        )
     }
 
     private func resolve(identifier: String? = nil) async throws -> CheckpointResolution {
@@ -267,6 +423,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private static func resolvedWorkflow(_ resolution: CheckpointResolution) -> ResolvedCheckpointWorkflow? {
         guard case let .workflow(workflow) = resolution else { return nil }
         return workflow
+    }
+
+    private static func resolvedOffering(_ resolution: CheckpointResolution) -> Offering? {
+        guard case let .offering(offering) = resolution else { return nil }
+        return offering
     }
 
     private static func rule(workflowID: String) -> CheckpointRule {

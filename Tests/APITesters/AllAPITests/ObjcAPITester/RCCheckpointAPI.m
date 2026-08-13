@@ -50,6 +50,8 @@
                 RCCheckpointPaywallDismissedOutcome * __unused dismissed =
                     (RCCheckpointPaywallDismissedOutcome *)outcome;
             }
+        } else if ([result isKindOfClass:RCCheckpointReceivedOfferingResult.class]) {
+            RCOffering * __unused offering = ((RCCheckpointReceivedOfferingResult *)result).offering;
         } else if ([result isKindOfClass:RCCheckpointNoActionResult.class]) {
             RCCheckpointNoActionReason *reason = ((RCCheckpointNoActionResult *)result).reason;
             NSString * __unused value = reason.value;

@@ -60,6 +60,8 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
         case let presented as CheckpointPaywallPresentedResult:
             return "Paywall presented · \(presented.checkpoint.identifier) · " +
                 Self.describe(presented.paywallOutcome)
+        case let received as CheckpointReceivedOfferingResult:
+            return "Received offering · \(received.checkpoint.identifier) · \(received.offering.identifier)"
         case let noAction as CheckpointNoActionResult:
             return "No action · \(noAction.checkpoint.identifier) · \(noAction.reason.value)"
         default:

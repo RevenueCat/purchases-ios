@@ -86,6 +86,12 @@ final class CheckpointsManager {
                 checkpoint: checkpoint,
                 paywallOutcome: outcome
             )
+        case let .offering(offering):
+            // Data-only, so this never claims the presentation slot the executor owns.
+            result = CheckpointReceivedOfferingResult(
+                checkpoint: checkpoint,
+                offering: offering
+            )
         case let .noAction(reason):
             result = CheckpointNoActionResult(
                 checkpoint: checkpoint,
