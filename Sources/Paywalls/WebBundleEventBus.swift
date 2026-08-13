@@ -17,36 +17,37 @@ import Foundation
 
 /// Publishes validated web-view entry URLs discovered during paywall cache warming,
 /// and a best-effort signal for live web views to drop in-memory `WKWebView`s on logout.
+///
+/// Events are pulses: late subscribers do not receive prior values, so a new web view
+/// created after logout will not immediately tear itself down.
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 @_spi(Internal) public actor WebBundleEventBus {
 
     public static let shared = WebBundleEventBus()
 
-    private let subject: CurrentValueSubject<WebBundleEvent, Never>
+    private let subject: PassthroughSubject<WebBundleEvent, Never>
 
     public nonisolated let publisher: AnyPublisher<WebBundleEvent, Never>
 
     public init() {
-        let subject = CurrentValueSubject<WebBundleEvent, Never>(.empty)
+        let subject = PassthroughSubject<WebBundleEvent, Never>()
         self.subject = subject
         self.publisher = subject.eraseToAnyPublisher()
     }
 
-    /// Replaces the current URL set and notifies subscribers.
+    /// Notifies subscribers of a new URL set.
     public func publish(_ urls: Set<URLWithValidation>) {
         self.subject.send(.receivedAssetURLs(urls))
     }
 
-    /// Sets the state back to empty
+    /// Notifies subscribers that the URL set is empty.
     public func empty() {
         self.subject.send(.empty)
     }
 
-    /// Notifies observers to clear their caches, then returns to empty so late subscribers
-    /// (new web views created after identity change) do not immediately tear down.
+    /// Notifies live observers to clear their caches.
     public func clearCache() {
         self.subject.send(.cacheClearRequested)
-        self.subject.send(.empty)
     }
 
 }
