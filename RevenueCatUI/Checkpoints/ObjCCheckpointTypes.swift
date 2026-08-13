@@ -42,10 +42,10 @@ public final class ObjCCheckpointParams: NSObject {
     /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
     @objc(initWithCustomVariables:)
     public init(customVariables: NSDictionary) {
-        var values: [String: CheckpointValue] = [:]
+        var values: [String: CustomVariableValue] = [:]
         for (rawKey, rawValue) in customVariables {
             guard let key = rawKey as? String,
-                  let value = CheckpointValue(foundationValue: rawValue) else {
+                  let value = CustomVariableValue(foundationValue: rawValue) else {
                 Logger.warning(CheckpointStrings.invalidObjectiveCCustomVariable(type(of: rawValue)))
                 continue
             }
