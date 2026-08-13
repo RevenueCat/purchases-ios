@@ -138,6 +138,60 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
+    func customVariablesAreAvailableInCustomNamespace() async throws {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+
+        let rule = try await evaluator.match(
+            in: [
+                TestLocalRule(
+                    id: "matching-rule",
+                    predicate: """
+                        {
+                          "and": [
+                            { "==": [{ "var": "custom.name" }, "Rick"] },
+                            { "==": [{ "var": "custom.attempts" }, 3] },
+                            { "==": [{ "var": "custom.score" }, 4.5] },
+                            { "==": [{ "var": "custom.subscriber" }, true] }
+                          ]
+                        }
+                        """
+                )
+            ],
+            customVariables: [
+                "name": .string("Rick"),
+                "attempts": .int(3),
+                "score": .double(4.5),
+                "subscriber": .bool(true)
+            ]
+        )
+
+        #expect(rule?.id == "matching-rule")
+    }
+
+    @Test
+    func customVariablesAreScopedToOneEvaluation() async throws {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let rules = [
+            TestLocalRule(
+                id: "matching-rule",
+                predicate: #"{"==":[{"var":"custom.source"},"onboarding"]}"#
+            )
+        ]
+
+        let first = try await evaluator.match(
+            in: rules,
+            customVariables: ["source": .string("onboarding")]
+        )
+        let second = try await evaluator.match(
+            in: rules,
+            customVariables: ["source": .string("paywall")]
+        )
+
+        #expect(first?.id == "matching-rule")
+        #expect(second?.id == nil)
+    }
+
+    @Test
     func duplicateLeafIsAConfigurationError() async {
         let first = TestDimensionProvider(
             namespace: .device,

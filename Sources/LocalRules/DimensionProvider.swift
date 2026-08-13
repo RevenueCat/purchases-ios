@@ -17,6 +17,7 @@ import Foundation
 /// Roots containing dimensions that may be evaluated locally by the rules engine.
 enum DimensionNamespace: String, CaseIterable, Sendable {
 
+    case custom
     case device
     case session
     case client

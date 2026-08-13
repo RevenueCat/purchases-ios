@@ -26,7 +26,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = try await manager.checkpoint(
             identifier: "unknown_checkpoint",
-            params: CheckpointParams(customProperties: ["name": "Rick"])
+            params: CheckpointParams(customVariables: ["name": "Rick"])
         )
 
         guard let noAction = result as? CheckpointNoActionResult else {
@@ -34,7 +34,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         XCTAssertEqual(noAction.reason, .unknownCheckpoint)
         XCTAssertEqual(noAction.checkpoint.identifier, "unknown_checkpoint")
-        XCTAssertEqual(noAction.checkpoint.params.customProperties["name"], "Rick")
+        XCTAssertEqual(noAction.checkpoint.params.customVariables["name"], "Rick")
         XCTAssertEqual(
             listener.events,
             [.hit("unknown_checkpoint"), .completed("unknown_checkpoint")]
@@ -113,11 +113,11 @@ final class CheckpointsManagerTests: TestCase {
     func testUIOwnedReferenceModelsPreserveValueEqualityAndHashing() {
         let firstInfo = CheckpointInfo(
             identifier: "test",
-            params: CheckpointParams(customProperties: ["name": "Rick"])
+            params: CheckpointParams(customVariables: ["name": "Rick"])
         )
         let secondInfo = CheckpointInfo(
             identifier: "test",
-            params: CheckpointParams(customProperties: ["name": "Rick"])
+            params: CheckpointParams(customVariables: ["name": "Rick"])
         )
         let firstResult = CheckpointNoActionResult(checkpoint: firstInfo, reason: .noMatch)
         let secondResult = CheckpointNoActionResult(checkpoint: secondInfo, reason: .noMatch)

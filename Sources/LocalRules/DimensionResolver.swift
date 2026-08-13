@@ -45,7 +45,7 @@ struct DimensionResolver: Sendable {
     ///
     /// For example, device `appVersion: "1.2.3"` becomes
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
-    func snapshot() async throws -> DimensionSnapshot {
+    func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
         var values: [String: RulesEngine.Value] = [:]
 
@@ -81,6 +81,13 @@ struct DimensionResolver: Sendable {
             }
 
             values[namespace] = .object(namespaceValues)
+        }
+
+        let validCustomVariables = CustomVariableKeyValidator.validateAndFilter(customVariables)
+        if !validCustomVariables.isEmpty {
+            values[DimensionNamespace.custom.rawValue] = .object(
+                validCustomVariables.mapValues(\.rulesEngineValue)
+            )
         }
 
         try Task.checkCancellation()
