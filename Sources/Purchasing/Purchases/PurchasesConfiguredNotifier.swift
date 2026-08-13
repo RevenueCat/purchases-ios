@@ -14,29 +14,27 @@ import Foundation
 
 /// RevenueCatUI implements this so ``Purchases`` can invoke it without importing that module.
 @_spi(Internal)
-@objc public protocol PurchasesUIConfiguring: NSObjectProtocol {
+@objc public protocol PurchasesPostConfigurationStep: NSObjectProtocol {
 
     /// Called after ``Purchases/shared`` has been set by ``Purchases/configure(withAPIKey:)``.
     static func purchasesDidConfigure()
 
 }
 
-/// Sends a one-shot message to RevenueCatUI when ``Purchases`` is configured.
-///
-/// RevenueCat does not import RevenueCatUI. If the UI module is linked, its
-/// `@objc(RCPurchasesUIService)` class is present and ``PurchasesUIConfiguring/purchasesDidConfigure()``
-/// is invoked. Otherwise this is a no-op.
+/// Sends a message to listeners when ``Purchases`` is configured.
 enum PurchasesConfiguredNotifier {
 
-    /// Must match `@objc(RCPurchasesUIService)` in RevenueCatUI.
-    static let uiServiceClassName = "RCPurchasesUIService"
+    // OBJC symbols must be linked for them to receive the notification
+    static let serviceClassNames = ["RCPurchasesUIService"]
 
     static func notify() {
-        guard let service = NSClassFromString(Self.uiServiceClassName) as? PurchasesUIConfiguring.Type else {
-            return
-        }
+        for name in serviceClassNames {
+            guard let service = NSClassFromString(name) as? PurchasesPostConfigurationStep.Type else {
+                return
+            }
 
-        service.purchasesDidConfigure()
+            service.purchasesDidConfigure()
+        }
     }
 
 }

@@ -28,7 +28,7 @@ import Foundation
 /// must activate merely by being linked, with no RevenueCatUI API reference, the
 /// host has to pass `-ObjC` or, more reliably, `-force_load`.
 @objc(RCPurchasesUIService)
-final class PurchasesUIService: NSObject, PurchasesUIConfiguring {
+final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
 
     private static let lock = NSLock()
     private static var didConfigure = false

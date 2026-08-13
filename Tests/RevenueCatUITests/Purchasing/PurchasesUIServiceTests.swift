@@ -32,10 +32,11 @@ class PurchasesUIServiceTests: TestCase {
     }
 
     func testServiceConformsAndIsDiscoverable() {
-        let service: AnyClass? = NSClassFromString(PurchasesConfiguredNotifier.uiServiceClassName)
+        // swiftlint:disable:next force_unwrapping
+        let service: AnyClass? = NSClassFromString(PurchasesConfiguredNotifier.serviceClassNames.first!)
 
         expect(service).toNot(beNil())
-        expect(service as? PurchasesUIConfiguring.Type).toNot(beNil())
+        expect(service as? PurchasesPostConfigurationStep.Type).toNot(beNil())
     }
 
     func testConfigurePingsRevenueCatUIOnce() {
