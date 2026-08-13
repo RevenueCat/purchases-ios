@@ -29,7 +29,7 @@ final class WebBundleCacheCoordinator {
         sweeper: (any WebViewDataStoreSweeping)? = nil
     ) {
         self.store = store
-        self.sweeper = sweeper ?? WebViewWebsiteDataStoreSweeper(idStore: store)
+        self.sweeper = sweeper ?? WebViewWebsiteDataStoreSweeper(store: store)
         self.bus = bus
         self.job = bus.publisher.sink { [weak self] event in
             guard let self else { return }

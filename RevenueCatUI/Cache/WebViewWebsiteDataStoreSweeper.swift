@@ -34,6 +34,15 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
     private let existingIdentifiers: @MainActor () async -> Set<UUID>
     private let remove: @MainActor (UUID) async -> Bool
 
+    init(store: WebViewDataStoreIdentifierStore = .init()) {
+        self.idStore = store
+        self.existingIdentifiers = Self.loadExistingIdentifiers
+        self.remove = Self.removeStore(for:)
+    }
+
+    #if DEBUG
+
+    // Test initializer
     init(
         idStore: WebViewDataStoreIdentifierStore = .init(),
         existingIdentifiers: (@MainActor () async -> Set<UUID>)? = nil,
@@ -43,6 +52,7 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
         self.existingIdentifiers = existingIdentifiers ?? Self.loadExistingIdentifiers
         self.remove = remove ?? Self.removeStore(for:)
     }
+    #endif
 
     @MainActor
     func sweepStores() async {
