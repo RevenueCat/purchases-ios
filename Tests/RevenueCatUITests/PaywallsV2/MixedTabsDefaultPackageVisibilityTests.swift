@@ -158,6 +158,60 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         )
     }
 
+    /// The same layout driven through the real loading transition. `isPaywallLoading` going false once
+    /// eligibility resolves fires a second page reconcile, and by then the showing tab has propagated its
+    /// annual card up. Nothing may move: that card is on screen and the user never tapped anything.
+    func testEligibilityResolvingDoesNotPullSelectionOffAVisibleTabCard() throws {
+        let (paywallState, _) = try Self.mixedLayoutState(tabs: .pageDefaultRepeatedInFirstTab)
+        let packageContext = Self.provisionallySeededContext()
+        let flag = PaywallLoadingFlag(isLoading: true)
+
+        let dispose = try PaywallLoadingHost(
+            flag: flag,
+            content: Self.loadedPaywallView(
+                paywallState: paywallState,
+                packageContext: packageContext
+            )
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        flag.isLoading = false
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            TestData.annualPackage.identifier,
+            "Eligibility resolving must not move the selection off the card the showing tab renders"
+        )
+    }
+
+    /// The residual case a reviewer raised: package C sits in both tabs, hidden in the one that's
+    /// showing. The page can't tell those two copies apart, so it leaves the selection alone. The
+    /// guarantee comes from one level down, where the showing tab reconciles against its own packages
+    /// and falls back to another card of its own.
+    func testShowingTabReconcilesWhenAnotherTabRepeatsItsHiddenPackage() throws {
+        let (paywallState, _) = try Self.mixedLayoutState(
+            components: Self.duplicatedAcrossTabsComponents()
+        )
+        let packageContext = Self.provisionallySeededContext()
+
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            Self.tabExtraPackage.identifier,
+            "The showing tab must fall back to its own visible card, not keep a package only another tab renders"
+        )
+    }
+
     /// The same paywall without the tabs component, which already worked: pins that the fix doesn't
     /// change the non-tabbed path.
     func testPageSelectionMovesOffHiddenDefaultWithoutTabs() throws {
@@ -172,6 +226,31 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         Self.settle()
 
         XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier)
+    }
+
+}
+
+/// Drives `\.isPaywallLoading` from `true` to `false`, the transition `PaywallsV2View` makes once intro
+/// and promo eligibility resolve. That flip is what triggers the page's second reconcile in production.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class PaywallLoadingFlag: ObservableObject {
+
+    @Published var isLoading: Bool
+
+    init(isLoading: Bool) {
+        self.isLoading = isLoading
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct PaywallLoadingHost<Content: View>: View {
+
+    @ObservedObject var flag: PaywallLoadingFlag
+    let content: Content
+
+    var body: some View {
+        self.content.environment(\.isPaywallLoading, self.flag.isLoading)
     }
 
 }
@@ -242,16 +321,73 @@ private extension MixedTabsDefaultPackageVisibilityTests {
         RunLoop.main.run(until: Date().addingTimeInterval(0.1))
     }
 
+    /// A second card for the showing tab, so it has somewhere of its own to fall back to.
+    static let tabExtraPackage = Package(
+        identifier: "tab_extra",
+        packageType: .custom,
+        storeProduct: TestData.lifetimeProduct.toStoreProduct(),
+        offeringIdentifier: "mixed_tabs",
+        webCheckoutUrl: nil
+    )
+
     static let offering = Offering(
         identifier: "mixed_tabs",
         serverDescription: "",
         availablePackages: [
             TestData.annualPackage,
             TestData.monthlyPackage,
-            TestData.weeklyPackage
+            TestData.weeklyPackage,
+            MixedTabsDefaultPackageVisibilityTests.tabExtraPackage
         ],
         webCheckoutUrl: nil
     )
+
+    /// Package C in both tabs, hidden in the one that's showing. The page cannot tell the two copies
+    /// apart, so this exists to check the tab's own reconcile covers it.
+    static func duplicatedAcrossTabsComponents() -> Offering.PaywallComponents {
+        let components: [PaywallComponent] = [
+            Self.packageComponent(
+                packageID: TestData.annualPackage.identifier,
+                isSelectedByDefault: true,
+                overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+            ),
+            Self.packageComponent(
+                packageID: TestData.monthlyPackage.identifier,
+                isSelectedByDefault: false
+            ),
+            .tabs(.init(
+                control: .init(
+                    type: .buttons,
+                    stack: .init(components: [
+                        .tabControlButton(.init(tabId: Self.tab1Id, stack: Self.textStack("Tab 1"))),
+                        .tabControlButton(.init(tabId: Self.tab2Id, stack: Self.textStack("Tab 2")))
+                    ])
+                ),
+                tabs: [
+                    .init(id: Self.tab1Id, stack: .init(components: [
+                        Self.packageComponent(
+                            packageID: TestData.weeklyPackage.identifier,
+                            isSelectedByDefault: true,
+                            overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+                        ),
+                        Self.packageComponent(
+                            packageID: Self.tabExtraPackage.identifier,
+                            isSelectedByDefault: false
+                        )
+                    ])),
+                    .init(id: Self.tab2Id, stack: .init(components: [
+                        Self.packageComponent(
+                            packageID: TestData.weeklyPackage.identifier,
+                            isSelectedByDefault: false
+                        )
+                    ]))
+                ],
+                defaultTabId: Self.tab1Id
+            ))
+        ]
+
+        return Self.paywallComponents(components: components)
+    }
 
     /// What `PaywallsV2View.init` seeds: resolved provisionally, so the hidden annual card wins.
     static func provisionallySeededContext() -> PackageContext {
@@ -264,7 +400,12 @@ private extension MixedTabsDefaultPackageVisibilityTests {
     /// Builds the real `PaywallState` and hands back the tabs component's own `TabControlContext`, the
     /// only way to drive a tab switch without simulating a tap.
     static func mixedLayoutState(tabs: TabsShape) throws -> (PaywallState, TabControlContext) {
-        let components = Self.paywallComponents(tabs: tabs)
+        return try Self.mixedLayoutState(components: Self.paywallComponents(tabs: tabs))
+    }
+
+    static func mixedLayoutState(
+        components: Offering.PaywallComponents
+    ) throws -> (PaywallState, TabControlContext) {
         let state = try PaywallsV2View.createPaywallState(
             componentsConfig: components.data.componentsConfig.base,
             componentsLocalizations: components.data.componentsLocalizations,
@@ -378,6 +519,10 @@ private extension MixedTabsDefaultPackageVisibilityTests {
             )))
         }
 
+        return Self.paywallComponents(components: components)
+    }
+
+    static func paywallComponents(components: [PaywallComponent]) -> Offering.PaywallComponents {
         return .init(
             uiConfig: PreviewUIConfig.make(),
             data: .init(

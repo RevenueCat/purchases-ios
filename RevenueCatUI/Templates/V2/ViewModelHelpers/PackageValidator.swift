@@ -155,17 +155,19 @@ class PackageValidator {
         return self.defaultSelectedPackage(among: self.pageScopedPackageInfos, in: context)
     }
 
-    /// Whether a card for `package` is on screen.
+    /// Whether any card for `package` is on screen, page or tab.
     ///
-    /// Where the page declares the package, only those occurrences count: a page card a rule hides isn't
-    /// on screen just because some tab repeats the same identifier. Packages the page doesn't declare are
-    /// left to the tabs, which is as close to "the active tab renders it" as this can get.
+    /// Deliberately blind to which tab is showing, because this can't know: a paywall can declare the same
+    /// package on the page and inside a tab, and only the tabs know which copy is up. Counting a tab copy
+    /// keeps a selection the showing tab renders from being pulled away, at the cost of leaving a hidden
+    /// page default selected when the only visible copy is in a tab that isn't showing. That case is the
+    /// pre-existing duplicate-identifier limitation, pinned by
+    /// `testDuplicateInAnotherTabMasksAHiddenPageDefault`, and closing it needs the active tab's package
+    /// set plumbed in here.
     private func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
-        let occurrences = self.scopedPackageInfos.filter { $0.info.package.identifier == package.identifier }
-        let pageOccurrences = occurrences.filter { $0.scope == .page }
-        let deciding = pageOccurrences.isEmpty ? occurrences : pageOccurrences
-
-        return deciding.contains { self.isVisible($0.info, in: context) }
+        return self.scopedPackageInfos.contains { scoped in
+            scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)
+        }
     }
 
     private func defaultSelectedPackage(
