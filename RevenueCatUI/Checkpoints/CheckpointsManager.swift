@@ -82,7 +82,11 @@ final class CheckpointsManager {
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .workflow(workflow):
-            let outcome = try await self.executor.execute(workflow)
+            let presentation = CheckpointPresentation(
+                workflow: workflow,
+                customVariables: params.customVariables
+            )
+            let outcome = try await self.executor.execute(presentation)
             result = CheckpointPaywallPresentedResult(
                 checkpoint: checkpoint,
                 paywallOutcome: outcome
