@@ -9,6 +9,13 @@
 
 import Foundation
 
+/*
+ These are convenience methods to stringify an HTTP message, and are exceptionally useful
+ when debugging networking calls. Do not rely on them for anything more than purely informational purposes.
+
+ These methods are only present in DEBUG builds.
+ */
+
 extension URLRequest {
 
     private var sortedHeaders: [(String, String)] {
