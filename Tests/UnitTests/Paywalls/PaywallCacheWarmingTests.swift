@@ -698,13 +698,25 @@ final class PaywallCacheWarmingTests: TestCase {
                                                         fontFamily: otherFamily)).to(beTrue())
     }
 
-    func testFontIsAlreadyInstalled_IsCaseInsensitiveForFontName() throws {
+    func testPlatformFontLookupIsCaseSensitive() throws {
         let font = try Self.anyInstalledFont()
+        let miscased = font.name.uppercased()
+        try XCTSkipIf(miscased == font.name)
 
-        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name.uppercased(),
-                                                        fontFamily: font.family)).to(beTrue())
-        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name.lowercased(),
-                                                        fontFamily: font.family)).to(beTrue())
+        expect(Self.platformResolvesFont(named: font.name)).to(beTrue())
+        expect(Self.platformResolvesFont(named: miscased)).to(beFalse())
+    }
+
+    func testFontIsAlreadyInstalled_AgreesWithPlatformFontLookupOnCasing() throws {
+        let font = try Self.anyInstalledFont()
+        let miscased = font.name.uppercased()
+        try XCTSkipIf(miscased == font.name)
+
+        // The paywall resolves fonts through this same lookup, so disagreeing means either
+        // re-downloading an available font or skipping one that can never be resolved.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: miscased,
+                                                        fontFamily: font.family))
+            == Self.platformResolvesFont(named: miscased)
     }
 
     func testFontIsAlreadyInstalled_ReturnsFalseForUnknownFontName() {
@@ -815,6 +827,17 @@ final class PaywallCacheWarmingTests: TestCase {
         }
         #else
         return []
+        #endif
+    }
+
+    /// The same lookup the paywall uses to resolve a custom font.
+    private static func platformResolvesFont(named name: String) -> Bool {
+        #if canImport(UIKit)
+        return UIFont(name: name, size: 1) != nil
+        #elseif canImport(AppKit)
+        return NSFont(name: name, size: 1) != nil
+        #else
+        return false
         #endif
     }
 

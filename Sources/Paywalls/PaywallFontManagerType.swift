@@ -123,8 +123,7 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
             return true
         }
 
-        return Self.installedFontNames(inFamily: fontFamily)
-            .contains { $0.caseInsensitiveCompare(fontName) == .orderedSame }
+        return Self.installedFontNames(inFamily: fontFamily).contains(fontName)
     }
 
     func installFont(_ font: DownloadableFont) async throws {
