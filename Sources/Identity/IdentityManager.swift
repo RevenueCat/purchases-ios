@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol CurrentUserProvider: Sendable {
+protocol CurrentUserProvider: AnyObject, Sendable {
 
     var currentAppUserID: String { get }
     var currentUserIsAnonymous: Bool { get }

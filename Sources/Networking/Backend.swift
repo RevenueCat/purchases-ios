@@ -33,6 +33,7 @@ class Backend {
         systemInfo: SystemInfo,
         httpClientTimeout: NetworkTimeout = .default,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
@@ -70,6 +71,7 @@ class Backend {
         let remoteConfigConfig = BackendConfiguration(
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
+                                               tokenManager: tokenManager,
                                                diagnosticsTracker: diagnosticsTracker,
                                                networkTimeout: httpClientTimeout,
                                                apiSourceFailover: apiSourceFailover,
@@ -312,6 +314,7 @@ private extension HTTPClient {
     static func dedicatedRemoteConfig(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
         networkTimeout: NetworkTimeout,
         apiSourceFailover: APISourceFailoverType?,
