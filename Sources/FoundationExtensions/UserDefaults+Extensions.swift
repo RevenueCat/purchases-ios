@@ -10,6 +10,7 @@
 //  UserDefaults+Extensions.swift
 //
 //  Created by Nacho Soto on 11/9/22.
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -23,7 +24,7 @@ extension UserDefaults {
     // - The globalDomain is also an invalid suite name, because it isn't writeable by apps.
     //
     // Because we know at compile time that it's neither of those, this is a safe force-unwrap.
-    static let revenueCatSuite: UserDefaults = .init(suiteName: UserDefaults.revenueCatSuiteName)!
+    @_spi(Internal) public static let revenueCatSuite = UserDefaults(suiteName: UserDefaults.revenueCatSuiteName)!
 
     // swiftlint:enable force_unwrapping
 
