@@ -17,6 +17,7 @@
 import XCTest
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManagerTests: TestCase {
 
     #if ENABLE_CHECKPOINTS_OBJC
@@ -208,6 +209,7 @@ final class CheckpointsManagerTests: TestCase {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowExecutorTests: TestCase {
 
     func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
@@ -393,6 +395,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
@@ -410,6 +413,7 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresenter: CheckpointPresenter {
 
     struct Presentation {
@@ -453,6 +457,7 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class ListenerRecorder: CheckpointListener {
 
     enum Event: Equatable {

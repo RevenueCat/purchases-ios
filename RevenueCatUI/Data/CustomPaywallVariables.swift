@@ -33,6 +33,7 @@ import SwiftUI
 /// ```
 /// Hello {{ custom.player_name }}!
 /// ```
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
     private enum Storage: Sendable, Equatable, Hashable {
@@ -130,6 +131,7 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
 // MARK: - ExpressibleByStringLiteral
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue: ExpressibleByStringLiteral {
 
     /// Creates a custom variable value from a string literal.
@@ -139,6 +141,7 @@ extension CustomVariableValue: ExpressibleByStringLiteral {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue: ExpressibleByIntegerLiteral {
 
     /// Creates a numeric custom variable value from an integer literal.
@@ -148,6 +151,7 @@ extension CustomVariableValue: ExpressibleByIntegerLiteral {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue: ExpressibleByFloatLiteral {
 
     /// Creates a numeric custom variable value from a floating-point literal.
@@ -157,6 +161,7 @@ extension CustomVariableValue: ExpressibleByFloatLiteral {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue: ExpressibleByBooleanLiteral {
 
     /// Creates a Boolean custom variable value from a Boolean literal.
@@ -168,6 +173,7 @@ extension CustomVariableValue: ExpressibleByBooleanLiteral {
 
 // MARK: - Foundation Bridge
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue {
 
     /// Creates a custom variable value from a supported Foundation primitive.

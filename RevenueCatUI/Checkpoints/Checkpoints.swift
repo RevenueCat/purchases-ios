@@ -14,6 +14,7 @@
 
 @_spi(Internal) import RevenueCat
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue {
 
     var coreCheckpointValue: RevenueCat.CheckpointValue {
@@ -26,6 +27,7 @@ extension CustomVariableValue {
 
 /// Per-call parameters for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom variables usable in checkpoint targeting rules and feature events.
@@ -59,6 +61,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
 
 /// Information about a checkpoint that was hit.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
@@ -93,6 +96,7 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 
 /// The reason no experience was served for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The value identifying the reason.
@@ -130,6 +134,7 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
 /// Base class for the result of hitting a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
     /// Information about the checkpoint that produced this result.
@@ -163,6 +168,7 @@ public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
 /// Nothing was served for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionResult: CheckpointResult {
 
     /// The reason no experience was served.
@@ -191,6 +197,7 @@ public final class CheckpointNoActionResult: CheckpointResult {
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol CheckpointListener: AnyObject {
 
     /// A checkpoint was hit, before evaluation.
@@ -201,6 +208,7 @@ public protocol CheckpointListener: AnyObject {
 }
 
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension CheckpointListener {
 
     /// Default no-op implementation.
