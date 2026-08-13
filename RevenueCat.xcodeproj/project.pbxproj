@@ -105,6 +105,7 @@
 		16A5DD10302E609A00E04386 /* WebBundleCacheCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD0F302E609A00E04386 /* WebBundleCacheCoordinator.swift */; };
 		16A5DD12302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD11302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift */; };
 		16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD13302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift */; };
+		16A5DD19302E7A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD15302E6A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
@@ -3485,7 +3486,6 @@
 			isa = PBXGroup;
 			children = (
 				16A5DD0F302E609A00E04386 /* WebBundleCacheCoordinator.swift */,
-				16A5DD11302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift */,
 				16A5DD13302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift */,
 			);
 			path = Cache;
@@ -3495,7 +3495,6 @@
 			isa = PBXGroup;
 			children = (
 				16A5DD17302E6A0300E04386 /* WebBundleCacheCoordinatorTests.swift */,
-				16A5DD15302E6A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift */,
 				16A5DD16302E6A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift */,
 			);
 			path = Cache;
@@ -5113,6 +5112,7 @@
 			isa = PBXGroup;
 			children = (
 				166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */,
+				16A5DD11302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift */,
 				032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */,
 				7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */,
 				88AD010B2C740CF400AA1F2B /* Components */,
@@ -5142,6 +5142,7 @@
 				3D26169F24D341F77345716D /* ExitOfferTests.swift */,
 				FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */,
 				166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */,
+				16A5DD15302E6A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
@@ -7723,6 +7724,7 @@
 				B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */,
 				359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */,
+				16A5DD12302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift in Sources */,
 				1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */,
 				B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */,
 				4F0BBA812A1D0524000E75AB /* DefaultDecodable.swift in Sources */,
@@ -8181,6 +8183,7 @@
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */,
+				16A5DD19302E7A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
@@ -8356,7 +8359,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				16A5DD10302E609A00E04386 /* WebBundleCacheCoordinator.swift in Sources */,
-				16A5DD12302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift in Sources */,
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
 				73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */,

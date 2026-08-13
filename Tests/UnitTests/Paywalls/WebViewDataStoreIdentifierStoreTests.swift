@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/12/26.
 //
 
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 final class WebViewDataStoreIdentifierStoreTests: TestCase {
