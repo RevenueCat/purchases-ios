@@ -39,15 +39,12 @@ enum DimensionValue: Equatable, Sendable {
 /// pulled only when a rules evaluation requests a new snapshot.
 protocol DimensionProvider: Sendable {
 
-    /// Stable identifier used only for configuration diagnostics.
-    var identifier: String { get }
-
     /// Root namespace containing the returned dimensions.
     var namespace: DimensionNamespace { get }
 
     /// Returns the complete current set of scalar dimensions relative to ``namespace``.
     ///
-    /// Keys are lowercase snake-case names such as `app_version`. The resolver
+    /// Keys are lower camel-case names such as `appVersion`. The resolver
     /// adds the provider's namespace. Missing individual values must be
     /// omitted. Throwing is reserved for a systemic failure to produce the
     /// provider's dimensions.
