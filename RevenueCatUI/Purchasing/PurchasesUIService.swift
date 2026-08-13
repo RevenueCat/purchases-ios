@@ -33,10 +33,6 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
     private static let lock = NSLock()
     private static var didConfigure = false
 
-    #if DEBUG
-    static var configureCallCount = 0
-    #endif
-
     /// Retains this class from a public RevenueCatUI entry point and replays
     /// configure-time work if `Purchases` is already configured.
     ///
@@ -52,9 +48,6 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
         lock.withLock {
             guard !didConfigure else { return }
             self.didConfigure = true
-            #if DEBUG
-            Self.configureCallCount += 1
-            #endif
             Logger.debug(Strings.purchases_did_configure)
             // Next PR: subscribe to publishers
         }
@@ -64,7 +57,6 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
     static func resetForTests() {
         lock.withLock {
             Self.didConfigure = false
-            Self.configureCallCount = 0
         }
     }
     #endif
