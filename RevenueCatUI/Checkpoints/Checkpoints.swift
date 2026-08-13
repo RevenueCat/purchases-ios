@@ -12,27 +12,9 @@
 //  Created by Rick van der Linden.
 //
 
-import Foundation
 @_spi(Internal) import RevenueCat
 
 extension CustomVariableValue {
-
-    init?(foundationValue: Any) {
-        guard let value = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
-
-        switch value {
-        case let .string(value): self = .string(value)
-        case let .integer(value): self = .number(Double(value))
-        case let .double(value): self = .number(value)
-        case let .boolean(value): self = .bool(value)
-        }
-    }
-
-    var foundationValue: Any {
-        if self.isString { return self.stringValue }
-        if self.isNumber { return NSNumber(value: self.doubleValue) }
-        return NSNumber(value: self.boolValue)
-    }
 
     var coreCheckpointValue: RevenueCat.CheckpointValue {
         if self.isString { return .string(self.stringValue) }
