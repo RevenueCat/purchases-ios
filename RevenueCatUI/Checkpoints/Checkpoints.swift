@@ -15,80 +15,29 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// A custom value supplied when a checkpoint is hit.
-@_spi(CheckpointsInternal)
-public struct CheckpointValue: Equatable, Hashable, Sendable {
+extension CustomVariableValue {
 
-    fileprivate let coreValue: RevenueCat.CheckpointValue
+    init?(foundationValue: Any) {
+        guard let value = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
 
-    private init(coreValue: RevenueCat.CheckpointValue) {
-        self.coreValue = coreValue
+        switch value {
+        case let .string(value): self = .string(value)
+        case let .integer(value): self = .number(Double(value))
+        case let .double(value): self = .number(value)
+        case let .boolean(value): self = .bool(value)
+        }
     }
 
-    /// Creates a string checkpoint value.
-    public static func string(_ value: String) -> Self { return .init(coreValue: .string(value)) }
-    /// Creates an integer checkpoint value.
-    public static func integer(_ value: Int64) -> Self { return .init(coreValue: .integer(value)) }
-    /// Creates a floating-point checkpoint value.
-    public static func double(_ value: Double) -> Self { return .init(coreValue: .double(value)) }
-    /// Creates a Boolean checkpoint value.
-    public static func boolean(_ value: Bool) -> Self { return .init(coreValue: .boolean(value)) }
-
-}
-
-extension CheckpointValue: ExpressibleByStringLiteral {
-
-    /// Creates a string checkpoint value from a string literal.
-    public init(stringLiteral value: String) { self = .string(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByIntegerLiteral {
-
-    /// Creates an integer checkpoint value from an integer literal.
-    public init(integerLiteral value: Int64) { self = .integer(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByFloatLiteral {
-
-    /// Creates a floating-point checkpoint value from a floating-point literal.
-    public init(floatLiteral value: Double) { self = .double(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByBooleanLiteral {
-
-    /// Creates a Boolean checkpoint value from a Boolean literal.
-    public init(booleanLiteral value: Bool) { self = .boolean(value) }
-
-}
-
-extension CheckpointValue: Codable {
-
-    /// Creates a checkpoint value by decoding a primitive JSON value.
-    public init(from decoder: Decoder) throws {
-        self.init(coreValue: try RevenueCat.CheckpointValue(from: decoder))
+    var foundationValue: Any {
+        if self.isString { return self.stringValue }
+        if self.isNumber { return NSNumber(value: self.doubleValue) }
+        return NSNumber(value: self.boolValue)
     }
 
-    /// Encodes the checkpoint value as a primitive JSON value.
-    public func encode(to encoder: Encoder) throws {
-        try self.coreValue.encode(to: encoder)
-    }
-
-}
-
-extension CheckpointValue {
-
-    /// Creates a checkpoint value from a supported Foundation primitive.
-    public init?(foundationValue: Any) {
-        guard let coreValue = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
-        self.init(coreValue: coreValue)
-    }
-
-    /// The equivalent Foundation primitive value.
-    public var foundationValue: Any {
-        return self.coreValue.foundationValue
+    var coreCheckpointValue: RevenueCat.CheckpointValue {
+        if self.isString { return .string(self.stringValue) }
+        if self.isNumber { return .double(self.doubleValue) }
+        return .boolean(self.boolValue)
     }
 
 }
@@ -98,10 +47,10 @@ extension CheckpointValue {
 public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom variables usable in checkpoint targeting rules and feature events.
-    public let customVariables: [String: CheckpointValue]
+    public let customVariables: [String: CustomVariableValue]
 
     /// Creates checkpoint parameters with the supplied custom variables.
-    public init(customVariables: [String: CheckpointValue] = [:]) {
+    public init(customVariables: [String: CustomVariableValue] = [:]) {
         self.customVariables = customVariables
     }
 
@@ -121,7 +70,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
     }
 
     var coreParams: RevenueCat.CheckpointParams {
-        return .init(customVariables: self.customVariables.mapValues(\.coreValue))
+        return .init(customVariables: self.customVariables.mapValues(\.coreCheckpointValue))
     }
 
 }

@@ -49,11 +49,10 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 private final class CheckpointListenerDefaultsAPITester: CheckpointListener {}
 
 func checkCheckpointAPI(_ purchases: Purchases) {
-    let string: CheckpointValue = .string("value")
-    let integer: CheckpointValue = .integer(2)
-    let double: CheckpointValue = .double(4.5)
-    let boolean: CheckpointValue = .boolean(true)
-    let _: Any = string.foundationValue
+    let string: CustomVariableValue = .string("value")
+    let integer: CustomVariableValue = 2
+    let double: CustomVariableValue = 4.5
+    let boolean: CustomVariableValue = true
 
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
@@ -64,7 +63,7 @@ func checkCheckpointAPI(_ purchases: Purchases) {
         "score": double,
         "subscriber": boolean
     ])
-    let _: [String: CheckpointValue] = params.customVariables
+    let _: [String: CustomVariableValue] = params.customVariables
 
     purchases.checkpoint(
         "test_checkpoint",

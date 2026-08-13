@@ -14,10 +14,10 @@
 @_spi(Internal) import RevenueCat
 import SwiftUI
 
-/// A value type for custom paywall variables that can be passed to paywalls at runtime.
+/// A value type for custom variables that can be passed to RevenueCat UI at runtime.
 ///
-/// Custom variables allow developers to personalize paywall text with dynamic values.
-/// Variables are defined in the RevenueCat dashboard and can be overridden at runtime.
+/// Custom variables allow developers to personalize RevenueCat UI and supply values for checkpoint targeting.
+/// Variables are defined in the RevenueCat dashboard and can be supplied at runtime.
 ///
 /// ### Usage
 /// ```swift
@@ -33,7 +33,6 @@ import SwiftUI
 /// ```
 /// Hello {{ custom.player_name }}!
 /// ```
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
     private enum Storage: Sendable, Equatable, Hashable {
@@ -131,12 +130,38 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
 
 // MARK: - ExpressibleByStringLiteral
 
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CustomVariableValue: ExpressibleByStringLiteral {
 
     /// Creates a custom variable value from a string literal.
     public init(stringLiteral value: String) {
         self = .string(value)
+    }
+
+}
+
+extension CustomVariableValue: ExpressibleByIntegerLiteral {
+
+    /// Creates a numeric custom variable value from an integer literal.
+    public init(integerLiteral value: Int64) {
+        self = .number(Double(value))
+    }
+
+}
+
+extension CustomVariableValue: ExpressibleByFloatLiteral {
+
+    /// Creates a numeric custom variable value from a floating-point literal.
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+
+}
+
+extension CustomVariableValue: ExpressibleByBooleanLiteral {
+
+    /// Creates a Boolean custom variable value from a Boolean literal.
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
     }
 
 }

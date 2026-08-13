@@ -23,7 +23,7 @@ final class CustomVariables: ObservableObject {
     ]
 
     var checkpointParams: CheckpointParams {
-        var customVariables: [String: CheckpointValue] = [:]
+        var customVariables: [String: CustomVariableValue] = [:]
 
         for variable in self.variables {
             let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)

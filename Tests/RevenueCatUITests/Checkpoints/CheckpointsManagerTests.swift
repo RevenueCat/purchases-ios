@@ -19,6 +19,24 @@ import XCTest
 @MainActor
 final class CheckpointsManagerTests: TestCase {
 
+    func testCheckpointParamsConvertCustomVariableValuesForCoreResolution() {
+        let params = RevenueCatUI.CheckpointParams(customVariables: [
+            "string": "value",
+            "integer": 42,
+            "double": 4.5,
+            "boolean": true
+        ])
+
+        let expected: [String: RevenueCat.CheckpointValue] = [
+            "string": .string("value"),
+            "integer": .double(42),
+            "double": .double(4.5),
+            "boolean": .boolean(true)
+        ]
+
+        XCTAssertEqual(params.coreParams.customVariables, expected)
+    }
+
     func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
         let listener = ListenerRecorder()
