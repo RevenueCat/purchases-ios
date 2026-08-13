@@ -15,6 +15,10 @@ import Foundation
 @_spi(Experimental)
 @objc(RCPurchasesAuthenticationDelegate)
 public protocol AuthenticationDelegate: NSObjectProtocol {
+
+    /// The SDK encountered an unrecoverable authentication error while performing other operations
+    ///
+    /// - Parameter error: The ``PublicError`` indicating why authentication has failed
     func authenticatorDidEncounterError(_ error: PublicError)
 }
 
@@ -57,7 +61,13 @@ public final class Authentication: NSObject {
         self.systemInfo = systemInfo
         self.internalDelegate = internalDelegate
         super.init()
+    }
 
+    /// Provide an app-specific alias for the current user
+    /// - Parameters:
+    ///   - appUserID: The user's alias
+    ///   - completion: A completion handler that is invoked with the updated ``CustomerInfo`` (if any),
+    ///   a boolean indicating whether the user was created or restored, and an optional ``PublicError``
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
     This is likely a programmer error. This ID is used to identify the current user.
@@ -115,6 +125,10 @@ public final class Authentication: NSObject {
 
     // MARK: - Async
 
+    /// Provide an app-specific alias for the current user
+    /// - Parameter appUserID: The user's alias
+    /// - Returns: A tuple of the new ``CustomerInfo`` and a boolean indicating whether it was created or restored
+    /// - Throws: an error if the alias could not be applied to the current user
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
     This is likely a programmer error. This ID is used to identify the current user.
@@ -127,6 +141,10 @@ public final class Authentication: NSObject {
         return try await identifyCurrentUser(as: appUserID.description)
     }
 
+    /// Provide an app-specific alias for the current user
+    /// - Parameter appUserID: The user's alias
+    /// - Returns: A tuple of the new ``CustomerInfo`` and a boolean indicating whether it was created or restored
+    /// - Throws: an error if the alias could not be applied to the current user
     @_disfavoredOverload
     public func identifyCurrentUser(as appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withUnsafeThrowingContinuation { continuation in
@@ -137,6 +155,8 @@ public final class Authentication: NSObject {
         }
     }
 
+    /// Log out the current user and revert to an anonymous user identifier
+    /// - Returns: The ``CustomerInfo`` of the anonymous user
     public func logOut() async throws -> CustomerInfo {
         return try await withUnsafeThrowingContinuation { continuation in
             self.logOut(completion: { customerInfo, error in

@@ -78,23 +78,6 @@ class TokenManager {
         }
     }
 
-    var currentIdentitySources: [IdentitySource]? {
-        guard let currentIDToken else { return nil }
-        guard let jwt = try? JWT(from: currentIDToken) else { return nil }
-        return jwt.amr?.compactMap { IdentitySource.source(with: $0) }
-    }
-
-    var isCurrentIdentityAnonymous: Bool {
-        // returns true iff all (1+) the amr claim values are "anonymous"
-        guard let sources = currentIdentitySources else { return false }
-        if sources.isEmpty { return false }
-        return sources.allSatisfy { $0 == .anonymous }
-    }
-
-    var currentIdentitySource: IdentitySource? {
-        currentIdentitySources?.last
-    }
-
     func idToken(for user: String) -> String? {
         storage.string(for: .id(user))
     }

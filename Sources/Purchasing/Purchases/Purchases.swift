@@ -518,7 +518,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
-                                              tokenManager: tokenManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
