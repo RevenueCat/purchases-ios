@@ -18,10 +18,10 @@
 /// Isolates web-view storage on cache clear request, then deletes retired stores later.
 final class WebBundleCacheCoordinator {
 
-    let store: WebViewDataStoreIdentifierStore
-    let sweeper: any WebViewDataStoreSweeping
-    let bus: WebBundleEventBus
-    var job: AnyCancellable?
+    private let store: WebViewDataStoreIdentifierStore
+    private let sweeper: any WebViewDataStoreSweeping
+    private let bus: WebBundleEventBus
+    private var job: AnyCancellable?
 
     init(
         store: WebViewDataStoreIdentifierStore,
@@ -54,7 +54,7 @@ final class WebBundleCacheCoordinator {
     static let shared = WebBundleCacheCoordinator(store: .init(), bus: .shared)
 
     @MainActor
-    func scheduleSweep() async {
+    private func scheduleSweep() async {
         await self.sweeper.sweepStores()
     }
 
