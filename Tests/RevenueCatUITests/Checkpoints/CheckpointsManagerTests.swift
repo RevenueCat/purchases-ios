@@ -19,6 +19,43 @@ import XCTest
 @MainActor
 final class CheckpointsManagerTests: TestCase {
 
+    #if ENABLE_CHECKPOINTS_OBJC
+
+    func testObjectiveCParamsConvertAndRoundTripSupportedFoundationValues() throws {
+        let params = ObjCCheckpointParams(customVariables: [
+            "string": "value",
+            "integer": NSNumber(value: Int64(42)),
+            "double": NSNumber(value: 4.5),
+            "true": NSNumber(value: true),
+            "false": NSNumber(value: false)
+        ])
+
+        XCTAssertEqual(params.value.customVariables, [
+            "string": .string("value"),
+            "integer": .number(42),
+            "double": .number(4.5),
+            "true": .bool(true),
+            "false": .bool(false)
+        ])
+
+        let roundTrip = ObjCCheckpointParams(customVariables: params.customVariables)
+        XCTAssertEqual(roundTrip.value, params.value)
+    }
+
+    func testObjectiveCParamsDropUnsupportedValuesAndNonStringKeys() {
+        let params = ObjCCheckpointParams(customVariables: [
+            "valid": "value",
+            "null": NSNull(),
+            "date": Date(),
+            "array": ["nested"],
+            NSNumber(value: 1): "invalid key"
+        ])
+
+        XCTAssertEqual(params.value.customVariables, ["valid": .string("value")])
+    }
+
+    #endif
+
     func testCheckpointParamsConvertCustomVariableValuesForCoreResolution() {
         let params = RevenueCatUI.CheckpointParams(customVariables: [
             "string": "value",

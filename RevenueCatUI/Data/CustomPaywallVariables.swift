@@ -166,6 +166,41 @@ extension CustomVariableValue: ExpressibleByBooleanLiteral {
 
 }
 
+// MARK: - Foundation Bridge
+
+extension CustomVariableValue {
+
+    /// Creates a custom variable value from a supported Foundation primitive.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should use
+    /// ``string(_:)``, ``number(_:)``, or ``bool(_:)`` instead.
+    @_spi(Internal)
+    public init?(foundationValue: Any) {
+        guard let value = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
+
+        switch value {
+        case let .string(value): self = .string(value)
+        case let .integer(value): self = .number(Double(value))
+        case let .double(value): self = .number(value)
+        case let .boolean(value): self = .bool(value)
+        }
+    }
+
+    /// The equivalent Foundation primitive value.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should pass
+    /// ``CustomVariableValue`` directly.
+    @_spi(Internal)
+    public var foundationValue: Any {
+        switch self.storage {
+        case let .string(value): return value
+        case let .number(value): return NSNumber(value: value)
+        case let .bool(value): return NSNumber(value: value)
+        }
+    }
+
+}
+
 // MARK: - Environment Key
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
