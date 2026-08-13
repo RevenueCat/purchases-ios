@@ -23,7 +23,6 @@ public enum CheckpointValue: Equatable, Hashable, Sendable {
 
     // swiftlint:disable missing_docs
     case string(String)
-    case integer(Int64)
     case double(Double)
     case boolean(Bool)
     // swiftlint:enable missing_docs
@@ -39,8 +38,8 @@ extension CheckpointValue: ExpressibleByStringLiteral {
 
 extension CheckpointValue: ExpressibleByIntegerLiteral {
 
-    /// Creates an integer checkpoint value from an integer literal.
-    public init(integerLiteral value: Int64) { self = .integer(value) }
+    /// Creates a numeric checkpoint value from an integer literal.
+    public init(integerLiteral value: Int64) { self = .double(Double(value)) }
 
 }
 
@@ -68,8 +67,6 @@ extension CheckpointValue: Codable {
             self = .string(value)
         } else if let value = try? container.decode(Bool.self) {
             self = .boolean(value)
-        } else if let value = try? container.decode(Int64.self) {
-            self = .integer(value)
         } else if let value = try? container.decode(Double.self) {
             self = .double(value)
         } else {
@@ -77,7 +74,7 @@ extension CheckpointValue: Codable {
                 Self.self,
                 .init(
                     codingPath: decoder.codingPath,
-                    debugDescription: "Expected a string, integer, double, or boolean."
+                    debugDescription: "Expected a string, number, or boolean."
                 )
             )
         }
@@ -89,7 +86,6 @@ extension CheckpointValue: Codable {
 
         switch self {
         case let .string(value): try container.encode(value)
-        case let .integer(value): try container.encode(value)
         case let .double(value): try container.encode(value)
         case let .boolean(value): try container.encode(value)
         }
@@ -110,10 +106,7 @@ extension CheckpointValue {
         switch number.jsonNumberKind {
         case .boolean:
             self = .boolean(number.boolValue)
-        case .integer:
-            guard let value = Int64(number.stringValue) else { return nil }
-            self = .integer(value)
-        case .floatingPoint:
+        case .integer, .floatingPoint:
             self = .double(number.doubleValue)
         }
     }
@@ -122,7 +115,6 @@ extension CheckpointValue {
     public var foundationValue: Any {
         switch self {
         case let .string(value): return value
-        case let .integer(value): return NSNumber(value: value)
         case let .double(value): return NSNumber(value: value)
         case let .boolean(value): return NSNumber(value: value)
         }
@@ -135,7 +127,6 @@ extension CheckpointValue {
     var dimensionValue: DimensionValue {
         switch self {
         case let .string(value): return .string(value)
-        case let .integer(value): return .int(value)
         case let .double(value): return .double(value)
         case let .boolean(value): return .bool(value)
         }
