@@ -53,6 +53,7 @@ public class PaywallViewController: UIViewController {
     ///
     /// - Important: Set this property before presenting the view controller.
     ///   Changes made after presentation will not be reflected in the paywall.
+    ///   Invalid keys are ignored.
     ///
     /// ### Example
     /// ```swift
@@ -62,38 +63,39 @@ public class PaywallViewController: UIViewController {
     /// ]
     /// present(vc, animated: true)
     /// ```
-    public var customVariables: [String: CustomVariableValue] = [:] {
-        didSet {
+    public var customVariables: [String: CustomVariableValue] {
+        get { return self.storedCustomVariables }
+        set {
             assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
+            self.storedCustomVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(newValue)
         }
     }
+
+    private var storedCustomVariables: [String: CustomVariableValue] = [:]
 
     // MARK: - Objective-C Custom Variable Methods
 
     /// Sets a string custom variable value for the given key.
     /// - Parameters:
     ///   - value: The string value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariable(_ value: String, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .string(value)
     }
 
     /// Sets a numeric custom variable value for the given key.
     /// - Parameters:
     ///   - value: The numeric value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
 
     /// Sets a boolean custom variable value for the given key.
     /// - Parameters:
     ///   - value: The boolean value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }
 

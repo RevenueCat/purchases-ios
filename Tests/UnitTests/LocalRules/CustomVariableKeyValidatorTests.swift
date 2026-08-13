@@ -25,14 +25,31 @@ struct CustomVariableKeyValidatorTests {
 
     @Test
     func acceptsAddressableKeys() {
-        let validKeys = ["validKey", "valid_key_name", "key123", "player_score_2024", "a", "kéy"]
+        let validKeys = [
+            "validKey",
+            "valid_key_name",
+            "key123",
+            "player_score_2024",
+            "a",
+            "123key",
+            "_key",
+            String(repeating: "a", count: 256)
+        ]
 
         #expect(validKeys.allSatisfy { CustomVariableKeyValidator.isValidKey($0) })
     }
 
     @Test
     func rejectsUnaddressableKeys() {
-        let invalidKeys = ["", "123key", "_key", "key-name", "key name", "key.name", "key!"]
+        let invalidKeys = [
+            "",
+            "key-name",
+            "key name",
+            "key.name",
+            "key!",
+            "kéy",
+            String(repeating: "a", count: 257)
+        ]
 
         #expect(invalidKeys.allSatisfy { !CustomVariableKeyValidator.isValidKey($0) })
     }
@@ -42,11 +59,14 @@ struct CustomVariableKeyValidatorTests {
         let snapshot = try await DimensionResolver(dimensionProviders: []).snapshot(customVariables: [
             "valid_key": .string("kept"),
             "my.property": .string("dropped"),
-            "2fast": .string("dropped"),
+            "2fast": .string("also kept"),
             "has space": .string("dropped")
         ])
 
-        #expect(snapshot.values["custom"] == .object(["valid_key": .string("kept")]))
+        #expect(snapshot.values["custom"] == .object([
+            "valid_key": .string("kept"),
+            "2fast": .string("also kept")
+        ]))
     }
 
     @Test

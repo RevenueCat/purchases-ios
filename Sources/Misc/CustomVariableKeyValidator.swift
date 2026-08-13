@@ -22,7 +22,7 @@ private enum CustomVariableKeyValidatorStrings: LogMessage {
         switch self {
         case .invalidKey(let key):
             return "Custom variable key '\(key)' is invalid and will be ignored. " +
-                "Keys must start with a letter and contain only letters, numbers, and underscores."
+                "Keys must be 1–256 characters and contain only ASCII letters, numbers, and underscores."
         }
     }
 
@@ -38,8 +38,19 @@ public struct CustomVariableKeyValidator {
 
     /// Returns whether a key can be addressed using a `custom.<key>` path.
     public static func isValidKey(_ key: String) -> Bool {
-        guard let first = key.first, first.isLetter else { return false }
-        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
+        guard (1...256).contains(key.utf8.count) else { return false }
+
+        return key.utf8.allSatisfy { character in
+            switch character {
+            case UInt8(ascii: "a")...UInt8(ascii: "z"),
+                 UInt8(ascii: "A")...UInt8(ascii: "Z"),
+                 UInt8(ascii: "0")...UInt8(ascii: "9"),
+                 UInt8(ascii: "_"):
+                return true
+            default:
+                return false
+            }
+        }
     }
 
     /// Drops invalid keys and, in debug builds, logs a warning for each removed entry.
