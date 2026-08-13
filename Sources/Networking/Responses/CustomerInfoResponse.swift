@@ -150,16 +150,16 @@ extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomSt
         attributes.description
     }
 
-    // Note: attribute names are arbitrary, developer-chosen strings (they can contain underscores,
+    // Note: attribute names are arbitrary strings (they can contain underscores,
     // `$`, mixed case, etc.), so they must never be run through `JSONDecoder`/`JSONEncoder`'s
     // snake_case <-> camelCase key strategy conversion (`JSONDecoder.default` / `JSONEncoder.default`
     // both configure this). A `KeyedDecodingContainer`/`KeyedEncodingContainer` keyed by a custom
     // `CodingKey` type (like `AnyCodingKey`) is *not* exempt from that conversion, so using one here
     // would silently mangle attribute names containing underscores (e.g. "custom_key" -> "customKey").
-    // Swift's native `Dictionary<String, Value>` Codable conformance *is* specifically exempted from
-    // the key strategy, so decoding/encoding through `[String: Entry]` keeps attribute names intact.
+    // Instead, manually going through singleValueContainers() will preserve the underlying casing.
     init(from decoder: any Decoder) throws {
-        let entries = try [String: Entry](from: decoder)
+        let container = try decoder.singleValueContainer()
+        let entries = try container.decode([String: Entry].self)
 
         self.init(attributes: entries.map { key, entry in
             SubscriberAttribute(withKey: key,
@@ -175,7 +175,8 @@ extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomSt
                                   updatedAtMs: attribute.setTime.timeIntervalSince1970 * 1000))
         })
 
-        try entries.encode(to: encoder)
+        var container = encoder.singleValueContainer()
+        try container.encode(entries)
     }
 
 }
