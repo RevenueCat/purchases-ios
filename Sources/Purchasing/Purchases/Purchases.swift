@@ -518,6 +518,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
+                                              tokenManager: tokenManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
@@ -1121,6 +1122,7 @@ public extension Purchases {
 public extension Purchases {
 
     @_spi(Experimental)
+    @objc
     var authentication: Authentication { _authentication }
 
     @available(*, deprecated, message: """
