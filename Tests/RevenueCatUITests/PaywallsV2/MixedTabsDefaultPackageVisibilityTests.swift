@@ -37,6 +37,7 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
 
     private static let tab1Id = "tab1"
     private static let tab2Id = "tab2"
+    private static let tab3Id = "tab3"
 
     /// The break vegaro pointed at: a package inside any tab used to make the page skip reconciling
     /// entirely, so the hidden annual card stayed selected with nothing on screen to show it.
@@ -221,6 +222,38 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         )
     }
 
+    /// Leaving a tab restores the page's own selection, which is not a tap either. If that restore were
+    /// recorded as a user selection, the reconcile that follows would store the page fallback as the
+    /// user's pick and a tab opened later that lists it would keep it over its own declared default.
+    func testRestoringOnTabSwitchDoesNotOverrideALaterTabsDefault() throws {
+        let (paywallState, tabControlContext) = try Self.mixedLayoutState(
+            components: Self.restoreThenOverlappingTabComponents()
+        )
+        let packageContext = Self.provisionallySeededContext()
+
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        // Leave the package-bearing tab for one with no packages, which restores the page's selection.
+        tabControlContext.selectedTabId = Self.tab2Id
+        Self.settle()
+
+        // Then open a tab that offers the page's fallback plus its own declared default.
+        tabControlContext.selectedTabId = Self.tab3Id
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            Self.tabExtraPackage.identifier,
+            "Tab 3 declares its own default, and nothing the user did should outrank it"
+        )
+    }
+
     /// The residual case a reviewer raised: package C sits in both tabs, hidden in the one that's
     /// showing. The page can't tell those two copies apart, so it leaves the selection alone. The
     /// guarantee comes from one level down, where the showing tab reconciles against its own packages
@@ -400,6 +433,54 @@ private extension MixedTabsDefaultPackageVisibilityTests {
                 tabs: [
                     .init(id: Self.tab1Id, stack: .init(components: [Self.textComponent("No packages")])),
                     .init(id: Self.tab2Id, stack: .init(components: [
+                        Self.packageComponent(
+                            packageID: TestData.monthlyPackage.identifier,
+                            isSelectedByDefault: false
+                        ),
+                        Self.packageComponent(
+                            packageID: MixedTabsDefaultPackageVisibilityTests.tabExtraPackage.identifier,
+                            isSelectedByDefault: true
+                        )
+                    ]))
+                ],
+                defaultTabId: Self.tab1Id
+            ))
+        ]
+
+        return Self.paywallComponents(components: components)
+    }
+
+    /// Three tabs: the showing one holds a package, the second holds none (so leaving the first restores
+    /// the page's own selection), and the third offers the page's fallback plus its own declared default.
+    static func restoreThenOverlappingTabComponents() -> Offering.PaywallComponents {
+        let components: [PaywallComponent] = [
+            Self.packageComponent(
+                packageID: TestData.annualPackage.identifier,
+                isSelectedByDefault: true,
+                overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+            ),
+            Self.packageComponent(
+                packageID: TestData.monthlyPackage.identifier,
+                isSelectedByDefault: false
+            ),
+            .tabs(.init(
+                control: .init(
+                    type: .buttons,
+                    stack: .init(components: [
+                        .tabControlButton(.init(tabId: Self.tab1Id, stack: Self.textStack("Tab 1"))),
+                        .tabControlButton(.init(tabId: Self.tab2Id, stack: Self.textStack("Tab 2"))),
+                        .tabControlButton(.init(tabId: Self.tab3Id, stack: Self.textStack("Tab 3")))
+                    ])
+                ),
+                tabs: [
+                    .init(id: Self.tab1Id, stack: .init(components: [
+                        Self.packageComponent(
+                            packageID: TestData.weeklyPackage.identifier,
+                            isSelectedByDefault: false
+                        )
+                    ])),
+                    .init(id: Self.tab2Id, stack: .init(components: [Self.textComponent("No packages")])),
+                    .init(id: Self.tab3Id, stack: .init(components: [
                         Self.packageComponent(
                             packageID: TestData.monthlyPackage.identifier,
                             isSelectedByDefault: false

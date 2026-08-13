@@ -418,9 +418,12 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
+                    // Switching tabs restores a selection rather than making one, so this must not
+                    // register as a tap: a tab opened later still gets to use its own default.
                     self.packageContext.update(
                         package: parentUpdate.package,
-                        variableContext: parentUpdate.variableContext
+                        variableContext: parentUpdate.variableContext,
+                        isReconcile: true
                     )
                 }
             }
