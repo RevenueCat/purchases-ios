@@ -35,6 +35,7 @@ class MockIdentityManager: IdentityManager {
                     transactionPoster: MockTransactionPoster(),
                     systemInfo: mockSystemInfo
                    ),
+                   tokenManager: MockTokenManager(),
                    attributeSyncing: self.mockAttributeSyncing,
                    appUserID: mockAppUserID)
     }

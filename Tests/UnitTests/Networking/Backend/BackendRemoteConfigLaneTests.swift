@@ -131,6 +131,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
         func makeClient() -> HTTPClient {
             return HTTPClient(systemInfo: systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
                               networkTimeout: .custom(30),
@@ -202,6 +203,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             systemInfo: systemInfo,
             httpClientTimeout: .default,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             operationDispatcher: OperationDispatcher(),
             attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                    systemInfo: systemInfo),

@@ -576,6 +576,15 @@
 		55DACDF7302BC331005EE017 /* JWT.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF6302BC331005EE017 /* JWT.swift */; };
 		55DACDFA302BC356005EE017 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF8302BC356005EE017 /* Authentication.swift */; };
 		55DACDFC302BC381005EE017 /* AnyCodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDFB302BC381005EE017 /* AnyCodingKey.swift */; };
+		55DACE87302E2B95005EE017 /* AuthenticationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE85302E2B95005EE017 /* AuthenticationTests.swift */; };
+		55DACE90302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */; };
+		55DACE91302E2BBB005EE017 /* MockAuthenticationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */; };
+		55DACE92302E2BBB005EE017 /* MockSecureItemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */; };
+		55DACE93302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */; };
+		55DACE94302E2BBB005EE017 /* MockAuthenticationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */; };
+		55DACE95302E2BBB005EE017 /* MockSecureItemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */; };
+		55DACE97302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
+		55DACE98302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
 		57045B3C29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */; };
@@ -2250,6 +2259,11 @@
 		55DACDF6302BC331005EE017 /* JWT.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWT.swift; sourceTree = "<group>"; };
 		55DACDF8302BC356005EE017 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
 		55DACDFB302BC381005EE017 /* AnyCodingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKey.swift; sourceTree = "<group>"; };
+		55DACE85302E2B95005EE017 /* AuthenticationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationTests.swift; sourceTree = "<group>"; };
+		55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthenticationDelegate.swift; sourceTree = "<group>"; };
+		55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInternalAuthenticatorDelegate.swift; sourceTree = "<group>"; };
+		55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSecureItemStorage.swift; sourceTree = "<group>"; };
+		55DACE96302E320C005EE017 /* MockTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTokenManager.swift; sourceTree = "<group>"; };
 		55FCA85B959807F2D3DD175A /* TransactionReason.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionReason.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -3997,6 +4011,7 @@
 			children = (
 				73A620000000000000000020 /* Checkpoints */,
 				9094B43F2E96AA140094AD5F /* Ads */,
+				55DACE86302E2B95005EE017 /* Authentication */,
 				356E2DE62CD3CF890055AABB /* Events */,
 				1EFA950E2CDB7F8800CA5951 /* DeepLink */,
 				357348FE2C3BEAF8000EEB86 /* CustomerCenter */,
@@ -4408,6 +4423,10 @@
 		2DDF41DD24F6F4F9005BC22D /* Mocks */ = {
 			isa = PBXGroup;
 			children = (
+				55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */,
+				55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */,
+				55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */,
+				55DACE96302E320C005EE017 /* MockTokenManager.swift */,
 				1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */,
 				900D27022F96929800D32EDF /* MockAdsAPI.swift */,
 				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
@@ -5185,6 +5204,14 @@
 			isa = PBXGroup;
 			children = (
 				55DACDF8302BC356005EE017 /* Authentication.swift */,
+			);
+			path = Authentication;
+			sourceTree = "<group>";
+		};
+		55DACE86302E2B95005EE017 /* Authentication */ = {
+			isa = PBXGroup;
+			children = (
+				55DACE85302E2B95005EE017 /* AuthenticationTests.swift */,
 			);
 			path = Authentication;
 			sourceTree = "<group>";
@@ -7259,6 +7286,7 @@
 				57DD426D2926B9620026DF09 /* StoreKitConfigTestCase+Extensions.swift in Sources */,
 				57ACB12528174B9F000DCC9F /* CustomerInfo+TestExtensions.swift in Sources */,
 				2D90F8C326FD214F009B9142 /* MockAttributionTypeFactory.swift in Sources */,
+				55DACE97302E320C005EE017 /* MockTokenManager.swift in Sources */,
 				FDAADFD72BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift in Sources */,
 				A55D083427235DED00D919E0 /* BeginRefundRequestHelperTests.swift in Sources */,
 				57DE80892807540D008D6C6F /* StorefrontTests.swift in Sources */,
@@ -7270,6 +7298,9 @@
 				FDAC7B5C2CF100000DFC0D9 /* WinBackOfferEligibilityCalculatorTests.swift in Sources */,
 				FD2046812CB8333A00166727 /* StoreKit2PurchaseIntentListenerTests.swift in Sources */,
 				57DE80812807529F008D6C6F /* MockStorefront.swift in Sources */,
+				55DACE93302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift in Sources */,
+				55DACE94302E2BBB005EE017 /* MockAuthenticationDelegate.swift in Sources */,
+				55DACE95302E2BBB005EE017 /* MockSecureItemStorage.swift in Sources */,
 				FD6D87582FAE4CD400CAF0F2 /* MockProductsRequestFactory.swift in Sources */,
 				57544C29285FA95E004E54D5 /* MockAttributeSyncing.swift in Sources */,
 				57057FF928B0048900995F21 /* TestLogHandler.swift in Sources */,
@@ -7911,6 +7942,7 @@
 				57554C88282AC293009A7E58 /* PurchaseOwnershipTypeTests.swift in Sources */,
 				35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */,
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
+				55DACE87302E2B95005EE017 /* AuthenticationTests.swift in Sources */,
 				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,
@@ -8074,6 +8106,7 @@
 				858195FCF0E04E3CAA99F9BB /* RemoteConfigurationDecodingTests.swift in Sources */,
 				FEDA000000000000000000B1 /* WeightedSourceSelectorTests.swift in Sources */,
 				FEDA000000000000000000D1 /* RemoteConfigSourceProviderTests.swift in Sources */,
+				55DACE98302E320C005EE017 /* MockTokenManager.swift in Sources */,
 				A1B2C3D42FE1000000000004 /* RCContainerTests.swift in Sources */,
 				A1B2C3D42FE100000000000D /* RCContainerBackwardsCompatibilityTests.swift in Sources */,
 				A1B2C3D42FE4000000000002 /* RCContainerCompressionFixtureTests.swift in Sources */,
@@ -8265,6 +8298,9 @@
 				57FDAA9A2846C2BD009A48F1 /* PurchasesDelegateTests.swift in Sources */,
 				351B516026D44BB600BD2BD7 /* MockAttributionDataMigrator.swift in Sources */,
 				1DEF759E2ECF13C000614CB2 /* BackendPostCreateTicketTests.swift in Sources */,
+				55DACE90302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift in Sources */,
+				55DACE91302E2BBB005EE017 /* MockAuthenticationDelegate.swift in Sources */,
+				55DACE92302E2BBB005EE017 /* MockSecureItemStorage.swift in Sources */,
 				2DDF41E024F6F527005BC22D /* MockInAppPurchaseBuilder.swift in Sources */,
 				37E352973B0901E3CAA717E1 /* DateFormatter+ExtensionsTests.swift in Sources */,
 				03F446262D2FE1510046129A /* MaskShapePropertyTests.swift in Sources */,

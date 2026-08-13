@@ -246,6 +246,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               deviceCache: mockDeviceCache,
                               paywallCache: MockPaywallCacheWarming(),
                               identityManager: mockIdentityManager,
+                              tokenManager: MockTokenManager(),
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
