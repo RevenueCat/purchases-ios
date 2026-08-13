@@ -1175,6 +1175,7 @@ public extension Purchases {
                 return
             }
 
+            self.webBundleCacheCoordinator.retireCurrentStore()
             self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
@@ -2887,9 +2888,6 @@ private extension Purchases {
         } else {
             self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: self.appUserID,
                                                                isAppBackgrounded: isAppBackgrounded) { @Sendable res in
-                if fetchContext == .identityChange {
-                    self.webBundleCacheCoordinator.retireCurrentStore()
-                }
                 completion?(res.mapError { $0.asPublicError })
             }
 

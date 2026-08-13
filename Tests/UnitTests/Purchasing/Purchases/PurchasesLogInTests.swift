@@ -104,27 +104,49 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
     }
 
-    func testLogOutRetiresWebBundleStore() {
-        let storeRetired = self.expectation(description: "Web bundle store retired")
+    func testLogOutRetiresWebBundleStoreBeforeCustomerInfoFetchCompletes() {
+        var retired = false
+        var logOutCompleted = false
 
         Purchases.clearSingleton()
         self.initializePurchasesInstance(
             appUserId: Self.appUserID,
             webBundleCacheCoordinator: .init(retireCurrentStore: {
-                storeRetired.fulfill()
+                retired = true
             })
         )
         self.identityManager.mockLogOutError = nil
         self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
 
-        let result = waitUntilValue { completed in
-            self.purchases.logOut { customerInfo, error in
-                completed(Result(customerInfo, error))
+        self.purchases.logOut { _, _ in
+            logOutCompleted = true
+        }
+
+        expect(retired) == true
+        expect(logOutCompleted) == false
+        expect(logOutCompleted).toEventually(beTrue())
+    }
+
+    func testLogOutRetiresWebBundleStoreWhenCustomerInfoFetchFails() {
+        var retired = false
+
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            webBundleCacheCoordinator: .init(retireCurrentStore: {
+                retired = true
+            })
+        )
+        self.identityManager.mockLogOutError = nil
+        self.backend.overrideCustomerInfoResult = .failure(.networkError(.offlineConnection()))
+
+        waitUntil { completed in
+            self.purchases.logOut { _, _ in
+                completed()
             }
         }
 
-        expect(result).to(beSuccess())
-        self.wait(for: [storeRetired], timeout: 1)
+        expect(retired) == true
     }
 
     func testLogInDoesNotRetireWebBundleStore() {
@@ -174,6 +196,28 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.identityManager.invokedLogOutCount) == 1
     }
 
+    func testLogOutDoesNotRetireWebBundleStoreWhenIdentityLogOutFails() {
+        var retired = false
+        let error = BackendError.networkError(.offlineConnection()).asPurchasesError
+
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            webBundleCacheCoordinator: .init(retireCurrentStore: {
+                retired = true
+            })
+        )
+        self.identityManager.mockLogOutError = error
+
+        waitUntil { completed in
+            self.purchases.logOut { _, _ in
+                completed()
+            }
+        }
+
+        expect(retired) == false
+    }
+
     // MARK: - Switch user
 
     func testSwitchUserSwitchesUser() {
@@ -185,6 +229,22 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
         expect(self.identityManager.invokedSwitchUser) == true
         expect(self.identityManager.invokedSwitchUserParametersList) == ["test-user-id"]
+    }
+
+    func testSwitchUserDoesNotRetireWebBundleStore() {
+        var retired = false
+        self.systemInfo = MockSystemInfo(finishTransactions: true, customEntitlementsComputation: true)
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(
+            appUserId: "old-test-user-id",
+            webBundleCacheCoordinator: .init(retireCurrentStore: {
+                retired = true
+            })
+        )
+
+        self.purchases.internalSwitchUser(to: "test-user-id")
+
+        expect(retired) == false
     }
 
     func testSwitchUserRefreshesOfferingsCache() {
