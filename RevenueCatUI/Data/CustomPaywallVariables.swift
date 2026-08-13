@@ -186,7 +186,6 @@ extension CustomVariableValue {
 
         switch value {
         case let .string(value): self = .string(value)
-        case let .integer(value): self = .number(Double(value))
         case let .double(value): self = .number(value)
         case let .boolean(value): self = .bool(value)
         }
