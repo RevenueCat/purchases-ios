@@ -78,21 +78,26 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         }
     }
 
-    func testCacheClearRequestedSchedulesASweep() async throws {
+    func testCacheClearRequestedSweepsTheRetiredIdentifier() async throws {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
+        let first = store.identifier()
         let swept = self.expectation(description: "sweep scheduled")
+        var pendingAtSweep: Set<UUID>?
         let coordinator = WebBundleCacheCoordinator(
             store: store,
             bus: bus,
-            sweeper: SweepProbe { swept.fulfill() }
+            sweeper: SweepProbe {
+                pendingAtSweep = store.pendingRemovalIdentifiers()
+                swept.fulfill()
+            }
         )
-        store.identifier()
 
         await bus.clearCache()
 
         await self.fulfillment(of: [swept], timeout: 1)
-        XCTAssertNotNil(coordinator.job)
+        XCTAssertEqual(pendingAtSweep, [first])
+        withExtendedLifetime(coordinator) {}
     }
 
     private func makeStore() throws -> WebViewDataStoreIdentifierStore {
