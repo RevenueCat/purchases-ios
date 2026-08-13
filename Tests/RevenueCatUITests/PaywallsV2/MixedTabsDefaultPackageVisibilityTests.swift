@@ -187,18 +187,14 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         )
     }
 
-    /// Known limitation, pinned so it is discoverable rather than surprising.
-    ///
     /// The page's reconcile writes the shared parent context, and `TabsComponentView` classifies any
-    /// parent change that isn't its own propagation as an explicit user selection. So a tab opened later
-    /// that also offers the reconciled package keeps it instead of using its own declared default, even
-    /// though the user never tapped anything.
+    /// parent change that isn't its own propagation as an explicit user selection. A reconcile is not a
+    /// tap, so a tab opened later still gets to use its own declared default.
     ///
-    /// Marking the update as reconcile-originated does not hold: the tab seeding path writes the same
-    /// context before the tabs view observes the change, and clearing the flag reliably means reworking
-    /// how `didUserSelectPackage` is derived, which the tab inheritance tests cover in depth. The narrower
-    /// alternative, not reconciling at all, is the bug this PR fixes.
-    func testReconcileCountsAsAUserSelectionForALaterTabSwitch() throws {
+    /// Guards the same invariant as
+    /// `TabsPackageInheritanceTests.testOverlappingPackagesToggleShowsEachTabDefaultWithoutUserSelection`,
+    /// which covers the resolver directly and so can't see this path.
+    func testReconcileDoesNotOverrideATabsOwnDefaultOnASubsequentSwitch() throws {
         let (paywallState, tabControlContext) = try Self.mixedLayoutState(
             components: Self.overlappingTabDefaultComponents()
         )
@@ -220,8 +216,8 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
 
         XCTAssertEqual(
             packageContext.package?.identifier,
-            TestData.monthlyPackage.identifier,
-            "Documents today's behavior: the reconciled package outranks tab 2's own default"
+            Self.tabExtraPackage.identifier,
+            "Tab 2 declares its own default, and the earlier move was a reconcile, not a tap"
         )
     }
 

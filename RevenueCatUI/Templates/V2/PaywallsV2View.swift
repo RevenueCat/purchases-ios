@@ -670,7 +670,8 @@ struct LoadedPaywallsV2View: View {
                 packages: self.workflowPackages ?? self.paywallState.packages,
                 showZeroDecimalPlacePrices: self.selectedPackageContext.variableContext
                     .showZeroDecimalPlacePrices
-            )
+            ),
+            isReconcile: true
         )
     }
 

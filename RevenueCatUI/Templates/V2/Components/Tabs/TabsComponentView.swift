@@ -362,7 +362,9 @@ struct LoadedTabsComponentView: View {
                     self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    if let package = tierPackageContext.package {
+                    // A package-less tab shares the parent's context, so there is nothing to propagate
+                    // and writing it back would only republish what was just read.
+                    if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
@@ -448,8 +450,13 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it
-                self.didUserSelectPackage = true
+                // This is a user selection - track it. A reconcile moved the selection off a package that
+                // wasn't rendering, so it becomes the parent's own selection without counting as a
+                // choice: a tab opened later still gets to use its own default. Set-only, so it can't
+                // clear a real choice the user made earlier.
+                if !self.packageContext.lastUpdateWasReconcile {
+                    self.didUserSelectPackage = true
+                }
                 self.parentOwnedPackage = newPackage
                 self.parentOwnedVariableContext = self.packageContext.variableContext
 

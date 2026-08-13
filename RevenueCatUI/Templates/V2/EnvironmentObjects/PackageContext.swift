@@ -60,6 +60,11 @@ class PackageContext: ObservableObject {
     @Published var package: Package?
     @Published var variableContext: VariableContext
 
+    /// Whether the last update moved the selection because the current package wasn't rendering, rather
+    /// than because the user picked something. Read by `TabsComponentView`, which otherwise treats any
+    /// parent change it didn't cause as an explicit choice and lets it outrank a tab's own default.
+    private(set) var lastUpdateWasReconcile: Bool = false
+
     init(
         package: Package?,
         variableContext: VariableContext
@@ -69,7 +74,9 @@ class PackageContext: ObservableObject {
     }
 
     @MainActor
-    func update(package: Package?, variableContext: VariableContext) {
+    func update(package: Package?, variableContext: VariableContext, isReconcile: Bool = false) {
+        // Set before the published properties so observers see it while handling the change.
+        self.lastUpdateWasReconcile = isReconcile
         self.package = package
         self.variableContext = variableContext
     }
