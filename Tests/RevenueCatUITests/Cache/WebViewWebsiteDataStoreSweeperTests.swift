@@ -12,6 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/12/26.
 //
 
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 import XCTest
 
@@ -66,11 +67,91 @@ final class WebViewWebsiteDataStoreSweeperTests: TestCase {
 
     func testSweepStoresIsANoOpWhenNothingIsPending() async throws {
         let store = try self.makeStore()
-        let sweeper = WebViewWebsiteDataStoreSweeper(idStore: store)
+        let sweeper = WebViewWebsiteDataStoreSweeper(
+            idStore: store,
+            existingIdentifiers: { [] },
+            remove: { _ in true }
+        )
 
         await sweeper.sweepStores()
 
         XCTAssertTrue(store.pendingRemovalIdentifiers().isEmpty)
+    }
+
+    func testSweepStoresRemovesClearedIdentifiersFromPending() async throws {
+        let store = try self.makeStore()
+        let first = store.identifier()
+        store.retireCurrentIdentifier()
+
+        let sweeper = WebViewWebsiteDataStoreSweeper(
+            idStore: store,
+            existingIdentifiers: { [first] },
+            remove: { _ in true }
+        )
+
+        await sweeper.sweepStores()
+
+        XCTAssertTrue(store.pendingRemovalIdentifiers().isEmpty)
+    }
+
+    func testSweepStoresKeepsIdentifiersWhenRemoveFails() async throws {
+        let store = try self.makeStore()
+        let first = store.identifier()
+        store.retireCurrentIdentifier()
+
+        let sweeper = WebViewWebsiteDataStoreSweeper(
+            idStore: store,
+            existingIdentifiers: { [first] },
+            remove: { _ in false }
+        )
+
+        await sweeper.sweepStores()
+
+        XCTAssertEqual(store.pendingRemovalIdentifiers(), [first])
+    }
+
+    func testSweepStoresDropsMissingIdentifiersWithoutCallingRemove() async throws {
+        let store = try self.makeStore()
+        let first = store.identifier()
+        store.retireCurrentIdentifier()
+        var removeCalled = false
+
+        let sweeper = WebViewWebsiteDataStoreSweeper(
+            idStore: store,
+            existingIdentifiers: { [] },
+            remove: { _ in
+                removeCalled = true
+                return true
+            }
+        )
+
+        await sweeper.sweepStores()
+
+        XCTAssertFalse(removeCalled)
+        XCTAssertTrue(store.pendingRemovalIdentifiers().isEmpty)
+    }
+
+    func testSweepStoresPreservesIdentifiersRetiredDuringSweep() async throws {
+        let store = try self.makeStore()
+        let first = store.identifier()
+        store.retireCurrentIdentifier()
+        var retiredDuringSweep: UUID?
+
+        let sweeper = WebViewWebsiteDataStoreSweeper(
+            idStore: store,
+            existingIdentifiers: { [first] },
+            remove: { _ in
+                let second = store.identifier()
+                store.retireCurrentIdentifier()
+                retiredDuringSweep = second
+                return true
+            }
+        )
+
+        await sweeper.sweepStores()
+
+        XCTAssertEqual(store.pendingRemovalIdentifiers(), [try XCTUnwrap(retiredDuringSweep)])
+        XCTAssertFalse(store.pendingRemovalIdentifiers().contains(first))
     }
 
     private func makeStore() throws -> WebViewDataStoreIdentifierStore {
