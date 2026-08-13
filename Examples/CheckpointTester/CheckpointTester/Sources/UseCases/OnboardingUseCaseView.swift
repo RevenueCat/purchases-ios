@@ -44,7 +44,7 @@ struct OnboardingUseCaseView: View {
         }
     }
 
-    @ObservedObject var checkpointVariables: CheckpointVariables
+    @ObservedObject var customVariables: CustomVariables
 
     @State private var step: Step = .welcome
     @State private var isRunning = false
@@ -151,9 +151,9 @@ struct OnboardingUseCaseView: View {
     }
 
     private var personalizationCheckpointParams: CheckpointParams {
-        var customProperties = self.checkpointVariables.checkpointParams.customProperties
-        customProperties["step"] = .string("personalize")
-        return CheckpointParams(customProperties: customProperties)
+        var customVariables = self.customVariables.checkpointParams.customVariables
+        customVariables["step"] = .string("personalize")
+        return CheckpointParams(customVariables: customVariables)
     }
 
 }

@@ -19,7 +19,7 @@ import SwiftUI
 struct CustomCheckpointUseCaseView: View {
 
     @ObservedObject var model: CheckpointDemoModel
-    @ObservedObject var checkpointVariables: CheckpointVariables
+    @ObservedObject var customVariables: CustomVariables
 
     @State private var identifier = ""
     @State private var isRunning = false
@@ -42,7 +42,7 @@ struct CustomCheckpointUseCaseView: View {
                 }
                 .disabled(self.trimmedIdentifier.isEmpty || self.isRunning)
             } footer: {
-                Text("The current variables are passed as checkpoint parameters.")
+                Text("The current custom variables are passed as checkpoint parameters.")
             }
         }
         .navigationTitle("Custom checkpoint")
@@ -58,7 +58,7 @@ struct CustomCheckpointUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 self.trimmedIdentifier,
-                params: self.checkpointVariables.checkpointParams
+                params: self.customVariables.checkpointParams
             )
             self.model.showOutcome(result)
         } catch {

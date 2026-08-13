@@ -11,6 +11,7 @@
 //
 //  Created by Facundo Menzella on 1/22/26.
 
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 /// A value type for custom paywall variables that can be passed to paywalls at runtime.
@@ -211,7 +212,7 @@ enum CustomVariableKeyValidator {
     /// Only performs validation in DEBUG builds.
     static func validate(_ key: String) {
         #if DEBUG
-        if !isValidKey(key) {
+        if !RevenueCat.CustomVariableKeyValidator.isValidKey(key) {
             Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
         }
         #endif
@@ -221,19 +222,11 @@ enum CustomVariableKeyValidator {
     /// Only performs validation in DEBUG builds.
     static func validate(_ variables: [String: CustomVariableValue]) {
         #if DEBUG
-        for key in variables.keys where !isValidKey(key) {
+        for key in variables.keys where !RevenueCat.CustomVariableKeyValidator.isValidKey(key) {
             Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
         }
         #endif
     }
-
-    #if DEBUG
-    private static func isValidKey(_ key: String) -> Bool {
-        guard !key.isEmpty else { return false }
-        guard let first = key.first, first.isLetter else { return false }
-        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
-    }
-    #endif
 
 }
 

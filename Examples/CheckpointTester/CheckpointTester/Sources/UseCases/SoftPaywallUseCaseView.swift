@@ -19,7 +19,7 @@ import SwiftUI
 
 struct SoftPaywallUseCaseView: View {
 
-    @ObservedObject var checkpointVariables: CheckpointVariables
+    @ObservedObject var customVariables: CustomVariables
 
     @State private var isRunning = false
     @State private var didLoad = false
@@ -72,7 +72,7 @@ struct SoftPaywallUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "soft_paywall",
-                params: self.checkpointVariables.checkpointParams
+                params: self.customVariables.checkpointParams
             )
             self.handle(result)
         } catch {

@@ -97,31 +97,31 @@ extension CheckpointValue {
 @_spi(CheckpointsInternal)
 public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
-    /// Custom properties usable in checkpoint targeting rules and feature events.
-    public let customProperties: [String: CheckpointValue]
+    /// Custom variables usable in checkpoint targeting rules and feature events.
+    public let customVariables: [String: CheckpointValue]
 
-    /// Creates checkpoint parameters with the supplied custom properties.
-    public init(customProperties: [String: CheckpointValue] = [:]) {
-        self.customProperties = customProperties
+    /// Creates checkpoint parameters with the supplied custom variables.
+    public init(customVariables: [String: CheckpointValue] = [:]) {
+        self.customVariables = customVariables
     }
 
-    /// Returns whether two parameter collections contain the same custom properties.
+    /// Returns whether two parameter collections contain the same custom variables.
     public static func == (lhs: CheckpointParams, rhs: CheckpointParams) -> Bool {
-        return lhs.customProperties == rhs.customProperties
+        return lhs.customVariables == rhs.customVariables
     }
 
     /// Hashes the checkpoint parameters.
     public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.customProperties)
+        hasher.combine(self.customVariables)
     }
 
     /// A debug description of the checkpoint parameters.
     public var description: String {
-        return "CheckpointParams(customProperties=\(self.customProperties))"
+        return "CheckpointParams(customVariables=\(self.customVariables))"
     }
 
     var coreParams: RevenueCat.CheckpointParams {
-        return .init(customProperties: self.customProperties.mapValues(\.coreValue))
+        return .init(customVariables: self.customVariables.mapValues(\.coreValue))
     }
 
 }

@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointVariables.swift
+//  CustomVariables.swift
 //
 //  Created by Rick van der Linden.
 //
@@ -16,28 +16,28 @@ import Combine
 import Foundation
 @_spi(CheckpointsInternal) import RevenueCatUI
 
-final class CheckpointVariables: ObservableObject {
+final class CustomVariables: ObservableObject {
 
     @Published var variables = [
-        CheckpointVariable(name: "source", value: "CheckpointTester"),
+        CustomVariable(name: "source", value: "CheckpointTester"),
     ]
 
     var checkpointParams: CheckpointParams {
-        var customProperties: [String: CheckpointValue] = [:]
+        var customVariables: [String: CheckpointValue] = [:]
 
         for variable in self.variables {
             let name = variable.name.trimmingCharacters(in: .whitespacesAndNewlines)
             if !name.isEmpty {
-                customProperties[name] = .string(variable.value)
+                customVariables[name] = .string(variable.value)
             }
         }
 
-        return CheckpointParams(customProperties: customProperties)
+        return CheckpointParams(customVariables: customVariables)
     }
 
 }
 
-struct CheckpointVariable: Identifiable {
+struct CustomVariable: Identifiable {
 
     let id = UUID()
     var name = ""
