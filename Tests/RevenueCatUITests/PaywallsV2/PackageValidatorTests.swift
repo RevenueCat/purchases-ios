@@ -459,6 +459,141 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    /// Pins the recording order that "document order" means: a package nested inside another package's
+    /// stack is recorded after its parent, because `ViewModelFactory` records before walking the stack.
+    /// Recording after the walk would put the nested package first and hand the fallback to it.
+    func testNestedPackageIsRecordedAfterItsParent() throws {
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "",
+            availablePackages: [TestData.monthlyPackage, TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+        let factory = ViewModelFactory()
+        let packageValidator = PackageValidator()
+
+        let nested = Self.makePackageComponent(
+            packageID: TestData.monthlyPackage.identifier,
+            isSelectedByDefault: false,
+            visible: nil
+        )
+        let outer = PaywallComponent.PackageComponent(
+            packageID: TestData.annualPackage.identifier,
+            isSelectedByDefault: false,
+            visible: nil,
+            applePromoOfferProductCode: nil,
+            stack: .init(components: [.package(nested)])
+        )
+
+        _ = try factory.toViewModel(
+            component: .package(outer),
+            packageValidator: packageValidator,
+            purchaseButtonCollector: nil,
+            offering: offering,
+            localizationProvider: LocalizationProvider(
+                locale: Locale(identifier: "en_US"),
+                localizedStrings: ["package_label": .string("Package")]
+            ),
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            colorScheme: .light
+        )
+
+        XCTAssertEqual(
+            packageValidator.packages.map(\.identifier),
+            [TestData.annualPackage.identifier, TestData.monthlyPackage.identifier]
+        )
+
+        // No package is selected by default, so the fallback takes the outer one.
+        XCTAssertEqual(
+            packageValidator.defaultSelectedPackage(in: Self.context())?.identifier,
+            TestData.annualPackage.identifier
+        )
+    }
+
+    // MARK: - Mixed page and tab scopes
+
+    /// A package inside a tab must not stop the page from reconciling its own packages, and must not be
+    /// picked as the replacement either: the user may be on a different tab.
+    func testReconcileFallsBackToAPageScopedPackageWhenTabsAlsoHoldPackages() {
+        let validator = Self.canTrialValidator()
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.weeklyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(customVariables: ["can_trial": .bool(false)])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// A tab can be rendering the current selection, so a page-level reconcile leaves it alone.
+    func testReconcileKeepsASelectionThatOnlyATabRenders() {
+        let validator = Self.canTrialValidator()
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.weeklyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertNil(
+            validator.reconciledSelection(
+                current: TestData.weeklyPackage,
+                in: Self.context(customVariables: ["can_trial": .bool(false)])
+            )
+        )
+    }
+
+    /// Every package lives in a tab, so there is no page-level selection to resolve. The tabs reconcile
+    /// their own, each against its own validator.
+    func testReconcileIsANoOpWhenEveryPackageIsTabScoped() {
+        let validator = PackageValidator()
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+        ))
+        validator.addTabScoped(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: true
+        ))
+
+        XCTAssertNil(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(customVariables: ["can_trial": .bool(false)])
+            )
+        )
+    }
+
+    // MARK: - Warnings
+
+    /// `defaultSelectedPackage(in:)` is read from view bodies, so an unconditional warning repeats on
+    /// every re-render. Each distinct warning is logged once per validator.
+    func testHiddenDefaultWarningIsLoggedOnceForRepeatedResolutions() {
+        let validator = Self.canTrialValidator()
+        let context = Self.context(customVariables: ["can_trial": .bool(false)])
+
+        for _ in 0..<5 {
+            _ = validator.defaultSelectedPackage(in: context)
+        }
+
+        self.logger.verifyMessageWasLogged(
+            Strings.paywall_default_package_not_visible(
+                defaultPackage: TestData.annualPackage.identifier,
+                selectedPackage: TestData.monthlyPackage.identifier
+            ),
+            level: .warn,
+            expectedCount: 1
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

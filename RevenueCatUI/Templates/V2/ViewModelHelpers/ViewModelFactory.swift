@@ -194,9 +194,8 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
-            // Recorded before walking the stack so ordering is pre-order, matching Android's
-            // `StyleFactory.recordPackage`. Both platforms resolve the default package by document
-            // order, so the two walks have to agree. Nothing here depends on the stack.
+            // Recorded before walking the stack so a package nested inside another package lands after
+            // its parent, which is the document order the default package is resolved by.
             if let package = offering.package(identifier: component.packageID) {
                 packageValidator.add(
                     PackageValidator.PackageInfo(

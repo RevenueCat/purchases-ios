@@ -62,19 +62,33 @@ class PackageValidator {
         promotionalOfferProductCode: String?
     )
 
-    private(set) var packageInfos: [PackageInfo] = []
+    /// Where a package was declared. Selection inside a tab is tab-local, so a page-level resolution
+    /// must never hand back a package that only exists in a tab.
+    private enum Scope {
+        case page
+        case tab
+    }
 
-    /// True when this validator has packages merged in from tabs. Selection is tab-local, so the
-    /// page-level validator must not reconcile a selection across tab boundaries.
-    private(set) var containsTabScopedPackages: Bool = false
+    private var scopedPackageInfos: [(info: PackageInfo, scope: Scope)] = []
+
+    var packageInfos: [PackageInfo] {
+        self.scopedPackageInfos.map(\.info)
+    }
+
+    private var pageScopedPackageInfos: [PackageInfo] {
+        self.scopedPackageInfos.filter { $0.scope == .page }.map(\.info)
+    }
+
+    /// Warnings are emitted from resolution, which view bodies call on every render. Logging each
+    /// distinct message once per validator keeps that out of the console.
+    private var loggedWarnings: Set<String> = []
 
     func add(_ packageInfo: PackageInfo) {
-        self.packageInfos.append(packageInfo)
+        self.scopedPackageInfos.append((packageInfo, .page))
     }
 
     func addTabScoped(_ packageInfo: PackageInfo) {
-        self.containsTabScopedPackages = true
-        self.packageInfos.append(packageInfo)
+        self.scopedPackageInfos.append((packageInfo, .tab))
     }
 
     var isValid: Bool {
@@ -85,8 +99,11 @@ class PackageValidator {
         packageInfos.map(\.package)
     }
 
-    private func visiblePackageInfos(in context: PackageSelectionContext) -> [PackageInfo] {
-        return self.packageInfos.filter { info in
+    private func visiblePackageInfos(
+        among packageInfos: [PackageInfo],
+        in context: PackageSelectionContext
+    ) -> [PackageInfo] {
+        return packageInfos.filter { info in
             info.visibilityResolver.visible(
                 // Selection is what's being resolved, so nothing is selected yet. Pinning these two
                 // inputs keeps resolution independent of its own output — otherwise a paywall with
@@ -103,7 +120,7 @@ class PackageValidator {
 
     /// The packages that actually render for the given context, in document order.
     func visiblePackages(in context: PackageSelectionContext) -> [Package] {
-        return self.visiblePackageInfos(in: context).map(\.package)
+        return self.visiblePackageInfos(among: self.packageInfos, in: context).map(\.package)
     }
 
     /// Resolves which package should start selected.
@@ -112,46 +129,71 @@ class PackageValidator {
     /// 2. otherwise the first visible package in document order
     /// 3. otherwise `nil`
     func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
-        let visiblePackageInfos = self.visiblePackageInfos(in: context)
+        return self.defaultSelectedPackage(among: self.packageInfos, in: context)
+    }
+
+    /// The selection that should be in effect for `context`, given whatever is currently selected.
+    ///
+    /// Returns `nil` when nothing needs to change: either `current` is still rendering, or every package
+    /// this validator knows about lives in a tab, in which case the tabs reconcile their own selection.
+    ///
+    /// Selection is only moved when the current package isn't rendering anywhere, which is why this can't
+    /// discard a deliberate choice: the user can't have tapped a card that isn't on screen. The
+    /// replacement comes from the packages declared outside the tabs, since a page-level selection can't
+    /// point into a tab the user may not be on.
+    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
+        let pageScopedPackageInfos = self.pageScopedPackageInfos
+
+        guard !pageScopedPackageInfos.isEmpty else {
+            return nil
+        }
+
+        let visiblePackageInfos = self.visiblePackageInfos(among: self.packageInfos, in: context)
+
+        if let current, visiblePackageInfos.contains(where: { $0.package.identifier == current.identifier }) {
+            return nil
+        }
+
+        return self.defaultSelectedPackage(among: pageScopedPackageInfos, in: context)
+    }
+
+    private func defaultSelectedPackage(
+        among packageInfos: [PackageInfo],
+        in context: PackageSelectionContext
+    ) -> Package? {
+        let visiblePackageInfos = self.visiblePackageInfos(among: packageInfos, in: context)
 
         if let defaultSelectedPackage = visiblePackageInfos.first(where: { $0.isSelectedByDefault }) {
             return defaultSelectedPackage.package
         }
 
         guard let fallback = visiblePackageInfos.first else {
-            Logger.warning(Strings.paywall_could_not_find_any_packages)
+            self.warnOnce(Strings.paywall_could_not_find_any_packages)
             return nil
         }
 
-        if let hiddenDefault = self.packageInfos.first(where: { $0.isSelectedByDefault }) {
+        if let hiddenDefault = packageInfos.first(where: { $0.isSelectedByDefault }) {
             // The authored default resolved hidden, so nothing would appear selected. Falling back keeps
             // a package selected, but the paywall almost certainly isn't behaving as authored.
-            Logger.warning(
+            self.warnOnce(
                 Strings.paywall_default_package_not_visible(
                     defaultPackage: hiddenDefault.package.identifier,
                     selectedPackage: fallback.package.identifier
                 )
             )
         } else {
-            Logger.warning(Strings.paywall_could_not_find_default_package)
+            self.warnOnce(Strings.paywall_could_not_find_default_package)
         }
 
         return fallback.package
     }
 
-    /// The selection that should be in effect for `context`, given whatever is currently selected.
-    ///
-    /// Returns `nil` when `current` is still visible, meaning nothing needs to change. Selection is only
-    /// moved when the current package isn't rendering, which is why this can't discard a deliberate
-    /// choice: the user can't have tapped a card that isn't on screen.
-    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
-        let visiblePackageInfos = self.visiblePackageInfos(in: context)
-
-        if let current, visiblePackageInfos.contains(where: { $0.package.identifier == current.identifier }) {
-            return nil
+    private func warnOnce(_ warning: Strings) {
+        guard self.loggedWarnings.insert(warning.description).inserted else {
+            return
         }
 
-        return self.defaultSelectedPackage(in: context)
+        Logger.warning(warning)
     }
 
 }

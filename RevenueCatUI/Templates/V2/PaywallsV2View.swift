@@ -642,15 +642,11 @@ private struct LoadedPaywallsV2View: View {
     }
 
     /// Moves the selection off a package that isn't rendering.
+    ///
+    /// Resolution is scoped to the packages declared outside the tabs: a tabbed paywall's own selection
+    /// is tab-local and reconciled inside `LoadedTabsComponentView`.
     private func reconcileSelection() {
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
-
-        // Selection is tab-local, so a tabbed paywall reconciles inside `LoadedTabsComponentView`.
-        // Resolving here would walk document order across every tab and could select a package from a
-        // tab the user isn't on.
-        guard !packageValidator.containsTabScopedPackages else {
-            return
-        }
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
