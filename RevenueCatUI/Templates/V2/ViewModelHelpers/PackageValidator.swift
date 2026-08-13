@@ -132,19 +132,15 @@ class PackageValidator {
         return self.defaultSelectedPackage(among: self.packageInfos, in: context)
     }
 
-    /// The selection that should be in effect for `context`, given whatever is currently selected.
+    /// The selection that should be in effect for `context`, or `nil` when nothing needs to change.
     ///
-    /// Returns `nil` when nothing needs to change: either `current` is still rendering, or every package
-    /// this validator knows about lives in a tab, in which case the tabs reconcile their own selection.
-    ///
-    /// Selection is only moved when the current package isn't rendering anywhere, which is why this can't
-    /// discard a deliberate choice: the user can't have tapped a card that isn't on screen. The
-    /// replacement comes from the packages declared outside the tabs, since a page-level selection can't
-    /// point into a tab the user may not be on.
+    /// Only moves a selection nothing is rendering, so it can't discard a tap, and only to a package
+    /// declared outside the tabs, since a page selection can't point into a tab the user isn't on.
     func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
         let pageScopedPackageInfos = self.pageScopedPackageInfos
 
         guard !pageScopedPackageInfos.isEmpty else {
+            // Every package lives in a tab, and each tab reconciles its own selection.
             return nil
         }
 
