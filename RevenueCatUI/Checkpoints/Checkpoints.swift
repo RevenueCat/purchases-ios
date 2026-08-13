@@ -37,7 +37,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
 
     /// Creates checkpoint parameters with the supplied custom variables.
     public init(customVariables: [String: CustomVariableValue] = [:]) {
-        self.customVariables = customVariables
+        self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
     }
 
     /// Returns whether two parameter collections contain the same custom variables.
