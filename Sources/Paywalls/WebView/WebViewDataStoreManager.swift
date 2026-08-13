@@ -20,7 +20,7 @@ import WebKit
 
 #endif
 
-/// Isolates web-view storage on identity change, then deletes retired stores later.
+/// Isolates web-view storage on log out, then deletes retired stores later.
 ///
 /// Logout only retires the current identifier and notifies live web views. Actual
 /// `WKWebsiteDataStore` removal happens on a later main-thread pass (configure / foreground)
