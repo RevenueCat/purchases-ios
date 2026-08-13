@@ -1,0 +1,63 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WebBundleCacheCoordinator.swift
+//
+//  Created by Jacob Zivan Rakidzich on 8/11/26.
+//
+
+@preconcurrency import Combine
+@_spi(Internal) import RevenueCat
+
+/// Isolates web-view storage on cache clear request, then deletes retired stores later.
+final class WebBundleCacheCoordinator {
+
+    let store: WebViewDataStoreIdentifierStore
+    let sweeper: WebViewWebsiteDataStoreSweeper
+    let bus: WebBundleEventBus
+    var job: AnyCancellable?
+
+    @MainActor private var isSweeping = false
+
+    init(
+        store: WebViewDataStoreIdentifierStore,
+        bus: WebBundleEventBus
+    ) {
+        self.store = store
+        self.sweeper = .init(idStore: store)
+        self.bus = bus
+        job = bus.publisher.removeDuplicates().sink(receiveValue: { event in
+            switch event {
+            case .cacheClearRequested:
+                self.store.retireCurrentIdentifier()
+                Task(priority: .medium) {
+                    // Allow other UI work to go through before we start destroying caches
+                    await self.scheduleSweep()
+                }
+            case .receivedAssetURLs:
+                break // will do in upcoming PRs
+            case .empty:
+                break
+            }
+        })
+
+    }
+
+    /// Production coordinator that retires identifiers and sweeps on a later main-thread pass.
+    static let shared = WebBundleCacheCoordinator(store: .init(), bus: .shared)
+
+    @MainActor
+    func scheduleSweep() async {
+        guard !isSweeping else { return }
+        isSweeping = true
+        await sweeper.sweepStores()
+        isSweeping = false
+    }
+
+}
