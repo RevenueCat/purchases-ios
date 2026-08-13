@@ -43,6 +43,9 @@ struct WebViewComponentView: View {
 
     let viewModel: WebViewComponentViewModel
 
+    /// Changed when the live instance becomes unusable so `webViewInstance()` can mint a replacement.
+    @State private var webViewRecoveryGeneration = UUID()
+
     private var style: WebViewComponentStyle {
         let currentPackage = self.packageContext.package
         return self.viewModel.style(
@@ -69,8 +72,10 @@ struct WebViewComponentView: View {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                instance: instance
+                instance: instance,
+                recoveryGeneration: self.$webViewRecoveryGeneration
             )
+            .id(self.webViewRecoveryGeneration)
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
             // this renders nothing, so surface why instead of leaving authors with a silent blank.
@@ -121,20 +126,31 @@ private struct HostedWebViewComponentView: View {
     @ObservedObject
     var instance: WebViewInstance
 
+    @Binding
+    var recoveryGeneration: UUID
+
     var body: some View {
-        if !self.instance.processTerminated, !self.instance.loadFailed {
-            WebViewRepresentable(
-                url: self.url,
-                instance: self.instance
-            )
-            .webViewSize(
-                self.size,
-                measuredWidth: self.instance.measuredWidth,
-                measuredHeight: self.instance.measuredHeight
-            )
-            // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
-            // placeholder -> measured); never paint outside the component's box.
-            .clipped()
+        Group {
+            if !self.instance.isUnusable {
+                WebViewRepresentable(
+                    url: self.url,
+                    instance: self.instance
+                )
+                .webViewSize(
+                    self.size,
+                    measuredWidth: self.instance.measuredWidth,
+                    measuredHeight: self.instance.measuredHeight
+                )
+                // Content can momentarily overflow the exact frame mid-resize (fit axes animate through
+                // placeholder -> measured); never paint outside the component's box.
+                .clipped()
+            }
+        }
+        .id(self.recoveryGeneration)
+        .onChangeOf(self.instance.retiredByCacheClear) { retiredByCacheClear in
+            if retiredByCacheClear {
+                self.recoveryGeneration = .init()
+            }
         }
     }
 
@@ -195,6 +211,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     private func makeHost(context: Context) -> WebViewHostView {
         let host = WebViewHostView()
 
+        guard !self.instance.isUnusable else {
+            return host
+        }
+
         _ = self.instance.webView {
             self.makeWebView(context: context)
         }
@@ -213,6 +233,10 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     @MainActor
     private func update(_ host: WebViewHostView) {
+        guard !self.instance.isUnusable else {
+            return
+        }
+
         if host.window != nil {
             self.instance.updateHost(host)
         }

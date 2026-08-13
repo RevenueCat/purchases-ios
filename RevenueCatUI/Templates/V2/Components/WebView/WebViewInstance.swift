@@ -26,6 +26,7 @@ final class WebViewInstance: ObservableObject {
 
     @Published private(set) var processTerminated = false
     @Published private(set) var loadFailed = false
+    @Published private(set) var retiredByCacheClear = false
 
     var isUnusable: Bool {
         self.processTerminated || self.loadFailed || self.retiredByCacheClear
@@ -34,7 +35,6 @@ final class WebViewInstance: ObservableObject {
     private var webView: PlatformWebView?
     private var navigationDelegateObject: AnyObject?
     private var cacheClearSubscription: AnyCancellable?
-    private var retiredByCacheClear = false
 
     private weak var attachedHost: WebViewHostView?
 

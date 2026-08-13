@@ -91,6 +91,7 @@ final class WebViewInstanceTests: TestCase {
         let instance = Self.makeInstance()
         XCTAssertFalse(instance.processTerminated)
         XCTAssertFalse(instance.loadFailed)
+        XCTAssertFalse(instance.retiredByCacheClear)
 
         instance.markProcessTerminated()
         instance.markLoadFailed()
@@ -108,6 +109,7 @@ final class WebViewInstanceTests: TestCase {
 
         XCTAssertFalse(replacement === terminated)
         XCTAssertFalse(replacement.isUnusable)
+        _ = replacement.webView { WKWebView(frame: .zero) }
     }
 
     // MARK: - Ownership
@@ -337,6 +339,9 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let host = self.makeWindowedHost()
         instance.hostDidEnterWindow(host)
 
+        var published = false
+        let cancellable = instance.objectWillChange.sink { published = true }
+
         events.send(.cacheClearRequested)
 
         let deadline = Date().addingTimeInterval(1)
@@ -345,7 +350,10 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         }
 
         XCTAssertTrue(instance.isUnusable)
+        XCTAssertTrue(instance.retiredByCacheClear)
+        XCTAssertTrue(published)
         XCTAssertNil(webView.superview)
+        _ = cancellable
     }
 
     // MARK: - Helpers
