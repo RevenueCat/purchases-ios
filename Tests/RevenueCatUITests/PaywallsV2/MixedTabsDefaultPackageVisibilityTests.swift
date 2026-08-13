@@ -187,6 +187,44 @@ final class MixedTabsDefaultPackageVisibilityTests: TestCase {
         )
     }
 
+    /// Known limitation, pinned so it is discoverable rather than surprising.
+    ///
+    /// The page's reconcile writes the shared parent context, and `TabsComponentView` classifies any
+    /// parent change that isn't its own propagation as an explicit user selection. So a tab opened later
+    /// that also offers the reconciled package keeps it instead of using its own declared default, even
+    /// though the user never tapped anything.
+    ///
+    /// Marking the update as reconcile-originated does not hold: the tab seeding path writes the same
+    /// context before the tabs view observes the change, and clearing the flag reliably means reworking
+    /// how `didUserSelectPackage` is derived, which the tab inheritance tests cover in depth. The narrower
+    /// alternative, not reconciling at all, is the bug this PR fixes.
+    func testReconcileCountsAsAUserSelectionForALaterTabSwitch() throws {
+        let (paywallState, tabControlContext) = try Self.mixedLayoutState(
+            components: Self.overlappingTabDefaultComponents()
+        )
+        let packageContext = Self.provisionallySeededContext()
+
+        let dispose = try Self.loadedPaywallView(
+            paywallState: paywallState,
+            packageContext: packageContext
+        ).addToHierarchy()
+        defer { dispose() }
+
+        Self.settle()
+
+        // The showing tab has no packages, so the page reconciles off the hidden annual card itself.
+        XCTAssertEqual(packageContext.package?.identifier, TestData.monthlyPackage.identifier)
+
+        tabControlContext.selectedTabId = Self.tab2Id
+        Self.settle()
+
+        XCTAssertEqual(
+            packageContext.package?.identifier,
+            TestData.monthlyPackage.identifier,
+            "Documents today's behavior: the reconciled package outranks tab 2's own default"
+        )
+    }
+
     /// The residual case a reviewer raised: package C sits in both tabs, hidden in the one that's
     /// showing. The page can't tell those two copies apart, so it leaves the selection alone. The
     /// guarantee comes from one level down, where the showing tab reconciles against its own packages
@@ -341,6 +379,47 @@ private extension MixedTabsDefaultPackageVisibilityTests {
         ],
         webCheckoutUrl: nil
     )
+
+    /// The showing tab holds no packages; the other tab offers the page's fallback package plus its own
+    /// declared default. Used to check whether a page-level reconcile gets mistaken for a user tap.
+    static func overlappingTabDefaultComponents() -> Offering.PaywallComponents {
+        let components: [PaywallComponent] = [
+            Self.packageComponent(
+                packageID: TestData.annualPackage.identifier,
+                isSelectedByDefault: true,
+                overrides: [Self.visibilityOverride(whenCanTrial: false, visible: false)]
+            ),
+            Self.packageComponent(
+                packageID: TestData.monthlyPackage.identifier,
+                isSelectedByDefault: false
+            ),
+            .tabs(.init(
+                control: .init(
+                    type: .buttons,
+                    stack: .init(components: [
+                        .tabControlButton(.init(tabId: Self.tab1Id, stack: Self.textStack("Tab 1"))),
+                        .tabControlButton(.init(tabId: Self.tab2Id, stack: Self.textStack("Tab 2")))
+                    ])
+                ),
+                tabs: [
+                    .init(id: Self.tab1Id, stack: .init(components: [Self.textComponent("No packages")])),
+                    .init(id: Self.tab2Id, stack: .init(components: [
+                        Self.packageComponent(
+                            packageID: TestData.monthlyPackage.identifier,
+                            isSelectedByDefault: false
+                        ),
+                        Self.packageComponent(
+                            packageID: MixedTabsDefaultPackageVisibilityTests.tabExtraPackage.identifier,
+                            isSelectedByDefault: true
+                        )
+                    ]))
+                ],
+                defaultTabId: Self.tab1Id
+            ))
+        ]
+
+        return Self.paywallComponents(components: components)
+    }
 
     /// Package C in both tabs, hidden in the one that's showing. The page cannot tell the two copies
     /// apart, so this exists to check the tab's own reconcile covers it.
