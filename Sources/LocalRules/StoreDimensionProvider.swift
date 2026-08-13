@@ -35,6 +35,7 @@ struct StoreDimensionProvider: DimensionProvider {
             return [:]
         }
 
+        // Storefront country codes use ISO 3166-1 alpha-3 format, such as "USA".
         return ["country": .string(storefrontCountryCode)]
     }
 
