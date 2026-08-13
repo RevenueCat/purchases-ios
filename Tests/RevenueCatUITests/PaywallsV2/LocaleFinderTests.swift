@@ -241,4 +241,16 @@ class LocaleFinderTest: TestCase {
         let foundLocalizations = localizations.findLocale(locale)
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
+
+    func test_et_EE() {
+        let localizations = [
+            "et": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "et_EE")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
 }
