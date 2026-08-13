@@ -115,7 +115,7 @@ extension Data {
 
     init?(base64URLEncoded string: String) {
         let remainder = string.utf8.count % 4
-        
+
         guard remainder != 1 else { return nil }
 
         let paddingCount = remainder == 0 ? 0 : 4 - remainder
