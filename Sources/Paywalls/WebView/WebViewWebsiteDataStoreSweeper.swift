@@ -37,12 +37,14 @@ enum WebViewWebsiteDataStoreSweeper {
                     await Self.removeStore(for: identifier)
                 }
             )
-            WebViewDataStoreIdentifierStore.keepPendingOnly(remaining)
+            // Subtract only IDs this pass cleared. Replacing the set would drop IDs
+            // retired during the WebKit awaits (logout / overlapping sweeps).
+            WebViewDataStoreIdentifierStore.removeFromPending(pending.subtracting(remaining))
             return
         }
         #endif
 
-        WebViewDataStoreIdentifierStore.keepPendingOnly([])
+        WebViewDataStoreIdentifierStore.removeFromPending(pending)
     }
 
 #if !os(tvOS) && !os(watchOS) && canImport(WebKit)

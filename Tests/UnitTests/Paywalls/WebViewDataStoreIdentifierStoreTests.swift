@@ -70,7 +70,7 @@ final class WebViewDataStoreIdentifierStoreTests: TestCase {
         )
     }
 
-    func testKeepPendingOnlyReplacesThePendingSet() throws {
+    func testRemoveFromPendingSubtractsWithoutReplacingTheSet() throws {
         let (userDefaults, suiteName) = try makeUserDefaults()
         defer { userDefaults.removePersistentDomain(forName: suiteName) }
 
@@ -79,11 +79,37 @@ final class WebViewDataStoreIdentifierStoreTests: TestCase {
         let second = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
         _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
 
-        WebViewDataStoreIdentifierStore.keepPendingOnly([second], in: userDefaults)
+        WebViewDataStoreIdentifierStore.removeFromPending([first], in: userDefaults)
 
         XCTAssertEqual(
             WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults),
             [second]
+        )
+    }
+
+    func testRemoveFromPendingPreservesIdentifiersAddedAfterSnapshot() throws {
+        let (userDefaults, suiteName) = try makeUserDefaults()
+        defer { userDefaults.removePersistentDomain(forName: suiteName) }
+
+        let first = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+        let second = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+
+        let snapshot = WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults)
+
+        let third = WebViewDataStoreIdentifierStore.identifier(in: userDefaults)
+        _ = WebViewDataStoreIdentifierStore.retireCurrentIdentifier(in: userDefaults)
+
+        let remainingAfterSweep: Set<UUID> = [second]
+        WebViewDataStoreIdentifierStore.removeFromPending(
+            snapshot.subtracting(remainingAfterSweep),
+            in: userDefaults
+        )
+
+        XCTAssertEqual(
+            WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults),
+            [second, third]
         )
         XCTAssertFalse(
             WebViewDataStoreIdentifierStore.pendingRemovalIdentifiers(in: userDefaults).contains(first)

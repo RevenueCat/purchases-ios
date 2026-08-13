@@ -74,13 +74,19 @@ import Foundation
         }
     }
 
-    static func keepPendingOnly(_ identifiers: Set<UUID>) {
-        self.keepPendingOnly(identifiers, in: Self.defaults)
+    /// Subtracts `identifiers` from the pending-removal set.
+    /// IDs added after a sweep snapshot (for example by a concurrent logout) are preserved.
+    static func removeFromPending(_ identifiers: Set<UUID>) {
+        self.removeFromPending(identifiers, in: Self.defaults)
     }
 
-    static func keepPendingOnly(_ identifiers: Set<UUID>, in userDefaults: UserDefaults) {
+    static func removeFromPending(_ identifiers: Set<UUID>, in userDefaults: UserDefaults) {
+        guard !identifiers.isEmpty else { return }
+
         Self.lock.perform {
-            Self.setPendingIdentifiersLocked(identifiers, in: userDefaults)
+            var pending = Self.pendingIdentifiersLocked(in: userDefaults)
+            pending.subtract(identifiers)
+            Self.setPendingIdentifiersLocked(pending, in: userDefaults)
         }
     }
 
