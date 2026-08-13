@@ -20,7 +20,15 @@ import WebKit
 
 #endif
 
-final class WebViewWebsiteDataStoreSweeper {
+protocol WebViewDataStoreSweeping: AnyObject {
+
+    @MainActor
+    func sweepStores() async
+
+}
+
+final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
+
     let idStore: WebViewDataStoreIdentifierStore
 
     init(idStore: WebViewDataStoreIdentifierStore = .init()) {

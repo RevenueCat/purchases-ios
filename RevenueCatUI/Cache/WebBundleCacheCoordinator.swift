@@ -19,20 +19,21 @@
 final class WebBundleCacheCoordinator {
 
     let store: WebViewDataStoreIdentifierStore
-    let sweeper: WebViewWebsiteDataStoreSweeper
+    let sweeper: any WebViewDataStoreSweeping
     let bus: WebBundleEventBus
     var job: AnyCancellable?
 
-    @MainActor private var isSweeping = false
-
     init(
         store: WebViewDataStoreIdentifierStore,
-        bus: WebBundleEventBus
+        bus: WebBundleEventBus,
+        sweeper: (any WebViewDataStoreSweeping)? = nil
     ) {
         self.store = store
-        self.sweeper = .init(idStore: store)
+        self.sweeper = sweeper ?? WebViewWebsiteDataStoreSweeper(idStore: store)
         self.bus = bus
-        job = bus.publisher.removeDuplicates().sink(receiveValue: { event in
+        self.job = bus.publisher.sink { [weak self] event in
+            guard let self else { return }
+
             switch event {
             case .cacheClearRequested:
                 self.store.retireCurrentIdentifier()
@@ -45,7 +46,7 @@ final class WebBundleCacheCoordinator {
             case .empty:
                 break
             }
-        })
+        }
 
     }
 
@@ -54,10 +55,7 @@ final class WebBundleCacheCoordinator {
 
     @MainActor
     func scheduleSweep() async {
-        guard !isSweeping else { return }
-        isSweeping = true
-        await sweeper.sweepStores()
-        isSweeping = false
+        await self.sweeper.sweepStores()
     }
 
 }

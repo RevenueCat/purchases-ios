@@ -16,31 +16,32 @@ import Foundation
 
 /// Persists the identifiers for RevenueCat's isolated website data store.
 final class WebViewDataStoreIdentifierStore {
-    let userDefualts: UserDefaults
 
-    init(userDefualts: UserDefaults = WebViewDataStoreIdentifierStore.defaults) {
-        self.userDefualts = userDefualts
+    let userDefaults: UserDefaults
+
+    init(userDefaults: UserDefaults = WebViewDataStoreIdentifierStore.defaults) {
+        self.userDefaults = userDefaults
     }
 
     /// Returns the stable identifier used by RevenueCat web views.
-    public func identifier() -> UUID {
-        return Self.identifier(in: userDefualts)
+    func identifier() -> UUID {
+        return Self.identifier(in: self.userDefaults)
     }
 
     /// Moves the current identifier into the pending-removal set without creating one.
     @discardableResult
     func retireCurrentIdentifier() -> UUID? {
-        return Self.retireCurrentIdentifier(in: userDefualts)
+        return Self.retireCurrentIdentifier(in: self.userDefaults)
     }
 
     func pendingRemovalIdentifiers() -> Set<UUID> {
-        return Self.pendingRemovalIdentifiers(in: userDefualts)
+        return Self.pendingRemovalIdentifiers(in: self.userDefaults)
     }
 
     /// Subtracts `identifiers` from the pending-removal set.
     /// IDs added after a sweep snapshot (for example by a concurrent logout) are preserved.
     func removeFromPending(_ identifiers: Set<UUID>) {
-        Self.removeFromPending(identifiers, in: userDefualts)
+        Self.removeFromPending(identifiers, in: self.userDefaults)
     }
 
 }
@@ -55,7 +56,7 @@ extension WebViewDataStoreIdentifierStore {
     private static let lock = NSLock()
 
     static func identifier(in userDefaults: UserDefaults) -> UUID {
-        return Self.lock.perform {
+        return Self.lock.withLock {
             if let value = userDefaults.string(forKey: Self.currentKey),
                let identifier = UUID(uuidString: value) {
                 return identifier
@@ -81,14 +82,14 @@ extension WebViewDataStoreIdentifierStore {
     }
 
     static func pendingRemovalIdentifiers(in userDefaults: UserDefaults) -> Set<UUID> {
-        return Self.lock.perform {
+        return Self.lock.withLock {
             return Self.pendingIdentifiersLocked(in: userDefaults)
         }
     }
 
     @discardableResult
     static func retireCurrentIdentifier(in userDefaults: UserDefaults) -> UUID? {
-        return Self.lock.perform {
+        return Self.lock.withLock {
             let current = userDefaults.string(forKey: Self.currentKey)
                 .flatMap(UUID.init(uuidString:))
             userDefaults.removeObject(forKey: Self.currentKey)
@@ -106,24 +107,10 @@ extension WebViewDataStoreIdentifierStore {
     static func removeFromPending(_ identifiers: Set<UUID>, in userDefaults: UserDefaults) {
         guard !identifiers.isEmpty else { return }
 
-        Self.lock.perform {
+        Self.lock.withLock {
             var pending = Self.pendingIdentifiersLocked(in: userDefaults)
             pending.subtract(identifiers)
             Self.setPendingIdentifiersLocked(pending, in: userDefaults)
         }
-    }
-}
-
-extension NSLock {
-
-    @discardableResult
-    func perform<T>(_ block: () throws -> T) rethrows -> T {
-        if Thread.isMainThread {
-            return try block()
-        }
-
-        lock()
-        defer { unlock() }
-        return try block()
     }
 }
