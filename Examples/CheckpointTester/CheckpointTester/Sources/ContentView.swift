@@ -21,7 +21,7 @@ struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
-    @StateObject private var checkpointVariables = CheckpointVariables()
+    @StateObject private var customVariables = CustomVariables()
 
     var body: some View {
         TabView {
@@ -32,7 +32,7 @@ struct ContentView: View {
 
             self.variableEditor
                 .tabItem {
-                    Label("Variables", systemImage: "slider.horizontal.3")
+                    Label("Custom variables", systemImage: "slider.horizontal.3")
                 }
 
             self.listenerLog
@@ -63,7 +63,7 @@ struct ContentView: View {
             List {
                 Section("App-driven use cases") {
                     NavigationLink {
-                        HardPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
+                        HardPaywallUseCaseView(customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Hard paywall",
@@ -73,7 +73,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        SoftPaywallUseCaseView(checkpointVariables: self.checkpointVariables)
+                        SoftPaywallUseCaseView(customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Soft paywall",
@@ -83,7 +83,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        OnboardingUseCaseView(checkpointVariables: self.checkpointVariables)
+                        OnboardingUseCaseView(customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Onboarding",
@@ -93,7 +93,7 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        EntitlementGateUseCaseView(checkpointVariables: self.checkpointVariables)
+                        EntitlementGateUseCaseView(customVariables: self.customVariables)
                     } label: {
                         DemoLabel(
                             title: "Entitlement gate",
@@ -105,7 +105,7 @@ struct ContentView: View {
                     NavigationLink {
                         CustomCheckpointUseCaseView(
                             model: self.model,
-                            checkpointVariables: self.checkpointVariables
+                            customVariables: self.customVariables
                         )
                     } label: {
                         DemoLabel(
@@ -126,7 +126,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "this-checkpoint-does-not-exist",
-                                    params: self.checkpointVariables.checkpointParams
+                                    params: self.customVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -144,7 +144,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "error_checkpoint",
-                                    params: self.checkpointVariables.checkpointParams
+                                    params: self.customVariables.checkpointParams
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -163,28 +163,28 @@ struct ContentView: View {
         NavigationStack {
             List {
                 Section {
-                    ForEach(self.$checkpointVariables.variables) { $variable in
+                    ForEach(self.$customVariables.variables) { $variable in
                         HStack {
                             TextField("Name", text: $variable.name)
                             TextField("Value", text: $variable.value)
                         }
                     }
                     .onDelete { offsets in
-                        self.checkpointVariables.variables.remove(atOffsets: offsets)
+                        self.customVariables.variables.remove(atOffsets: offsets)
                     }
 
                     Button {
-                        self.checkpointVariables.variables.append(.init())
+                        self.customVariables.variables.append(.init())
                     } label: {
                         Label("Add variable", systemImage: "plus")
                     }
                 } header: {
-                    Text("Checkpoint variables")
+                    Text("Custom variables")
                 } footer: {
-                    Text("These custom properties are passed to every checkpoint call.")
+                    Text("These custom variables are passed to every checkpoint call.")
                 }
             }
-            .navigationTitle("Variables")
+            .navigationTitle("Custom variables")
         }
     }
 

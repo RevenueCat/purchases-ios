@@ -19,17 +19,17 @@ import XCTest
 final class CheckpointValueTests: TestCase {
 
     func testLiteralValuesPreserveTheirTypes() {
-        let params = CheckpointParams(customProperties: [
+        let params = CheckpointParams(customVariables: [
             "string": "value",
             "integer": 42,
             "double": 4.5,
             "boolean": true
         ])
 
-        XCTAssertEqual(params.customProperties["string"], .string("value"))
-        XCTAssertEqual(params.customProperties["integer"], .integer(42))
-        XCTAssertEqual(params.customProperties["double"], .double(4.5))
-        XCTAssertEqual(params.customProperties["boolean"], .boolean(true))
+        XCTAssertEqual(params.customVariables["string"], .string("value"))
+        XCTAssertEqual(params.customVariables["integer"], .integer(42))
+        XCTAssertEqual(params.customVariables["double"], .double(4.5))
+        XCTAssertEqual(params.customVariables["boolean"], .boolean(true))
     }
 
     func testCodableUsesPrimitiveJSONValues() throws {
@@ -72,11 +72,18 @@ final class CheckpointValueTests: TestCase {
     }
 
     func testParamsPreserveValueEqualityAndHashing() {
-        let firstParams = CheckpointParams(customProperties: ["name": "Rick"])
-        let secondParams = CheckpointParams(customProperties: ["name": "Rick"])
+        let firstParams = CheckpointParams(customVariables: ["name": "Rick"])
+        let secondParams = CheckpointParams(customVariables: ["name": "Rick"])
 
         XCTAssertEqual(firstParams, secondParams)
         XCTAssertEqual(Set([firstParams, secondParams]).count, 1)
+    }
+
+    func testValuesConvertToDimensionsWithoutLosingTheirTypes() {
+        XCTAssertEqual(CheckpointValue.string("value").dimensionValue, .string("value"))
+        XCTAssertEqual(CheckpointValue.integer(42).dimensionValue, .int(42))
+        XCTAssertEqual(CheckpointValue.double(4.5).dimensionValue, .double(4.5))
+        XCTAssertEqual(CheckpointValue.boolean(true).dimensionValue, .bool(true))
     }
 
 }

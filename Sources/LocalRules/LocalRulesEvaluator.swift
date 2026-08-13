@@ -44,12 +44,16 @@ final class LocalRulesEvaluator: Sendable {
     /// Returns the first matching rule, using one snapshot for the full call.
     ///
     /// For example, rules `[("a", false), ("b", true)]` return the second rule.
-    func match<Rule: LocalRule>(in rules: [Rule]) async throws -> Rule? {
+    /// Developer-supplied values are available to predicates under `custom.*`.
+    func match<Rule: LocalRule>(
+        in rules: [Rule],
+        customVariables: [String: DimensionValue] = [:]
+    ) async throws -> Rule? {
         guard !rules.isEmpty else {
             return nil
         }
 
-        let snapshot = try await self.dimensionResolver.snapshot()
+        let snapshot = try await self.dimensionResolver.snapshot(customVariables: customVariables)
 
         var firstEvaluationError: LocalRulesEvaluationError?
 

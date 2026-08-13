@@ -19,12 +19,12 @@ import Foundation
 
 private enum CheckpointStrings: LogMessage {
 
-    case invalidObjectiveCCustomProperty(Any.Type)
+    case invalidObjectiveCCustomVariable(Any.Type)
 
     var description: String {
         switch self {
-        case let .invalidObjectiveCCustomProperty(type):
-            return "Dropping invalid Objective-C checkpoint custom property: \(String(reflecting: type))"
+        case let .invalidObjectiveCCustomVariable(type):
+            return "Dropping invalid Objective-C checkpoint custom variable: \(String(reflecting: type))"
         }
     }
 
@@ -40,18 +40,18 @@ public final class ObjCCheckpointParams: NSObject {
     let value: CheckpointParams
 
     /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
-    @objc(initWithCustomProperties:)
-    public init(customProperties: NSDictionary) {
+    @objc(initWithCustomVariables:)
+    public init(customVariables: NSDictionary) {
         var values: [String: CheckpointValue] = [:]
-        for (rawKey, rawValue) in customProperties {
+        for (rawKey, rawValue) in customVariables {
             guard let key = rawKey as? String,
                   let value = CheckpointValue(foundationValue: rawValue) else {
-                Logger.warning(CheckpointStrings.invalidObjectiveCCustomProperty(type(of: rawValue)))
+                Logger.warning(CheckpointStrings.invalidObjectiveCCustomVariable(type(of: rawValue)))
                 continue
             }
             values[key] = value
         }
-        self.value = CheckpointParams(customProperties: values)
+        self.value = CheckpointParams(customVariables: values)
         super.init()
     }
 
@@ -60,10 +60,10 @@ public final class ObjCCheckpointParams: NSObject {
         super.init()
     }
 
-    /// The custom properties as Objective-C Foundation primitive values.
-    @objc(customProperties)
-    public var customProperties: NSDictionary {
-        return self.value.customProperties.mapValues { $0.foundationValue } as NSDictionary
+    /// The custom variables as Objective-C Foundation primitive values.
+    @objc(customVariables)
+    public var customVariables: NSDictionary {
+        return self.value.customVariables.mapValues { $0.foundationValue } as NSDictionary
     }
 
 }
