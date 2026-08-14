@@ -802,6 +802,8 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+#if !os(tvOS)
+
     private static func fontsConfig(
         fontName: String,
         family: String,
@@ -814,6 +816,8 @@ final class PaywallCacheWarmingTests: TestCase {
 
         return UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: fontName, webFontInfo: webFontInfo))
     }
+
+#endif
 
     /// Every installed family and its face names on the current platform.
     private static func installedFontFamilies() -> [(family: String, names: [String])] {
