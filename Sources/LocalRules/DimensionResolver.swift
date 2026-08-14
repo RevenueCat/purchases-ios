@@ -64,6 +64,8 @@ struct DimensionResolver: Sendable {
                 )
             }
 
+            guard !providerValues.isEmpty else { continue }
+
             let namespace = provider.namespace.rawValue
             var namespaceValues: [String: RulesEngine.Value] = [:]
             if case .object(let existing) = values[namespace] {

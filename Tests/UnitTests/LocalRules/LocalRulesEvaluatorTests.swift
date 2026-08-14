@@ -18,6 +18,7 @@
 
 import Foundation
 import Testing
+import XCTest
 
 @testable import RevenueCat
 
@@ -320,6 +321,23 @@ struct LocalRulesEvaluatorTests {
             Issue.record("Unexpected error: \(error)")
         }
     }
+}
+
+final class DimensionResolverTests: TestCase {
+
+    func testEmptyProviderDoesNotAddItsNamespace() async throws {
+        let provider = TestDimensionProvider(
+            namespace: .device,
+            snapshots: [[:]]
+        )
+
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [provider]
+        ).snapshot()
+
+        XCTAssertNil(snapshot.values[DimensionNamespace.device.rawValue])
+    }
+
 }
 
 private extension LocalRulesEvaluatorTests {
