@@ -18,10 +18,10 @@ import Foundation
 @_spi(Internal) public enum CheckpointResolution {
 
     /// A workflow was selected for the checkpoint.
-    case workflow(ResolvedCheckpointWorkflow)
+    case matchedWorkflow(ResolvedCheckpointWorkflow)
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
     /// decides whether and how to use it.
-    case offering(Offering)
+    case matchedOffering(Offering)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -179,31 +179,29 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         let workflow = workflowData.workflow
-        guard workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) else {
+        guard let initialStep = workflow.steps[workflow.initialStepId] else {
+            return Self.unservable(rule, reason: "its initial step was not found")
+        }
+
+        guard initialStep.type == Self.offeringStepType else {
+            guard !workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) else {
+                return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+            }
             return await self.resolveWorkflow(rule, workflowData: workflowData)
         }
 
-        return await self.resolveOffering(rule, workflow: workflow)
+        guard workflow.steps.count == 1 else {
+            return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
+        }
+
+        return await self.resolveOffering(rule, step: initialStep)
     }
 
     /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
     ///
-    /// The shape is validated strictly, and an offering step carrying anything a step of another kind would
-    /// need (a screen, triggers, trigger actions) is treated as unservable rather than served with those
-    /// parts ignored.
-    private func resolveOffering(_ rule: CheckpointRule, workflow: PublishedWorkflow) async -> CheckpointResolution {
-        guard workflow.steps.count == 1 else {
-            return Self.unservable(rule, reason: "an offering step must be the workflow's only step")
-        }
-        guard let step = workflow.steps[workflow.initialStepId], step.type == Self.offeringStepType else {
-            return Self.unservable(rule, reason: "the offering step must be the workflow's initial step")
-        }
-        guard step.screenId == nil else {
-            return Self.unservable(rule, reason: "the offering step references a screen")
-        }
-        guard step.triggers.isEmpty, step.triggerActions.isEmpty else {
-            return Self.unservable(rule, reason: "the offering step declares triggers")
-        }
+    /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
+    /// than treated as unservable, since a step of this kind renders nothing.
+    private func resolveOffering(_ rule: CheckpointRule, step: WorkflowStep) async -> CheckpointResolution {
         guard case let .string(offeringID)? = step.paramValues[Self.offeringIdentifierParam],
               !offeringID.trimmingCharacters(in: .whitespaces).isEmpty else {
             return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
@@ -216,7 +214,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "offering '\(offeringID)' is unavailable")
         }
 
-        return .offering(offering)
+        return .matchedOffering(offering)
     }
 
     private func resolveWorkflow(
@@ -233,7 +231,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return Self.unservable(rule, reason: "offering '\(offeringID)' is unavailable")
         }
 
-        return .workflow(
+        return .matchedWorkflow(
             ResolvedCheckpointWorkflow(
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,

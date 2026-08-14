@@ -45,7 +45,7 @@ final class CheckpointsManagerTests: TestCase {
         let executor = MockCheckpointWorkflowExecutor()
         executor.outcome = CheckpointPaywallDismissedOutcome.shared
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .workflow(Self.workflow()) },
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
         )
 
@@ -61,7 +61,7 @@ final class CheckpointsManagerTests: TestCase {
     func testResolvedOfferingProducesReceivedOfferingResultWithoutPresenting() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .offering(Self.offering()) },
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             executor: executor
         )
         let listener = ListenerRecorder()
@@ -100,7 +100,7 @@ final class CheckpointsManagerTests: TestCase {
         let executor = MockCheckpointWorkflowExecutor()
         executor.error = expectedError
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .workflow(Self.workflow()) },
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
         )
         let listener = ListenerRecorder()
