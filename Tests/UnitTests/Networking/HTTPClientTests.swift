@@ -3220,7 +3220,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response?.value?.body) == responseData
 
         self.logger.verifyMessageWasLogged("""
-            Performing redirect from '\(pathA.url(preferIAMPath: false)!.absoluteString)' 
+            Performing redirect from '\(pathA.url(preferIAMPath: false)!.absoluteString)'
              to '\(pathB.url(preferIAMPath: false)!.absoluteString)'
             """,
             level: .debug

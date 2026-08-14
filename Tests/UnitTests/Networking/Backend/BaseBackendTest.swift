@@ -140,6 +140,7 @@ extension BaseBackendTests {
 
         return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

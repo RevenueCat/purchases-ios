@@ -14,6 +14,8 @@
 import CryptoKit
 import Foundation
 
+// swiftlint:disable file_length
+
 /// A type that can verify signatures.
 protocol SigningType {
 
