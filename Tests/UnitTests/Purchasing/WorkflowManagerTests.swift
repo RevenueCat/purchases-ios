@@ -319,7 +319,7 @@ class WorkflowManagerTests: TestCase {
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
+        let offerings = Self.offerings()
 
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
@@ -328,7 +328,7 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
         expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === offerings
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId?["default"]?.id) == "wf_1"
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
     func testPublishWebBundleURLsFallsBackToGetWorkflowWhenCacheMisses() async throws {
@@ -338,57 +338,55 @@ class WorkflowManagerTests: TestCase {
         let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
         self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
+        let offerings = Self.offerings()
 
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
         expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId ?? [:]).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
 
         self.mockProvider.stubbedGetWorkflowError = [:]
         self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId?["default"]?.id) == "wf_1"
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
     func testPublishWebBundleURLsSkipsOfferingsWithoutAWorkflowMapping() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
-        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
+        let offerings = Self.offerings()
 
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters).to(beEmpty())
         expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId ?? [:]).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
     // MARK: - Helpers
 
-    private static func offerings(currentOfferingID: String, offeringIDs: [String]) -> Offerings {
-        let offerings = offeringIDs.map { identifier in
-            Offering(
-                identifier: identifier,
-                serverDescription: identifier,
-                availablePackages: [],
-                webCheckoutUrl: nil
-            )
-        }
+    private static func offerings() -> Offerings {
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "default",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
         let response = OfferingsResponse(
-            currentOfferingId: currentOfferingID,
+            currentOfferingId: "default",
             offerings: [],
             placements: nil,
             targeting: nil,
             uiConfig: nil
         )
         return Offerings(
-            offerings: Dictionary(uniqueKeysWithValues: offerings.map { ($0.identifier, $0) }),
-            currentOfferingID: currentOfferingID,
+            offerings: [offering.identifier: offering],
+            currentOfferingID: "default",
             placements: nil,
             targeting: nil,
             contents: .init(response: response, httpResponseOriginalSource: .mainServer),

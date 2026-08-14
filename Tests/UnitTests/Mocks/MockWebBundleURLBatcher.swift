@@ -16,28 +16,22 @@ import Foundation
 
 final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendable {
 
-    struct PublishCall {
-        let offerings: Offerings
-        let workflowsByOfferingId: [String: PublishedWorkflow]
-    }
+    private let _invokedPublishCount: Atomic<Int> = .init(0)
+    private let _invokedPublishOfferings: Atomic<Offerings?> = nil
+    private let _invokedPublishWorkflowsByOfferingId: Atomic<[String: PublishedWorkflow]> = .init([:])
+    private let _invokedPublishPresentedWorkflowIDs: Atomic<[String]> = .init([])
 
-    private let _publishCalls: Atomic<[PublishCall]> = .init([])
-    private let _presentedWorkflows: Atomic<[PublishedWorkflow]> = .init([])
-
-    var invokedPublish: Bool {
-        return !self._publishCalls.value.isEmpty
-    }
     var invokedPublishCount: Int {
-        return self._publishCalls.value.count
-    }
-    var invokedPublishCalls: [PublishCall] {
-        return self._publishCalls.value
+        return self._invokedPublishCount.value
     }
     var invokedPublishOfferings: Offerings? {
-        return self._publishCalls.value.last?.offerings
+        return self._invokedPublishOfferings.value
     }
-    var invokedPublishWorkflowsByOfferingId: [String: PublishedWorkflow]? {
-        return self._publishCalls.value.last?.workflowsByOfferingId
+    var invokedPublishWorkflowsByOfferingId: [String: PublishedWorkflow] {
+        return self._invokedPublishWorkflowsByOfferingId.value
+    }
+    var invokedPublishPresentedWorkflowIDs: [String] {
+        return self._invokedPublishPresentedWorkflowIDs.value
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -45,27 +39,14 @@ final class MockWebBundleURLBatcher: WebBundleURLBatcherType, @unchecked Sendabl
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
     ) async {
-        self._publishCalls.modify {
-            $0.append(PublishCall(offerings: offerings, workflowsByOfferingId: workflowsByOfferingId))
-        }
-    }
-
-    var invokedPublishPresentedWorkflow: Bool {
-        return !self._presentedWorkflows.value.isEmpty
-    }
-    var invokedPublishPresentedWorkflowCount: Int {
-        return self._presentedWorkflows.value.count
-    }
-    var invokedPublishPresentedWorkflowIDs: [String] {
-        return self._presentedWorkflows.value.map(\.id)
-    }
-    var invokedPublishPresentedWorkflows: [PublishedWorkflow] {
-        return self._presentedWorkflows.value
+        self._invokedPublishCount.modify { $0 += 1 }
+        self._invokedPublishOfferings.value = offerings
+        self._invokedPublishWorkflowsByOfferingId.value = workflowsByOfferingId
     }
 
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publishPresentedWorkflow(_ workflow: PublishedWorkflow) async {
-        self._presentedWorkflows.modify { $0.append(workflow) }
+        self._invokedPublishPresentedWorkflowIDs.modify { $0.append(workflow.id) }
     }
 
 }

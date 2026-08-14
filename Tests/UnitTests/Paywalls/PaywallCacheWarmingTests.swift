@@ -496,26 +496,7 @@ final class PaywallCacheWarmingTests: TestCase {
         )
         expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
         expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === offerings
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId ?? [:]).to(beEmpty())
-    }
-
-    func testOfferingsAssetPrewarmingDoesNotPublishWhenThereAreNoWebViews() async throws {
-        let offering = Offering(
-            identifier: Self.offeringIdentifier,
-            serverDescription: "Test",
-            paywallComponents: .init(
-                uiConfig: Self.emptyUIConfig,
-                data: Self.paywallComponentsData(components: [
-                    .image(.init(source: Self.cacheWarmingImage("offering-image")))
-                ])
-            ),
-            availablePackages: [],
-            webCheckoutUrl: nil
-        )
-
-        await self.cache.warmUpPaywallAssetsCache(offerings: try Self.createOfferings([offering]))
-
-        expect(self.mockWebBundleURLBatcher.invokedPublish) == false
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
