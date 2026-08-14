@@ -106,6 +106,9 @@
 		16A5DD12302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD11302E60C400E04386 /* WebViewDataStoreIdentifierStore.swift */; };
 		16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD13302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift */; };
 		16A5DD19302E7A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD15302E6A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift */; };
+		16A5DD1A302E7A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD16302E6A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift */; };
+		16A5DD1B302E7A0300E04386 /* WebBundleCacheCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD17302E6A0300E04386 /* WebBundleCacheCoordinatorTests.swift */; };
+		16A5DD1C302E7A0400E04386 /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
@@ -1511,6 +1514,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 2DC5621524EC63420031F69B;
 			remoteInfo = Purchases;
+		};
+		16A5DD1D302E7A0500E04386 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 352629F51F7C4B9100C04F2C /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 887A5FB92C1D036200E1A461;
+			remoteInfo = RevenueCatUI;
 		};
 		2DD500F72C519EB4009C19B7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -3234,6 +3244,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16A5DD1C302E7A0400E04386 /* RevenueCatUI.framework in Frameworks */,
 				57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */,
 				B36824BE268FBC5B00957E4C /* XCTest.framework in Frameworks */,
 				2D9C5ED326F2816F0057FC45 /* OHHTTPStubsSwift in Frameworks */,
@@ -6850,6 +6861,7 @@
 			);
 			dependencies = (
 				2DC5622124EC63430031F69B /* PBXTargetDependency */,
+				16A5DD1E302E7A0600E04386 /* PBXTargetDependency */,
 				2DFF6C55270CA11400ECAFAB /* PBXTargetDependency */,
 			);
 			name = UnitTests;
@@ -8184,6 +8196,8 @@
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */,
 				16A5DD19302E7A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift in Sources */,
+				16A5DD1A302E7A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift in Sources */,
+				16A5DD1B302E7A0300E04386 /* WebBundleCacheCoordinatorTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
@@ -8695,6 +8709,11 @@
 			isa = PBXTargetDependency;
 			target = 2DC5621524EC63420031F69B /* RevenueCat */;
 			targetProxy = 2DC5622024EC63430031F69B /* PBXContainerItemProxy */;
+		};
+		16A5DD1E302E7A0600E04386 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 887A5FB92C1D036200E1A461 /* RevenueCatUI */;
+			targetProxy = 16A5DD1D302E7A0500E04386 /* PBXContainerItemProxy */;
 		};
 		2DFF6C55270CA11400ECAFAB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
