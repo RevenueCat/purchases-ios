@@ -106,6 +106,24 @@ extension RevenueCatUI.CustomVariableValue : Swift.ExpressibleByStringLiteral {
   public typealias UnicodeScalarLiteralType = Swift.String
 }
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension RevenueCatUI.CustomVariableValue : Swift.ExpressibleByIntegerLiteral {
+  public init(integerLiteral value: Swift.Int64)
+  @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+  public typealias IntegerLiteralType = Swift.Int64
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension RevenueCatUI.CustomVariableValue : Swift.ExpressibleByFloatLiteral {
+  public init(floatLiteral value: Swift.Double)
+  @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+  public typealias FloatLiteralType = Swift.Double
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension RevenueCatUI.CustomVariableValue : Swift.ExpressibleByBooleanLiteral {
+  public init(booleanLiteral value: Swift.Bool)
+  @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+  public typealias BooleanLiteralType = Swift.Bool
+}
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension SwiftUICore.EnvironmentValues {
   public var customPaywallVariables: [Swift.String : RevenueCatUI.CustomVariableValue] {
     get
