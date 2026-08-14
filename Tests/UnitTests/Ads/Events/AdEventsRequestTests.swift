@@ -109,8 +109,8 @@ class AdFeatureEventsRequestTests: TestCase {
 
         expect(requestEvent.rewardType) == "entitlement"
         expect(requestEvent.rewardEntitlementId) == "pro"
-        expect(requestEvent.rewardCurrencyCode).to(beNil())
-        expect(requestEvent.rewardCurrencyAmount).to(beNil())
+        expect(requestEvent.rewardVirtualCurrencyCode).to(beNil())
+        expect(requestEvent.rewardVirtualCurrencyAmount).to(beNil())
 
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }

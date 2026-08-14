@@ -168,7 +168,7 @@ import Foundation
 
 extension AdRewardGranted: Codable {
 
-    /// ``reward`` is encoded as flat `rewardType` / `rewardCurrencyCode` / `rewardCurrencyAmount` /
+    /// ``reward`` is encoded as flat `rewardType` / `rewardVirtualCurrencyCode` / `rewardVirtualCurrencyAmount` /
     /// `rewardEntitlementId` fields, matching ``AdRewardVerified``'s wire shape.
     private enum CodingKeys: String, CodingKey {
         case networkName
@@ -178,8 +178,8 @@ extension AdRewardGranted: Codable {
         case adUnitId
         case impressionId
         case rewardType
-        case rewardCurrencyCode
-        case rewardCurrencyAmount
+        case rewardVirtualCurrencyCode
+        case rewardVirtualCurrencyAmount
         case rewardEntitlementId
     }
 
@@ -195,8 +195,8 @@ extension AdRewardGranted: Codable {
         try self.reward.encode(
             into: &container,
             typeKey: .rewardType,
-            codeKey: .rewardCurrencyCode,
-            amountKey: .rewardCurrencyAmount,
+            codeKey: .rewardVirtualCurrencyCode,
+            amountKey: .rewardVirtualCurrencyAmount,
             entitlementIdKey: .rewardEntitlementId
         )
     }
@@ -214,8 +214,8 @@ extension AdRewardGranted: Codable {
             reward: try AdReward.decode(
                 from: container,
                 typeKey: .rewardType,
-                codeKey: .rewardCurrencyCode,
-                amountKey: .rewardCurrencyAmount,
+                codeKey: .rewardVirtualCurrencyCode,
+                amountKey: .rewardVirtualCurrencyAmount,
                 entitlementIdKey: .rewardEntitlementId
             )
         )

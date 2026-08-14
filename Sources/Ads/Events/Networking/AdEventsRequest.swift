@@ -67,8 +67,8 @@ extension AdEventsRequest {
         var rewardAmount: Int?
         // For reward granted events only:
         var rewardType: String?
-        var rewardCurrencyCode: String?
-        var rewardCurrencyAmount: Int?
+        var rewardVirtualCurrencyCode: String?
+        var rewardVirtualCurrencyAmount: Int?
         var rewardEntitlementId: String?
         // For reward failed-to-verify events only:
         var rewardFailureReason: String?
@@ -127,8 +127,8 @@ extension AdEventsRequest.AdEventRequest {
                 rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
                 rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
                 rewardType: adEvent.rewardGrantedData?.reward.kindRawValue,
-                rewardCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
-                rewardCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
+                rewardVirtualCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
+                rewardVirtualCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
                 rewardEntitlementId: adEvent.rewardGrantedData?.reward.entitlement?.identifier,
                 rewardFailureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
@@ -193,8 +193,8 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case rewardItem
         case rewardAmount
         case rewardType
-        case rewardCurrencyCode
-        case rewardCurrencyAmount
+        case rewardVirtualCurrencyCode
+        case rewardVirtualCurrencyAmount
         case rewardEntitlementId
         case rewardFailureReason
 
