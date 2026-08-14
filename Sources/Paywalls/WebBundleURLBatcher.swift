@@ -45,12 +45,15 @@ actor WebBundleURLBatcher: WebBundleURLBatcherType {
     }
 
     /// Publishes one complete-screen batch at a time from `offerings` and `workflowsByOfferingId`.
+    ///
+    /// Workflow IDs are unioned, not replaced: cache warming calls this with an empty map for inline
+    /// V2 trees and must not clear load-path IDs used by ``publishPresentedWorkflow(_:)``.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
     ) async {
-        self.publishedWorkflowIDs = Set(workflowsByOfferingId.values.map(\.id))
+        self.publishedWorkflowIDs.formUnion(workflowsByOfferingId.values.map(\.id))
         await self.publishBatches(
             Self.orderedScreenURLBatches(
                 offerings: offerings,

@@ -188,15 +188,16 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
 
 private extension WorkflowManager {
 
-    /// Fire-and-forget pre-download of a resolved workflow's images/videos/fonts. Remote config's own
-    /// blob prefetch only covers the workflow's JSON body, not the assets it references.
+    /// Fire-and-forget web-bundle URL publish, then image/video/font pre-download. URLs go out first so
+    /// present-path cache warming does not wait on downloads when this is the first time the workflow is seen.
+    /// Remote config's own blob prefetch only covers the workflow's JSON body, not the assets it references.
     func scheduleAssetPrewarming(for result: WorkflowDataResult) {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
         let webBundleURLBatcher = self.webBundleURLBatcher
         self.operationDispatcher.dispatchOnWorkerThread {
-            await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
             await webBundleURLBatcher.publishPresentedWorkflow(result.workflow)
+            await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
         }
     }
 

@@ -600,6 +600,25 @@ final class WebBundleURLBatcherTests: TestCase {
         ]
     }
 
+    func testEmptyPublishDoesNotClearLoadPathDedup() async throws {
+        let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
+        let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
+
+        var received: [WebBundleEvent] = []
+        self.bus.publisher
+            .dropFirst()
+            .sink { received.append($0) }
+            .store(in: &self.cancellables)
+
+        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": current])
+        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: [:])
+        await self.batcher.publishPresentedWorkflow(current)
+
+        expect(received) == [
+            .receivedAssetURLs([Self.url("https://example.com/current")])
+        ]
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
