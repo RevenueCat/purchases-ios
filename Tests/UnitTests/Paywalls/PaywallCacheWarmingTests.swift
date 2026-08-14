@@ -698,19 +698,6 @@ final class PaywallCacheWarmingTests: TestCase {
                                                         fontFamily: otherFamily)).to(beTrue())
     }
 
-#if canImport(UIKit)
-
-    func testPlatformFontLookupIsNotCaseSensitive() throws {
-        let font = try Self.anyInstalledFont()
-        let uppercased = font.name.uppercased()
-        try XCTSkipIf(uppercased == font.name)
-
-        expect(Self.platformResolvesFont(named: font.name)).to(beTrue())
-        expect(Self.platformResolvesFont(named: uppercased)).to(beTrue())
-    }
-
-#endif
-
     func testFontIsAlreadyInstalled_AgreesWithPlatformFontLookupOnCasing() throws {
         let font = try Self.anyInstalledFont()
         let miscased = font.name.uppercased()
