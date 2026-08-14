@@ -1858,7 +1858,8 @@ extension Purchases {
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) {
-        guard let trackingMetadata else { return }
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
         let data = AdRewardEarnedUnverified(
             networkName: trackingMetadata.networkName,
             mediatorName: trackingMetadata.mediatorName,
@@ -1870,7 +1871,7 @@ extension Purchases {
             rewardItem: nil,
             rewardAmount: nil
         )
-        self.trackRewardAdEvent(.rewardEarnedUnverified(.init(captureMethod: captureMethod), data))
+        self.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: captureMethod)
     }
 
     /// Tracks the terminal verification outcome: one verified/failed-to-verify event, plus one granted
@@ -1881,7 +1882,8 @@ extension Purchases {
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) {
-        guard let trackingMetadata else { return }
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
 
         switch outcome {
         case let .verified(reward, moreRewards):
@@ -1893,7 +1895,7 @@ extension Purchases {
                 adUnitId: trackingMetadata.adUnitId,
                 impressionId: trackingMetadata.impressionId
             )
-            self.trackRewardAdEvent(.rewardVerified(.init(captureMethod: captureMethod), verified))
+            self.adTracker.trackAdRewardVerified(verified, captureMethod: captureMethod)
 
             for grant in ([reward] + moreRewards) where grant != .noReward {
                 let granted = AdRewardGranted(
@@ -1905,7 +1907,7 @@ extension Purchases {
                     impressionId: trackingMetadata.impressionId,
                     reward: grant
                 )
-                self.trackRewardAdEvent(.rewardGranted(.init(captureMethod: captureMethod), granted))
+                self.adTracker.trackAdRewardGranted(granted, captureMethod: captureMethod)
             }
         case let .failed(reason):
             let failed = AdRewardFailedToVerify(
@@ -1917,14 +1919,7 @@ extension Purchases {
                 impressionId: trackingMetadata.impressionId,
                 failureReason: reason.trackingFailureReason
             )
-            self.trackRewardAdEvent(.rewardFailedToVerify(.init(captureMethod: captureMethod), failed))
-        }
-    }
-
-    private func trackRewardAdEvent(_ event: AdEvent) {
-        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
-        Task {
-            await self.eventsManager?.track(adEvent: event)
+            self.adTracker.trackAdRewardFailedToVerify(failed, captureMethod: captureMethod)
         }
     }
 

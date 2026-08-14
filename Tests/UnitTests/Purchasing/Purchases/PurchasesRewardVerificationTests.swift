@@ -390,7 +390,9 @@ extension PurchasesRewardVerificationTests {
             return data
         }
         expect(grantedEvents.count) == 2
-        expect(grantedEvents.map(\.reward)) == [.virtualCurrency(virtualCurrency), .entitlement(entitlement)]
+        let grantedRewards = grantedEvents.map(\.reward)
+        expect(grantedRewards).to(contain(.virtualCurrency(virtualCurrency)))
+        expect(grantedRewards).to(contain(.entitlement(entitlement)))
     }
 
     func testPollRewardVerificationTracksFailedToVerifyEvent() async throws {
