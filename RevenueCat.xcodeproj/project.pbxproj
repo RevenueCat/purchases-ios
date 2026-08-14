@@ -88,6 +88,8 @@
 		164933242E5808BE00CE43A9 /* PaywallTransitionTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */; };
 		166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */; };
 		166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */; };
+		166B9F41302F01010037DDCB /* WebBundleURLBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F40302F01000037DDCB /* WebBundleURLBatcher.swift */; };
+		166B9F43302F01030037DDCB /* WebBundleURLBatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F42302F01020037DDCB /* WebBundleURLBatcherTests.swift */; };
 		166BA79A2F84022400BB46C9 /* PaywallEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
 		1696D7313007FC5100E6E8C0 /* SizeConstraintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1696D72B3007FC4800E6E8C0 /* SizeConstraintTests.swift */; };
@@ -1674,6 +1676,8 @@
 		164933232E5808BE00CE43A9 /* PaywallTransitionTest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransitionTest.swift; sourceTree = "<group>"; };
 		166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleEventBusTests.swift; sourceTree = "<group>"; };
 		166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleEventBus.swift; sourceTree = "<group>"; };
+		166B9F40302F01000037DDCB /* WebBundleURLBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleURLBatcher.swift; sourceTree = "<group>"; };
+		166B9F42302F01020037DDCB /* WebBundleURLBatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleURLBatcherTests.swift; sourceTree = "<group>"; };
 		166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTracker.swift; sourceTree = "<group>"; };
 		166BA7A02F84028600BB46C9 /* ControlInteractionLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlInteractionLoggerTests.swift; sourceTree = "<group>"; };
 		166BA7A12F84028600BB46C9 /* PaywallEventTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTrackerTests.swift; sourceTree = "<group>"; };
@@ -5084,6 +5088,7 @@
 			isa = PBXGroup;
 			children = (
 				166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */,
+				166B9F40302F01000037DDCB /* WebBundleURLBatcher.swift */,
 				032B13C72E0263750099E1ED /* SubscriptionHistoryTracker.swift */,
 				7542E4E82DEDCC2A002CE340 /* PaywallFontManagerType.swift */,
 				88AD010B2C740CF400AA1F2B /* Components */,
@@ -5113,6 +5118,7 @@
 				3D26169F24D341F77345716D /* ExitOfferTests.swift */,
 				FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */,
 				166B9F0E30251A4A0037DDCB /* WebBundleEventBusTests.swift */,
+				166B9F42302F01020037DDCB /* WebBundleURLBatcherTests.swift */,
 			);
 			path = Paywalls;
 			sourceTree = "<group>";
@@ -7692,6 +7698,7 @@
 				B372EC56268FEF020099171E /* ProductRequestData.swift in Sources */,
 				359E8E3F26DEBEEB00B869F9 /* TrialOrIntroPriceEligibilityChecker.swift in Sources */,
 				166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */,
+				166B9F41302F01010037DDCB /* WebBundleURLBatcher.swift in Sources */,
 				1E2F91722CCFA98C00BDB016 /* WebRedemptionStrings.swift in Sources */,
 				B34605CE279A6E380031CA74 /* PostSubscriberAttributesOperation.swift in Sources */,
 				4F0BBA812A1D0524000E75AB /* DefaultDecodable.swift in Sources */,
@@ -8150,6 +8157,7 @@
 				2C6CC1162B8D2B6900432E4D /* PurchasesSyncAttributesAndOfferingsIfNeededTests.swift in Sources */,
 				4F6ABC7C2A81673F00250E63 /* PaywallCacheWarmingTests.swift in Sources */,
 				166B9F0F30251A4A0037DDCB /* WebBundleEventBusTests.swift in Sources */,
+				166B9F43302F01030037DDCB /* WebBundleURLBatcherTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,

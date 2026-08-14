@@ -88,4 +88,10 @@ final class MockWorkflowAssetPrewarmer: WorkflowAssetPrewarmingType, @unchecked 
         self.invokedPrefetchedAssetPrewarmingParameters.append(includingOfferingId)
     }
 
+    private(set) var invokedPublishWebBundleURLsOfferings: [Offerings] = []
+
+    func publishWebBundleURLs(offerings: Offerings) async {
+        self.invokedPublishWebBundleURLsOfferings.append(offerings)
+    }
+
 }

@@ -19,6 +19,7 @@ import Foundation
 protocol WorkflowAssetPrewarmingType: Sendable {
 
     func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async
+    func publishWebBundleURLs(offerings: Offerings) async
 
 }
 
@@ -147,6 +148,39 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         }
     }
 
+    /// Resolves workflows for target offerings (current, placements, fallback) and publishes their
+    /// web-view URLs in visit order. Prefetch-only workflows are not included.
+    func publishWebBundleURLs(offerings: Offerings) async {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
+
+        var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
+        for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
+            guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
+                continue
+            }
+
+            let cached = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
+                workflowId: workflowId
+            )
+            let resolved: Result<WorkflowDataResult, WorkflowResolutionError>
+            switch cached {
+            case .success:
+                resolved = cached
+            case .failure:
+                resolved = await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId)
+            }
+
+            if case let .success(result) = resolved {
+                workflowsByOfferingId[offeringId] = result.workflow
+            }
+        }
+
+        await WebBundleURLBatcher.shared.publish(
+            offerings: offerings,
+            workflowsByOfferingId: workflowsByOfferingId
+        )
+    }
+
 }
 
 private extension WorkflowManager {
@@ -158,6 +192,7 @@ private extension WorkflowManager {
 
         self.operationDispatcher.dispatchOnWorkerThread {
             await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
+            await WebBundleURLBatcher.shared.publishPresentedWorkflow(result.workflow)
         }
     }
 

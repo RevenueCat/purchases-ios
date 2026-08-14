@@ -136,6 +136,17 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
         let cacheAssets = offerings.allPaywallV2CacheAssets
 
+        let webViewURLs = WebBundleURLBatcher.orderedWebViewURLs(
+            offerings: offerings,
+            workflowsByOfferingId: [:]
+        )
+        if !webViewURLs.isEmpty {
+            await WebBundleURLBatcher.shared.publish(
+                offerings: offerings,
+                workflowsByOfferingId: [:]
+            )
+        }
+
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)
         imageSources = Set(cacheAssets.imageSourcesToDownload)
