@@ -90,6 +90,7 @@
 		166B9F3A302A133B0037DDCB /* WebBundleEventBus.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */; };
 		166B9F41302F01010037DDCB /* WebBundleURLBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F40302F01000037DDCB /* WebBundleURLBatcher.swift */; };
 		166B9F43302F01030037DDCB /* WebBundleURLBatcherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F42302F01020037DDCB /* WebBundleURLBatcherTests.swift */; };
+		166B9F47302F01070037DDCB /* MockWebBundleURLBatcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166B9F46302F01060037DDCB /* MockWebBundleURLBatcher.swift */; };
 		166BA79A2F84022400BB46C9 /* PaywallEventTracker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */; };
 		167D67092EA151C400B4503F /* SynchronizedLargeItemCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */; };
 		1696D7313007FC5100E6E8C0 /* SizeConstraintTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1696D72B3007FC4800E6E8C0 /* SizeConstraintTests.swift */; };
@@ -1678,6 +1679,7 @@
 		166B9F39302A133B0037DDCB /* WebBundleEventBus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleEventBus.swift; sourceTree = "<group>"; };
 		166B9F40302F01000037DDCB /* WebBundleURLBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleURLBatcher.swift; sourceTree = "<group>"; };
 		166B9F42302F01020037DDCB /* WebBundleURLBatcherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleURLBatcherTests.swift; sourceTree = "<group>"; };
+		166B9F46302F01060037DDCB /* MockWebBundleURLBatcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockWebBundleURLBatcher.swift; sourceTree = "<group>"; };
 		166BA7992F84022400BB46C9 /* PaywallEventTracker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTracker.swift; sourceTree = "<group>"; };
 		166BA7A02F84028600BB46C9 /* ControlInteractionLoggerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlInteractionLoggerTests.swift; sourceTree = "<group>"; };
 		166BA7A12F84028600BB46C9 /* PaywallEventTrackerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallEventTrackerTests.swift; sourceTree = "<group>"; };
@@ -4454,6 +4456,7 @@
 				57488BE929CB83540000EE7E /* MockOfflineEntitlementsManager.swift */,
 				351B514A26D44A4A00BD2BD7 /* MockOperationDispatcher.swift */,
 				91F85F12F0FC9173F5A69A0B /* MockWorkflowsConfigProvider.swift */,
+				166B9F46302F01060037DDCB /* MockWebBundleURLBatcher.swift */,
 				4F9BB63E2A7AFB72001C120D /* MockPayment.swift */,
 				351B517326D44F4B00BD2BD7 /* MockPaymentDiscount.swift */,
 				5733D00828CFA7A4008638D8 /* MockPaymentQueueWrapper.swift */,
@@ -7971,6 +7974,7 @@
 				A56DFDF3286673CE00EF2E32 /* BackendPostAttributionDataTests.swift in Sources */,
 				351B514B26D44A4A00BD2BD7 /* MockOperationDispatcher.swift in Sources */,
 				287CDC891DD96BA20779235F /* MockWorkflowsConfigProvider.swift in Sources */,
+				166B9F47302F01070037DDCB /* MockWebBundleURLBatcher.swift in Sources */,
 				351B514926D44A2F00BD2BD7 /* MockCustomerInfoManager.swift in Sources */,
 				4F5C05BF2A43A2C500651C7D /* LocaleExtensionsTests.swift in Sources */,
 				5766AAC9283E88CF00FA6091 /* PurchasesGetCustomerInfoTests.swift in Sources */,
