@@ -129,10 +129,9 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     /// Walks paywall component trees once, then downloads images.
     ///
-    /// IMPORTANT
-    /// Video and Web Bundle assets will be warmed here in the future
-    /// When done, we should use task groups so we can dispatch things asynchronously
-    /// Will do as part of: FUN-2274
+    /// Inline V2 web-view URLs are published here with an empty workflow map (RC-off). When remote
+    /// config is on, those trees are empty and ``WorkflowManager/publishWebBundleURLs(offerings:)``
+    /// is the real list. Video warming is still future work (FUN-2274).
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
         guard !self.hasLoadedPaywallAssets else { return }
         self.hasLoadedPaywallAssets = true

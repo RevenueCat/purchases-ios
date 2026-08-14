@@ -405,8 +405,8 @@ final class WebBundleURLBatcherTests: TestCase {
         ]
     }
 
-    func testPrefetchOnlyWorkflowIsNotSelected() throws {
-        let prefetch = try Self.singleScreenWorkflow(id: "wf_prefetch", url: "https://example.com/prefetch")
+    func testWorkflowForOfferingOutsideTargetListIsNotSelected() throws {
+        let other = try Self.singleScreenWorkflow(id: "wf_other", url: "https://example.com/other")
         let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
 
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default", "other"])
@@ -414,7 +414,7 @@ final class WebBundleURLBatcherTests: TestCase {
             offerings: offerings,
             workflowsByOfferingId: [
                 "default": current,
-                "other": prefetch
+                "other": other
             ]
         )
 
