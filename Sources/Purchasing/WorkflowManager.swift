@@ -48,15 +48,18 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
+    private let webBundleURLBatcher: WebBundleURLBatcher
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
-        operationDispatcher: OperationDispatcher
+        operationDispatcher: OperationDispatcher,
+        webBundleURLBatcher: WebBundleURLBatcher = .shared
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
         self.operationDispatcher = operationDispatcher
+        self.webBundleURLBatcher = webBundleURLBatcher
     }
 
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
@@ -175,7 +178,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             }
         }
 
-        await WebBundleURLBatcher.shared.publish(
+        await webBundleURLBatcher.publish(
             offerings: offerings,
             workflowsByOfferingId: workflowsByOfferingId
         )

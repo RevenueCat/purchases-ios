@@ -60,6 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
+    private let webBundleURLBatcher: WebBundleURLBatcher
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedPaywallAssets = false
@@ -70,11 +71,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        fileRepository: FileRepositoryType = FileRepository.shared
+        fileRepository: FileRepositoryType = FileRepository.shared,
+        webBundleURLBatcher: WebBundleURLBatcher = .shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
+        self.webBundleURLBatcher = webBundleURLBatcher
     }
 
     /// Warms up the intro eligibility cache for products across all offerings.
@@ -141,7 +144,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
             workflowsByOfferingId: [:]
         )
         if !webViewURLs.isEmpty {
-            await WebBundleURLBatcher.shared.publish(
+            await webBundleURLBatcher.publish(
                 offerings: offerings,
                 workflowsByOfferingId: [:]
             )

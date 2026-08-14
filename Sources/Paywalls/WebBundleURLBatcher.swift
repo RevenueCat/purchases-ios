@@ -20,7 +20,6 @@ import Foundation
 /// instead of a partial one. Batches are sent in visit order: current offering, then each
 /// placement's offering, then the placement fallback. Prefetch-only workflows are not included.
 /// Screen order is a BFS of the workflow graph.
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 actor WebBundleURLBatcher {
 
     static let shared = WebBundleURLBatcher()
@@ -33,6 +32,7 @@ actor WebBundleURLBatcher {
     }
 
     /// Publishes one complete-screen batch at a time from `offerings` and `workflowsByOfferingId`.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
@@ -47,6 +47,7 @@ actor WebBundleURLBatcher {
     }
 
     /// Appends a presented workflow that was not already in the load-path set (dedup by workflow ID).
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publishPresentedWorkflow(_ workflow: PublishedWorkflow) async {
         guard self.publishedWorkflowIDs.insert(workflow.id).inserted else { return }
         await self.publishBatches(Self.screenURLBatches(in: workflow))
@@ -54,7 +55,6 @@ actor WebBundleURLBatcher {
 
 }
 
-@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 extension WebBundleURLBatcher {
 
     /// Current offering, then each placement's offering in alphabetical placement-id order, then the
@@ -87,6 +87,7 @@ extension WebBundleURLBatcher {
     /// One batch per screen, in visit order. Workflows first (remote config), otherwise the
     /// offering's inline V2 tree as a single screen. Same workflow behind several offerings is
     /// enqueued once, at the first offering that mapped to it.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func orderedScreenURLBatches(
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
@@ -113,6 +114,7 @@ extension WebBundleURLBatcher {
     }
 
     /// Flattened visit-order URLs. First occurrence of a URL wins.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func orderedWebViewURLs(
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
@@ -156,6 +158,7 @@ extension WebBundleURLBatcher {
     }
 
     /// One batch per visited screen that has web-view URLs. A screen's URLs stay together.
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func screenURLBatches(in workflow: PublishedWorkflow) -> [[URLWithValidation]] {
         return Self.screensInVisitOrder(for: workflow).compactMap { screen in
             let urls = Self.uniqueURLs(screen.allCacheAssets.webBundles)
@@ -163,6 +166,7 @@ extension WebBundleURLBatcher {
         }
     }
 
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func webViewURLs(in workflow: PublishedWorkflow) -> [URLWithValidation] {
         return Self.uniqueURLs(Self.screenURLBatches(in: workflow).flatMap { $0 })
     }
