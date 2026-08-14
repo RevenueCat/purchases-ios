@@ -188,12 +188,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [unavailableWorkflowID])
     }
 
-    func testNoPresentableRuleResolvesConfigurationUnavailable() async throws {
+    func testNoPresentableRuleResolvesConfigurationUnavailableWithoutFetchingOfferings() async throws {
         self.workflowsProvider.stubbedGetWorkflowResult = [:]
         self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .notFound
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            return self.offerings
+        }
 
-        let resolution = try await self.resolve()
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 0)
     }
 
     func testOfferingsFetchFailureResolvesConfigurationUnavailable() async throws {
@@ -249,19 +256,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(fetchCount.value, 1)
-    }
-
-    func testUnservableWorkflowIsNotWorthAnOfferingsFetch() async throws {
-        self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .notFound
-        let fetchCount = Atomic<Int>(0)
-        let resolver = self.makeResolver {
-            fetchCount.modify { $0 += 1 }
-            return self.offerings
-        }
-
-        _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
-
-        XCTAssertEqual(fetchCount.value, 0)
     }
 
     // MARK: - Terminal offering workflows
@@ -332,27 +326,47 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testUIWorkflowContainingAnOfferingStepResolvesConfigurationUnavailable() async throws {
-        var offeringStep = WorkflowStep(id: "step_2", type: "offering", screenId: nil)
-        offeringStep.paramValues = ["offering_identifier": .string(self.offeringID)]
-        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
-            workflow: PublishedWorkflow(
-                id: self.workflowID,
-                displayName: "Test",
-                initialStepId: "step_1",
-                singleStepFallbackId: nil,
-                steps: [
-                    "step_1": WorkflowStep(id: "step_1", type: "screen", screenId: nil),
-                    "step_2": offeringStep
-                ],
-                screens: [:]
-            ),
-            uiConfig: .empty,
-            enrolledVariants: nil
+        // Initial step is the screen step, so the offering step is an unreachable extra.
+        self.stubOfferingWorkflow(
+            offeringID: self.offeringID,
+            initialStepID: "step_2",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
         )
 
         let resolution = try await self.resolve()
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    /// Prewarming reads its fonts from `uiConfig`, not from the workflow's screens, so a screenless
+    /// offering workflow would still download every app font if it were scheduled here.
+    func testTerminalOfferingWorkflowDoesNotScheduleAssetPrewarming() async throws {
+        let cache = MockPaywallCacheWarming()
+        self.workflowManager = WorkflowManager(
+            workflowsConfigProvider: self.workflowsProvider,
+            paywallCache: cache,
+            operationDispatcher: MockOperationDispatcher()
+        )
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, self.offeringID)
+        XCTAssertFalse(cache.invokedPrewarmWorkflowAssets)
+    }
+
+    func testResolvedWorkflowSchedulesAssetPrewarming() async throws {
+        let cache = MockPaywallCacheWarming()
+        self.workflowManager = WorkflowManager(
+            workflowsConfigProvider: self.workflowsProvider,
+            paywallCache: cache,
+            operationDispatcher: MockOperationDispatcher()
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertNotNil(Self.resolvedWorkflow(resolution))
+        XCTAssertEqual(cache.invokedPrewarmWorkflowAssetIDs, [self.workflowID])
     }
 
     /// An offering step renders nothing, so anything else it happens to carry is ignored rather than
