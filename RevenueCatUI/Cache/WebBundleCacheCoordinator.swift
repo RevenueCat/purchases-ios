@@ -63,7 +63,6 @@ final class WebBundleCacheCoordinator {
             case .cacheClearRequested:
                 self.store.retireCurrentIdentifier()
                 Task(priority: .medium) {
-                    // Allow other UI work to go through before we start destroying caches
                     await self.scheduleSweep()
                 }
             case .receivedAssetURLs:
