@@ -409,9 +409,7 @@ private extension AdFeatureEventsRequestTests {
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
-        rewardVerificationEnabled: true,
-        rewardItem: "coins",
-        rewardAmount: 10
+        rewardVerificationEnabled: true
     )
 
     static let rewardVerifiedData: AdRewardVerified = .init(

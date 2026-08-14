@@ -63,8 +63,6 @@ extension AdEventsRequest {
         var mediatorErrorCode: Int?
         // For reward earned (unverified) events only:
         var rewardVerificationEnabled: Bool?
-        var rewardItem: String?
-        var rewardAmount: Int?
         // For reward granted events only:
         var rewardType: String?
         var rewardVirtualCurrencyCode: String?
@@ -124,8 +122,6 @@ extension AdEventsRequest.AdEventRequest {
                 precision: adEvent.revenueData?.precision.rawValue,
                 mediatorErrorCode: adEvent.mediatorErrorCode,
                 rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
-                rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
-                rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
                 rewardType: adEvent.rewardGrantedData?.reward.kindRawValue,
                 rewardVirtualCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
                 rewardVirtualCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
@@ -190,8 +186,6 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case precision
         case mediatorErrorCode
         case rewardVerificationEnabled
-        case rewardItem
-        case rewardAmount
         case rewardType
         case rewardVirtualCurrencyCode
         case rewardVirtualCurrencyAmount

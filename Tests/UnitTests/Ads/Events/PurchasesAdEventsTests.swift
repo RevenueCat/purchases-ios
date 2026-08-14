@@ -185,9 +185,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         self.purchases.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .adapter)
@@ -208,8 +206,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
         expect(eventData.rewardVerificationEnabled) == true
-        expect(eventData.rewardItem) == "coins"
-        expect(eventData.rewardAmount) == 10
     }
 
     func testTrackAdRewardVerifiedStoresEvent() async throws {

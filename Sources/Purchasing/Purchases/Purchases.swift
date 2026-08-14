@@ -1831,7 +1831,6 @@ extension Purchases {
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
         self.trackRewardEarnedUnverified(
-            clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod
         )
@@ -1839,7 +1838,6 @@ extension Purchases {
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
         self.trackRewardOutcome(
             outcome,
-            clientTransactionID: clientTransactionID,
             trackingMetadata: trackingMetadata,
             captureMethod: captureMethod
         )
@@ -1854,7 +1852,6 @@ extension Purchases {
 
     /// Tracks the "earned, not yet verified" moment.
     private func trackRewardEarnedUnverified(
-        clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) {
@@ -1867,9 +1864,7 @@ extension Purchases {
             placement: trackingMetadata.placement,
             adUnitId: trackingMetadata.adUnitId,
             impressionId: trackingMetadata.impressionId,
-            rewardVerificationEnabled: true,
-            rewardItem: nil,
-            rewardAmount: nil
+            rewardVerificationEnabled: true
         )
         self.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: captureMethod)
     }
@@ -1878,7 +1873,6 @@ extension Purchases {
     /// event per non-empty reward.
     private func trackRewardOutcome(
         _ outcome: RewardVerification.Outcome,
-        clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata?,
         captureMethod: AdEventCaptureMethod
     ) {
