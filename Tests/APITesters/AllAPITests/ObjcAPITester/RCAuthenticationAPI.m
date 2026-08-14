@@ -25,14 +25,14 @@
     [auth logOutWithCompletion:^(RCCustomerInfo *i, NSError *error) { }];
 
     RCIdentity *siwa = [RCIdentity identityWithSignInWithAppleToken:[NSData data]];
-    RCIdentitySource *source = siwa.identitySource;
+    RCIdentitySource *__unused source = siwa.identitySource;
 
-    RCIdentitySource *anonymousSource = [RCIdentitySource anonymous];
-    RCIdentitySource *appleSource = [RCIdentitySource signInWithApple];
-    RCIdentitySource *googleSource = [RCIdentitySource google];
-    RCIdentitySource *firebase = [RCIdentitySource firebase];
-    RCIdentitySource *facebook = [RCIdentitySource facebook];
-    RCIdentitySource *oidc = [RCIdentitySource oidc];
+    RCIdentitySource *__unused anonymousSource = [RCIdentitySource anonymous];
+    RCIdentitySource *__unused appleSource = [RCIdentitySource signInWithApple];
+    RCIdentitySource *__unused googleSource = [RCIdentitySource google];
+    RCIdentitySource *__unused firebase = [RCIdentitySource firebase];
+    RCIdentitySource *__unused facebook = [RCIdentitySource facebook];
+    RCIdentitySource *__unused oidc = [RCIdentitySource oidc];
 }
 
 - (void)authenticatorDidEncounterError:(NSError *)error { }

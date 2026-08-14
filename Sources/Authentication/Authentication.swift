@@ -47,7 +47,8 @@ public final class Authentication: NSObject {
     ///
     /// However, if an error occurs during an explicit ``logIn(using:)`` call, that will be reported
     /// via the corresponding completion handler (or thrown when called using `await`).
-    public weak var delegate: AuthenticationDelegate?
+    @objc public weak var delegate: AuthenticationDelegate?
+
     internal init(backend: Backend,
                   identityManager: IdentityManager,
                   tokenManager: TokenManager,
