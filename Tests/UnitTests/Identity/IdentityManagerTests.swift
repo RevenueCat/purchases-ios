@@ -12,6 +12,7 @@ class IdentityManagerTests: TestCase {
 
     private var mockDeviceCache: MockDeviceCache!
     private let mockBackend = MockBackend()
+    private var mockTokenManager = MockTokenManager()
     private var mockCustomerInfoManager: MockCustomerInfoManager!
     private var mockAttributeSyncing: MockAttributeSyncing!
 
@@ -25,6 +26,7 @@ class IdentityManagerTests: TestCase {
                                systemInfo: self.mockSystemInfo,
                                backend: self.mockBackend,
                                customerInfoManager: self.mockCustomerInfoManager,
+                               tokenManager: self.mockTokenManager,
                                attributeSyncing: self.mockAttributeSyncing,
                                appUserID: appUserID)
     }
