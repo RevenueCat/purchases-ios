@@ -17,7 +17,63 @@
 import XCTest
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManagerTests: TestCase {
+
+    #if ENABLE_CHECKPOINTS_OBJC
+
+    func testObjectiveCParamsConvertAndRoundTripSupportedFoundationValues() throws {
+        let params = ObjCCheckpointParams(customVariables: [
+            "string": "value",
+            "integer": NSNumber(value: Int64(42)),
+            "double": NSNumber(value: 4.5),
+            "true": NSNumber(value: true),
+            "false": NSNumber(value: false)
+        ])
+
+        XCTAssertEqual(params.value.customVariables, [
+            "string": .string("value"),
+            "integer": .number(42),
+            "double": .number(4.5),
+            "true": .bool(true),
+            "false": .bool(false)
+        ])
+
+        let roundTrip = ObjCCheckpointParams(customVariables: params.customVariables)
+        XCTAssertEqual(roundTrip.value, params.value)
+    }
+
+    func testObjectiveCParamsDropUnsupportedValuesAndNonStringKeys() {
+        let params = ObjCCheckpointParams(customVariables: [
+            "valid": "value",
+            "null": NSNull(),
+            "date": Date(),
+            "array": ["nested"],
+            NSNumber(value: 1): "invalid key"
+        ])
+
+        XCTAssertEqual(params.value.customVariables, ["valid": .string("value")])
+    }
+
+    #endif
+
+    func testCheckpointParamsConvertCustomVariableValuesForCoreResolution() {
+        let params = RevenueCatUI.CheckpointParams(customVariables: [
+            "string": "value",
+            "integer": 42,
+            "double": 4.5,
+            "boolean": true
+        ])
+
+        let expected: [String: RevenueCat.CheckpointValue] = [
+            "string": .string("value"),
+            "integer": .double(42),
+            "double": .double(4.5),
+            "boolean": .boolean(true)
+        ]
+
+        XCTAssertEqual(params.coreParams.customVariables, expected)
+    }
 
     func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
@@ -178,6 +234,7 @@ final class CheckpointsManagerTests: TestCase {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowExecutorTests: TestCase {
 
     func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
@@ -363,6 +420,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
@@ -380,6 +438,7 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 }
 
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresenter: CheckpointPresenter {
 
     struct Presentation {
@@ -423,6 +482,7 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class ListenerRecorder: CheckpointListener {
 
     enum Event: Equatable {

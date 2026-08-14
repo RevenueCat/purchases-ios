@@ -14,6 +14,8 @@
 
 import XCTest
 
+// swiftlint:disable type_body_length
+
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 @_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
@@ -137,6 +139,38 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
         XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [self.workflowID])
+    }
+
+    func testDimensionProviderFailureResolvesConfigurationUnavailableWithoutFetchingOfferings() async throws {
+        let fetchCount = Atomic<Int>(0)
+        let evaluator = LocalRulesEvaluator(dimensionProviders: [FailingDimensionProvider()])
+        let resolver = self.makeResolver(
+            offeringsProvider: {
+                fetchCount.modify { $0 += 1 }
+                return self.offerings
+            },
+            localRulesEvaluator: evaluator
+        )
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 0)
+        XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+    }
+
+    func testCancellationWhileCollectingDimensionsPropagates() async {
+        let evaluator = LocalRulesEvaluator(dimensionProviders: [CancellingDimensionProvider()])
+        let resolver = self.makeResolver(localRulesEvaluator: evaluator)
+
+        do {
+            _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+            XCTFail("Expected resolution to throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Expected CancellationError, got \(error)")
+        }
     }
 
     func testFirstRuleWithoutOfferingMetadataDoesNotFallThrough() async throws {
@@ -438,11 +472,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func makeResolver(
-        offeringsProvider: (() async throws -> Offerings)? = nil
+        offeringsProvider: (() async throws -> Offerings)? = nil,
+        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: [])
     ) -> DefaultCheckpointWorkflowResolver {
         return DefaultCheckpointWorkflowResolver(
             checkpointsConfigProvider: self.checkpointsProvider,
             workflowManager: self.workflowManager,
+            localRulesEvaluator: localRulesEvaluator,
             offeringsProvider: offeringsProvider ?? { self.offerings }
         )
     }
@@ -506,6 +542,28 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             contents: Offerings.Contents(response: response, httpResponseOriginalSource: .mainServer),
             loadedFromDiskCache: false
         )
+    }
+
+}
+
+private struct FailingDimensionProvider: DimensionProvider {
+
+    let namespace = DimensionNamespace.device
+
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        throw FailingDimensionProviderError()
+    }
+
+}
+
+private struct FailingDimensionProviderError: Error {}
+
+private struct CancellingDimensionProvider: DimensionProvider {
+
+    let namespace = DimensionNamespace.device
+
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        throw CancellationError()
     }
 
 }

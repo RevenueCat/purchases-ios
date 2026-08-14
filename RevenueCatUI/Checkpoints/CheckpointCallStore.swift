@@ -17,6 +17,7 @@ import Foundation
 
 /// Owns checkpoint presentation state until the UI has fully dismissed.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointCallStore {
 
     final class Call {

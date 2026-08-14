@@ -126,7 +126,7 @@ struct HardPaywallUseCaseView: View {
         self.attempts += 1
         var customVariables = self.customVariables.checkpointParams.customVariables
         customVariables["gate"] = .string("hard")
-        customVariables["attempt"] = .integer(Int64(self.attempts))
+        customVariables["attempt"] = .number(Double(self.attempts))
         return CheckpointParams(customVariables: customVariables)
     }
 

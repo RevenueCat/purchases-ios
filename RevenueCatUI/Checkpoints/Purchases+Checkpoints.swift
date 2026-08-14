@@ -18,6 +18,7 @@ import Foundation
 #if os(iOS) && !targetEnvironment(macCatalyst)
 
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 public extension Purchases {
 
     /// Global listener for checkpoint activity.
@@ -70,6 +71,7 @@ public extension Purchases {
 #if ENABLE_CHECKPOINTS_OBJC
 
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 public extension Purchases {
 
     /// Objective-C-compatible checkpoint API.
@@ -94,6 +96,7 @@ public extension Purchases {
 
 #endif
 
+@available(iOS 15.0, *)
 private extension Purchases {
 
     var checkpointsManager: CheckpointsManager {
