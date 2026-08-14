@@ -27,6 +27,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
     var signing: MockSigning!
     var client: HTTPClient!
     var eTagManager: ETag!
+    var tokenManager: TokenManager!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var operationDispatcher: OperationDispatcher!
     var dateProvider: MockCurrentDateProvider!
@@ -85,6 +86,7 @@ class BaseHTTPClientTests<ETag: ETagManager, TimeoutManager: HTTPRequestTimeoutM
         }
         return HTTPClient(systemInfo: systemInfo,
                           eTagManager: self.eTagManager,
+                          tokenManager: self.tokenManager,
                           signing: self.signing,
                           diagnosticsTracker: self.diagnosticsTracker,
                           dnsChecker: MockDNSChecker.self,
@@ -99,6 +101,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
+        self.tokenManager = MockTokenManager()
         self.timeoutManager = HTTPRequestTimeoutManager(
             networkTimeout: .default,
             dateProvider: MockCurrentDateProvider()
@@ -1821,7 +1824,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
 
             // Main-source request supporting a fallback should use the base tier for that kind
@@ -1852,7 +1855,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let client = self.createClient(self.systemInfoUsingAPISources())
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .timeoutResponse()
         }
@@ -1948,7 +1951,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
         let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
 
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
             XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .timeoutResponse()
@@ -1979,7 +1982,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .emptySuccessResponse()
         }
@@ -2076,7 +2079,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
             // Main-source request should use the base tier for a request supporting fallback
             XCTAssertEqual(
@@ -3197,7 +3200,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
                 data: .init(),
                 statusCode: .temporaryRedirect,
                 headers: [
-                    HTTPClient.ResponseHeader.location.rawValue: pathB.url!.absoluteString
+                    HTTPClient.ResponseHeader.location.rawValue: pathB.url(preferIAMPath: false)!.absoluteString
                 ]
             )
         }
@@ -3216,8 +3219,10 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response).to(beSuccess())
         expect(response?.value?.body) == responseData
 
-        self.logger.verifyMessageWasLogged(
-            "Performing redirect from '\(pathA.url!.absoluteString)' to '\(pathB.url!.absoluteString)'",
+        self.logger.verifyMessageWasLogged("""
+            Performing redirect from '\(pathA.url(preferIAMPath: false)!.absoluteString)' 
+             to '\(pathB.url(preferIAMPath: false)!.absoluteString)'
+            """,
             level: .debug
         )
     }
@@ -3527,7 +3532,8 @@ extension HTTPClientTests {
 
     private func buildEmptyRequest(
         isRetryable: Bool,
-        hasFallbackUrls: Bool = false
+        hasFallbackUrls: Bool = false,
+        preferIAMPath: Bool = false
     ) -> HTTPClient.Request {
         let completionHandler: HTTPClient.Completion<CustomerInfo> = { _ in return }
 
@@ -3547,6 +3553,7 @@ extension HTTPClientTests {
             authHeaders: .init(),
             defaultHeaders: .init(),
             verificationMode: .default,
+            preferIAMPath: preferIAMPath,
             internalSettings: DangerousSettings.Internal.default,
             completionHandler: completionHandler
         )
@@ -4629,6 +4636,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
 
     override func setUpWithError() throws {
         self.eTagManager = MockETagManager()
+        self.tokenManager = MockTokenManager()
         let mockTimeoutManager = MockHTTPRequestTimeoutManager(defaultTimeout: defaultRequestTimeout)
         self.timeoutManager = mockTimeoutManager
 
@@ -4641,7 +4649,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request times out
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .timeoutResponse()
         }
@@ -4768,7 +4776,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        let url = try XCTUnwrap(request.path.url?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .serverDownResponse()
         }

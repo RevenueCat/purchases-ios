@@ -24,6 +24,7 @@ class HTTPClient {
     let systemInfo: SystemInfo
     let timeout: TimeInterval
     let authHeaders: RequestHeaders
+    let tokenManager: TokenManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -49,6 +50,7 @@ class HTTPClient {
 
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
@@ -69,6 +71,7 @@ class HTTPClient {
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.tokenManager = tokenManager
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
@@ -91,6 +94,7 @@ class HTTPClient {
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
+                                    preferIAMPath: self.tokenManager.enabled,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: completionHandler))
     }
@@ -290,6 +294,7 @@ internal extension HTTPClient {
         var httpRequest: HTTPRequest
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
+        var preferIAMPath: Bool
         var completionHandler: HTTPClient.Completion<Data>?
         private(set) var fallbackUrlIndex: Int?
 
@@ -321,6 +326,7 @@ internal extension HTTPClient {
                                       authHeaders: HTTPClient.RequestHeaders,
                                       defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
+                                      preferIAMPath: Bool,
                                       internalSettings: InternalDangerousSettingsType,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
@@ -331,6 +337,7 @@ internal extension HTTPClient {
                 internalSettings: internalSettings
             )
             self.verificationMode = verificationMode
+            self.preferIAMPath = preferIAMPath
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -342,13 +349,20 @@ internal extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { self.httpRequest.path.relativePath }
+        var path: String {
+            if self.preferIAMPath {
+                return self.httpRequest.path.relativeIAMPath
+            } else {
+                return self.httpRequest.path.relativePath
+            }
+        }
 
         func getCurrentRequestURL(proxyURL: URL?, apiSourceURL: URL?) -> URL? {
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
                 apiSourceURL: apiSourceURL,
-                fallbackUrlIndex: self.fallbackUrlIndex
+                fallbackUrlIndex: self.fallbackUrlIndex,
+                preferIAMPath: self.preferIAMPath
             )
         }
 
@@ -486,10 +500,10 @@ private extension HTTPClient {
             ))
             requestHeaders = [:]
         } else {
-            requestHeaders = request.headers
+            requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         }
         #else
-        let requestHeaders = request.headers
+        let requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         #endif
 
         let result = Result
@@ -512,7 +526,8 @@ private extension HTTPClient {
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
-                    isFallbackUrlResponse: isFallbackUrlResponse
+                    isFallbackUrlResponse: isFallbackUrlResponse,
+                    iamEnabled: request.preferIAMPath
                 )
             }
             // Fetch from ETagManager if available

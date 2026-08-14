@@ -216,7 +216,7 @@ class HTTPRequestTests: TestCase {
         let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
 
         expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
-        expect(path.url?.absoluteString)
+        expect(path.url(preferIAMPath: false)?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
         expect(path.fallbackUrls).to(beEmpty())
         expect(path.authenticated).to(beTrue())
@@ -245,25 +245,26 @@ class HTTPRequestTests: TestCase {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"
         let expectedURL = "https://api.revenuecat.com/v1/subscribers/\(encodedUserID)"
-        let result = HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).url
+        let result = HTTPRequest.Path.getCustomerInfo(appUserID: encodeableUserID).url(preferIAMPath: false)
 
         expect(result?.absoluteString) == expectedURL
     }
 
     func testURLWithNoProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url?.absoluteString) == "https://api.revenuecat.com/v1/health"
-        expect(path.url(proxyURL: nil)?.absoluteString) == "https://api.revenuecat.com/v1/health"
+        expect(path.url(preferIAMPath: false)?.absoluteString) == "https://api.revenuecat.com/v1/health"
+        expect(path.url(proxyURL: nil, preferIAMPath: false)?.absoluteString) == "https://api.revenuecat.com/v1/health"
     }
 
     func testURLWithProxy() {
         let path: HTTPRequest.Path = .health
-        expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
+        let url = path.url(proxyURL: URL(string: "https://test_url"), preferIAMPath: false)
+        expect(url?.absoluteString) == "https://test_url/v1/health"
     }
 
     func testURLWithAPISource() {
         let path: HTTPRequest.Path = .health
-        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"))?.absoluteString)
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)?.absoluteString)
             == "https://api.rc-backup.com/v1/health"
     }
 
@@ -272,13 +273,14 @@ class HTTPRequestTests: TestCase {
         // and must not silently route around the proxy.
         let path: HTTPRequest.Path = .health
         expect(path.url(proxyURL: URL(string: "https://test_url"),
-                        apiSourceURL: URL(string: "https://api.rc-backup.com/"))).to(beNil())
+                        apiSourceURL: URL(string: "https://api.rc-backup.com/"), preferIAMPath: false)).to(beNil())
     }
 
     func testURLFallbackIndexTakesPrecedenceOverAPISource() {
         let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
         expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
-                        fallbackUrlIndex: 0)?.absoluteString)
+                        fallbackUrlIndex: 0,
+                        preferIAMPath: false)?.absoluteString)
             == path.fallbackUrls.first?.absoluteString
     }
 

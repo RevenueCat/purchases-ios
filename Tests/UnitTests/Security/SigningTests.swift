@@ -49,6 +49,7 @@ class SigningTests: TestCase {
             signature: signature,
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
@@ -69,6 +70,7 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         let parameters: Signing.SignatureParameters = .init(
             path: Self.mockPath,
+            iamEnabled: false,
             message: message.asData,
             nonce: nonce.asData,
             etag: etag,
@@ -100,6 +102,7 @@ class SigningTests: TestCase {
         let salt = Self.createSalt()
         let parameters: Signing.SignatureParameters = .init(
             path: Self.mockPath,
+            iamEnabled: false,
             message: message.asData,
             nonce: nonce.asData,
             etag: etag,
@@ -130,6 +133,7 @@ class SigningTests: TestCase {
             signature: "invalid signature".asData.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
@@ -147,6 +151,7 @@ class SigningTests: TestCase {
             signature: signature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
@@ -177,6 +182,7 @@ class SigningTests: TestCase {
                 signature: fullSignature.base64EncodedString(),
                 with: .init(
                     path: Self.mockPath,
+                    iamEnabled: false,
                     message: message.asData,
                     nonce: nonce.asData,
                     etag: nil,
@@ -197,6 +203,7 @@ class SigningTests: TestCase {
             signature: signature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: "Hello World".asData,
                 nonce: "nonce".asData,
                 etag: nil,
@@ -219,6 +226,7 @@ class SigningTests: TestCase {
         let signature = try self.sign(
             parameters: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
@@ -236,6 +244,7 @@ class SigningTests: TestCase {
             signature: fullSignature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: nil,
@@ -256,6 +265,7 @@ class SigningTests: TestCase {
         let signature = try self.sign(
             parameters: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: etag,
@@ -273,6 +283,7 @@ class SigningTests: TestCase {
             signature: fullSignature.base64EncodedString(),
             with: .init(
                 path: Self.mockPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nonce.asData,
                 etag: etag,
@@ -316,6 +327,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "login"),
+                    iamEnabled: false,
                     message: response.asData,
                     nonce: nonce,
                     etag: etag,
@@ -349,6 +361,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .getOfferings(appUserID: "test"),
+                    iamEnabled: false,
                     message: response.asData,
                     nonce: nil,
                     etag: nil,
@@ -380,6 +393,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .health,
+                    iamEnabled: false,
                     message: response.asData,
                     nonce: nonce,
                     etag: nil,
@@ -413,6 +427,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "login"),
+                    iamEnabled: false,
                     message: nil, // 304 response
                     nonce: nonce,
                     etag: etag,
@@ -448,6 +463,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "$RCAnonymousID:1af512a3b9c848899fe427f39dd69f2b"),
+                    iamEnabled: false,
                     message: response.asData,
                     nonce: nonce,
                     etag: etag,
@@ -485,6 +501,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .logIn,
+                    iamEnabled: false,
                     message: response.asData,
                     requestBody: LogInOperation.Body(
                         appUserID: "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
@@ -525,6 +542,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .getCustomerInfo(appUserID: "$RCAnonymousID:6ca4535c42714f88abc99c563703f113"),
+                    iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
                         "X-Is-Sandbox": "true"
@@ -567,6 +585,7 @@ class SigningTests: TestCase {
                 signature: expectedSignature,
                 with: .init(
                     path: .logIn,
+                    iamEnabled: false,
                     message: response.asData,
                     requestHeaders: [
                         "X-Is-Sandbox": "true"
@@ -593,7 +612,8 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: nil,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -609,7 +629,8 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -633,7 +654,8 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -651,6 +673,7 @@ class SigningTests: TestCase {
         ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: false,
                                                         message: message.asData,
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
@@ -678,7 +701,8 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -694,6 +718,7 @@ class SigningTests: TestCase {
         let requestHeaders: HTTPRequest.Headers = [:]
 
         let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: false,
                                                         message: nil,
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
@@ -722,7 +747,8 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -739,6 +765,7 @@ class SigningTests: TestCase {
         ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: false,
                                                         message: message.asData,
                                                         requestHeaders: requestHeaders,
                                                         nonce: nil,
@@ -766,7 +793,8 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -790,7 +818,8 @@ class SigningTests: TestCase {
             requestHeaders: [:],
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -813,6 +842,7 @@ class SigningTests: TestCase {
         ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: false,
                                                         message: message.asData,
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
@@ -840,7 +870,8 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: true
+            isFallbackUrlResponse: true,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .verified
@@ -858,6 +889,7 @@ class SigningTests: TestCase {
         ]
 
         let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: false,
                                                         message: message.asData,
                                                         requestHeaders: requestHeaders,
                                                         nonce: nonce.asData,
@@ -885,7 +917,8 @@ class SigningTests: TestCase {
             requestHeaders: requestHeaders,
             publicKey: self.publicKey,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: true // Mismatch with useFallbackPath: false in signing
+            isFallbackUrlResponse: true, // Mismatch with useFallbackPath: false in signing
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -902,6 +935,7 @@ class SigningTests: TestCase {
         let signatureWithFallback = try self.sign(
             parameters: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -921,6 +955,7 @@ class SigningTests: TestCase {
             signature: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -942,6 +977,7 @@ class SigningTests: TestCase {
         let signatureWithFallback = try self.sign(
             parameters: .init(
                 path: productEntitlementMappingPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -961,6 +997,7 @@ class SigningTests: TestCase {
             signature: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: productEntitlementMappingPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -982,6 +1019,7 @@ class SigningTests: TestCase {
         let signatureRegular = try self.sign(
             parameters: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -1001,6 +1039,7 @@ class SigningTests: TestCase {
             signature: fullSignatureWithRegular.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -1022,6 +1061,7 @@ class SigningTests: TestCase {
         let signatureRegular = try self.sign(
             parameters: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -1041,6 +1081,7 @@ class SigningTests: TestCase {
             signature: fullSignatureWithRegular.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: nil,
@@ -1063,6 +1104,7 @@ class SigningTests: TestCase {
         let signatureWithFallback = try self.sign(
             parameters: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: etag,
@@ -1082,6 +1124,7 @@ class SigningTests: TestCase {
             signature: fullSignatureWithFallback.base64EncodedString(),
             with: .init(
                 path: offeringsPath,
+                iamEnabled: false,
                 message: message.asData,
                 nonce: nil,
                 etag: etag,
@@ -1107,7 +1150,7 @@ private extension SigningTests {
     }
 
     func sign(key: PrivateKey, parameters: Signing.SignatureParameters, salt: Data) throws -> Data {
-        return try key.signature(for: parameters.signature(salt: salt, apiKey: Self.apiKey))
+        return try key.signature(for: parameters.signature(salt: salt, authValue: Self.apiKey))
     }
 
     static func fullSignature(intermediateKey: Data, salt: String, signature: Data) -> Data {

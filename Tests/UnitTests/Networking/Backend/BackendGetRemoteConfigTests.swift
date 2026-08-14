@@ -136,7 +136,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
         expect(self.httpClient.calls.first?.request.path as? HTTPRequest.FallbackPath)
             == HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        expect(self.httpClient.calls.first?.request.path.url?.absoluteString)
+        expect(self.httpClient.calls.first?.request.path.url(preferIAMPath: false)?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
     }
