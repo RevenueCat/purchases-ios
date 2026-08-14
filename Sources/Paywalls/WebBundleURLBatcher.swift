@@ -125,11 +125,10 @@ extension WebBundleURLBatcher {
         )
     }
 
-    /// BFS from `initial_step_id` then `single_step_fallback_id`. Unreached screens are appended in
-    /// alphabetical screen-id order. If the walk reaches no screens, that same alphabetical order is used.
+    /// BFS from `initial_step_id` then `single_step_fallback_id`. `screens` and `steps` are lookup
+    /// tables keyed by opaque IDs (`pw…` / nanoid); visit order is the step graph, not key sort or
+    /// display names. Unreachable screens are omitted.
     nonisolated static func screensInVisitOrder(for workflow: PublishedWorkflow) -> [WorkflowScreen] {
-        let screenOrder = workflow.screens.keys.sorted()
-
         var queue: [String] = [workflow.initialStepId]
         if let fallback = workflow.singleStepFallbackId, fallback != workflow.initialStepId {
             queue.append(fallback)
@@ -151,17 +150,6 @@ extension WebBundleURLBatcher {
             }
 
             queue.append(contentsOf: Self.nextStepIDs(from: step))
-        }
-
-        if visitedScreens.isEmpty {
-            return screenOrder.compactMap { workflow.screens[$0] }
-        }
-
-        for screenID in screenOrder {
-            guard let screen = workflow.screens[screenID] else { continue }
-            if visitedScreenIDs.insert(screenID).inserted {
-                visitedScreens.append(screen)
-            }
         }
 
         return visitedScreens
@@ -199,7 +187,7 @@ extension WebBundleURLBatcher {
             appendStep(forActionID: actionID)
         }
 
-        for actionID in step.triggerActions.keys.sorted() where !seenActionIDs.contains(actionID) {
+        for actionID in step.triggerActions.keys where !seenActionIDs.contains(actionID) {
             appendStep(forActionID: actionID)
         }
 

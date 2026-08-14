@@ -110,163 +110,250 @@ final class WebBundleURLBatcherTests: TestCase {
 
     // MARK: - Screen visit order
 
-    func testScreenVisitOrderFollowsStepGraphNotJSONObjectOrder() throws {
+    func testScreenVisitOrderFollowsStepGraphNotKeysOrDisplayNames() throws {
+        // Screen keys are opaque `pw…` IDs; alphabetically the second screen sorts first.
+        // Display names are also inverted so neither keys nor names encode visit order.
         let workflow = try Self.workflowFromJSON(
             id: "wf_paywall",
             screensJSON: """
-            "page2": \(Self.screenJSON(url: "https://example.com/page2")),
-            "page1": \(Self.screenJSON(url: "https://example.com/page1"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(
+                name: "Screen 1",
+                url: "https://example.com/second"
+            )),
+            "\(Self.firstScreenId)": \(Self.screenJSON(
+                name: "Screen 2",
+                url: "https://example.com/first"
+            ))
             """,
             stepsJSON: """
-            "step1": {
-              "id": "step1",
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
               "type": "screen",
-              "screen_id": "page1",
-              "triggers": [{ "type": "on_press", "action_id": "next" }],
-              "trigger_actions": { "next": { "type": "step", "step_id": "step2" } }
+              "screen_id": "\(Self.firstScreenId)",
+              "trigger_actions": {
+                "continue": { "type": "step", "step_id": "\(Self.secondStepId)" }
+              }
             },
-            "step2": { "id": "step2", "type": "screen", "screen_id": "page2" }
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.secondScreenId)",
+              "trigger_actions": {}
+            }
             """,
-            initialStepId: "step1"
+            initialStepId: Self.firstStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["page1", "page2"]
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/first",
+            "https://example.com/second"
+        ]
+        expect(screens.compactMap(\.name)) == ["Screen 2", "Screen 1"]
     }
 
     func testSingleStepFallbackIsASecondRoot() throws {
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "main": \(Self.screenJSON(url: "https://example.com/main")),
-            "exit": \(Self.screenJSON(url: "https://example.com/exit"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "Exit", url: "https://example.com/exit")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "Main", url: "https://example.com/main"))
             """,
             stepsJSON: """
-            "main": { "id": "main", "type": "screen", "screen_id": "main" },
-            "exit": { "id": "exit", "type": "screen", "screen_id": "exit" }
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.firstScreenId)"
+            },
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.secondScreenId)"
+            }
             """,
-            initialStepId: "main",
-            singleStepFallbackId: "exit"
+            initialStepId: Self.firstStepId,
+            singleStepFallbackId: Self.secondStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["main", "exit"]
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/main",
+            "https://example.com/exit"
+        ]
     }
 
-    func testUnreferencedTriggerActionsAreFollowedAfterDeclaredTriggers() throws {
+    func testTriggerActionsAreFollowedWhenTriggersArrayIsEmpty() throws {
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "a": \(Self.screenJSON(url: "https://example.com/a")),
-            "b": \(Self.screenJSON(url: "https://example.com/b")),
-            "c": \(Self.screenJSON(url: "https://example.com/c"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "Next", url: "https://example.com/next")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "Start", url: "https://example.com/start"))
             """,
             stepsJSON: """
-            "a": {
-              "id": "a",
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
               "type": "screen",
-              "screen_id": "a",
-              "triggers": [{ "type": "on_press", "action_id": "to_b" }],
+              "screen_id": "\(Self.firstScreenId)",
               "trigger_actions": {
-                "hidden": { "type": "step", "step_id": "c" },
-                "to_b": { "type": "step", "step_id": "b" }
+                "some_button_action": { "type": "step", "step_id": "\(Self.secondStepId)" }
               }
             },
-            "b": { "id": "b", "type": "screen", "screen_id": "b" },
-            "c": { "id": "c", "type": "screen", "screen_id": "c" }
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.secondScreenId)",
+              "trigger_actions": {}
+            }
             """,
-            initialStepId: "a"
+            initialStepId: Self.firstStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["a", "b", "c"]
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/start",
+            "https://example.com/next"
+        ]
+    }
+
+    func testDeclaredTriggersAreFollowedBeforeUnreferencedActions() throws {
+        let thirdScreenId = "pw0aaaaaaaaaaaaaaa"
+        let thirdStepId = "kLmNpQr"
+        let workflow = try Self.workflowFromJSON(
+            id: "wf",
+            screensJSON: """
+            "\(thirdScreenId)": \(Self.screenJSON(name: "C", url: "https://example.com/c")),
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "B", url: "https://example.com/b")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "A", url: "https://example.com/a"))
+            """,
+            stepsJSON: """
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.firstScreenId)",
+              "triggers": [{ "type": "on_press", "action_id": "to_b" }],
+              "trigger_actions": {
+                "hidden": { "type": "step", "step_id": "\(thirdStepId)" },
+                "to_b": { "type": "step", "step_id": "\(Self.secondStepId)" }
+              }
+            },
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.secondScreenId)"
+            },
+            "\(thirdStepId)": {
+              "id": "\(thirdStepId)",
+              "type": "screen",
+              "screen_id": "\(thirdScreenId)"
+            }
+            """,
+            initialStepId: Self.firstStepId
+        )
+
+        let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/a",
+            "https://example.com/b",
+            "https://example.com/c"
+        ]
     }
 
     func testUnknownActionsDoNotHideAFollowingStep() throws {
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "a": \(Self.screenJSON(url: "https://example.com/a")),
-            "b": \(Self.screenJSON(url: "https://example.com/b"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "B", url: "https://example.com/b")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "A", url: "https://example.com/a"))
             """,
             stepsJSON: """
-            "a": {
-              "id": "a",
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
               "type": "screen",
-              "screen_id": "a",
+              "screen_id": "\(Self.firstScreenId)",
               "triggers": [
                 { "type": "on_press", "action_id": "unknown" },
                 { "type": "on_press", "action_id": "to_b" }
               ],
               "trigger_actions": {
                 "unknown": { "type": "close" },
-                "to_b": { "type": "step", "step_id": "b" }
+                "to_b": { "type": "step", "step_id": "\(Self.secondStepId)" }
               }
             },
-            "b": { "id": "b", "type": "screen", "screen_id": "b" }
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.secondScreenId)"
+            }
             """,
-            initialStepId: "a"
+            initialStepId: Self.firstStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["a", "b"]
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/a",
+            "https://example.com/b"
+        ]
     }
 
     func testFirstVisitWinsForCyclesAndSharedScreens() throws {
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "a": \(Self.screenJSON(url: "https://example.com/a")),
-            "b": \(Self.screenJSON(url: "https://example.com/b"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "B", url: "https://example.com/b")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "A", url: "https://example.com/a"))
             """,
             stepsJSON: """
-            "a": {
-              "id": "a",
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
               "type": "screen",
-              "screen_id": "a",
-              "triggers": [{ "type": "on_press", "action_id": "to_b" }],
-              "trigger_actions": { "to_b": { "type": "step", "step_id": "b" } }
+              "screen_id": "\(Self.firstScreenId)",
+              "trigger_actions": { "to_b": { "type": "step", "step_id": "\(Self.secondStepId)" } }
             },
-            "b": {
-              "id": "b",
+            "\(Self.secondStepId)": {
+              "id": "\(Self.secondStepId)",
               "type": "screen",
-              "screen_id": "b",
-              "triggers": [{ "type": "on_press", "action_id": "back" }],
-              "trigger_actions": { "back": { "type": "step", "step_id": "a" } }
+              "screen_id": "\(Self.secondScreenId)",
+              "trigger_actions": { "back": { "type": "step", "step_id": "\(Self.firstStepId)" } }
             }
             """,
-            initialStepId: "a"
+            initialStepId: Self.firstStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["a", "b"]
+        expect(Self.webViewURLs(in: screens)) == [
+            "https://example.com/a",
+            "https://example.com/b"
+        ]
     }
 
-    func testUnreachedScreensAreAppendedInAlphabeticalOrder() throws {
+    func testUnreachedScreensAreNotIncluded() throws {
+        let orphanScreenId = "pwffffffffffffffff"
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "orphan2": \(Self.screenJSON(url: "https://example.com/orphan2")),
-            "page1": \(Self.screenJSON(url: "https://example.com/page1")),
-            "orphan1": \(Self.screenJSON(url: "https://example.com/orphan1"))
+            "\(orphanScreenId)": \(Self.screenJSON(name: "Orphan", url: "https://example.com/orphan")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "Reachable", url: "https://example.com/reachable"))
             """,
             stepsJSON: """
-            "page1": { "id": "page1", "type": "screen", "screen_id": "page1" }
+            "\(Self.firstStepId)": {
+              "id": "\(Self.firstStepId)",
+              "type": "screen",
+              "screen_id": "\(Self.firstScreenId)"
+            }
             """,
-            initialStepId: "page1"
+            initialStepId: Self.firstStepId
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["page1", "orphan1", "orphan2"]
+        expect(Self.webViewURLs(in: screens)) == ["https://example.com/reachable"]
     }
 
-    func testMissingWalkUsesAlphabeticalScreenOrder() throws {
+    func testUnreachableInitialStepYieldsNoScreens() throws {
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
-            "c": \(Self.screenJSON(url: "https://example.com/c")),
-            "a": \(Self.screenJSON(url: "https://example.com/a")),
-            "b": \(Self.screenJSON(url: "https://example.com/b"))
+            "\(Self.secondScreenId)": \(Self.screenJSON(name: "B", url: "https://example.com/b")),
+            "\(Self.firstScreenId)": \(Self.screenJSON(name: "A", url: "https://example.com/a"))
             """,
             stepsJSON: """
             "missing": { "id": "missing", "type": "screen", "screen_id": "no-such-screen" }
@@ -275,39 +362,20 @@ final class WebBundleURLBatcherTests: TestCase {
         )
 
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
-        expect(screens.compactMap(\.name)) == ["a", "b", "c"]
+        expect(screens).to(beEmpty())
     }
 
     // MARK: - URL selection
 
     func testWorkedExampleWarmOrder() throws {
-        let paywall = try Self.workflowFromJSON(
+        let paywall = try Self.linearWorkflow(
             id: "wf_paywall",
-            screensJSON: """
-            "page2": \(Self.screenJSON(url: "https://example.com/paywall/page2")),
-            "page1": \(Self.screenJSON(url: "https://example.com/paywall/page1"))
-            """,
-            stepsJSON: """
-            "page1": {
-              "id": "page1",
-              "type": "screen",
-              "screen_id": "page1",
-              "triggers": [{ "type": "on_press", "action_id": "next" }],
-              "trigger_actions": { "next": { "type": "step", "step_id": "page2" } }
-            },
-            "page2": { "id": "page2", "type": "screen", "screen_id": "page2" }
-            """,
-            initialStepId: "page1"
+            firstURLs: ["https://example.com/paywall/first"],
+            secondURLs: ["https://example.com/paywall/second"]
         )
-        let onboarding = try Self.workflowFromJSON(
+        let onboarding = try Self.singleScreenWorkflow(
             id: "wf_onboarding",
-            screensJSON: """
-            "welcome": \(Self.screenJSON(url: "https://example.com/onboarding/welcome"))
-            """,
-            stepsJSON: """
-            "welcome": { "id": "welcome", "type": "screen", "screen_id": "welcome" }
-            """,
-            initialStepId: "welcome"
+            url: "https://example.com/onboarding/welcome"
         )
 
         let offerings = Self.offerings(
@@ -331,33 +399,15 @@ final class WebBundleURLBatcherTests: TestCase {
         )
 
         expect(urls.map(\.url.absoluteString)) == [
-            "https://example.com/paywall/page1",
-            "https://example.com/paywall/page2",
+            "https://example.com/paywall/first",
+            "https://example.com/paywall/second",
             "https://example.com/onboarding/welcome"
         ]
     }
 
     func testPrefetchOnlyWorkflowIsNotSelected() throws {
-        let prefetch = try Self.workflowFromJSON(
-            id: "wf_prefetch",
-            screensJSON: """
-            "only": \(Self.screenJSON(url: "https://example.com/prefetch"))
-            """,
-            stepsJSON: """
-            "only": { "id": "only", "type": "screen", "screen_id": "only" }
-            """,
-            initialStepId: "only"
-        )
-        let current = try Self.workflowFromJSON(
-            id: "wf_current",
-            screensJSON: """
-            "only": \(Self.screenJSON(url: "https://example.com/current"))
-            """,
-            stepsJSON: """
-            "only": { "id": "only", "type": "screen", "screen_id": "only" }
-            """,
-            initialStepId: "only"
-        )
+        let prefetch = try Self.singleScreenWorkflow(id: "wf_prefetch", url: "https://example.com/prefetch")
+        let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
 
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default", "other"])
         let urls = WebBundleURLBatcher.orderedWebViewURLs(
@@ -372,16 +422,7 @@ final class WebBundleURLBatcherTests: TestCase {
     }
 
     func testSameWorkflowBehindSeveralOfferingsIsEnqueuedOnce() throws {
-        let shared = try Self.workflowFromJSON(
-            id: "wf_shared",
-            screensJSON: """
-            "only": \(Self.screenJSON(url: "https://example.com/shared"))
-            """,
-            stepsJSON: """
-            "only": { "id": "only", "type": "screen", "screen_id": "only" }
-            """,
-            initialStepId: "only"
-        )
+        let shared = try Self.singleScreenWorkflow(id: "wf_shared", url: "https://example.com/shared")
         let offerings = Self.offerings(
             currentOfferingID: "default",
             offeringIDs: ["default", "onboarding"],
@@ -427,23 +468,10 @@ final class WebBundleURLBatcherTests: TestCase {
     }
 
     func testDuplicateURLsKeepFirstOccurrence() throws {
-        let workflow = try Self.workflowFromJSON(
+        let workflow = try Self.linearWorkflow(
             id: "wf",
-            screensJSON: """
-            "a": \(Self.screenJSON(url: "https://example.com/same")),
-            "b": \(Self.screenJSON(url: "https://example.com/same"))
-            """,
-            stepsJSON: """
-            "a": {
-              "id": "a",
-              "type": "screen",
-              "screen_id": "a",
-              "triggers": [{ "type": "on_press", "action_id": "next" }],
-              "trigger_actions": { "next": { "type": "step", "step_id": "b" } }
-            },
-            "b": { "id": "b", "type": "screen", "screen_id": "b" }
-            """,
-            initialStepId: "a"
+            firstURLs: ["https://example.com/same"],
+            secondURLs: ["https://example.com/same"]
         )
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
 
@@ -456,30 +484,17 @@ final class WebBundleURLBatcherTests: TestCase {
     }
 
     func testScreenBatchesKeepEveryURLOnAScreenTogether() throws {
-        let workflow = try Self.workflowFromJSON(
+        let workflow = try Self.linearWorkflow(
             id: "wf",
-            screensJSON: """
-            "page2": \(Self.screenJSON(urls: [
-                "https://example.com/page2/a",
-                "https://example.com/page2/b"
-            ])),
-            "page1": \(Self.screenJSON(urls: [
-                "https://example.com/page1/a",
-                "https://example.com/page1/b",
-                "https://example.com/page1/c"
-            ]))
-            """,
-            stepsJSON: """
-            "page1": {
-              "id": "page1",
-              "type": "screen",
-              "screen_id": "page1",
-              "triggers": [{ "type": "on_press", "action_id": "next" }],
-              "trigger_actions": { "next": { "type": "step", "step_id": "page2" } }
-            },
-            "page2": { "id": "page2", "type": "screen", "screen_id": "page2" }
-            """,
-            initialStepId: "page1"
+            firstURLs: [
+                "https://example.com/first/a",
+                "https://example.com/first/b",
+                "https://example.com/first/c"
+            ],
+            secondURLs: [
+                "https://example.com/second/a",
+                "https://example.com/second/b"
+            ]
         )
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
 
@@ -490,13 +505,13 @@ final class WebBundleURLBatcherTests: TestCase {
 
         expect(batches.map { $0.map(\.url.absoluteString) }) == [
             [
-                "https://example.com/page1/a",
-                "https://example.com/page1/b",
-                "https://example.com/page1/c"
+                "https://example.com/first/a",
+                "https://example.com/first/b",
+                "https://example.com/first/c"
             ],
             [
-                "https://example.com/page2/a",
-                "https://example.com/page2/b"
+                "https://example.com/second/a",
+                "https://example.com/second/b"
             ]
         ]
     }
@@ -504,30 +519,17 @@ final class WebBundleURLBatcherTests: TestCase {
     // MARK: - Publishing
 
     func testPublishSendsOneBatchPerScreenInVisitOrder() async throws {
-        let workflow = try Self.workflowFromJSON(
+        let workflow = try Self.linearWorkflow(
             id: "wf",
-            screensJSON: """
-            "page2": \(Self.screenJSON(urls: [
-                "https://example.com/page2/a",
-                "https://example.com/page2/b"
-            ])),
-            "page1": \(Self.screenJSON(urls: [
-                "https://example.com/page1/a",
-                "https://example.com/page1/b",
-                "https://example.com/page1/c"
-            ]))
-            """,
-            stepsJSON: """
-            "page1": {
-              "id": "page1",
-              "type": "screen",
-              "screen_id": "page1",
-              "triggers": [{ "type": "on_press", "action_id": "next" }],
-              "trigger_actions": { "next": { "type": "step", "step_id": "page2" } }
-            },
-            "page2": { "id": "page2", "type": "screen", "screen_id": "page2" }
-            """,
-            initialStepId: "page1"
+            firstURLs: [
+                "https://example.com/first/a",
+                "https://example.com/first/b",
+                "https://example.com/first/c"
+            ],
+            secondURLs: [
+                "https://example.com/second/a",
+                "https://example.com/second/b"
+            ]
         )
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
 
@@ -541,13 +543,13 @@ final class WebBundleURLBatcherTests: TestCase {
 
         expect(received) == [
             .receivedAssetURLs([
-                Self.url("https://example.com/page1/a"),
-                Self.url("https://example.com/page1/b"),
-                Self.url("https://example.com/page1/c")
+                Self.url("https://example.com/first/a"),
+                Self.url("https://example.com/first/b"),
+                Self.url("https://example.com/first/c")
             ]),
             .receivedAssetURLs([
-                Self.url("https://example.com/page2/a"),
-                Self.url("https://example.com/page2/b")
+                Self.url("https://example.com/second/a"),
+                Self.url("https://example.com/second/b")
             ])
         ]
     }
@@ -578,26 +580,8 @@ final class WebBundleURLBatcherTests: TestCase {
     }
 
     func testPresentedWorkflowIsAppendedOnce() async throws {
-        let current = try Self.workflowFromJSON(
-            id: "wf_current",
-            screensJSON: """
-            "only": \(Self.screenJSON(url: "https://example.com/current"))
-            """,
-            stepsJSON: """
-            "only": { "id": "only", "type": "screen", "screen_id": "only" }
-            """,
-            initialStepId: "only"
-        )
-        let presented = try Self.workflowFromJSON(
-            id: "wf_presented",
-            screensJSON: """
-            "only": \(Self.screenJSON(url: "https://example.com/presented"))
-            """,
-            stepsJSON: """
-            "only": { "id": "only", "type": "screen", "screen_id": "only" }
-            """,
-            initialStepId: "only"
-        )
+        let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
+        let presented = try Self.singleScreenWorkflow(id: "wf_presented", url: "https://example.com/presented")
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
 
         var received: [WebBundleEvent] = []
@@ -620,6 +604,65 @@ final class WebBundleURLBatcherTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension WebBundleURLBatcherTests {
+
+    /// Opaque published screen IDs (`pw` + 16 hex chars). `secondScreenId` sorts before `firstScreenId`.
+    static let firstScreenId = "pwa1b2c3d4e5f67890"
+    static let secondScreenId = "pw9f8e7d6c5b4a3210"
+    /// Opaque step nanoids. Unique within a workflow; not sequential names.
+    static let firstStepId = "nQ8kT2w"
+    static let secondStepId = "B7mF9qr"
+
+    static func webViewURLs(in screens: [WorkflowScreen]) -> [String] {
+        return screens.flatMap { $0.allCacheAssets.webBundles.map(\.url.absoluteString) }
+    }
+
+    static func singleScreenWorkflow(id: String, url: String) throws -> PublishedWorkflow {
+        return try self.workflowFromJSON(
+            id: id,
+            screensJSON: """
+            "\(self.firstScreenId)": \(self.screenJSON(name: "Screen", url: url))
+            """,
+            stepsJSON: """
+            "\(self.firstStepId)": {
+              "id": "\(self.firstStepId)",
+              "type": "screen",
+              "screen_id": "\(self.firstScreenId)"
+            }
+            """,
+            initialStepId: self.firstStepId
+        )
+    }
+
+    static func linearWorkflow(
+        id: String,
+        firstURLs: [String],
+        secondURLs: [String]
+    ) throws -> PublishedWorkflow {
+        return try self.workflowFromJSON(
+            id: id,
+            screensJSON: """
+            "\(self.secondScreenId)": \(self.screenJSON(name: "Screen 2", urls: secondURLs)),
+            "\(self.firstScreenId)": \(self.screenJSON(name: "Screen 1", urls: firstURLs))
+            """,
+            stepsJSON: """
+            "\(self.firstStepId)": {
+              "id": "\(self.firstStepId)",
+              "type": "screen",
+              "screen_id": "\(self.firstScreenId)",
+              "trigger_actions": {
+                "continue": { "type": "step", "step_id": "\(self.secondStepId)" }
+              }
+            },
+            "\(self.secondStepId)": {
+              "id": "\(self.secondStepId)",
+              "type": "screen",
+              "screen_id": "\(self.secondScreenId)",
+              "trigger_actions": {}
+            }
+            """,
+            initialStepId: self.firstStepId
+        )
+    }
 
     static func offerings(
         currentOfferingID: String?,
@@ -713,11 +756,11 @@ private extension WebBundleURLBatcherTests {
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
-    static func screenJSON(url: String) -> String {
-        return self.screenJSON(urls: [url])
+    static func screenJSON(name: String, url: String) -> String {
+        return self.screenJSON(name: name, urls: [url])
     }
 
-    static func screenJSON(urls: [String]) -> String {
+    static func screenJSON(name: String, urls: [String]) -> String {
         let components = urls.enumerated().map { index, url in
             """
             {
@@ -725,11 +768,10 @@ private extension WebBundleURLBatcherTests {
               "id": "web-\(index)",
               "protocol_version": 1,
               "url": "\(url)",
-              "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+              "size": { "width": { "type": "fill" }, "height": { "type": "fill" } }
             }
             """
         }.joined(separator: ",\n")
-        let name = urls.first.flatMap { URL(string: $0)?.lastPathComponent } ?? "screen"
         return """
         {
           "name": "\(name)",
