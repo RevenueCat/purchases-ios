@@ -24,7 +24,7 @@ public final class Identity: NSObject {
 //    @objc public static func google(_ token: Data) -> Identity {
 //        Identity(token: .google(token))
 //    }
-    
+
     /// A Sign In With Apple identity
     /// - Parameter identityToken: The `identityToken` from an `ASAuthorizationAppleIDCredential`
     /// - Returns: An ``Identity`` that can be used to log in to the ``Purchases`` type
@@ -46,7 +46,7 @@ public final class Identity: NSObject {
 //    }
 
     internal let authToken: IdentityAuthToken
-    
+
     /// Retrieve the source service of this identity
     @objc public var identitySource: IdentitySource { authToken.authenticationMethod }
 
@@ -61,12 +61,12 @@ public final class Identity: NSObject {
 @_spi(Experimental)
 @objc(RCIdentitySource)
 public final class IdentitySource: NSObject, CaseIterable {
-    
+
     /// An array of all supported identity source values
     public static let allCases: [IdentitySource] = [
         .anonymous, .oidc, .google, .signInWithApple, .facebook, .firebase
     ]
-    
+
     /// The identity is considered "anonymous"
     @objc public static let anonymous = IdentitySource("anonymous")
 
