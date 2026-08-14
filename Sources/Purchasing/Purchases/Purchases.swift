@@ -1235,6 +1235,8 @@ public extension Purchases {
 
 }
 
+#endif
+
 extension Purchases: InternalAuthenticatorDelegate {
 
     func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?) {
@@ -1252,8 +1254,6 @@ extension Purchases: InternalAuthenticatorDelegate {
     }
 
 }
-
-#endif
 
 // - MARK: - Custom entitlement computation API
 
