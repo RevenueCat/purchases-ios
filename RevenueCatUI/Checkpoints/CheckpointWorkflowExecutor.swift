@@ -17,6 +17,7 @@ import Foundation
 
 /// Bridges resolved checkpoint workflows into asynchronous UI outcomes.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointExecutor: AnyObject {
 
     func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome
@@ -25,6 +26,7 @@ protocol CheckpointExecutor: AnyObject {
 
 /// Presents a resolved workflow and reports its terminal outcome through a delegate.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresenter: AnyObject {
 
     func present(
@@ -38,6 +40,7 @@ protocol CheckpointPresenter: AnyObject {
 
 /// Receives the final staged outcome after checkpoint UI has fully dismissed.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresentationDelegate: AnyObject {
 
     func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome)
@@ -46,6 +49,7 @@ protocol CheckpointPresentationDelegate: AnyObject {
 
 /// Executes a resolved workflow using RevenueCatUI's checkpoint presenter.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentationDelegate {
 
     typealias PresenterProvider = @MainActor () -> CheckpointPresenter?
@@ -58,9 +62,6 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     init(presenterProvider: @escaping PresenterProvider = {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) else {
-            return nil
-        }
         return CheckpointWorkflowPresenter()
         #else
         return nil

@@ -16,6 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
     var listener: CheckpointListener? {
@@ -99,6 +100,7 @@ final class CheckpointsManager {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension CheckpointResolutionReason {
 
     var noActionReason: CheckpointNoActionReason {
