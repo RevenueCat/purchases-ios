@@ -539,9 +539,10 @@ private extension OfferingsManager {
             await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
                 includingOfferingId: offerings.current?.identifier
             )
-            // publishWebBundleURLs decodes from that cache ☝️
-            // running it concurrently misses and getWorkflow fetches the same body again.
-            await workflowAssetPrewarmer.publishWebBundleURLs(offerings: offerings)
+            // Body cache is ready. URL publish reads that cache and must not delay offerings.
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await workflowAssetPrewarmer.publishWebBundleURLs(offerings: offerings)
+            }
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }

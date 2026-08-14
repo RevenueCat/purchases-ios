@@ -14,8 +14,8 @@
 import Foundation
 
 /// Starts asset prewarming for workflows selected by remote config without making offerings delivery wait for
-/// workflow decoding or asset downloads. Implementations may await the workflow body data needed to enqueue that
-/// work, but the asset-prewarming work itself is fire-and-forget.
+/// workflow decoding, asset downloads, or web-bundle URL publish. Implementations may await the workflow body
+/// data needed to enqueue that work; image/font/video warming and URL publish are fire-and-forget.
 protocol WorkflowAssetPrewarmingType: Sendable {
 
     func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async
