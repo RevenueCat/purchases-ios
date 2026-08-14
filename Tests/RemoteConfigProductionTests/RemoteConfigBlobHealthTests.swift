@@ -134,13 +134,16 @@ final class RemoteConfigBlobHealthTests: TestCase {
         let backend = Backend(
             systemInfo: systemInfo,
             eTagManager: ETagManager(),
+            tokenManager: TokenManager(enabled: false, storage: Keychain(access: nil)),
             operationDispatcher: .default,
             attributionFetcher: AttributionFetcher(
                 attributionFactory: AttributionTypeFactory(),
                 systemInfo: systemInfo
             ),
             offlineCustomerInfoCreator: nil,
-            diagnosticsTracker: nil
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
         )
         return RemoteConfigManager(
             remoteConfigAPI: backend.remoteConfigAPI,
