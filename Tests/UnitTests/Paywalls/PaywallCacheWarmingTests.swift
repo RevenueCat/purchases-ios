@@ -698,7 +698,7 @@ final class PaywallCacheWarmingTests: TestCase {
                                                         fontFamily: otherFamily)).to(beTrue())
     }
 
-#if !os(tvOS)
+#if canImport(UIKit)
 
     func testPlatformFontLookupIsNotCaseSensitive() throws {
         let font = try Self.anyInstalledFont()
