@@ -48,13 +48,13 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
-    private let webBundleURLBatcher: WebBundleURLBatcher
+    private let webBundleURLBatcher: WebBundleURLBatcherType
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
         operationDispatcher: OperationDispatcher,
-        webBundleURLBatcher: WebBundleURLBatcher = .shared
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
@@ -193,9 +193,10 @@ private extension WorkflowManager {
     func scheduleAssetPrewarming(for result: WorkflowDataResult) {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
+        let webBundleURLBatcher = self.webBundleURLBatcher
         self.operationDispatcher.dispatchOnWorkerThread {
             await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
-            await WebBundleURLBatcher.shared.publishPresentedWorkflow(result.workflow)
+            await webBundleURLBatcher.publishPresentedWorkflow(result.workflow)
         }
     }
 

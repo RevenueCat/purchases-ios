@@ -13,6 +13,19 @@
 
 import Foundation
 
+protocol WebBundleURLBatcherType: Sendable {
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func publish(
+        offerings: Offerings,
+        workflowsByOfferingId: [String: PublishedWorkflow]
+    ) async
+
+    @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+    func publishPresentedWorkflow(_ workflow: PublishedWorkflow) async
+
+}
+
 /// Selects web-view entry URLs in the order a customer is likely to see them, then publishes one
 /// batch per screen to ``WebBundleEventBus``.
 ///
@@ -20,7 +33,7 @@ import Foundation
 /// instead of a partial one. Batches are sent in visit order: current offering, then each
 /// placement's offering, then the placement fallback. Prefetch-only workflows are not included.
 /// Screen order is a BFS of the workflow graph.
-actor WebBundleURLBatcher {
+actor WebBundleURLBatcher: WebBundleURLBatcherType {
 
     static let shared = WebBundleURLBatcher()
 

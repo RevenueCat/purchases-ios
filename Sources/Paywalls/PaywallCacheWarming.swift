@@ -60,7 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
-    private let webBundleURLBatcher: WebBundleURLBatcher
+    private let webBundleURLBatcher: WebBundleURLBatcherType
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedPaywallAssets = false
@@ -72,7 +72,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
         fileRepository: FileRepositoryType = FileRepository.shared,
-        webBundleURLBatcher: WebBundleURLBatcher = .shared
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
