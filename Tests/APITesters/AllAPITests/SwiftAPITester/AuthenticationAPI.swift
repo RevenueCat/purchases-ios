@@ -24,15 +24,20 @@ func checkAuthenticationAPI() {
 
     }
 
-    let siwa = Identity.signInWithApple(Data())
-    let source = siwa.identitySource
+    let siwa: Identity = Identity.signInWithApple(Data())
+    let source: IdentitySource = siwa.identitySource
 
-    let anonymousSource = IdentitySource.anonymous
-    let appleSource = IdentitySource.signInWithApple
-    let googleSource = IdentitySource.google
-    let firebase = IdentitySource.firebase
-    let facebook = IdentitySource.facebook
-    let oidc = IdentitySource.oidc
+    let anonymousSource: IdentitySource = IdentitySource.anonymous
+    let appleSource: IdentitySource = IdentitySource.signInWithApple
+    let googleSource: IdentitySource = IdentitySource.google
+    let firebase: IdentitySource = IdentitySource.firebase
+    let facebook: IdentitySource = IdentitySource.facebook
+    let oidc: IdentitySource = IdentitySource.oidc
+
+    Task {
+        let (customerInfo: CustomerInfo, created: Bool) = try await auth.identifyCurrentUser(as: "")
+        let info: CustomerInfo = try await auth.logOut()
+    }
 }
 
 class AuthDelegate: NSObject, AuthenticationDelegate {
