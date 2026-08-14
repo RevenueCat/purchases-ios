@@ -51,6 +51,8 @@ struct CheckpointTesterApp: App {
             fatalError("Generate CheckpointTester with a valid TUIST_RC_API_KEY.")
         }
 
+        Purchases.proxyURL = URL(string: "http://localhost:8000")
+
         let purchases = Purchases.isConfigured
             ? Purchases.shared
             : Purchases.configure(withAPIKey: apiKey)
