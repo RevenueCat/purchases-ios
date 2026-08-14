@@ -96,8 +96,9 @@ final class AdRewardTests: TestCase {
         expect(decoded.reward) == reward
     }
 
-    func testEntitlementFlatEncodingEmitsIdAndRoundTripsIdentifier() throws {
-        let reward = AdReward.entitlement(identifier: "pro", expiresAt: Date())
+    func testEntitlementFlatEncodingEmitsIdAndRoundTripsIdentifierAndExpiresAt() throws {
+        let expiresAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let reward = AdReward.entitlement(identifier: "pro", expiresAt: expiresAt)
 
         let data = try JSONEncoder().encode(FlatRewardWrapper(reward: reward))
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
@@ -108,6 +109,15 @@ final class AdRewardTests: TestCase {
 
         let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
         expect(decoded.reward.entitlement?.identifier) == "pro"
+        expect(decoded.reward.entitlement?.expiresAt) == expiresAt
+    }
+
+    func testEntitlementFlatDecodingFallsBackToUnsupportedWhenExpiresAtMissing() throws {
+        let json: [String: Any] = ["type": "entitlement", "entitlementId": "pro"]
+        let data = try JSONSerialization.data(withJSONObject: json)
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward) == .unsupportedReward
     }
 
     func testEntitlementFlatDecodingFallsBackToUnsupportedWhenIdMissing() throws {
@@ -127,6 +137,7 @@ private struct FlatRewardWrapper: Codable, Equatable {
         case code
         case amount
         case entitlementId
+        case entitlementExpiresAt
     }
 
     let reward: AdReward
@@ -142,7 +153,8 @@ private struct FlatRewardWrapper: Codable, Equatable {
             typeKey: .type,
             codeKey: .code,
             amountKey: .amount,
-            entitlementIdKey: .entitlementId
+            entitlementIdKey: .entitlementId,
+            entitlementExpiresAtKey: .entitlementExpiresAt
         )
     }
 
@@ -153,7 +165,8 @@ private struct FlatRewardWrapper: Codable, Equatable {
             typeKey: .type,
             codeKey: .code,
             amountKey: .amount,
-            entitlementIdKey: .entitlementId
+            entitlementIdKey: .entitlementId,
+            entitlementExpiresAtKey: .entitlementExpiresAt
         )
     }
 }

@@ -170,6 +170,8 @@ extension AdRewardGranted: Codable {
 
     /// ``reward`` is encoded as flat `rewardType` / `rewardVirtualCurrencyCode` / `rewardVirtualCurrencyAmount` /
     /// `rewardEntitlementId` fields, matching ``AdRewardVerified``'s wire shape.
+    ///
+    /// `rewardEntitlementExpiresAt` is local round-trip only — never forward it to the backend request.
     private enum CodingKeys: String, CodingKey {
         case networkName
         case mediatorName
@@ -181,6 +183,7 @@ extension AdRewardGranted: Codable {
         case rewardVirtualCurrencyCode
         case rewardVirtualCurrencyAmount
         case rewardEntitlementId
+        case rewardEntitlementExpiresAt
     }
 
     // swiftlint:disable:next missing_docs
@@ -197,7 +200,8 @@ extension AdRewardGranted: Codable {
             typeKey: .rewardType,
             codeKey: .rewardVirtualCurrencyCode,
             amountKey: .rewardVirtualCurrencyAmount,
-            entitlementIdKey: .rewardEntitlementId
+            entitlementIdKey: .rewardEntitlementId,
+            entitlementExpiresAtKey: .rewardEntitlementExpiresAt
         )
     }
 
@@ -216,7 +220,8 @@ extension AdRewardGranted: Codable {
                 typeKey: .rewardType,
                 codeKey: .rewardVirtualCurrencyCode,
                 amountKey: .rewardVirtualCurrencyAmount,
-                entitlementIdKey: .rewardEntitlementId
+                entitlementIdKey: .rewardEntitlementId,
+                entitlementExpiresAtKey: .rewardEntitlementExpiresAt
             )
         )
     }
