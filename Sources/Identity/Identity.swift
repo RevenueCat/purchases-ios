@@ -88,7 +88,7 @@ public final class IdentitySource: NSObject, CaseIterable {
     internal static func source(with rawValue: String) -> IdentitySource? {
         return allCases.first(where: { $0.rawValue == rawValue })
     }
-    
+
     /// A raw textual representation of this identity, such as `"anonymous"`
     @objc public let rawValue: String
 
