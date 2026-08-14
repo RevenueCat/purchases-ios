@@ -25,12 +25,37 @@ final class WebBundleCacheCoordinator {
 
     init(
         store: WebViewDataStoreIdentifierStore,
-        bus: WebBundleEventBus,
-        sweeper: (any WebViewDataStoreSweeping)? = nil
+        bus: WebBundleEventBus
     ) {
         self.store = store
-        self.sweeper = sweeper ?? WebViewWebsiteDataStoreSweeper(store: store)
+        self.sweeper = WebViewWebsiteDataStoreSweeper(store: store)
         self.bus = bus
+        self.setUpSubscription()
+    }
+
+    #if DEBUG
+    // Test Initializer -- invoking webkit apis in the unit test suite results in bad memory crashes
+    init(
+        store: WebViewDataStoreIdentifierStore,
+        bus: WebBundleEventBus,
+        sweeper: any WebViewDataStoreSweeping
+    ) {
+        self.store = store
+        self.sweeper = sweeper
+        self.bus = bus
+        self.setUpSubscription()
+    }
+    #endif
+
+    /// Production coordinator that retires identifiers and sweeps on a later main-thread pass.
+    static let shared = WebBundleCacheCoordinator(store: .init(), bus: .shared)
+
+    @MainActor
+    private func scheduleSweep() async {
+        await self.sweeper.sweepStores()
+    }
+
+    private func setUpSubscription() {
         self.job = bus.publisher.sink { [weak self] event in
             guard let self else { return }
 
@@ -47,15 +72,6 @@ final class WebBundleCacheCoordinator {
                 break
             }
         }
-
-    }
-
-    /// Production coordinator that retires identifiers and sweeps on a later main-thread pass.
-    static let shared = WebBundleCacheCoordinator(store: .init(), bus: .shared)
-
-    @MainActor
-    private func scheduleSweep() async {
-        await self.sweeper.sweepStores()
     }
 
 }
