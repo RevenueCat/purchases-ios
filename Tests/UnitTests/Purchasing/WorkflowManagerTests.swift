@@ -331,11 +331,10 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
-    func testPublishWebBundleURLsFallsBackToGetWorkflowWhenCacheMisses() async throws {
+    func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
         }
-        let expected = try Self.workflowDataResult(id: "wf_1")
         self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
         self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
         let offerings = Self.offerings()
@@ -343,15 +342,9 @@ class WorkflowManagerTests: TestCase {
         await self.manager.publishWebBundleURLs(offerings: offerings)
 
         expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
-        expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
-
-        self.mockProvider.stubbedGetWorkflowError = [:]
-        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
-        await self.manager.publishWebBundleURLs(offerings: offerings)
-
-        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
-        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
     func testPublishWebBundleURLsSkipsOfferingsWithoutAWorkflowMapping() async throws {

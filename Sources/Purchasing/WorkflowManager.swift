@@ -151,8 +151,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         }
     }
 
-    /// Resolves workflows for target offerings (current, placements, fallback) and publishes their
-    /// web-view URLs in visit order. Prefetch-only workflows are not included.
+    /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
+    /// Cache-only: no blob fetch. An uncached target offering is published when it is presented.
     func publishWebBundleURLs(offerings: Offerings) async {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
@@ -165,15 +165,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             let cached = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
                 workflowId: workflowId
             )
-            let resolved: Result<WorkflowDataResult, WorkflowResolutionError>
-            switch cached {
-            case .success:
-                resolved = cached
-            case .failure:
-                resolved = await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId)
-            }
-
-            if case let .success(result) = resolved {
+            if case let .success(result) = cached {
                 workflowsByOfferingId[offeringId] = result.workflow
             }
         }
