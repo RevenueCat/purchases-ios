@@ -38,6 +38,8 @@ actor WebBundleURLBatcher: WebBundleURLBatcherType {
     static let shared = WebBundleURLBatcher()
 
     private let eventBus: WebBundleEventBus
+    /// Process-lifetime. Load-path `publish` always re-emits and unions IDs; present-path skips a seen ID.
+    /// Not reset on identity or config generation change.
     private var publishedWorkflowIDs: Set<String> = []
 
     init(eventBus: WebBundleEventBus = .shared) {
@@ -207,6 +209,7 @@ extension WebBundleURLBatcher {
             appendStep(forActionID: actionID)
         }
 
+        // Declared triggers first. Remaining keys have no guaranteed order.
         for actionID in step.triggerActions.keys where !seenActionIDs.contains(actionID) {
             appendStep(forActionID: actionID)
         }
@@ -219,6 +222,7 @@ extension WebBundleURLBatcher {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension WebBundleURLBatcher {
 
+    /// Each event is one screen's URLs as a `Set`. Order among URLs in the set is not part of the contract.
     func publishBatches(_ batches: [[URLWithValidation]]) async {
         guard !batches.isEmpty else { return }
 
