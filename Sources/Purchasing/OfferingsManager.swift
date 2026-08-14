@@ -536,10 +536,11 @@ private extension OfferingsManager {
         offerings: Offerings
     ) async {
         if let workflowAssetPrewarmer = self.workflowAssetPrewarmer {
-            await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
+            async let first = await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
                 includingOfferingId: offerings.current?.identifier
             )
-            await workflowAssetPrewarmer.publishWebBundleURLs(offerings: offerings)
+            async let second = await workflowAssetPrewarmer.publishWebBundleURLs(offerings: offerings)
+            _ = await (first, second)
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }
