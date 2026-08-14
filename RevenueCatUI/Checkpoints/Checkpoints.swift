@@ -18,9 +18,11 @@
 extension CustomVariableValue {
 
     var coreCheckpointValue: RevenueCat.CheckpointValue {
-        if self.isString { return .string(self.stringValue) }
-        if self.isNumber { return .double(self.doubleValue) }
-        return .boolean(self.boolValue)
+        return self.map(
+            string: { .string($0) },
+            number: { .double($0) },
+            boolean: { .boolean($0) }
+        )
     }
 
 }

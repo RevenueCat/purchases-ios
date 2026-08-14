@@ -127,6 +127,22 @@ public struct CustomVariableValue: Sendable, Equatable, Hashable {
         return false
     }
 
+    /// Maps the underlying value while keeping storage handling exhaustive.
+    ///
+    /// This intentionally switches over every storage case so adding a new custom-variable type produces a
+    /// compiler error instead of silently coercing that type to one of the existing representations.
+    internal func map<Value>(
+        string: (String) -> Value,
+        number: (Double) -> Value,
+        boolean: (Bool) -> Value
+    ) -> Value {
+        switch self.storage {
+        case let .string(value): return string(value)
+        case let .number(value): return number(value)
+        case let .bool(value): return boolean(value)
+        }
+    }
+
 }
 
 // MARK: - ExpressibleByStringLiteral
