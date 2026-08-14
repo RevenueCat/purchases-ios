@@ -554,7 +554,8 @@ extension AdEventTests {
     func testAdRewardGrantedDecodingVirtualCurrencyWithNonPositiveAmountFallsBackToUnsupported() throws {
         let decoded = try decodeAdRewardGranted(
             rewardFields: """
-            "reward_type": "virtual_currency", "reward_virtual_currency_code": "GOLD", "reward_virtual_currency_amount": 0
+            "reward_type": "virtual_currency", "reward_virtual_currency_code": "GOLD",
+            "reward_virtual_currency_amount": 0
             """
         )
         expect(decoded.reward) == .unsupportedReward
