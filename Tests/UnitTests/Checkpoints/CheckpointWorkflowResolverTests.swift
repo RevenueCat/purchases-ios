@@ -357,8 +357,23 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(missed), .noMatch)
     }
 
-    /// A predicate the engine can't evaluate leaves the customer's membership unknown, so resolution can't
-    /// claim they simply didn't match.
+    /// A malformed predicate is an evaluation failure, not a lookup failure: the audience was read, the engine
+    /// just couldn't run it. That doesn't block a lower-priority rule from winning on its own merits.
+    func testMalformedAudienceBeforeAMatchDoesNotPreventALaterWorkflow() async throws {
+        let secondWorkflowID = "wf5678"
+        self.stubTwoRules(secondWorkflowID: secondWorkflowID)
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience_\(self.workflowID)": "{not-json",
+            "audience_\(secondWorkflowID)": "true"
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
+    }
+
+    /// A predicate the engine can't evaluate leaves the customer's membership unknown, so when nothing else
+    /// matches, resolution can't claim they simply didn't match.
     func testUnevaluatablePredicateResolvesConfigurationUnavailable() async throws {
         self.audiencesProvider.defaultRules = "{not-json"
 
