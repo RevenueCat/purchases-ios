@@ -382,6 +382,53 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    // MARK: - Served audience payloads
+
+    /// Empty rules are a documented payload shape. The engine only dispatches single-key objects, and every
+    /// object is truthy, so `{}` matches everyone rather than nobody. Worth pinning: it is the opposite of how
+    /// the backend fails closed.
+    func testAudienceWithEmptyRulesMatchesEveryone() async throws {
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience": try Self.servedRules(#"{ "id": "audience", "rules": {} }"#)
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+    }
+
+    /// The backend substitutes an always-false predicate for an audience it can't express for the SDK, so a
+    /// fail-closed audience has to resolve to a clean non-match rather than an error.
+    func testFailClosedAudienceResolvesNoMatch() async throws {
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience": try Self.servedRules(#"{ "id": "audience", "rules": { "==": [1, 0] } }"#)
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    /// No dimension provider supplies `last_seen.*`, and `var` resolves a missing path to null instead of
+    /// throwing, so the predicate is merely false. That has to read as `noMatch`, not as a failure.
+    func testAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience": try Self.servedRules(
+                #"{ "id": "audience", "rules": { "in": [{ "var": "last_seen.country" }, ["ES"]] } }"#
+            )
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    /// Decodes with the real `Audience` decoder, so what gets evaluated is the string a served payload
+    /// actually produces rather than a hand-written one.
+    private static func servedRules(_ json: String) throws -> String {
+        return try JSONDecoder.default.decode(Audience.self, from: Data(json.utf8)).rules
+    }
+
     // MARK: - Terminal offering workflows
 
     func testTerminalOfferingWorkflowResolvesItsOfferingWithoutAWorkflowToPresent() async throws {
@@ -423,6 +470,18 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
             id: secondWorkflowID
         )
+    }
+
+    /// The audience gate runs before the workflow body decides between presenting and handing back an
+    /// offering, so a terminal-offering rule nobody matches must not hand back its offering either.
+    func testAudienceGateAppliesToTerminalOfferingRulesToo() async throws {
+        self.stubOfferingWorkflow(offeringID: self.offeringID)
+        self.audiencesProvider.defaultRules = "false"
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+        XCTAssertNil(Self.resolvedOffering(resolution))
     }
 
     func testOfferingStepWithoutAnOfferingIdentifierResolvesConfigurationUnavailable() async throws {
