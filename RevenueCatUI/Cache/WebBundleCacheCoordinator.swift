@@ -12,7 +12,7 @@
 //  Created by Jacob Zivan Rakidzich on 8/11/26.
 //
 
-@preconcurrency import Combine
+import Combine
 @_spi(Internal) import RevenueCat
 
 /// Isolates web-view storage on cache clear request, then deletes retired stores later.
