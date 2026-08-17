@@ -18,7 +18,7 @@ import XCTest
 
 final class CheckpointValueTests: TestCase {
 
-    func testLiteralValuesPreserveTheirTypes() {
+    func testLiteralValuesConvertToSupportedTypes() {
         let params = CheckpointParams(customVariables: [
             "string": "value",
             "integer": 42,
@@ -27,7 +27,7 @@ final class CheckpointValueTests: TestCase {
         ])
 
         XCTAssertEqual(params.customVariables["string"], .string("value"))
-        XCTAssertEqual(params.customVariables["integer"], .integer(42))
+        XCTAssertEqual(params.customVariables["integer"], .double(42))
         XCTAssertEqual(params.customVariables["double"], .double(4.5))
         XCTAssertEqual(params.customVariables["boolean"], .boolean(true))
     }
@@ -35,7 +35,7 @@ final class CheckpointValueTests: TestCase {
     func testCodableUsesPrimitiveJSONValues() throws {
         let values: [String: CheckpointValue] = [
             "string": .string("value"),
-            "integer": .integer(42),
+            "integer": 42,
             "double": .double(4.5),
             "boolean": .boolean(true)
         ]
@@ -48,27 +48,25 @@ final class CheckpointValueTests: TestCase {
 
     func testFoundationValuesDistinguishBooleansAndNumbers() {
         XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: true)), .boolean(true))
-        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: 1)), .integer(1))
+        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: 1)), .double(1))
         XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: 1.5)), .double(1.5))
         XCTAssertEqual(CheckpointValue(foundationValue: "value"), .string("value"))
         XCTAssertNil(CheckpointValue(foundationValue: Date()))
     }
 
-    func testFoundationNumberStorageTypesMatchJSONParsingBehavior() {
-        let integers: [NSNumber] = [
+    func testFoundationNumberStorageTypesAllBecomeDoubleValues() {
+        let numbers: [NSNumber] = [
             NSNumber(value: Int8(1)), NSNumber(value: Int16(2)), NSNumber(value: Int32(3)),
             NSNumber(value: Int64(4)), NSNumber(value: UInt8(5)), NSNumber(value: UInt16(6)),
-            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8))
+            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8)),
+            NSNumber(value: Float(1.5)), NSNumber(value: Double(2.5))
         ]
 
-        for number in integers {
-            guard case .integer = CheckpointValue(foundationValue: number) else {
-                return XCTFail("Expected NSNumber with objCType \(String(cString: number.objCType)) to be an integer")
+        for number in numbers {
+            guard case .double = CheckpointValue(foundationValue: number) else {
+                return XCTFail("Expected NSNumber with objCType \(String(cString: number.objCType)) to be a double")
             }
         }
-
-        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: Float(1.5))), .double(1.5))
-        XCTAssertEqual(CheckpointValue(foundationValue: NSNumber(value: Double(2.5))), .double(2.5))
     }
 
     func testParamsPreserveValueEqualityAndHashing() {
@@ -79,9 +77,9 @@ final class CheckpointValueTests: TestCase {
         XCTAssertEqual(Set([firstParams, secondParams]).count, 1)
     }
 
-    func testValuesConvertToDimensionsWithoutLosingTheirTypes() {
+    func testValuesConvertToSupportedDimensionTypes() {
         XCTAssertEqual(CheckpointValue.string("value").dimensionValue, .string("value"))
-        XCTAssertEqual(CheckpointValue.integer(42).dimensionValue, .int(42))
+        XCTAssertEqual(CheckpointValue(integerLiteral: 42).dimensionValue, .double(42))
         XCTAssertEqual(CheckpointValue.double(4.5).dimensionValue, .double(4.5))
         XCTAssertEqual(CheckpointValue.boolean(true).dimensionValue, .bool(true))
     }

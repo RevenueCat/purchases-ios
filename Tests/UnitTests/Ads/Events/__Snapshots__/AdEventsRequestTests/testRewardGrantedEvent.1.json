@@ -9,8 +9,10 @@
   "mediator_name" : "AdMob",
   "network_name" : "AdMob",
   "placement" : "home_screen",
-  "reward_type" : "no_reward",
+  "reward_type" : "virtual_currency",
+  "reward_virtual_currency_amount" : 100,
+  "reward_virtual_currency_code" : "GOLD",
   "timestamp_ms" : 1694029328000,
-  "type" : "rc_ads_ad_reward_sdk_verified",
+  "type" : "rc_ads_ad_reward_sdk_granted",
   "version" : 1
 }

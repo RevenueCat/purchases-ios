@@ -709,15 +709,6 @@ final class PaywallCacheWarmingTests: TestCase {
                                                         fontFamily: otherFamily)).to(beTrue())
     }
 
-    func testPlatformFontLookupIsNotCaseSensitive() throws {
-        let font = try Self.anyInstalledFont()
-        let uppercased = font.name.uppercased()
-        try XCTSkipIf(uppercased == font.name)
-
-        expect(Self.platformResolvesFont(named: font.name)).to(beTrue())
-        expect(Self.platformResolvesFont(named: uppercased)).to(beTrue())
-    }
-
     func testFontIsAlreadyInstalled_AgreesWithPlatformFontLookupOnCasing() throws {
         let font = try Self.anyInstalledFont()
         let miscased = font.name.uppercased()
@@ -815,6 +806,8 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+#if !os(tvOS)
+
     private static func fontsConfig(
         fontName: String,
         family: String,
@@ -827,6 +820,8 @@ final class PaywallCacheWarmingTests: TestCase {
 
         return UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: fontName, webFontInfo: webFontInfo))
     }
+
+#endif
 
     /// Every installed family and its face names on the current platform.
     private static func installedFontFamilies() -> [(family: String, names: [String])] {

@@ -12,96 +12,31 @@
 //  Created by Rick van der Linden.
 //
 
-import Foundation
 @_spi(Internal) import RevenueCat
 
-/// A custom value supplied when a checkpoint is hit.
-@_spi(CheckpointsInternal)
-public struct CheckpointValue: Equatable, Hashable, Sendable {
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue {
 
-    fileprivate let coreValue: RevenueCat.CheckpointValue
-
-    private init(coreValue: RevenueCat.CheckpointValue) {
-        self.coreValue = coreValue
-    }
-
-    /// Creates a string checkpoint value.
-    public static func string(_ value: String) -> Self { return .init(coreValue: .string(value)) }
-    /// Creates an integer checkpoint value.
-    public static func integer(_ value: Int64) -> Self { return .init(coreValue: .integer(value)) }
-    /// Creates a floating-point checkpoint value.
-    public static func double(_ value: Double) -> Self { return .init(coreValue: .double(value)) }
-    /// Creates a Boolean checkpoint value.
-    public static func boolean(_ value: Bool) -> Self { return .init(coreValue: .boolean(value)) }
-
-}
-
-extension CheckpointValue: ExpressibleByStringLiteral {
-
-    /// Creates a string checkpoint value from a string literal.
-    public init(stringLiteral value: String) { self = .string(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByIntegerLiteral {
-
-    /// Creates an integer checkpoint value from an integer literal.
-    public init(integerLiteral value: Int64) { self = .integer(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByFloatLiteral {
-
-    /// Creates a floating-point checkpoint value from a floating-point literal.
-    public init(floatLiteral value: Double) { self = .double(value) }
-
-}
-
-extension CheckpointValue: ExpressibleByBooleanLiteral {
-
-    /// Creates a Boolean checkpoint value from a Boolean literal.
-    public init(booleanLiteral value: Bool) { self = .boolean(value) }
-
-}
-
-extension CheckpointValue: Codable {
-
-    /// Creates a checkpoint value by decoding a primitive JSON value.
-    public init(from decoder: Decoder) throws {
-        self.init(coreValue: try RevenueCat.CheckpointValue(from: decoder))
-    }
-
-    /// Encodes the checkpoint value as a primitive JSON value.
-    public func encode(to encoder: Encoder) throws {
-        try self.coreValue.encode(to: encoder)
-    }
-
-}
-
-extension CheckpointValue {
-
-    /// Creates a checkpoint value from a supported Foundation primitive.
-    public init?(foundationValue: Any) {
-        guard let coreValue = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
-        self.init(coreValue: coreValue)
-    }
-
-    /// The equivalent Foundation primitive value.
-    public var foundationValue: Any {
-        return self.coreValue.foundationValue
+    var coreCheckpointValue: RevenueCat.CheckpointValue {
+        return self.map(
+            string: { .string($0) },
+            number: { .double($0) },
+            boolean: { .boolean($0) }
+        )
     }
 
 }
 
 /// Per-call parameters for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// Custom variables usable in checkpoint targeting rules and feature events.
-    public let customVariables: [String: CheckpointValue]
+    public let customVariables: [String: CustomVariableValue]
 
     /// Creates checkpoint parameters with the supplied custom variables.
-    public init(customVariables: [String: CheckpointValue] = [:]) {
+    public init(customVariables: [String: CustomVariableValue] = [:]) {
         self.customVariables = customVariables
     }
 
@@ -121,13 +56,14 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
     }
 
     var coreParams: RevenueCat.CheckpointParams {
-        return .init(customVariables: self.customVariables.mapValues(\.coreValue))
+        return .init(customVariables: self.customVariables.mapValues(\.coreCheckpointValue))
     }
 
 }
 
 /// Information about a checkpoint that was hit.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
@@ -162,6 +98,7 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 
 /// The reason no experience was served for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
     /// The value identifying the reason.
@@ -199,6 +136,7 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
 /// Base class for the result of hitting a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
     /// Information about the checkpoint that produced this result.
@@ -232,6 +170,7 @@ public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
 /// Nothing was served for a checkpoint.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionResult: CheckpointResult {
 
     /// The reason no experience was served.
@@ -260,6 +199,7 @@ public final class CheckpointNoActionResult: CheckpointResult {
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol CheckpointListener: AnyObject {
 
     /// A checkpoint was hit, before evaluation.
@@ -270,6 +210,7 @@ public protocol CheckpointListener: AnyObject {
 }
 
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public extension CheckpointListener {
 
     /// Default no-op implementation.
