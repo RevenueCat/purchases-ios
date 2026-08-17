@@ -162,6 +162,7 @@ import Foundation
         defaultLocale: PaywallComponent.LocaleID,
         offeringIdentifier: String?,
         exitOffers: ExitOffers? = nil,
+        automaticallyScaleFontSize: Bool = true,
         stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil
     ) {
         self.name = name
@@ -174,6 +175,7 @@ import Foundation
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
         self.exitOffers = exitOffers
+        self._automaticallyScaleFontSize = automaticallyScaleFontSize
         self._stateDeclarations = stateDeclarations
     }
 

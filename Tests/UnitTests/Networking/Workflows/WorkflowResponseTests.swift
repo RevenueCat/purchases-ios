@@ -237,6 +237,22 @@ class WorkflowResponseTests: TestCase {
         expect(screen.automaticallyScaleFontSize) == true
     }
 
+    func testWorkflowScreenInitializerCanDisableAutomaticFontScaling() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            automaticallyScaleFontSize: false
+        )
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
