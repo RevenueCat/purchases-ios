@@ -283,7 +283,7 @@ struct LoadedTabsComponentView: View {
             workflowDefaultPackage: workflowDefaultPackage,
             tabPackages: tabPackages,
             tabDefaultPackage: tabDefaultPackage
-        )
+        ) ?? tabPackages.first
     }
 
     /// Picks the default selection for a tab, preferring the workflow-global default only when this

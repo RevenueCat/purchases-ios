@@ -61,8 +61,13 @@ enum TabsPackageSelectionResolver {
             return .init(parentUpdate: update, tabUpdate: update)
         }
 
-        // Never select a package the tab doesn't offer: it would leave every row unselected.
-        guard let defaultPackage = tabDefaultPackage,
+        // Visibility resolution can return nil even when the tab lists packages
+        // (e.g. `selected_package` rules evaluated with no selection yet). Fall
+        // back to the first package the tab actually offers so a 1:1 auto-select
+        // tab still publishes to the parent / footer.
+        let defaultPackage = tabDefaultPackage
+            ?? tabPackages.first
+        guard let defaultPackage,
               tabPackageIdentifiers.contains(defaultPackage.identifier) else {
             return .init(parentUpdate: nil, tabUpdate: nil)
         }

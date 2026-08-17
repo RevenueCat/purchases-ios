@@ -113,11 +113,12 @@ final class TabsPackageSelectionResolverTests: TestCase {
             == expectedTabVariableContext.mostExpensivePricePerMonth
     }
 
-    func testTabWithPackagesAndNilDefaultYieldsNoUpdates() {
+    func testTabWithPackagesAndNilDefaultFallsBackToFirstTabPackage() {
         let parentOwnedVariableContext = PackageContext.VariableContext(
             packages: [self.parentPackageA, self.parentPackageB]
         )
         let tabPackages = [self.tabPackageC]
+        let expectedTabVariableContext = PackageContext.VariableContext(packages: tabPackages)
 
         let plan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: nil,
@@ -127,8 +128,10 @@ final class TabsPackageSelectionResolverTests: TestCase {
             tabDefaultPackage: nil
         )
 
-        expect(plan.tabUpdate).to(beNil())
-        expect(plan.parentUpdate).to(beNil())
+        expect(plan.tabUpdate?.package?.identifier) == self.tabPackageC.identifier
+        expect(plan.parentUpdate?.package?.identifier) == self.tabPackageC.identifier
+        expect(plan.tabUpdate?.variableContext.mostExpensivePricePerMonth)
+            == expectedTabVariableContext.mostExpensivePricePerMonth
     }
 
 }
