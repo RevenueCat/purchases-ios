@@ -9,13 +9,11 @@ import Foundation
 
 protocol AudiencesConfigProviderType {
 
-    func getAudience(_ identifier: String) async -> [String: AnyDecodable]?
+    func getAudience(_ identifier: String) async -> Audience?
 
 }
 
 /// The topic-specific front door for audiences, reading through `RemoteConfigManager`'s `audiences` topic.
-///
-/// Audience payloads stay schema-agnostic until the SDK has a consumer that can define their concrete shape.
 final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
     private let manager: RemoteConfigManagerType
@@ -24,15 +22,16 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         self.manager = manager
     }
 
-    func getAudience(_ identifier: String) async -> [String: AnyDecodable]? {
+    /// An audience the SDK can't decode is dropped on its own, so one bad payload can't take out the others.
+    func getAudience(_ identifier: String) async -> Audience? {
         do {
             return try await self.manager.blobData(
                 for: .audiences,
                 itemKey: identifier,
-                as: [String: AnyDecodable].self
+                as: Audience.self
             )
         } catch {
-            Logger.error(Strings.codable.decoding_error(error, [String: AnyDecodable].self))
+            Logger.error(Strings.codable.decoding_error(error, Audience.self))
             return nil
         }
     }

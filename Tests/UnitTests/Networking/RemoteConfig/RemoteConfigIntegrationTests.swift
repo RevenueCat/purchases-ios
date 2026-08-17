@@ -128,15 +128,15 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(missingData).to(beNil())
     }
 
-    func testAudiencesProviderDecodesRawAudiencePayloadPreservingKeys() async throws {
+    func testAudiencesProviderDecodesATypedAudienceIgnoringUnknownFields() async throws {
         let payload = #"""
         {
             "id": "aud_123",
             "created_via": "dashboard",
-            "condition": {
-                "operator": "and",
-                "operands": [
-                    { "attribute": "country", "values": ["ES", "US"] }
+            "rules": {
+                "in": [
+                    { "var": "last_seen.country" },
+                    ["ES", "US"]
                 ]
             }
         }
@@ -152,18 +152,37 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.refresh(with: container)
 
         let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
-        let expected: [String: AnyDecodable] = [
-            "id": "aud_123",
-            "created_via": "dashboard",
-            "condition": [
-                "operator": "and",
-                "operands": [
-                    ["attribute": "country", "values": ["ES", "US"]]
-                ]
-            ]
-        ]
 
-        expect(audience) == expected
+        expect(audience) == Audience(
+            id: "aud_123",
+            rules: #"{"in":[{"var":"last_seen.country"},["ES","US"]]}"#
+        )
+    }
+
+    /// The topic is read one item at a time, so an audience the SDK can't decode has to stay contained.
+    func testAudiencesProviderReadsAValidAudienceAlongsideAMalformedOne() async throws {
+        let invalid = #"{ "id": "aud_invalid", "rules": [] }"#.asData
+        let valid = #"{ "id": "aud_valid", "rules": { "==": [1, 1] } }"#.asData
+        let invalidRef = RCContainerTestData.blobRef(for: invalid)
+        let validRef = RCContainerTestData.blobRef(for: valid)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "aud_invalid": .init(blobRef: invalidRef, prefetch: true),
+                    "aud_valid": .init(blobRef: validRef, prefetch: true)
+                ]
+            ]),
+            contentElements: [(invalid, .none), (valid, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let provider = AudiencesConfigProvider(manager: self.manager)
+        let invalidAudience = await provider.getAudience("aud_invalid")
+        let validAudience = await provider.getAudience("aud_valid")
+
+        expect(invalidAudience).to(beNil())
+        expect(validAudience) == Audience(id: "aud_valid", rules: #"{"==":[1,1]}"#)
     }
 
     func testAudiencesProviderReturnsNilForMalformedPayload() async throws {
