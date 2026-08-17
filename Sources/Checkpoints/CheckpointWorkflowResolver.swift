@@ -129,24 +129,22 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        // Resolved before the offering and workflow lookups so a checkpoint nobody matches doesn't also pay
-        // for an offerings fetch.
-        let matchedRule: CheckpointRule?
+        let rule: CheckpointRule?
         do {
-            matchedRule = try await self.matchingRule(in: rulesSnapshot.ruleSet.rules, params: params)
+            rule = try await self.matchingRule(in: rulesSnapshot.ruleSet.rules, params: params)
         } catch let error as CancellationError {
             throw error
         } catch {
             // An audience the SDK failed to evaluate is not the same answer as an audience the customer is
             // outside of, so this can't report `noMatch`.
-            Logger.warn(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
             return .noAction(.configurationUnavailable)
         }
 
-        guard let rule = matchedRule else { return .noAction(.noMatch) }
+        guard let rule else { return .noAction(.noMatch) }
         guard let offeringID = await self.offeringID(for: rule) else {
             return .noAction(.configurationUnavailable)
         }

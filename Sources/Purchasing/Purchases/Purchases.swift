@@ -652,12 +652,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
+            RulesEngine.setLogger(RulesEngineLoggerBridge())
+            let localRulesEvaluator = LocalRulesEvaluator(
+                dimensionProviders: [
+                    DeviceDimensionProvider(),
+                    StoreDimensionProvider()
+                ]
+            )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
                 audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
-                localRulesEvaluator: LocalRulesEvaluator(
-                    dimensionProviders: [DeviceDimensionProvider(), StoreDimensionProvider()]
-                ),
+                localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
                 offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in
