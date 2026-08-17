@@ -33,13 +33,16 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
             return nil
         }
 
-        Logger.debug(Strings.remoteConfig.audienceMetadataBeforeDecoding(
-            identifier: identifier,
-            metadata: "\(content)"
-        ))
-
         do {
             let data = try JSONSerialization.data(withJSONObject: content.mapValues(\.asAny))
+
+            // Logged as JSON rather than the parsed values, so what the backend sent is legible when a
+            // predicate turns out to behave differently than whoever configured the audience expected.
+            Logger.debug(Strings.remoteConfig.audienceMetadataBeforeDecoding(
+                identifier: identifier,
+                metadata: String(bytes: data, encoding: .utf8) ?? "<non-UTF8>"
+            ))
+
             return try JSONDecoder.default.decode(Audience.self, from: data)
         } catch {
             Logger.error(Strings.codable.decoding_error(error, Audience.self))
