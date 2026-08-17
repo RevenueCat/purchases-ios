@@ -654,6 +654,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         if systemInfo.remoteConfigEnabled {
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
+                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                localRulesEvaluator: LocalRulesEvaluator(
+                    dimensionProviders: [DeviceDimensionProvider(), StoreDimensionProvider()]
+                ),
                 workflowManager: workflowManager,
                 offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in

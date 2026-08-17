@@ -49,6 +49,19 @@ final class LocalRulesEvaluator: Sendable {
         in rules: [Rule],
         customVariables: [String: DimensionValue] = [:]
     ) async throws -> Rule? {
+        return try await self.match(in: rules, customVariables: customVariables) { $0.predicate }
+    }
+
+    /// Same, for rules that don't carry their own predicate and have to look it up.
+    ///
+    /// The predicate is resolved one rule at a time, so a rule after the match never pays for a lookup. A
+    /// lookup that throws ends the call: a predicate the SDK couldn't obtain is not the same answer as one
+    /// that evaluated to false, so the remaining rules can't be walked as if it hadn't matched.
+    func match<Rule: Sendable>(
+        in rules: [Rule],
+        customVariables: [String: DimensionValue] = [:],
+        predicate resolvePredicate: (Rule) async throws -> String
+    ) async throws -> Rule? {
         guard !rules.isEmpty else {
             return nil
         }
@@ -59,7 +72,7 @@ final class LocalRulesEvaluator: Sendable {
 
         for (index, rule) in rules.enumerated() {
             switch RulesEngine.evaluate(
-                predicate: rule.predicate,
+                predicate: try await resolvePredicate(rule),
                 variables: snapshot.values
             ) {
             case .success(true):

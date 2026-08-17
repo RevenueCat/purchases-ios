@@ -10,6 +10,7 @@ import Foundation
 enum RemoteConfigStrings {
 
     case cacheURLNotAvailable
+    case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointRuleSkipped(reason: String)
     case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
@@ -51,6 +52,8 @@ extension RemoteConfigStrings: LogMessage {
         switch self {
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
+        case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
+            return "The audiences for checkpoint '\(checkpointID)' could not be evaluated: \(reason)."
         case let .checkpointRuleSkipped(reason):
             return "Skipping malformed checkpoint rule: \(reason)."
         case let .checkpointWorkflowRuleSkipped(workflowID, reason):

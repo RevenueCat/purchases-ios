@@ -74,27 +74,31 @@ final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
 }
 
-/// Resolves checkpoints through the ordered rules served by the `checkpoint_rules` remote-config topic.
-///
-/// Audience evaluation is not available yet. Until it is, the first rule supplied by the backend is treated as
-/// the match.
+/// Resolves checkpoints through the ordered rules served by the `checkpoint_rules` remote-config topic, taking
+/// the first rule whose audience the customer matches.
 final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     private let checkpointsConfigProvider: CheckpointsConfigProviderType
+    private let audiencesConfigProvider: AudiencesConfigProviderType
+    private let localRulesEvaluator: LocalRulesEvaluator
     private let workflowManager: WorkflowManager
     private let offeringsProvider: () async throws -> Offerings
 
     init(
         checkpointsConfigProvider: CheckpointsConfigProviderType,
+        audiencesConfigProvider: AudiencesConfigProviderType,
+        localRulesEvaluator: LocalRulesEvaluator,
         workflowManager: WorkflowManager,
         offeringsProvider: @escaping () async throws -> Offerings
     ) {
         self.checkpointsConfigProvider = checkpointsConfigProvider
+        self.audiencesConfigProvider = audiencesConfigProvider
+        self.localRulesEvaluator = localRulesEvaluator
         self.workflowManager = workflowManager
         self.offeringsProvider = offeringsProvider
     }
 
-    func resolve(identifier: String, params _: CheckpointParams) async throws -> CheckpointResolution {
+    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
         #if DEBUG
         // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
         if identifier == Self.simulatedErrorCheckpointIdentifier {
@@ -104,10 +108,13 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
         #endif
 
-        return try await self.resolveConfiguredWorkflow(identifier: identifier)
+        return try await self.resolveConfiguredWorkflow(identifier: identifier, params: params)
     }
 
-    private func resolveConfiguredWorkflow(identifier: String) async throws -> CheckpointResolution {
+    private func resolveConfiguredWorkflow(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
@@ -122,7 +129,24 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        guard let rule = self.matchingRule(in: rulesSnapshot.ruleSet.rules) else { return .noAction(.noMatch) }
+        // Resolved before the offering and workflow lookups so a checkpoint nobody matches doesn't also pay
+        // for an offerings fetch.
+        let matchedRule: CheckpointRule?
+        do {
+            matchedRule = try await self.matchingRule(in: rulesSnapshot.ruleSet.rules, params: params)
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            // An audience the SDK failed to evaluate is not the same answer as an audience the customer is
+            // outside of, so this can't report `noMatch`.
+            Logger.warn(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+                checkpointID: identifier,
+                reason: "\(error)"
+            ))
+            return .noAction(.configurationUnavailable)
+        }
+
+        guard let rule = matchedRule else { return .noAction(.noMatch) }
         guard let offeringID = await self.offeringID(for: rule) else {
             return .noAction(.configurationUnavailable)
         }
@@ -139,9 +163,22 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return resolution
     }
 
-    private func matchingRule(in rules: [CheckpointRule]) -> CheckpointRule? {
-        // Audience rules will be evaluated here later. Until then, the first backend-ordered rule always matches.
-        return rules.first
+    /// Walks the served rules in priority order and returns the first one whose audience matches.
+    private func matchingRule(
+        in rules: [CheckpointRule],
+        params: CheckpointParams
+    ) async throws -> CheckpointRule? {
+        return try await self.localRulesEvaluator.match(
+            in: rules,
+            // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
+            customVariables: params.customVariables.mapValues(\.dimensionValue)
+        ) { rule in
+            guard let audience = await self.audiencesConfigProvider.getAudience(rule.audienceId) else {
+                throw AudienceUnavailableError(audienceID: rule.audienceId)
+            }
+
+            return audience.rules
+        }
     }
 
     private func offeringID(for rule: CheckpointRule) async -> String? {
@@ -200,5 +237,16 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"
     #endif
+
+}
+
+/// An audience referenced by a checkpoint rule that the SDK couldn't read, so the rule can't be evaluated.
+private struct AudienceUnavailableError: Error, CustomStringConvertible {
+
+    let audienceID: String
+
+    var description: String {
+        return "audience '\(self.audienceID)' could not be read"
+    }
 
 }
