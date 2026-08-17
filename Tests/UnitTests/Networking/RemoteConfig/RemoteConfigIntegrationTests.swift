@@ -159,6 +159,40 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
     }
 
+    /// The backend serves audiences inline in the topic item, with no `blob_ref` at all, so the item's own
+    /// content is what has to decode.
+    func testAudiencesProviderDecodesAnAudienceServedInlineWithoutABlob() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: [
+                "aud_123": .init(content: [
+                    "id": "aud_123",
+                    "rules": ["in": [["var": "last_seen.country"], ["ES", "US"]]]
+                ])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience) == Audience(
+            id: "aud_123",
+            rules: #"{"in":[{"var":"last_seen.country"},["ES","US"]]}"#
+        )
+    }
+
+    func testAudiencesProviderReturnsNilForAnItemThatCarriesNeitherBlobNorContent() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: ["aud_123": .init(prefetch: true)]
+        ]))
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience).to(beNil())
+    }
+
     /// The topic is read one item at a time, so an audience the SDK can't decode has to stay contained.
     func testAudiencesProviderReadsAValidAudienceAlongsideAMalformedOne() async throws {
         let invalid = #"{ "id": "aud_invalid", "rules": [] }"#.asData
