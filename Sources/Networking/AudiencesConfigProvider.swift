@@ -22,37 +22,29 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         self.manager = manager
     }
 
-    /// An audience the SDK can't decode is dropped on its own, so one bad payload can't take out the others.
+    /// Reads the audience from the topic item itself. The backend publishes audiences as item metadata with no
+    /// blob at all, so `ConfigItem.content` (every key apart from the reserved `blob_ref` and `prefetch`) is
+    /// the whole audience.
     ///
-    /// Audiences are served inline in the topic item rather than as a blob, so the item's own content is the
-    /// primary source. The blob read stays as a fallback for any project still served the earlier shape.
+    /// An audience the SDK can't decode is dropped on its own, so one bad payload can't take out the others.
     func getAudience(_ identifier: String) async -> Audience? {
-        do {
-            if let inline = try await self.inlineAudience(identifier) {
-                return inline
-            }
-
-            return try await self.manager.blobData(
-                for: .audiences,
-                itemKey: identifier,
-                as: Audience.self
-            )
-        } catch {
-            Logger.error(Strings.codable.decoding_error(error, Audience.self))
-            return nil
-        }
-    }
-
-    /// Decodes the audience from the topic item itself. `ConfigItem.content` holds every key the item carried
-    /// apart from the reserved `blob_ref` and `prefetch`, which for this topic is the whole audience.
-    private func inlineAudience(_ identifier: String) async throws -> Audience? {
         guard let content = await self.manager.topic(.audiences)?[identifier]?.content,
               !content.isEmpty else {
             return nil
         }
 
-        let data = try JSONSerialization.data(withJSONObject: content.mapValues(\.asAny))
-        return try JSONDecoder.default.decode(Audience.self, from: data)
+        Logger.debug(Strings.remoteConfig.audienceMetadataBeforeDecoding(
+            identifier: identifier,
+            metadata: "\(content)"
+        ))
+
+        do {
+            let data = try JSONSerialization.data(withJSONObject: content.mapValues(\.asAny))
+            return try JSONDecoder.default.decode(Audience.self, from: data)
+        } catch {
+            Logger.error(Strings.codable.decoding_error(error, Audience.self))
+            return nil
+        }
     }
 
 }

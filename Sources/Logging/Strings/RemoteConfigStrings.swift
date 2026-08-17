@@ -9,6 +9,7 @@ import Foundation
 
 enum RemoteConfigStrings {
 
+    case audienceMetadataBeforeDecoding(identifier: String, metadata: String)
     case cacheURLNotAvailable
     case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointRuleSkipped(reason: String)
@@ -50,6 +51,8 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
+        case let .audienceMetadataBeforeDecoding(identifier, metadata):
+            return "Raw audience remote config metadata for '\(identifier)' before decoding: \(metadata)"
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .checkpointAudiencesNotEvaluated(checkpointID, reason):

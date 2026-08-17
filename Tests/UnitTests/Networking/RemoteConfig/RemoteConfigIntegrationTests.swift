@@ -128,44 +128,14 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(missingData).to(beNil())
     }
 
+    /// The backend publishes audiences as item metadata with no blob, so the item's own content is what has
+    /// to decode. Unknown fields it may carry alongside `id` and `rules` are ignored.
     func testAudiencesProviderDecodesATypedAudienceIgnoringUnknownFields() async throws {
-        let payload = #"""
-        {
-            "id": "aud_123",
-            "created_via": "dashboard",
-            "rules": {
-                "in": [
-                    { "var": "last_seen.country" },
-                    ["ES", "US"]
-                ]
-            }
-        }
-        """#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-
-        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
-
-        expect(audience) == Audience(
-            id: "aud_123",
-            rules: #"{"in":[{"var":"last_seen.country"},["ES","US"]]}"#
-        )
-    }
-
-    /// The backend serves audiences inline in the topic item, with no `blob_ref` at all, so the item's own
-    /// content is what has to decode.
-    func testAudiencesProviderDecodesAnAudienceServedInlineWithoutABlob() async throws {
         let container = try Self.containerData(topics: .init(entries: [
             RemoteConfigTopic.audiences.wireName: [
                 "aud_123": .init(content: [
                     "id": "aud_123",
+                    "created_via": "dashboard",
                     "rules": ["in": [["var": "last_seen.country"], ["ES", "US"]]]
                 ])
             ]
@@ -181,7 +151,26 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
     }
 
-    func testAudiencesProviderReturnsNilForAnItemThatCarriesNeitherBlobNorContent() async throws {
+    /// An audience published the old way, as a blob with no metadata, is not readable. The backend clears the
+    /// blob when it publishes the metadata, so there is nothing to fall back to.
+    func testAudiencesProviderReturnsNilForAnAudienceServedOnlyAsABlob() async throws {
+        let payload = #"{ "id": "aud_123", "rules": { "==": [1, 1] } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience).to(beNil())
+    }
+
+    func testAudiencesProviderReturnsNilForAnItemThatCarriesNoMetadata() async throws {
         let container = try Self.containerData(topics: .init(entries: [
             RemoteConfigTopic.audiences.wireName: ["aud_123": .init(prefetch: true)]
         ]))
@@ -195,19 +184,13 @@ final class RemoteConfigIntegrationTests: TestCase {
 
     /// The topic is read one item at a time, so an audience the SDK can't decode has to stay contained.
     func testAudiencesProviderReadsAValidAudienceAlongsideAMalformedOne() async throws {
-        let invalid = #"{ "id": "aud_invalid", "rules": [] }"#.asData
-        let valid = #"{ "id": "aud_valid", "rules": { "==": [1, 1] } }"#.asData
-        let invalidRef = RCContainerTestData.blobRef(for: invalid)
-        let validRef = RCContainerTestData.blobRef(for: valid)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "aud_invalid": .init(blobRef: invalidRef, prefetch: true),
-                    "aud_valid": .init(blobRef: validRef, prefetch: true)
-                ]
-            ]),
-            contentElements: [(invalid, .none), (valid, .none)]
-        )
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: [
+                // `rules` has to be an object; an array can't be a predicate.
+                "aud_invalid": .init(content: ["id": "aud_invalid", "rules": []]),
+                "aud_valid": .init(content: ["id": "aud_valid", "rules": ["==": [1, 1]]])
+            ]
+        ]))
 
         await self.refresh(with: container)
 
@@ -219,15 +202,10 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(validAudience) == Audience(id: "aud_valid", rules: #"{"==":[1,1]}"#)
     }
 
-    func testAudiencesProviderReturnsNilForMalformedPayload() async throws {
-        let payload = Data("not-json".utf8)
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
-            ]),
-            contentElements: [(payload, .none)]
-        )
+    func testAudiencesProviderReturnsNilWhenTheMetadataIsMissingRules() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: ["aud_123": .init(content: ["id": "aud_123"])]
+        ]))
 
         await self.refresh(with: container)
 
