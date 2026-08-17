@@ -17,7 +17,7 @@ import Foundation
 /// Persists the identifiers for RevenueCat's isolated website data store.
 @_spi(Internal) public final class WebViewDataStoreIdentifierStore {
 
-    private let userDefaults: LockingSynchronizedUserDefaults
+    private let userDefaults: SynchronizedUserDefaults
 
     /// Creates a store that reads and writes identifiers in the default suite.
     @_spi(Internal) public convenience init() {
@@ -26,7 +26,7 @@ import Foundation
 
     /// Creates a store that reads and writes identifiers in `userDefaults`.
     @_spi(Internal) public init(userDefaults: UserDefaults) {
-        self.userDefaults = LockingSynchronizedUserDefaults(userDefaults: userDefaults)
+        self.userDefaults = SynchronizedUserDefaults(userDefaults: userDefaults)
     }
 
     /// Returns the stable identifier used by RevenueCat web views.
