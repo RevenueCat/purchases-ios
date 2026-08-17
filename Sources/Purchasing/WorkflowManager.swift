@@ -65,9 +65,18 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
     /// missing, malformed, or missing its `ui_config`.
     func getWorkflow(workflowId: String) async throws -> WorkflowDataResult {
+        let result = try await self.workflowData(workflowId: workflowId)
+        self.scheduleAssetPrewarming(for: result)
+        return result
+    }
+
+    /// Same resolution as ``getWorkflow(workflowId:)`` without scheduling asset prewarming, so a caller that
+    /// may end up not presenting the workflow doesn't pay for its assets. Prewarming reads its fonts from
+    /// `uiConfig` rather than from the workflow's screens, so it is not free even for a screenless workflow.
+    /// Callers that go on to present the workflow call ``scheduleAssetPrewarming(for:)`` themselves.
+    func workflowData(workflowId: String) async throws -> WorkflowDataResult {
         switch await self.workflowsConfigProvider.getWorkflow(workflowId: workflowId) {
         case let .success(result):
-            self.scheduleAssetPrewarming(for: result)
             return result
         case .failure(.notFound):
             throw BackendError.workflowNotFound(workflowId: workflowId)
@@ -178,7 +187,7 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
 
 }
 
-private extension WorkflowManager {
+extension WorkflowManager {
 
     /// Fire-and-forget web-bundle URL publish, then image/video/font pre-download. URLs go out first so
     /// present-path cache warming does not wait on downloads when this is the first time the workflow is seen.

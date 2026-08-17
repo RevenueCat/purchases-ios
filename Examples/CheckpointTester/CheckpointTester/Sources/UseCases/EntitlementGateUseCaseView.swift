@@ -103,6 +103,8 @@ struct EntitlementGateUseCaseView: View {
         switch result {
         case let presented as CheckpointPaywallPresentedResult:
             self.handle(presented.paywallOutcome)
+        case let received as CheckpointReceivedOfferingResult:
+            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
         case let noAction as CheckpointNoActionResult:
             self.status = "No paywall shown (\(noAction.reason.value)). Content remains locked."
         default:

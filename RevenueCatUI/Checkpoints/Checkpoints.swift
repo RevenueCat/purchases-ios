@@ -197,6 +197,36 @@ public final class CheckpointNoActionResult: CheckpointResult {
 
 }
 
+/// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
+/// whether and how to use it.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointReceivedOfferingResult: CheckpointResult {
+
+    /// The offering the checkpoint selected.
+    public let offering: Offering
+
+    init(checkpoint: CheckpointInfo, offering: Offering) {
+        self.offering = offering
+        super.init(checkpoint: checkpoint)
+    }
+
+    public override var description: String {
+        return "ReceivedOffering(checkpoint=\(self.checkpoint), offering=\(self.offering.identifier))"
+    }
+
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointReceivedOfferingResult else { return false }
+        return self.checkpoint == other.checkpoint && self.offering == other.offering
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.checkpoint)
+        hasher.combine(self.offering)
+    }
+
+}
+
 /// Global listener for checkpoint activity. All methods are called on the main thread.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
