@@ -18,7 +18,10 @@ import Foundation
 @_spi(Internal) public enum CheckpointResolution {
 
     /// A workflow was selected for the checkpoint.
-    case workflow(ResolvedCheckpointWorkflow)
+    case matchedWorkflow(ResolvedCheckpointWorkflow)
+    /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
+    /// decides whether and how to use it.
+    case matchedOffering(Offering)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -76,6 +79,15 @@ final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
 /// Resolves checkpoints through the ordered rules served by the `checkpoint_rules` remote-config topic, taking
 /// the first rule whose audience the customer matches.
+///
+/// The matched rule's workflow body is read first, because its shape decides what else the rule needs: a
+/// workflow whose only step is a terminal `offering` step is handed back to the app as an offering, with
+/// nothing presented, while every other workflow keeps resolving its offering through the workflows topic
+/// and is presented as before.
+///
+/// The match is final either way. A matched rule that turns out to be unservable resolves to
+/// ``CheckpointResolutionReason/configurationUnavailable`` instead of falling through to a rule this
+/// customer wasn't the first choice for.
 final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     private let checkpointsConfigProvider: CheckpointsConfigProviderType
@@ -144,16 +156,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
-        guard let offeringID = await self.offeringID(for: rule) else {
-            return .noAction(.configurationUnavailable)
-        }
 
-        guard let offerings = await self.loadOfferings() else {
-            return .noAction(.configurationUnavailable)
-        }
-
-        let resolution = await self.resolve(rule, offeringID: offeringID, offerings: offerings)
+        let resolution = await self.resolve(rule)
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
             return .noAction(.configurationUnavailable)
         }
@@ -200,37 +206,98 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
     }
 
-    private func resolve(
-        _ rule: CheckpointRule,
-        offeringID: String,
-        offerings: Offerings
-    ) async -> CheckpointResolution {
-        guard let offering = offerings.offering(identifier: offeringID) else {
-            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
-                workflowID: rule.workflowId,
-                reason: "offering '\(offeringID)' is unavailable"
-            ))
+    private func resolve(_ rule: CheckpointRule) async -> CheckpointResolution {
+        // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
+        // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
+        let workflowData: WorkflowDataResult
+        do {
+            workflowData = try await self.workflowManager.workflowData(workflowId: rule.workflowId)
+        } catch {
+            return Self.unservable(rule, reason: error.localizedDescription)
+        }
+
+        let workflow = workflowData.workflow
+        guard let initialStep = workflow.steps[workflow.initialStepId] else {
+            return Self.unservable(rule, reason: "its initial step was not found")
+        }
+
+        if initialStep.type == Self.offeringStepType {
+            guard workflow.steps.count == 1 else {
+                return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
+            }
+            return await self.resolveOffering(rule, step: initialStep)
+        }
+
+        if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
+            return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+        }
+
+        return await self.resolveWorkflow(rule, workflowData: workflowData)
+    }
+
+    /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
+    ///
+    /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
+    /// than treated as unservable, since a step of this kind renders nothing.
+    private func resolveOffering(_ rule: CheckpointRule, step: WorkflowStep) async -> CheckpointResolution {
+        guard case let .string(offeringID)? = step.paramValues[Self.offeringIdentifierParam],
+              offeringID.isNotEmpty else {
+            return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
+        }
+        guard let match = await self.offering(identifier: offeringID, for: rule) else {
             return .noAction(.configurationUnavailable)
         }
 
-        do {
-            let workflowData = try await self.workflowManager.getWorkflow(workflowId: rule.workflowId)
-            return .workflow(
-                ResolvedCheckpointWorkflow(
-                    workflow: workflowData.workflow,
-                    uiConfig: workflowData.uiConfig,
-                    offering: offering,
-                    offerings: offerings
-                )
-            )
-        } catch {
-            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
-                workflowID: rule.workflowId,
-                reason: error.localizedDescription
-            ))
+        return .matchedOffering(match.offering)
+    }
+
+    private func resolveWorkflow(
+        _ rule: CheckpointRule,
+        workflowData: WorkflowDataResult
+    ) async -> CheckpointResolution {
+        guard let offeringID = await self.offeringID(for: rule),
+              let match = await self.offering(identifier: offeringID, for: rule) else {
             return .noAction(.configurationUnavailable)
         }
+
+        self.workflowManager.scheduleAssetPrewarming(for: workflowData)
+
+        return .matchedWorkflow(
+            ResolvedCheckpointWorkflow(
+                workflow: workflowData.workflow,
+                uiConfig: workflowData.uiConfig,
+                offering: match.offering,
+                offerings: match.offerings
+            )
+        )
     }
+
+    /// Loads the offerings and picks `identifier` out of them, logging why the rule can't be served when it
+    /// isn't there. Both resolution paths need the offering and the container it came from.
+    private func offering(
+        identifier: String,
+        for rule: CheckpointRule
+    ) async -> (offering: Offering, offerings: Offerings)? {
+        guard let offerings = await self.loadOfferings() else { return nil }
+        guard let offering = offerings.offering(identifier: identifier) else {
+            Self.unservable(rule, reason: "offering '\(identifier)' is unavailable")
+            return nil
+        }
+
+        return (offering, offerings)
+    }
+
+    @discardableResult
+    private static func unservable(_ rule: CheckpointRule, reason: String) -> CheckpointResolution {
+        Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+            workflowID: rule.workflowId,
+            reason: reason
+        ))
+        return .noAction(.configurationUnavailable)
+    }
+
+    private static let offeringStepType = "offering"
+    private static let offeringIdentifierParam = "offering_identifier"
 
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"

@@ -101,7 +101,7 @@ final class CheckpointsManagerTests: TestCase {
         let executor = MockCheckpointWorkflowExecutor()
         executor.outcome = CheckpointPaywallDismissedOutcome.shared
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .workflow(Self.workflow()) },
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
         )
 
@@ -112,6 +112,27 @@ final class CheckpointsManagerTests: TestCase {
         }
         XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallDismissedOutcome)
         XCTAssertEqual(executor.executedWorkflows.map(\.workflow.id), ["workflow-id"])
+    }
+
+    func testResolvedOfferingProducesReceivedOfferingResultWithoutPresenting() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: executor
+        )
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        let result = try await manager.checkpoint(identifier: "onboarding", params: .init())
+
+        guard let received = result as? CheckpointReceivedOfferingResult else {
+            return XCTFail("Expected a received-offering result")
+        }
+        XCTAssertEqual(received.offering.identifier, "offering-id")
+        XCTAssertEqual(received.checkpoint.identifier, "onboarding")
+        // Data-only, so it never claims the executor's one-presentation-at-a-time slot.
+        XCTAssertTrue(executor.executedWorkflows.isEmpty)
+        XCTAssertEqual(listener.events, [.hit("onboarding"), .completed("onboarding")])
     }
 
     func testResolutionErrorIsForwardedWithoutCompletedListenerEvent() async {
@@ -135,7 +156,7 @@ final class CheckpointsManagerTests: TestCase {
         let executor = MockCheckpointWorkflowExecutor()
         executor.error = expectedError
         let manager = CheckpointsManager(
-            resolveCheckpoint: { _, _ in .workflow(Self.workflow()) },
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
         )
         let listener = ListenerRecorder()
@@ -184,13 +205,17 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(Set([firstResult, secondResult]).count, 1)
     }
 
-    private static func workflow() -> ResolvedCheckpointWorkflow {
-        let offering = Offering(
+    private static func offering() -> Offering {
+        return Offering(
             identifier: "offering-id",
             serverDescription: "Test offering",
             availablePackages: [],
             webCheckoutUrl: nil
         )
+    }
+
+    private static func workflow() -> ResolvedCheckpointWorkflow {
+        let offering = Self.offering()
         return ResolvedCheckpointWorkflow(
             workflow: PublishedWorkflow(
                 id: "workflow-id",
