@@ -35,7 +35,10 @@ final class WebBundlePrewarmerTests: TestCase {
         let prewarmer = WebBundlePrewarmer { url in
             await probe.load(url)
         }
-        let urls = Self.urls("https://example.com/a", "https://example.com/b", "https://example.com/c")
+        let urls = Self.urls(
+            "https://example.com/a", "https://example.com/b",
+            "https://example.com/c", "https://example.com/d"
+        )
 
         await prewarmer.prewarm(urls)
 
