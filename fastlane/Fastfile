@@ -954,6 +954,26 @@ platform :ios do
     end
   end
 
+  desc "Runs PurchasesUIService integration tests against a Release, symbol-stripped RevenueCatUI build"
+  lane :test_purchases_ui_service_stripped do
+    platform = ENV['PLATFORM'] || 'iOS Simulator'
+    destination = ENV['DEVICE'] || "iPhone 16,OS=18.5"
+    sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
+
+    xcodebuild(
+      workspace: '.',
+      scheme: 'RevenueCatUI-Stripped',
+      destination: "platform=" + platform + ",name=" + destination,
+      sdk: sdk,
+      configuration: 'Release',
+      result_bundle_path: 'fastlane/test_output/purchases_ui_service_stripped.xcresult',
+      report_formats: [:junit],
+      report_path: 'fastlane/test_output/purchases_ui_service_stripped/tests.xml',
+      test: true,
+      xcargs: "DEAD_CODE_STRIPPING=YES STRIP_SWIFT_SYMBOLS=YES ONLY_ACTIVE_ARCH=YES"
+    )
+  end
+
   desc "Release checks"
   lane :release_checks do |options|
     version_number = current_version_number

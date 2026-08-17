@@ -22,6 +22,9 @@ import Foundation
 /// execution, so that call can run after ``Purchases/configure`` and still keep
 /// the class in the binary. The same path replays if RevenueCatUI loads after
 /// configuration.
+///
+/// The `RevenueCatUI-Stripped` scheme runs `PurchasesUIServiceIntegrationTests`
+/// in Release with dead-code stripping to catch regressions.
 @objc(RCPurchasesUIService)
 final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
 

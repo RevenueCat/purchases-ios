@@ -780,6 +780,14 @@ jobs:
                 name: SPM RevenueCatUI Release Build (Xcode 16)
                 command: swift build -c release --target RevenueCatUI
                 no_output_timeout: 5m
+            - run:
+                name: PurchasesUIService stripped-symbol integration tests
+                command: bundle exec fastlane test_purchases_ui_service_stripped
+                no_output_timeout: 15m
+                environment:
+                  DEVICE: iPhone 16,OS=18.5
+            - store_test_results:
+                path: fastlane/test_output/purchases_ui_service_stripped/tests.xml
 
       # === RevenueCatUI iOS 18 tests ===
       - run:

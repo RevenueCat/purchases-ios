@@ -44,6 +44,7 @@ custom_rules:
       - Tests/UnitTests/RulesEngine
       - Tests/v3LoadShedderIntegration
       - Tests/v4LoadShedderIntegration
+      - Tests/PurchasesUIServiceIntegrationTests
     regex: "\\: XCTestCase \\{"
     name: "XCTestCase Superclass"
     message: "Test classes must inherit `TestCase` instead."
