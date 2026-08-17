@@ -47,20 +47,19 @@ final class WebBundlePrewarmer {
     }
     #endif
 
-    /// Loads every URL in `urls` with at most ``maxConcurrentLoads`` in flight. Order in a `Set` is not
-    /// part of the contract. One failure does not cancel the rest of the batch.
-    func prewarm(_ urls: Set<URLWithValidation>) async {
-        let items = Array(urls)
-        guard !items.isEmpty else { return }
+    /// Loads every URL in `urls` with at most ``maxConcurrentLoads`` in flight. One failure does
+    /// not cancel the rest of the batch.
+    func prewarm(_ urls: [URLWithValidation]) async {
+        guard !urls.isEmpty else { return }
 
-        let concurrency = min(max(self.maxConcurrentLoads, 1), items.count)
+        let concurrency = min(max(self.maxConcurrentLoads, 1), urls.count)
 
         await withTaskGroup(of: Void.self) { group in
             var nextIndex = 0
 
             func startNext() {
-                guard nextIndex < items.count else { return }
-                let url = items[nextIndex].url
+                guard nextIndex < urls.count else { return }
+                let url = urls[nextIndex].url
                 nextIndex += 1
                 group.addTask { [load] in
                     await load(url)

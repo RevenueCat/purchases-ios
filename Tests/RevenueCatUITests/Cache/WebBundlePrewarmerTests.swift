@@ -18,7 +18,7 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class WebBundlePrewarmerTests: TestCase {
 
-    func testEmptySetDoesNotCallLoad() async {
+    func testEmptyArrayDoesNotCallLoad() async {
         let probe = LoadProbe()
         let prewarmer = WebBundlePrewarmer { url in
             await probe.load(url)
@@ -47,7 +47,7 @@ final class WebBundlePrewarmerTests: TestCase {
         XCTAssertEqual(loaded.count, urls.count)
     }
 
-    func testDuplicateURLsInASetLoadOnce() async {
+    func testDuplicateURLsAreLoadedForEachOccurrence() async {
         let probe = LoadProbe()
         let prewarmer = WebBundlePrewarmer { url in
             await probe.load(url)
@@ -60,7 +60,7 @@ final class WebBundlePrewarmerTests: TestCase {
         ])
 
         let loaded = await probe.loaded
-        XCTAssertEqual(loaded, [url])
+        XCTAssertEqual(loaded, [url, url])
     }
 
     func testDoesNotExceedMaxConcurrentLoads() async throws {
@@ -119,8 +119,8 @@ final class WebBundlePrewarmerTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension WebBundlePrewarmerTests {
 
-    static func urls(_ strings: String...) -> Set<URLWithValidation> {
-        return Set(strings.map { .init(url: self.url($0), checksum: nil) })
+    static func urls(_ strings: String...) -> [URLWithValidation] {
+        return strings.map { .init(url: self.url($0), checksum: nil) }
     }
 
     static func url(_ string: String) -> URL {
