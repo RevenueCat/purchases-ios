@@ -65,12 +65,13 @@ extension AdEventsRequest {
         var rewardVerificationEnabled: Bool?
         var rewardItem: String?
         var rewardAmount: Int?
-        // For reward verified events only:
+        // For reward granted events only:
         var rewardType: String?
-        var rewardCurrencyCode: String?
-        var rewardCurrencyAmount: Int?
+        var rewardVirtualCurrencyCode: String?
+        var rewardVirtualCurrencyAmount: Int?
+        var rewardEntitlementId: String?
         // For reward failed-to-verify events only:
-        var failureReason: String?
+        var rewardFailureReason: String?
 
     }
 
@@ -86,9 +87,10 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
-        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_unverified"
+        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_earned"
         case rewardVerified = "rc_ads_ad_reward_sdk_verified"
         case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
+        case rewardGranted = "rc_ads_ad_reward_sdk_granted"
 
     }
 
@@ -124,10 +126,11 @@ extension AdEventsRequest.AdEventRequest {
                 rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
                 rewardItem: adEvent.rewardEarnedUnverifiedData?.rewardItem,
                 rewardAmount: adEvent.rewardEarnedUnverifiedData?.rewardAmount,
-                rewardType: adEvent.rewardVerifiedData?.reward.kindRawValue,
-                rewardCurrencyCode: adEvent.rewardVerifiedData?.reward.virtualCurrency?.code,
-                rewardCurrencyAmount: adEvent.rewardVerifiedData?.reward.virtualCurrency?.amount,
-                failureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
+                rewardType: adEvent.rewardGrantedData?.reward.kindRawValue,
+                rewardVirtualCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
+                rewardVirtualCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
+                rewardEntitlementId: adEvent.rewardGrantedData?.reward.entitlement?.identifier,
+                rewardFailureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -152,6 +155,7 @@ private extension AdEvent {
         case .rewardEarnedUnverified: return .rewardEarnedUnverified
         case .rewardVerified: return .rewardVerified
         case .rewardFailedToVerify: return .rewardFailedToVerify
+        case .rewardGranted: return .rewardGranted
         }
 
     }
@@ -189,9 +193,10 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case rewardItem
         case rewardAmount
         case rewardType
-        case rewardCurrencyCode
-        case rewardCurrencyAmount
-        case failureReason
+        case rewardVirtualCurrencyCode
+        case rewardVirtualCurrencyAmount
+        case rewardEntitlementId
+        case rewardFailureReason
 
     }
 
