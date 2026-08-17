@@ -22,11 +22,6 @@ import Foundation
 /// execution, so that call can run after ``Purchases/configure`` and still keep
 /// the class in the binary. The same path replays if RevenueCatUI loads after
 /// configuration.
-///
-/// `@_used` is not used here: it can prevent stripping after an object is loaded,
-/// but it does not reliably force extraction from a static archive. If this type
-/// must activate merely by being linked, with no RevenueCatUI API reference, the
-/// host has to pass `-ObjC` or, more reliably, `-force_load`.
 @objc(RCPurchasesUIService)
 final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
 
