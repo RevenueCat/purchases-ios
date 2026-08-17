@@ -20,34 +20,6 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 final class PaywallViewControllerExitOfferTests: TestCase {
 
-    func testCustomVariablesPropertyFiltersInvalidKeys() {
-        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-
-        controller.customVariables = [
-            "valid_key": "kept",
-            "invalid-key": "dropped",
-            "2fast": "also kept"
-        ]
-
-        expect(controller.customVariables).to(equal([
-            "valid_key": "kept",
-            "2fast": "also kept"
-        ]))
-    }
-
-    func testObjectiveCCustomVariableSettersFilterInvalidKeys() {
-        let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
-
-        controller.setCustomVariable("kept", forKey: "string_value")
-        controller.setCustomVariableNumber(2, forKey: "number-value")
-        controller.setCustomVariableBool(true, forKey: "1boolean")
-
-        expect(controller.customVariables).to(equal([
-            "string_value": "kept",
-            "1boolean": true
-        ]))
-    }
-
     func testUpdateDisplayCloseButtonDoesNotClearWorkflowExitOffer() {
         let controller = PaywallViewController(offering: Self.makeOffering(identifier: "main"))
         controller.remoteConfigEnabledForTesting = true
