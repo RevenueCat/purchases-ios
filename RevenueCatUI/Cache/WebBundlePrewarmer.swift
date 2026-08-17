@@ -86,18 +86,20 @@ private extension WebBundlePrewarmer {
     @MainActor
     static func loadURL(_ url: URL) async {
         #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
-        if #available(iOS 15.0, macOS 12.0, *) {
+        if #available(iOS 17.0, macOS 14.0, *) {
             await self.loadUsingWKWebView(url)
         }
         #endif
     }
 
     #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
-    @available(iOS 15.0, macOS 12.0, *)
+    @available(iOS 17.0, macOS 14.0, *)
     @MainActor
     static func loadUsingWKWebView(_ url: URL) async {
         let configuration = WKWebViewConfiguration()
+        // Update to use the store by UUID from other PR
         configuration.websiteDataStore = .nonPersistent()
+
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let delegate = NavigationCompletion()
         webView.navigationDelegate = delegate
