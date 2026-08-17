@@ -139,6 +139,10 @@ import Foundation
     var config: [String: AnyDecodable]
     public let offeringIdentifier: String?
     public let exitOffers: ExitOffers?
+    @DefaultDecodable.True
+    // swiftlint:disable:next identifier_name
+    var _automaticallyScaleFontSize: Bool
+    public var automaticallyScaleFontSize: Bool { _automaticallyScaleFontSize }
     /// Whole-map fallback to nil; the offerings path drops entries individually via
     /// `FailableStateDeclaration`.
     @IgnoreDecodeErrors<[String: PaywallComponent.StateDeclaration]?>
@@ -296,6 +300,8 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case config
         case offeringIdentifier
         case exitOffers
+        // swiftlint:disable:next identifier_name
+        case _automaticallyScaleFontSize = "automaticallyScaleFontSize"
         // swiftlint:disable:next identifier_name
         case _stateDeclarations = "stateDeclarations"
     }

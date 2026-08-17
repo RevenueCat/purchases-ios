@@ -30,6 +30,7 @@ enum WorkflowScreenMapper {
             revision: screen.revision,
             defaultLocaleIdentifier: screen.defaultLocale,
             exitOffers: screen.exitOffers,
+            automaticallyScaleFontSize: screen.automaticallyScaleFontSize,
             stateDeclarations: screen.stateDeclarations
         )
         return .init(uiConfig: uiConfig, data: data)
