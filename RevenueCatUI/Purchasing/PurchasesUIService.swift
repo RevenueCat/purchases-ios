@@ -28,13 +28,11 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
     private static let lock = NSLock()
     private static var didConfigure = false
 
-    /// Retains this class from a public RevenueCatUI entry point and replays
-    /// configure-time work if `Purchases` is already configured.
+    /// Retains this class from a public RevenueCatUI entry point.
     ///
     /// Reads runtime state and may mutate locked state, so it cannot be
     /// optimized away as a no-op keep-alive.
     static func activateIfNeeded() {
-        guard Purchases.isConfigured else { return }
         Self.purchasesDidConfigure()
     }
 
