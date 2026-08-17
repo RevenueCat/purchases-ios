@@ -177,8 +177,8 @@ class PurchasesGetOfferingsTests: BasePurchasesTests {
         expect(self.paywallCache.invokedWarmUpEligibilityCache).toEventually(beTrue())
         expect(self.paywallCache.invokedWarmUpEligibilityCacheOfferings) == offerings
 
-        expect(self.paywallCache.invokedWarmUpPaywallImagesCache).toEventually(beTrue())
-        expect(self.paywallCache.invokedWarmUpPaywallImagesCacheOfferings) == offerings
+        expect(self.paywallCache.invokedWarmUpPaywallAssetsCache).toEventually(beTrue())
+        expect(self.paywallCache.invokedWarmUpPaywallAssetsCacheOfferings) == offerings
     }
 
     func testGetOfferingsWarmsUpEligibilityCache() throws {

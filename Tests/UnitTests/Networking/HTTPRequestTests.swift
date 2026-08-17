@@ -224,6 +224,13 @@ class HTTPRequestTests: TestCase {
         expect(path.supportsSignatureVerification).to(beTrue())
         expect(path.needsNonceForSigning).to(beFalse())
         expect(path.name) == "remote_config_fallback"
+        expect(path.isFallbackHostPath).to(beTrue())
+    }
+
+    func testMainPathsAreNotFallbackHostPaths() {
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
     }
 
     func testUserIDEscaping() {
@@ -384,5 +391,26 @@ class HTTPRequestTests: TestCase {
         expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
         expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
         expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testHeaderSignatureUsesAdditionalHeaderOverride() {
+        let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
+        let request = HTTPRequest(
+            method: .get,
+            path: .getCustomerInfo(appUserID: "user"),
+            additionalHeaders: [sandboxHeader: "false"]
+        )
+
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [sandboxHeader: "true"],
+            verificationMode: Signing.verificationMode(with: .informational),
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        let expectedHash = HTTPRequest.signingParameterHash(["false"])
+        expect(headers[sandboxHeader]) == "false"
+        expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
+            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
     }
 }

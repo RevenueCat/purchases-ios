@@ -83,6 +83,52 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(result.data.exitOffers).to(beNil())
     }
 
+    func testCarriesThePaywallIdItWasGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: uiConfig,
+            paywallId: "paywall_123"
+        )
+
+        expect(result.data.id) == "paywall_123"
+    }
+
+    func testIdIsNilWhenNotGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.id).to(beNil())
+    }
+
+    func testPassesThroughStateDeclarations() throws {
+        let screen = try Self.makeScreen(
+            stateDeclarationsJSON: """
+            { "selected_tab": { "type": "string", "default": "monthly" } }
+            """
+        )
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        let declaration = try XCTUnwrap(result.data.stateDeclarations?["selected_tab"])
+        expect(declaration.type) == PaywallComponent.StateDeclaration.ValueType.string
+        expect(declaration.defaultValue) == .string("monthly")
+    }
+
+    func testStateDeclarationsAreNilWhenScreenDeclaresNone() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.stateDeclarations).to(beNil())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -94,8 +140,15 @@ private extension WorkflowScreenMapperTests {
         assetBaseURL: String = "https://assets.pawwalls.com",
         revision: Int = 3,
         defaultLocale: String = "en_US",
-        exitOfferOfferingId: String? = nil
+        exitOfferOfferingId: String? = nil,
+        stateDeclarationsJSON: String? = nil
     ) throws -> RevenueCat.WorkflowScreen {
+        var stateDeclarationsFragment = ""
+        if let stateDeclarationsJSON {
+            stateDeclarationsFragment = """
+            , "state_declarations": \(stateDeclarationsJSON)
+            """
+        }
         var exitOffersJSON = ""
         if let exitOfferOfferingId {
             exitOffersJSON = """
@@ -135,7 +188,7 @@ private extension WorkflowScreenMapperTests {
                         }
                     }
                 }
-            }\(exitOffersJSON)
+            }\(exitOffersJSON)\(stateDeclarationsFragment)
         }
         """
         let data = try XCTUnwrap(json.data(using: .utf8))

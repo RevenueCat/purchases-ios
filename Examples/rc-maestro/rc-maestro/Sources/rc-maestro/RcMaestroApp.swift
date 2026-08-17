@@ -13,57 +13,42 @@ struct RcMaestroApp: App {
             SystemInfo.apiBaseURL = apiBaseURL
         }
 
-        // Used in E2E tests
-        let forceServerErrorStrategy = Constants.forceServerErrorStrategy
+        // Used in E2E tests. The strategy is read on every request rather than captured here, so that
+        // tests can change it mid-session through `ForceServerErrorStrategyStore`.
         Purchases.configure(
             with: .builder(withAPIKey: Constants.apiKey)
                 .with(dangerousSettings: .init(
                     autoSyncPurchases: true,
                     internalSettings: DangerousSettings.Internal(
-                        forceServerErrorStrategy: .init(
-                            // For `remoteConfigNetworkError`, route forced-error requests to an unreachable
-                            // host so they fail with a transport error (simulating no network), instead of
-                            // the default endpoint that returns a server error.
-                            serverErrorURL: forceServerErrorStrategy == .remoteConfigNetworkError
-                                ? URL(string: "http://127.0.0.1:1")!
-                                : ForceServerErrorStrategy.defaultServerErrorURL,
-                            fakeResponseWithoutPerformingRequest: { request in
-                                // Simulate a 4xx on the /v1/config endpoint (its session kill-switch),
+                        forceServerErrorStrategy: .init { request in
+                            switch ForceServerErrorStrategyStore.current {
+                            case .never:
+                                return .performRequest
+
+                            case .remoteConfigKillswitch:
+                                // Let the backend serve the real kill-switch response for this request only,
                                 // so we can exercise the classic-paywall fallback for workflow offerings.
-                                guard case .remoteConfigNotFound = forceServerErrorStrategy,
-                                      request.path.contains("config/"),
-                                      let url = URL(string: "https://api.revenuecat.com"),
-                                      let response = HTTPURLResponse(url: url,
-                                                                     statusCode: 404,
-                                                                     httpVersion: nil,
-                                                                     headerFields: nil) else {
-                                    return nil
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .appendQueryItems([URLQueryItem(name: "force_killswitch", value: "true")])
+
+                            case .primaryBackendDown:
+                                // Remote config uses a separate request path whose primary URL is already
+                                // the fallback backend, so it does not have a fallbackUrlIndex.
+                                if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
+                                   case .remoteConfig = fallbackPath {
+                                    return .performRequest
                                 }
-                                return (response, Data("{}".utf8))
-                            },
-                            shouldForceServerError: { request in
-                                switch forceServerErrorStrategy {
-                                case .never, .remoteConfigNotFound:
-                                    return false
-                                case .primaryBackendDown:
-                                    // Remote config uses a separate request path whose primary URL is already
-                                    // the fallback backend, so it does not have a fallbackUrlIndex.
-                                    if let fallbackPath = request.httpRequest.path as? HTTPRequest.FallbackPath,
-                                       case .remoteConfig = fallbackPath {
-                                        return false
-                                    }
-                                    return request.fallbackUrlIndex == nil
-                                case .remoteConfigNetworkError:
-                                    // No network for /v1/config only; offerings still resolve so a paywall
-                                    // is presentable and can degrade to the classic paywall.
-                                    return request.path.contains("config/")
-                                }
+                                return request.fallbackUrlIndex == nil ? .defaultServerError : .performRequest
+
+                            case .remoteConfigNetworkError:
+                                // No network for /v1/config only; offerings still resolve so a paywall
+                                // is presentable and can degrade to the classic paywall. The unreachable
+                                // host makes the request fail with a transport error.
+                                guard request.path.contains("config/") else { return .performRequest }
+                                return .serverErrorURL(URL(string: "http://127.0.0.1:1")!)
                             }
-                        )
-                    ),
-                    // Workflows (multipage paywalls) read through remote config; this internal flag
-                    // is the runtime gate (no compile flag needed for the Maestro app).
-                    useWorkflows: true
+                        }
+                    )
                 ))
                 .build()
         )
@@ -98,6 +83,8 @@ enum E2ETestFlow: String {
     case openWorkflow = "open_workflow"
     case openNoPaywall = "open_no_paywall"
     case openWorkflowPresented = "open_workflow_presented"
+    case openWorkflowUIKit = "open_workflow_uikit"
+    case openDefaultPackageVisibility = "open_default_package_visibility"
 
     @ViewBuilder
     var view: some View {
@@ -112,6 +99,10 @@ enum E2ETestFlow: String {
             E2ETestFlowView.OpenNoPaywall()
         case .openWorkflowPresented:
             E2ETestFlowView.OpenWorkflowPresented()
+        case .openWorkflowUIKit:
+            E2ETestFlowView.OpenWorkflowUIKit()
+        case .openDefaultPackageVisibility:
+            E2ETestFlowView.OpenDefaultPackageVisibility()
         }
     }
 }

@@ -124,6 +124,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
+    /// Returns the existing per-instance checkpoints manager, or creates and stores one.
+    @_spi(Internal)
+    public func getOrCreateCheckpointsManager<Manager: AnyObject>(
+        _ create: () -> Manager
+    ) -> Manager {
+        return self.purchasesOrchestrator.getOrCreateCheckpointsManager(create)
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -339,7 +347,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      responseVerificationMode: Signing.ResponseVerificationMode,
                      storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
-                     networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+                     networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
@@ -408,6 +416,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
         let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
 
+        // One instance for every request kind that consults the per-host fail-fast memory: both backend
+        // HTTPClients and the blob downloader.
+        let requestTimeoutManager = HTTPRequestTimeoutManager(networkTimeout: networkTimeout)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -422,7 +434,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
             diagnosticsTracker: diagnosticsTracker,
-            apiSourceProvider: apiSourceProvider
+            apiSourceProvider: apiSourceProvider,
+            timeoutManager: requestTimeoutManager
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -510,7 +523,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             let blobStore = RemoteConfigBlobStore()
             let blobFetcher = RemoteConfigBlobFetcher(
                 blobStore: blobStore,
-                sourceProvider: apiSourceProvider
+                sourceProvider: apiSourceProvider,
+                downloader: URLSessionRemoteConfigBlobDownloader(timeoutManager: requestTimeoutManager)
             )
 
             return RemoteConfigManager(
@@ -584,6 +598,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             manager: remoteConfigManager,
             uiConfigProvider: uiConfigProvider
         )
+        let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
 
         let workflowManager = WorkflowManager(
             workflowsConfigProvider: workflowsConfigProvider,
@@ -635,6 +650,32 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
+        let checkpointResolver: CheckpointWorkflowResolver
+        if systemInfo.remoteConfigEnabled {
+            RulesEngine.setLogger(RulesEngineLoggerBridge())
+            let localRulesEvaluator = LocalRulesEvaluator(
+                dimensionProviders: [
+                    DeviceDimensionProvider(),
+                    StoreDimensionProvider()
+                ]
+            )
+            checkpointResolver = DefaultCheckpointWorkflowResolver(
+                checkpointsConfigProvider: checkpointsConfigProvider,
+                workflowManager: workflowManager,
+                localRulesEvaluator: localRulesEvaluator,
+                offeringsProvider: {
+                    try await withCheckedThrowingContinuation { continuation in
+                        offeringsManager.offerings(
+                            appUserID: identityManager.currentAppUserID,
+                            trackDiagnostics: false,
+                            completion: { result in continuation.resume(with: result) }
+                        )
+                    }
+                }
+            )
+        } else {
+            checkpointResolver = DisabledCheckpointWorkflowResolver()
+        }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -693,7 +734,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             } else {
                 return .init(
@@ -721,7 +763,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             }
         }()
@@ -1050,6 +1093,17 @@ public extension Purchases {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
     }
 
+    @_spi(Internal)
+    func resolveCheckpoint(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.purchasesOrchestrator.resolveCheckpoint(
+            identifier: identifier,
+            params: params
+        )
+    }
+
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
@@ -1151,7 +1205,13 @@ public extension Purchases {
         }
 
         self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .read,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            }
         })
     }
 
@@ -2194,7 +2254,7 @@ public extension Purchases {
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
-        networkTimeout: TimeInterval,
+        networkTimeout: NetworkTimeout,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
@@ -2434,7 +2494,7 @@ extension Purchases {
     }
 
     // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
-    // can't see either the ENABLE_REMOTE_CONFIG compile flag or the remote config manager's kill switch.
+    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
         return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
@@ -2593,6 +2653,12 @@ internal extension Purchases {
 
     var networkTimeout: TimeInterval {
         return self.backend.networkTimeout
+    }
+
+    /// The timeout the shared request timeout manager hands out for a request that can't be reduced by the
+    /// per-host memory, which is the configured network timeout whenever the developer customized it.
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.backend.requestTimeoutManagerBaseTimeout
     }
 
     var storeKitTimeout: TimeInterval {
@@ -2872,7 +2938,7 @@ private extension Purchases {
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
-            await cache.warmUpPaywallImagesCache(offerings: offerings)
+            await cache.warmUpPaywallAssetsCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallFontsCache(offerings: offerings)

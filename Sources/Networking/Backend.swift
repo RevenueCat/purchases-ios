@@ -31,22 +31,35 @@ class Backend {
 
     convenience init(
         systemInfo: SystemInfo,
-        httpClientTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+        httpClientTimeout: NetworkTimeout = .default,
         eTagManager: ETagManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
         diagnosticsTracker: DiagnosticsTrackerType?,
         apiSourceProvider: RemoteConfigSourceProviderType?,
+        timeoutManager: HTTPRequestTimeoutManagerType,
         dateProvider: DateProvider = DateProvider()
     ) {
+        // One `apiSourceFailover` for both HTTPClients, so they walk one source list and one
+        // health-check cache; handle tokens keep concurrent unhealthy reports from double-advancing it.
+        let apiSourceFailover = apiSourceProvider.map {
+            APISourceFailover(usesRemoteConfigAPISources:
+                                systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
+                              sourceProvider: $0,
+                              healthChecker: SourceHealthChecker())
+        }
+        // `timeoutManager` is shared by both HTTPClients (and, outside of `Backend`, by the blob
+        // downloader) so a timeout one of them sees on a host fast-fails the others' next request to that
+        // same host, and a success on any of them clears it for all.
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
-                                    requestTimeout: httpClientTimeout,
+                                    networkTimeout: httpClientTimeout,
                                     operationDispatcher: OperationDispatcher.default,
-                                    apiSourceProvider: apiSourceProvider)
+                                    apiSourceFailover: apiSourceFailover,
+                                    timeoutManager: timeoutManager)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: operationDispatcher,
                                           operationQueue: QueueProvider.createBackendQueue(),
@@ -58,8 +71,9 @@ class Backend {
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
                                                diagnosticsTracker: diagnosticsTracker,
-                                               requestTimeout: httpClientTimeout,
-                                               apiSourceProvider: apiSourceProvider),
+                                               networkTimeout: httpClientTimeout,
+                                               apiSourceFailover: apiSourceFailover,
+                                               timeoutManager: timeoutManager),
             operationDispatcher: operationDispatcher,
             operationQueue: QueueProvider.createRemoteConfigQueue(),
             diagnosticsQueue: QueueProvider.createDiagnosticsQueue(),
@@ -294,20 +308,23 @@ extension Backend {
 
 private extension HTTPClient {
 
+    // swiftlint:disable:next function_parameter_count
     static func dedicatedRemoteConfig(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
-        requestTimeout: TimeInterval,
-        apiSourceProvider: RemoteConfigSourceProviderType?
+        networkTimeout: NetworkTimeout,
+        apiSourceFailover: APISourceFailoverType?,
+        timeoutManager: HTTPRequestTimeoutManagerType
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
-                   requestTimeout: requestTimeout,
+                   networkTimeout: networkTimeout,
                    operationDispatcher: OperationDispatcher.default,
-                   apiSourceProvider: apiSourceProvider)
+                   apiSourceFailover: apiSourceFailover,
+                   timeoutManager: timeoutManager)
     }
 
 }
@@ -318,6 +335,14 @@ extension Backend {
 
     var networkTimeout: TimeInterval {
         return self.config.httpClient.timeout
+    }
+
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.config.httpClient.requestTimeoutManager.timeout(host: nil,
+                                                                    isFallbackHostRequest: false,
+                                                                    endpointSupportsFallbackURLs: false,
+                                                                    isProxied: false,
+                                                                    reTieredTimeoutsEnabled: true)
     }
 
     var offlineCustomerInfoEnabled: Bool {

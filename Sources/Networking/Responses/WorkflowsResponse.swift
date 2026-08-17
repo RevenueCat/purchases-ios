@@ -139,6 +139,12 @@ import Foundation
     var config: [String: AnyDecodable]
     public let offeringIdentifier: String?
     public let exitOffers: ExitOffers?
+    /// Whole-map fallback to nil; the offerings path drops entries individually via
+    /// `FailableStateDeclaration`.
+    @IgnoreDecodeErrors<[String: PaywallComponent.StateDeclaration]?>
+    // swiftlint:disable:next identifier_name
+    var _stateDeclarations: [String: PaywallComponent.StateDeclaration]?
+    public var stateDeclarations: [String: PaywallComponent.StateDeclaration]? { _stateDeclarations }
 
     // `config` carries backend screen config the renderer doesn't read and is typed with the
     // internal `AnyDecodable`, so it's defaulted rather than exposed.
@@ -151,7 +157,8 @@ import Foundation
         componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
         defaultLocale: PaywallComponent.LocaleID,
         offeringIdentifier: String?,
-        exitOffers: ExitOffers? = nil
+        exitOffers: ExitOffers? = nil,
+        stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil
     ) {
         self.name = name
         self.templateName = templateName
@@ -163,6 +170,7 @@ import Foundation
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
         self.exitOffers = exitOffers
+        self._stateDeclarations = stateDeclarations
     }
 
 }
@@ -288,6 +296,8 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case config
         case offeringIdentifier
         case exitOffers
+        // swiftlint:disable:next identifier_name
+        case _stateDeclarations = "stateDeclarations"
     }
 
 }

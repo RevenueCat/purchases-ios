@@ -34,8 +34,8 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
-    private let requestTimeoutManager: HTTPRequestTimeoutManagerType
-    private let apiSourceProvider: RemoteConfigSourceProviderType?
+    let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    private let apiSourceFailover: APISourceFailoverType?
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -43,22 +43,26 @@ class HTTPClient {
         TimeInterval(3)
     ]
 
+    /// Defensive cap on API source attempts within one logical request, in case the source list is
+    /// re-armed (topic rebuild or interval restart) while a request is walking it.
+    private static let maxAPISourceAttempts = 5
+
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
-         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+         networkTimeout: NetworkTimeout,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
-         apiSourceProvider: RemoteConfigSourceProviderType?,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+         apiSourceFailover: APISourceFailoverType?,
+         timeoutManager: HTTPRequestTimeoutManagerType
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = requestTimeout
-        config.timeoutIntervalForResource = requestTimeout
+        config.timeoutIntervalForRequest = networkTimeout.timeoutInterval
+        config.timeoutIntervalForResource = networkTimeout.timeoutInterval
         config.urlCache = nil // We implement our own caching with `ETagManager`.
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
@@ -69,15 +73,12 @@ class HTTPClient {
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
-        self.timeout = requestTimeout
+        self.timeout = networkTimeout.timeoutInterval
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
-        self.apiSourceProvider = apiSourceProvider
-        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
-            defaultTimeout: timeout,
-            dateProvider: dateProvider
-        )
+        self.apiSourceFailover = apiSourceFailover
+        self.requestTimeoutManager = timeoutManager
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -197,7 +198,7 @@ extension HTTPClient {
         case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
-        case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case lastRefreshTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
@@ -262,6 +263,28 @@ internal extension HTTPClient {
         static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
     }
 
+    /// The API-source resolution state of a request, modeled as one value so an inconsistent
+    /// combination (e.g. a targeted source without an attempt count) is unrepresentable.
+    enum APISourceState {
+
+        /// Source resolution hasn't run yet for this logical request.
+        case unresolved
+
+        /// Resolution ran and API sources don't apply (setting disabled, proxy or overridden
+        /// base URL, endpoint fallback attempt, opted-out path, or an exhausted source list).
+        case noSource
+
+        /// The request targets `source`; `attemptCount` is the number of source attempts made
+        /// by this logical request so far (1 when a source is first resolved, +1 per failover).
+        case source(APISourceFailover.ResolvedSource, attemptCount: Int)
+
+        var source: APISourceFailover.ResolvedSource? {
+            guard case let .source(source, _) = self else { return nil }
+            return source
+        }
+
+    }
+
     struct Request: CustomStringConvertible {
 
         var httpRequest: HTTPRequest
@@ -282,6 +305,17 @@ internal extension HTTPClient {
         var isFallbackURLRequest: Bool {
             return self.fallbackUrlIndex != nil
         }
+
+        /// Whether the attempt is aimed at a fallback host, either because the fallback walk moved it
+        /// there or because the path targets one on its own. Such attempts get the flat fallback
+        /// timeout and never take part in the main source's per-host fail-fast memory.
+        var targetsFallbackHost: Bool {
+            return self.isFallbackURLRequest || self.httpRequest.path.isFallbackHostPath
+        }
+
+        /// Carried on the request so a failure can report the exact handle unhealthy, and so
+        /// retries of any kind (ETag refresh, status-code backoff) keep targeting the same host.
+        private(set) var apiSourceState: APISourceState = .unresolved
 
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
@@ -325,6 +359,30 @@ internal extension HTTPClient {
             return copy
         }
 
+        /// Resolves the API source once per logical request. Retries of any kind keep the carried
+        /// source instead of re-resolving, so they deterministically target the same host.
+        mutating func resolveAPISourceIfNeeded(with failover: APISourceFailoverType?) {
+            guard case .unresolved = self.apiSourceState else { return }
+            if let source = failover?.currentSource(for: self.httpRequest.path,
+                                                    isFallbackAttempt: self.isFallbackURLRequest) {
+                self.apiSourceState = .source(source, attemptCount: 1)
+            } else {
+                self.apiSourceState = .noSource
+            }
+        }
+
+        /// Only meaningful on a request that is already targeting a source (a failover decision can
+        /// only come from one); the previous attempt count carries over and increments.
+        func requestWith(nextAPISource: APISourceFailover.ResolvedSource) -> Self {
+            guard case let .source(_, attemptCount) = self.apiSourceState else {
+                assertionFailure("Retrying on a next API source requires a current one")
+                return self
+            }
+            var copy = self
+            copy.apiSourceState = .source(nextAPISource, attemptCount: attemptCount + 1)
+            return copy
+        }
+
         func requestWithNextFallbackHost(proxyURL: URL?) -> Self? {
             guard proxyURL == nil else {
                 // Don't fallback to next host if proxyURL is set
@@ -332,6 +390,9 @@ internal extension HTTPClient {
             }
             var copy = self
             copy.fallbackUrlIndex = self.fallbackUrlIndex?.advanced(by: 1) ?? 0
+            // The static fallback walk drops the API source: fallback attempts pin their own host and
+            // must not re-enter source failover.
+            copy.apiSourceState = .noSource
             guard copy.getCurrentRequestURL(proxyURL: nil, apiSourceURL: nil) != nil else {
                 // No more fallback hosts available
                 return nil
@@ -506,9 +567,16 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
+        // The requestTimeoutManager tracks how fast a host answers, so a non-error response clears the
+        // entry even when parsing or verifying that response fails afterwards.
+        if !request.targetsFallbackHost,
+           networkError == nil,
+           (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
+            requestTimeoutResult = .successOnMainBackend
+        }
+
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
-            var retryScheduled = false
 
             switch response {
             case let .success(response):
@@ -524,14 +592,14 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // Record successful response from the main backend
-                if !request.isFallbackURLRequest {
-                    requestTimeoutResult = .successOnMainBackend
-                }
+                self.finish(request: request,
+                            response: .success(response),
+                            retryScheduled: false,
+                            requestTimeoutResult: requestTimeoutResult,
+                            urlRequest: urlRequest,
+                            requestStartTime: requestStartTime)
 
             case let .failure(error):
-                let httpURLResponse = urlResponse as? HTTPURLResponse
-
                 Logger.debug(Strings.network.api_request_failed(request.httpRequest,
                                                                 httpCode: httpURLResponse?.httpStatusCode,
                                                                 error: error,
@@ -541,24 +609,59 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // A timeout on a main backend URL for a request that has a fallback URL
-                if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
-                    request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                // A timeout on a non-fallback (main-source) request arms the per-host fail-fast memory.
+                // With API sources enabled this covers every main-source timeout; otherwise it stays
+                // limited to fallback-supporting endpoints, matching the legacy behavior.
+                if networkError?.isURLRequestTimeout == true,
+                    !request.targetsFallbackHost,
+                    self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
+                        || request.httpRequest.path.supportsFallbackURLs {
+                    requestTimeoutResult = .mainSourceTimedOut
                 }
 
-                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               error: error)
+                // A failure that points at the host (never a device-connectivity error or a 4xx) on a
+                // request targeting an API source may fail over to the next source, but only after the
+                // current source's health check fails. The decision is asynchronous: the serial pipeline
+                // stays stalled (as if the request were still in flight) until it completes.
+                if case let .source(source, attemptCount) = request.apiSourceState,
+                   attemptCount < Self.maxAPISourceAttempts,
+                   error.isAllowedToRetryWithFallbackHost,
+                   let apiSourceFailover = self.apiSourceFailover {
+                    let requestTimeoutResult = requestTimeoutResult
+
+                    // Make sure to already update the shared timeout state before making any other requests
+                    self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+
+                    apiSourceFailover.onRequestFailure(source) { decision in
+                        let retryScheduled = self.handleAPISourceFailureDecision(decision,
+                                                                                 request: request,
+                                                                                 error: error,
+                                                                                 httpURLResponse: httpURLResponse)
+                        self.finish(request: request,
+                                    response: .failure(error),
+                                    retryScheduled: retryScheduled,
+                                    requestTimeoutResult: requestTimeoutResult,
+                                    recordRequestTimeoutResult: false,
+                                    urlRequest: urlRequest,
+                                    requestStartTime: requestStartTime)
+                    }
+                    return
+                }
+
+                var retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                                                                                   error: error)
 
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
                 }
-            }
 
-            if !retryScheduled {
-                request.completionHandler?(response)
+                self.finish(request: request,
+                            response: .failure(error),
+                            retryScheduled: retryScheduled,
+                            requestTimeoutResult: requestTimeoutResult,
+                            urlRequest: urlRequest,
+                            requestStartTime: requestStartTime)
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
@@ -566,9 +669,60 @@ private extension HTTPClient {
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
+
+            self.finish(request: request,
+                        response: nil,
+                        retryScheduled: true,
+                        requestTimeoutResult: requestTimeoutResult,
+                        urlRequest: urlRequest,
+                        requestStartTime: requestStartTime)
+        }
+    }
+
+    /// Schedules the retry (if any) that a failover `decision` calls for, returning whether one was
+    /// scheduled. A source that failed its health check is retried on the next source; otherwise the
+    /// pre-existing chain runs: the static fallback host walk, then the status-code backoff retry.
+    private func handleAPISourceFailureDecision(_ decision: APISourceFailover.FailureDecision,
+                                                request: Request,
+                                                error: NetworkError,
+                                                httpURLResponse: HTTPURLResponse?) -> Bool {
+        switch decision {
+        case let .retryNextSource(nextSource):
+            Logger.debug(Strings.network.retrying_request_with_next_api_source(
+                httpMethod: request.method.httpMethod,
+                path: request.path,
+                host: nextSource.handle.url
+            ))
+            self.state.modify {
+                $0.queuedRequests.insert(request.requestWith(nextAPISource: nextSource), at: 0)
+            }
+            return true
+
+        case .sourceHealthy, .sourcesExhausted:
+            // Declining to switch sources doesn't disable the pre-existing static fallback: the
+            // request still failed, so endpoints with fallback hosts keep retrying there as before.
+            return self.retryRequestWithNextFallbackHostIfNeeded(request: request, error: error)
+                || self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
+        }
+    }
+
+    /// The shared tail of `handle(...)`: completes the request (unless a retry was scheduled), records
+    /// timeout bookkeeping and diagnostics for the attempt, and unblocks the serial pipeline.
+    // swiftlint:disable:next function_parameter_count
+    private func finish(request: Request,
+                        response: VerifiedHTTPResponse<Data>.Result?,
+                        retryScheduled: Bool,
+                        requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult,
+                        recordRequestTimeoutResult: Bool = true,
+                        urlRequest: URLRequest,
+                        requestStartTime: Date) {
+        if !retryScheduled, let response = response {
+            request.completionHandler?(response)
         }
 
-        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
+        if recordRequestTimeoutResult {
+            self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+        }
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -595,6 +749,9 @@ private extension HTTPClient {
     }
 
     func start(request: Request) {
+        var request = request
+        request.resolveAPISourceIfNeeded(with: self.apiSourceFailover)
+
         let urlRequest = self.convert(request: request)
 
         guard let urlRequest = urlRequest else {
@@ -613,36 +770,30 @@ private extension HTTPClient {
 
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
-
-            if let (fakeResponse, fakeData) = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
-
-                // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
-                // might be empty if called immediately after `Product.purchase()`.
-                // This introduces a delay to simulate a real API request, and avoid that race condition.
-
-                Logger.warn(Strings.network.api_request_faking_error_response(request.httpRequest))
-                DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
-                    self.handle(urlResponse: fakeResponse,
-                                request: request,
-                                urlRequest: urlRequest,
-                                data: fakeData,
-                                error: nil,
-                                requestStartTime: requestStartTime)
-                }
-                return
+        if let (fakeResponse, fakeData) = self.applyForceServerErrorStrategy(to: &finalURLRequest, request: request) {
+            // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+            // might be empty if called immediately after `Product.purchase()`.
+            // This introduces a delay to simulate a real API request, and avoid that race condition.
+            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
+                self.handle(urlResponse: fakeResponse,
+                            request: request,
+                            urlRequest: urlRequest,
+                            data: fakeData,
+                            error: nil,
+                            requestStartTime: requestStartTime)
             }
-
-            if forceErrorStrategy.shouldForceServerError(request) {
-                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-                finalURLRequest = URLRequest(url: forceErrorStrategy.serverErrorURL)
-            }
+            return
         }
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            isFallback: request.isFallbackURLRequest,
-            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
+            host: finalURLRequest.url?.host,
+            isFallbackHostRequest: request.targetsFallbackHost,
+            endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
+            isProxied: SystemInfo.proxyURL != nil,
+            // The re-tiered fail-fast timeouts for main-API requests only apply when API sources are
+            // enabled. Blob-source downloads opt in independently of this setting.
+            reTieredTimeoutsEnabled: self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
         )
 
         // swiftlint:disable:next redundant_void_return
@@ -657,10 +808,46 @@ private extension HTTPClient {
         task.resume()
     }
 
+    #if DEBUG
+    /// Applies `forceServerErrorStrategy`, if configured, to `urlRequest`.
+    /// - Returns: the response to return without performing the request, if the strategy fakes one.
+    func applyForceServerErrorStrategy(
+        to urlRequest: inout URLRequest,
+        request: Request
+    ) -> (HTTPURLResponse, Data)? {
+        guard let strategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy else {
+            return nil
+        }
+
+        switch strategy.action(request) {
+        case let .fakeResponse(fakeResponse, fakeData):
+            Logger.warn(Strings.network.api_request_faking_response(request.httpRequest,
+                                                                    statusCode: fakeResponse.statusCode))
+            return (fakeResponse, fakeData)
+
+        case let .serverErrorURL(serverErrorURL):
+            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest,
+                                                                         serverErrorURL: serverErrorURL))
+            urlRequest = URLRequest(url: serverErrorURL)
+
+        case let .appendQueryItems(queryItems):
+            Logger.warn(Strings.network.api_request_appending_query_items(request.httpRequest, queryItems: queryItems))
+            if let url = urlRequest.url?.appendingQueryItems(queryItems) {
+                urlRequest.url = url
+            }
+
+        case .performRequest:
+            break
+        }
+
+        return nil
+    }
+    #endif
+
     func convert(request: Request) -> URLRequest? {
         guard let requestURL = request.getCurrentRequestURL(
             proxyURL: SystemInfo.proxyURL,
-            apiSourceURL: self.apiSourceURL(for: request)
+            apiSourceURL: request.apiSourceState.source?.url
         ) else {
             return nil
         }
@@ -676,24 +863,6 @@ private extension HTTPClient {
         }
 
         return urlRequest
-    }
-
-    /// The API base source URL to use for `request`, or `nil` to fall back to the path's `serverHostURL`.
-    ///
-    /// API sources apply only when: the `usesRemoteConfigAPISources` dangerous setting is enabled, no proxy
-    /// is configured (a proxy pins every request to itself), the request is not already targeting an endpoint
-    /// fallback host, the path opts in via `usesAPISources`, and `SystemInfo.apiBaseURL` still holds its
-    /// default (an override pins the host, e.g. in tests).
-    private func apiSourceURL(for request: Request) -> URL? {
-        guard self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources,
-              SystemInfo.proxyURL == nil,
-              !request.isFallbackURLRequest,
-              request.httpRequest.path.usesAPISources,
-              SystemInfo.apiBaseURL == SystemInfo.defaultApiBaseURL,
-              let source = self.apiSourceProvider?.currentAPISource() else {
-            return nil
-        }
-        return URL(string: source.url)
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
@@ -928,6 +1097,7 @@ extension HTTPRequest {
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
         result += self.path.additionalHeaders
+        result += self.additionalHeaders
 
         if self.path.authenticated {
             result += authHeaders
@@ -940,7 +1110,7 @@ extension HTTPRequest {
         if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
-                with: defaultHeaders,
+                with: result,
                 path: self.path
             )
 
@@ -1104,3 +1274,20 @@ private extension HTTPResponse where Body == Data {
     }
 
 }
+
+#if DEBUG
+
+private extension URL {
+
+    /// Returns this URL with `queryItems` added to the ones it already contains, if any.
+    func appendingQueryItems(_ queryItems: [URLQueryItem]) -> URL? {
+        // Request URLs are relative to a base URL, so the base needs resolving to keep the host.
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: true) else { return nil }
+
+        components.queryItems = (components.queryItems ?? []) + queryItems
+        return components.url
+    }
+
+}
+
+#endif

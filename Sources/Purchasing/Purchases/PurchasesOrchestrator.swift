@@ -83,6 +83,8 @@ final class PurchasesOrchestrator {
     private let eventsManager: EventsManagerType?
     private let webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType
     private let dateProvider: DateProvider
+    private let checkpointsManager = Atomic<AnyObject?>(nil)
+    private let checkpointResolver: CheckpointWorkflowResolver
 
     let notificationCenter: NotificationCenter
 
@@ -160,6 +162,7 @@ final class PurchasesOrchestrator {
                      winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
                      eventsManager: EventsManagerType?,
                      webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+                     checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
                      dateProvider: DateProvider = DateProvider(),
                      notificationCenter: NotificationCenter = .default
     ) {
@@ -187,6 +190,7 @@ final class PurchasesOrchestrator {
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             eventsManager: eventsManager,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
+            checkpointResolver: checkpointResolver,
             dateProvider: dateProvider,
             notificationCenter: notificationCenter
         )
@@ -246,6 +250,7 @@ final class PurchasesOrchestrator {
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
+         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
          dateProvider: DateProvider = DateProvider(),
          notificationCenter: NotificationCenter = .default
     ) {
@@ -272,10 +277,35 @@ final class PurchasesOrchestrator {
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
+        self.checkpointResolver = checkpointResolver
         self.dateProvider = dateProvider
         self.notificationCenter = notificationCenter
 
         Logger.verbose(Strings.purchase.purchases_orchestrator_init(self))
+    }
+
+    func getOrCreateCheckpointsManager<Manager: AnyObject>(
+        _ create: () -> Manager
+    ) -> Manager {
+        return self.checkpointsManager.modify { storedManager in
+            if let existingManager = storedManager as? Manager {
+                return existingManager
+            }
+
+            let newManager = create()
+            storedManager = newManager
+            return newManager
+        }
+    }
+
+    func resolveCheckpoint(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.checkpointResolver.resolve(
+            identifier: identifier,
+            params: params
+        )
     }
 
     deinit {

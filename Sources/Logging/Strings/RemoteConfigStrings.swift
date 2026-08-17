@@ -10,6 +10,8 @@ import Foundation
 enum RemoteConfigStrings {
 
     case cacheURLNotAvailable
+    case checkpointRuleSkipped(reason: String)
+    case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
     case failedToReadBlob(String, Error)
@@ -30,7 +32,9 @@ enum RemoteConfigStrings {
     case prefetchingBlobCount(Int)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
+    case disablingRefresh(BackendError)
     case refreshFailed(BackendError)
+    case refreshSkippedDisabled
     case skippingInvalidBlob(String)
     case persistedConfiguration(domain: String, activeTopicCount: Int, referencedBlobCount: Int)
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
@@ -47,6 +51,10 @@ extension RemoteConfigStrings: LogMessage {
         switch self {
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
+        case let .checkpointRuleSkipped(reason):
+            return "Skipping malformed checkpoint rule: \(reason)."
+        case let .checkpointWorkflowRuleSkipped(workflowID, reason):
+            return "Skipping checkpoint rule for workflow '\(workflowID)': \(reason)."
         case let .failedToClearBlobStore(error):
             return "Failed to clear remote config blob store: \(error.localizedDescription)"
         case let .failedToDeleteBlob(ref, error):
@@ -95,8 +103,12 @@ extension RemoteConfigStrings: LogMessage {
         case let .refreshing(domain, manifestPresent, isAppBackgrounded):
             return "Refreshing remote config for domain '\(domain)' " +
                 "(manifestPresent: \(manifestPresent), isAppBackgrounded: \(isAppBackgrounded))."
+        case let .disablingRefresh(error):
+            return "Disabling remote config for this session after receiving a 4xx response. Error: \(error)"
         case let .refreshFailed(error):
             return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
+        case .refreshSkippedDisabled:
+            return "Remote config is disabled for this session (4xx). Skipping refresh."
         case let .skippingInvalidBlob(ref):
             return "Skipping remote config blob '\(ref)': checksum verification failed."
         case let .persistedConfiguration(domain, activeTopicCount, referencedBlobCount):

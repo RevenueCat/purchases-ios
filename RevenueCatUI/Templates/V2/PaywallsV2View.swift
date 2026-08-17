@@ -96,11 +96,13 @@ struct PaywallsV2View: View {
     /// The workflow step's `screen_type` classification, used to gate impression reporting. `nil` for
     /// standalone paywalls and for workflow steps the backend did not tag (see `stepScreenType`).
     private let workflowScreenType: [String]?
-    /// Workflow attribution for the impression event (`presented_workflow_id` / `presented_step_id` in
-    /// the post-receipt body, see #7024). Orthogonal to `workflowScreenType`: gating decides whether the
-    /// event fires; these identify which workflow step it came from. `nil` for standalone paywalls.
+    /// Workflow attribution, `nil` for standalone paywalls. `workflowId` / `stepId` go to the post-receipt
+    /// body as `presented_workflow_id` / `presented_step_id`; `traceId` goes to the nested `paywall`
+    /// object and to the paywall event's `presented_offering_context`. Orthogonal to
+    /// `workflowScreenType`, which gates whether events fire.
     private let workflowId: String?
     private let stepId: String?
+    private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
     /// step alone. Irrelevant for standalone paywalls and tagged steps.
@@ -143,6 +145,7 @@ struct PaywallsV2View: View {
         workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil,
+        traceId: String? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
         let uiConfigProvider = UIConfigProvider(
@@ -166,6 +169,7 @@ struct PaywallsV2View: View {
         self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
+        self.traceId = traceId
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
             subscriptionHistoryTracker: purchaseHandler.subscriptionHistoryTracker
@@ -206,7 +210,10 @@ struct PaywallsV2View: View {
             selectedPackageContext = Self.makeSelectedPackageContext(
                 from: paywallState,
                 defaultPackage: Self.effectiveDefaultPackage(
-                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                    // Provisional: `init` has no environment, so variable/eligibility rules can't be
+                    // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
+                    pageDefaultPackage: paywallState.viewModelFactory.packageValidator
+                        .defaultSelectedPackage(in: .provisional),
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
                 workflowPackages: workflowPackages,
@@ -259,16 +266,14 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
-        let defaultPackage = Self.effectiveDefaultPackage(
-            pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
-            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage
-        )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
             uiConfigProvider: self.uiConfigProvider,
             selectedPackageContext: self.selectedPackageContext,
-            defaultPackage: defaultPackage,
+            // Resolved inside the loaded view, where the render environment (custom variables, screen
+            // condition) and the eligibility contexts are available.
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage,
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
@@ -281,6 +286,9 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
+            purchaseHandler.signalURLOpened(url)
+        })
         .environmentObject(self.purchaseHandler)
         .environmentObject(self.introOfferEligibilityContext)
         .environmentObject(self.paywallPromoOfferCache)
@@ -392,6 +400,10 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+            .preference(key: WebCheckoutOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.webCheckoutOpened)
+            .preference(key: URLOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.urlOpened)
             .disabled(self.purchaseHandler.actionInProgress)
             .onDisappear {
                 // Standalone closes on disappear. A workflow page closes here only if it is still the
@@ -453,18 +465,20 @@ struct PaywallsV2View: View {
         )
     }
 
-    /// Stamps workflow attribution onto a paywall event's data so the post-receipt body can send
-    /// `presented_workflow_id` / `presented_step_id` (#7024). Orthogonal to the `screen_type` gate
-    /// (``shouldTrackPaywallEvents`` decides whether the event fires at all); both are `nil` for
-    /// standalone paywalls. Mirrors Android's `PaywallEvent.Data.withCurrentWorkflowMetadata`.
+    /// Stamps workflow attribution onto a paywall event's data: `workflowId` / `stepId` for the
+    /// post-receipt body, `traceId` for the post-receipt `paywall` object and the event's own
+    /// `presented_offering_context`. Orthogonal to the `screen_type` gate; all are `nil`
+    /// for standalone paywalls.
     static func applyingWorkflowAttribution(
         to data: PaywallEvent.Data,
         workflowId: String?,
-        stepId: String?
+        stepId: String?,
+        traceId: String?
     ) -> PaywallEvent.Data {
         var data = data
         data.workflowId = workflowId
         data.stepId = stepId
+        data.traceId = traceId
         return data
     }
 
@@ -552,7 +566,12 @@ struct PaywallsV2View: View {
             darkMode: self.colorScheme == .dark,
             source: self.paywallSource
         )
-        return Self.applyingWorkflowAttribution(to: data, workflowId: self.workflowId, stepId: self.stepId)
+        return Self.applyingWorkflowAttribution(
+            to: data,
+            workflowId: self.workflowId,
+            stepId: self.stepId,
+            traceId: self.traceId
+        )
     }
 
 }
@@ -566,7 +585,19 @@ private struct LoadedPaywallsV2View: View {
     private let uiConfigProvider: UIConfigProvider
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
-    private let defaultPackage: Package?
+    private let workflowDefaultPackage: Package?
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
 
     @ObservedObject
     private var selectedPackageContext: PackageContext
@@ -576,7 +607,7 @@ private struct LoadedPaywallsV2View: View {
         paywallState: PaywallState,
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
-        defaultPackage: Package?,
+        workflowDefaultPackage: Package?,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil
     ) {
@@ -584,9 +615,54 @@ private struct LoadedPaywallsV2View: View {
         self.paywallState = paywallState
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
-        self.defaultPackage = defaultPackage
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
+    }
+
+    private var packageSelectionContext: PackageSelectionContext {
+        return PackageSelectionContext(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                introOfferEligibilityContext.isEligible(package: $0)
+            },
+            isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+            }
+        )
+    }
+
+    private var defaultPackage: Package? {
+        return PaywallsV2View.effectiveDefaultPackage(
+            pageDefaultPackage: self.paywallState.viewModelFactory.packageValidator
+                .defaultSelectedPackage(in: self.packageSelectionContext),
+            workflowDefaultPackage: self.workflowDefaultPackage
+        )
+    }
+
+    /// Moves the selection off a package that isn't rendering.
+    private func reconcileSelection() {
+        let packageValidator = self.paywallState.viewModelFactory.packageValidator
+
+        // Selection is tab-local, so a tabbed paywall reconciles inside `LoadedTabsComponentView`.
+        // Resolving here would walk document order across every tab and could select a package from a
+        // tab the user isn't on.
+        guard !packageValidator.containsTabScopedPackages else {
+            return
+        }
+
+        guard let resolved = packageValidator.reconciledSelection(
+            current: self.selectedPackageContext.package,
+            in: self.packageSelectionContext
+        ) else {
+            return
+        }
+
+        self.selectedPackageContext.update(
+            package: resolved,
+            variableContext: self.selectedPackageContext.variableContext
+        )
     }
 
     var body: some View {
@@ -624,6 +700,14 @@ private struct LoadedPaywallsV2View: View {
             .environment(\.planSelectionDefaultPackage, self.defaultPackage)
             .environmentObject(self.selectedPackageContext)
             .edgesIgnoringSafeArea(.bottom)
+            .onAppear {
+                self.reconcileSelection()
+            }
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
+            .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection()
+            }
         }
     }
 

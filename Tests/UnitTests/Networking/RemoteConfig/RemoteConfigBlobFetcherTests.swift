@@ -220,7 +220,13 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         expect(self.blobStore.invokedWriteParameters?.data) == payload
     }
 
-    func testRealDownloaderUsesFiveSecondTimeoutAndRetriesNextSourceAfterTimeout() async {
+    func testRealDownloaderUsesFiveSecondTimeoutAndRetriesNextSourceAfterTimeout() async throws {
+        #if os(watchOS)
+        // OHHTTPStubs relies on URL loading interception, which Foundation does not support on watchOS.
+        // The fetcher's platform-independent retry behavior remains covered by the injected downloader tests.
+        try XCTSkipIf(true, "OHHTTPStubs does not support watchOS")
+        #endif
+
         let payload = "timeout fallback payload".asData
         let ref = Self.ref(for: payload)
         let primaryURL = Self.templateURL.replacingOccurrences(of: Self.placeholder, with: ref)
@@ -244,7 +250,9 @@ final class RemoteConfigBlobFetcherTests: TestCase {
         self.fetcher = RemoteConfigBlobFetcher(
             blobStore: self.blobStore,
             sourceProvider: self.sourceProvider,
-            downloader: URLSessionRemoteConfigBlobDownloader()
+            downloader: URLSessionRemoteConfigBlobDownloader(
+                timeoutManager: MockHTTPRequestTimeoutManager(defaultTimeout: 15)
+            )
         )
 
         let result = await self.fetcher.ensureDownloaded(ref: ref)

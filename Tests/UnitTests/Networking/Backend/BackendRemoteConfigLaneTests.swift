@@ -110,16 +110,21 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
 
     private static let userID = "lane-user"
 
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        #if os(watchOS)
+        // See https://github.com/AliSoftware/OHHTTPStubs/issues/287
+        try XCTSkipIf(true, "OHHTTPStubs does not currently support watchOS")
+        #endif
+    }
+
     override func tearDown() {
         HTTPStubs.removeAllStubs()
         super.tearDown()
     }
 
     func testConfigCompletesWhileOfferingsHangsOnSeparateLane() throws {
-        #if os(watchOS)
-        throw XCTSkip("OHHTTPStubs does not support watchOS")
-        #endif
-
         let systemInfo = MockSystemInfo(finishTransactions: true)
         let eTagManager = MockETagManager()
 
@@ -128,9 +133,10 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
                               eTagManager: eTagManager,
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
-                              requestTimeout: 30,
+                              networkTimeout: .custom(30),
                               operationDispatcher: OperationDispatcher(),
-                              apiSourceProvider: nil)
+                              apiSourceFailover: nil,
+                              timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .custom(30)))
         }
 
         func makeConfig(_ client: HTTPClient, _ queue: OperationQueue) -> BackendConfiguration {
@@ -181,6 +187,60 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
         expect(configResult).to(beSuccess())
         expect(offeringsDispatched.value).toEventually(beTrue())
         expect(offeringsCompleted.value) == false
+    }
+
+    /// Both lanes talk to the same hosts, so a timeout either of them sees must fast-fail the other.
+    func testTimeoutOnMainLaneReducesTimeoutOnRemoteConfigLane() throws {
+        let systemInfo = MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                internalSettings: DangerousSettings.Internal(usesRemoteConfigAPISources: true)
+            )
+        )
+        let backend = Backend(
+            systemInfo: systemInfo,
+            httpClientTimeout: .default,
+            eTagManager: MockETagManager(),
+            operationDispatcher: OperationDispatcher(),
+            attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
+                                                   systemInfo: systemInfo),
+            offlineCustomerInfoCreator: nil,
+            diagnosticsTracker: nil,
+            apiSourceProvider: nil,
+            timeoutManager: HTTPRequestTimeoutManager(networkTimeout: .default)
+        )
+
+        let apiHost = try XCTUnwrap(SystemInfo.apiBaseURL.host)
+        stub(condition: pathEndsWith("/offerings")) { request in
+            if request.url?.host == apiHost {
+                return .timeoutResponse()
+            }
+            return HTTPStubsResponse(data: Data(), statusCode: 400, headers: nil)
+        }
+
+        waitUntil { completed in
+            backend.offerings.getOfferings(appUserID: Self.userID, isAppBackgrounded: false) { _ in
+                completed()
+            }
+        }
+
+        let remoteConfigTimeout: Atomic<TimeInterval?> = nil
+        stub(condition: pathEndsWith("/config/app")) { request in
+            remoteConfigTimeout.value = request.timeoutInterval
+            return HTTPStubsResponse(data: Data(), statusCode: 204, headers: nil)
+        }
+
+        let configResult: Result<RemoteConfigFetchResult, BackendError>? = waitUntilValue { completed in
+            backend.remoteConfigAPI.getRemoteConfig(
+                request: .init(fetchContext: .appStart, appUserID: Self.userID),
+                isAppBackgrounded: false,
+                completion: completed
+            )
+        }
+
+        expect(configResult).to(beSuccess())
+        expect(remoteConfigTimeout.value) == HTTPRequestTimeoutManager.Timeout.mainSourceNoFallbackReduced
     }
 
 }
