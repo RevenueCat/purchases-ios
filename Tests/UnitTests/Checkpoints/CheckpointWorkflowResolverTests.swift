@@ -423,6 +423,21 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
+    /// The same unsupplied variable inverts under negation: `null == "NL"` is false, so `!` makes it true and
+    /// the audience matches *everyone*, including customers it was meant to exclude. An unresolvable path
+    /// doesn't fail closed, it makes the result arbitrary.
+    func testNegatedAudienceOnAnUnsuppliedVariableMatchesEveryone() async throws {
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience": try Self.servedRules(
+                #"{ "id": "audience", "rules": { "!": [{ "==": [{ "var": "last_seen.country" }, "NL"] }] } }"#
+            )
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+    }
+
     /// Decodes with the real `Audience` decoder, so what gets evaluated is the string a served payload
     /// actually produces rather than a hand-written one.
     private static func servedRules(_ json: String) throws -> String {
