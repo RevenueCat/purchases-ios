@@ -222,14 +222,14 @@ extension WebBundleURLBatcher {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension WebBundleURLBatcher {
 
-    /// Each event is one screen's URLs as a `Set`. Order among URLs in the set is not part of the contract.
+    /// Each event is one screen's URLs in first-occurrence visit order.
     func publishBatches(_ batches: [[URLWithValidation]]) async {
         guard !batches.isEmpty else { return }
 
         Logger.verbose(Strings.paywalls.warming_up_web_bundles(screenCount: batches.count))
 
         for batch in batches {
-            await self.eventBus.publish(Set(batch))
+            await self.eventBus.publish(batch)
         }
     }
 
