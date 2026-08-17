@@ -63,15 +63,12 @@ public class PaywallViewController: UIViewController {
     /// ]
     /// present(vc, animated: true)
     /// ```
-    public var customVariables: [String: CustomVariableValue] {
-        get { return self.storedCustomVariables }
-        set {
+    public var customVariables: [String: CustomVariableValue] = [:] {
+        didSet {
             assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
-            self.storedCustomVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(newValue)
+            self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(self.customVariables)
         }
     }
-
-    private var storedCustomVariables: [String: CustomVariableValue] = [:]
 
     // MARK: - Objective-C Custom Variable Methods
 
