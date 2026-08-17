@@ -147,10 +147,12 @@ private extension WebBundlePrewarmer {
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            Logger.debug(Strings.paywall_web_view_loaded(webView.url))
             self.finish()
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+            Logger.debug(Strings.paywall_web_view_load_failed(error.localizedDescription))
             self.finish()
         }
 
@@ -159,6 +161,7 @@ private extension WebBundlePrewarmer {
             didFailProvisionalNavigation navigation: WKNavigation!,
             withError error: Error
         ) {
+            Logger.debug(Strings.paywall_web_view_load_failed(error.localizedDescription))
             self.finish()
         }
 
