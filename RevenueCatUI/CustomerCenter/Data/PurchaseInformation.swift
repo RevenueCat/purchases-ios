@@ -415,7 +415,7 @@ extension PurchaseInformation {
     ) async -> RenewalPrice? {
         guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
             for: product
-        ) else {
+        ), renewalPriceDetails.productIdentifier == product.productIdentifier else {
             return nil
         }
 
@@ -481,8 +481,20 @@ extension PurchaseInformation {
     func priceRenewalString(
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
-        guard let renewalPrice, let renewalDate else {
+        guard let renewalDate else {
             return nil
+        }
+
+        guard let renewalPrice else {
+            switch pricePaid {
+            case .free:
+                return localizations[.free]
+            case .nonFree(let priceString):
+                return localizations[.pricePaid]
+                    .replacingOccurrences(of: "{{ price }}", with: priceString)
+            case .unknown:
+                return nil
+            }
         }
 
         switch renewalPrice {
