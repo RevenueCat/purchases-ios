@@ -48,9 +48,11 @@ class PurchasesUIServiceTests: TestCase {
         self.verifyPurchasesDidConfigureLogged(count: 1)
     }
 
-    func testActivateIfNeededDoesNothingWhenPurchasesIsNotConfigured() {
+    func testActivateIfNeededPingsEvenWhenPurchasesIsNotConfigured() {
+        // Keep-alive must actually run: a no-op would be stripped, and UI may
+        // load before ``Purchases/configure``.
         PurchasesUIService.activateIfNeeded()
-        self.verifyPurchasesDidConfigureLogged(count: 0)
+        self.verifyPurchasesDidConfigureLogged(count: 1)
     }
 
     func testActivateIfNeededReplaysWhenPurchasesAlreadyConfigured() {
