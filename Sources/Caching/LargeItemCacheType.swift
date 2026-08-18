@@ -25,6 +25,9 @@ protocol LargeItemCacheType {
     /// Check if there is content cached at the url
     func cachedContentExists(at url: URL) -> Bool
 
+    /// Check if there is a regular file cached at the url
+    func cachedFileExists(at url: URL) -> Bool
+
     /// Load data from url
     func loadFile(at url: URL) throws -> Data
 
@@ -149,6 +152,11 @@ extension FileManager: LargeItemCacheType {
         } catch {
             return false
         }
+    }
+
+    /// Check if a regular file is cached at the given path
+    func cachedFileExists(at url: URL) -> Bool {
+        return (try? url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile) == true
     }
 
     /// Creates a directory from a base path in the specified directory type

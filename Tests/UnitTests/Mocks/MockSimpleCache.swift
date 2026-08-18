@@ -84,6 +84,10 @@ class MockSimpleCache: LargeItemCacheType, @unchecked Sendable {
         }
     }
 
+    func cachedFileExists(at url: URL) -> Bool {
+        self.cachedContentExists(at: url)
+    }
+
     func stubSaveData(at index: Int = 0, with result: Result<SaveData, Error>) {
         lock.withLock {
             saveDataResponses.insert(result, at: index)
