@@ -297,6 +297,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationWithNilTrackingMetadataTracksNothing() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
@@ -332,6 +333,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationTracksVerifiedAndGrantedEventsOnVirtualCurrencyReward() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
         let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
 
@@ -355,6 +357,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationDoesNotTrackGrantedEventOnNoReward() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
 
         _ = await self.purchases.pollRewardVerification(
@@ -370,6 +373,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationTracksOneGrantedEventPerRewardOnMultiGrant() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
         let poller = self.makeStubPoller(statuses: [
@@ -396,6 +400,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationTracksFailedToVerifyEvent() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let poller = self.makeStubPoller(statuses: [.failed(reason: "no_reward_rule", message: "nope")])
 
         _ = await self.purchases.pollRewardVerification(
@@ -414,6 +419,7 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testPollRewardVerificationTracksCancellation() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
         let poller = self.makeStubPoller(statuses: [.pending, .verified(.noReward)])
 
         let task = Task {
