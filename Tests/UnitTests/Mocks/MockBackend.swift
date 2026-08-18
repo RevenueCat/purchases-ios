@@ -6,40 +6,6 @@
 import Foundation
 @testable import RevenueCat
 
-/// A one-shot, thread-safe async gate used to deterministically order concurrent operations in tests.
-/// Callers of `wait()` suspend until `open()` is invoked; once open, `wait()` returns immediately.
-final class MockAsyncGate: @unchecked Sendable {
-
-    private let lock = NSLock()
-    private var isOpen = false
-    private var continuations: [CheckedContinuation<Void, Never>] = []
-
-    func wait() async {
-        await withCheckedContinuation { continuation in
-            self.lock.lock()
-            if self.isOpen {
-                self.lock.unlock()
-                continuation.resume()
-            } else {
-                self.continuations.append(continuation)
-                self.lock.unlock()
-            }
-        }
-    }
-
-    func open() {
-        self.lock.lock()
-        self.isOpen = true
-        let continuations = self.continuations
-        self.continuations = []
-        self.lock.unlock()
-
-        for continuation in continuations {
-            continuation.resume()
-        }
-    }
-}
-
 // swiftlint:disable large_tuple line_length
 class MockBackend: Backend {
 

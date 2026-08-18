@@ -325,7 +325,7 @@ extension PurchaseStrings: LogMessage {
 
         case let .sk2_queue_receipt_post_waiting_for_purchase(productID):
             return "StoreKit.Transaction.updates: waiting for in-flight purchase receipt post to finish " +
-            "before posting queue transaction for product '\(productID)'"
+            "before posting receipt from the queue for product '\(productID)'"
 
         case let .transaction_poster_handling_transaction(transactionID,
                                                           productID,
