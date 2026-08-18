@@ -179,8 +179,7 @@ extension RulesEngine {
             let defaultValue: Value? = items.count >= 2 ? items[1] : nil
             if items.count > 2 {
                 RulesEngine.logger.warn(
-                    "\(operatorName): ignoring \(items.count - 2) extra arg(s); "
-                        + "expected [path] or [path, default]"
+                    "\(operatorName): ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
                 )
             }
             return (path, defaultValue)
