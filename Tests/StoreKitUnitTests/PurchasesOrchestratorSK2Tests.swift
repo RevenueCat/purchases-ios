@@ -1755,7 +1755,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // Wait until the purchase post has reached the backend (the in-flight purchase task is
         // registered synchronously when `purchase()` is called, and is now blocked on this post).
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
         expect(self.backend.invokedPostReceiptDataParametersList.first?.postReceiptSource.initiationSource) == .purchase
 
         // A queue transaction for the same product arrives while the purchase post is still in flight.
@@ -1768,7 +1768,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
 
         // The queue post must not happen until the purchase post finishes.
-        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
+        await expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
 
         // Releasing the purchase post lets the purchase finish, which unblocks the queue post.
         gate.open()
@@ -1821,7 +1821,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
 
         // A queue transaction for a different product isn't held back by the in-flight purchase.
         let queueTransaction = MockStoreTransaction(
@@ -1836,7 +1836,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
 
         // It posts while the purchase post is still gated.
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
         try await queueTask.value
 
         expect(
@@ -1887,7 +1887,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
 
         let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: .purchase)
         let queueTask = Task {
@@ -1964,7 +1964,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
 
         let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: .purchase)
         let queueTask = Task {
@@ -1976,7 +1976,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         // Cancelling the caller must not abort the receipt post, nor release the queue transaction early.
         purchaseTask.cancel()
-        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
+        await expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
 
         gate.open()
 
@@ -2027,13 +2027,13 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let firstGate = MockAsyncGate()
         self.backend.deferredPostReceiptCompletionGate.value = firstGate
         let firstPurchase = startPurchase()
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
 
         // A second purchase of the same product overwrites the first one in the in-flight registry.
         let secondGate = MockAsyncGate()
         self.backend.deferredPostReceiptCompletionGate.value = secondGate
         let secondPurchase = startPurchase()
-        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
 
         // The first purchase finishing must not deregister the second one.
         firstGate.open()
@@ -2047,7 +2047,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(3), until: .milliseconds(300))
+        await expect(self.backend.invokedPostReceiptDataCount).toNever(equal(3), until: .milliseconds(300))
 
         secondGate.open()
         _ = try await secondPurchase.value
