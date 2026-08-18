@@ -74,4 +74,37 @@ final class RewardVerificationOutcomeTests: TestCase {
         XCTAssertEqual(moreRewards.count, 1)
         XCTAssertEqual(moreRewards.first?.entitlement, entitlement)
     }
+
+    // MARK: - trackingFailureReason
+
+    func testTrackingFailureReasonCarriesTheBackendReasonCode() {
+        let reason = RewardVerification.FailureReason.backendRejected(reason: "no_access", message: "nope")
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: "no_access"))
+    }
+
+    func testTrackingFailureReasonMapsBackendRejectedWithoutReasonToBackendError() {
+        let reason = RewardVerification.FailureReason.backendRejected(reason: nil, message: "nope")
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: nil))
+    }
+
+    func testTrackingFailureReasonMapsExhaustedPendingToTimeout() {
+        XCTAssertEqual(RewardVerification.FailureReason.exhaustedPending.trackingFailureReason, .timeout)
+    }
+
+    func testTrackingFailureReasonMapsExhaustedTransientToNetworkError() {
+        XCTAssertEqual(RewardVerification.FailureReason.exhaustedTransient.trackingFailureReason, .networkError)
+    }
+
+    func testTrackingFailureReasonMapsTerminalErrorToNetworkError() {
+        let reason = RewardVerification.FailureReason.terminalError(error: "boom")
+        XCTAssertEqual(reason.trackingFailureReason, .networkError)
+    }
+
+    func testTrackingFailureReasonMapsUnexpectedResponseToUnknown() {
+        XCTAssertEqual(RewardVerification.FailureReason.unexpectedResponse.trackingFailureReason, .unknown)
+    }
+
+    func testTrackingFailureReasonMapsCancelledToCancelled() {
+        XCTAssertEqual(RewardVerification.FailureReason.cancelled.trackingFailureReason, .cancelled)
+    }
 }
