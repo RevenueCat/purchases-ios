@@ -22,6 +22,10 @@ extension RulesEngine {
             vars: Scope
         ) throws -> Value {
             switch operatorName {
+            case "rc.entries":
+                return try EntriesOperators.opEntries(args: args, vars: vars)
+            case "rc.fromEntries":
+                return try EntriesOperators.opFromEntries(args: args, vars: vars)
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
