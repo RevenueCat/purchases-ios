@@ -1135,6 +1135,204 @@ class SigningTests: TestCase {
         )) == true
     }
 
+    // MARK: - IAM
+
+    func testResponseVerificationWithIAMEnabledUsesIAMRelativePathForSignature() throws {
+        let message = "Hello World"
+        let nonce = "0123456789ab"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
+        let requestHeaders: HTTPRequest.Headers = [:]
+
+        // The backend signs using the IAM relative path ("/v1/customer") once IAM is enabled,
+        // rather than the classic "/v1/subscribers/{id}" path.
+        let signature = try self.sign(parameters: .init(path: request.path,
+                                                        iamEnabled: true,
+                                                        message: message.asData,
+                                                        requestHeaders: requestHeaders,
+                                                        nonce: nonce.asData,
+                                                        etag: nil,
+                                                        requestDate: requestDate,
+                                                        useFallbackPath: false),
+                                      salt: salt.asData)
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            body: message.asData
+        )
+
+        let verifiedWithIAMEnabled = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false,
+            iamEnabled: true
+        )
+        expect(verifiedWithIAMEnabled.verificationResult) == .verified
+
+        // The same signature does not verify against the classic (non-IAM) relative path, since
+        // the bytes that were signed don't match.
+        let verifiedWithIAMDisabled = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false,
+            iamEnabled: false
+        )
+        expect(verifiedWithIAMDisabled.verificationResult) == .failed
+    }
+
+    func testVerificationUsesBearerTokenFromHeadersInsteadOfAPIKeyWhenPresent() throws {
+        let message = "Hello World"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        let accessToken = "iam-access-token-123"
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
+        ]
+
+        let parameters: Signing.SignatureParameters = .init(
+            path: request.path,
+            iamEnabled: true,
+            message: message.asData,
+            requestHeaders: requestHeaders,
+            nonce: nil,
+            etag: nil,
+            requestDate: requestDate,
+            useFallbackPath: false
+        )
+
+        // The client authenticated this request with its IAM access token rather than the SDK's
+        // API key, so the backend signs the response using that same access token as the auth value.
+        let signature = try self.privateIntermediateKey.signature(
+            for: parameters.signature(salt: salt.asData, authValue: accessToken)
+        )
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            body: message.asData
+        )
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false,
+            iamEnabled: true
+        )
+
+        expect(verifiedResponse.verificationResult) == .verified
+    }
+
+    func testVerificationFailsWhenSignedWithAPIKeyButRequestHasBearerToken() throws {
+        let message = "Hello World"
+        let requestDate = Date().millisecondsSince1970
+        let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
+        let salt = Self.createSalt()
+        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        let requestHeaders: HTTPRequest.Headers = [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer some-access-token"
+        ]
+
+        let parameters: Signing.SignatureParameters = .init(
+            path: request.path,
+            iamEnabled: true,
+            message: message.asData,
+            requestHeaders: requestHeaders,
+            nonce: nil,
+            etag: nil,
+            requestDate: requestDate,
+            useFallbackPath: false
+        )
+
+        // Signed using the SDK's API key, even though the request headers carry a bearer token.
+        // Verification must prefer the header's bearer token as the auth value, so this signature
+        // should fail to verify.
+        let signature = try self.privateIntermediateKey.signature(
+            for: parameters.signature(salt: salt.asData, authValue: Self.apiKey)
+        )
+        let fullSignature = Self.fullSignature(
+            intermediateKey: intermediateKey,
+            salt: salt,
+            signature: signature
+        )
+
+        let response = HTTPResponse<Data?>(
+            httpStatusCode: .success,
+            responseHeaders: [
+                HTTPClient.ResponseHeader.signature.rawValue: fullSignature.base64EncodedString(),
+                HTTPClient.ResponseHeader.requestDate.rawValue: String(requestDate)
+            ],
+            body: message.asData
+        )
+        let verifiedResponse = response.verify(
+            signing: self.signing,
+            request: request,
+            requestHeaders: requestHeaders,
+            publicKey: self.publicKey,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false,
+            iamEnabled: true
+        )
+
+        expect(verifiedResponse.verificationResult) == .failed
+    }
+
+    func testDebugDescriptionUsesIAMRelativePathWhenIAMEnabled() {
+        let parameters: Signing.SignatureParameters = .init(
+            path: .getCustomerInfo(appUserID: "user"),
+            iamEnabled: true,
+            message: nil,
+            requestHeaders: [:],
+            nonce: nil,
+            etag: nil,
+            requestDate: 0
+        )
+
+        expect(parameters.debugDescription).to(contain("path: '/v1/customer'"))
+    }
+
+    func testDebugDescriptionUsesRegularRelativePathWhenIAMDisabled() {
+        let parameters: Signing.SignatureParameters = .init(
+            path: .getCustomerInfo(appUserID: "user"),
+            iamEnabled: false,
+            message: nil,
+            requestHeaders: [:],
+            nonce: nil,
+            etag: nil,
+            requestDate: 0
+        )
+
+        expect(parameters.debugDescription).to(contain("path: '/v1/subscribers/user'"))
+    }
+
 }
 
 private extension SigningTests {

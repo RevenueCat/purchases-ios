@@ -80,7 +80,7 @@ class HTTPRequestTests: TestCase {
 
     func testPathsHaveValidURLs() {
         for path in Self.paths {
-            expect(path.url).toNot(beNil())
+            expect(path.url(preferIAMPath: false)).toNot(beNil())
         }
     }
 
@@ -414,5 +414,142 @@ class HTTPRequestTests: TestCase {
         expect(headers[sandboxHeader]) == "false"
         expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
             == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
+    }
+
+    // MARK: - IAM paths
+
+    /// Maps each `HTTPRequest.Path` case (other than `.logIn`, which is disallowed under IAM) to the
+    /// relative path it should resolve to when IAM access-token authorization is preferred.
+    private static let iamPathComponentsByPath: [HTTPRequest.Path: String] = [
+        .getCustomerInfo(appUserID: userID): "customer",
+        .getOfferings(appUserID: userID): "customer/offerings",
+        .getIntroEligibility(appUserID: userID): "customer/intro_eligibility",
+        .postAttributionData(appUserID: userID): "customer/attribution",
+        .postOfferForSigning: "offers",
+        .postReceiptData: "receipts",
+        .postSubscriberAttributes(appUserID: userID): "customer/attributes",
+        .postAdServicesToken(appUserID: userID): "customer/adservices_attribution",
+        .health: "health",
+        .appHealthReport(appUserID: userID): "customer/health_report",
+        .appHealthReportAvailability(appUserID: userID): "subscribers/\(userID)/health_report_availability",
+        .getProductEntitlementMapping: "product_entitlement_mapping",
+        .getCustomerCenterConfig(appUserID: userID): "customer/customercenter",
+        .getVirtualCurrencies(appUserID: userID): "customer/virtual_currencies",
+        .postRedeemWebPurchase: "subscribers/redeem_purchase",
+        .postCreateTicket: "customercenter/support/create-ticket",
+        .isPurchaseAllowedByRestoreBehavior(appUserID: userID): "customer/restore/eligibility",
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID):
+            "subscribers/\(userID)/ads/reward_verifications/\(clientTransactionID)",
+        .remoteConfig(domain: "app"): "config/app"
+    ]
+
+    func testRelativeIAMPathMatchesExpectedComponentPerPath() {
+        for (path, expectedComponent) in Self.iamPathComponentsByPath {
+            expect(path.relativeIAMPath).to(
+                equal("/v1/\(expectedComponent)"),
+                description: "Path '\(path)' has an unexpected IAM relative path"
+            )
+        }
+    }
+
+    func testRelativeIAMPathForLoginEndpointCrashes() {
+        // The `.logIn` endpoint is not allowed once IAM access tokens are enabled: exchanging a
+        // static app-user-id-based endpoint for a token-authenticated one doesn't make sense.
+        expect {
+            _ = HTTPRequest.Path.logIn.relativeIAMPath
+        }.to(throwAssertion())
+    }
+
+    func testUrlPreferringIAMPathUsesIAMRelativePath() {
+        let path: HTTPRequest.Path = .getCustomerInfo(appUserID: Self.userID)
+
+        let regularURL = path.url(preferIAMPath: false)
+        let iamURL = path.url(preferIAMPath: true)
+
+        expect(regularURL?.absoluteString) == "https://api.revenuecat.com/v1/subscribers/\(Self.userID)"
+        expect(iamURL?.absoluteString) == "https://api.revenuecat.com/v1/customer"
+        expect(iamURL) != regularURL
+    }
+
+    func testUrlPreferringIAMPathForPathsWithSharedComponentMatchesRegularURL() {
+        // `.health` resolves to the same relative path regardless of IAM preference.
+        let path: HTTPRequest.Path = .health
+
+        expect(path.url(preferIAMPath: true)?.absoluteString) == path.url(preferIAMPath: false)?.absoluteString
+    }
+
+    func testDefaultHTTPRequestPathIsNotAnIAMPath() {
+        for path in Self.paths {
+            expect(path.isIAMPath).to(
+                beFalse(),
+                description: "Path '\(path)' should not be reported as an IAM path by default"
+            )
+        }
+    }
+
+    func testDefaultRelativeIAMPathFallsBackToRelativePathForOtherPathTypes() {
+        // `HTTPRequest.FallbackPath` doesn't override `relativeIAMPath`, so it should fall back
+        // to the default implementation, which just returns `relativePath`.
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+
+        expect(path.relativeIAMPath) == path.relativePath
+    }
+
+    // MARK: - Bearer authorization header
+
+    func testBearerAuthorizationValueIsNilWhenNoAuthorizationHeaderIsSet() {
+        let headers: HTTPRequest.Headers = [:]
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueParsesBearerToken() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer abc123"
+
+        expect(headers.bearerAuthorizationValue) == "abc123"
+    }
+
+    func testBearerAuthorizationValueIsNilForNonBearerScheme() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Basic abc123"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueIsNilWhenSchemeHasNoSeparatingSpace() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueIsNilWhenPrefixIsSimilarButNotExactMatch() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearertoken abc123"
+
+        expect(headers.bearerAuthorizationValue).to(beNil())
+    }
+
+    func testSettingBearerAuthorizationValueUpdatesAuthorizationHeader() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.bearerAuthorizationValue = "my-access-token"
+
+        expect(headers.authorizationValue) == "Bearer my-access-token"
+    }
+
+    func testSettingBearerAuthorizationValueToNilClearsAuthorizationHeader() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.authorizationValue = "Bearer abc123"
+        headers.bearerAuthorizationValue = nil
+
+        expect(headers.authorizationValue).to(beNil())
+    }
+
+    func testBearerAuthorizationValueRoundTrips() {
+        var headers: HTTPRequest.Headers = [:]
+        headers.bearerAuthorizationValue = "round-trip-token"
+
+        expect(headers.bearerAuthorizationValue) == "round-trip-token"
     }
 }

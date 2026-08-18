@@ -607,6 +607,7 @@
 		55DACDFA302BC356005EE017 /* Authentication.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDF8302BC356005EE017 /* Authentication.swift */; };
 		55DACDFC302BC381005EE017 /* AnyCodingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACDFB302BC381005EE017 /* AnyCodingKey.swift */; };
 		55DACE87302E2B95005EE017 /* AuthenticationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE85302E2B95005EE017 /* AuthenticationTests.swift */; };
+		2485B5EE8B74A157C83795EE /* IdentityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02B9F0E7224E89051D2DC8EC /* IdentityTests.swift */; };
 		55DACE90302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */; };
 		55DACE91302E2BBB005EE017 /* MockAuthenticationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */; };
 		55DACE92302E2BBB005EE017 /* MockSecureItemStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */; };
@@ -2342,6 +2343,7 @@
 		55DACDF8302BC356005EE017 /* Authentication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Authentication.swift; sourceTree = "<group>"; };
 		55DACDFB302BC381005EE017 /* AnyCodingKey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKey.swift; sourceTree = "<group>"; };
 		55DACE85302E2B95005EE017 /* AuthenticationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationTests.swift; sourceTree = "<group>"; };
+		02B9F0E7224E89051D2DC8EC /* IdentityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTests.swift; sourceTree = "<group>"; };
 		55DACE8D302E2BBB005EE017 /* MockAuthenticationDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockAuthenticationDelegate.swift; sourceTree = "<group>"; };
 		55DACE8E302E2BBB005EE017 /* MockInternalAuthenticatorDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockInternalAuthenticatorDelegate.swift; sourceTree = "<group>"; };
 		55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSecureItemStorage.swift; sourceTree = "<group>"; };
@@ -5176,6 +5178,7 @@
 				75ABFDB42D5F579E00D69DF1 /* CustomerInfoManagerUIPreviewModeTests.swift */,
 				FE5151005A0000000000A002 /* CustomerInfoManagerSimulatedStoreTests.swift */,
 				37E35294EBC1E5A879C95540 /* IdentityManagerTests.swift */,
+				02B9F0E7224E89051D2DC8EC /* IdentityTests.swift */,
 			);
 			path = Identity;
 			sourceTree = "<group>";
@@ -8151,6 +8154,7 @@
 				35109DAB2BC6E436001030C8 /* BackendPostDiagnosticsTests.swift in Sources */,
 				57554C84282AC273009A7E58 /* PeriodTypeTests.swift in Sources */,
 				55DACE87302E2B95005EE017 /* AuthenticationTests.swift in Sources */,
+				2485B5EE8B74A157C83795EE /* IdentityTests.swift in Sources */,
 				903A05962EB3AE3C009B9CE4 /* AdEventStoreTests.swift in Sources */,
 				16F376262E93F1E300ADF649 /* LargeItemCacheTypeTests.swift in Sources */,
 				5757EDE72DEE08C100AC4BE1 /* StoreKitVersionTests.swift in Sources */,

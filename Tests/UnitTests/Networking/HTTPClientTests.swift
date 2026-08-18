@@ -3531,6 +3531,18 @@ extension HTTPClientTests {
         expect(secondRetriedRequest.fallbackUrlIndex).to(equal(0))
     }
 
+    func testRequestPathUsesRegularPathWhenIAMPathNotPreferred() {
+        let request = buildEmptyRequest(isRetryable: true, preferIAMPath: false)
+
+        expect(request.path) == "/v1/subscribers/abc123"
+    }
+
+    func testRequestPathUsesIAMPathWhenIAMPathPreferred() {
+        let request = buildEmptyRequest(isRetryable: true, preferIAMPath: true)
+
+        expect(request.path) == "/v1/customer"
+    }
+
     private func buildEmptyRequest(
         isRetryable: Bool,
         hasFallbackUrls: Bool = false,
