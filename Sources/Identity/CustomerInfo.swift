@@ -170,7 +170,8 @@ public typealias ProductIdentifier = String
             "verification=\(verificationResult)"
         ]
         if let attributes = self.data.response.subscriber.subscriberAttributes {
-            parts.append("attributes=\(attributes)")
+            let keyNames = attributes.attributes.map(\.key)
+            parts.append("attributes=\(keyNames)")
         }
 
         let contents = parts.map { "  " + $0 }.joined(separator: ",\n")
