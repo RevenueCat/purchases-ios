@@ -23,11 +23,7 @@ extension RulesEngine {
         ///
         /// Non-string/non-array inputs throw rather than defaulting to `0`.
         /// A silent zero would make `{"==": [{"rc.length": {"var": "missing"}},
-        /// 0]}` quietly true when a key is absent — the failure mode these
-        /// operators exist to eliminate. This differs from `rc.entries`, which
-        /// returns `[]` leniently because its result feeds iteration operators
-        /// that must keep composing; length feeds arithmetic, where a wrong
-        /// number is indistinguishable from a right one.
+        /// 0]}` quietly true when a key is absent.
         ///
         /// Uses `Operators.firstArgEvaluated` spread semantics; extra arguments
         /// are silently ignored. Literal array operands must be wrapped
