@@ -44,11 +44,6 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
-
-    /// Tracks in-flight `purchase()` operations, keyed by product identifier.
-    /// A queue-initiated receipt post (`StoreKit.Transaction.updates`) for the same product awaits the
-    /// corresponding task so the purchase post (which carries offering/paywall attribution) reaches the
-    /// backend first. See `awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier:)`.
     private let inFlightPurchasesByProductID: Atomic<[String: Task<PurchaseResultData, Error>]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
@@ -1595,9 +1590,6 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        // If a `purchase()` for this same product is in flight, wait for its receipt post (which
-        // carries the offering/paywall attribution) to finish before posting this queue-initiated
-        // transaction, so the attributed post reaches the backend first.
         await self.awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: transaction.productIdentifier)
 
         // Only attribute offering context and paywall data for transactions that are not known
