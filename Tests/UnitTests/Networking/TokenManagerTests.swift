@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Experimental) import RevenueCat
 
 class TokenManagerTests: TestCase {
 
