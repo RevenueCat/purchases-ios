@@ -27,6 +27,12 @@ class AuthenticationTests: TestCase {
     private var authenticationDelegate: MockAuthenticationDelegate!
     private var secureItemStorage: MockSecureItemStorage!
     private var tokenManager: TokenManager!
+    // `Authentication` only holds a *weak* reference to itself inside the closure it hands to
+    // `tokenManager.reportError`, so tests that don't otherwise keep the `Authentication` returned by
+    // `makeAuthentication()` alive would see it deallocated immediately, silently turning that closure
+    // into a no-op. Stashing it here keeps it alive for the lifetime of the test regardless of whether
+    // the caller captures the return value.
+    private var authentication: Authentication!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -59,6 +65,7 @@ class AuthenticationTests: TestCase {
                                             systemInfo: systemInfo,
                                             internalDelegate: self.internalDelegate)
         authentication.delegate = self.authenticationDelegate
+        self.authentication = authentication
         return authentication
     }
 
