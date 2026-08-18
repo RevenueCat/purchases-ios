@@ -18,6 +18,15 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
 
     /// The SDK encountered an unrecoverable authentication error while performing other operations
     ///
+    /// This method is invoked when an attempt to refresh the session tokens fails, and the error corresponds
+    /// to that error. Therefore, a single call into the SDK may result in *two* errors being reported. For example,
+    /// if a call to ``Purchases.customerInfo()`` attempts causes the SDK to refresh its session tokens
+    /// and that attempt fails, then this delegate method is invoked with the error from attempting to refresh
+    /// the tokens, and the overall call to `customerInfo()` reports that the overall operation failed.
+    ///
+    /// This method is *not* invoked when ``Authentication.logIn(using:)`` or
+    /// ``Authentication.logOut()`` fail, as both of those methods report any failures directly.
+    ///
     /// - Parameter error: The ``PublicError`` indicating why authentication has failed
     func authenticatorDidEncounterError(_ error: PublicError)
 }
