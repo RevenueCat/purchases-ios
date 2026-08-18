@@ -39,6 +39,23 @@ class TokenManager {
 
     var hasCurrentAccessToken: Bool { currentAccessToken != nil }
 
+    var currentIdentitySources: [IdentitySource]? {
+        guard let currentIDToken else { return nil }
+        guard let jwt = try? JWT(from: currentIDToken) else { return nil }
+        return jwt.amr?.compactMap { IdentitySource.source(with: $0) }
+    }
+
+    var isCurrentIdentityAnonymous: Bool {
+        // returns true iff all (1+) the identity sources are "anonymous"
+        guard let sources = currentIdentitySources else { return false }
+        if sources.isEmpty { return false }
+        return sources.allSatisfy { $0 == .anonymous }
+    }
+
+    var currentIdentitySource: IdentitySource? {
+        currentIdentitySources?.last
+    }
+
     var currentRefreshToken: String? {
         get {
             guard enabled == true else { return nil }

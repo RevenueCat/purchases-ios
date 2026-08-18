@@ -497,6 +497,132 @@ class HTTPRequestTests: TestCase {
         expect(path.relativeIAMPath) == path.relativePath
     }
 
+    // MARK: - Token (IAM auth) paths
+
+    private static let tokenPaths: [HTTPRequest.Path] = [
+        .tokenLogin,
+        .tokenRefresh,
+        .tokenLogOut
+    ]
+
+    private static let expectedTokenPathComponents: [HTTPRequest.Path: String] = [
+        .tokenLogin: "/auth/login",
+        .tokenRefresh: "/auth/token",
+        .tokenLogOut: "/auth/revoke"
+    ]
+
+    private static let expectedTokenPathNames: [HTTPRequest.Path: String] = [
+        .tokenLogin: "token_login",
+        .tokenRefresh: "token_refresh",
+        .tokenLogOut: "token_logout"
+    ]
+
+    func testTokenPathsHaveALeadingSlashUnlikeOtherPaths() {
+        // Unlike the rest of `HTTPRequest.Path`, the token (IAM auth) endpoints live outside `/v1`,
+        // so their `pathComponent` includes its own leading slash.
+        for path in Self.tokenPaths {
+            expect(path.pathComponent).to(
+                beginWith("/"),
+                description: "Path '\(path)' should have a leading slash"
+            )
+        }
+    }
+
+    func testTokenPathComponentsMatchExpectedValues() {
+        for (path, expectedComponent) in Self.expectedTokenPathComponents {
+            expect(path.pathComponent) == expectedComponent
+        }
+    }
+
+    func testTokenPathsRelativePathIsNotPrefixedWithV1() {
+        // `relativePath` only prepends `/v1` when the `pathComponent` doesn't already have a
+        // leading slash, so the token endpoints' relative path is identical to their path component.
+        for (path, expectedComponent) in Self.expectedTokenPathComponents {
+            expect(path.relativePath) == expectedComponent
+        }
+    }
+
+    func testTokenPathsRelativeIAMPathMatchesRelativePath() {
+        for path in Self.tokenPaths {
+            expect(path.relativeIAMPath) == path.relativePath
+        }
+    }
+
+    func testTokenPathNamesMatchExpectedValues() {
+        for (path, expectedName) in Self.expectedTokenPathNames {
+            expect(path.name) == expectedName
+        }
+    }
+
+    func testTokenPathsAreAuthenticated() {
+        for path in Self.tokenPaths {
+            expect(path.authenticated).to(
+                beTrue(),
+                description: "Path '\(path)' should be authenticated"
+            )
+        }
+    }
+
+    func testTokenPathsSendETag() {
+        for path in Self.tokenPaths {
+            expect(path.shouldSendEtag).to(
+                beTrue(),
+                description: "Path '\(path)' should send etag"
+            )
+        }
+    }
+
+    func testTokenPathsDoNotSupportSignatureVerification() {
+        for path in Self.tokenPaths {
+            expect(path.supportsSignatureVerification).to(
+                beFalse(),
+                description: "Path '\(path)' should not support signature verification"
+            )
+        }
+    }
+
+    func testTokenPathsRequireNonceForSigning() {
+        for path in Self.tokenPaths {
+            expect(path.needsNonceForSigning).to(
+                beTrue(),
+                description: "Path '\(path)' should require a nonce for signing"
+            )
+        }
+    }
+
+    func testTokenPathsAreIAMPaths() {
+        for path in Self.tokenPaths {
+            expect(path.isIAMPath).to(
+                beTrue(),
+                description: "Path '\(path)' should be reported as an IAM path"
+            )
+        }
+    }
+
+    func testTokenPathsUseAPISources() {
+        for path in Self.tokenPaths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testTokenPathsHaveNoFallbackUrls() {
+        for path in Self.tokenPaths {
+            expect(path.fallbackUrls).to(beEmpty())
+        }
+    }
+
+    func testTokenLoginURLResolvesOutsideOfTheV1Namespace() {
+        let url = HTTPRequest.Path.tokenLogin.url(preferIAMPath: false)
+
+        expect(url?.absoluteString) == "https://api.revenuecat.com/auth/login"
+    }
+
+    func testTokenPathsURLIsTheSameRegardlessOfIAMPreference() {
+        for path in Self.tokenPaths {
+            expect(path.url(preferIAMPath: true)?.absoluteString) == path.url(preferIAMPath: false)?.absoluteString
+        }
+    }
+
     // MARK: - Bearer authorization header
 
     func testBearerAuthorizationValueIsNilWhenNoAuthorizationHeaderIsSet() {

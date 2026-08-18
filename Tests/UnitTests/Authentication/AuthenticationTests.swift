@@ -184,6 +184,72 @@ class AuthenticationTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
     }
 
+    // MARK: - logIn(using:completion:)
+
+    func testLogInUsingIdentityReturnsUnsupportedErrorWhenTokenManagerIsDisabled() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: false)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedError).to(matchError(ErrorCode.unsupportedError))
+        expect(self.identityManager.invokedLogInWithIdentity) == false
+    }
+
+    func testLogInUsingIdentitySucceedsAndNotifiesInternalDelegate() throws {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(receivedError).to(beNil())
+        expect(self.identityManager.invokedLogInWithIdentityCount) == 1
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
+        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
+    }
+
+    func testLogInUsingIdentityFailureDoesNotNotifyInternalDelegate() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInWithIdentityResult = .failure(backendError)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedError).to(matchError(backendError.asPurchasesError))
+        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+    }
+
+    func testLogInUsingIdentityPassesTheProvidedIdentityToTheIdentityManager() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockLogInWithIdentityResult = .failure(.missingAppUserID())
+
+        authentication.logIn(using: .signInWithApple(Data("identity-token".utf8))) { _, _ in }
+
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource)
+            == .signInWithApple
+    }
+
     // MARK: - logOut(completion:)
 
     func testLogOutCallsLogOutWithUserInitiatedTrueAndForwardsResult() throws {

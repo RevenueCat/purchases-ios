@@ -189,6 +189,9 @@ extension HTTPRequest {
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
 
+        case tokenLogin
+        case tokenRefresh
+        case tokenLogOut
     }
 
     enum FallbackPath: Hashable {
@@ -285,7 +288,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .remoteConfig:
+                .remoteConfig,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
 
         case .health,
@@ -312,7 +318,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .remoteConfig,
              .health,
@@ -343,7 +352,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return false
         }
     }
@@ -358,7 +370,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -456,6 +471,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
+
+        case .tokenLogin:
+            return "/auth/login"
+
+        case .tokenRefresh:
+            return "/auth/token"
+
+        case .tokenLogOut:
+            return "/auth/revoke"
         }
     }
 
@@ -506,6 +530,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return self.pathComponent
         case .remoteConfig:
             return self.pathComponent
+        case .tokenLogin:
+            return "/auth/login"
+        case .tokenRefresh:
+            return "/auth/token"
+        case .tokenLogOut:
+            return "/auth/revoke"
         }
     }
 
@@ -569,6 +599,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
+
+        case .tokenLogin:
+            return "token_login"
+
+        case .tokenRefresh:
+            return "token_refresh"
+
+        case .tokenLogOut:
+            return "token_logout"
         }
     }
 
@@ -582,6 +621,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
             ]
         default:
             return [:]
+        }
+    }
+
+    var isIAMPath: Bool {
+        switch self {
+        case .tokenLogin, .tokenRefresh, .tokenLogOut:
+            return true
+        default: return false
         }
     }
 

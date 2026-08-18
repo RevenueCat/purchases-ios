@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-@testable import RevenueCat
+@testable @_spi(Experimental) import RevenueCat
 
 class MockIdentityManager: IdentityManager {
 
@@ -65,6 +65,21 @@ class MockIdentityManager: IdentityManager {
         self.invokedLogInParametersList.append(appUserID)
 
         completion(self.mockLogInResult)
+    }
+
+    // MARK: - LogIn (Identity / IAM)
+
+    var mockLogInWithIdentityResult: IdentityAPI.LogInResponse!
+    var invokedLogInWithIdentity = false
+    var invokedLogInWithIdentityCount = 0
+    var invokedLogInWithIdentityParametersList: [Identity] = []
+
+    override func logIn(identity: Identity, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        self.invokedLogInWithIdentity = true
+        self.invokedLogInWithIdentityCount += 1
+        self.invokedLogInWithIdentityParametersList.append(identity)
+
+        completion(self.mockLogInWithIdentityResult)
     }
 
     // MARK: - LogOut

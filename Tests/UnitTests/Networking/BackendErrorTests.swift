@@ -35,6 +35,12 @@ class BackendErrorTests: BaseErrorTests {
         verifyPurchasesError(error, expectedCode: .invalidAppUserIdError)
     }
 
+    func testInvalidAuthorizationToken() {
+        let error: BackendError = .invalidAuthorizationToken()
+
+        verifyPurchasesError(error, expectedCode: .invalidCredentialsError)
+    }
+
     func testEmptySubscriberAttributes() {
         let error: BackendError = .emptySubscriberAttributes()
 
