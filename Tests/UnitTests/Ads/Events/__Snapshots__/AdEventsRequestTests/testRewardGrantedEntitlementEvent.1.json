@@ -9,8 +9,9 @@
   "mediator_name" : "AdMob",
   "network_name" : "AdMob",
   "placement" : "home_screen",
-  "reward_type" : "unsupported_reward",
+  "reward_entitlement_id" : "pro",
+  "reward_type" : "entitlement",
   "timestamp_ms" : 1694029328000,
-  "type" : "rc_ads_ad_reward_sdk_verified",
+  "type" : "rc_ads_ad_reward_sdk_granted",
   "version" : 1
 }

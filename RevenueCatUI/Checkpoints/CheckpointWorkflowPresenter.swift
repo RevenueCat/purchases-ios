@@ -26,7 +26,7 @@ import UIKit
 @MainActor
 final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
-    typealias PresentationHandler = (ResolvedCheckpointWorkflow) throws -> Bool
+    typealias PresentationHandler = (CheckpointPresentation) throws -> Bool
 
     private let callStore: CheckpointCallStore
     private let presentationHandler: PresentationHandler?
@@ -45,18 +45,18 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
     }
 
     func present(
-        workflow: ResolvedCheckpointWorkflow,
+        presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws {
-        self.callStore.store(workflow: workflow, delegate: delegate)
+        self.callStore.store(presentation: presentation, delegate: delegate)
 
         do {
             if let presentationHandler = self.presentationHandler {
-                guard try presentationHandler(workflow) else {
+                guard try presentationHandler(presentation) else {
                     throw CheckpointError.presentationFailed
                 }
             } else {
-                try self.presentAutomatically(workflow)
+                try self.presentAutomatically(presentation)
             }
         } catch {
             _ = self.callStore.remove()
@@ -104,20 +104,12 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         call.delegate.checkpointPresentationFinished(outcome: call.stagedOutcome)
     }
 
-    private func presentAutomatically(_ workflow: ResolvedCheckpointWorkflow) throws {
+    private func presentAutomatically(_ presentation: CheckpointPresentation) throws {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
             throw CheckpointError.noPresentationContext
         }
-        let workflowContext = try WorkflowPreview.makeContext(
-            workflow: workflow.workflow,
-            offerings: workflow.offerings,
-            uiConfig: workflow.uiConfig
-        )
-        let viewController = PaywallViewController(
-            workflowContext: workflowContext,
-            displayCloseButton: true
-        )
+        let viewController = try self.makePaywallViewController(for: presentation)
         viewController.delegate = self
         self.presentedViewController = viewController
         presentationContext.present(viewController, animated: true)
@@ -127,6 +119,22 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #else
         throw CheckpointError.noPresentationContext
         #endif
+    }
+
+    func makePaywallViewController(
+        for presentation: CheckpointPresentation
+    ) throws -> PaywallViewController {
+        let workflowContext = try WorkflowPreview.makeContext(
+            workflow: presentation.workflow.workflow,
+            offerings: presentation.workflow.offerings,
+            uiConfig: presentation.workflow.uiConfig
+        )
+        let viewController = PaywallViewController(
+            workflowContext: workflowContext,
+            displayCloseButton: true
+        )
+        viewController.customVariables = presentation.customVariables
+        return viewController
     }
 
 }

@@ -17,19 +17,20 @@ import Foundation
 
 /// Owns checkpoint presentation state until the UI has fully dismissed.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointCallStore {
 
     final class Call {
-        let workflow: ResolvedCheckpointWorkflow
+        let presentation: CheckpointPresentation
         let delegate: CheckpointPresentationDelegate
         fileprivate(set) var stagedOutcome: CheckpointPaywallOutcome
 
         init(
-            workflow: ResolvedCheckpointWorkflow,
+            presentation: CheckpointPresentation,
             delegate: CheckpointPresentationDelegate,
             stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
         ) {
-            self.workflow = workflow
+            self.presentation = presentation
             self.delegate = delegate
             self.stagedOutcome = stagedOutcome
         }
@@ -38,10 +39,10 @@ final class CheckpointCallStore {
     private(set) var call: Call?
 
     func store(
-        workflow: ResolvedCheckpointWorkflow,
+        presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) {
-        self.call = Call(workflow: workflow, delegate: delegate)
+        self.call = Call(presentation: presentation, delegate: delegate)
     }
 
     func stage(outcome: CheckpointPaywallOutcome) {

@@ -16,6 +16,7 @@ import Foundation
 @_spi(Internal) import RevenueCat
 
 /// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
     var listener: CheckpointListener? {
@@ -80,11 +81,21 @@ final class CheckpointsManager {
 
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
-        case let .workflow(workflow):
-            let outcome = try await self.executor.execute(workflow)
+        case let .matchedWorkflow(workflow):
+            let presentation = CheckpointPresentation(
+                workflow: workflow,
+                customVariables: params.customVariables
+            )
+            let outcome = try await self.executor.execute(presentation)
             result = CheckpointPaywallPresentedResult(
                 checkpoint: checkpoint,
                 paywallOutcome: outcome
+            )
+        case let .matchedOffering(offering):
+            // Data-only, so this never claims the presentation slot the executor owns.
+            result = CheckpointReceivedOfferingResult(
+                checkpoint: checkpoint,
+                offering: offering
             )
         case let .noAction(reason):
             result = CheckpointNoActionResult(
@@ -99,6 +110,7 @@ final class CheckpointsManager {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension CheckpointResolutionReason {
 
     var noActionReason: CheckpointNoActionReason {

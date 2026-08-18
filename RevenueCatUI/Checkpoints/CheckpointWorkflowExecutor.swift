@@ -15,20 +15,31 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// Everything needed to present a checkpoint workflow.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CheckpointPresentation {
+
+    let workflow: ResolvedCheckpointWorkflow
+    let customVariables: [String: CustomVariableValue]
+
+}
+
 /// Bridges resolved checkpoint workflows into asynchronous UI outcomes.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointExecutor: AnyObject {
 
-    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome
 
 }
 
 /// Presents a resolved workflow and reports its terminal outcome through a delegate.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresenter: AnyObject {
 
     func present(
-        workflow: ResolvedCheckpointWorkflow,
+        presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws
 
@@ -38,6 +49,7 @@ protocol CheckpointPresenter: AnyObject {
 
 /// Receives the final staged outcome after checkpoint UI has fully dismissed.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresentationDelegate: AnyObject {
 
     func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome)
@@ -46,6 +58,7 @@ protocol CheckpointPresentationDelegate: AnyObject {
 
 /// Executes a resolved workflow using RevenueCatUI's checkpoint presenter.
 @MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentationDelegate {
 
     typealias PresenterProvider = @MainActor () -> CheckpointPresenter?
@@ -58,9 +71,6 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     init(presenterProvider: @escaping PresenterProvider = {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
-        guard #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) else {
-            return nil
-        }
         return CheckpointWorkflowPresenter()
         #else
         return nil
@@ -69,7 +79,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         self.presenterProvider = presenterProvider
     }
 
-    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
         guard self.pendingContinuation == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -87,7 +97,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                 }
                 self.store(continuation: continuation)
                 do {
-                    try presenter.present(workflow: workflow, delegate: self)
+                    try presenter.present(presentation: presentation, delegate: self)
                 } catch {
                     self.fail(error: error)
                 }

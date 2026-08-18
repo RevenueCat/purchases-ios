@@ -17,6 +17,7 @@ import Foundation
 
 /// A checkpoint-triggered paywall was presented and finished.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
     /// The terminal outcome of the presented paywall.
@@ -45,6 +46,7 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
 /// Base class for the terminal result of a checkpoint-presented paywall.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {
 
     fileprivate init() {}
@@ -70,6 +72,7 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
 
 /// The customer dismissed the paywall.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
     static let shared = CheckpointPaywallDismissedOutcome()
@@ -82,6 +85,7 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
 /// The customer completed a purchase.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after the completed purchase.
@@ -104,6 +108,7 @@ public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
 /// The customer restored purchases.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
     /// Customer information after restoring purchases.
@@ -126,6 +131,7 @@ public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
 /// The paywall ended with an error.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
 
     /// The error that ended the checkpoint experience.

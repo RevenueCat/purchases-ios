@@ -17,6 +17,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+#if DEBUG
 private enum CheckpointStrings: LogMessage {
 
     case invalidObjectiveCCustomVariable(Any.Type)
@@ -31,9 +32,11 @@ private enum CheckpointStrings: LogMessage {
     var category: String { return "checkpoints" }
 
 }
+#endif
 
 /// Objective-C-compatible checkpoint parameters.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointParams)
 public final class ObjCCheckpointParams: NSObject {
 
@@ -42,11 +45,13 @@ public final class ObjCCheckpointParams: NSObject {
     /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
     @objc(initWithCustomVariables:)
     public init(customVariables: NSDictionary) {
-        var values: [String: CheckpointValue] = [:]
+        var values: [String: CustomVariableValue] = [:]
         for (rawKey, rawValue) in customVariables {
             guard let key = rawKey as? String,
-                  let value = CheckpointValue(foundationValue: rawValue) else {
+                  let value = CustomVariableValue(foundationValue: rawValue) else {
+                #if DEBUG
                 Logger.warning(CheckpointStrings.invalidObjectiveCCustomVariable(type(of: rawValue)))
+                #endif
                 continue
             }
             values[key] = value
@@ -70,6 +75,7 @@ public final class ObjCCheckpointParams: NSObject {
 
 /// Objective-C-compatible checkpoint information.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointInfo)
 public final class ObjCCheckpointInfo: NSObject {
 
@@ -89,6 +95,7 @@ public final class ObjCCheckpointInfo: NSObject {
 
 /// Objective-C-compatible reason that no experience was served.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointNoActionReason)
 public final class ObjCCheckpointNoActionReason: NSObject {
 
@@ -104,6 +111,7 @@ public final class ObjCCheckpointNoActionReason: NSObject {
 
 /// Objective-C-compatible base checkpoint result.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointResult)
 public class ObjCCheckpointResult: NSObject {
 
@@ -119,6 +127,8 @@ public class ObjCCheckpointResult: NSObject {
         switch value {
         case let result as CheckpointPaywallPresentedResult:
             return ObjCCheckpointPaywallPresentedResult(result)
+        case let result as CheckpointReceivedOfferingResult:
+            return ObjCCheckpointReceivedOfferingResult(result)
         case let result as CheckpointNoActionResult:
             return ObjCCheckpointNoActionResult(result)
         default:
@@ -128,8 +138,25 @@ public class ObjCCheckpointResult: NSObject {
 
 }
 
+/// Objective-C-compatible checkpoint result carrying an app-owned offering.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
+@objc(RCCheckpointReceivedOfferingResult)
+public final class ObjCCheckpointReceivedOfferingResult: ObjCCheckpointResult {
+
+    init(_ value: CheckpointReceivedOfferingResult) {
+        self.offering = value.offering
+        super.init(value)
+    }
+
+    /// The offering the checkpoint selected.
+    @objc public let offering: Offering
+
+}
+
 /// Objective-C-compatible no-action checkpoint result.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointNoActionResult)
 public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
 
@@ -145,6 +172,7 @@ public final class ObjCCheckpointNoActionResult: ObjCCheckpointResult {
 
 /// Objective-C-compatible checkpoint-triggered paywall result.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallPresentedResult)
 public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 
@@ -160,6 +188,7 @@ public final class ObjCCheckpointPaywallPresentedResult: ObjCCheckpointResult {
 
 /// Objective-C-compatible base paywall outcome.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallOutcome)
 public class ObjCCheckpointPaywallOutcome: NSObject {
 
@@ -182,11 +211,13 @@ public class ObjCCheckpointPaywallOutcome: NSObject {
 
 /// Objective-C-compatible dismissed paywall outcome.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallDismissedOutcome)
 public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallOutcome {}
 
 /// Objective-C-compatible purchased paywall outcome.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallPurchasedOutcome)
 public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
@@ -202,6 +233,7 @@ public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallO
 
 /// Objective-C-compatible restored paywall outcome.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallRestoredOutcome)
 public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOutcome {
 
@@ -217,6 +249,7 @@ public final class ObjCCheckpointPaywallRestoredOutcome: ObjCCheckpointPaywallOu
 
 /// Objective-C-compatible error paywall outcome.
 @_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
 @objc(RCCheckpointPaywallErrorOutcome)
 public final class ObjCCheckpointPaywallErrorOutcome: ObjCCheckpointPaywallOutcome {
 

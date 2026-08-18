@@ -39,6 +39,8 @@ private final class CheckpointListenerAPITester: CheckpointListener {
             }
 
             let _: String = outcome.description
+        } else if let receivedOffering = result as? CheckpointReceivedOfferingResult {
+            let _: Offering = receivedOffering.offering
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
         }
@@ -49,26 +51,27 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 private final class CheckpointListenerDefaultsAPITester: CheckpointListener {}
 
 func checkCheckpointAPI(_ purchases: Purchases) {
-    let string: CheckpointValue = .string("value")
-    let integer: CheckpointValue = .integer(2)
-    let double: CheckpointValue = .double(4.5)
-    let boolean: CheckpointValue = .boolean(true)
-    let _: Any = string.foundationValue
-
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
-    let params = CheckpointParams(customVariables: [
-        "name": string,
-        "attempts": integer,
-        "score": double,
-        "subscriber": boolean
+    let literalParams = CheckpointParams(customVariables: [
+        "name": "Rick",
+        "points": 120,
+        "score": 4.5,
+        "subscriber": true
     ])
-    let _: [String: CheckpointValue] = params.customVariables
+    let explicitParams = CheckpointParams(customVariables: [
+        "name": .string("Rick"),
+        "points": .number(120),
+        "score": .number(4.5),
+        "subscriber": .bool(true)
+    ])
+    let _: [String: CustomVariableValue] = literalParams.customVariables
+    let _: [String: CustomVariableValue] = explicitParams.customVariables
 
     purchases.checkpoint(
         "test_checkpoint",
-        params: params
+        params: literalParams
     ) { (_: Result<CheckpointResult, PublicError>) in }
 
     purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }

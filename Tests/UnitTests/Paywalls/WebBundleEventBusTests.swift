@@ -36,8 +36,8 @@ final class WebBundleEventBusTests: TestCase {
         super.tearDown()
     }
 
-    func testLateSubscriberReceivesLastPublishedSet() async {
-        let urls: Set<URLWithValidation> = [
+    func testLateSubscriberReceivesLastPublishedURLs() async {
+        let urls: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
         ]
@@ -52,10 +52,10 @@ final class WebBundleEventBusTests: TestCase {
     }
 
     func testPublishingReplacesPreviousValueForSubsequentSubscribers() async {
-        let first: Set<URLWithValidation> = [
+        let first: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/first")!, checksum: nil)
         ]
-        let second: Set<URLWithValidation> = [
+        let second: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/second")!, checksum: nil)
         ]
 
@@ -70,7 +70,7 @@ final class WebBundleEventBusTests: TestCase {
         expect(received) == .receivedAssetURLs(second)
     }
 
-    func testInitialSubscriberReceivesEmptySet() {
+    func testInitialSubscriberReceivesEmpty() {
         var received: WebBundleEvent?
         self.bus.publisher
             .sink { received = $0 }
@@ -89,8 +89,8 @@ final class WebBundleEventBusTests: TestCase {
         expect(received) == .cacheClearRequested
     }
 
-    func testEmptyReplacesCurrentValueWithEmptySet() async {
-        let urls: Set<URLWithValidation> = [
+    func testEmptyReplacesCurrentValueWithEmpty() async {
+        let urls: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil),
             .init(url: URL(string: "https://example.com/b")!, checksum: nil)
         ]
@@ -108,10 +108,10 @@ final class WebBundleEventBusTests: TestCase {
     }
 
     func testSubscriberCanPublishInResponseToValue() async {
-        let first: Set<URLWithValidation> = [
+        let first: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/first")!, checksum: nil)
         ]
-        let second: Set<URLWithValidation> = [
+        let second: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/second")!, checksum: nil)
         ]
         let receivedSecond = self.expectation(description: "Received second publication")

@@ -13,6 +13,6 @@
   "reward_item" : "coins",
   "reward_verification_enabled" : true,
   "timestamp_ms" : 1694029328000,
-  "type" : "rc_ads_ad_reward_sdk_unverified",
+  "type" : "rc_ads_ad_reward_sdk_earned",
   "version" : 1
 }
