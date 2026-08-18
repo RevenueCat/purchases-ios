@@ -1768,8 +1768,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         }
 
         // The queue post must not happen until the purchase post finishes.
-        await Task.yield()
-        expect(self.backend.invokedPostReceiptDataCount) == 1
+        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
 
         // Releasing the purchase post lets the purchase finish, which unblocks the queue post.
         gate.open()
@@ -1781,6 +1780,12 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             $0.postReceiptSource.initiationSource
         }
         expect(sources) == [.purchase, .queue]
+
+        // The whole point of the ordering: the post that reaches the backend first is the attributed one.
+        expect(
+            self.backend.invokedPostReceiptDataParametersList.first?
+                .transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
     }
 
     func testQueueTransactionDoesNotWaitForInFlightPurchaseOfDifferentProduct() async throws {
@@ -1925,6 +1930,133 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         expect(
             self.backend.invokedPostReceiptDataParametersList.first?.postReceiptSource.initiationSource
         ) == .queue
+    }
+
+    func testCancellingCallerStillPostsPurchaseReceiptBeforeQueueTransaction() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let gate = MockAsyncGate()
+        self.backend.deferredPostReceiptCompletionGate.value = gate
+
+        let purchaseTask = Task {
+            try await self.orchestrator.purchase(
+                sk2Product: product,
+                package: package,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
+                promotionalOfferOptions: nil
+            )
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+
+        let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: .purchase)
+        let queueTask = Task {
+            try await self.orchestrator.storeKit2TransactionListener(
+                self.mockStoreKit2TransactionListener!,
+                updatedTransaction: queueTransaction
+            )
+        }
+
+        // Cancelling the caller must not abort the receipt post, nor release the queue transaction early.
+        purchaseTask.cancel()
+        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(2), until: .milliseconds(300))
+
+        gate.open()
+
+        _ = await purchaseTask.result
+        try await queueTask.value
+
+        let sources = self.backend.invokedPostReceiptDataParametersList.map {
+            $0.postReceiptSource.initiationSource
+        }
+        expect(sources) == [.purchase, .queue]
+        expect(
+            self.backend.invokedPostReceiptDataParametersList.first?
+                .transactionData.presentedOfferingContext?.offeringIdentifier
+        ) == "offering"
+    }
+
+    func testQueueTransactionWaitsForNewestPurchaseWhenAnEarlierOneForSameProductFinishes() async throws {
+        self.setUpStoreKit2Listener()
+
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+        self.customerInfoManager.stubbedCachedCustomerInfoResult = self.mockCustomerInfo
+        self.backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
+        self.mockStoreKit2TransactionListener?.mockResult = .init(nil)
+
+        let product = try await self.fetchSk2Product()
+        let package = Package(
+            identifier: "package",
+            packageType: .monthly,
+            storeProduct: StoreProduct(sk2Product: product),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        func startPurchase() -> Task<PurchaseResultData, Error> {
+            return Task {
+                try await self.orchestrator.purchase(
+                    sk2Product: product,
+                    package: package,
+                    promotionalOffer: nil,
+                    winBackOffer: nil,
+                    introductoryOfferEligibilityJWS: nil,
+                    billingPlanType: nil,
+                    promotionalOfferOptions: nil
+                )
+            }
+        }
+
+        let firstGate = MockAsyncGate()
+        self.backend.deferredPostReceiptCompletionGate.value = firstGate
+        let firstPurchase = startPurchase()
+        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+
+        // A second purchase of the same product overwrites the first one in the in-flight registry.
+        let secondGate = MockAsyncGate()
+        self.backend.deferredPostReceiptCompletionGate.value = secondGate
+        let secondPurchase = startPurchase()
+        expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(2))
+
+        // The first purchase finishing must not deregister the second one.
+        firstGate.open()
+        _ = try await firstPurchase.value
+
+        let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: .purchase)
+        let queueTask = Task {
+            try await self.orchestrator.storeKit2TransactionListener(
+                self.mockStoreKit2TransactionListener!,
+                updatedTransaction: queueTransaction
+            )
+        }
+
+        expect(self.backend.invokedPostReceiptDataCount).toNever(equal(3), until: .milliseconds(300))
+
+        secondGate.open()
+        _ = try await secondPurchase.value
+        try await queueTask.value
+
+        let sources = self.backend.invokedPostReceiptDataParametersList.map {
+            $0.postReceiptSource.initiationSource
+        }
+        expect(sources) == [.purchase, .purchase, .queue]
     }
 
     func testSK2TransactionListenerDoesNotAttributeCachedDataWhenPurchaseDateIsBeforeCacheDate() async throws {
