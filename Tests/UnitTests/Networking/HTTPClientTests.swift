@@ -3220,10 +3220,9 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response).to(beSuccess())
         expect(response?.value?.body) == responseData
 
-        self.logger.verifyMessageWasLogged("""
-            Performing redirect from '\(pathA.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)'
-             to '\(pathB.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)'
-            """,
+        self.logger.verifyMessageWasLogged(
+            "Performing redirect from '\(pathA.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)' " +
+            "to '\(pathB.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)'",
             level: .debug
         )
     }
