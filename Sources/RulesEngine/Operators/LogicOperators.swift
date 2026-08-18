@@ -17,13 +17,13 @@ extension RulesEngine {
         /// `{"!": x}` — boolean negation. Coerces to bool first per JSON Logic
         /// truthiness rules.
         static func opNot(args: Value, vars: Scope) throws -> Value {
-            let value = try firstArgEvaluated(args, vars: vars)
+            let value = try Operators.firstArgEvaluated(args, vars: vars)
             return .bool(!value.isTruthy)
         }
 
         /// `{"!!": x}` — boolean cast. Spec: equivalent to `!!x` in JS.
         static func opNotNot(args: Value, vars: Scope) throws -> Value {
-            let value = try firstArgEvaluated(args, vars: vars)
+            let value = try Operators.firstArgEvaluated(args, vars: vars)
             return .bool(value.isTruthy)
         }
 
@@ -77,14 +77,6 @@ extension RulesEngine {
                 return try Evaluator.evaluateValue(items[index], vars: vars)
             }
             return .null
-        }
-
-        // MARK: - Helpers
-
-        private static func firstArgEvaluated(_ args: Value, vars: Scope) throws -> Value {
-            let items = Operators.argsAsList(args)
-            let first = items.first ?? .null
-            return try Evaluator.evaluateValue(first, vars: vars)
         }
     }
 }
