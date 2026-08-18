@@ -13,17 +13,12 @@
 
 import XCTest
 
-/// Selection rules for a paywall with packages both outside and inside tabs, driven with real taps.
-/// Each card renames itself when selected, so the selection is readable from the accessibility tree.
+/// Package selection driven with real taps, which nothing else in the repo does. Cards rename
+/// themselves when selected, so the selection is readable from the accessibility tree.
 ///
-/// These cover what the user sees: the hidden default is never the selection, a tab owns the selection
-/// while it is showing, and a tapped page card takes over without following the user into a tab that
-/// does not offer it. Nothing else in the repo drives package selection with real taps.
-///
-/// They are area coverage rather than proof of one change: they pass with the page-scoped reconcile
-/// and the reconcile marker both disabled, because tab propagation alone produces the same selection
-/// in this fixture. Those two are pinned by `MixedTabsDefaultPackageVisibilityTests`, which can seed a
-/// `PackageContext` directly and reach states a tap sequence cannot.
+/// Area coverage, not proof of one change: these still pass with the page-scoped reconcile and the
+/// reconcile marker disabled, since tab propagation alone gives the same selection here. Those two are
+/// pinned by `MixedTabsDefaultPackageVisibilityTests`.
 final class PackageSelectionUITests: XCTestCase {
 
     override func setUp() {
@@ -31,8 +26,7 @@ final class PackageSelectionUITests: XCTestCase {
         self.continueAfterFailure = false
     }
 
-    /// The authored default is hidden, and the showing tab declares its own, so the tab's package
-    /// owns the selection. Nothing may end up selected on the hidden card.
+    /// The hidden default must never be the selection; the showing tab's own package owns it.
     func testHiddenDefaultIsNeverTheSelection() throws {
         let app = self.launchMixedTabs()
 
@@ -59,8 +53,7 @@ final class PackageSelectionUITests: XCTestCase {
         )
     }
 
-    /// A real tap on a page card takes the selection, and the tab it leaves behind must not keep
-    /// claiming it.
+    /// A real tap on a page card takes the selection off the tab.
     func testTappingAPageCardTakesTheSelection() throws {
         let app = self.launchMixedTabs()
         XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
@@ -98,8 +91,7 @@ final class PackageSelectionUITests: XCTestCase {
         return app
     }
 
-    /// Included in failure messages so a broken fixture reports what did render. Package cards are
-    /// buttons, not static text: the card is tappable, so its label carries the text.
+    /// Cards are buttons, not static text: the card is tappable, so its label carries the text.
     private static func visibleLabels(in app: XCUIApplication) -> String {
         return "Card labels: \(app.buttons.allElementsBoundByIndex.prefix(12).map(\.label))"
     }

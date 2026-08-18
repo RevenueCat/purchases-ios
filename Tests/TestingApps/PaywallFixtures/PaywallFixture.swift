@@ -24,8 +24,8 @@ enum PaywallFixture: String, CaseIterable {
     /// A button whose only content is an icon, so it has no text for a screen reader to announce.
     case iconOnlyButton = "icon_only_button"
 
-    /// Packages both outside and inside tabs, with the authored default hidden. Each card renames
-    /// itself when selected, so a UI test can read the selection out of the accessibility tree.
+    /// Packages outside and inside tabs, authored default hidden. Cards rename themselves when
+    /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
 
     var title: String {
@@ -46,8 +46,7 @@ enum PaywallFixture: String, CaseIterable {
         }
     }
 
-    /// The packages the fixture's offering carries. A paywall whose offering lacks a package a
-    /// component references renders that component with no product.
+    /// A component referencing a package the offering lacks renders with no product.
     var packages: [Package] {
         switch self {
         case .iconOnlyButton:
@@ -184,8 +183,7 @@ private extension PaywallFixture {
         )
     }
 
-    /// A package card whose label changes when it is the selection, which is what a UI test reads.
-    /// `visible: false` hides the card outright, standing in for a rule that resolves hidden.
+    /// `visible: false` hides the card, standing in for a rule that resolves hidden.
     static func packageCard(
         packageID: String,
         label: String,
@@ -216,8 +214,7 @@ private extension PaywallFixture {
         ))
     }
 
-    /// Two packages on the page, the authored default among them hidden, plus two tabs that each
-    /// declare their own default. Exercises the page/tab selection rules with real taps.
+    /// Two page packages with the default among them hidden, plus two tabs declaring their own.
     static func mixedTabsPageDefaultComponentsData() -> PaywallComponentsData {
         let tabs: PaywallComponent = .tabs(.init(
             control: .init(
