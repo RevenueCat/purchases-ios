@@ -17,6 +17,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+#if DEBUG
 private enum CheckpointStrings: LogMessage {
 
     case invalidObjectiveCCustomVariable(Any.Type)
@@ -31,6 +32,7 @@ private enum CheckpointStrings: LogMessage {
     var category: String { return "checkpoints" }
 
 }
+#endif
 
 /// Objective-C-compatible checkpoint parameters.
 @_spi(CheckpointsInternal)
@@ -47,7 +49,9 @@ public final class ObjCCheckpointParams: NSObject {
         for (rawKey, rawValue) in customVariables {
             guard let key = rawKey as? String,
                   let value = CustomVariableValue(foundationValue: rawValue) else {
+                #if DEBUG
                 Logger.warning(CheckpointStrings.invalidObjectiveCCustomVariable(type(of: rawValue)))
+                #endif
                 continue
             }
             values[key] = value
@@ -123,12 +127,30 @@ public class ObjCCheckpointResult: NSObject {
         switch value {
         case let result as CheckpointPaywallPresentedResult:
             return ObjCCheckpointPaywallPresentedResult(result)
+        case let result as CheckpointReceivedOfferingResult:
+            return ObjCCheckpointReceivedOfferingResult(result)
         case let result as CheckpointNoActionResult:
             return ObjCCheckpointNoActionResult(result)
         default:
             return ObjCCheckpointResult(value)
         }
     }
+
+}
+
+/// Objective-C-compatible checkpoint result carrying an app-owned offering.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, *)
+@objc(RCCheckpointReceivedOfferingResult)
+public final class ObjCCheckpointReceivedOfferingResult: ObjCCheckpointResult {
+
+    init(_ value: CheckpointReceivedOfferingResult) {
+        self.offering = value.offering
+        super.init(value)
+    }
+
+    /// The offering the checkpoint selected.
+    @objc public let offering: Offering
 
 }
 

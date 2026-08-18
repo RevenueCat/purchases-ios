@@ -1475,7 +1475,95 @@ class ApiDiffHelperTest < Minitest::Test
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#7355>", new_declarations: ["final public func apiDiffDemoPing() -> Swift.String"])
 
     assert_includes message, "1 new declaration"
-    refute_includes message, "apiDiffDemoPing", "Slack stays a ping; the detail belongs in the PR comment"
+    assert_includes message, "apiDiffDemoPing"
+  end
+
+  def test_slack_credentials_reachable_needs_a_webhook_or_a_token_and_channel
+    assert ApiDiffHelper.slack_credentials_reachable?(webhook_url: "https://hooks.example/abc")
+    assert ApiDiffHelper.slack_credentials_reachable?(bot_token: "xoxb-1", channel: "#chan")
+    refute ApiDiffHelper.slack_credentials_reachable?(bot_token: "xoxb-1")
+    refute ApiDiffHelper.slack_credentials_reachable?(channel: "#chan")
+    refute ApiDiffHelper.slack_credentials_reachable?
+  end
+
+  def test_comment_body_carries_the_slack_notice
+    body = ApiDiffHelper.api_diff_comment_body(
+      { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
+    )
+
+    assert_includes body, ":warning: #{ApiDiffHelper::SLACK_UNREACHABLE_NOTICE}"
+  end
+
+  def test_comment_body_omits_the_notice_when_slack_is_reachable
+    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+
+    refute_includes body, ":warning: No Slack credentials"
+  end
+
+  def test_slack_summary_labels_the_platform_and_modules
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
+
+    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+  end
+
+  def test_changed_modules_names_only_the_schemes_that_changed
+    reports = {
+      "RevenueCat iOS" => NO_CHANGES_OUTPUT,
+      "RevenueCatUI iOS" => SINGLE_ADDITION_OUTPUT,
+      "RevenueCatUI macOS" => SINGLE_ADDITION_OUTPUT
+    }
+
+    assert_equal ["RevenueCatUI"], ApiDiffHelper.changed_modules(reports)
+  end
+
+  # A removal-only PR used to show a break count and no declarations at all.
+  def test_slack_summary_lists_breaking_declarations
+    breaks = [
+      { reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" },
+      { reason: :modified, owner: nil, declaration: "public func changed() -> Swift.Int" }
+    ]
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42>")
+
+    assert_includes message, "- removed in CustomerInfo: public func gone()"
+    assert_includes message, "- signature changed: public func changed() -> Swift.Int"
+  end
+
+  # An added enum case is reported by both breaking_changes and added_declarations.
+  def test_slack_summary_lists_a_breaking_addition_once
+    breaks = [{ reason: :enum_case, owner: "PaywallEvent", declaration: "case newCase" }]
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "", new_declarations: ["case newCase", "public func added()"])
+
+    assert_includes message, "- case added to an existing enum in PaywallEvent: case newCase"
+    refute_includes message, "+ case newCase"
+    assert_includes message, "+ public func added()"
+  end
+
+  def test_slack_summary_marks_additions_with_a_plus
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: ["public func added()"])
+
+    assert_includes message, "+ public func added()"
+  end
+
+  def test_slack_summary_caps_the_declaration_block
+    declarations = (1..15).map { |index| "public func f#{index}()" }
+
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: declarations)
+
+    assert_includes message, "public func f10()"
+    refute_includes message, "public func f11()"
+    assert_includes message, "…and 5 more"
+  end
+
+  def test_slack_summary_truncates_long_declarations
+    long = "public func f(#{'a' * 400})"
+
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: [long])
+
+    assert_includes message, "…"
+    refute_includes message, long
+    assert message.lines.all? { |line| line.chomp.length <= ApiDiffHelper::SLACK_DECLARATION_WIDTH }
   end
 
 

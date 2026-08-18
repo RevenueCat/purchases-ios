@@ -2535,12 +2535,17 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
+      # notify_api_changes_on_slack bails out when there is nothing to announce, so the notice must
+      # not claim a change went unannounced.
+      announceable = all_breaks.any? || ApiDiffHelper.changed_modules(reports_by_target).any?
+      slack_notice = announceable ? api_slack_unreachable_notice : nil
       schemes.each do |scheme|
         upsert_api_diff_comment(
           scheme: scheme,
           reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
           breaks: all_breaks,
-          labels: labels
+          labels: labels,
+          notice: slack_notice
         )
       end
       notify_api_changes_on_slack(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
@@ -2570,7 +2575,8 @@ platform :ios do
     existing_id = find_pr_comment_with_marker(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
 
     section = ApiDiffHelper.api_diff_comment_section(
-      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels]
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
+      notice: options[:notice]
     )
 
     if existing_id
@@ -2617,7 +2623,8 @@ platform :ios do
         breaks,
         options[:labels],
         source: api_gate_pr_link,
-        new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target])
+        new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
+        modules: ApiDiffHelper.changed_modules(options[:reports_by_target])
       ),
       webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
       bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
@@ -2631,6 +2638,19 @@ platform :ios do
 
     ApiDiffHelper.post_slack_message(request)
     UI.success("Posted the API change summary to Slack")
+  end
+
+  # Reported in the PR comment so a missing credential is visible without failing the gate.
+  private_lane :api_slack_unreachable_notice do
+    reachable = ApiDiffHelper.slack_credentials_reachable?(
+      webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
+      bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
+      channel: ENV["SLACK_CHANNEL_SDK_NEW_API"]
+    )
+
+    next nil if reachable
+
+    ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
   end
 
   private_lane :api_gate_pr_link do
