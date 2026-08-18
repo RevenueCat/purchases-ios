@@ -469,14 +469,19 @@ module ApiDiffHelper
     end
   end
 
-  def api_diff_comment_section(module_name, reports_by_target, breaks, labels)
-    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}")
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil)
+    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
 
     [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
   end
 
-  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil)
+  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil, notice: nil)
     lines = heading ? [heading] : [API_DIFF_COMMENT_MARKER, "## Public API changes"]
+
+    unless notice.to_s.empty?
+      lines << ""
+      lines << ":warning: #{notice}"
+    end
 
     if breaks.any?
       lines << ""
@@ -532,13 +537,48 @@ module ApiDiffHelper
     end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
   end
 
-  # A ping, not a report: the detail lives in the PR comment.
-  def slack_summary(breaks, labels, source:, new_declarations: [])
+  SDK_PLATFORM_LABEL = "iOS :ios:".freeze
+
+  SLACK_DECLARATION_LIMIT = 10
+
+  # Slack stops wrapping code blocks past this; the full text is in the PR comment.
+  SLACK_DECLARATION_WIDTH = 160
+
+  def slack_declaration_block(declarations)
+    shown = declarations.first(SLACK_DECLARATION_LIMIT).map do |declaration|
+      declaration.length > SLACK_DECLARATION_WIDTH ? "#{declaration[0, SLACK_DECLARATION_WIDTH - 1]}…" : declaration
+    end
+    remaining = declarations.count - shown.count
+    shown << "…and #{remaining} more" if remaining.positive?
+
+    "```\n#{shown.join("\n")}\n```"
+  end
+
+  # Target names are "#{scheme} #{platform}", built by the check_api_changes lane.
+  def changed_modules(reports_by_target)
+    reports_by_target.select { |_target, report| api_changes_reported?(report) }
+                     .keys.map { |target| target.split(" ").first }.uniq.sort
+  end
+
+  # Not all breaks are removals, so each carries its reason; additions match the `+` Android uses.
+  # An enum case or protocol requirement is both an addition and a break, so it is listed once.
+  def slack_declaration_lines(breaks, new_declarations)
+    break_lines = breaks.map do |change|
+      owner = change[:owner] ? " in #{change[:owner]}" : ""
+      "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: #{change[:declaration]}"
+    end
+    broken = breaks.map { |change| change[:declaration] }
+
+    break_lines + (new_declarations - broken).map { |declaration| "+ #{declaration}" }
+  end
+
+  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [])
     headline = if breaks.any?
                  gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
                else
                  ":sparkles: *New public API*"
                end
+    headline = [headline, SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
 
     lines = [headline]
     lines << source unless source.to_s.empty?
@@ -548,9 +588,18 @@ module ApiDiffHelper
     counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
     lines << counts.join(", ") if counts.any?
 
+    declaration_lines = slack_declaration_lines(breaks, new_declarations)
+    lines << slack_declaration_block(declaration_lines) if declaration_lines.any?
+
     lines.join("\n")
   end
 
+
+  def slack_credentials_reachable?(webhook_url: nil, bot_token: nil, channel: nil)
+    !webhook_url.to_s.empty? || (!bot_token.to_s.empty? && !channel.to_s.empty?)
+  end
+
+  SLACK_UNREACHABLE_NOTICE = "No Slack credentials were reachable, so this change was not announced in the SDK API feed.".freeze
 
   def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
     unless webhook_url.to_s.empty?
