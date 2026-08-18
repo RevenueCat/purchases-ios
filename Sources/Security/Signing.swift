@@ -98,17 +98,7 @@ final class Signing: SigningType {
             return false
         }
 
-        let authValue: String
-        if let authHeader = parameters.requestHeaders[HTTPClient.RequestHeader.authorization.rawValue] {
-            if let firstSpaceIndex = authHeader.firstIndex(of: " ") {
-                let afterSpace = authHeader.index(after: firstSpaceIndex)
-                authValue = String(authHeader[afterSpace...])
-            } else {
-                authValue = authHeader
-            }
-        } else {
-            authValue = self.apiKey
-        }
+        let authValue = parameters.requestHeaders.bearerAuthorizationValue ?? self.apiKey
 
         let salt = signature.component(.salt)
         let payload = signature.component(.payload)

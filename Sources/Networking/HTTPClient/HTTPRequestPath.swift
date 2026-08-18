@@ -471,7 +471,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getIntroEligibility:
             return "customer/intro_eligibility"
         case .logIn:
-            // SHOULD NOT BE USED
+            precondition(false, "The .login endpoint is not allowed when IAM is enabled")
             return self.pathComponent
         case .postAttributionData:
             return "customer/attribution"

@@ -142,3 +142,34 @@ extension HTTPRequest.Method {
     }
 
 }
+
+extension HTTPRequest.Headers {
+
+    var bearerAuthorizationValue: String? {
+        get {
+            guard let value = authorizationValue else { return nil }
+            guard let firstSpaceIndex = value.firstIndex(of: " ") else { return nil }
+            guard value[..<firstSpaceIndex] == "Bearer" else { return nil }
+
+            let afterSpace = value.index(after: firstSpaceIndex)
+            return String(value[afterSpace...])
+        }
+        set {
+            if let newValue {
+                self.authorizationValue = "Bearer \(newValue)"
+            } else {
+                self.authorizationValue = nil
+            }
+        }
+    }
+
+    var authorizationValue: String? {
+        get {
+            return self[HTTPClient.RequestHeader.authorization.rawValue]
+        }
+        set {
+            self[HTTPClient.RequestHeader.authorization.rawValue] = newValue
+        }
+    }
+
+}

@@ -1824,7 +1824,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
 
             // Main-source request supporting a fallback should use the base tier for that kind
@@ -1855,7 +1855,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let client = self.createClient(self.systemInfoUsingAPISources())
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .timeoutResponse()
         }
@@ -1951,7 +1951,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: HTTPRequest.FallbackPath.remoteConfig(domain: "app"))
         let host = try XCTUnwrap(HTTPRequest.FallbackPath.serverHostURL.host)
 
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
             XCTAssertEqual(request.timeoutInterval, HTTPRequestTimeoutManager.Timeout.flat)
             return .timeoutResponse()
@@ -1982,7 +1982,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
 
         timeoutManager.recordRequestResult(host: host, .mainSourceTimedOut)
 
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .emptySuccessResponse()
         }
@@ -2079,7 +2079,7 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { request in
             // Main-source request should use the base tier for a request supporting fallback
             XCTAssertEqual(
@@ -3196,11 +3196,12 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         let responseData = "{\"message\": \"something is great up in the cloud\"}".asData
 
         stub(condition: isPath(pathA)) { _ in
+            let locationValue = pathB.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString
             return HTTPStubsResponse(
                 data: .init(),
                 statusCode: .temporaryRedirect,
                 headers: [
-                    HTTPClient.ResponseHeader.location.rawValue: pathB.url(preferIAMPath: false)!.absoluteString
+                    HTTPClient.ResponseHeader.location.rawValue: locationValue
                 ]
             )
         }
@@ -3220,8 +3221,8 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(response?.value?.body) == responseData
 
         self.logger.verifyMessageWasLogged("""
-            Performing redirect from '\(pathA.url(preferIAMPath: false)!.absoluteString)'
-             to '\(pathB.url(preferIAMPath: false)!.absoluteString)'
+            Performing redirect from '\(pathA.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)'
+             to '\(pathB.url(preferIAMPath: self.tokenManager.enabled)!.absoluteString)'
             """,
             level: .debug
         )
@@ -4649,7 +4650,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getOfferings(appUserID: "test_user_id"))
 
         // main request times out
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .timeoutResponse()
         }
@@ -4776,7 +4777,7 @@ final class HTTPClientTimeoutManagerTests: BaseHTTPClientTests<MockETagManager, 
         let request = HTTPRequest(method: .get, path: .getProductEntitlementMapping)
 
         // main request fails with server error (triggers fallback)
-        let url = try XCTUnwrap(request.path.url(preferIAMPath: false)?.absoluteString)
+        let url = try XCTUnwrap(request.path.url(preferIAMPath: self.tokenManager.enabled)?.absoluteString)
         stub(condition: isAbsoluteURLString(url)) { _ in
             return .serverDownResponse()
         }
