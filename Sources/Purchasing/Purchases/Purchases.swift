@@ -661,8 +661,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
-                workflowManager: workflowManager,
+                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
                 localRulesEvaluator: localRulesEvaluator,
+                workflowManager: workflowManager,
                 offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(

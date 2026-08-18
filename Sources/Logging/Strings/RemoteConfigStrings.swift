@@ -9,7 +9,9 @@ import Foundation
 
 enum RemoteConfigStrings {
 
+    case audienceMetadataBeforeDecoding(identifier: String, metadata: String)
     case cacheURLNotAvailable
+    case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointRuleSkipped(reason: String)
     case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
@@ -49,8 +51,12 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
+        case let .audienceMetadataBeforeDecoding(identifier, metadata):
+            return "Raw audience remote config metadata for '\(identifier)' before decoding: \(metadata)"
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
+        case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
+            return "The audiences for checkpoint '\(checkpointID)' could not be evaluated: \(reason)."
         case let .checkpointRuleSkipped(reason):
             return "Skipping malformed checkpoint rule: \(reason)."
         case let .checkpointWorkflowRuleSkipped(workflowID, reason):
