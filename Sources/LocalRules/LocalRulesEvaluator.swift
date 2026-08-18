@@ -71,8 +71,11 @@ final class LocalRulesEvaluator: Sendable {
         var firstEvaluationError: LocalRulesEvaluationError?
 
         for (index, rule) in rules.enumerated() {
+            let predicate = try await resolvePredicate(rule)
+            try Task.checkCancellation()
+
             switch RulesEngine.evaluate(
-                predicate: try await resolvePredicate(rule),
+                predicate: predicate,
                 variables: snapshot.values
             ) {
             case .success(true):

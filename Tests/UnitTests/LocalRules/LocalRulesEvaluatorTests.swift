@@ -374,6 +374,42 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
+    func cancellationStopsTheRuleWalk() async {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let resolved = Atomic<[String]>([])
+        let lookupStarted = Atomic<Bool>(false)
+        let cancelled = Atomic<Bool>(false)
+
+        let task = Task {
+            try await evaluator.match(in: ["first", "second"]) { rule in
+                resolved.modify { $0.append(rule) }
+                lookupStarted.value = true
+                // Stands in for an audience read that suspends while the task is cancelled. Nothing on this
+                // path throws on its own, so the walk only stops if the evaluator checks cancellation itself.
+                while !cancelled.value {
+                    await Task.yield()
+                }
+                return "false"
+            }
+        }
+
+        while !lookupStarted.value {
+            await Task.yield()
+        }
+        task.cancel()
+        cancelled.value = true
+
+        do {
+            _ = try await task.value
+            Issue.record("Expected cancellation to be thrown")
+        } catch is CancellationError {
+            #expect(resolved.value == ["first"])
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
     func cancellationIsThrownByMatch() async {
         let evaluator = Self.evaluator(dimensionProviders: [
             CancellingDimensionProvider(namespace: .session)
