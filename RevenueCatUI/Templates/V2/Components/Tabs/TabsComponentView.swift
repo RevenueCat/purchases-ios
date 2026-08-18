@@ -327,9 +327,8 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
-                    // A package-less tab shares the parent's context, so this would write back what it
-                    // just observed. Skipping it keeps that redundant write from clearing state the
-                    // parent set, which would otherwise depend on which observer SwiftUI calls first.
+                    // A package-less tab shares the parent's context: writing back what it just
+                    // read would only clear state the parent set.
                     guard context !== self.packageContext else { return }
 
                     self.packageContext.update(
@@ -367,8 +366,7 @@ struct LoadedTabsComponentView: View {
                     self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    // A package-less tab shares the parent's context, so there is nothing to propagate
-                    // and writing it back would only republish what was just read.
+                    // A package-less tab shares that context, so it has nothing to propagate.
                     if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
@@ -458,10 +456,8 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it. A reconcile moved the selection off a package that
-                // wasn't rendering, so it becomes the parent's own selection without counting as a
-                // choice: a tab opened later still gets to use its own default. Set-only, so it can't
-                // clear a real choice the user made earlier.
+                // This is a user selection - track it, unless a reconcile made it. Set-only, so a
+                // reconcile can't clear a real choice made earlier.
                 if !self.packageContext.lastUpdateWasReconcile {
                     self.didUserSelectPackage = true
                 }
