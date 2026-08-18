@@ -16,7 +16,7 @@ import Foundation
 @_spi(Experimental) public struct RewardVerificationResult: Sendable, Equatable {
 
     private enum Storage: Equatable, Sendable {
-        case verified(AdReward)
+        case verified(reward: AdReward, moreRewards: [AdReward])
         case failed
     }
 
@@ -27,20 +27,31 @@ import Foundation
     }
 
     /// Server verification succeeded for this ad's transaction.
-    @_spi(Internal) public static func verified(_ reward: AdReward) -> RewardVerificationResult {
-        RewardVerificationResult(storage: .verified(reward))
+    ///
+    /// `moreRewards` contains additional rewards only; it does not repeat `reward`.
+    @_spi(Internal) public static func verified(
+        _ reward: AdReward,
+        moreRewards: [AdReward] = []
+    ) -> RewardVerificationResult {
+        RewardVerificationResult(storage: .verified(reward: reward, moreRewards: moreRewards))
     }
 
     /// Verification did not complete successfully (rejected, exhausted polling, error, etc.).
     public static let failed = RewardVerificationResult(storage: .failed)
 
-    /// Non-`nil` when verification succeeded.
+    /// Primary verified reward, if verification succeeded.
     public var verifiedReward: AdReward? {
-        guard case .verified(let reward) = self.storage else { return nil }
+        guard case .verified(let reward, _) = self.storage else { return nil }
         return reward
     }
 
-    /// `true` when verification did not complete successfully.
+    /// Additional verified rewards. Empty when verification failed or only one reward was granted.
+    public var moreRewards: [AdReward] {
+        guard case .verified(_, let moreRewards) = self.storage else { return [] }
+        return moreRewards
+    }
+
+    /// Whether verification failed.
     var failed: Bool {
         guard case .failed = self.storage else { return false }
         return true

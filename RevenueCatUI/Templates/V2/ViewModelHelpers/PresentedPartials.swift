@@ -436,7 +436,7 @@ extension PaywallComponent {
         case .button(let component):
             if component.overrides?.hasUnsupportedCondition() == true { return true }
             if component.stack.containsUnsupportedConditions() { return true }
-            if case let .navigateTo(.sheet(sheet)) = component.action {
+            if case let .navigateTo(.sheet(sheet)) = component.action, let sheet {
                 return sheet.stack.containsUnsupportedConditions()
             }
             return false
@@ -461,6 +461,8 @@ extension PaywallComponent {
             return component.containsUnsupportedConditions()
         case .countdown(let component):
             return component.containsUnsupportedConditions()
+        case .webView(let component):
+            return component.overrides?.hasUnsupportedCondition() == true
         case .fallbackHeader:
             return false
         }

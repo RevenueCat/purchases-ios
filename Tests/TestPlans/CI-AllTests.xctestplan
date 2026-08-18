@@ -47,13 +47,6 @@
         "identifier" : "D50393B16846CEC202A92DE5",
         "name" : "ReceiptParserTests"
       }
-    },
-    {
-      "target" : {
-        "containerPath" : "container:RulesEngineInternal.xcodeproj",
-        "identifier" : "F0748CDFA15F3FA669701260",
-        "name" : "RulesEngineInternalTests"
-      }
     }
   ],
   "version" : 1

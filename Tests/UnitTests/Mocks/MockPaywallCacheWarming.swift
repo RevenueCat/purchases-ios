@@ -54,40 +54,21 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
-    private let _invokedWarmUpPaywallImagesCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallImagesCacheOfferings: Atomic<Offerings?> = nil
+    private let _invokedWarmUpPaywallAssetsCache: Atomic<Bool> = false
+    private let _invokedWarmUpPaywallAssetsCacheOfferings: Atomic<Offerings?> = nil
 
-    var invokedWarmUpPaywallImagesCache: Bool {
-        get { return self._invokedWarmUpPaywallImagesCache.value }
-        set { self._invokedWarmUpPaywallImagesCache.value = newValue }
+    var invokedWarmUpPaywallAssetsCache: Bool {
+        get { return self._invokedWarmUpPaywallAssetsCache.value }
+        set { self._invokedWarmUpPaywallAssetsCache.value = newValue }
     }
-    var invokedWarmUpPaywallImagesCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallImagesCacheOfferings.value }
-        set { self._invokedWarmUpPaywallImagesCacheOfferings.value = newValue }
-    }
-
-    func warmUpPaywallImagesCache(offerings: Offerings) {
-        self.invokedWarmUpPaywallImagesCache = true
-        self.invokedWarmUpPaywallImagesCacheOfferings = offerings
+    var invokedWarmUpPaywallAssetsCacheOfferings: Offerings? {
+        get { return self._invokedWarmUpPaywallAssetsCacheOfferings.value }
+        set { self._invokedWarmUpPaywallAssetsCacheOfferings.value = newValue }
     }
 
-    // MARK: -
-
-    private let _invokedWarmUpPaywallVideosCache: Atomic<Bool> = false
-    private let _invokedWarmUpPaywallVideosCacheOfferings: Atomic<Offerings?> = nil
-
-    var invokedWarmUpPaywallVideosCache: Bool {
-        get { return self._invokedWarmUpPaywallVideosCache.value }
-        set { self._invokedWarmUpPaywallVideosCache.value = newValue }
-    }
-    var invokedWarmUpPaywallVideosCacheOfferings: Offerings? {
-        get { return self._invokedWarmUpPaywallVideosCacheOfferings.value }
-        set { self._invokedWarmUpPaywallVideosCacheOfferings.value = newValue }
-    }
-
-    func warmUpPaywallVideosCache(offerings: Offerings) async {
-        self.invokedWarmUpPaywallVideosCache = true
-        self.invokedWarmUpPaywallVideosCacheOfferings = offerings
+    func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        self.invokedWarmUpPaywallAssetsCache = true
+        self.invokedWarmUpPaywallAssetsCacheOfferings = offerings
     }
 
     // MARK: -
@@ -111,21 +92,42 @@ final class MockPaywallCacheWarming: PaywallCacheWarmingType {
 
     // MARK: -
 
-    private let _invokedWarmUpWorkflowCaches: Atomic<Bool> = false
-    private let _invokedWarmUpWorkflowCachesWorkflow: Atomic<PublishedWorkflow?> = nil
+    private let _invokedPrewarmWorkflowAssets: Atomic<Bool> = false
+    private let _invokedPrewarmWorkflowAssetsCount: Atomic<Int> = .init(0)
+    private let _invokedPrewarmWorkflowAssetIDs: Atomic<[String]> = .init([])
+    private let _invokedPrewarmWorkflowAssetsWorkflow: Atomic<PublishedWorkflow?> = nil
+    private let _invokedPrewarmWorkflowAssetsUiConfig: Atomic<UIConfig?> = nil
 
-    var invokedWarmUpWorkflowCaches: Bool {
-        get { return self._invokedWarmUpWorkflowCaches.value }
-        set { self._invokedWarmUpWorkflowCaches.value = newValue }
+    var invokedPrewarmWorkflowAssets: Bool {
+        get { return self._invokedPrewarmWorkflowAssets.value }
+        set { self._invokedPrewarmWorkflowAssets.value = newValue }
     }
-    var invokedWarmUpWorkflowCachesWorkflow: PublishedWorkflow? {
-        get { return self._invokedWarmUpWorkflowCachesWorkflow.value }
-        set { self._invokedWarmUpWorkflowCachesWorkflow.value = newValue }
+    var invokedPrewarmWorkflowAssetsCount: Int {
+        get { return self._invokedPrewarmWorkflowAssetsCount.value }
+        set { self._invokedPrewarmWorkflowAssetsCount.value = newValue }
+    }
+    var invokedPrewarmWorkflowAssetIDs: [String] {
+        return self._invokedPrewarmWorkflowAssetIDs.value
+    }
+    var invokedPrewarmWorkflowAssetsWorkflow: PublishedWorkflow? {
+        get { return self._invokedPrewarmWorkflowAssetsWorkflow.value }
+        set { self._invokedPrewarmWorkflowAssetsWorkflow.value = newValue }
+    }
+    var invokedPrewarmWorkflowAssetsUiConfig: UIConfig? {
+        get { return self._invokedPrewarmWorkflowAssetsUiConfig.value }
+        set { self._invokedPrewarmWorkflowAssetsUiConfig.value = newValue }
     }
 
-    func warmUpWorkflowCaches(workflow: PublishedWorkflow) async {
-        self.invokedWarmUpWorkflowCaches = true
-        self.invokedWarmUpWorkflowCachesWorkflow = workflow
+    func prewarmWorkflowAssets(workflow: PublishedWorkflow, uiConfig: UIConfig) async {
+        self.invokedPrewarmWorkflowAssets = true
+        self._invokedPrewarmWorkflowAssetsCount.modify { $0 += 1 }
+        self._invokedPrewarmWorkflowAssetIDs.modify { $0.append(workflow.id) }
+        self.invokedPrewarmWorkflowAssetsWorkflow = workflow
+        self.invokedPrewarmWorkflowAssetsUiConfig = uiConfig
+    }
+
+    func hasStartedWorkflowAssetPrewarming(for workflowID: String) async -> Bool {
+        return self.invokedPrewarmWorkflowAssetIDs.contains(workflowID)
     }
 
 #if !os(tvOS)

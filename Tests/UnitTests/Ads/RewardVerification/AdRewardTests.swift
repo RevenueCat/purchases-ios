@@ -84,17 +84,45 @@ final class AdRewardTests: TestCase {
 
     // MARK: - Flat (analytics events) encoding
 
-    /// The analytics-events flat encoding only models a currency `code`/`amount`. Entitlement analytics
-    /// is a deferred non-goal, so an entitlement reward flat-encodes its `type` only and round-trips back
-    /// to ``AdReward/unsupportedReward`` (it cannot be reconstructed without identifier/expiry keys).
-    func testEntitlementFlatEncodingEmitsTypeOnlyAndDecodesAsUnsupported() throws {
-        let reward = AdReward.entitlement(identifier: "pro", expiresAt: Date())
+    func testVirtualCurrencyFlatEncodingOmitsEntitlementKeysAndRoundTrips() throws {
+        let reward = AdReward.virtualCurrency(code: "coins", amount: 5)
+
+        let data = try JSONEncoder().encode(FlatRewardWrapper(reward: reward))
+        let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
+        expect(json["type"] as? String) == "virtual_currency"
+        expect(json.keys).toNot(contain("entitlementId"))
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward) == reward
+    }
+
+    func testEntitlementFlatEncodingEmitsIdAndRoundTripsIdentifierAndExpiresAt() throws {
+        let expiresAt = Date(timeIntervalSince1970: 1_700_000_000)
+        let reward = AdReward.entitlement(identifier: "pro", expiresAt: expiresAt)
 
         let data = try JSONEncoder().encode(FlatRewardWrapper(reward: reward))
         let json = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
         expect(json["type"] as? String) == "entitlement"
+        expect(json["entitlementId"] as? String) == "pro"
         expect(json.keys).toNot(contain("code"))
         expect(json.keys).toNot(contain("amount"))
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward.entitlement?.identifier) == "pro"
+        expect(decoded.reward.entitlement?.expiresAt) == expiresAt
+    }
+
+    func testEntitlementFlatDecodingFallsBackToUnsupportedWhenExpiresAtMissing() throws {
+        let json: [String: Any] = ["type": "entitlement", "entitlementId": "pro"]
+        let data = try JSONSerialization.data(withJSONObject: json)
+
+        let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testEntitlementFlatDecodingFallsBackToUnsupportedWhenIdMissing() throws {
+        let json: [String: Any] = ["type": "entitlement"]
+        let data = try JSONSerialization.data(withJSONObject: json)
 
         let decoded = try JSONDecoder().decode(FlatRewardWrapper.self, from: data)
         expect(decoded.reward) == .unsupportedReward
@@ -102,13 +130,14 @@ final class AdRewardTests: TestCase {
 
 }
 
-/// Exercises ``AdReward``'s flat `encode`/`decode` helpers (the analytics-events wire shape).
 private struct FlatRewardWrapper: Codable, Equatable {
 
     enum CodingKeys: String, CodingKey {
         case type
         case code
         case amount
+        case entitlementId
+        case entitlementExpiresAt
     }
 
     let reward: AdReward
@@ -119,11 +148,25 @@ private struct FlatRewardWrapper: Codable, Equatable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try self.reward.encode(into: &container, typeKey: .type, codeKey: .code, amountKey: .amount)
+        try self.reward.encode(
+            into: &container,
+            typeKey: .type,
+            codeKey: .code,
+            amountKey: .amount,
+            entitlementIdKey: .entitlementId,
+            entitlementExpiresAtKey: .entitlementExpiresAt
+        )
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.reward = try AdReward.decode(from: container, typeKey: .type, codeKey: .code, amountKey: .amount)
+        self.reward = try AdReward.decode(
+            from: container,
+            typeKey: .type,
+            codeKey: .code,
+            amountKey: .amount,
+            entitlementIdKey: .entitlementId,
+            entitlementExpiresAtKey: .entitlementExpiresAt
+        )
     }
 }

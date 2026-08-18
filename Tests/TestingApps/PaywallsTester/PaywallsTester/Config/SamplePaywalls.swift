@@ -649,7 +649,7 @@ extension SamplePaywallLoader {
 
     private static func planTabs() -> PaywallComponent.TabsComponent {
         return .init(
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             control: .init(
                 type: .buttons,
                 stack: .init(
@@ -659,7 +659,7 @@ extension SamplePaywallLoader {
                         Self.tabControlButton(tabId: "lifetime", labelLid: "tab_lifetime_label")
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -689,13 +689,13 @@ extension SamplePaywallLoader {
                     .text(.init(
                         text: labelLid,
                         color: .init(light: .hex("#000000")),
-                        size: .init(width: .fit, height: .fit),
+                        size: .init(width: .fit(nil), height: .fit(nil)),
                         overrides: [
                             .init(conditions: [.selected], properties: .init(color: .init(light: .hex("#ffffff"))))
                         ]
                     ))
                 ],
-                size: .init(width: .fit, height: .fit),
+                size: .init(width: .fit(nil), height: .fit(nil)),
                 padding: .init(top: 8, bottom: 8, leading: 18, trailing: 18),
                 shape: .pill,
                 overrides: [
@@ -714,20 +714,20 @@ extension SamplePaywallLoader {
                     text: titleLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#111827")),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     margin: .init(top: 16, bottom: 0, leading: 0, trailing: 0),
                     fontSize: 20
                 )),
                 .text(.init(
                     text: descLid,
                     color: .init(light: .hex("#6b7280")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     margin: .init(top: 4, bottom: 0, leading: 0, trailing: 0),
                     fontSize: 14
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 4
         ))
     }
@@ -741,7 +741,7 @@ extension SamplePaywallLoader {
             text: "headline_monthly",
             fontWeight: .regular,
             color: .init(light: .hex("#6b7280")),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             fontSize: 18,
             horizontalAlignment: .center,
             overrides: [
@@ -771,7 +771,7 @@ extension SamplePaywallLoader {
                     text: "price_monthly",
                     fontWeight: .bold,
                     color: .init(light: .hex("#111827")),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     fontSize: 24,
                     overrides: [
                         .init(extendedConditions: Self.whenPlan("annual"), properties: .init(
@@ -786,7 +786,7 @@ extension SamplePaywallLoader {
                 ))
             ],
             dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             backgroundColor: .init(light: .hex("#f3f4f6")),
             padding: .init(top: 24, bottom: 24, leading: 16, trailing: 16),
             shape: .rectangle(.init(topLeading: 12, topTrailing: 12, bottomLeading: 12, bottomTrailing: 12)),
@@ -814,7 +814,7 @@ extension SamplePaywallLoader {
             fontWeight: .semibold,
             color: .init(light: .hex("#1b873f")),
             backgroundColor: .init(light: .hex("#e7f7ec")),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16),
             fontSize: 15,
             overrides: [

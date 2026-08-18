@@ -55,6 +55,9 @@ struct PaywallPresenter: View {
                 .onRestoreFailure({ error in
                     print("Paywall Handler - onRestoreFailure")
                 })
+                .onURLOpened({ url in
+                    print("Paywall Handler - onURLOpened: \(url)")
+                })
 
 #if !os(watchOS)
 #if !os(macOS)
@@ -93,10 +96,10 @@ struct PaywallPresenter: View {
             fatalError()
 
         case .workflow:
-            PaywallView(configuration: .init(
-                content: .offeringIdentifier(offering.identifier, presentedOfferingContext: nil),
-                purchaseHandler: .default()
-            ))
+            PaywallView(offeringIdentifier: offering.identifier)
+                .onURLOpened({ url in
+                    print("Paywall Handler - onURLOpened: \(url)")
+                })
 
         case .presentWorkflow:
             fatalError()

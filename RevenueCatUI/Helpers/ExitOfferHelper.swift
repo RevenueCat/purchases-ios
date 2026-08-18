@@ -88,7 +88,7 @@ enum ExitOfferHelper {
 extension Offering {
 
     var exitOfferOfferingId: String? {
-        return self.paywallComponents?.data.exitOffers?.dismiss?.offeringId
+        return self.internalPaywallComponents?.data.exitOffers?.dismiss?.offeringId
     }
 
 }

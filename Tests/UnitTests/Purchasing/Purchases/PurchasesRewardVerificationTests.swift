@@ -211,7 +211,6 @@ extension PurchasesRewardVerificationTests {
 
     func testPollRewardVerificationFailsWhenEntitlementCustomerInfoRefreshFails() async throws {
         let reward = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
-        // Terminal (non-transient) error — should not be retried.
         self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
         let before = self.backend.getCustomerInfoCallCount
         let poller = self.makeStubPoller(statuses: [.verified(.entitlement(reward))])
@@ -221,7 +220,6 @@ extension PurchasesRewardVerificationTests {
         expect(result) == .failed
         expect(result.verifiedReward).to(beNil())
         expect(self.backend.getCustomerInfoCallCount) == before + 1
-        // The completion log reflects the delivered result, never "verified".
         self.logger.verifyMessageWasLogged(
             AdsStrings.reward_verification_completed(result: .failed, transactionID: "tx-1"),
             level: .info
@@ -234,7 +232,6 @@ extension PurchasesRewardVerificationTests {
     }
 
     func testTransientServerErrorsAreRetriableForEntitlementRefresh() {
-        // Typical transient infra errors (502, 503) must be retried, not treated as terminal.
         for statusCode in [502, 503] {
             let error = makePollingError(statusCode: statusCode, backendCode: .internalServerError)
             expect(error.isTransient).to(beTrue(), description: "status \(statusCode) should be transient")
@@ -249,6 +246,199 @@ extension PurchasesRewardVerificationTests {
         _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
 
         expect(self.backend.getCustomerInfoCallCount) == before
+    }
+
+    func testPollRewardVerificationMultiGrantInvalidatesVCCacheAndFetchesCustomerInfo() async throws {
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let before = self.backend.getCustomerInfoCallCount
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+        ])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+        expect(self.backend.getCustomerInfoCallCount) > before
+        expect(result.verifiedReward) == .virtualCurrency(virtualCurrency)
+        expect(result.moreRewards) == [.entitlement(entitlement)]
+    }
+
+    func testPollRewardVerificationMultiGrantFailsWhenEntitlementRefreshFails() async throws {
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        self.backend.overrideCustomerInfoResult = .failure(makeTerminalBackendError())
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+        ])
+
+        let result = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        expect(result) == .failed
+        expect(self.mockVirtualCurrencyManager.invalidateVirtualCurrenciesCacheCallCount) == 1
+    }
+
+}
+
+// MARK: - pollRewardVerification tracking
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension PurchasesRewardVerificationTests {
+
+    private func makeTrackingMetadata() -> RewardedAdTrackingMetadata {
+        .init(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+    }
+
+    func testPollRewardVerificationWithNilTrackingMetadataTracksNothing() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(clientTransactionID: "tx-1", poller: poller)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(beEmpty())
+    }
+
+    func testPollRewardVerificationTracksEarnedUnverifiedEvent() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(
+            clientTransactionID: "tx-1",
+            trackingMetadata: self.makeTrackingMetadata(),
+            poller: poller
+        )
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified, granted
+        guard case let .rewardEarnedUnverified(_, eventData) = trackedEvents.first else {
+            return fail("Expected AdEvent.rewardEarnedUnverified but got \(String(describing: trackedEvents.first))")
+        }
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.rewardVerificationEnabled) == true
+    }
+
+    func testPollRewardVerificationTracksVerifiedAndGrantedEventsOnVirtualCurrencyReward() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 3))
+        let poller = self.makeStubPoller(statuses: [.verified(.virtualCurrency(reward))])
+
+        _ = await self.purchases.pollRewardVerification(
+            clientTransactionID: "tx-1",
+            trackingMetadata: self.makeTrackingMetadata(),
+            poller: poller
+        )
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified, granted
+        guard case .rewardVerified = trackedEvents[1] else {
+            return fail("Expected AdEvent.rewardVerified but got \(trackedEvents[1])")
+        }
+
+        guard case let .rewardGranted(_, grantedData) = trackedEvents[2] else {
+            return fail("Expected AdEvent.rewardGranted but got \(trackedEvents[2])")
+        }
+        expect(grantedData.reward.virtualCurrency?.code) == "coins"
+    }
+
+    func testPollRewardVerificationDoesNotTrackGrantedEventOnNoReward() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let poller = self.makeStubPoller(statuses: [.verified(.noReward)])
+
+        _ = await self.purchases.pollRewardVerification(
+            clientTransactionID: "tx-1",
+            trackingMetadata: self.makeTrackingMetadata(),
+            poller: poller
+        )
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified — no granted
+        expect(trackedEvents.contains { if case .rewardGranted = $0 { return true }; return false }) == false
+    }
+
+    func testPollRewardVerificationTracksOneGrantedEventPerRewardOnMultiGrant() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let virtualCurrency = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let poller = self.makeStubPoller(statuses: [
+            .verified(reward: .virtualCurrency(virtualCurrency), moreRewards: [.entitlement(entitlement)])
+        ])
+
+        _ = await self.purchases.pollRewardVerification(
+            clientTransactionID: "tx-1",
+            trackingMetadata: self.makeTrackingMetadata(),
+            poller: poller
+        )
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(4))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        let grantedEvents = trackedEvents.compactMap { event -> AdRewardGranted? in
+            guard case let .rewardGranted(_, data) = event else { return nil }
+            return data
+        }
+        expect(grantedEvents.count) == 2
+        let grantedRewards = grantedEvents.map(\.reward)
+        expect(grantedRewards).to(contain(.virtualCurrency(virtualCurrency)))
+        expect(grantedRewards).to(contain(.entitlement(entitlement)))
+    }
+
+    func testPollRewardVerificationTracksFailedToVerifyEvent() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let poller = self.makeStubPoller(statuses: [.failed(reason: "no_reward_rule", message: "nope")])
+
+        _ = await self.purchases.pollRewardVerification(
+            clientTransactionID: "tx-1",
+            trackingMetadata: self.makeTrackingMetadata(),
+            poller: poller
+        )
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, failed-to-verify
+        guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
+            return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
+        }
+        expect(failedData.failureReason) == .backendError(reason: "no_reward_rule")
+    }
+
+    func testPollRewardVerificationTracksCancellation() async throws {
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+        let poller = self.makeStubPoller(statuses: [.pending, .verified(.noReward)])
+
+        let task = Task {
+            await self.purchases.pollRewardVerification(
+                clientTransactionID: "tx-1",
+                trackingMetadata: self.makeTrackingMetadata(),
+                poller: poller
+            )
+        }
+        task.cancel()
+        _ = await task.value
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, failed-to-verify
+        guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
+            return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
+        }
+        expect(failedData.failureReason) == .cancelled
     }
 
 }

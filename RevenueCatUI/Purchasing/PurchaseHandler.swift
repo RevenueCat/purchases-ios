@@ -64,6 +64,12 @@ final class PurchaseHandler: ObservableObject {
         return purchases.preferredLocaleOverride.map(Locale.init)
     }
 
+    /// Whether remote config (and, with it, paywall workflows) is enabled. The single gate for both:
+    /// they ship together, so there's no separate workflows switch.
+    var remoteConfigEnabled: Bool {
+        return purchases.remoteConfigEnabled
+    }
+
     /// Whether a purchase is currently in progress
     @Published
     var packageBeingPurchased: Package?
@@ -104,6 +110,16 @@ final class PurchaseHandler: ObservableObject {
     /// This allows SwiftUI preference listeners to receive consecutive identical results.
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
+
+    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
+    /// ``WebCheckoutOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var webCheckoutOpened: UUID?
+
+    /// Set to a new signal each time the paywall successfully opened a URL, propagated via
+    /// ``URLOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var urlOpened: URLOpenedSignal?
 
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
@@ -244,6 +260,7 @@ final class PurchaseHandler: ObservableObject {
     /// per-session completion signal) to avoid stale values triggering handlers. The handler is held as a
     /// `@StateObject` by the presenting modifier and reused across present/dismiss cycles, so without this
     /// a prior session's restore would leak into the next one.
+    @MainActor
     func resetForNewSession() {
         if let sessionID = self.activePaywallSessionID {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
@@ -252,6 +269,8 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
+        self.deferredClearWebCheckoutOpened()
+        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -292,43 +311,123 @@ extension PurchaseHandler {
 
     func cachedInitialOffering(for content: PaywallViewConfiguration.Content) -> Offering? {
 #if !os(tvOS)
-        let workflowsEndpointEnabled = ProcessInfo.processInfo.workflowsEndpointEnabled
+        let remoteConfigEnabled = self.remoteConfigEnabled
 #else
         // The workflows endpoint isn't available on tvOS, so always fall through to the cached switch.
-        let workflowsEndpointEnabled = false
+        let remoteConfigEnabled = false
 #endif
 
-        return self.cachedInitialOffering(for: content, workflowsEndpointEnabled: workflowsEndpointEnabled)
+        return self.cachedInitialOffering(for: content, remoteConfigEnabled: remoteConfigEnabled)
     }
 
-    // Exposes the workflow flag so tests can cover both states deterministically without relying on the
-    // `-EnableWorkflowsEndpoint` launch argument being present in the scheme.
-    func cachedInitialOffering(
+#if !os(tvOS)
+    func cachedInitialPaywallViewData(
         for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
-    ) -> Offering? {
-        // The passed/cached offering alone can't drive a workflow paywall: under workflows the
-        // rendered offering is the workflow screen's offering with its workflow-mapped components,
-        // and it needs a WorkflowContext the offering doesn't carry. Workflow seeding therefore goes
-        // through cachedInitialWorkflowContext(for:workflowsEndpointEnabled:) (which can build the
-        // context from a warm cache); this overload returns nil so callers don't seed a non-workflow
-        // paywall that would then swap once the workflow resolves.
-        if workflowsEndpointEnabled {
+        injectedWorkflowContext: WorkflowContext?
+    ) -> ResolvedPaywallViewData? {
+        if let injectedWorkflowContext {
+            return .init(
+                offering: injectedWorkflowContext.initialOffering,
+                workflowContext: injectedWorkflowContext
+            )
+        }
+
+        return self.cachedInitialPaywallViewData(for: content)
+    }
+
+    func cachedInitialPaywallViewData(
+        for content: PaywallViewConfiguration.Content
+    ) -> ResolvedPaywallViewData? {
+        return self.cachedInitialPaywallViewData(
+            for: content,
+            remoteConfigEnabled: self.remoteConfigEnabled
+        )
+    }
+
+    func cachedInitialPaywallViewData(
+        for content: PaywallViewConfiguration.Content,
+        remoteConfigEnabled: Bool
+    ) -> ResolvedPaywallViewData? {
+        if !remoteConfigEnabled {
+            // A pruned offering has nothing to render, so don't seed it: falling through leaves the async
+            // path to re-resolve it against the offerings cache.
+            guard let offering = self.cachedInitialOffering(
+                for: content,
+                remoteConfigEnabled: remoteConfigEnabled
+            ), !offering.hasPrunedPaywallComponents else {
+                return nil
+            }
+
+            return .init(offering: offering, workflowContext: nil)
+        }
+
+        guard let cachedOfferings = self.purchases.cachedOfferings,
+              let offering = self.initialOffering(
+                content: content,
+                from: cachedOfferings
+              ) else {
             return nil
         }
 
+        guard offering.paywall == nil else {
+            return .init(offering: offering, workflowContext: nil)
+        }
+
+        guard let fetchResult = self.purchases.cachedWorkflow(forOfferingIdentifier: offering.identifier),
+              let context = try? Self.makeWorkflowContext(
+                workflow: fetchResult.workflow,
+                uiConfig: fetchResult.uiConfig,
+                allOfferings: cachedOfferings,
+                presentedOfferingContext: offering.presentedOfferingContext,
+                triggerOfferingIdentifier: offering.identifier
+              ) else {
+            return nil
+        }
+
+        return .init(offering: context.initialOffering, workflowContext: context)
+    }
+#endif
+
+    // Exposes the gate so tests can cover both states deterministically, without having to configure
+    // the SDK in the mode (custom entitlement computation) or kill-switch state that disables it.
+    func cachedInitialOffering(
+        for content: PaywallViewConfiguration.Content,
+        remoteConfigEnabled: Bool
+    ) -> Offering? {
+        // The passed/cached offering alone can't drive a workflow paywall: under workflows the
+        // rendered offering is the workflow screen's offering with its workflow-mapped components,
+        // and it needs a WorkflowContext the offering doesn't carry.
+        if remoteConfigEnabled {
+#if !os(tvOS)
+            return self.cachedInitialPaywallViewData(
+                for: content,
+                remoteConfigEnabled: remoteConfigEnabled
+            )?.offering
+#else
+            return nil
+#endif
+        }
+
+        return self.initialOffering(
+            content: content,
+            from: self.purchases.cachedOfferings
+        )
+    }
+
+    private func initialOffering(
+        content: PaywallViewConfiguration.Content,
+        from cachedOfferings: Offerings?
+    ) -> Offering? {
         switch content {
         case let .offering(offering):
             return offering
         case .defaultOffering:
-            return self.purchases.cachedOfferings?.current
+            return cachedOfferings?.current
         case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = self.purchases.cachedOfferings?.offering(identifier: identifier)
-
+            let offering = cachedOfferings?.offering(identifier: identifier)
             if let presentedOfferingContext {
                 return offering?.withPresentedOfferingContext(presentedOfferingContext)
             }
-
             return offering
         }
     }
@@ -380,74 +479,18 @@ extension PurchaseHandler {
     }
 
 #if !os(tvOS)
-    /// Synchronously builds the workflow ``WorkflowContext`` for `content` from already-cached
-    /// workflow + offerings data, so a warm cache can seed the paywall without a loading state.
-    /// Returns `nil` when workflows are disabled, when the cache is cold/stale, or on any partial
-    /// hit (workflow cached but its base offering absent), in which case the async resolve path runs.
-    func cachedInitialWorkflowContext(
-        for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
-    ) -> WorkflowContext? {
-        guard workflowsEndpointEnabled else { return nil }
-
-        // Snapshot the cached offerings once so the default-offering lookup and the workflow's base
-        // offering are resolved against the same value; `cachedOfferings` can be replaced on a
-        // background thread, and reading it twice could mix two different snapshots. A nil snapshot
-        // means the async resolve path runs instead of seeding a partial paywall.
-        guard let allOfferings = self.purchases.cachedOfferings else { return nil }
-
-        // Resolve the lookup identifier and presented-offering context the same way the async
-        // resolvePaywallViewData(for:) dispatch does for each content type.
-        let identifier: String
-        let presentedOfferingContext: PresentedOfferingContext?
-        let hasLegacyPaywall: Bool
-        switch content {
-        case let .offering(offering):
-            identifier = offering.identifier
-            presentedOfferingContext = offering.presentedOfferingContext
-            hasLegacyPaywall = offering.paywall != nil
-        case .defaultOffering:
-            guard let current = allOfferings.current else { return nil }
-            identifier = current.identifier
-            presentedOfferingContext = current.presentedOfferingContext
-            hasLegacyPaywall = current.paywall != nil
-        case let .offeringIdentifier(offeringIdentifier, context):
-            identifier = offeringIdentifier
-            presentedOfferingContext = context
-            hasLegacyPaywall = allOfferings.offering(identifier: offeringIdentifier)?.paywall != nil
-        }
-
-        // A legacy paywall renders directly (matches the async gate), so don't seed a workflow for it.
-        if hasLegacyPaywall { return nil }
-
-        // A fresh cached workflow must be present; a miss returns nil so the async resolve path runs
-        // instead of seeding a partial paywall.
-        guard let workflowResult = self.purchases.cachedWorkflow(forOfferingIdentifier: identifier) else {
-            return nil
-        }
-
-        // A throw here (no initial screen, or the screen's offering missing from the cached
-        // offerings) is treated as a cache miss: return nil so the async resolve path runs.
-        return try? Self.makeWorkflowContext(
-            workflow: workflowResult.workflow,
-            allOfferings: allOfferings,
-            presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: identifier
-        )
-    }
-
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content
     ) async throws -> ResolvedPaywallViewData {
         return try await self.resolvePaywallViewData(
             for: content,
-            workflowsEndpointEnabled: ProcessInfo.processInfo.workflowsEndpointEnabled
+            remoteConfigEnabled: self.remoteConfigEnabled
         )
     }
 
     func resolvePaywallViewData(
         for content: PaywallViewConfiguration.Content,
-        workflowsEndpointEnabled: Bool
+        remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
         switch content {
         case let .offering(offering):
@@ -455,7 +498,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: nil,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         case .defaultOffering:
             let offerings = try await self.purchases.offerings()
@@ -463,7 +506,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: offering,
                 offerings: offerings,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         case let .offeringIdentifier(identifier, presentedOfferingContext):
             let offerings = try await self.purchases.offerings()
@@ -481,7 +524,7 @@ extension PurchaseHandler {
             return try await self.resolvePaywallViewData(
                 for: resolvedOffering,
                 offerings: offerings,
-                workflowsEndpointEnabled: workflowsEndpointEnabled
+                remoteConfigEnabled: remoteConfigEnabled
             )
         }
     }
@@ -496,45 +539,122 @@ extension PurchaseHandler {
 
     /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
     /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
-    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch.
+    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. If the
+    /// workflow fetch fails, falls back to `paywallComponents` (the offerings-provided paywall) when
+    /// available; when the offering simply has no workflow attached, it falls back to the default
+    /// paywall even without components (matching the legacy path). Other failures with no components
+    /// (e.g. network, malformed workflow) propagate, as do non-fetch-eligible failures.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
-        workflowsEndpointEnabled: Bool
+        remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
-        guard workflowsEndpointEnabled, offering.paywall == nil else {
-            return .init(offering: offering, workflowContext: nil)
+        guard remoteConfigEnabled, offering.paywall == nil else {
+            return .init(
+                offering: await self.restoringPrunedPaywallComponents(
+                    offering,
+                    remoteConfigEnabled: remoteConfigEnabled
+                ),
+                workflowContext: nil
+            )
         }
 
-        let context = try await self.resolveWorkflowContext(
-            identifier: offering.identifier,
-            presentedOfferingContext: offering.presentedOfferingContext,
-            offerings: offerings
-        )
+        do {
+            let context = try await self.resolveWorkflowContext(
+                identifier: offering.identifier,
+                presentedOfferingContext: offering.presentedOfferingContext,
+                offerings: offerings
+            )
 
-        return .init(offering: context.initialOffering, workflowContext: context)
+            return .init(offering: context.initialOffering, workflowContext: context)
+        } catch {
+            // This very fetch may be what disabled remote config (the kill switch trips on a 4xx), so read
+            // the gate again rather than reusing the caller's snapshot: the offering's own components become
+            // restorable at that point.
+            let fallbackOffering = await self.restoringPrunedPaywallComponents(
+                offering,
+                remoteConfigEnabled: self.remoteConfigEnabled
+            )
+
+            // Fall back to rendering the offering when there are components to show, or when the
+            // offering simply has no workflow attached (render the default paywall, matching the
+            // legacy path). Other failures with no components — including a mapped workflow whose item
+            // or blob failed to resolve — still propagate so a broken rollout surfaces.
+            guard error.isWorkflowFetchFallbackEligible,
+                  fallbackOffering.internalPaywallComponents != nil || error.isOfferingWithoutWorkflowError else {
+                throw error
+            }
+
+            Logger.warning(
+                Strings.workflow_fetch_failed_falling_back_to_offerings_paywall(
+                    offeringIdentifier: offering.identifier,
+                    error: error
+                )
+            )
+
+            return .init(offering: fallbackOffering, workflowContext: nil)
+        }
     }
 
-    // Callers gate on workflowsEndpointEnabled before reaching this point, so this assumes
+    /// Re-resolves an offering whose paywall components the SDK pruned while remote config was active.
+    ///
+    /// Under workflows, offerings retain only the components marker because components are served by
+    /// `/v1/config`, so an offering captured then — including one the app holds and passes back in — can no
+    /// longer render once the kill switch disables remote config mid-session. `OfferingsManager` restores the
+    /// components in its own cache on disable, so reading offerings again yields a renderable offering.
+    /// Returns the offering untouched when there is nothing to restore.
+    private func restoringPrunedPaywallComponents(
+        _ offering: Offering,
+        remoteConfigEnabled: Bool
+    ) async -> Offering {
+        guard !remoteConfigEnabled, offering.hasPrunedPaywallComponents else { return offering }
+
+        do {
+            guard let restored = try await self.purchases.offerings().offering(identifier: offering.identifier),
+                  !restored.hasPrunedPaywallComponents else {
+                return offering
+            }
+
+            Logger.debug(
+                Strings.restored_paywall_components_for_disabled_remote_config(
+                    offeringIdentifier: offering.identifier
+                )
+            )
+
+            guard let presentedOfferingContext = offering.presentedOfferingContext else { return restored }
+
+            return restored.withPresentedOfferingContext(presentedOfferingContext)
+        } catch {
+            Logger.warning(Strings.errorFetchingOfferings(error))
+            return offering
+        }
+    }
+
+    // Callers gate on remoteConfigEnabled before reaching this point, so this assumes
     // workflows are enabled and always resolves against the workflow endpoint.
     func resolveWorkflowContext(
         identifier: String,
         presentedOfferingContext: PresentedOfferingContext?,
         offerings: Offerings? = nil
     ) async throws -> WorkflowContext {
-        async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
+        do {
+            async let fetchResultTask = self.purchases.workflow(forOfferingIdentifier: identifier)
 
-        // Reuse the caller's snapshot if provided; otherwise fetch concurrently with the workflow above.
-        let allOfferings = try await self.resolveOfferings(offerings)
+            // Reuse the caller's snapshot if provided; otherwise fetch concurrently with the workflow above.
+            let allOfferings = try await self.resolveOfferings(offerings)
 
-        let fetchResult = try await fetchResultTask
+            let fetchResult = try await fetchResultTask
 
-        return try Self.makeWorkflowContext(
-            workflow: fetchResult.workflow,
-            allOfferings: allOfferings,
-            presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: identifier
-        )
+            return try Self.makeWorkflowContext(
+                workflow: fetchResult.workflow,
+                uiConfig: fetchResult.uiConfig,
+                allOfferings: allOfferings,
+                presentedOfferingContext: presentedOfferingContext,
+                triggerOfferingIdentifier: identifier
+            )
+        } catch WorkflowError.uiConfigUnavailable(let workflowId) {
+            throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
+        }
     }
 
     /// Builds a ``WorkflowContext`` from already-resolved `workflow` + `allOfferings`. The context's
@@ -547,6 +667,7 @@ extension PurchaseHandler {
     /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
+        uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         triggerOfferingIdentifier: String
@@ -563,7 +684,8 @@ extension PurchaseHandler {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: workflow.uiConfig
+            uiConfig: uiConfig,
+            paywallId: screenID
         )
 
         let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
@@ -577,6 +699,7 @@ extension PurchaseHandler {
 
         return WorkflowContext(
             workflow: workflow,
+            uiConfig: uiConfig,
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext
@@ -585,6 +708,20 @@ extension PurchaseHandler {
     #endif
 
 }
+
+#if !os(tvOS)
+private extension Error {
+
+    /// Whether this error should fall back to the offerings-provided paywall instead of surfacing.
+    /// Excludes ``PaywallError`` (a structural workflow misconfiguration, not an availability
+    /// failure — matches Android's design, where that failure never throws at all) and
+    /// `CancellationError` (control flow, not a workflow failure).
+    var isWorkflowFetchFallbackEligible: Bool {
+        return !(self is PaywallError) && !(self is CancellationError)
+    }
+
+}
+#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {
@@ -787,9 +924,68 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
+    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalWebCheckoutOpened() {
+        self.webCheckoutOpened = UUID()
+    }
+
+    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalURLOpened(_ url: URL) {
+        self.urlOpened = .init(id: UUID(), url: url)
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
+    }
+
+    /// Clears the active paywall session (without discarding its tracked events) so subsequent purchase
+    /// events are unattributed until the next impression. Used when a non-paywall workflow step becomes
+    /// current: it reports no impression, and a purchase there must not attribute to the prior step.
+    func clearActivePaywallSession() {
+        self.activePaywallSessionID = nil
+    }
+
+    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
+    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
+    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
+    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
+    /// its own fresh one.
+    @MainActor
+    func clearWebCheckoutOpened() {
+        self.webCheckoutOpened = nil
+    }
+
+    /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
+    /// `clearWebCheckoutOpened`.
+    @MainActor
+    func clearURLOpened() {
+        self.urlOpened = nil
+    }
+
+    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
+    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
+    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
+    /// clear can't wipe out a signal it was never meant to touch.
+    @MainActor
+    private func deferredClearWebCheckoutOpened() {
+        let pendingValue = self.webCheckoutOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.webCheckoutOpened == pendingValue else { return }
+            self.webCheckoutOpened = nil
+        }
+    }
+
+    /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
+    @MainActor
+    private func deferredClearURLOpened() {
+        let pendingValue = self.urlOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.urlOpened == pendingValue else { return }
+            self.urlOpened = nil
+        }
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
@@ -942,6 +1138,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocaleOverride: String? { nil }
 
     var isUIPreviewMode: Bool { false }
+
+    var remoteConfigEnabled: Bool { false }
 
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()
@@ -1113,6 +1311,37 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: UUID?
+
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
+        value = nextValue()
+    }
+
+}
+
+/// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
+/// consecutive opens of the same URL.
+struct URLOpenedSignal: Equatable {
+
+    let id: UUID
+    let url: URL
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct URLOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: URLOpenedSignal?
+
+    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
+        value = nextValue()
+    }
+
+}
+
 // MARK: Environment keys
 
 /// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
@@ -1167,6 +1396,34 @@ extension EnvironmentValues {
     var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction? {
         get { self[OfferCodeRedemptionInitiatedActionKey.self] }
         set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// Lightweight wrapper so views can report opened URLs without depending on the full `PurchaseHandler`.
+struct URLOpenedNotifier {
+
+    private let action: (URL) -> Void
+
+    init(action: @escaping (URL) -> Void = { _ in }) {
+        self.action = action
+    }
+
+    func callAsFunction(_ url: URL) {
+        self.action(url)
+    }
+
+}
+
+/// `EnvironmentKey` for storing the notifier for URLs opened from the paywall.
+struct URLOpenedNotifierKey: EnvironmentKey {
+    static let defaultValue: URLOpenedNotifier = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var urlOpenedNotifier: URLOpenedNotifier {
+        get { self[URLOpenedNotifierKey.self] }
+        set { self[URLOpenedNotifierKey.self] = newValue }
     }
 }
 

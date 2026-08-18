@@ -243,7 +243,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -256,7 +256,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil
                 ),
@@ -275,7 +275,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -288,7 +288,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil
                 ),
@@ -307,7 +307,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -316,7 +316,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil,
                     overrides: [.init(extendedConditions: [.unsupported], properties: .init())]

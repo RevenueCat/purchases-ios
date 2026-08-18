@@ -49,13 +49,16 @@ struct RemoteConfiguration: Equatable {
 
 extension RemoteConfiguration {
 
+    /// A single topic's items, keyed by item name.
+    typealias ConfigTopic = [String: ConfigItem]
+
     struct Topics: Equatable {
 
-        /// Changed topic bodies only: topic name to item name to config item.
-        let entries: [String: [String: ConfigItem]]
+        /// Changed topic bodies only: topic name to topic.
+        let entries: [String: ConfigTopic]
 
         init(
-            entries: [String: [String: ConfigItem]] = [:]
+            entries: [String: ConfigTopic] = [:]
         ) {
             self.entries = entries
         }
@@ -66,8 +69,8 @@ extension RemoteConfiguration {
     ///
     /// Items are arbitrary topic-specific JSON. `blob_ref` and `prefetch` are the only
     /// reserved keys the SDK interprets; every other key is preserved in `content`.
-    /// Payloads may be inline in `content` or external via `blobRef`, depending on what
-    /// the server chooses for a given response.
+    /// An item's blob payload is addressed by `blobRef`; `content` is the inline topic
+    /// metadata exposed through the topic index, not blob bytes returned by `blobData`.
     struct ConfigItem: Codable, Equatable {
         /// When present, the item's payload is an external static blob addressed by this ref.
         let blobRef: String?
@@ -144,6 +147,8 @@ extension RemoteConfiguration: Codable {
 
 }
 
+extension RemoteConfiguration: HTTPResponseBody {}
+
 extension RemoteConfiguration.Topics: Codable {
 
     init(from decoder: Decoder) throws {
@@ -154,6 +159,15 @@ extension RemoteConfiguration.Topics: Codable {
     func encode(to encoder: Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(self.entries)
+    }
+
+}
+
+extension RemoteConfiguration.Topics {
+
+    /// All blob refs referenced by this topic collection.
+    var blobRefs: Set<String> {
+        return Set(self.entries.values.flatMap { $0.values.compactMap(\.blobRef) })
     }
 
 }

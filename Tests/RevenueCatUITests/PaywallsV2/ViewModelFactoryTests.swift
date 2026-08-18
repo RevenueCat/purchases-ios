@@ -415,7 +415,7 @@ class ViewModelFactoryTests: TestCase {
                             heic: Self.sampleURL,
                             heicLowRes: Self.sampleURL
                         )),
-                        size: .init(width: .fill, height: .fit)
+                        size: .init(width: .fill, height: .fit(nil))
                     )
                 ),
                 .text(.init(text: "badge_text_lid", color: Self.black))
@@ -459,7 +459,7 @@ class ViewModelFactoryTests: TestCase {
                             heic: Self.sampleURL,
                             heicLowRes: Self.sampleURL
                         )),
-                        size: .init(width: .fill, height: .fit)
+                        size: .init(width: .fill, height: .fit(nil))
                     ))
                 ],
                 dimension: .zlayer(.top)
@@ -495,7 +495,7 @@ class ViewModelFactoryTests: TestCase {
                 .text(.init(text: "badge_text_lid", color: Self.black))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             background: .image(
                 .init(light: .init(
                     width: 1,
@@ -549,7 +549,7 @@ class ViewModelFactoryTests: TestCase {
                         heic: Self.sampleURL,
                         heicLowRes: Self.sampleURL
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ))
             ],
             dimension: .zlayer(.top)
@@ -590,7 +590,7 @@ class ViewModelFactoryTests: TestCase {
                         urlLowRes: nil,
                         checksumLowRes: nil
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 ))
             ]),
             header: .init(stack: .init(components: [
@@ -630,7 +630,7 @@ class ViewModelFactoryTests: TestCase {
                         urlLowRes: nil,
                         checksumLowRes: nil
                     )),
-                    size: .init(width: .fill, height: .fit)
+                    size: .init(width: .fill, height: .fit(nil))
                 )),
                 .text(.init(text: "badge_text_lid", color: Self.black))
             ],
@@ -656,6 +656,210 @@ class ViewModelFactoryTests: TestCase {
 
         expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
         expect(root.shouldOverlayHeader).to(beFalse())
+    }
+
+    // MARK: - Web View Hero Tests
+
+    @MainActor
+    func testRootWebViewOverlaysHeader() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .webView(Self.webViewComponent(width: .fill))
+            ]),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+
+        // Like a video hero, a web view hero overlays the header but does not remove the
+        // header's own top safe-area inset.
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beTrue())
+    }
+
+    @MainActor
+    func testRootWebViewNotFullWidthDoesNotDetectHero() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .webView(Self.webViewComponent(width: .fixed(100)))
+            ]),
+            header: .init(stack: .init(components: [
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ])),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        expect(root.firstItemIsFullWidthMedia).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
+    }
+
+    @MainActor
+    func testRootWebViewNestedInStackDetectsHero() throws {
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: [
+                .stack(.init(
+                    components: [
+                        .webView(Self.webViewComponent(width: .fill))
+                    ],
+                    dimension: .vertical(.leading, .start)
+                ))
+            ]),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // Detection drills through nested stacks to reach the first full-width web view.
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+    }
+
+    @MainActor
+    func testHeaderWebViewDoesNotIgnoreSafeAreaOrOverlay() throws {
+        let headerStack = PaywallComponent.StackComponent(
+            components: [
+                .webView(Self.webViewComponent(width: .fill)),
+                .text(.init(text: "badge_text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(components: []),
+            header: .init(stack: headerStack),
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "badge_text_lid": .string("Text")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // A web view in the header behaves like a video: it does not remove the header inset.
+        expect(root.headerViewModel?.firstItemIgnoresSafeArea).to(beFalse())
+        expect(root.shouldOverlayHeader).to(beFalse())
+    }
+
+    @MainActor
+    func testFallbackHeaderIsSkippedWhenDetectingFirstFullWidthWebView() throws {
+        let rootStack = PaywallComponent.StackComponent(
+            components: [
+                .fallbackHeader,
+                .webView(Self.webViewComponent(width: .fill))
+            ],
+            dimension: .vertical(.leading, .start),
+            size: .init(width: .fill, height: .fit(nil))
+        )
+
+        let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
+            stack: rootStack,
+            stickyFooter: nil,
+            background: .color(.init(light: .hex("#FFFFFF")))
+        )
+
+        var factory = ViewModelFactory()
+        let root = try factory.toRootViewModel(
+            componentsConfig: componentsConfig,
+            offering: Self.mockOffering,
+            localizationProvider: .init(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            colorScheme: .light
+        )
+
+        // fallbackHeader should be skipped; the full-width web view should be detected.
+        expect(root.firstItemIsFullWidthMedia).to(beTrue())
+    }
+
+    @MainActor
+    func testZLayerFirstChildFullWidthWebViewIsDetectedAsMedia() throws {
+        let stackComponent = PaywallComponent.StackComponent(
+            components: [
+                .webView(Self.webViewComponent(width: .fill)),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+
+        let factory = ViewModelFactory()
+        let viewModel = try factory.toStackViewModel(
+            component: stackComponent,
+            packageValidator: factory.packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_lid": .string("Hello")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+
+        expect(viewModel.firstChildIsFullWidthMedia).to(beTrue())
+    }
+
+    @MainActor
+    func testZLayerFirstChildNonFullWidthWebViewIsNotDetectedAsMedia() throws {
+        let stackComponent = PaywallComponent.StackComponent(
+            components: [
+                .webView(Self.webViewComponent(width: .fixed(100))),
+                .text(.init(text: "text_lid", color: Self.black))
+            ],
+            dimension: .zlayer(.top)
+        )
+
+        let factory = ViewModelFactory()
+        let viewModel = try factory.toStackViewModel(
+            component: stackComponent,
+            packageValidator: factory.packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: .init(locale: .current, localizedStrings: [
+                "text_lid": .string("Hello")
+            ]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            offering: Self.mockOffering,
+            colorScheme: .light
+        )
+
+        expect(viewModel.firstChildIsFullWidthMedia).to(beFalse())
     }
 
     // MARK: - Layout Tests
@@ -757,7 +961,7 @@ class ViewModelFactoryTests: TestCase {
                 .text(.init(text: "text_lid", color: Self.black))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let factory = ViewModelFactory()
@@ -790,7 +994,7 @@ class ViewModelFactoryTests: TestCase {
                 heic: Self.sampleURL,
                 heicLowRes: Self.sampleURL
             )),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let rootStack = PaywallComponent.StackComponent(
@@ -799,7 +1003,7 @@ class ViewModelFactoryTests: TestCase {
                 .image(imageComponent)
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         )
 
         let componentsConfig = PaywallComponentsData.PaywallComponentsConfig(
@@ -830,6 +1034,17 @@ class ViewModelFactoryTests: TestCase {
 
     // swiftlint:disable:next force_unwrapping
     private static let sampleURL = URL(string: "https://revenuecat.com/image.heic")!
+
+    private static func webViewComponent(
+        width: PaywallComponent.SizeConstraint
+    ) -> PaywallComponent.WebViewComponent {
+        .init(
+            id: "web_view_id",
+            protocolVersion: PaywallComponent.WebViewComponent.supportedProtocolVersion,
+            url: "https://revenuecat.com",
+            size: .init(width: width, height: .fit(nil))
+        )
+    }
 
     private static func createUIConfigProvider() throws -> UIConfigProvider {
         let json = """

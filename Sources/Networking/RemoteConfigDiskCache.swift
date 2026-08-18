@@ -7,7 +7,15 @@
 
 import Foundation
 
-protocol RemoteConfigDiskCacheType: AnyObject {
+/// Read-only access to a topic's persisted item index (metadata only, no blob bytes or waiting).
+protocol RemoteConfigTopicStoreType: AnyObject {
+
+    /// The saved items for `topic`, or `nil` when nothing has been persisted yet.
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?
+
+}
+
+protocol RemoteConfigDiskCacheType: RemoteConfigTopicStoreType {
 
     func read() -> PersistedRemoteConfiguration?
 
@@ -24,23 +32,27 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
     let manifest: String
     let activeTopics: [String]
     let prefetchBlobs: [String]
-    let topicBlobRefs: [String: [String]]
-    let lastRefreshAt: Date?
+    let topics: RemoteConfiguration.Topics
+
+    /// The most recent `X-RevenueCat-Request-Time` supplied by the main API, stored as epoch milliseconds.
+    ///
+    /// This value is replayed as `X-RC-Last-Refresh-Time` on the next config request.
+    private(set) var lastRefreshTimeMilliseconds: UInt64?
 
     init(
         domain: String = RemoteConfiguration.defaultDomain,
         manifest: String,
         activeTopics: [String] = [],
         prefetchBlobs: [String] = [],
-        topicBlobRefs: [String: [String]] = [:],
-        lastRefreshAt: Date? = nil
+        topics: RemoteConfiguration.Topics = .init(),
+        lastRefreshTimeMilliseconds: UInt64? = nil
     ) {
         self.domain = domain
         self.manifest = manifest
         self.activeTopics = activeTopics
         self.prefetchBlobs = prefetchBlobs
-        self.topicBlobRefs = topicBlobRefs
-        self.lastRefreshAt = lastRefreshAt
+        self.topics = topics
+        self.lastRefreshTimeMilliseconds = lastRefreshTimeMilliseconds
     }
 
     init(from decoder: Decoder) throws {
@@ -50,8 +62,11 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
             manifest: try container.decode(String.self, forKey: .manifest),
             activeTopics: try container.decodeIfPresent([String].self, forKey: .activeTopics) ?? [],
             prefetchBlobs: try container.decodeIfPresent([String].self, forKey: .prefetchBlobs) ?? [],
-            topicBlobRefs: try container.decodeIfPresent([String: [String]].self, forKey: .topicBlobRefs) ?? [:],
-            lastRefreshAt: try container.decodeIfPresent(Date.self, forKey: .lastRefreshAt)
+            topics: try container.decodeIfPresent(RemoteConfiguration.Topics.self, forKey: .topics) ?? .init(),
+            lastRefreshTimeMilliseconds: try container.decodeIfPresent(
+                UInt64.self,
+                forKey: .lastRefreshTimeMilliseconds
+            )
         )
     }
 
@@ -60,8 +75,25 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
         case manifest
         case activeTopics
         case prefetchBlobs
-        case topicBlobRefs
-        case lastRefreshAt
+        case topics
+        case lastRefreshTimeMilliseconds
+    }
+
+}
+
+extension PersistedRemoteConfiguration {
+
+    /// The persisted main-server request time in the `Date` representation used by the request layer.
+    var lastRefreshTime: Date? {
+        return self.lastRefreshTimeMilliseconds.map(Date.init(millisecondsSince1970:))
+    }
+
+    /// Returns a copy whose replayed refresh time is updated from a successful main-server response.
+    func withLastRefreshTime(_ date: Date) -> Self {
+        var copy = self
+        copy.lastRefreshTimeMilliseconds = date.millisecondsSince1970
+
+        return copy
     }
 
 }
@@ -69,6 +101,8 @@ struct PersistedRemoteConfiguration: Codable, Equatable {
 final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
 
     private let cache: SynchronizedLargeItemCache
+
+    private let snapshot: Atomic<Snapshot> = .init(.notLoaded)
 
     init(
         cache: SynchronizedLargeItemCache = .init(
@@ -81,26 +115,66 @@ final class RemoteConfigDiskCache: RemoteConfigDiskCacheType {
     }
 
     func read() -> PersistedRemoteConfiguration? {
+        return self.snapshot.modify { snapshot in
+            switch snapshot {
+            case .notLoaded:
+                let configuration = self.readFromDisk()
+                snapshot = .loaded(configuration)
+                return configuration
+            case .loaded(let configuration):
+                return configuration
+            }
+        }
+    }
+
+    @discardableResult
+    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
+        return self.snapshot.modify { snapshot in
+            let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
+            if didWrite {
+                snapshot = .loaded(configuration)
+            } else {
+                Logger.error(Strings.remoteConfig.failedToWriteCache)
+            }
+
+            return didWrite
+        }
+    }
+
+    func clear() {
+        self.snapshot.modify { snapshot in
+            self.cache.clear()
+            snapshot = .loaded(nil)
+        }
+    }
+
+    private func readFromDisk() -> PersistedRemoteConfiguration? {
         do {
-            return try self.cache.value(forKey: Self.fileName)
+            return try self.cache.value(forKey: Self.fileName, decoder: .default)
         } catch {
             Logger.error(Strings.remoteConfig.failedToReadCache(error))
             return nil
         }
     }
 
-    @discardableResult
-    func write(_ configuration: PersistedRemoteConfiguration) -> Bool {
-        let didWrite = self.cache.set(codable: configuration, forKey: Self.fileName)
-        if !didWrite {
-            Logger.error(Strings.remoteConfig.failedToWriteCache)
-        }
+}
 
-        return didWrite
+extension RemoteConfigDiskCache {
+
+    /// In-memory snapshot of the persisted configuration, so `read()` only hits disk once.
+    /// `.loaded(nil)` means we've already checked and nothing is persisted, avoiding repeated
+    /// disk reads while no configuration exists.
+    private enum Snapshot {
+        case notLoaded
+        case loaded(PersistedRemoteConfiguration?)
     }
 
-    func clear() {
-        self.cache.clear()
+}
+
+extension RemoteConfigDiskCache: RemoteConfigTopicStoreType {
+
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return self.read()?.topics.entries[topic.wireName]
     }
 
 }

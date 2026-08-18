@@ -14,23 +14,43 @@ final class RemoteConfigSourceProviderTests: TestCase {
 
     // MARK: - Initial selection
 
-    func testCurrentSourcesAreNilWhenNoSources() {
-        let provider = RemoteConfigSourceProvider(
-            apiSources: [],
-            blobSources: [],
-            randomizer: FakeRandomizer()
-        )
-        expect(provider.getCurrent(for: .api)).to(beNil())
+    func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenTopicHasNoSources() {
+        let provider = Self.provider(api: [], blob: [])
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
+        // Blob has no embedded default, so it stays empty.
         expect(provider.getCurrent(for: .blob)).to(beNil())
     }
 
-    func testCurrentSourceReturnsHighestPrioritySource() {
-        let low = Self.source("low", priority: 0, weight: 100)
-        let high = Self.source("high", priority: 10, weight: 1)
+    func testCurrentApiSourceFallsBackToEmbeddedDefaultWhenSourcesTopicAbsent() {
+        let provider = RemoteConfigSourceProvider(
+            topicStore: FakeTopicStore(nil),
+            randomizer: FakeRandomizer(0)
+        )
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
+        // Blob has no embedded default, so it stays empty.
+        expect(provider.getCurrent(for: .blob)).to(beNil())
+    }
+
+    func testEmbeddedApiDefaultsFallBackToBackupWhenPrimaryUnhealthy() {
+        let provider = RemoteConfigSourceProvider(
+            topicStore: FakeTopicStore(nil),
+            randomizer: FakeRandomizer(0)
+        )
+        // The primary default is preferred (lower priority number); the backup is the next fallback.
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.rc-backup.com/"
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+    }
+
+    func testCurrentSourceReturnsLowestPriorityNumberSource() {
+        let low = Self.source("low", priority: 0, weight: 1)
+        let high = Self.source("high", priority: 10, weight: 100)
         let provider = Self.apiProvider([low, high])
 
         let handle = provider.getCurrent(for: .api)
-        expect(handle?.url) == Self.url("high")
+        expect(handle?.url) == Self.url("low")
         expect(handle?.purpose) == .api
     }
 
@@ -48,10 +68,10 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([high, low])
 
         let first = provider.getCurrent(for: .api)
-        expect(first?.url) == Self.url("high")
+        expect(first?.url) == Self.url("low")
 
         provider.reportUnhealthy(first!)
-        expect(provider.getCurrent(for: .api)?.url) == Self.url("low")
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("high")
     }
 
     func testCurrentSourceIsNilWhenExhausted() {
@@ -62,9 +82,9 @@ final class RemoteConfigSourceProviderTests: TestCase {
     }
 
     func testReportUnhealthyWalksFullFallbackOrder() {
-        let first = Self.source("1", priority: 30, weight: 1)
+        let first = Self.source("1", priority: 10, weight: 1)
         let second = Self.source("2", priority: 20, weight: 1)
-        let third = Self.source("3", priority: 10, weight: 1)
+        let third = Self.source("3", priority: 30, weight: 1)
         let provider = Self.apiProvider([first, second, third])
 
         expect(provider.getCurrent(for: .api)?.url) == Self.url("1")
@@ -82,7 +102,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
         let provider = Self.apiProvider([
             Self.source("a", priority: 10, weight: 1),
             Self.source("a", priority: 5, weight: 1),
-            Self.source("b", priority: 0, weight: 1)
+            Self.source("b", priority: 20, weight: 1)
         ])
 
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
@@ -92,16 +112,17 @@ final class RemoteConfigSourceProviderTests: TestCase {
         expect(provider.getCurrent(for: .api)).to(beNil())
     }
 
-    func testDedupKeepsHighestPriorityRegardlessOfOrder() {
+    func testDedupKeepsLowestPriorityNumberRegardlessOfOrder() {
         let provider = Self.apiProvider([
-            Self.source("a", priority: 0, weight: 1),
             Self.source("a", priority: 10, weight: 1),
+            Self.source("a", priority: 0, weight: 1),
             Self.source("b", priority: 5, weight: 1)
         ])
 
-        // `a` is kept at priority 10, so it outranks `b` (priority 5) despite appearing first at 0.
+        // `a` is kept at priority 0 (lowest number, i.e. highest priority), so it outranks `b`
+        // (priority 5) despite appearing first at 10.
         expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
-        expect(provider.getCurrent(for: .api)?.source.priority) == 10
+        expect(provider.getCurrent(for: .api)?.source.priority) == 0
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
     }
@@ -118,11 +139,7 @@ final class RemoteConfigSourceProviderTests: TestCase {
     // MARK: - api / blob independence
 
     func testAPIAndBlobAreExposedIndependently() {
-        let provider = RemoteConfigSourceProvider(
-            apiSources: [Self.source("api")],
-            blobSources: [Self.source("blob")],
-            randomizer: FakeRandomizer(0)
-        )
+        let provider = Self.provider(api: [Self.source("api")], blob: [Self.source("blob")])
 
         let api = provider.getCurrent(for: .api)
         let blob = provider.getCurrent(for: .blob)
@@ -133,10 +150,9 @@ final class RemoteConfigSourceProviderTests: TestCase {
     }
 
     func testReportingAPIUnhealthyDoesNotAffectBlob() {
-        let provider = RemoteConfigSourceProvider(
-            apiSources: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
-            blobSources: [Self.source("blob1", priority: 10), Self.source("blob2", priority: 0)],
-            randomizer: FakeRandomizer(0)
+        let provider = Self.provider(
+            api: [Self.source("api1", priority: 0), Self.source("api2", priority: 10)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
@@ -217,10 +233,9 @@ final class RemoteConfigSourceProviderTests: TestCase {
     }
 
     func testRestartOnlyRewindsRequestedPurpose() {
-        let provider = RemoteConfigSourceProvider(
-            apiSources: [Self.source("api1", priority: 10), Self.source("api2", priority: 0)],
-            blobSources: [Self.source("blob1", priority: 10), Self.source("blob2", priority: 0)],
-            randomizer: FakeRandomizer(0)
+        let provider = Self.provider(
+            api: [Self.source("api1", priority: 0), Self.source("api2", priority: 10)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
         )
 
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
@@ -251,6 +266,250 @@ final class RemoteConfigSourceProviderTests: TestCase {
         // A handle obtained after the restart still advances normally.
         provider.reportUnhealthy(provider.getCurrent(for: .api)!)
         expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    // MARK: - restartIfExhausted
+
+    func testRestartIfExhaustedRewindsAndReturnsTrueOnceSourcesAreExhausted() {
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testRestartIfExhaustedIsNoOpAndReturnsFalseWhileSourceIsCurrent() {
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")])
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        expect(provider.restartIfExhausted(for: .api)) == false
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testRestartIfExhaustedOnlyRewindsRequestedPurpose() {
+        let provider = Self.provider(
+            api: [Self.source("api1", priority: 0)],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)]
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        provider.reportUnhealthy(provider.getCurrent(for: .blob)!)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("api1")
+        expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob2")
+    }
+
+    func testRestartIfExhaustedReturnsTrueWhenChangedSourcesTopicAlreadyRearmedTheList() {
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
+        expect(provider.restartIfExhausted(for: .api)) == true
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+    }
+
+    // MARK: - Sources topic changes
+
+    func testChangedSourcesTopicRebuildsAndRestartsFromTheTop() {
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        // The sources topic changes: the provider rebuilds and starts the new list from the top.
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+    }
+
+    func testUnchangedSourcesTopicPreservesFailoverProgress() {
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+
+        // Re-providing content-equal sources must not rebuild, so the position is kept at `b`.
+        store.sources = Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: [])
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testStaleReportFromBeforeASourcesChangeIsIgnored() {
+        let store = FakeTopicStore(
+            Self.sourcesTopic(api: [Self.source("a"), Self.source("b"), Self.source("c")], blob: [])
+        )
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        let stale = provider.getCurrent(for: .api)
+        expect(stale?.url) == Self.url("a")
+
+        // Sources change before the stale handle is reported back. Its report belongs to the old list, so
+        // it must not advance the freshly-rebuilt one.
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y"), Self.source("z")], blob: [])
+        provider.reportUnhealthy(stale!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+
+        // A handle obtained after the change still advances normally.
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("y")
+    }
+
+    func testSourcesTopicAppearingAfterBeingAbsentReplacesTheEmbeddedDefaults() {
+        let store = FakeTopicStore(nil)
+        let provider = RemoteConfigSourceProvider(topicStore: store, randomizer: FakeRandomizer(0))
+
+        expect(provider.getCurrent(for: .api)?.url) == "https://api.revenuecat.com/"
+
+        // A sources topic shows up where there was none: the provider builds the list from the top.
+        store.sources = Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: [])
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    // MARK: - API restart interval (TTL re-arm)
+
+    private static let restartInterval = RemoteConfigSourceProvider.apiFailoverRestartInterval
+
+    func testAdvancedAPIListRestartsFromTheTopAfterTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        dateProvider.advance(by: Self.restartInterval)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testAdvancedAPIListKeepsItsPositionJustUnderTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+
+        dateProvider.advance(by: Self.restartInterval - 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testExhaustedAPIListReArmsAfterTheRestartInterval() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> exhausted
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        dateProvider.advance(by: Self.restartInterval - 1)
+        expect(provider.getCurrent(for: .api)).to(beNil())
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testTheRestartIntervalCountsFromTheFirstAdvanceNotTheLatest() {
+        // A flapping list must not postpone the periodic return to the primary: advancing again
+        // mid-interval does not reset the timer.
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider(
+            [Self.source("a"), Self.source("b"), Self.source("c")],
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: Self.restartInterval - 100)
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // b -> c, timer unchanged
+
+        dateProvider.advance(by: 100) // a full interval since the first advance
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testHandleFromBeforeTheIntervalRestartIsStale() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        let stale = provider.getCurrent(for: .api)
+        expect(stale?.url) == Self.url("b")
+
+        dateProvider.advance(by: Self.restartInterval)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+
+        // The pre-restart handle belongs to the previous cycle, so it must not advance the list.
+        provider.reportUnhealthy(stale!)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testANewFailoverCycleAfterAnIntervalRestartNeedsAFullIntervalAgain() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b
+        dateProvider.advance(by: Self.restartInterval)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, new timer
+        dateProvider.advance(by: Self.restartInterval - 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("a")
+    }
+
+    func testExplicitRestartResetsTheIntervalTimer() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.apiProvider([Self.source("a"), Self.source("b")], dateProvider: dateProvider)
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: Self.restartInterval - 100)
+        provider.restart(for: .api) // timer cleared
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, fresh timer
+        // Over a full interval since the ORIGINAL advance, under since the fresh one.
+        dateProvider.advance(by: Self.restartInterval - 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("b")
+    }
+
+    func testAChangedSourcesTopicResetsTheIntervalTimer() {
+        let dateProvider = MockCurrentDateProvider()
+        let store = FakeTopicStore(Self.sourcesTopic(api: [Self.source("a"), Self.source("b")], blob: []))
+        let provider = RemoteConfigSourceProvider(
+            topicStore: store,
+            randomizer: FakeRandomizer(0),
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // a -> b, timer starts
+        dateProvider.advance(by: Self.restartInterval - 100)
+
+        store.sources = Self.sourcesTopic(api: [Self.source("x"), Self.source("y")], blob: [])
+        provider.reportUnhealthy(provider.getCurrent(for: .api)!) // x -> y, fresh timer
+
+        dateProvider.advance(by: Self.restartInterval - 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("y")
+
+        dateProvider.advance(by: 1)
+        expect(provider.getCurrent(for: .api)?.url) == Self.url("x")
+    }
+
+    func testBlobProgressIsUnaffectedByElapsedTime() {
+        let dateProvider = MockCurrentDateProvider()
+        let provider = Self.provider(
+            api: [Self.source("api1")],
+            blob: [Self.source("blob1", priority: 0), Self.source("blob2", priority: 10)],
+            dateProvider: dateProvider
+        )
+
+        provider.reportUnhealthy(provider.getCurrent(for: .blob)!) // blob1 -> blob2
+        dateProvider.advance(by: Self.restartInterval)
+        expect(provider.getCurrent(for: .blob)?.url) == Self.url("blob2")
     }
 
     // MARK: - Threading
@@ -304,12 +563,56 @@ final class RemoteConfigSourceProviderTests: TestCase {
         return RemoteConfigSource(url: url(host), priority: priority, weight: weight)
     }
 
-    private static func apiProvider(_ sources: [RemoteConfigSource]) -> RemoteConfigSourceProvider {
+    private static func apiProvider(
+        _ sources: [RemoteConfigSource],
+        dateProvider: DateProvider = DateProvider()
+    ) -> RemoteConfigSourceProvider {
+        return provider(api: sources, blob: [], dateProvider: dateProvider)
+    }
+
+    private static func provider(
+        api: [RemoteConfigSource],
+        blob: [RemoteConfigSource],
+        dateProvider: DateProvider = DateProvider()
+    ) -> RemoteConfigSourceProvider {
         return RemoteConfigSourceProvider(
-            apiSources: sources,
-            blobSources: [],
-            randomizer: FakeRandomizer(0)
+            topicStore: FakeTopicStore(sourcesTopic(api: api, blob: blob)),
+            randomizer: FakeRandomizer(0),
+            dateProvider: dateProvider
         )
+    }
+
+    /// Builds a `sources` topic matching the backend shape: api entries use `url`, blob use `url_format`.
+    private static func sourcesTopic(
+        api: [RemoteConfigSource],
+        blob: [RemoteConfigSource]
+    ) -> RemoteConfiguration.ConfigTopic {
+        func item(_ sources: [RemoteConfigSource], urlKey: String) -> RemoteConfiguration.ConfigItem {
+            return RemoteConfiguration.ConfigItem(content: [
+                "sources": .array(sources.map { source in
+                    .object([
+                        urlKey: .string(source.url),
+                        "priority": .int(source.priority),
+                        "weight": .int(source.weight)
+                    ])
+                })
+            ])
+        }
+        return ["api": item(api, urlKey: "url"), "blob": item(blob, urlKey: "url_format")]
+    }
+
+}
+
+private final class FakeTopicStore: RemoteConfigTopicStoreType {
+
+    var sources: RemoteConfiguration.ConfigTopic?
+
+    init(_ sources: RemoteConfiguration.ConfigTopic?) {
+        self.sources = sources
+    }
+
+    func topic(_ topic: RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic? {
+        return topic == .sources ? self.sources : nil
     }
 
 }

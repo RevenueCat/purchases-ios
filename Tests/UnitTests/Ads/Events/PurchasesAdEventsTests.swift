@@ -185,9 +185,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         self.purchases.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: .adapter)
@@ -208,8 +206,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
         expect(eventData.rewardVerificationEnabled) == true
-        expect(eventData.rewardItem) == "coins"
-        expect(eventData.rewardAmount) == 10
     }
 
     func testTrackAdRewardVerifiedStoresEvent() async throws {
@@ -219,8 +215,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             adFormat: .rewarded,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "impression-123",
-            reward: .virtualCurrency(code: "GOLD", amount: 100)
+            impressionId: "impression-123"
         )
 
         self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)
@@ -240,9 +235,6 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
-        expect(eventData.reward.kindRawValue) == "virtual_currency"
-        expect(eventData.reward.virtualCurrency?.code) == "GOLD"
-        expect(eventData.reward.virtualCurrency?.amount) == 100
     }
 
     func testTrackAdRewardFailedToVerifyStoresEvent() async throws {
@@ -253,7 +245,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            failureReason: .backendError
+            failureReason: .backendError(reason: nil)
         )
 
         self.purchases.adTracker.trackAdRewardFailedToVerify(data, captureMethod: .adapter)
@@ -273,7 +265,40 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
         expect(eventData.impressionId) == "impression-123"
-        expect(eventData.failureReason) == .backendError
+        expect(eventData.failureReason) == .backendError(reason: nil)
+    }
+
+    func testTrackAdRewardGrantedStoresEvent() async throws {
+        let data = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        self.purchases.adTracker.trackAdRewardGranted(data, captureMethod: .adapter)
+
+        await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(1))
+
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+
+        guard case let .rewardGranted(_, eventData) = trackedEvents.first else {
+            fail("Expected AdEvent.rewardGranted but got \(String(describing: trackedEvents.first))")
+            return
+        }
+
+        expect(eventData.networkName) == "AdMob"
+        expect(eventData.mediatorName) == .adMob
+        expect(eventData.adFormat) == .rewarded
+        expect(eventData.placement) == "home_screen"
+        expect(eventData.adUnitId) == "ca-app-pub-123"
+        expect(eventData.impressionId) == "impression-123"
+        expect(eventData.reward.kindRawValue) == "virtual_currency"
+        expect(eventData.reward.virtualCurrency?.code) == "GOLD"
+        expect(eventData.reward.virtualCurrency?.amount) == 100
     }
 
     // MARK: - Capture method
@@ -319,8 +344,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
             adFormat: .rewarded,
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
-            impressionId: "impression-123",
-            reward: .virtualCurrency(code: "GOLD", amount: 100)
+            impressionId: "impression-123"
         )
 
         self.purchases.adTracker.trackAdRewardVerified(data, captureMethod: .adapter)

@@ -173,20 +173,28 @@ platform :ios do
 
   desc "Setup development environment"
   lane :setup_dev do |options|
-    begin
-      sh("brew install swiftlint")
-    rescue => exception
-      UI.error("❌ Please install homebrew and then re-run this lane: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
-      raise exception
+    if system("command -v swiftlint > /dev/null")
+      UI.message("swiftlint already installed ✅")
+    else
+      begin
+        sh("brew install swiftlint")
+      rescue => exception
+        UI.error("❌ Please install homebrew and then re-run this lane: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\"")
+        raise exception
+      end
     end
 
-    pre_commit_link = "../.git/hooks/pre-commit"
-    if File.exist?(pre_commit_link) || File.symlink?(pre_commit_link)
-      UI.message("pre-commit script already linked ✅")
-    else
-      UI.message("Linking pre-commit script 🔗")
-      Dir.chdir ".." do
-        sh("ln -s -f ../../scripts/pre-commit.sh .git/hooks/pre-commit")
+    Dir.chdir ".." do
+      # .git is a file when this repo is checked out as a submodule, so ask git for the real hooks dir
+      hooks_dir = sh("git", "rev-parse", "--git-path", "hooks", log: false).strip
+      pre_commit_link = File.join(hooks_dir, "pre-commit")
+
+      if File.exist?(pre_commit_link) || File.symlink?(pre_commit_link)
+        UI.message("pre-commit script already linked ✅")
+      else
+        UI.message("Linking pre-commit script 🔗")
+        FileUtils.mkdir_p(hooks_dir)
+        FileUtils.ln_sf(File.expand_path("scripts/pre-commit.sh"), pre_commit_link)
       end
     end
   end
@@ -502,7 +510,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 17,OS=26.2"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
     begin
       xcodebuild(
         workspace: '.',
@@ -739,6 +746,24 @@ platform :ios do
     pr_number
   end
 
+  private_lane :pr_labels_for_api_gate do
+    pr_number = detect_pr_number
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+
+    if pr_number.nil? || token.nil? || token.empty?
+      UI.message("No PR context, treating the API gate as unlabelled")
+      []
+    else
+      response = github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'GET',
+        path: "/repos/RevenueCat/#{REPO_NAME}/pulls/#{pr_number}"
+      )
+      (response[:json]["labels"] || []).map { |label| label["name"] }
+    end
+  end
+
   private_lane :send_to_emerge do |options|
     pr_number = detect_pr_number
 
@@ -774,6 +799,11 @@ platform :ios do
     # See https://developer.apple.com/forums/thread/724068 and `FB12223404`.
     skip_sk_tests = options[:skip_sk_tests]
 
+    # UnitTestsHostApp needs to be signed with its keychain entitlements for the KeychainTests to pass.
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
     if generate_snapshots
       if skip_sk_tests
         test_plan = "CI-RevenueCat-Snapshots"
@@ -807,9 +837,35 @@ platform :ios do
     )
   end
 
+  # Screen reader behavior can only be asserted against the real accessibility tree, which SwiftUI
+  # builds for an assistive technology client and not under XCTest. Needs no API key: the paywall
+  # under test is one of PaywallsTester's local sample paywalls.
+  desc "Runs the paywall accessibility UI tests"
+  lane :paywall_accessibility_ui_tests do
+    scan(
+      step_name: "scan - paywall accessibility UI tests",
+      workspace: "RevenueCat-Tuist.xcworkspace",
+      scheme: "PaywallFixturesUITests",
+      device: ENV['SCAN_DEVICE'] || "iPhone 16 Pro",
+      ensure_devices_found: true,
+      prelaunch_simulator: true,
+      output_types: 'junit',
+      result_bundle: true,
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/paywall_accessibility",
+      number_of_retries: 2
+    )
+  end
+
   desc "Runs all the tvOS tests"
   lane :test_tvos do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
+
+    # UnitTestsHostApp needs to be signed with its keychain entitlements for the KeychainTests to pass.
+    Dir.chdir("../Tests/UnitTestsHostApp/fastlane") do
+      match(type: "development", readonly: true)
+    end
+
     if generate_snapshots
       test_plan = "CI-RevenueCat-Snapshots"
     else
@@ -892,7 +948,6 @@ platform :ios do
     platform = ENV['PLATFORM'] || 'iOS Simulator'
     destination = ENV['DEVICE'] || "iPhone 14,OS=16.4"
     sdk = ENV['BUILD_SDK'] || 'iphonesimulator'
-
     begin
       # See https://forums.swift.org/t/i-made-a-little-spm-package-that-uses-uikit-how-can-i-run-tests-from-command-line/50399/2
       # Note: We use xcodebuild instead of scan because this is an SPM package (workspace: '.')
@@ -932,6 +987,25 @@ platform :ios do
     build_release(platform: 'macOS')
     build_release(platform: 'visionOS')
     build_release(platform: 'visionOS', scheme: 'RevenueCatUI')
+  end
+
+  desc "Build a scheme with app-extension-safe API checks enabled"
+  lane :build_with_app_extension_safe_apis do |options|
+    scheme = options[:scheme] || UI.user_error!("Missing required option: scheme")
+
+    xcodebuild(
+      workspace: "RevenueCat.xcworkspace",
+      scheme: scheme,
+      destination: "generic/platform=iOS",
+      sdk: "iphoneos",
+      configuration: "Release",
+      xcargs: [
+        'CODE_SIGN_IDENTITY=""',
+        "CODE_SIGNING_REQUIRED=NO",
+        "ONLY_ACTIVE_ARCH=YES",
+        "APPLICATION_EXTENSION_API_ONLY=YES"
+      ].join(" ")
+    )
   end
 
   desc "macOS build"
@@ -1128,6 +1202,8 @@ platform :ios do
     backend_environment = options[:backend_environment] || "production"
     store = options[:store] || "app_store"
     output_dir = options[:output_dir] || "test_output/maestro"
+    # Which subdirectory of Examples/rc-maestro/maestro to run flows from (e.g. "e2e_tests", "workflows").
+    flow_subdir = options[:flow_subdir] || "e2e_tests"
     skip_slack_notification = options.fetch(:skip_slack_notification, true)
     base_path = "#{Dir.pwd}/.."
 
@@ -1222,7 +1298,7 @@ platform :ios do
 
     success = false
     begin
-      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/e2e_tests"
+      flow_dir = "#{base_path}/Examples/rc-maestro/maestro/#{flow_subdir}"
 
       UI.message("Using flow directory: #{flow_dir}")
 
@@ -1681,7 +1757,7 @@ platform :ios do
     Dir.chdir(project_root) do
       tuist_binary = `which tuist 2>/dev/null`.strip
       if tuist_binary.empty?
-        UI.user_error!("tuist not found in PATH. Install it with `mise install` or run the `revenuecat/install-tuist` CI step.")
+        UI.user_error!("tuist not found in PATH. Install it with `mise install` or run the `revenuecat/install-mise-tools` CI step (tools: tuist).")
       end
 
       # Build environment variable exports for TUIST_ prefixed variables
@@ -1806,6 +1882,24 @@ platform :ios do
   end
 
   desc "Run BackendIntegrationTests"
+  desc "Runs the remote config blob health monitor against the live backend (two projects)"
+  desc "Keys come from the environment (REVENUECAT_REMOTE_CONFIG_CDN_API_KEY / _INLINE_API_KEY);"
+  desc "each test skips if its key is unset, so no key is ever written into source."
+  lane :remote_config_production_tests do
+    scan(
+      workspace: 'RevenueCat-Tuist.xcworkspace',
+      scheme: "RemoteConfigProductionTests",
+      device: ENV['SCAN_DEVICE'] || "iPhone 16 (18.5)",
+      ensure_devices_found: true,
+      derived_data_path: "scan_derived_data",
+      output_types: 'junit',
+      result_bundle: true,
+      configuration: 'Debug',
+      output_directory: "fastlane/test_output/xctest/ios",
+      number_of_retries: 3
+    )
+  end
+
   lane :backend_integration_tests do |options|
     generate_snapshots = ENV["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "true"
     test_configuration = generate_snapshots ? "GenerateSnapshots" : "Default"
@@ -2404,10 +2498,181 @@ platform :ios do
 
     if failed_platforms.any?
       ApiDiffHelper.print_failure_summary(failed_platforms)
-      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
     else
       UI.success("✅ No API changes detected")
     end
+
+
+    # Regenerated baselines make the freshness diff empty, so the gate needs the merge base.
+    runner = ->(*command) { sh(*command, log: false) }
+    merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
+    UI.message("Comparing against the merge base #{merge_base}")
+
+    all_breaks = []
+    reports_by_target = {}
+
+    schemes.each do |scheme|
+      base_dir = File.join(ApiDiffHelper::MERGE_BASE_SWIFTINTERFACE_DIR, scheme)
+      ApiDiffHelper.extract_baselines_at(merge_base, base_dir, scheme, runner: runner)
+      prefix = ApiDiffHelper.api_file_prefix(scheme)
+
+      ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
+        old_file = File.join(base_dir, "#{prefix}-api#{platform[:suffix]}.swiftinterface")
+        new_file = "#{ApiDiffHelper::PR_SWIFTINTERFACE_DIR}/#{scheme}#{platform[:suffix]}.swiftinterface"
+        next unless File.exist?(new_file)
+
+        target_name = "#{scheme} #{platform[:name]}"
+        report = ApiDiffHelper.public_api_diff_report(
+          tool: "public-api-diff",
+          old_file: old_file,
+          new_file: new_file,
+          target_name: target_name
+        )
+        reports_by_target[target_name] = report
+        all_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
+      end
+    end
+
+    all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
+
+    labels = []
+    if all_breaks.any?
+      begin
+        labels = pr_labels_for_api_gate
+      rescue StandardError => e
+        # Unreadable labels must not abort before the report is published, and an unlabelled
+        # PR is the blocking answer, so a failure here degrades rather than raising.
+        UI.important("Could not read the PR labels (#{e.message}), treating the PR as unlabelled")
+      end
+    end
+
+    ApiDiffHelper.print_breaking_summary(all_breaks, labels)
+
+    # Informational: a GitHub or Slack outage must not decide whether the gate fails.
+    begin
+      # notify_api_changes_on_slack bails out when there is nothing to announce, so the notice must
+      # not claim a change went unannounced.
+      announceable = all_breaks.any? || ApiDiffHelper.changed_modules(reports_by_target).any?
+      slack_notice = announceable ? api_slack_unreachable_notice : nil
+      schemes.each do |scheme|
+        upsert_api_diff_comment(
+          scheme: scheme,
+          reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
+          breaks: all_breaks,
+          labels: labels,
+          notice: slack_notice
+        )
+      end
+      notify_api_changes_on_slack(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
+    rescue StandardError => e
+      UI.important("Could not publish the API diff report: #{e.message}")
+    end
+
+    if failed_platforms.any?
+      UI.user_error!("API changes detected! Update baseline files if changes are intentional.")
+    end
+
+    if ApiDiffHelper.gate_blocked?(all_breaks, labels)
+      UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
+    end
+  end
+
+  private_lane :upsert_api_diff_comment do |options|
+    pr_number = detect_pr_number
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+
+    if pr_number.nil? || token.nil? || token.empty?
+      UI.message("No PR context, skipping the API diff comment")
+      next
+    end
+
+    repo = "RevenueCat/#{REPO_NAME}"
+    existing_id = find_pr_comment_with_marker(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
+
+    section = ApiDiffHelper.api_diff_comment_section(
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
+      notice: options[:notice]
+    )
+
+    if existing_id
+      # The other module's job owns its own section of this comment.
+      existing = github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'GET',
+        path: "/repos/#{repo}/issues/comments/#{existing_id}"
+      )
+      body = ApiDiffHelper.merge_api_diff_comment(existing[:json]["body"], options[:scheme], section)
+
+      UI.message("Updating API diff comment #{existing_id}")
+      github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'PATCH',
+        path: "/repos/#{repo}/issues/comments/#{existing_id}",
+        body: { body: body }
+      )
+    else
+      UI.message("Creating the API diff comment")
+      github_api(
+        server_url: 'https://api.github.com',
+        api_token: token,
+        http_method: 'POST',
+        path: "/repos/#{repo}/issues/#{pr_number}/comments",
+        body: { body: ApiDiffHelper.merge_api_diff_comment(nil, options[:scheme], section) }
+      )
+    end
+  end
+
+  private_lane :notify_api_changes_on_slack do |options|
+    breaks = options[:breaks]
+    changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
+
+    if breaks.empty? && changed_targets.empty?
+      UI.message("No public API changes, nothing to post to Slack")
+      next
+    end
+
+    request = ApiDiffHelper.slack_post_request(
+      ApiDiffHelper.slack_summary(
+        breaks,
+        options[:labels],
+        source: api_gate_pr_link,
+        new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
+        modules: ApiDiffHelper.changed_modules(options[:reports_by_target])
+      ),
+      webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
+      bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
+      channel: ENV["SLACK_CHANNEL_SDK_NEW_API"]
+    )
+
+    if request.nil?
+      UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API, or SLACK_URL_SDK_NEW_API. Skipping.")
+      next
+    end
+
+    ApiDiffHelper.post_slack_message(request)
+    UI.success("Posted the API change summary to Slack")
+  end
+
+  # Reported in the PR comment so a missing credential is visible without failing the gate.
+  private_lane :api_slack_unreachable_notice do
+    reachable = ApiDiffHelper.slack_credentials_reachable?(
+      webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
+      bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
+      channel: ENV["SLACK_CHANNEL_SDK_NEW_API"]
+    )
+
+    next nil if reachable
+
+    ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
+  end
+
+  private_lane :api_gate_pr_link do
+    pr_number = detect_pr_number
+    next "" if pr_number.nil?
+
+    "<https://github.com/RevenueCat/#{REPO_NAME}/pull/#{pr_number}|##{pr_number}>"
   end
 
 
@@ -2706,12 +2971,21 @@ def update_paywall_preview_resources_commit(hash)
 end
 
 def find_pr_comment_with_marker(repo, pr_number, token, marker)
-  resp = github_api(
-    server_url: 'https://api.github.com',
-    api_token: token,
-    http_method: 'GET',
-    path: "/repos/#{repo}/issues/#{pr_number}/comments?per_page=100"
-  )
-  comment = resp[:json].find { |c| c["body"].to_s.include?(marker) }
-  comment ? comment["id"] : nil
+  # A missed marker posts a duplicate instead of updating.
+  page = 1
+
+  loop do
+    resp = github_api(
+      server_url: 'https://api.github.com',
+      api_token: token,
+      http_method: 'GET',
+      path: "/repos/#{repo}/issues/#{pr_number}/comments?per_page=100&page=#{page}"
+    )
+    comments = resp[:json] || []
+    comment = comments.find { |c| c["body"].to_s.include?(marker) }
+    return comment["id"] if comment
+    return nil if comments.count < 100
+
+    page += 1
+  end
 end

@@ -4,12 +4,14 @@
 // swift-module-flags-ignorable:  -formal-cxx-interoperability-mode=off -interface-compiler-version 6.3.2
 import Combine
 import CommonCrypto
+import Compression
 import CoreText
 import CryptoKit
 import Foundation
 import Foundation/*.Bundle*/
 import Foundation/*.ProcessInfo*/
 import Foundation/*.URL*/
+import Security
 import StoreKit
 import Swift
 import SwiftUI
@@ -20,6 +22,7 @@ import _StoreKit_SwiftUI
 import _StringProcessing
 import _SwiftConcurrencyShims
 import os
+import zlib
 @objc(RCAttributionNetwork) public enum AttributionNetwork : Swift.Int {
   @available(*, deprecated, message: "use adServices")
   case appleSearchAds = 0
@@ -1543,7 +1546,7 @@ extension RevenueCat.PaywallViewMode : Swift.Codable {
     @objc public func with(storeKitVersion version: RevenueCat.StoreKitVersion) -> RevenueCat.Configuration.Builder
     @objc public func with(automaticDeviceIdentifierCollectionEnabled: Swift.Bool) -> RevenueCat.Configuration.Builder
     @objc public func build() -> RevenueCat.Configuration
-    public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
+    @objc public func with(preferredUILocaleOverride: Swift.String?) -> RevenueCat.Configuration.Builder
     @objc deinit
   }
   @objc deinit
@@ -1812,7 +1815,10 @@ extension RevenueCat.NonSubscriptionTransaction : Swift.Sendable {
     @objc get
   }
   final public let paywall: RevenueCat.PaywallData?
-  final public let paywallComponents: RevenueCat.Offering.PaywallComponents?
+  @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
+  final public var paywallComponents: RevenueCat.Offering.PaywallComponents? {
+    get
+  }
   final public var hasPaywall: Swift.Bool {
     get
   }
@@ -2180,7 +2186,7 @@ extension RevenueCat.Purchases {
   public static let paywallImageDownloadSession: Foundation.URLSession
 }
 extension RevenueCat.Purchases {
-  final public func overridePreferredUILocale(_ locale: Swift.String?)
+  @objc final public func overridePreferredUILocale(_ locale: Swift.String?)
 }
 extension RevenueCat.Purchases {
   @discardableResult

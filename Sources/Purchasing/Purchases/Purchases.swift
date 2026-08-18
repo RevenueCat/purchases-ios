@@ -124,6 +124,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         set { self.eventsManager?.eventsListener = newValue }
     }
 
+    /// Returns the existing per-instance checkpoints manager, or creates and stores one.
+    @_spi(Internal)
+    public func getOrCreateCheckpointsManager<Manager: AnyObject>(
+        _ create: () -> Manager
+    ) -> Manager {
+        return self.purchasesOrchestrator.getOrCreateCheckpointsManager(create)
+    }
+
     private let operationDispatcher: OperationDispatcher
 
     /**
@@ -286,6 +294,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let productsManager: ProductsManagerType
     private let customerInfoManager: CustomerInfoManager
     private let eventsManager: EventsManagerType?
+    private let remoteConfigManager: RemoteConfigManagerType
 
     private var _adTracker: Any?
 
@@ -338,12 +347,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      responseVerificationMode: Signing.ResponseVerificationMode,
                      storeKitVersion: StoreKitVersion = .default,
                      storeKitTimeout: TimeInterval = Configuration.storeKitRequestTimeoutDefault,
-                     networkTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+                     networkTimeout: NetworkTimeout = .default,
                      dangerousSettings: DangerousSettings? = nil,
                      showStoreMessagesAutomatically: Bool,
                      diagnosticsEnabled: Bool = false,
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
+                     iamEnabled: Bool = false,
                      currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
@@ -377,7 +387,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
         let deviceCache = DeviceCache(systemInfo: systemInfo, userDefaults: userDefaults)
-        let workflowsCache = WorkflowsCache(deviceCache: deviceCache)
 
         let diagnosticsFileHandler: DiagnosticsFileHandlerType? = {
             guard diagnosticsEnabled,
@@ -404,6 +413,13 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             ? SimulatedStoreTransactionFetcher()
             : StoreKit2TransactionFetcher(diagnosticsTracker: diagnosticsTracker)
 
+        let remoteConfigDiskCache = systemInfo.remoteConfigEnabled ? RemoteConfigDiskCache() : nil
+        let apiSourceProvider = RemoteConfigSourceProvider(topicStore: remoteConfigDiskCache)
+
+        // One instance for every request kind that consults the per-host fail-fast memory: both backend
+        // HTTPClients and the blob downloader.
+        let requestTimeoutManager = HTTPRequestTimeoutManager(networkTimeout: networkTimeout)
+
         let backend = Backend(
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
@@ -417,7 +433,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 observerMode: observerMode,
                 customEntitlementComputation: systemInfo.dangerousSettings.customEntitlementComputation
             ),
-            diagnosticsTracker: diagnosticsTracker
+            diagnosticsTracker: diagnosticsTracker,
+            apiSourceProvider: apiSourceProvider,
+            timeoutManager: requestTimeoutManager
         )
 
         let paymentQueueWrapper: EitherPaymentQueueWrapper = systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable
@@ -497,10 +515,30 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
                                               attributeSyncing: subscriberAttributesManager,
-                                              workflowsCache: systemInfo.workflowsEndpointEnabled
-                                              ? workflowsCache : nil,
                                               appUserID: appUserID
         )
+        let remoteConfigManager: RemoteConfigManagerType = {
+            guard let remoteConfigDiskCache else { return NoOpRemoteConfigManager() }
+
+            let blobStore = RemoteConfigBlobStore()
+            let blobFetcher = RemoteConfigBlobFetcher(
+                blobStore: blobStore,
+                sourceProvider: apiSourceProvider,
+                downloader: URLSessionRemoteConfigBlobDownloader(timeoutManager: requestTimeoutManager)
+            )
+
+            return RemoteConfigManager(
+                remoteConfigAPI: backend.remoteConfigAPI,
+                diskCache: remoteConfigDiskCache,
+                blobStore: blobStore,
+                blobFetcher: blobFetcher,
+                currentUserProvider: identityManager,
+                cacheDurationInSeconds: { isAppBackgrounded in
+                    deviceCache.cacheDurationInSeconds(isAppBackgrounded: isAppBackgrounded)
+                }
+            )
+        }()
+        identityManager.remoteConfigManager = remoteConfigManager
 
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
@@ -555,10 +593,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             paywallCache = nil
         }
 
-        let workflowManager = WorkflowManager(backend: backend,
-                                              workflowsCache: workflowsCache,
-                                              paywallCache: paywallCache,
-                                              operationDispatcher: operationDispatcher)
+        let uiConfigProvider = UiConfigProvider(manager: remoteConfigManager)
+        let workflowsConfigProvider = WorkflowsConfigProvider(
+            manager: remoteConfigManager,
+            uiConfigProvider: uiConfigProvider
+        )
+        let checkpointsConfigProvider = CheckpointsConfigProvider(manager: remoteConfigManager)
+
+        let workflowManager = WorkflowManager(
+            workflowsConfigProvider: workflowsConfigProvider,
+            paywallCache: paywallCache,
+            operationDispatcher: operationDispatcher
+        )
 
         let offeringsManager = OfferingsManager(deviceCache: deviceCache,
                                                 operationDispatcher: operationDispatcher,
@@ -567,8 +613,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                                 offeringsFactory: offeringsFactory,
                                                 productsManager: productsManager,
                                                 diagnosticsTracker: diagnosticsTracker,
-                                                workflowManager: systemInfo.workflowsEndpointEnabled
-                                                ? workflowManager : nil)
+                                                remoteConfigManager: systemInfo.remoteConfigEnabled
+                                                ? remoteConfigManager
+                                                : nil,
+                                                uiConfigProvider: systemInfo.remoteConfigEnabled
+                                                ? uiConfigProvider
+                                                : nil,
+                                                workflowAssetPrewarmer: systemInfo.remoteConfigEnabled
+                                                ? workflowManager
+                                                : nil)
         let manageSubsHelper = ManageSubscriptionsHelper(systemInfo: systemInfo,
                                                          customerInfoManager: customerInfoManager,
                                                          currentUserProvider: identityManager)
@@ -597,6 +650,33 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         }
 
         let notificationCenter: NotificationCenter = .default
+        let checkpointResolver: CheckpointWorkflowResolver
+        if systemInfo.remoteConfigEnabled {
+            RulesEngine.setLogger(RulesEngineLoggerBridge())
+            let localRulesEvaluator = LocalRulesEvaluator(
+                dimensionProviders: [
+                    DeviceDimensionProvider(),
+                    StoreDimensionProvider()
+                ]
+            )
+            checkpointResolver = DefaultCheckpointWorkflowResolver(
+                checkpointsConfigProvider: checkpointsConfigProvider,
+                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
+                localRulesEvaluator: localRulesEvaluator,
+                workflowManager: workflowManager,
+                offeringsProvider: {
+                    try await withCheckedThrowingContinuation { continuation in
+                        offeringsManager.offerings(
+                            appUserID: identityManager.currentAppUserID,
+                            trackDiagnostics: false,
+                            completion: { result in continuation.resume(with: result) }
+                        )
+                    }
+                }
+            )
+        } else {
+            checkpointResolver = DisabledCheckpointWorkflowResolver()
+        }
         let purchasesOrchestrator: PurchasesOrchestrator = {
             if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
                 let diagnosticsSynchronizer: DiagnosticsSynchronizer?
@@ -655,7 +735,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             } else {
                 return .init(
@@ -683,7 +764,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     eventsManager: eventsManager,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
-                                                                             customerInfoManager: customerInfoManager)
+                                                                             customerInfoManager: customerInfoManager),
+                    checkpointResolver: checkpointResolver
                 )
             }
         }()
@@ -725,6 +807,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   productsManager: productsManager,
                   offeringsManager: offeringsManager,
                   workflowManager: workflowManager,
+                  remoteConfigManager: remoteConfigManager,
                   offlineEntitlementsManager: offlineEntitlementsManager,
                   purchasesOrchestrator: purchasesOrchestrator,
                   purchasedProductsFetcher: purchasedProductsFetcher,
@@ -760,6 +843,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          productsManager: ProductsManagerType,
          offeringsManager: OfferingsManager,
          workflowManager: WorkflowManager,
+         remoteConfigManager: RemoteConfigManagerType,
          offlineEntitlementsManager: OfflineEntitlementsManager,
          purchasesOrchestrator: PurchasesOrchestrator,
          purchasedProductsFetcher: PurchasedProductsFetcherType?,
@@ -814,6 +898,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.productsManager = productsManager
         self.offeringsManager = offeringsManager
         self.workflowManager = workflowManager
+        self.remoteConfigManager = systemInfo.remoteConfigEnabled ? remoteConfigManager : NoOpRemoteConfigManager()
         self.offlineEntitlementsManager = offlineEntitlementsManager
         self.purchasesOrchestrator = purchasesOrchestrator
         self.purchasedProductsFetcher = purchasedProductsFetcher
@@ -826,6 +911,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.currentConfiguration = currentConfiguration
 
         super.init()
+
+        self.identityManager.remoteConfigManager = self.remoteConfigManager
+        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
+            guard let self else { return }
+            self.offeringsManager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: self.appUserID)
+        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -884,6 +975,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.notificationCenter.removeObserver(self)
         self.paymentQueueWrapper.sk1Wrapper?.delegate = nil
         self.paymentQueueWrapper.sk2Wrapper?.delegate = nil
+        self.remoteConfigManager.close()
         self.customerInfoObservationDisposable?()
         self.privateDelegate = nil
     }
@@ -994,27 +1086,23 @@ public extension Purchases {
 
     @_spi(Internal)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
-        // Prefer the workflowId resolved from the workflows list (offeringId → workflowId), falling
-        // back to the offering identifier itself, which the backend also accepts as a workflow key.
-        // The map is empty until the workflows list has been fetched, so the fallback preserves the
-        // original behavior. `WorkflowManager` handles caching and asset warm-up.
-        let workflowId = self.workflowManager.cachedWorkflowId(forOfferingId: offeringID) ?? offeringID
-        return try await Async.call { completion in
-            self.workflowManager.getWorkflow(
-                appUserID: self.appUserID,
-                workflowId: workflowId,
-                isAppBackgrounded: false,
-                completion: completion
-            )
-        }
+        return try await self.workflowManager.getWorkflow(forOfferingId: offeringID)
     }
 
-    /// Synchronously returns the cached workflow for `offeringID` when one is present and fresh,
-    /// otherwise `nil`. Used to seed the workflow paywall without a backend round-trip; callers fall
-    /// back to the async ``workflow(forOfferingIdentifier:)`` when this returns `nil`.
     @_spi(Internal)
     func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
         return self.workflowManager.cachedWorkflow(forOfferingId: offeringID)
+    }
+
+    @_spi(Internal)
+    func resolveCheckpoint(
+        identifier: String,
+        params: CheckpointParams
+    ) async throws -> CheckpointResolution {
+        return try await self.purchasesOrchestrator.resolveCheckpoint(
+            identifier: identifier,
+            params: params
+        )
     }
 
     internal func offerings(fetchPolicy: OfferingsManager.FetchPolicy) async throws -> Offerings {
@@ -1044,7 +1132,9 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        self.identityManager.logIn(appUserID: appUserID) { result in
+        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
+
+        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
@@ -1055,6 +1145,10 @@ public extension Purchases {
 
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
             }
         }
     }
@@ -1089,7 +1183,7 @@ public extension Purchases {
                 return
             }
 
-            self.updateAllCaches {
+            self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
         }
@@ -1112,7 +1206,13 @@ public extension Purchases {
         }
 
         self.syncSubscriberAttributes(completion: {
-            self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .read,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                self.getOfferings(fetchPolicy: .default, fetchCurrent: true, completion: completion)
+            }
         })
     }
 
@@ -1200,6 +1300,10 @@ extension Purchases {
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                fetchContext: .identityChange,
+                isAppBackgrounded: isBackgrounded
+            )
         }
     }
 
@@ -1501,12 +1605,13 @@ public extension Purchases {
         productID: String,
         completion: @escaping (StoreTransaction?, PublicError?) -> Void
     ) {
+        let completion = SendableRecordPurchaseCompletion(run: completion)
         Task {
             let result = await StoreKit.Transaction.latest(for: productID)
 
             guard let result = result else {
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, NewErrorUtils.storeProblemError(
+                    completion.run(nil, NewErrorUtils.storeProblemError(
                         withMessage: "No transaction found for product ID: \(productID)"
                     ).asPublicError)
                 }
@@ -1516,12 +1621,12 @@ public extension Purchases {
             do {
                 let transaction = try await self.recordPurchase(.success(result))
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(transaction, nil)
+                    completion.run(transaction, nil)
                 }
             } catch {
                 let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
                 OperationDispatcher.dispatchOnMainActor {
-                    completion(nil, publicError)
+                    completion.run(nil, publicError)
                 }
             }
         }
@@ -1689,24 +1794,55 @@ extension Purchases {
     /// Polls the backend until reward verification completes or the attempt budget is exhausted.
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
-    /// ``generateRewardVerificationToken(impressionId:)``.
-    /// On a verified reward, automatically invalidates the relevant cache so the grant is reflected on the
-    /// next access: the virtual currencies cache for a virtual-currency reward, and the `CustomerInfo`
-    /// cache for an entitlement reward.
+    /// ``generateRewardVerificationToken(impressionId:)``. Pass `trackingMetadata` to have the SDK
+    /// automatically track the reward events as verification progresses
+    ///
+    /// Refreshes local reward state before returning verified rewards.
     @_spi(Experimental) public func pollRewardVerification(
-        clientTransactionID: String
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
         await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
+            trackingMetadata: trackingMetadata,
+            captureMethod: .manual,
+            poller: RewardVerification.Poller.makeDefault()
+        )
+    }
+
+    /// Adapter entry point: identical to the public overload, but lets an official RevenueCat
+    /// ad-network adapter stamp `captureMethod: .adapter` on the tracked events instead of `.manual`.
+    @_spi(Internal) public func pollRewardVerification(
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) async -> RewardVerificationResult {
+        await self.pollRewardVerification(
+            clientTransactionID: clientTransactionID,
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod,
             poller: RewardVerification.Poller.makeDefault()
         )
     }
 
     internal func pollRewardVerification(
         clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil,
+        captureMethod: AdEventCaptureMethod = .manual,
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
+        self.trackRewardEarnedUnverified(
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod
+        )
+
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        self.trackRewardOutcome(
+            outcome,
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod
+        )
+
         let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
         Logger.info(AdsStrings.reward_verification_completed(
             result: result,
@@ -1715,39 +1851,105 @@ extension Purchases {
         return result
     }
 
-    /// Applies a verified reward's side-effects and returns the result delivered to the caller. A failed
-    /// entitlement `CustomerInfo` refresh downgrades the result to `.failed`.
+    /// Tracks the "earned, not yet verified" moment.
+    private func trackRewardEarnedUnverified(
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) {
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+        let data = AdRewardEarnedUnverified(
+            networkName: trackingMetadata.networkName,
+            mediatorName: trackingMetadata.mediatorName,
+            adFormat: trackingMetadata.adFormat,
+            placement: trackingMetadata.placement,
+            adUnitId: trackingMetadata.adUnitId,
+            impressionId: trackingMetadata.impressionId,
+            rewardVerificationEnabled: true
+        )
+        self.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: captureMethod)
+    }
+
+    /// Tracks the terminal verification outcome: one verified/failed-to-verify event, plus one granted
+    /// event per non-empty reward.
+    private func trackRewardOutcome(
+        _ outcome: RewardVerification.Outcome,
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) {
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+
+        switch outcome {
+        case let .verified(reward, moreRewards):
+            let verified = AdRewardVerified(
+                networkName: trackingMetadata.networkName,
+                mediatorName: trackingMetadata.mediatorName,
+                adFormat: trackingMetadata.adFormat,
+                placement: trackingMetadata.placement,
+                adUnitId: trackingMetadata.adUnitId,
+                impressionId: trackingMetadata.impressionId
+            )
+            self.adTracker.trackAdRewardVerified(verified, captureMethod: captureMethod)
+
+            for grant in ([reward] + moreRewards) where grant != .noReward {
+                let granted = AdRewardGranted(
+                    networkName: trackingMetadata.networkName,
+                    mediatorName: trackingMetadata.mediatorName,
+                    adFormat: trackingMetadata.adFormat,
+                    placement: trackingMetadata.placement,
+                    adUnitId: trackingMetadata.adUnitId,
+                    impressionId: trackingMetadata.impressionId,
+                    reward: grant
+                )
+                self.adTracker.trackAdRewardGranted(granted, captureMethod: captureMethod)
+            }
+        case let .failed(reason):
+            let failed = AdRewardFailedToVerify(
+                networkName: trackingMetadata.networkName,
+                mediatorName: trackingMetadata.mediatorName,
+                adFormat: trackingMetadata.adFormat,
+                placement: trackingMetadata.placement,
+                adUnitId: trackingMetadata.adUnitId,
+                impressionId: trackingMetadata.impressionId,
+                failureReason: reason.trackingFailureReason
+            )
+            self.adTracker.trackAdRewardFailedToVerify(failed, captureMethod: captureMethod)
+        }
+    }
+
+    /// Applies local side effects before building the result delivered to the caller.
     private func rewardVerificationResult(
         for outcome: RewardVerification.Outcome,
         clientTransactionID: String
     ) async -> RewardVerificationResult {
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        if case .verified(let reward) = outcome {
-            if reward.virtualCurrency != nil {
+        if case let .verified(reward, moreRewards) = outcome {
+            let rewards = [reward] + moreRewards
+            if rewards.contains(where: { $0.virtualCurrency != nil }) {
                 Logger.debug(AdsStrings.reward_verification_virtual_currency_invalidating_cache(
                     transactionID: clientTransactionID
                 ))
                 self.invalidateVirtualCurrenciesCache()
             }
-            if reward.entitlement != nil,
+            if rewards.contains(where: { $0.entitlement != nil }),
                await self.refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: clientTransactionID)
                 == false {
-                // Couldn't reflect the entitlement locally — report `.failed` so the app doesn't act on a
-                // reward it can't honor yet. The grant persists server-side and syncs on a later fetch.
+                // Do not surface entitlement rewards that could not be reflected locally yet.
                 return .failed
             }
         }
         #endif
         switch outcome {
-        case .verified(let reward): return .verified(reward)
-        case .failed: return .failed
+        case let .verified(reward, moreRewards):
+            return .verified(reward, moreRewards: moreRewards)
+        case .failed:
+            return .failed
         }
     }
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-    /// Fetches current `CustomerInfo` so an entitlement reward is reflected locally,
-    /// retrying transient failures since `getCustomerInfo` has no built-in retry. Returns whether it
-    /// succeeded.
+    /// Refreshes `CustomerInfo` after entitlement grants, retrying transient failures.
     private func refreshCustomerInfoAfterEntitlementGrant(clientTransactionID: String) async -> Bool {
         Logger.debug(AdsStrings.reward_verification_entitlement_fetching_customer_info(
             transactionID: clientTransactionID
@@ -1760,7 +1962,6 @@ extension Purchases {
                 )
                 return (shouldRetry: false, info)
             } catch {
-                // Retry only transient failures; a terminal error won't improve on retry.
                 let isTransient = (error as? BackendError)?.isTransient ?? false
                 return (shouldRetry: isTransient, nil)
             }
@@ -1798,8 +1999,8 @@ extension Purchases {
         }
 
         switch response.status {
-        case let .verified(reward):
-            return .verified(reward)
+        case let .verified(reward, moreRewards):
+            return .verified(reward: reward, moreRewards: moreRewards)
         case .pending:
             return .pending
         case let .failed(failure):
@@ -1820,7 +2021,7 @@ extension Purchases {
     ///
     /// Setting this will affect the display of RevenueCat UI components, such as the Paywalls.
     /// - Important: This method only takes effect after `Purchases` has been configured.
-    public func overridePreferredUILocale(_ locale: String?) {
+    @objc public func overridePreferredUILocale(_ locale: String?) {
         guard locale != self.systemInfo.preferredLocaleOverride else {
             return
         }
@@ -1888,6 +2089,7 @@ public extension Purchases {
                 diagnosticsEnabled: configuration.diagnosticsEnabled,
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
+                iamEnabled: configuration.iamEnabled,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration
@@ -2153,12 +2355,13 @@ public extension Purchases {
         responseVerificationMode: Signing.ResponseVerificationMode,
         storeKitVersion: StoreKitVersion,
         storeKitTimeout: TimeInterval,
-        networkTimeout: TimeInterval,
+        networkTimeout: NetworkTimeout,
         dangerousSettings: DangerousSettings?,
         showStoreMessagesAutomatically: Bool,
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
-        automaticDeviceIdentifierCollectionEnabled: Bool = true
+        automaticDeviceIdentifierCollectionEnabled: Bool = true,
+        iamEnabled: Bool = false
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -2176,6 +2379,7 @@ public extension Purchases {
                   diagnosticsEnabled: diagnosticsEnabled,
                   preferredLocale: preferredLocale,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
+                  iamEnabled: iamEnabled,
                   currentConfiguration: nil)
         )
     }
@@ -2390,6 +2594,13 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
+    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
+    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
+    // swiftlint:disable missing_docs
+    @_spi(Internal) public var remoteConfigEnabled: Bool {
+        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
+    }
+
     // swiftlint:disable missing_docs
     @_spi(Internal) public static var installationMethod: String {
         return SystemInfo.installationMethod
@@ -2545,6 +2756,12 @@ internal extension Purchases {
         return self.backend.networkTimeout
     }
 
+    /// The timeout the shared request timeout manager hands out for a request that can't be reduced by the
+    /// per-host memory, which is the configured network timeout whenever the developer customized it.
+    var requestTimeoutManagerBaseTimeout: TimeInterval {
+        return self.backend.requestTimeoutManagerBaseTimeout
+    }
+
     var storeKitTimeout: TimeInterval {
         return self.productsManager.requestTimeout
     }
@@ -2614,7 +2831,7 @@ private extension Purchases {
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
-        self.updateAllCachesIfNeeded(isAppBackgrounded: false)
+        self.updateAllCachesIfNeeded(isAppBackgrounded: false, fetchContext: .foreground)
         self.dispatchSyncSubscriberAttributes()
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
@@ -2679,7 +2896,11 @@ private extension Purchases {
             guard !isBackgrounded, let self = self else { return }
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
-                self?.updateAllCaches(isAppBackgrounded: isBackgrounded, completion: nil)
+                self?.updateAllCaches(
+                    isAppBackgrounded: isBackgrounded,
+                    fetchContext: .appStart,
+                    completion: nil
+                )
 
                 // Run the health check after all cache operations have been
                 // enqueued on the serial queue, so it doesn't block user-facing requests.
@@ -2715,7 +2936,7 @@ private extension Purchases {
     }
     #endif
 
-    func updateAllCachesIfNeeded(isAppBackgrounded: Bool) {
+    func updateAllCachesIfNeeded(isAppBackgrounded: Bool, fetchContext: RemoteConfigFetchContext) {
         guard !self.systemInfo.dangerousSettings.uiPreviewMode else {
             // No need to update caches every time when in UI preview mode.
             // Only needed at configuration time
@@ -2735,17 +2956,29 @@ private extension Purchases {
         if self.deviceCache.isOfferingsCacheStale(isAppBackgrounded: isAppBackgrounded) {
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
         }
+
+        self.remoteConfigManager.refreshRemoteConfigIfStale(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
-    func updateAllCaches(completion: ((Result<CustomerInfo, PublicError>) -> Void)?) {
+    func updateAllCaches(
+        fetchContext: RemoteConfigFetchContext,
+        completion: ((Result<CustomerInfo, PublicError>) -> Void)?
+    ) {
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateAllCaches(isAppBackgrounded: isAppBackgrounded,
-                                 completion: completion)
+            self.updateAllCaches(
+                isAppBackgrounded: isAppBackgrounded,
+                fetchContext: fetchContext,
+                completion: completion
+            )
         }
     }
 
     func updateAllCaches(
         isAppBackgrounded: Bool,
+        fetchContext: RemoteConfigFetchContext,
         completion: ((Result<CustomerInfo, PublicError>) -> Void)?
     ) {
         Logger.verbose(Strings.purchase.updating_all_caches)
@@ -2769,6 +3002,10 @@ private extension Purchases {
         }
 
         self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+        self.remoteConfigManager.refreshRemoteConfig(
+            fetchContext: fetchContext,
+            isAppBackgrounded: isAppBackgrounded
+        )
     }
 
     // Used when delegate is being set
@@ -2802,12 +3039,18 @@ private extension Purchases {
             await cache.warmUpEligibilityCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
-            await cache.warmUpPaywallImagesCache(offerings: offerings)
+            await cache.warmUpPaywallAssetsCache(offerings: offerings)
         }
         self.operationDispatcher.dispatchOnWorkerThread {
             await cache.warmUpPaywallFontsCache(offerings: offerings)
         }
     }
+
+}
+
+private struct SendableRecordPurchaseCompletion: @unchecked Sendable {
+
+    let run: (StoreTransaction?, PublicError?) -> Void
 
 }
 

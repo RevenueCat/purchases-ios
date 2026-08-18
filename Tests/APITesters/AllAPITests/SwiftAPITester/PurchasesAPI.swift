@@ -326,7 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])
@@ -397,6 +396,17 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
 
         let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(
+            clientTransactionID: "",
+            trackingMetadata: RewardedAdTrackingMetadata(
+                networkName: nil,
+                mediatorName: .adMob,
+                adFormat: .rewarded,
+                placement: nil,
+                adUnitId: "",
+                impressionId: ""
+            )
+        )
     } catch {}
 }
 

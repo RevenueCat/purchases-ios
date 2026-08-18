@@ -1,35 +1,30 @@
 ## RevenueCat SDK
-### ✨ New Features
-* Expose `autoResumeDate` and `productPlanIdentifier` on `SubscriptionInfo` (#7049) via Álvaro Brey (@AlvaroBrey)
-* Log reward verification failure reason (#6892) via Pol Miro (@polmiro)
-* Report ad event capture method (#7020) via Pol Miro (@polmiro)
+### 🐞 Bugfixes
+* fix(remote-config): Fix misleading ui_config warnings for projects without paywalls (#7389) via Rick (@rickvdl)
 
 ## RevenueCatUI SDK
-### ✨ New Features
-* Preview paywalls via deep link (#6922) via Dave DeLong (@davedelong)
-### Paywallv2
+### 🐞 Bugfixes
+* fix(paywalls): don't leave a hidden package selected by default (#7380) via Facundo Menzella (@facumenzella)
+* Add accessibility labels for some paywall buttons (#7357) via Facundo Menzella (@facumenzella)
+* fix(paywalls): dismiss the UIKit exit offer instead of deferring to the host (#7371) via Facundo Menzella (@facumenzella)
+### Paywallsv2
 #### 🐞 Bugfixes
-* Extract ImageRenderPlan and add unit tests (#7069) via Alexander Repty (@alexrepty)
+* fix(paywalls-v2): select each tab's own default package on workflows (#7373) via Facundo Menzella (@facumenzella)
 
 ### 🔄 Other Changes
-* fix: align RulesEngineInternal with json-logic-js (undefined & missing_some) (#7066) via Antonio Pallares (@ajpallares)
-* feat(remote-config): update request and response models according to spec (#7022) via Rick (@rickvdl)
-* fix(ci): install pinned xcodes prebuilt binary for visionOS support (#7065) via Antonio Pallares (@ajpallares)
-* feat(workflows): add workflows_close abandonment event (#7040) via Facundo Menzella (@facumenzella)
-* test(ads): add api signature test for newly exposed reward primitives (#7045) via Peter Porfy (@peterporfy)
-* Model entitlement reward variant in reward verification (#7038) via Pol Miro (@polmiro)
-* Chore(deps): Bump nokogiri from 1.19.3 to 1.19.4 in /Tests/InstallationTests/CocoapodsInstallation (#7063) via dependabot[bot] (@dependabot[bot])
-* Chore(deps): Bump concurrent-ruby from 1.3.6 to 1.3.7 in /Tests/InstallationTests/CocoapodsInstallation (#7062) via dependabot[bot] (@dependabot[bot])
-* Send `presented_workflow_id` and `presented_step_id` in post-receipt body (#7024) via Cesar de la Vega (@vegaro)
-* Chore(deps): Bump nokogiri from 1.19.3 to 1.19.4 (#7061) via dependabot[bot] (@dependabot[bot])
-* Chore(deps): Bump danger from 9.5.3 to 9.6.0 (#7060) via dependabot[bot] (@dependabot[bot])
-* feat(remote-config): support RC Container format in network stack and use for remote-config request (#7037) via Rick (@rickvdl)
-* Bump sdks-common-config orb to 4.1.0 (#7050) via Álvaro Brey (@AlvaroBrey)
-* feat(remote-config): add RC Container format V1 + parser (#7030) via Rick (@rickvdl)
-* Upload paywall rendering validation screenshots to Emerge in PRs (#6979) via JayShortway (@JayShortway)
-* Remove unused pollRewardVerificationStatus (#7042) via Pol Miro (@polmiro)
-* Add Danger check to discourage large PRs (#7041) via Toni Rico (@tonidero)
-* Update baseline swiftinterface files for `main` (#7036) via RevenueCat Git Bot (@RCGitBot)
-* refactor(ads): reuse SDK retry classification for poll errors (#7009) via Antonio Pallares (@ajpallares)
-* Migrate update_error_codes to the outputs parameter (#7035) via Álvaro Brey (@AlvaroBrey)
-* refactor(ads): move reward verification to coresdk (#6895) via Peter Porfy (@peterporfy)
+* feat(checkpoints): Add local rules evaluation foundation (#7306) via Rick (@rickvdl)
+* feat(checkpoints): Resolve checkpoints from remote configuration (#7385) via Rick (@rickvdl)
+* feat(checkpoints): Expand CheckpointTester use cases (#7382) via Rick (@rickvdl)
+* refactor(checkpoints): Only expose APIs behind a feature flag (#7381) via Rick (@rickvdl)
+* Chore: reduce component tree traversals on cache warming (#7379) via Jacob Rakidzich (@JZDesign)
+* Ingest audiences config topic (#7390) via Cesar de la Vega (@vegaro)
+* Chore: Create WebBundleEventBus (#7386) via Jacob Rakidzich (@JZDesign)
+* Chore(deps): Bump json from 2.20.0 to 2.21.2 (#7387) via dependabot[bot] (@dependabot[bot])
+* fix(checkpoints): Refine unknown checkpoint and workflow resolution (#7384) via Rick (@rickvdl)
+* Ingest the checkpoints config topic (#7370) via Facundo Menzella (@facumenzella)
+* feat(checkpoints): UI presentation (#7368) via Rick (@rickvdl)
+* feat(checkpoints): core engine (#7365) via Rick (@rickvdl)
+* feat(checkpoints): CheckpointTester app (#7375) via Rick (@rickvdl)
+* feat(checkpoints): public API surface (#7361) via Rick (@rickvdl)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `b4e1e7f` to `7fbbe66` (#7378) via dependabot[bot] (@dependabot[bot])
+* test(paywalls): Maestro flow for closing the exit offer from UIKit (#7372) via Facundo Menzella (@facumenzella)

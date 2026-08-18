@@ -15,6 +15,7 @@
 import Nimble
 @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -1876,6 +1877,23 @@ class CustomVariablesV2Tests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class CustomVariableValueTests: TestCase {
 
+    func testEnvironmentFiltersInvalidCustomVariableKeys() {
+        var environment = EnvironmentValues()
+
+        environment.customPaywallVariables = [
+            "valid_key": "kept",
+            "invalid-key": "dropped",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]
+
+        expect(environment.customPaywallVariables).to(equal([
+            "valid_key": "kept",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]))
+    }
+
     // MARK: - stringValue Tests
 
     func testStringValueForString() {
@@ -1961,6 +1979,61 @@ class CustomVariableValueTests: TestCase {
     func testExpressibleByStringLiteral() {
         let value: CustomVariableValue = "test"
         expect(value).to(equal(.string("test")))
+    }
+
+    func testExpressibleByNumericAndBooleanLiterals() {
+        let integer: CustomVariableValue = 42
+        let double: CustomVariableValue = 4.5
+        let boolean: CustomVariableValue = true
+
+        expect(integer).to(equal(.number(42)))
+        expect(double).to(equal(.number(4.5)))
+        expect(boolean).to(equal(.bool(true)))
+    }
+
+    // MARK: - Foundation Bridge Tests
+
+    func testFoundationValuesPreserveSupportedPrimitiveTypes() {
+        expect(CustomVariableValue(foundationValue: "value")).to(equal(.string("value")))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: true))).to(equal(.bool(true)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: false))).to(equal(.bool(false)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Int64(42)))).to(equal(.number(42)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(4.5)))).to(equal(.number(4.5)))
+    }
+
+    func testFoundationValuesSupportAllNSNumberIntegerAndFloatingPointStorageTypes() {
+        let integers: [NSNumber] = [
+            NSNumber(value: Int8(1)), NSNumber(value: Int16(2)), NSNumber(value: Int32(3)),
+            NSNumber(value: Int64(4)), NSNumber(value: UInt8(5)), NSNumber(value: UInt16(6)),
+            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8))
+        ]
+
+        for number in integers {
+            expect(CustomVariableValue(foundationValue: number)).to(equal(.number(number.doubleValue)))
+        }
+
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Float(1.5)))).to(equal(.number(1.5)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(2.5)))).to(equal(.number(2.5)))
+    }
+
+    func testFoundationValueRejectsUnsupportedTypes() {
+        expect(CustomVariableValue(foundationValue: Date())).to(beNil())
+        expect(CustomVariableValue(foundationValue: NSNull())).to(beNil())
+        expect(CustomVariableValue(foundationValue: ["nested": "value"])).to(beNil())
+    }
+
+    func testFoundationValueRoundTripsEverySupportedType() {
+        let values: [CustomVariableValue] = [
+            .string("value"),
+            .number(42),
+            .number(4.5),
+            .bool(true),
+            .bool(false)
+        ]
+
+        for value in values {
+            expect(CustomVariableValue(foundationValue: value.foundationValue)).to(equal(value))
+        }
     }
 
     // MARK: - Dictionary Conversion Tests

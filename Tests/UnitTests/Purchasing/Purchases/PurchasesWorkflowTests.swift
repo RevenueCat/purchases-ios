@@ -16,32 +16,68 @@ import XCTest
 
 @testable @_spi(Internal) import RevenueCat
 
+/// `Purchases.workflow(forOfferingIdentifier:)` reads through `WorkflowManager`/`WorkflowsConfigProvider`
+/// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
 
-    private var mockWorkflowsAPI: MockWorkflowsAPI!
-
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-
+    func testRemoteConfigEnabledReturnsFalseWhenDisabledByKillSwitch() {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
         self.setupPurchases()
-        self.mockWorkflowsAPI = try XCTUnwrap(self.backend.workflowsAPI as? MockWorkflowsAPI)
+
+        expect(self.purchases.remoteConfigEnabled) == true
+
+        self.mockRemoteConfigManager.isDisabled = true
+
+        expect(self.purchases.remoteConfigEnabled) == false
     }
 
-    func testWorkflowForOfferingIdentifierFallsBackToOfferingIdAsWorkflowId() async throws {
-        let expected = try Self.workflowDataResult(id: "default")
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+    func testWorkflowForOfferingIdentifierThrowsWhenOfferingHasNoWorkflow() async throws {
+        self.setupPurchases()
 
-        // No workflows list has been fetched yet, so the offeringId → workflowId map is empty and the
-        // offering identifier itself is used as the workflow lookup key, preserving the prior behavior.
-        let result = try await self.purchases.workflow(forOfferingIdentifier: "default")
+        // The `workflows` topic has synced, but no item maps to the "default" offering (its item carries
+        // no matching `offeringIdentifier`). With no mapping, resolution fails fast with a distinct
+        // `offeringHasNoWorkflow` and does NOT attempt a fetch by offering id — the prior lazy
+        // offering-id-as-workflow-key behavior was dropped to match purchases-android #3760.
+        self.mockRemoteConfigManager.stubbedTopics[.workflows] = ["default": .init(blobRef: "default", content: [:])]
+        self.mockRemoteConfigManager.stubbedBlobData[.workflows] = ["default": try Self.workflowJSON(id: "default")]
 
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowParameters?.workflowId) == "default"
-        expect(result) == expected
+        do {
+            _ = try await self.purchases.workflow(forOfferingIdentifier: "default")
+            fail("Expected workflow(forOfferingIdentifier:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .offeringHasNoWorkflow(offeringId: "default"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
+
+        // Failed fast on the missing mapping: no workflow blob was fetched.
+        let requestedWorkflowKeys = self.mockRemoteConfigManager.invokedBlobDataParameters
+            .filter { $0.topic == .workflows }
+            .map(\.itemKey)
+        expect(requestedWorkflowKeys).to(beEmpty())
     }
 
     // MARK: - Helpers
 
-    private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
+    private static let uiConfigTopic: [String: RemoteConfiguration.ConfigItem] = [
+        "app": .init(blobRef: "app-ref", content: [:]),
+        "localizations": .init(blobRef: "localizations-ref", content: [:]),
+        "variable_config": .init(blobRef: "variable-config-ref", content: [:]),
+        "custom_variables": .init(blobRef: "custom-variables-ref", content: [:])
+    ]
+
+    private static let uiConfigBlobs: [String: Data] = [
+        "app": Data(#"{"colors": {}, "fonts": {}}"#.utf8),
+        "localizations": Data(#"{}"#.utf8),
+        "variable_config": Data(
+            #"{"variable_compatibility_map": {}, "function_compatibility_map": {}}"#.utf8
+        ),
+        "custom_variables": Data(#"{}"#.utf8)
+    ]
+
+    private static func workflowJSON(id: String) throws -> Data {
         let json = """
         {
           "id": "\(id)",
@@ -74,16 +110,10 @@ class PurchasesWorkflowTests: BasePurchasesTests {
               },
               "offering_identifier": "default"
             }
-          },
-          "ui_config": {
-            "app": { "colors": {}, "fonts": {} },
-            "localizations": {}
           }
         }
         """
-        let data = try XCTUnwrap(json.data(using: .utf8))
-        let workflow = try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
-        return .init(workflow: workflow, enrolledVariants: nil)
+        return try XCTUnwrap(json.data(using: .utf8))
     }
 
 }

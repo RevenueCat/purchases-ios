@@ -16,7 +16,7 @@ internal extension RewardVerification {
 
     /// Terminal SSV verdict from the polling loop.
     enum Outcome: Sendable {
-        case verified(AdReward)
+        case verified(reward: AdReward, moreRewards: [AdReward])
         case failed(FailureReason)
 
         var logDescription: String {
@@ -55,5 +55,25 @@ internal extension RewardVerification {
 
         /// The polling task was cancelled before completion.
         case cancelled
+    }
+}
+
+internal extension RewardVerification.FailureReason {
+
+    /// Maps this internal diagnostic classification to the reason reported on the
+    /// ``AdRewardFailedToVerify`` tracking event.
+    var trackingFailureReason: AdRewardFailureReason {
+        switch self {
+        case .backendRejected(let reason, _):
+            return .backendError(reason: reason)
+        case .exhaustedPending:
+            return .timeout
+        case .exhaustedTransient, .terminalError:
+            return .networkError
+        case .unexpectedResponse:
+            return .unknown
+        case .cancelled:
+            return .cancelled
+        }
     }
 }

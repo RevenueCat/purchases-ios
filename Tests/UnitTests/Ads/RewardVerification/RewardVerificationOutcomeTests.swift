@@ -20,18 +20,19 @@ final class RewardVerificationOutcomeTests: TestCase {
         let reward = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
         let outcome = RewardVerification.Outcome.verified(.virtualCurrency(reward))
 
-        guard case .verified(let adReward) = outcome, let captured = adReward.virtualCurrency else {
+        guard case let .verified(adReward, moreRewards) = outcome, let captured = adReward.virtualCurrency else {
             return XCTFail("Expected .verified(.virtualCurrency), got \(outcome)")
         }
         XCTAssertEqual(captured, reward)
         XCTAssertEqual(captured.code, "coins")
         XCTAssertEqual(captured.amount, 5)
+        XCTAssertTrue(moreRewards.isEmpty)
     }
 
     func testVerifiedCarriesNoRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.noReward)
 
-        guard case .verified(.noReward) = outcome else {
+        guard case .verified(.noReward, _) = outcome else {
             return XCTFail("Expected .verified(.noReward), got \(outcome)")
         }
     }
@@ -39,7 +40,7 @@ final class RewardVerificationOutcomeTests: TestCase {
     func testVerifiedCarriesUnsupportedRewardPayload() {
         let outcome = RewardVerification.Outcome.verified(.unsupportedReward)
 
-        guard case .verified(.unsupportedReward) = outcome else {
+        guard case .verified(.unsupportedReward, _) = outcome else {
             return XCTFail("Expected .verified(.unsupportedReward), got \(outcome)")
         }
     }
@@ -56,5 +57,54 @@ final class RewardVerificationOutcomeTests: TestCase {
         guard case .failed(.terminalError("boom")) = terminal else {
             return XCTFail("Expected .failed(.terminalError(\"boom\")), got \(terminal)")
         }
+    }
+
+    func testVerifiedCarriesPrimaryRewardAndMoreRewards() throws {
+        let primary = try XCTUnwrap(VirtualCurrencyReward(code: "coins", amount: 5))
+        let entitlement = try XCTUnwrap(EntitlementReward(identifier: "pro", expiresAt: Date()))
+        let outcome = RewardVerification.Outcome.verified(
+            reward: .virtualCurrency(primary),
+            moreRewards: [.entitlement(entitlement)]
+        )
+
+        guard case let .verified(adReward, moreRewards) = outcome else {
+            return XCTFail("Expected .verified, got \(outcome)")
+        }
+        XCTAssertEqual(adReward.virtualCurrency, primary)
+        XCTAssertEqual(moreRewards.count, 1)
+        XCTAssertEqual(moreRewards.first?.entitlement, entitlement)
+    }
+
+    // MARK: - trackingFailureReason
+
+    func testTrackingFailureReasonCarriesTheBackendReasonCode() {
+        let reason = RewardVerification.FailureReason.backendRejected(reason: "no_access", message: "nope")
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: "no_access"))
+    }
+
+    func testTrackingFailureReasonMapsBackendRejectedWithoutReasonToBackendError() {
+        let reason = RewardVerification.FailureReason.backendRejected(reason: nil, message: "nope")
+        XCTAssertEqual(reason.trackingFailureReason, .backendError(reason: nil))
+    }
+
+    func testTrackingFailureReasonMapsExhaustedPendingToTimeout() {
+        XCTAssertEqual(RewardVerification.FailureReason.exhaustedPending.trackingFailureReason, .timeout)
+    }
+
+    func testTrackingFailureReasonMapsExhaustedTransientToNetworkError() {
+        XCTAssertEqual(RewardVerification.FailureReason.exhaustedTransient.trackingFailureReason, .networkError)
+    }
+
+    func testTrackingFailureReasonMapsTerminalErrorToNetworkError() {
+        let reason = RewardVerification.FailureReason.terminalError(error: "boom")
+        XCTAssertEqual(reason.trackingFailureReason, .networkError)
+    }
+
+    func testTrackingFailureReasonMapsUnexpectedResponseToUnknown() {
+        XCTAssertEqual(RewardVerification.FailureReason.unexpectedResponse.trackingFailureReason, .unknown)
+    }
+
+    func testTrackingFailureReasonMapsCancelledToCancelled() {
+        XCTAssertEqual(RewardVerification.FailureReason.cancelled.trackingFailureReason, .cancelled)
     }
 }
