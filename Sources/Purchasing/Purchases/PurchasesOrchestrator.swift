@@ -784,7 +784,12 @@ final class PurchasesOrchestrator {
             }
         }
 
-        return try await purchaseTask.value
+        return try await withTaskCancellationHandler {
+            try await purchaseTask.value
+        } onCancel: {
+            // The receipt post doesn't observe cancellation, so it still completes.
+            purchaseTask.cancel()
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
