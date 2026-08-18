@@ -273,6 +273,24 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testConfigGenerationChangeDuringAudienceEvaluationSkipsResolution() async throws {
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            return self.offerings
+        }
+        // Audiences are read live, outside the rule snapshot's generation guard, so a refresh landing mid-walk
+        // leaves the match itself built from config that is already gone.
+        self.audiencesProvider.onLookup = { _ in
+            self.checkpointsProvider.configGeneration += 1
+        }
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 0, "A rule matched against stale config should not be resolved")
+    }
+
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
         let secondWorkflowID = "wf5678"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
@@ -728,10 +746,12 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     /// tests that predate audience evaluation.
     var rulesByAudienceID: [String: String] = [:]
     var defaultRules: String? = "true"
+    var onLookup: ((String) -> Void)?
     private(set) var requestedIdentifiers: [String] = []
 
     func getAudience(_ identifier: String) async -> Audience? {
         self.requestedIdentifiers.append(identifier)
+        self.onLookup?(identifier)
 
         guard let rules = self.rulesByAudienceID[identifier] ?? self.defaultRules else { return nil }
 

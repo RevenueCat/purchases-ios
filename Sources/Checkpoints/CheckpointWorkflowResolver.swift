@@ -156,6 +156,12 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        // Audiences are read live rather than pinned to this snapshot, so a refresh landing mid-walk leaves
+        // the match built from config that is already gone.
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+            return .noAction(.configurationUnavailable)
+        }
+
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
