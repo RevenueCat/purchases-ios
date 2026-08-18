@@ -156,7 +156,7 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var iamEnabled: Bool = false
-        private(set) var keychainAccessGroup: String? = nil
+        private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
