@@ -1141,6 +1141,12 @@ public extension Purchases {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
 
+    fileprivate func logInIfNeeded() {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.authentication.logInIfNeeded()
+        #endif
+    }
+
 }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -2853,7 +2859,7 @@ private extension Purchases {
         // if IAM is enabled and we don't have tokens for the current (anonymous) user,
         // then attempt to get them. If this fails, this will invoke the authentication delegate's
         // callback about failure, because it was not explicitly user-initiated
-        self.authentication.logInIfNeeded()
+        self.logInIfNeeded()
 
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
@@ -2922,7 +2928,7 @@ private extension Purchases {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
 
-            self.authentication.logInIfNeeded()
+            self.logInIfNeeded()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(
