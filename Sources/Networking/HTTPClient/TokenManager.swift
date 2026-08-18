@@ -23,12 +23,19 @@ class TokenManager {
         }
     }
 
+    private struct CurrentTokenRefreshState {
+        let request: HTTPRequest
+        var completions: [(Bool) -> Void]
+    }
+
     let enabled: Bool
     private let storage: any SecureItemStorage
 
     weak var currentUserProvider: CurrentUserProvider?
 
     private var currentUser: String? { currentUserProvider?.currentAppUserID }
+
+    private let currentRefreshState: Atomic<CurrentTokenRefreshState?> = Atomic(nil)
 
     init(enabled: Bool, storage: any SecureItemStorage) {
         self.enabled = enabled
@@ -113,6 +120,104 @@ class TokenManager {
 
     func deleteAccessToken(for userID: String) {
         storage.setString(nil, for: .access(userID))
+    }
+
+    func authorizationHeaders(for urlRequest: HTTPClient.Request) -> [String: String] {
+        guard enabled else { return [:] }
+        guard let currentAccessToken else { return [:] }
+
+        // /auth/* paths want the API key
+        if urlRequest.httpRequest.path.isIAMPath { return [:] }
+
+        return [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(currentAccessToken)"
+        ]
+    }
+
+    // MARK: - Refreshing Tokens
+
+    enum TokenRefreshAction {
+        case noAction
+        case refresh(HTTPRequest)
+        case waitingForOtherRequest
+    }
+
+    func tokenRefreshRequest(for initialRequest: HTTPClient.Request,
+                             response: HTTPURLResponse?,
+                             duplicateRequestHandler: @escaping (Bool) -> Void)
+    -> TokenRefreshAction {
+
+        guard self.enabled else { return .noAction }
+
+        // IAM requests do not trigger a token refresh
+        if initialRequest.httpRequest.path.isIAMPath { return .noAction }
+
+        // retried requests do not trigger a token refresh
+        // this is based on the assumption that the request was retried because it previously failed
+        // this check prevents us from getting caught in infinite re-auth loops
+        guard initialRequest.retried == false else { return .noAction }
+
+        // only "401 Unauthorized" responses will trigger a refresh
+        guard let response else { return .noAction }
+        guard response.httpStatusCode == .unauthorized else { return .noAction }
+
+        // we can only refresh if we have a refresh token
+        guard let currentRefreshToken else { return .noAction }
+
+        return self.currentRefreshState.modify {
+            if $0 != nil {
+                $0?.completions.append(duplicateRequestHandler)
+                return .waitingForOtherRequest
+            } else {
+                let body = TokenRefreshOperation.Body(refreshToken: currentRefreshToken)
+                let request = HTTPRequest(method: .post(body), path: .tokenRefresh, isRetryable: false)
+                $0 = .init(request: request, completions: [])
+                return .refresh(request)
+            }
+        }
+    }
+
+    func handleTokenRefreshResponse(_ result: VerifiedHTTPResponse<TokenResponse>.Result) -> Bool {
+        guard self.enabled else { return false }
+
+        // make sure this response is a successful one
+        let didHandle: Bool
+        let reportedError: PublicError?
+        switch result {
+        case .success(let response):
+            if response.httpStatusCode == .success {
+                let tokens = response.body
+
+                self.currentRefreshToken = tokens.refreshToken
+                self.currentAccessToken = tokens.accessToken
+                self.currentIDToken = tokens.idToken
+
+                reportedError = nil
+                didHandle = true
+            } else {
+                // a non-successful response that somehow didn't get turned into an actual error
+                reportedError = ErrorUtils.unknownError().asPublicError
+                didHandle = false
+            }
+        case .failure(let error):
+            reportedError = error.asPublicError
+            didHandle = false
+        }
+
+        let handlers = self.currentRefreshState.modify { state in
+            let handlers = state?.completions ?? []
+            state = nil
+            return handlers
+        }
+
+        defer {
+            if let reportedError, let reportError {
+                reportError(reportedError)
+            }
+        }
+
+        handlers.forEach { $0(didHandle) }
+        return didHandle
     }
 
 }

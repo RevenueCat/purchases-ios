@@ -86,8 +86,16 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
+        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
+        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+    }
+
+    var needsIAMLogin: Bool {
+        guard tokenManager.enabled else { return false }
+        guard currentUserIsAnonymous else { return false }
+        if tokenManager.hasCurrentAccessToken { return false }
+        return true
     }
 
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {

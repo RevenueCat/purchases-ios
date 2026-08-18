@@ -52,6 +52,8 @@ public final class Authentication: NSObject {
     /// to the delegate to prevent it from being unintentionally deallocated.
     @objc public weak var delegate: AuthenticationDelegate?
 
+    private let ongoingUserInitiatedRequestCount = Atomic(0)
+
     internal init(backend: Backend,
                   identityManager: IdentityManager,
                   tokenManager: TokenManager,
@@ -108,7 +110,10 @@ public final class Authentication: NSObject {
 
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
+        self.ongoingUserInitiatedRequestCount.increment()
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
+            self.ongoingUserInitiatedRequestCount.decrement()
+            
             self.operationDispatcher.dispatchOnMainThread {
                 if case let .success(values) = result {
                     self.internalDelegate?.authenticatorDidLogIn(info: values.info)
@@ -184,6 +189,11 @@ public final class Authentication: NSObject {
 
     // MARK: - Internals
 
+    internal func logInIfNeeded(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        guard identityManager.needsIAMLogin else { return }
+        self.logIn(using: .anonymous, userInitiated: false, completion: completion)
+    }
+
     internal func logIn(using identity: Identity,
                         userInitiated: Bool,
                         completion: ((CustomerInfo?, PublicError?) -> Void)?) {
@@ -196,7 +206,10 @@ public final class Authentication: NSObject {
             return
         }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logIn(identity: identity) { result in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let completion {
                 self.operationDispatcher.dispatchOnMainThread {
                     completion(result.value?.info, result.error?.asPublicError)
@@ -226,7 +239,10 @@ public final class Authentication: NSObject {
             return
         }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logOut { error in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let error {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
@@ -256,6 +272,9 @@ public final class Authentication: NSObject {
 
     internal func reportAuthenticationError(_ error: PublicError) {
         guard let delegate else { return }
+
+        // if we currently have user initiated requests going, then skip reporting this error via the delegate
+        if self.ongoingUserInitiatedRequestCount.value > 0 { return }
 
         self.operationDispatcher.dispatchOnMainThread {
             delegate.authenticatorDidEncounterError(error)

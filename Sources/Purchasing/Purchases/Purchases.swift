@@ -2850,6 +2850,11 @@ private extension Purchases {
 
         self.systemInfo.isAppBackgroundedState = false
 
+        // if IAM is enabled and we don't have tokens for the current (anonymous) user,
+        // then attempt to get them. If this fails, this will invoke the authentication delegate's
+        // callback about failure, because it was not explicitly user-initiated
+        self.authentication.logInIfNeeded()
+
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
@@ -2916,6 +2921,8 @@ private extension Purchases {
     private func performInitialForegroundSetup() {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
+
+            self.authentication.logInIfNeeded()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(
