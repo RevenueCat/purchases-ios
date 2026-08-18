@@ -166,6 +166,8 @@ struct ContentView: View {
                     ForEach(self.$customVariables.variables) { $variable in
                         HStack {
                             TextField("Name", text: $variable.name)
+                                .textInputAutocapitalization(.never)
+                                .autocorrectionDisabled()
                             TextField("Value", text: $variable.value)
                         }
                     }

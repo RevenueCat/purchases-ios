@@ -327,6 +327,9 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
+                    // A package-less tab shares the parent's context, so this would only clear it.
+                    guard context !== self.packageContext else { return }
+
                     self.packageContext.update(
                         package: context.package,
                         variableContext: context.variableContext
@@ -362,7 +365,8 @@ struct LoadedTabsComponentView: View {
                     self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    if let package = tierPackageContext.package {
+                    // A package-less tab shares that context, so it has nothing to propagate.
+                    if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
@@ -411,9 +415,11 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
+                    // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
                         package: parentUpdate.package,
-                        variableContext: parentUpdate.variableContext
+                        variableContext: parentUpdate.variableContext,
+                        isReconcile: true
                     )
                 }
             }
@@ -448,8 +454,10 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it
-                self.didUserSelectPackage = true
+                // A user selection, unless a reconcile made it. Set-only: it can't clear an earlier one.
+                if !self.packageContext.lastUpdateWasReconcile {
+                    self.didUserSelectPackage = true
+                }
                 self.parentOwnedPackage = newPackage
                 self.parentOwnedVariableContext = self.packageContext.variableContext
 

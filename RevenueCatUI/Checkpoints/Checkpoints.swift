@@ -37,7 +37,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
 
     /// Creates checkpoint parameters with the supplied custom variables.
     public init(customVariables: [String: CustomVariableValue] = [:]) {
-        self.customVariables = customVariables
+        self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
     }
 
     /// Returns whether two parameter collections contain the same custom variables.
@@ -193,6 +193,36 @@ public final class CheckpointNoActionResult: CheckpointResult {
     public override func hash(into hasher: inout Hasher) {
         hasher.combine(self.checkpoint)
         hasher.combine(self.reason)
+    }
+
+}
+
+/// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
+/// whether and how to use it.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointReceivedOfferingResult: CheckpointResult {
+
+    /// The offering the checkpoint selected.
+    public let offering: Offering
+
+    init(checkpoint: CheckpointInfo, offering: Offering) {
+        self.offering = offering
+        super.init(checkpoint: checkpoint)
+    }
+
+    public override var description: String {
+        return "ReceivedOffering(checkpoint=\(self.checkpoint), offering=\(self.offering.identifier))"
+    }
+
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointReceivedOfferingResult else { return false }
+        return self.checkpoint == other.checkpoint && self.offering == other.offering
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.checkpoint)
+        hasher.combine(self.offering)
     }
 
 }

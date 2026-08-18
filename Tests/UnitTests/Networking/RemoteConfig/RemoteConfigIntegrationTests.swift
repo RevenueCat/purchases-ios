@@ -128,19 +128,33 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(missingData).to(beNil())
     }
 
-    func testAudiencesProviderDecodesRawAudiencePayloadPreservingKeys() async throws {
-        let payload = #"""
-        {
-            "id": "aud_123",
-            "created_via": "dashboard",
-            "condition": {
-                "operator": "and",
-                "operands": [
-                    { "attribute": "country", "values": ["ES", "US"] }
-                ]
-            }
-        }
-        """#.asData
+    /// The backend publishes audiences as item metadata with no blob, so the item's own content is what has
+    /// to decode. Unknown fields it may carry alongside `id` and `rules` are ignored.
+    func testAudiencesProviderDecodesATypedAudienceIgnoringUnknownFields() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: [
+                "aud_123": .init(content: [
+                    "id": "aud_123",
+                    "created_via": "dashboard",
+                    "rules": ["in": [["var": "last_seen.country"], ["ES", "US"]]]
+                ])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience) == Audience(
+            id: "aud_123",
+            rules: #"{"in":[{"var":"last_seen.country"},["ES","US"]]}"#
+        )
+    }
+
+    /// An audience published the old way, as a blob with no metadata, is not readable. The backend clears the
+    /// blob when it publishes the metadata, so there is nothing to fall back to.
+    func testAudiencesProviderReturnsNilForAnAudienceServedOnlyAsABlob() async throws {
+        let payload = #"{ "id": "aud_123", "rules": { "==": [1, 1] } }"#.asData
         let ref = RCContainerTestData.blobRef(for: payload)
         let container = try Self.containerData(
             topics: .init(entries: [
@@ -152,29 +166,46 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.refresh(with: container)
 
         let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
-        let expected: [String: AnyDecodable] = [
-            "id": "aud_123",
-            "created_via": "dashboard",
-            "condition": [
-                "operator": "and",
-                "operands": [
-                    ["attribute": "country", "values": ["ES", "US"]]
-                ]
-            ]
-        ]
 
-        expect(audience) == expected
+        expect(audience).to(beNil())
     }
 
-    func testAudiencesProviderReturnsNilForMalformedPayload() async throws {
-        let payload = Data("not-json".utf8)
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: ["aud_123": .init(blobRef: ref, prefetch: true)]
-            ]),
-            contentElements: [(payload, .none)]
-        )
+    func testAudiencesProviderReturnsNilForAnItemThatCarriesNoMetadata() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: ["aud_123": .init(prefetch: true)]
+        ]))
+
+        await self.refresh(with: container)
+
+        let audience = await AudiencesConfigProvider(manager: self.manager).getAudience("aud_123")
+
+        expect(audience).to(beNil())
+    }
+
+    /// The topic is read one item at a time, so an audience the SDK can't decode has to stay contained.
+    func testAudiencesProviderReadsAValidAudienceAlongsideAMalformedOne() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: [
+                // `rules` has to be an object; an array can't be a predicate.
+                "aud_invalid": .init(content: ["id": "aud_invalid", "rules": []]),
+                "aud_valid": .init(content: ["id": "aud_valid", "rules": ["==": [1, 1]]])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let provider = AudiencesConfigProvider(manager: self.manager)
+        let invalidAudience = await provider.getAudience("aud_invalid")
+        let validAudience = await provider.getAudience("aud_valid")
+
+        expect(invalidAudience).to(beNil())
+        expect(validAudience) == Audience(id: "aud_valid", rules: #"{"==":[1,1]}"#)
+    }
+
+    func testAudiencesProviderReturnsNilWhenTheMetadataIsMissingRules() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.audiences.wireName: ["aud_123": .init(content: ["id": "aud_123"])]
+        ]))
 
         await self.refresh(with: container)
 

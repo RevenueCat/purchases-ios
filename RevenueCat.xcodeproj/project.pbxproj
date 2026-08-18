@@ -1321,6 +1321,7 @@
 		D07F64990C2DD742698ED810 /* PredicateConformanceFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9988F3464C8BB896E3FE78 /* PredicateConformanceFixture.swift */; };
 		D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08C42672FD995C20035A009 /* RewardVerificationToken.swift */; };
 		D0D83AE85FF3400EA30B0BDE /* TabsComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */; };
+		475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */; };
 		D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2779D02050D28BF369658 /* WebViewComponentView.swift */; };
@@ -1482,6 +1483,8 @@
 		FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C5 /* CheckpointRulesTests.swift */; };
 		FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */; };
 		A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D100000000000000000001 /* AudiencesConfigProvider.swift */; };
+		A7D200000000000000000002 /* Audience.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000001 /* Audience.swift */; };
+		A7D200000000000000000004 /* AudienceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7D200000000000000000003 /* AudienceTests.swift */; };
 		FEDA000000000000000000E1 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		FEDA000000000000000000E2 /* MockRemoteConfigSourceProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */; };
 		FEDA0000000000000000F0A2 /* GetRemoteConfigFallbackOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FEDA0000000000000000F0A1 /* GetRemoteConfigFallbackOperation.swift */; };
@@ -3013,6 +3016,7 @@
 		B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CarouselTabSwitchTests.swift; sourceTree = "<group>"; };
 		B413E5A02F97B3B900B5F0CA /* PaywallsV2ViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallsV2ViewTests.swift; sourceTree = "<group>"; };
 		B413E5A12F97B3B900B5F0CA /* TabsWorkflowDefaultPackageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsWorkflowDefaultPackageTests.swift; sourceTree = "<group>"; };
+		F4A8C1D25E3B47A9B0D6E718 /* MixedTabsDefaultPackageVisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MixedTabsDefaultPackageVisibilityTests.swift; sourceTree = "<group>"; };
 		BDE6FC116D66BBEFEE662547 /* Value.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Value.swift; sourceTree = "<group>"; };
 		C07759C930F712D2D53B9333 /* WorkflowStepEventTrackerTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowStepEventTrackerTests.swift; sourceTree = "<group>"; };
 		C1B939C7DAAFEA1DE2DE2674 /* WebViewEnvelopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelopeTests.swift; sourceTree = "<group>"; };
@@ -3032,6 +3036,7 @@
 		D01244182FD02FC30043B43B /* RewardVerificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResult.swift; sourceTree = "<group>"; };
 		D04D812C75F9E42B66D11A37 /* PredicateConformanceRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceRunner.swift; sourceTree = "<group>"; };
 		D08C42672FD995C20035A009 /* RewardVerificationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationToken.swift; sourceTree = "<group>"; };
+		9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdTrackingMetadata.swift; sourceTree = "<group>"; };
 		D0A2779D02050D28BF369658 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentTests.swift; sourceTree = "<group>"; };
@@ -3116,6 +3121,7 @@
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
 		FACE0000000000000000A002 /* BackendRemoteConfigLaneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendRemoteConfigLaneTests.swift; sourceTree = "<group>"; };
 		FACE0000000000000000F001 /* PaywallViewControllerExitOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerExitOfferTests.swift; sourceTree = "<group>"; };
+		FACE0000000000000000F002 /* PaywallViewControllerCustomVariablesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerCustomVariablesTests.swift; sourceTree = "<group>"; };
 		FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryTests.swift; sourceTree = "<group>"; };
 		FCF81FAC33B948F0947AE312 /* RemoteConfigCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigCallback.swift; sourceTree = "<group>"; };
 		FD05A7192EE2430E00FE671F /* StoreKit2PromotionalOfferPurchaseOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKit2PromotionalOfferPurchaseOptions.swift; sourceTree = "<group>"; };
@@ -3195,6 +3201,8 @@
 		FEDA000000000000000000C5 /* CheckpointRulesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointRulesTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsConfigProviderTests.swift; sourceTree = "<group>"; };
 		A7D100000000000000000001 /* AudiencesConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudiencesConfigProvider.swift; sourceTree = "<group>"; };
+		A7D200000000000000000001 /* Audience.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Audience.swift; sourceTree = "<group>"; };
+		A7D200000000000000000003 /* AudienceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudienceTests.swift; sourceTree = "<group>"; };
 		FEDA000000000000000000E0 /* MockRemoteConfigSourceProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockRemoteConfigSourceProvider.swift; sourceTree = "<group>"; };
 		FEDA0000000000000000F0A1 /* GetRemoteConfigFallbackOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRemoteConfigFallbackOperation.swift; sourceTree = "<group>"; };
 		FFB683A085B695768EAB9AA5 /* WorkflowsConfigProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsConfigProviderTests.swift; sourceTree = "<group>"; };
@@ -3353,6 +3361,7 @@
 				B413E59F2F97B3B900B5F0CA /* CarouselTabSwitchTests.swift */,
 				B413E5A02F97B3B900B5F0CA /* PaywallsV2ViewTests.swift */,
 				B413E5A12F97B3B900B5F0CA /* TabsWorkflowDefaultPackageTests.swift */,
+				F4A8C1D25E3B47A9B0D6E718 /* MixedTabsDefaultPackageVisibilityTests.swift */,
 				DBB32F183007CACD00A86DC7 /* BottomSheetSwitchTests.swift */,
 				DB1FC9592F9A1B74009A95EA /* WorkflowScreenMapperTests.swift */,
 				F468C7BCEB786BEC80277ECA /* WorkflowNavigatorTests.swift */,
@@ -4842,6 +4851,7 @@
 				4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */,
 				FEDA000000000000000000C3 /* CheckpointRules.swift */,
 				FEDA000000000000000000C4 /* CheckpointsConfigProvider.swift */,
+				A7D200000000000000000001 /* Audience.swift */,
 				A7D100000000000000000001 /* AudiencesConfigProvider.swift */,
 				A1B2C3D42FE7000000000001 /* RemoteConfigTopic.swift */,
 				A1B2C3D42FE1000000000011 /* RemoteConfigSignatureContextProvider.swift */,
@@ -4875,6 +4885,7 @@
 				A1B2C3D42FE9000000000003 /* GenerationGuardedCacheTests.swift */,
 				371E0615EDF883698273BC59 /* UiConfigProviderTests.swift */,
 				FFB683A085B695768EAB9AA5 /* WorkflowsConfigProviderTests.swift */,
+				A7D200000000000000000003 /* AudienceTests.swift */,
 				FEDA000000000000000000C5 /* CheckpointRulesTests.swift */,
 				FEDA000000000000000000C6 /* CheckpointsConfigProviderTests.swift */,
 				5733B1A927FFBCF900EC2045 /* BaseErrorTests.swift */,
@@ -6230,6 +6241,7 @@
 			isa = PBXGroup;
 			children = (
 				D08C42672FD995C20035A009 /* RewardVerificationToken.swift */,
+				9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */,
 				D01244152FD02FC30043B43B /* Outcome.swift */,
 				D01244162FD02FC30043B43B /* Poller.swift */,
 				D01244172FD02FC30043B43B /* RewardVerification.swift */,
@@ -6666,6 +6678,7 @@
 		FACE0000000000000000F003 /* UIKit */ = {
 			isa = PBXGroup;
 			children = (
+				FACE0000000000000000F002 /* PaywallViewControllerCustomVariablesTests.swift */,
 				FACE0000000000000000F001 /* PaywallViewControllerExitOfferTests.swift */,
 			);
 			path = UIKit;
@@ -7467,6 +7480,7 @@
 				49B8016629C29C4691C0774A /* WorkflowsConfigProvider.swift in Sources */,
 				FEDA000000000000000000D3 /* CheckpointRules.swift in Sources */,
 				FEDA000000000000000000D4 /* CheckpointsConfigProvider.swift in Sources */,
+				A7D200000000000000000002 /* Audience.swift in Sources */,
 				A7D100000000000000000002 /* AudiencesConfigProvider.swift in Sources */,
 				A1B2C3D42FE2000000000006 /* RemoteConfigStrings.swift in Sources */,
 				A1B2C3D42FE7000000000002 /* RemoteConfigTopic.swift in Sources */,
@@ -7628,6 +7642,7 @@
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
 				D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */,
+				475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */,
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
@@ -8113,6 +8128,7 @@
 				A1B2C3D42FE9000000000004 /* GenerationGuardedCacheTests.swift in Sources */,
 				AD787D4FC44F9C3638DCDEF9 /* UiConfigProviderTests.swift in Sources */,
 				E48EFFFF5FF27ECC25F4E308 /* WorkflowsConfigProviderTests.swift in Sources */,
+				A7D200000000000000000004 /* AudienceTests.swift in Sources */,
 				FEDA000000000000000000D5 /* CheckpointRulesTests.swift in Sources */,
 				FEDA000000000000000000D6 /* CheckpointsConfigProviderTests.swift in Sources */,
 				03A98D362D244329009BCA61 /* UIConfigDecodingTests.swift in Sources */,
