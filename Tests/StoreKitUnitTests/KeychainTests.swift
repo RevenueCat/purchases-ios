@@ -628,7 +628,8 @@ class KeychainAccessGroupTests: TestCase {
     func testTokenManagerBackedByAccessGroupKeychainRoundTripsCurrentUserTokens() throws {
         let tokenManager = try makeAccessGroupTokenManager()
         let userID = trackTokenManagerUser(uniqueID(), in: tokenManager)
-        tokenManager.currentUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
+        let mockUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
+        tokenManager.currentUserProvider = mockUserProvider
 
         tokenManager.currentRefreshToken = "refresh-token"
         tokenManager.currentAccessToken = "access-token"
