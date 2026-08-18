@@ -23,7 +23,7 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
 }
 
 internal protocol InternalAuthenticatorDelegate: AnyObject {
-    func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?)
+    func authenticatorDidLogIn(info: CustomerInfo)
     func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
 }
 
@@ -106,11 +106,11 @@ public final class Authentication: NSObject {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
 
-            guard case .success = result else {
+            guard case let .success(values) = result else {
                 return
             }
 
-            self.internalDelegate?.authenticatorDidLogIn(info: result.value?.info, error: result.error?.asPublicError)
+            self.internalDelegate?.authenticatorDidLogIn(info: values.info)
         }
 
     }

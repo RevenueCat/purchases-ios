@@ -17,12 +17,12 @@ final class MockInternalAuthenticatorDelegate: InternalAuthenticatorDelegate {
 
     private(set) var invokedAuthenticatorDidLogIn = false
     private(set) var invokedAuthenticatorDidLogInCount = 0
-    private(set) var invokedAuthenticatorDidLogInParametersList: [(info: CustomerInfo?, error: PublicError?)] = []
+    private(set) var invokedAuthenticatorDidLogInParametersList: [CustomerInfo] = []
 
-    func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?) {
+    func authenticatorDidLogIn(info: CustomerInfo) {
         self.invokedAuthenticatorDidLogIn = true
         self.invokedAuthenticatorDidLogInCount += 1
-        self.invokedAuthenticatorDidLogInParametersList.append((info, error))
+        self.invokedAuthenticatorDidLogInParametersList.append(info)
     }
 
     private(set) var invokedAuthenticatorDidChangeIdentity = false

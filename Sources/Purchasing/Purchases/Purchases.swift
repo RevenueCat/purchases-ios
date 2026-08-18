@@ -1239,7 +1239,7 @@ public extension Purchases {
 
 extension Purchases: InternalAuthenticatorDelegate {
 
-    func authenticatorDidLogIn(info: CustomerInfo?, error: PublicError?) {
+    func authenticatorDidLogIn(info: CustomerInfo) {
         self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
             self.remoteConfigManager.refreshRemoteConfig(
