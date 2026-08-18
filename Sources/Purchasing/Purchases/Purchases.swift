@@ -356,6 +356,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
+                     keychainAccessGroup: String? = nil,
                      currentConfiguration: Configuration?
     ) {
         if userDefaults != nil {
@@ -385,7 +386,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
-        let tokenManager = TokenManager(enabled: iamEnabled, storage: Keychain(access: nil))
+        let accessGroup = keychainAccessGroup.map { Keychain.AccessGroup(accessGroup: $0, appIdentifier: apiKey) }
+        let tokenManager = TokenManager(enabled: iamEnabled, storage: Keychain(access: accessGroup))
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
@@ -2107,6 +2109,7 @@ public extension Purchases {
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
                 iamEnabled: configuration.iamEnabled,
+                keychainAccessGroup: configuration.keychainAccessGroup,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration
@@ -2378,7 +2381,8 @@ public extension Purchases {
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
         automaticDeviceIdentifierCollectionEnabled: Bool = true,
-        iamEnabled: Bool = false
+        iamEnabled: Bool = false,
+        keychainAccessGroup: String? = nil
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -2397,6 +2401,7 @@ public extension Purchases {
                   preferredLocale: preferredLocale,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
                   iamEnabled: iamEnabled,
+                  keychainAccessGroup: keychainAccessGroup,
                   currentConfiguration: nil)
         )
     }

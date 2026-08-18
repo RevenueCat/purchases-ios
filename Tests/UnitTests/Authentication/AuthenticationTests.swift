@@ -82,7 +82,7 @@ class AuthenticationTests: TestCase {
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
         expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
-        expect(self.internalDelegate.invokedAuthenticatorDidLogInParametersList.last?.info) == expectedInfo
+        expect(self.internalDelegate.invokedAuthenticatorDidLogInParametersList.last) == expectedInfo
     }
 
     func testIdentifyCurrentUserWithStringFailureDoesNotNotifyInternalDelegate() {
