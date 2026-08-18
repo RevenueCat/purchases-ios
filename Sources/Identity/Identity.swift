@@ -17,14 +17,6 @@ public final class Identity: NSObject {
         Identity(token: .anonymous)
     }
 
-//    @objc public static func oidc(_ token: Data) -> Identity {
-//        Identity(token: .oidc(token))
-//    }
-//
-//    @objc public static func google(_ token: Data) -> Identity {
-//        Identity(token: .google(token))
-//    }
-
     /// A Sign In With Apple identity
     /// - Parameter identityToken: The `identityToken` from an `ASAuthorizationAppleIDCredential`
     /// - Returns: An ``Identity`` that can be used to log in to the ``Purchases`` type
@@ -32,18 +24,6 @@ public final class Identity: NSObject {
     public static func signInWithApple(_ identityToken: Data) -> Identity {
         Identity(token: .signInWithApple(identityToken))
     }
-
-//    @objc public static func facebook(_ idToken: Data) -> Identity {
-//        Identity(token: .facebook(idToken, nil))
-//    }
-//
-//    @objc public static func facebook(idToken: Data, email: String) -> Identity {
-//        Identity(token: .facebook(idToken, email))
-//    }
-//
-//    @objc public static func firebase(_ token: Data) -> Identity {
-//        Identity(token: .firebase(token))
-//    }
 
     internal let authToken: IdentityAuthToken
 
