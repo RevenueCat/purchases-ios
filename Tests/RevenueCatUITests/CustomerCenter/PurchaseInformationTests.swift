@@ -123,7 +123,8 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.priceRenewalString(localizations: Self.mockLocalization)) == "Paid $6.99."
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalization)) ==
+            "Renews on Apr 12, 2062. Paid $6.99."
         expect(subscriptionInfo.isLifetime).to(beFalse())
         expect(subscriptionInfo.changePlan).toNot(beNil())
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
@@ -250,7 +251,8 @@ final class PurchaseInformationTests: TestCase {
         )
 
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.priceRenewalString(localizations: Self.mockLocalization)) == "Paid $6.99."
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalization)) ==
+            "Renews on Apr 12, 2062. Paid $6.99."
     }
 
     func testAppleEntitlementAndLifetimeProduct() async throws {

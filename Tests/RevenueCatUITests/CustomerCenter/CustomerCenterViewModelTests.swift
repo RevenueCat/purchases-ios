@@ -1163,12 +1163,11 @@ final class CustomerCenterViewModelTests: TestCase {
     func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
         let mockPurchases = MockCustomerCenterPurchases()
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        let renewalPriceData = RenewalPriceData(
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
             price: 5.0,
             currencyCode: "USD",
             productIdentifier: "com.revenuecat.product"
         )
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = renewalPriceData
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -1176,8 +1175,6 @@ final class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases,
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
         )
-
-        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo) == renewalPriceData
 
         await viewModel.loadScreen()
 

@@ -467,6 +467,27 @@ private extension EntitlementInfo {
 
 extension PurchaseInformation {
 
+    func subtitle(localizations: CustomerCenterConfigData.Localization) -> String? {
+        if renewalDate != nil {
+            if let renewalPriceString = priceRenewalString(localizations: localizations) {
+                return renewalPriceString
+            }
+
+            guard let renewalDateString = renewalDateString(localizations: localizations) else {
+                return nil
+            }
+            guard let pricePaidString = pricePaidSubtitleString(localizations: localizations) else {
+                return renewalDateString
+            }
+
+            return [renewalDateString, pricePaidString].joined(separator: " ")
+        } else if expirationDate != nil {
+            return expirationString(localizations: localizations)
+        } else {
+            return pricePaidString(localizations: localizations)
+        }
+    }
+
     func pricePaidString(localizations: CustomerCenterConfigData.Localization) -> String? {
         switch pricePaid {
         case .free:
@@ -478,23 +499,25 @@ extension PurchaseInformation {
         }
     }
 
-    func priceRenewalString(
+    private func pricePaidSubtitleString(
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
-        guard let renewalDate else {
+        switch pricePaid {
+        case .free:
+            return localizations[.free]
+        case .nonFree(let priceString):
+            return localizations[.pricePaid]
+                .replacingOccurrences(of: "{{ price }}", with: priceString)
+        case .unknown:
             return nil
         }
+    }
 
-        guard let renewalPrice else {
-            switch pricePaid {
-            case .free:
-                return localizations[.free]
-            case .nonFree(let priceString):
-                return localizations[.pricePaid]
-                    .replacingOccurrences(of: "{{ price }}", with: priceString)
-            case .unknown:
-                return nil
-            }
+    private func priceRenewalString(
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let renewalDate, let renewalPrice else {
+            return nil
         }
 
         switch renewalPrice {
@@ -509,7 +532,18 @@ extension PurchaseInformation {
         }
     }
 
-    func expirationString(
+    private func renewalDateString(
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let renewalDate else {
+            return nil
+        }
+
+        return localizations[.renewsOnDate]
+            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
+    }
+
+    private func expirationString(
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
         guard let expirationDate else {
