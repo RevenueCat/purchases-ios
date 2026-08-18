@@ -1529,6 +1529,28 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
   end
 
+  def test_announced_fingerprint_survives_a_run_with_nothing_to_announce
+    announced = ApiDiffHelper.merge_api_diff_comment(
+      nil, "RevenueCat",
+      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "abc123abc123")
+    )
+
+    assert_equal "abc123abc123", ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCat")
+    assert_nil ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCatUI")
+    assert_nil ApiDiffHelper.announced_fingerprint_in(nil, "RevenueCat")
+  end
+
+  # Another module's marker must not be mistaken for this module's.
+  def test_announced_fingerprint_is_read_from_this_modules_section
+    body = [
+      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], []),
+      ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [], announced_fingerprint: "def456def456")
+    ].join("\n")
+
+    assert_nil ApiDiffHelper.announced_fingerprint_in(body, "RevenueCat")
+    assert_equal "def456def456", ApiDiffHelper.announced_fingerprint_in(body, "RevenueCatUI")
+  end
+
   def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
     body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
 

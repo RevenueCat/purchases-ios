@@ -2580,9 +2580,12 @@ platform :ios do
       next
     end
 
+    announced_fingerprint = options[:announced_fingerprint] ||
+                            ApiDiffHelper.announced_fingerprint_in(existing&.dig("body"), options[:scheme])
+
     section = ApiDiffHelper.api_diff_comment_section(
       options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
-      notice: options[:notice], announced_fingerprint: options[:announced_fingerprint]
+      notice: options[:notice], announced_fingerprint: announced_fingerprint
     )
 
     if existing

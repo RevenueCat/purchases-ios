@@ -478,6 +478,18 @@ module ApiDiffHelper
     Digest::SHA256.hexdigest(message.to_s)[0, 12]
   end
 
+  ANNOUNCED_MARKER_PATTERN = /<!-- api-diff-announced:([0-9a-f]+) -->/.freeze
+
+  # The marker records the last summary that reached the channel, which a run with nothing to
+  # announce, or one whose post failed, did not change.
+  def announced_fingerprint_in(comment_body, module_name)
+    open_tag = Regexp.escape(api_diff_section_open(module_name))
+    close_tag = Regexp.escape(api_diff_section_close(module_name))
+    section = comment_body.to_s[/#{open_tag}.*?#{close_tag}/m]
+
+    section && ANNOUNCED_MARKER_PATTERN.match(section)&.captures&.first
+  end
+
   # The comment body is only read for :unknown, so the caller passes a block that fetches it.
   def already_announced?(state, fingerprint)
     return true if state == :same
