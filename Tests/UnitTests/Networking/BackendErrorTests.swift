@@ -37,8 +37,19 @@ class BackendErrorTests: BaseErrorTests {
 
     func testInvalidAuthorizationToken() {
         let error: BackendError = .invalidAuthorizationToken()
+        // `.invalidAuthorizationToken` is mapped to
+        // `ErrorUtils.backendError(withBackendCode: .invalidAuthToken, originalBackendErrorCode: ...)`,
+        // which always attaches the `BackendErrorCode` itself as the underlying error, via
+        // `ErrorUtils.backendUnderlyingError`. Mirror that construction exactly here.
+        let underlyingError = BackendErrorCode.invalidAuthToken
+            .addingUserInfo([
+                NSLocalizedDescriptionKey as NSError.UserInfoKey: "",
+                .backendErrorCode: BackendErrorCode.invalidAuthToken.rawValue
+            ])
 
-        verifyPurchasesError(error, expectedCode: .invalidCredentialsError)
+        verifyPurchasesError(error,
+                             expectedCode: .invalidCredentialsError,
+                             underlyingError: underlyingError)
     }
 
     func testEmptySubscriberAttributes() {
