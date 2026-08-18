@@ -1,0 +1,180 @@
+{
+  "fixtures": [
+    {
+      "id": "lower_basic_ascii",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "Hello, World!"
+          },
+          "hello, world!"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "upper_basic_ascii",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "Hello, World!"
+          },
+          "HELLO, WORLD!"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_locale_independent_turkish_i",
+      "description": "Unicode default mapping: Latin capital I lowercases to ASCII i, not Turkish dotless ı; matches JS toLowerCase(), not toLocaleLowerCase()",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "I"
+          },
+          "i"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_non_ascii_accented_latin",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "Résumé"
+          },
+          "résumé"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "upper_non_ascii_greek_sigma",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "σ"
+          },
+          "Σ"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_null_coerces_via_js_string",
+      "description": "jsString(null) is the literal \"null\", not cat's empty-string join rendering",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": null
+          },
+          "null"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_undefined_coerces_via_js_string",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": {
+              "and": []
+            }
+          },
+          "undefined"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_number_coerces_via_js_string",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": 42
+          },
+          "42"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_bool_coerces_via_js_string",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": true
+          },
+          "true"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_multi_element_arg_list_uses_first_only",
+      "description": "json-logic-js spread semantics: only the first argument is used; extra args silently ignored",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": [
+              "HELLO",
+              "ignored"
+            ]
+          },
+          "hello"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_case_insensitive_country_code_equality",
+      "description": "Motivating case: compare a variable country code case-insensitively against a lowercase literal",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": {
+              "var": "country"
+            }
+          },
+          "es"
+        ]
+      },
+      "variables": {
+        "country": "ES"
+      },
+      "expected": true
+    },
+    {
+      "id": "lower_case_insensitive_in_substring_check",
+      "description": "Motivating case: case-insensitive substring membership via in on lowercased haystack and needle",
+      "predicate": {
+        "in": [
+          {
+            "rc.lower": "es"
+          },
+          {
+            "rc.lower": {
+              "var": "country"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "country": "United States"
+      },
+      "expected": true
+    }
+  ]
+}
