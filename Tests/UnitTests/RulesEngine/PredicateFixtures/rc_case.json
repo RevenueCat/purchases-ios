@@ -41,6 +41,20 @@
       "expected": true
     },
     {
+      "id": "upper_locale_independent_turkish_i",
+      "description": "Unicode default mapping: ASCII i uppercases to Latin capital I (U+0049), not Turkish dotted İ (U+0130); matches JS toUpperCase(), not toLocaleUpperCase()",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "i"
+          },
+          "I"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "lower_non_ascii_accented_latin",
       "predicate": {
         "===": [
