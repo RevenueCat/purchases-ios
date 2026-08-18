@@ -578,8 +578,7 @@ struct PaywallsV2View: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-/// Internal rather than private so a test can host it with a `PaywallState` it built itself, which is
-/// the only way to reach the tabs component's `TabControlContext` and drive a tab switch.
+/// Internal rather than private so tests can host it with a `PaywallState` they built.
 struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -650,8 +649,8 @@ struct LoadedPaywallsV2View: View {
 
     /// Moves the selection off a package that isn't rendering.
     ///
-    /// Resolution is scoped to the packages declared outside the tabs: a tabbed paywall's own selection
-    /// is tab-local and reconciled inside `LoadedTabsComponentView`.
+    /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
+    /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
 
@@ -662,8 +661,7 @@ struct LoadedPaywallsV2View: View {
             return
         }
 
-        // A tab propagates its own variable context up, and relative prices for a package outside the
-        // tabs have to be computed against the page's packages, so rebuild it the way `init` seeded it.
+        // A tab propagates its own variable context up, so rebuild the page's before using it.
         self.selectedPackageContext.update(
             package: resolved,
             variableContext: .init(
@@ -718,8 +716,8 @@ struct LoadedPaywallsV2View: View {
             .onChangeOf(self.isPaywallLoading) { _ in
                 self.reconcileSelection()
             }
-            // Leaving a tab restores the page's own selection, which can be a package a rule hides.
-            // Reconciling here catches that without depending on `onAppear` ordering.
+            // Leaving a tab can restore a package a rule hides, and this doesn't depend on
+            // `onAppear` ordering.
             .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
                 self.reconcileSelection()
             }

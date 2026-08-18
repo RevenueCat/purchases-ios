@@ -60,9 +60,8 @@ class PackageContext: ObservableObject {
     @Published var package: Package?
     @Published var variableContext: VariableContext
 
-    /// Whether the last update moved the selection because the current package wasn't rendering, rather
-    /// than because the user picked something. Read by `TabsComponentView`, which otherwise treats any
-    /// parent change it didn't cause as an explicit choice and lets it outrank a tab's own default.
+    /// Whether the last update came from a reconcile rather than the user. `TabsComponentView` reads it
+    /// so a reconcile isn't recorded as a choice.
     private(set) var lastUpdateWasReconcile: Bool = false
 
     init(

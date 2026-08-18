@@ -194,8 +194,8 @@ struct ViewModelFactory {
                 )
             )
         case .package(let component):
-            // Recorded before walking the stack so a package nested inside another package lands after
-            // its parent, which is the document order the default package is resolved by.
+            // Recorded before the stack walk so a nested package lands after its parent, which is the
+            // document order selection uses.
             if let package = offering.package(identifier: component.packageID) {
                 packageValidator.add(
                     PackageValidator.PackageInfo(

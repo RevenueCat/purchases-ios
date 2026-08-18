@@ -62,8 +62,7 @@ class PackageValidator {
         promotionalOfferProductCode: String?
     )
 
-    /// Where a package was declared. Selection inside a tab is tab-local, so a page-level resolution
-    /// must never hand back a package that only exists in a tab.
+    /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
         case page
         case tab
@@ -83,8 +82,7 @@ class PackageValidator {
         self.scopedPackageInfos.filter { $0.scope == .page }.map(\.info)
     }
 
-    /// Warnings are emitted from resolution, which view bodies call on every render. Logging each
-    /// distinct message once per validator keeps that out of the console.
+    /// Resolution runs on every render, so each distinct warning is logged once.
     private var loggedWarnings: Set<String> = []
 
     func add(_ packageInfo: PackageInfo) {
@@ -105,9 +103,8 @@ class PackageValidator {
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
         return info.visibilityResolver.visible(
-            // Selection is what's being resolved, so nothing is selected yet. Pinning these two
-            // inputs keeps resolution independent of its own output — otherwise a paywall with
-            // `selected` or `selected_package` visibility rules could oscillate.
+            // Nothing is selected yet, since selection is what's being resolved. Pinning these keeps
+            // a `selected` or `selected_package` rule from oscillating.
             state: .default,
             condition: context.condition,
             isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
@@ -138,10 +135,8 @@ class PackageValidator {
         return self.defaultSelectedPackage(among: self.packageInfos, in: context)
     }
 
-    /// The selection that should be in effect for `context`, or `nil` when nothing needs to change.
-    ///
-    /// Only moves a selection nothing is rendering, so it can't discard a tap, and only to a package
-    /// declared outside the tabs, since a page selection can't point into a tab the user isn't on.
+    /// The selection that should be in effect, or `nil` when nothing needs to change: only moves a
+    /// selection nothing is rendering, and only to a package declared outside the tabs.
     func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
         guard self.hasPageScopedPackages else {
             // Every package lives in a tab, and each tab reconciles its own selection.
@@ -157,13 +152,8 @@ class PackageValidator {
 
     /// Whether any card for `package` is on screen, page or tab.
     ///
-    /// Deliberately blind to which tab is showing, because this can't know: a paywall can declare the same
-    /// package on the page and inside a tab, and only the tabs know which copy is up. Counting a tab copy
-    /// keeps a selection the showing tab renders from being pulled away, at the cost of leaving a hidden
-    /// page default selected when the only visible copy is in a tab that isn't showing. That case is the
-    /// pre-existing duplicate-identifier limitation, pinned by
-    /// `testDuplicateInAnotherTabMasksAHiddenPageDefault`, and closing it needs the active tab's package
-    /// set plumbed in here.
+    /// Blind to which tab is showing: counting a tab copy protects the showing tab's selection, at the
+    /// cost of the limitation pinned by `testDuplicateInAnotherTabMasksAHiddenPageDefault`.
     private func isRendering(_ package: Package, in context: PackageSelectionContext) -> Bool {
         return self.scopedPackageInfos.contains { scoped in
             scoped.info.package.identifier == package.identifier && self.isVisible(scoped.info, in: context)

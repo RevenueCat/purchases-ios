@@ -327,8 +327,7 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
-                    // A package-less tab shares the parent's context: writing back what it just
-                    // read would only clear state the parent set.
+                    // A package-less tab shares the parent's context, so this would only clear it.
                     guard context !== self.packageContext else { return }
 
                     self.packageContext.update(
@@ -416,8 +415,7 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
-                    // Switching tabs restores a selection rather than making one, so this must not
-                    // register as a tap: a tab opened later still gets to use its own default.
+                    // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
                         package: parentUpdate.package,
                         variableContext: parentUpdate.variableContext,
@@ -456,8 +454,7 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it, unless a reconcile made it. Set-only, so a
-                // reconcile can't clear a real choice made earlier.
+                // A user selection, unless a reconcile made it. Set-only: it can't clear an earlier one.
                 if !self.packageContext.lastUpdateWasReconcile {
                     self.didUserSelectPackage = true
                 }
