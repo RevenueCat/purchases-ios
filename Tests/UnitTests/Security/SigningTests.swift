@@ -1199,10 +1199,13 @@ class SigningTests: TestCase {
 
     func testVerificationUsesBearerTokenFromHeadersInsteadOfAPIKeyWhenPresent() throws {
         let message = "Hello World"
+        let nonce = "0123456789ab"
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
+        // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let accessToken = "iam-access-token-123"
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer \(accessToken)"
@@ -1213,7 +1216,7 @@ class SigningTests: TestCase {
             iamEnabled: true,
             message: message.asData,
             requestHeaders: requestHeaders,
-            nonce: nil,
+            nonce: nonce.asData,
             etag: nil,
             requestDate: requestDate,
             useFallbackPath: false
@@ -1253,10 +1256,13 @@ class SigningTests: TestCase {
 
     func testVerificationFailsWhenSignedWithAPIKeyButRequestHasBearerToken() throws {
         let message = "Hello World"
+        let nonce = "0123456789ab"
         let requestDate = Date().millisecondsSince1970
         let intermediateKey = try self.createIntermediatePublicKeyData(expiration: Self.intermediateKeyFutureExpiration)
         let salt = Self.createSalt()
-        let request = HTTPRequest(method: .get, path: .health, nonce: nil)
+        // `.getCustomerInfo` is an authenticated path: unlike `.health`, the auth value is actually
+        // folded into the signed bytes, so this test can tell bearer-token from API-key signing apart.
+        let request = HTTPRequest(method: .get, path: .getCustomerInfo(appUserID: "user"), nonce: nonce.asData)
         let requestHeaders: HTTPRequest.Headers = [
             HTTPClient.RequestHeader.authorization.rawValue: "Bearer some-access-token"
         ]
@@ -1266,7 +1272,7 @@ class SigningTests: TestCase {
             iamEnabled: true,
             message: message.asData,
             requestHeaders: requestHeaders,
-            nonce: nil,
+            nonce: nonce.asData,
             etag: nil,
             requestDate: requestDate,
             useFallbackPath: false
