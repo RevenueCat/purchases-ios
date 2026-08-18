@@ -22,6 +22,8 @@ extension RulesEngine {
             vars: Scope
         ) throws -> Value {
             switch operatorName {
+            case "rc.length":
+                return try LengthOperator.opLength(args: args, vars: vars)
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
