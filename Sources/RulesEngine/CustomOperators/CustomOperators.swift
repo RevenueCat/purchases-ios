@@ -11,9 +11,7 @@ extension RulesEngine {
     /// RevenueCat-specific JSON Logic operators.
     ///
     /// Operators here are namespaced under `rc.` so they cannot collide with a
-    /// future standard JSON Logic operator. Any engine evaluating these rules —
-    /// including the `json-logic-js`-based web implementation — must register
-    /// equivalents.
+    /// future standard JSON Logic operator.
     enum CustomOperators {
 
         static func dispatch(
