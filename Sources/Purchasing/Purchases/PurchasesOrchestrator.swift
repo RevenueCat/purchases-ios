@@ -44,7 +44,7 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
-    private let inFlightPurchasesByProductID: Atomic<[String: Task<PurchaseResultData, Error>]> = .init([:])
+    private let inFlightPurchasesByProductID: Atomic<[String: DeferredTask<PurchaseResultData>]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -752,9 +752,9 @@ final class PurchasesOrchestrator {
                   quantity: Int? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
-        // task is created (and registered) synchronously before the StoreKit purchase begins, so a
-        // transaction reaching `Transaction.updates` mid-purchase will find it.
-        let purchaseTask = Task {
+        // task only starts once registered, so a transaction reaching `Transaction.updates`
+        // mid-purchase always finds it.
+        let purchaseTask = DeferredTask {
             try await self.performSK2Purchase(
                 sk2Product: sk2Product,
                 package: package,
@@ -773,11 +773,13 @@ final class PurchasesOrchestrator {
         defer {
             self.inFlightPurchasesByProductID.modify { tasks in
                 // Only remove if it's still ours, so a newer concurrent purchase isn't evicted.
-                if tasks[sk2Product.id] == purchaseTask {
+                if tasks[sk2Product.id] === purchaseTask {
                     tasks.removeValue(forKey: sk2Product.id)
                 }
             }
         }
+
+        purchaseTask.start()
 
         return try await withTaskCancellationHandler {
             try await purchaseTask.value

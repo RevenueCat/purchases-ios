@@ -803,6 +803,7 @@
 		579B67F428C5326A0094F7E8 /* PaymentQueueWrapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579B67F328C5326A0094F7E8 /* PaymentQueueWrapper.swift */; };
 		579D2E3A28F0BF5A0094B36F /* BackendInternalTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */; };
 		57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */; };
+		AC17E0A7E0000000000000B1 /* DeferredTask.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC17E0A7E0000000000000B2 /* DeferredTask.swift */; };
 		57A0FBF22749CF66009E2FC3 /* SynchronizedUserDefaults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */; };
 		57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A17726276A721D0052D3A8 /* Set+Extensions.swift */; };
 		57A1772B276A726C0052D3A8 /* SetExtensionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */; };
@@ -880,6 +881,7 @@
 		57DE80BF2807705F008D6C6F /* XCTestCase+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2D22BF6626F3CBFB001AE2F9 /* XCTestCase+Extensions.swift */; };
 		57E0473B277260DE0082FE91 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 57E0473A277260DE0082FE91 /* SnapshotTesting */; };
 		57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E2230627500BB1002DB06E /* AtomicTests.swift */; };
+		AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */; };
 		BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69E305D88B5C27BAA73FE343 /* JWTTests.swift */; };
 		C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */; };
 		57E415EB2846962500EA5460 /* PurchasesSyncPurchasesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57E415EA2846962500EA5460 /* PurchasesSyncPurchasesTests.swift */; };
@@ -2477,6 +2479,7 @@
 		579B67F328C5326A0094F7E8 /* PaymentQueueWrapper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentQueueWrapper.swift; sourceTree = "<group>"; };
 		579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendInternalTests.swift; sourceTree = "<group>"; };
 		57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Atomic.swift; sourceTree = "<group>"; };
+		AC17E0A7E0000000000000B2 /* DeferredTask.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeferredTask.swift; sourceTree = "<group>"; };
 		57A0FBF12749CF66009E2FC3 /* SynchronizedUserDefaults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SynchronizedUserDefaults.swift; sourceTree = "<group>"; };
 		57A17726276A721D0052D3A8 /* Set+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Set+Extensions.swift"; sourceTree = "<group>"; };
 		57A1772A276A726C0052D3A8 /* SetExtensionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetExtensionsTests.swift; sourceTree = "<group>"; };
@@ -2540,6 +2543,7 @@
 		57DE80AD28075D77008D6C6F /* OSVersionEquivalent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OSVersionEquivalent.swift; sourceTree = "<group>"; };
 		57E0474B27729A1E0082FE91 /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		57E2230627500BB1002DB06E /* AtomicTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AtomicTests.swift; sourceTree = "<group>"; };
+		AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeferredTaskTests.swift; sourceTree = "<group>"; };
 		69E305D88B5C27BAA73FE343 /* JWTTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JWTTests.swift; sourceTree = "<group>"; };
 		CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnyCodingKeyTests.swift; sourceTree = "<group>"; };
 		57E415EA2846962500EA5460 /* PurchasesSyncPurchasesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesSyncPurchasesTests.swift; sourceTree = "<group>"; };
@@ -4569,6 +4573,7 @@
 				37E35B9AC7A350CA2437049D /* ISOPeriodFormatterTests.swift */,
 				37E35EEE7783629CDE41B70C /* SystemInfoTests.swift */,
 				57E2230627500BB1002DB06E /* AtomicTests.swift */,
+				AC17E0A7E0000000000000B4 /* DeferredTaskTests.swift */,
 				69E305D88B5C27BAA73FE343 /* JWTTests.swift */,
 				CDD3CB0292567BC23D1772B4 /* AnyCodingKeyTests.swift */,
 				5722482627C2BD3200C524A7 /* LockTests.swift */,
@@ -5607,6 +5612,7 @@
 			children = (
 				167D67082EA151C400B4503F /* SynchronizedLargeItemCache.swift */,
 				57A0FBEF2749C0C2009E2FC3 /* Atomic.swift */,
+				AC17E0A7E0000000000000B2 /* DeferredTask.swift */,
 				57EAE526274324C60060EB74 /* Lock.swift */,
 				2DDA3E4624DB0B5400EDFE5B /* OperationDispatcher.swift */,
 				2DD9F4BD274EADC20031AE2C /* Purchases+async.swift */,
@@ -7606,6 +7612,7 @@
 				4FCEEA5E2A379B80002C2112 /* DebugViewController.swift in Sources */,
 				579415D529368AB200218FBC /* ReceiptStrings.swift in Sources */,
 				57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */,
+				AC17E0A7E0000000000000B1 /* DeferredTask.swift in Sources */,
 				755C26A22E310AA4006DD0AE /* WebBillingProductsCallback.swift in Sources */,
 				4F98E9D32A465A4400DB6EAB /* TestStoreProduct.swift in Sources */,
 				3592E8902C2ED5C100D7F91D /* CustomerCenterConfigAPI.swift in Sources */,
@@ -8059,6 +8066,7 @@
 				351B51A426D450BC00BD2BD7 /* NSError+RCExtensionsTests.swift in Sources */,
 				A524378B284FFF0200E788BD /* AttributionPosterTests.swift in Sources */,
 				57E2230727500BB1002DB06E /* AtomicTests.swift in Sources */,
+				AC17E0A7E0000000000000B3 /* DeferredTaskTests.swift in Sources */,
 				BDB2DF81A0F4716A775EEE69 /* JWTTests.swift in Sources */,
 				C8B45E436A9CD78B7C05454A /* AnyCodingKeyTests.swift in Sources */,
 				076CCA9F373E5169F88F93E3 /* URLMessageDescriptionTests.swift in Sources */,
