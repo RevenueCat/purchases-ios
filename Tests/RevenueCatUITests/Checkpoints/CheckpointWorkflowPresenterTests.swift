@@ -29,7 +29,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
         let error = NSError(domain: "test", code: 1)
 
-        try presenter.present(workflow: Self.workflow(), delegate: delegate)
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
         presenter.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
 
         XCTAssertEqual(delegate.finishCount, 0)
@@ -49,7 +49,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     func testCallStoreDefaultsToDismissedAndRemovesCall() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
-        store.store(workflow: Self.workflow(), delegate: delegate)
+        store.store(presentation: Self.presentation(), delegate: delegate)
 
         let call = store.remove()
 
@@ -65,7 +65,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let delegate = MockCheckpointPresenterDelegate()
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
         var didFinishDismissing = false
-        try presenter.present(workflow: Self.workflow(), delegate: delegate)
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
 
         presenter.dismiss {
             didFinishDismissing = true
@@ -80,12 +80,12 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
 
     func testDismissTargetsPresentedExitOfferController() throws {
-        let workflow = Self.workflow()
+        let presentation = Self.presentation()
         let presenter = CheckpointWorkflowPresenter { _ in true }
-        try presenter.present(workflow: workflow, delegate: MockCheckpointPresenterDelegate())
-        let originalController = PaywallViewController(offering: workflow.offering)
+        try presenter.present(presentation: presentation, delegate: MockCheckpointPresenterDelegate())
+        let originalController = PaywallViewController(offering: presentation.workflow.offering)
         let exitOfferController = DismissRecordingPaywallController(
-            offering: workflow.offering
+            offering: presentation.workflow.offering
         )
 
         presenter.paywallViewController(
@@ -103,7 +103,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in false }
 
         XCTAssertThrowsError(
-            try presenter.present(workflow: Self.workflow(), delegate: delegate)
+            try presenter.present(presentation: Self.presentation(), delegate: delegate)
         ) { error in
             guard case CheckpointError.presentationFailed = error else {
                 return XCTFail("Expected presentationFailed, got \(error)")
@@ -122,7 +122,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         }
 
         XCTAssertThrowsError(
-            try presenter.present(workflow: Self.workflow(), delegate: delegate)
+            try presenter.present(presentation: Self.presentation(), delegate: delegate)
         ) { error in
             XCTAssertEqual(error as NSError, expectedError)
         }
@@ -131,6 +131,107 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     }
 
     #endif
+
+    func testCustomVariablesAreKeptWithThePresentedWorkflow() throws {
+        let store = CheckpointCallStore()
+        let expected: [String: CustomVariableValue] = [
+            "name": "Rick",
+            "attempt": 2,
+            "enabled": true
+        ]
+        var receivedPresentation: CheckpointPresentation?
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { presentation in
+            receivedPresentation = presentation
+            return true
+        }
+
+        try presenter.present(
+            presentation: Self.presentation(customVariables: expected),
+            delegate: MockCheckpointPresenterDelegate()
+        )
+
+        XCTAssertEqual(receivedPresentation?.customVariables, expected)
+        XCTAssertEqual(store.call?.presentation.customVariables, expected)
+    }
+
+    func testCustomVariablesAreAppliedToThePaywallViewController() throws {
+        let expected: [String: CustomVariableValue] = [
+            "name": "Rick",
+            "attempt": 2,
+            "enabled": true
+        ]
+        let presenter = CheckpointWorkflowPresenter { _ in true }
+
+        let viewController = try presenter.makePaywallViewController(
+            for: Self.renderablePresentation(customVariables: expected)
+        )
+
+        XCTAssertEqual(viewController.customVariables, expected)
+    }
+
+    private static func presentation(
+        customVariables: [String: CustomVariableValue] = [:]
+    ) -> CheckpointPresentation {
+        return CheckpointPresentation(
+            workflow: self.workflow(),
+            customVariables: customVariables
+        )
+    }
+
+    private static func renderablePresentation(
+        customVariables: [String: CustomVariableValue]
+    ) throws -> CheckpointPresentation {
+        let resolvedWorkflow = self.workflow()
+        let screen = WorkflowScreen(
+            name: nil,
+            templateName: "test",
+            assetBaseURL: try XCTUnwrap(URL(string: "https://assets.revenuecat.com")),
+            componentsConfig: try self.componentsConfig(),
+            componentsLocalizations: [:],
+            defaultLocale: "en_US",
+            offeringIdentifier: resolvedWorkflow.offering.identifier
+        )
+        let workflow = PublishedWorkflow(
+            id: "workflow-id",
+            displayName: "Test",
+            initialStepId: "step-id",
+            singleStepFallbackId: nil,
+            steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
+            screens: ["screen-id": screen]
+        )
+        return CheckpointPresentation(
+            workflow: ResolvedCheckpointWorkflow(
+                workflow: workflow,
+                uiConfig: resolvedWorkflow.uiConfig,
+                offering: resolvedWorkflow.offering,
+                offerings: resolvedWorkflow.offerings
+            ),
+            customVariables: customVariables
+        )
+    }
+
+    private static func componentsConfig() throws -> PaywallComponentsData.ComponentsConfig {
+        let json = """
+        {
+          "base": {
+            "stack": {
+              "type": "stack",
+              "components": [],
+              "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+              "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+              "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+              "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+            },
+            "background": {
+              "type": "color",
+              "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+            }
+          }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        return try JSONDecoder.default.decode(PaywallComponentsData.ComponentsConfig.self, from: data)
+    }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
         let workflow = PublishedWorkflow(

@@ -15,12 +15,21 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// Everything needed to present a checkpoint workflow.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CheckpointPresentation {
+
+    let workflow: ResolvedCheckpointWorkflow
+    let customVariables: [String: CustomVariableValue]
+
+}
+
 /// Bridges resolved checkpoint workflows into asynchronous UI outcomes.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointExecutor: AnyObject {
 
-    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome
 
 }
 
@@ -30,7 +39,7 @@ protocol CheckpointExecutor: AnyObject {
 protocol CheckpointPresenter: AnyObject {
 
     func present(
-        workflow: ResolvedCheckpointWorkflow,
+        presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws
 
@@ -70,7 +79,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         self.presenterProvider = presenterProvider
     }
 
-    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
         guard self.pendingContinuation == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -88,7 +97,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                 }
                 self.store(continuation: continuation)
                 do {
-                    try presenter.present(workflow: workflow, delegate: self)
+                    try presenter.present(presentation: presentation, delegate: self)
                 } catch {
                     self.fail(error: error)
                 }

@@ -31,8 +31,8 @@ import Foundation
         self.publisher = subject.eraseToAnyPublisher()
     }
 
-    /// Replaces the current URL set and notifies subscribers.
-    public func publish(_ urls: Set<URLWithValidation>) {
+    /// Replaces the current URLs and notifies subscribers.
+    public func publish(_ urls: [URLWithValidation]) {
         self.subject.send(.receivedAssetURLs(urls))
     }
 
@@ -50,6 +50,6 @@ import Foundation
 
 @_spi(Internal) public enum WebBundleEvent: Equatable, Sendable {
     case empty
-    case receivedAssetURLs(Set<URLWithValidation>)
+    case receivedAssetURLs([URLWithValidation])
     case cacheClearRequested
 }
