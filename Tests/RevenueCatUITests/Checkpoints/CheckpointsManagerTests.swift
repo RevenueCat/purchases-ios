@@ -80,12 +80,21 @@ final class CheckpointsManagerTests: TestCase {
         let params = RevenueCatUI.CheckpointParams(customVariables: [
             "valid_key": "value",
             "invalid-key": "value",
-            "1invalid": "value",
+            "1valid": "value",
+            "_valid": "value",
             "": "value"
         ])
 
-        XCTAssertEqual(params.customVariables, ["valid_key": "value"])
-        XCTAssertEqual(params.coreParams.customVariables, ["valid_key": .string("value")])
+        XCTAssertEqual(params.customVariables, [
+            "valid_key": "value",
+            "1valid": "value",
+            "_valid": "value"
+        ])
+        XCTAssertEqual(params.coreParams.customVariables, [
+            "valid_key": .string("value"),
+            "1valid": .string("value"),
+            "_valid": .string("value")
+        ])
     }
 
     func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {

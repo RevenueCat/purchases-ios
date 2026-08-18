@@ -239,7 +239,9 @@ extension EnvironmentValues {
     /// Use the `.customPaywallVariables(_:)` view modifier to set this value.
     public var customPaywallVariables: [String: CustomVariableValue] {
         get { self[CustomPaywallVariablesKey.self] }
-        set { self[CustomPaywallVariablesKey.self] = newValue }
+        set {
+            self[CustomPaywallVariablesKey.self] = RevenueCat.CustomVariableKeyValidator.validateAndFilter(newValue)
+        }
     }
 
 }
@@ -272,41 +274,12 @@ extension View {
     ///
     /// - Parameter variables: A dictionary mapping variable names to their values.
     ///   The keys should match the variable names defined in the dashboard (without the `custom.` prefix).
+    ///   Invalid keys are ignored.
     /// - Returns: A view with the custom variables set in the environment.
     public func customPaywallVariables(
         _ variables: [String: CustomVariableValue]
     ) -> some View {
-        #if DEBUG
-        CustomVariableKeyValidator.validate(variables)
-        #endif
         return environment(\.customPaywallVariables, variables)
-    }
-
-}
-
-// MARK: - Key Validator
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-enum CustomVariableKeyValidator {
-
-    /// Validates a single custom variable key and logs a warning if invalid.
-    /// Only performs validation in DEBUG builds.
-    static func validate(_ key: String) {
-        #if DEBUG
-        if !RevenueCat.CustomVariableKeyValidator.isValidKey(key) {
-            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
-        }
-        #endif
-    }
-
-    /// Validates all keys in a custom variables dictionary and logs warnings for invalid keys.
-    /// Only performs validation in DEBUG builds.
-    static func validate(_ variables: [String: CustomVariableValue]) {
-        #if DEBUG
-        for key in variables.keys where !RevenueCat.CustomVariableKeyValidator.isValidKey(key) {
-            Logger.warning(Strings.paywall_custom_variable_invalid_key(key: key))
-        }
-        #endif
     }
 
 }
