@@ -122,7 +122,7 @@ public final class Authentication: NSObject {
         self.ongoingUserInitiatedRequestCount.increment()
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.ongoingUserInitiatedRequestCount.decrement()
-            
+
             self.operationDispatcher.dispatchOnMainThread {
                 if case let .success(values) = result {
                     self.internalDelegate?.authenticatorDidLogIn(info: values.info)

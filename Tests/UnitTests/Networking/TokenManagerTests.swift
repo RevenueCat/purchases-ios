@@ -511,7 +511,7 @@ class TokenManagerTests: TestCase {
         manager.currentRefreshToken = "current-refresh-token"
 
         let firstAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
-                                                       response: Self.unauthorizedResponse) { _ in }
+                                                      response: Self.unauthorizedResponse) { _ in }
         expect(Self.isRefresh(firstAction)) == true
 
         var duplicateHandlerResult: Bool?
@@ -539,13 +539,13 @@ class TokenManagerTests: TestCase {
         manager.currentRefreshToken = "current-refresh-token"
 
         let firstAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
-                                                       response: Self.unauthorizedResponse) { _ in }
+                                                      response: Self.unauthorizedResponse) { _ in }
         expect(Self.isRefresh(firstAction)) == true
 
         _ = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse()))
 
         let secondAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
-                                                        response: Self.unauthorizedResponse) { _ in }
+                                                       response: Self.unauthorizedResponse) { _ in }
 
         expect(Self.isRefresh(secondAction)) == true
     }
