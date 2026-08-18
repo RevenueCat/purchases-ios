@@ -69,8 +69,8 @@
 		0882A0238A0B15DCAA63DCA5 /* WorkflowManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */; };
 		0DCCBCD6C7CA32B59407A391 /* IterationOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB697245B7ED4A8855FF027E /* IterationOperators.swift */; };
 		7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B9C0D1E2F304152637480 /* Scope.swift */; };
-		8B9C0D1E2F3041526374821 /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B9C0D1E2F3041526374820 /* CustomOperators.swift */; };
-		9C0D1E2F30415263748301 /* RootVarOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C0D1E2F30415263748300 /* RootVarOperator.swift */; };
+		A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */; };
+		B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
 		116EA498A344F7446083E8C5 /* EqualityOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EEB3B4E7701F8CC8B811A9 /* EqualityOperators.swift */; };
 		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
@@ -1324,6 +1324,7 @@
 		D07F64990C2DD742698ED810 /* PredicateConformanceFixture.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF9988F3464C8BB896E3FE78 /* PredicateConformanceFixture.swift */; };
 		D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = D08C42672FD995C20035A009 /* RewardVerificationToken.swift */; };
 		D0D83AE85FF3400EA30B0BDE /* TabsComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */; };
+		475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */; };
 		D0DA209A2F23BBEC00BA3B77 /* AdEventTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */; };
 		D62A9C83BFD14E5FA0452CC7 /* RemoteConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */; };
 		D969194D68D6967E81788B1F /* WebViewComponentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0A2779D02050D28BF369658 /* WebViewComponentView.swift */; };
@@ -2947,8 +2948,8 @@
 		AAE17E010000000000000004 /* RewardVerificationStatusResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponseTests.swift; sourceTree = "<group>"; };
 		AB697245B7ED4A8855FF027E /* IterationOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IterationOperators.swift; sourceTree = "<group>"; };
 		7A8B9C0D1E2F304152637480 /* Scope.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
-		8B9C0D1E2F3041526374820 /* CustomOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
-		9C0D1E2F30415263748300 /* RootVarOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootVarOperator.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
+		B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootVarOperator.swift; sourceTree = "<group>"; };
 		AC01FEB700000000000000B5 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
 		AC06C294F30E7D8000000002 /* SelectedPackageId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPackageId.swift; sourceTree = "<group>"; };
 		AD5000000000000000ADAD01 /* AdsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsStrings.swift; sourceTree = "<group>"; };
@@ -3040,6 +3041,7 @@
 		D01244182FD02FC30043B43B /* RewardVerificationResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationResult.swift; sourceTree = "<group>"; };
 		D04D812C75F9E42B66D11A37 /* PredicateConformanceRunner.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PredicateConformanceRunner.swift; sourceTree = "<group>"; };
 		D08C42672FD995C20035A009 /* RewardVerificationToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationToken.swift; sourceTree = "<group>"; };
+		9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardedAdTrackingMetadata.swift; sourceTree = "<group>"; };
 		D0A2779D02050D28BF369658 /* WebViewComponentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentView.swift; sourceTree = "<group>"; };
 		D0DA20992F23BBEC00BA3B77 /* AdEventTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdEventTests.swift; sourceTree = "<group>"; };
 		D11B9143D0AA4C0D9A694592 /* TabsComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabsComponentTests.swift; sourceTree = "<group>"; };
@@ -6243,6 +6245,7 @@
 			isa = PBXGroup;
 			children = (
 				D08C42672FD995C20035A009 /* RewardVerificationToken.swift */,
+				9B845797E663E98145FE7682 /* RewardedAdTrackingMetadata.swift */,
 				D01244152FD02FC30043B43B /* Outcome.swift */,
 				D01244162FD02FC30043B43B /* Poller.swift */,
 				D01244172FD02FC30043B43B /* RewardVerification.swift */,
@@ -6431,7 +6434,7 @@
 		AE36F9E53F62E943493B3F2B /* RulesEngine */ = {
 			isa = PBXGroup;
 			children = (
-				0D1E2F304152637484000 /* CustomOperators */,
+				A1B2C3D4E5F60718293A4B5C /* CustomOperators */,
 				80257F068E02666644D1ED62 /* Operators */,
 				5A76308A40945327EA3F6744 /* EvaluationError.swift */,
 				A07B6040B4AB4332DB547725 /* Evaluator.swift */,
@@ -6446,11 +6449,11 @@
 			path = RulesEngine;
 			sourceTree = "<group>";
 		};
-		0D1E2F304152637484000 /* CustomOperators */ = {
+		A1B2C3D4E5F60718293A4B5C /* CustomOperators */ = {
 			isa = PBXGroup;
 			children = (
-				8B9C0D1E2F3041526374820 /* CustomOperators.swift */,
-				9C0D1E2F30415263748300 /* RootVarOperator.swift */,
+				A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */,
+				B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */,
 			);
 			name = CustomOperators;
 			path = CustomOperators;
@@ -7655,6 +7658,7 @@
 				4FC083292A4A35FB00A97089 /* Integer+Extensions.swift in Sources */,
 				F5BE447D269E4ADB00254A30 /* ASIdManagerProxy.swift in Sources */,
 				D08C42682FD995C20035A009 /* RewardVerificationToken.swift in Sources */,
+				475702537ED0A302C9D3BE07 /* RewardedAdTrackingMetadata.swift in Sources */,
 				80E80EF226970E04008F245A /* ReceiptFetcher.swift in Sources */,
 				2DDF41AB24F6F37C005BC22D /* AppleReceipt.swift in Sources */,
 				2DDF41BB24F6F392005BC22D /* UInt8+Extensions.swift in Sources */,
@@ -7854,8 +7858,8 @@
 				2DF8D9550354ECBAE400C547 /* EvaluationError.swift in Sources */,
 				6A24585F01C6C2310AECC0B0 /* Evaluator.swift in Sources */,
 				7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */,
-				8B9C0D1E2F3041526374821 /* CustomOperators.swift in Sources */,
-				9C0D1E2F30415263748301 /* RootVarOperator.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */,
+				B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */,
 				1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */,
 				A91C0A012FEA000000000001 /* RulesEngineLoggerBridge.swift in Sources */,
 				A447209D359C42F9EC541F35 /* RulesEngine.swift in Sources */,
