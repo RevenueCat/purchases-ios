@@ -60,8 +60,16 @@ class PackageContext: ObservableObject {
     @Published var package: Package?
     @Published var variableContext: VariableContext
 
-    /// Whether the last update came from a reconcile rather than the user. `TabsComponentView` reads it
-    /// so a reconcile isn't recorded as a choice.
+    /// Whether the last update came from a reconcile rather than a user tap.
+    ///
+    /// `TabsComponentView` reads this when a parent change arrives. Without it a reconcile is recorded as
+    /// an explicit choice, and that choice then outranks a tab's own default on the next tab switch.
+    ///
+    /// It describes only the most recent `update`, so any other write to the same context in between
+    /// resets it. That is easy to reintroduce: a package-less tab shares the parent's context, so both
+    /// the `onAppear` seeding and `LoadedTabComponentView.onChange` used to write back what they had just
+    /// read and clear this. Both are skipped by identity checks now. If you add a write to the parent
+    /// context, decide whether it is a reconcile and pass `isReconcile` accordingly.
     private(set) var lastUpdateWasReconcile: Bool = false
 
     init(
@@ -72,6 +80,8 @@ class PackageContext: ObservableObject {
         self.variableContext = variableContext
     }
 
+    /// Pass `isReconcile: true` when the SDK moved the selection because the current package wasn't
+    /// rendering, rather than because the user picked something. See `lastUpdateWasReconcile`.
     @MainActor
     func update(package: Package?, variableContext: VariableContext, isReconcile: Bool = false) {
         // Set before the published properties so observers see it while handling the change.
