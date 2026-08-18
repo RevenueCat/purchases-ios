@@ -1401,6 +1401,158 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  # --- Announcing a change once ---
+
+  def history_getter(texts)
+    lambda do |_url, _headers|
+      SlackResponse.new("200", { ok: true, messages: texts.map { |text| { "text" => text } } }.to_json)
+    end
+  end
+
+  def test_slack_history_request_reads_the_channel_with_the_bot_token
+    request = ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1")
+
+    assert_includes request[:url], "https://slack.com/api/conversations.history?channel=C1"
+    assert_equal "Bearer xoxb-1", request[:headers]["Authorization"]
+    assert_equal ["new", "old"], ApiDiffHelper.recent_slack_messages(request, getter: history_getter(["new", "old"]))
+  end
+
+  def test_recent_slack_messages_raises_when_the_token_cannot_read_the_channel
+    getter = ->(_url, _headers) { SlackResponse.new("200", '{"ok":false,"error":"missing_scope"}') }
+
+    error = assert_raises(RuntimeError) do
+      ApiDiffHelper.recent_slack_messages(ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1"), getter: getter)
+    end
+    assert_match(/missing_scope/, error.message)
+  end
+
+  def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
+    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
+  end
+
+  def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
+    ApiDiffHelper.announcement_state(
+      message, bot_token: "xoxb-1", channel: "C1", source: source, modules: modules, getter: history_getter(texts)
+    )
+  end
+
+  def test_announcement_state_recognises_the_last_word_on_this_pull_request
+    summary = announcement("public func a()")
+
+    state, unusable = state_for(summary, [summary, announcement("public func older()")])
+
+    assert_equal :same, state
+    assert_nil unusable
+  end
+
+  # A PR that changes the API, changes it again, then reverts to the first state: the channel's
+  # newest word on it must be the current one, so this announces again.
+  def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
+    summary = announcement("public func a()")
+
+    state, _unusable = state_for(summary, [announcement("public func b()"), summary])
+
+    assert_equal :different, state
+  end
+
+  # Each scheme's job speaks only for its own module, so RevenueCatUI's message says nothing about
+  # what the RevenueCat job announced. `RevenueCat` must not match `RevenueCatUI` either.
+  def test_announcement_state_ignores_another_modules_announcement
+    summary = announcement("public func a()")
+    other_module = announcement("public func a()", modules: ["RevenueCatUI"])
+
+    state, unusable = state_for(summary, [other_module])
+
+    assert_equal :unknown, state
+    assert_nil unusable
+  end
+
+  def test_announcement_state_ignores_another_pull_requests_announcement
+    summary = announcement("public func a()")
+
+    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|#7354>")])
+
+    assert_equal :unknown, state
+  end
+
+  # chat.postMessage takes a `#name`, conversations.history does not.
+  def test_announcement_state_needs_the_channel_id
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "xoxb-1", channel: "#feed", source: "<url|#1>", modules: ["RevenueCat"],
+      getter: ->(*) { raise "must not read" }
+    )
+
+    assert_equal :unknown, state
+    assert_match(/channel ID/, unusable)
+  end
+
+  # A webhook has no token to read the channel with.
+  def test_announcement_state_reports_a_missing_token
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
+    )
+
+    assert_equal :unknown, state
+    assert_match(/cannot be read/, unusable)
+  end
+
+  def test_announcement_state_reports_a_failed_read
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "xoxb-1", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"],
+      getter: ->(*) { raise "slack is down" }
+    )
+
+    assert_equal :unknown, state
+    assert_equal "slack is down", unusable
+  end
+
+  def test_announcement_fingerprint_moves_with_the_summary
+    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
+    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
+    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
+
+    assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
+    refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
+  end
+
+  def test_announced_in_comment_matches_the_marker_this_run_would_write
+    body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
+
+    assert ApiDiffHelper.announced_in_comment?(body, "abc123abc123")
+    refute ApiDiffHelper.announced_in_comment?(body, "def456def456")
+    refute ApiDiffHelper.announced_in_comment?(nil, "abc123abc123")
+  end
+
+  # The fallback for a channel the token cannot read: the last announcement left its fingerprint
+  # in this module's section, and the next run recognises it there.
+  def test_comment_section_carries_the_announced_fingerprint
+    section = ApiDiffHelper.api_diff_comment_section(
+      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
+    )
+
+    assert_includes section, ApiDiffHelper.announced_marker("abc123abc123")
+    assert section.rstrip.end_with?(ApiDiffHelper.api_diff_section_close("RevenueCat"))
+  end
+
+  def test_comment_section_omits_the_marker_when_nothing_was_announced
+    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+
+    refute_includes section, "api-diff-announced"
+  end
+
+  # The marker lives inside the section, so the next run replaces it along with the report.
+  def test_merging_a_section_replaces_a_stale_fingerprint
+    announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
+    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
+    reannounced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "bbbbbbbbbbbb")
+
+    merged = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", reannounced)
+
+    assert_includes merged, ApiDiffHelper.announced_marker("bbbbbbbbbbbb")
+    refute_includes merged, ApiDiffHelper.announced_marker("aaaaaaaaaaaa")
+  end
+
+
   # --- One comment, two jobs ---
 
   # Two jobs write this comment, one per module. Before sections existed, whichever finished
@@ -1476,14 +1628,6 @@ class ApiDiffHelperTest < Minitest::Test
 
     assert_includes message, "1 new declaration"
     assert_includes message, "apiDiffDemoPing"
-  end
-
-  def test_slack_credentials_reachable_needs_a_webhook_or_a_token_and_channel
-    assert ApiDiffHelper.slack_credentials_reachable?(webhook_url: "https://hooks.example/abc")
-    assert ApiDiffHelper.slack_credentials_reachable?(bot_token: "xoxb-1", channel: "#chan")
-    refute ApiDiffHelper.slack_credentials_reachable?(bot_token: "xoxb-1")
-    refute ApiDiffHelper.slack_credentials_reachable?(channel: "#chan")
-    refute ApiDiffHelper.slack_credentials_reachable?
   end
 
   def test_comment_body_carries_the_slack_notice
@@ -1591,6 +1735,17 @@ class ApiDiffHelperTest < Minitest::Test
     refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
     refute_match(/Net::HTTP/, slack_lane, "the HTTP post belongs in ApiDiffHelper")
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
+  end
+
+  # The comment records the announcement, and the fallback recognises a change by the marker the
+  # previous run left in it, so writing the comment first would hide every repeat announcement.
+  def test_the_announcement_happens_before_the_comment_is_written
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
+
+    refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
+    assert_operator publishing.index("upsert_api_diff_comment"), :>, publishing.index("notify_api_changes_on_slack"),
+                    "the comment must be written after the announcement it records"
   end
 
 

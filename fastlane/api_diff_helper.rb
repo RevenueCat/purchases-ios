@@ -1,6 +1,7 @@
 # Helper module for API diff functionality
 # Used by generate_swiftinterface and check_api_changes lanes
 
+require 'digest'
 require 'fileutils'
 require 'json'
 require 'net/http'
@@ -469,10 +470,24 @@ module ApiDiffHelper
     end
   end
 
-  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil)
-    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
+  def announced_marker(fingerprint)
+    "<!-- api-diff-announced:#{fingerprint} -->"
+  end
 
-    [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
+  def announcement_fingerprint(message)
+    Digest::SHA256.hexdigest(message.to_s)[0, 12]
+  end
+
+  def announced_in_comment?(comment_body, fingerprint)
+    comment_body.to_s.include?(announced_marker(fingerprint))
+  end
+
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil, announced_fingerprint: nil)
+    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
+    parts = [api_diff_section_open(module_name), inner]
+    parts << announced_marker(announced_fingerprint) if announced_fingerprint
+
+    (parts << api_diff_section_close(module_name)).join("\n")
   end
 
   def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil, notice: nil)
@@ -595,10 +610,6 @@ module ApiDiffHelper
   end
 
 
-  def slack_credentials_reachable?(webhook_url: nil, bot_token: nil, channel: nil)
-    !webhook_url.to_s.empty? || (!bot_token.to_s.empty? && !channel.to_s.empty?)
-  end
-
   SLACK_UNREACHABLE_NOTICE = "No Slack credentials were reachable, so this change was not announced in the SDK API feed.".freeze
 
   def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
@@ -617,6 +628,64 @@ module ApiDiffHelper
       headers: { "Content-Type" => "application/json", "Authorization" => "Bearer #{bot_token}" },
       body: { channel: channel, text: message }
     }
+  end
+
+  SLACK_HISTORY_LIMIT = 100
+
+  # conversations.history takes a channel ID, never a `#name`.
+  CHANNEL_ID = /\A[CGD][A-Z0-9]+\z/.freeze
+
+  def slack_history_request(channel, bot_token:, limit: SLACK_HISTORY_LIMIT)
+    {
+      url: "https://slack.com/api/conversations.history?channel=#{channel}&limit=#{limit}",
+      headers: { "Authorization" => "Bearer #{bot_token}" }
+    }
+  end
+
+  # `getter` exists so the tests can exercise this without a network.
+  def recent_slack_messages(request, getter: nil)
+    getter ||= ->(url, headers) { Net::HTTP.get_response(URI.parse(url), headers) }
+
+    response = getter.call(request[:url], request[:headers])
+    raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
+
+    parsed = JSON.parse(response.body.to_s)
+    raise "Slack rejected conversations.history: #{parsed['error']}" unless parsed["ok"]
+
+    parsed["messages"].to_a.map { |message| message["text"].to_s }
+  end
+
+  # conversations.history answers newest first, so the first match is the channel's last word about
+  # this PR. Each job speaks for one scheme only, so the module is part of the identity: without it
+  # the RevenueCat job would compare itself against RevenueCatUI's message and both would repost
+  # on every run. The trailing backtick keeps `RevenueCat` from matching `RevenueCatUI`.
+  def last_announcement(texts, source, modules)
+    return nil if source.to_s.empty?
+
+    identity = [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
+
+    texts.find { |text| text.include?(source) && text.include?(identity) }
+  end
+
+  # A webhook cannot read the channel, and conversations.history needs an ID rather than a name, so
+  # both fall through to the fingerprint the last announcement left on the PR comment. Comparing
+  # against the last announcement rather than the whole window keeps a PR that reverts to an
+  # earlier surface announced: the channel's newest word on it has to be the current one.
+  # Returns [:same | :different | :unknown, why_unknown].
+  def announcement_state(message, bot_token:, channel:, source:, modules:, getter: nil)
+    return [:unknown, "no bot token, so the SDK API feed cannot be read"] if bot_token.to_s.empty?
+
+    unless CHANNEL_ID.match?(channel.to_s)
+      return [:unknown, "#{channel} is a channel name, and conversations.history needs the channel ID"]
+    end
+
+    request = slack_history_request(channel, bot_token: bot_token)
+    last = last_announcement(recent_slack_messages(request, getter: getter), source, modules)
+    return [:unknown, nil] if last.nil?
+
+    [last == message ? :same : :different, nil]
+  rescue StandardError => e
+    [:unknown, e.message]
   end
 
   # `poster` exists so the tests can exercise the response handling without a network.
