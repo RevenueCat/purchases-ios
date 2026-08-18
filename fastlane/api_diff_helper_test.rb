@@ -1445,8 +1445,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_nil unusable
   end
 
-  # A PR that changes the API, changes it again, then reverts to the first state: the channel's
-  # newest word on it must be the current one, so this announces again.
   def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
     summary = announcement("public func a()")
 
@@ -1455,8 +1453,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal :different, state
   end
 
-  # Each scheme's job speaks only for its own module, so RevenueCatUI's message says nothing about
-  # what the RevenueCat job announced. `RevenueCat` must not match `RevenueCatUI` either.
   def test_announcement_state_ignores_another_modules_announcement
     summary = announcement("public func a()")
     other_module = announcement("public func a()", modules: ["RevenueCatUI"])
@@ -1486,7 +1482,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/channel ID/, unusable)
   end
 
-  # A webhook has no token to read the channel with.
   def test_announcement_state_reports_a_missing_token
     state, unusable = ApiDiffHelper.announcement_state(
       "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
@@ -1515,13 +1510,11 @@ class ApiDiffHelperTest < Minitest::Test
     refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
   end
 
-  # Most PRs never touch the public API; a comment saying so on all of them is noise.
   def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
     refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
     refute ApiDiffHelper.comment_needed?({}, [], "<!-- api-diff-report -->", "RevenueCat")
   end
 
-  # Removing the change is worth saying: this is where "No public API changes" is the all-clear.
   def test_comment_survives_a_pull_request_that_removed_its_api_change
     body = ApiDiffHelper.merge_api_diff_comment(
       nil, "RevenueCat", ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
@@ -1536,16 +1529,16 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
   end
 
-  def test_announced_in_comment_matches_the_marker_this_run_would_write
+  def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
     body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
 
-    assert ApiDiffHelper.announced_in_comment?(body, "abc123abc123")
-    refute ApiDiffHelper.announced_in_comment?(body, "def456def456")
-    refute ApiDiffHelper.announced_in_comment?(nil, "abc123abc123")
+    assert ApiDiffHelper.already_announced?(:same, "def456def456") { raise "must not read" }
+    refute ApiDiffHelper.already_announced?(:different, "abc123abc123") { raise "must not read" }
+    assert ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { body }
+    refute ApiDiffHelper.already_announced?(:unknown, "def456def456") { body }
+    refute ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { nil }
   end
 
-  # The fallback for a channel the token cannot read: the last announcement left its fingerprint
-  # in this module's section, and the next run recognises it there.
   def test_comment_section_carries_the_announced_fingerprint
     section = ApiDiffHelper.api_diff_comment_section(
       "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
@@ -1561,7 +1554,6 @@ class ApiDiffHelperTest < Minitest::Test
     refute_includes section, "api-diff-announced"
   end
 
-  # The marker lives inside the section, so the next run replaces it along with the report.
   def test_merging_a_section_replaces_a_stale_fingerprint
     announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
     body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
@@ -1758,8 +1750,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
   end
 
-  # The comment records the announcement, and the fallback recognises a change by the marker the
-  # previous run left in it, so writing the comment first would hide every repeat announcement.
   def test_the_announcement_happens_before_the_comment_is_written
     lane = File.read(File.expand_path("Fastfile", __dir__))
     publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]

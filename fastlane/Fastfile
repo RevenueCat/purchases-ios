@@ -2535,8 +2535,6 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
-      # The comment records that the change was announced, so the announcement has to happen first:
-      # the fallback reads the marker the previous run left, which this run's comment overwrites.
       announcement = notify_api_changes_on_slack(
         reports_by_target: reports_by_target,
         breaks: all_breaks,
@@ -2611,10 +2609,7 @@ platform :ios do
     end
   end
 
-  # Returns { fingerprint:, notice: }. The fingerprint is set once the summary is in the channel,
-  # whether this run put it there or a previous one did, and the comment records it so the next run
-  # recognises it without reading the channel. A notice is reported in the PR comment so a missing
-  # credential or a duplicate risk is visible without failing the gate.
+  # Returns { fingerprint:, notice: }; the notice ends up in the PR comment.
   private_lane :notify_api_changes_on_slack do |options|
     breaks = options[:breaks]
     changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
@@ -2654,12 +2649,7 @@ platform :ios do
     state, history_error = ApiDiffHelper.announcement_state(
       summary, bot_token: bot_token, channel: channel, source: source, modules: modules
     )
-    announced = state == :same
-    # Nothing the channel can tell us: the marker the last announcement left on the comment records
-    # the same thing, the last summary that made it out.
-    announced = ApiDiffHelper.announced_in_comment?(api_diff_comment_body_on_pr, fingerprint) if state == :unknown
-
-    if announced
+    if ApiDiffHelper.already_announced?(state, fingerprint) { api_diff_comment_body_on_pr }
       UI.message("This API change is already in the SDK API feed, not posting it again")
       next({ fingerprint: fingerprint, notice: nil })
     end
@@ -2671,7 +2661,6 @@ platform :ios do
       UI.success("Posted the API change summary to Slack")
       { fingerprint: fingerprint, notice: notice }
     rescue StandardError => e
-      # A failed announcement must not record the fingerprint, or the next run stays silent too.
       UI.important("Could not announce the API change: #{e.message}")
       { fingerprint: nil, notice: "This change was not announced in the SDK API feed: #{e.message}." }
     end

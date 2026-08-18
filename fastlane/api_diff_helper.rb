@@ -478,12 +478,14 @@ module ApiDiffHelper
     Digest::SHA256.hexdigest(message.to_s)[0, 12]
   end
 
-  def announced_in_comment?(comment_body, fingerprint)
-    comment_body.to_s.include?(announced_marker(fingerprint))
+  # The comment body is only read for :unknown, so the caller passes a block that fetches it.
+  def already_announced?(state, fingerprint)
+    return true if state == :same
+    return false unless state == :unknown
+
+    yield.to_s.include?(announced_marker(fingerprint))
   end
 
-  # Most PRs never touch the public API, and "No public API changes" on all of them is noise. A PR
-  # that removed its changes keeps its section, so the same line reads as the all-clear it is.
   def comment_needed?(reports_by_target, breaks, existing_body, module_name)
     return true if breaks.any? || changed_modules(reports_by_target).any?
 
@@ -562,6 +564,11 @@ module ApiDiffHelper
 
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
+  # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
+  def announcement_identity(modules)
+    [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
+  end
+
   SLACK_DECLARATION_LIMIT = 10
 
   # Slack stops wrapping code blocks past this; the full text is in the PR comment.
@@ -601,7 +608,7 @@ module ApiDiffHelper
                else
                  ":sparkles: *New public API*"
                end
-    headline = [headline, SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
+    headline = [headline, announcement_identity(modules)].join(" · ")
 
     lines = [headline]
     lines << source unless source.to_s.empty?
@@ -650,7 +657,6 @@ module ApiDiffHelper
     }
   end
 
-  # `getter` exists so the tests can exercise this without a network.
   def recent_slack_messages(request, getter: nil)
     getter ||= ->(url, headers) { Net::HTTP.get_response(URI.parse(url), headers) }
 
@@ -663,22 +669,17 @@ module ApiDiffHelper
     parsed["messages"].to_a.map { |message| message["text"].to_s }
   end
 
-  # conversations.history answers newest first, so the first match is the channel's last word about
-  # this PR. Each job speaks for one scheme only, so the module is part of the identity: without it
-  # the RevenueCat job would compare itself against RevenueCatUI's message and both would repost
-  # on every run. The trailing backtick keeps `RevenueCat` from matching `RevenueCatUI`.
+  # conversations.history answers newest first, so the first match is the channel's last word. The
+  # trailing backtick in the identity keeps `RevenueCat` from matching `RevenueCatUI`.
   def last_announcement(texts, source, modules)
     return nil if source.to_s.empty?
 
-    identity = [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
+    identity = announcement_identity(modules)
 
     texts.find { |text| text.include?(source) && text.include?(identity) }
   end
 
-  # A webhook cannot read the channel, and conversations.history needs an ID rather than a name, so
-  # both fall through to the fingerprint the last announcement left on the PR comment. Comparing
-  # against the last announcement rather than the whole window keeps a PR that reverts to an
-  # earlier surface announced: the channel's newest word on it has to be the current one.
+  # A webhook cannot read the channel, and conversations.history needs an ID rather than a name.
   # Returns [:same | :different | :unknown, why_unknown].
   def announcement_state(message, bot_token:, channel:, source:, modules:, getter: nil)
     return [:unknown, "no bot token, so the SDK API feed cannot be read"] if bot_token.to_s.empty?
