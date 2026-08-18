@@ -23,13 +23,13 @@ extension RulesEngine {
         /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
         /// first and uses its string value as the path).
         ///
-        /// - Parameter vars: The JSON Logic data scope — one evaluated `Value`
-        ///   (usually an object) that `var` reads from. The name mirrors the
-        ///   spec's "data" argument passed through recursive evaluation.
-        static func opVar(args: Value, vars: Value) throws -> Value {
+        /// - Parameter vars: The JSON Logic evaluation scope — `current` is
+        ///   the data `var` reads from; path/default args evaluate against
+        ///   `current` as well.
+        static func opVar(args: Value, vars: Scope) throws -> Value {
             let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
 
-            if let found = lookupVar(in: vars, path: path) {
+            if let found = lookupVar(in: vars.current, path: path) {
                 return found
             }
             if let defaultValue = defaultValue {
@@ -49,7 +49,7 @@ extension RulesEngine {
         /// Each key argument is recursively evaluated before lookup. If the
         /// first evaluated argument is itself an array, its elements are
         /// unpacked as the key list (e.g. `{"missing": {"merge": [...]}}`).
-        static func opMissing(args: Value, vars: Value) throws -> Value {
+        static func opMissing(args: Value, vars: Scope) throws -> Value {
             let evaluatedArgs: [Value]
             if case .array(let items) = args {
                 evaluatedArgs = try items.map { try Evaluator.evaluateValue($0, vars: vars) }
@@ -70,7 +70,7 @@ extension RulesEngine {
             var missing: [Value] = []
             for key in keys {
                 guard let path = keyAsPath(key) else { continue }
-                if isMissingValue(varLookup(in: vars, path: path)) {
+                if isMissingValue(varLookup(in: vars.current, path: path)) {
                     missing.append(.string(path))
                 }
             }
@@ -81,7 +81,7 @@ extension RulesEngine {
         /// missing-keys array (same shape as `missing`) IF fewer than
         /// `min_required` of the requested paths are present. Otherwise
         /// returns `[]`.
-        static func opMissingSome(args: Value, vars: Value) throws -> Value {
+        static func opMissingSome(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             guard evaluated.count == 2 else {
                 throw RulesEngine.EvaluationError.typeMismatch(
@@ -146,7 +146,7 @@ extension RulesEngine {
 
         /// Recursively evaluate `var`'s arg(s) per the JSON Logic spec, then
         /// normalize the result into a `(path, default)` tuple.
-        private static func resolveVarArgs(_ args: Value, vars: Value) throws -> (String, Value?) {
+        private static func resolveVarArgs(_ args: Value, vars: Scope) throws -> (String, Value?) {
             if case .array(let items) = args {
                 var evaluated: [Value] = []
                 evaluated.reserveCapacity(items.count)
@@ -164,7 +164,8 @@ extension RulesEngine {
             let defaultValue: Value? = items.count >= 2 ? items[1] : nil
             if items.count > 2 {
                 RulesEngine.logger.warn(
-                    "var: ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
+                    "var: ignoring \(items.count - 2) extra arg(s); "
+                        + "expected [path] or [path, default]"
                 )
             }
             return (path, defaultValue)

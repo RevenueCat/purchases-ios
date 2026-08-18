@@ -21,7 +21,7 @@ extension RulesEngine {
         static func dispatch(
             op operatorName: String,
             args: Value,
-            vars: Value
+            vars: Scope
         ) throws -> Value {
             switch operatorName {
             // Accessors
@@ -111,7 +111,7 @@ extension RulesEngine {
                 return try MiscOperators.opLog(args: args, vars: vars)
 
             default:
-                throw RulesEngine.EvaluationError.unsupportedOperator(name: operatorName)
+                return try CustomOperators.dispatch(op: operatorName, args: args, vars: vars)
             }
         }
 
@@ -128,7 +128,7 @@ extension RulesEngine {
         }
 
         /// Evaluate every element in an argument list.
-        static func evalArgs(_ args: Value, vars: Value) throws -> [Value] {
+        static func evalArgs(_ args: Value, vars: Scope) throws -> [Value] {
             try argsAsList(args).map { try Evaluator.evaluateValue($0, vars: vars) }
         }
 
@@ -141,7 +141,7 @@ extension RulesEngine {
         /// are silently discarded.
         static func evalTwo(
             _ args: Value,
-            vars: Value
+            vars: Scope
         ) throws -> (Value, Value) {
             let evaluated = try evalArgs(args, vars: vars)
             let lhs = evaluated.first ?? .undefined

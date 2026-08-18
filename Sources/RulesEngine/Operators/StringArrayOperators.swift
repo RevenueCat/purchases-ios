@@ -27,7 +27,7 @@ extension RulesEngine {
         /// other haystack type returns `false`. `json-logic-js` implements
         /// `in` as `function(a, b)` (needle, haystack); missing or extra
         /// operands short-circuit to `false`.
-        static func opIn(args: Value, vars: Value) throws -> Value {
+        static func opIn(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             let needle = evaluated.first ?? .null
             let haystack = evaluated.indices.contains(1) ? evaluated[1] : .null
@@ -48,7 +48,7 @@ extension RulesEngine {
         /// operand is rendered via [`jsArrayElementString`] (mirrors
         /// `Array.prototype.join` on the argument list: `null` → `""`).
         /// 0 args returns `""`.
-        static func opCat(args: Value, vars: Value) throws -> Value {
+        static func opCat(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             let joined = evaluated.map(jsArrayElementString).joined()
             return .string(joined)
@@ -64,7 +64,7 @@ extension RulesEngine {
         /// to `0` and arguments past the third are silently ignored. A
         /// missing `source` is `undefined`, which stringifies to
         /// `"undefined"` (not `"null"`).
-        static func opSubstr(args: Value, vars: Value) throws -> Value {
+        static func opSubstr(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             let source = evaluated.first ?? .undefined
             let start = evaluated.indices.contains(1) ? evaluated[1] : .null
@@ -103,7 +103,7 @@ extension RulesEngine {
         /// `{"merge": [a, b, ...]}` — variadic, flattens one level. Array
         /// operands are spliced in; non-array operands are appended as
         /// single elements.
-        static func opMerge(args: Value, vars: Value) throws -> Value {
+        static func opMerge(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             var merged: [Value] = []
             for item in evaluated {
