@@ -472,6 +472,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "customer/intro_eligibility"
         case .logIn:
             assertionFailure("The .login endpoint is not allowed when IAM is enabled")
+            Logger.error("The .login endpoint is not allowed when IAM is enabled")
             return self.pathComponent
         case .postAttributionData:
             return "customer/attribution"
