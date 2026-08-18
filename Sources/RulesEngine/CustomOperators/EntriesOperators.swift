@@ -20,6 +20,13 @@ extension RulesEngine {
         /// array of two-element `[key, value]` arrays so `some`, `filter`, etc.
         /// can iterate it.
         ///
+        /// **Argument form**: unary operators follow `json-logic-js` spread
+        /// semantics via `Operators.firstArgEvaluated` — a multi-element
+        /// top-level array is a multi-argument call, not a single array
+        /// operand. So `{"rc.entries": ["a", "b"]}` uses only `"a"`. To pass a
+        /// literal array operand, wrap it:
+        /// `{"rc.entries": [["a", "b"]]}`.
+        ///
         /// - **Object**: pairs sorted **lexicographically by key**. Swift
         ///   dictionaries have no insertion order; this deliberately diverges
         ///   from JS `Object.entries` insertion order. Rules must not depend on
@@ -35,7 +42,7 @@ extension RulesEngine {
         /// `Object.entries` would disagree on strings and would *throw* on
         /// null/undefined where we return `[]`.
         static func opEntries(args: Value, vars: Scope) throws -> Value {
-            let input = try evalSingleArg(args, vars: vars)
+            let input = try Operators.firstArgEvaluated(args, vars: vars)
 
             switch input {
             case .object(let map):
@@ -61,6 +68,11 @@ extension RulesEngine {
 
         /// `{"rc.fromEntries": pairs}` — inverse of `rc.entries`.
         ///
+        /// **Argument form**: same spread semantics as `rc.entries`. A literal
+        /// pair list must be wrapped as a single operand, e.g.
+        /// `{"rc.fromEntries": [[["a", 1], ["b", 2]]]}`. Extra arguments are
+        /// silently ignored, matching `!` and `!!`.
+        ///
         /// - **Array of two-element arrays**: builds an object. Keys are coerced
         ///   via `jsString` (same helper `var` uses for path segments). Values
         ///   come from element `1`, or `.null` when absent.
@@ -69,7 +81,7 @@ extension RulesEngine {
         /// - **Non-array argument** or **empty array**: `{}` (empty array also
         ///   yields `{}`; non-array input logs a warning).
         static func opFromEntries(args: Value, vars: Scope) throws -> Value {
-            let input = try evalSingleArg(args, vars: vars)
+            let input = try Operators.firstArgEvaluated(args, vars: vars)
 
             guard case .array(let entries) = input else {
                 RulesEngine.logger.warn(
@@ -92,20 +104,6 @@ extension RulesEngine {
                 result[key] = value
             }
             return .object(result)
-        }
-
-        /// Resolve a single recursively evaluated operand.
-        ///
-        /// JSON Logic represents a one-arg operator either as a bare value or
-        /// as a one-element arg list. When the bare value is itself an array
-        /// (e.g. `{"rc.entries": ["a", "b"]}`), `argsAsList` would split it
-        /// into multiple operands; unary operators must treat a multi-element
-        /// top-level array as the operand instead.
-        private static func evalSingleArg(_ args: Value, vars: Scope) throws -> Value {
-            if case .array(let items) = args, items.count == 1 {
-                return try Evaluator.evaluateValue(items[0], vars: vars)
-            }
-            return try Evaluator.evaluateValue(args, vars: vars)
         }
     }
 }

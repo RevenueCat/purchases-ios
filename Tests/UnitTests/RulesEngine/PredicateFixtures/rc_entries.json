@@ -66,7 +66,26 @@
     },
     {
       "id": "entries_array_produces_string_index_keys",
-      "description": "Array input yields [[\"0\", elem0], [\"1\", elem1], ...]; nested arrays stringify via recursive comma-join per jsString",
+      "description": "Array input yields [[\"0\", elem0], [\"1\", elem1], ...]; literal array operands must be wrapped ([[...]]) per json-logic-js spread semantics",
+      "predicate": {
+        "==": [
+          {
+            "rc.entries": [
+              [
+                "a",
+                "b"
+              ]
+            ]
+          },
+          "0,a,1,b"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_multi_element_arg_list_uses_first_only",
+      "description": "json-logic-js spreads the arg array into the operator; {\"rc.entries\": [\"a\", \"b\"]} uses only the first argument (\"a\", a string → []), extra args silently ignored like ! and !!",
       "predicate": {
         "==": [
           {
@@ -75,11 +94,16 @@
               "b"
             ]
           },
-          "0,a,1,b"
+          ""
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": true,
+      "expectedWarnings": {
+        "contains": [
+          "rc.entries: expected object or array"
+        ]
+      }
     },
     {
       "id": "entries_singleton_wrapped_object_form",
@@ -223,16 +247,18 @@
             "rc.entries": {
               "rc.fromEntries": [
                 [
-                  "a",
-                  1
-                ],
-                [
-                  "a",
-                  2
-                ],
-                [
-                  "b",
-                  3
+                  [
+                    "a",
+                    1
+                  ],
+                  [
+                    "a",
+                    2
+                  ],
+                  [
+                    "b",
+                    3
+                  ]
                 ]
               ]
             }
@@ -273,13 +299,15 @@
                 "rc.entries": {
                   "rc.fromEntries": [
                     [
-                      "a",
-                      1
-                    ],
-                    "not-an-array",
-                    [
-                      "b",
-                      2
+                      [
+                        "a",
+                        1
+                      ],
+                      "not-an-array",
+                      [
+                        "b",
+                        2
+                      ]
                     ]
                   ]
                 }
@@ -339,13 +367,16 @@
     },
     {
       "id": "fromEntries_empty_array_returns_empty_object",
+      "description": "An empty pair list is a single wrapped operand: {\"rc.fromEntries\": [[]]}",
       "predicate": {
         "===": [
           {
             "reduce": [
               {
                 "rc.entries": {
-                  "rc.fromEntries": []
+                  "rc.fromEntries": [
+                    []
+                  ]
                 }
               },
               {

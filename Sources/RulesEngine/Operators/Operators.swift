@@ -149,6 +149,17 @@ extension RulesEngine {
             return (lhs, rhs)
         }
 
+        /// Evaluate the first argument of a unary operator. Uses `argsAsList`
+        /// then takes index zero, matching `json-logic-js`'s
+        /// `operations[op].apply(context, values)` spread semantics: a
+        /// multi-element top-level array is a multi-argument call, not a
+        /// single array operand. An empty arg list yields `.null`.
+        static func firstArgEvaluated(_ args: Value, vars: Scope) throws -> Value {
+            let items = argsAsList(args)
+            let first = items.first ?? .null
+            return try Evaluator.evaluateValue(first, vars: vars)
+        }
+
         /// Safely truncate a `Double` to `Int` for index / count math.
         /// `NaN` → `0` (matches JS `ToInteger`); `±Infinity` and
         /// out-of-range finite values clamp to `Int.max` / `Int.min`.
