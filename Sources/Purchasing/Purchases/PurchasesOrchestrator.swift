@@ -1590,14 +1590,18 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         _ listener: StoreKit2TransactionListenerType,
         updatedTransaction transaction: StoreTransactionType
     ) async throws {
-        await self.awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: transaction.productIdentifier)
-
         // Only attribute offering context and paywall data for transactions that are not known
         // to be renewals. When the reason is `nil` (i.e. iOS < 17), we still attempt
         // attribution because the product-ID and date matching in `getAndRemoveCachedPurchaseContext`
         // will safely return nil for non-matching transactions, making the misattribution case
         // extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
+
+        // There's nothing to order a renewal behind, since it's never attributed.
+        if !isKnownRenewal {
+            await self.awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: transaction.productIdentifier)
+        }
+
         let cached = isKnownRenewal ? nil : self.getAndRemoveCachedPurchaseContext(for: transaction)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
