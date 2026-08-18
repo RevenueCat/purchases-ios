@@ -1515,6 +1515,27 @@ class ApiDiffHelperTest < Minitest::Test
     refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
   end
 
+  # Most PRs never touch the public API; a comment saying so on all of them is noise.
+  def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
+    refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
+    refute ApiDiffHelper.comment_needed?({}, [], "<!-- api-diff-report -->", "RevenueCat")
+  end
+
+  # Removing the change is worth saying: this is where "No public API changes" is the all-clear.
+  def test_comment_survives_a_pull_request_that_removed_its_api_change
+    body = ApiDiffHelper.merge_api_diff_comment(
+      nil, "RevenueCat", ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+    )
+
+    assert ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], body, "RevenueCat")
+    refute ApiDiffHelper.comment_needed?({ "RevenueCatUI iOS" => NO_CHANGES_OUTPUT }, [], body, "RevenueCatUI")
+  end
+
+  def test_comment_is_needed_whenever_there_is_anything_to_report
+    assert ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], nil, "RevenueCat")
+    assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
+  end
+
   def test_announced_in_comment_matches_the_marker_this_run_would_write
     body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
 

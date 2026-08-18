@@ -482,6 +482,14 @@ module ApiDiffHelper
     comment_body.to_s.include?(announced_marker(fingerprint))
   end
 
+  # Most PRs never touch the public API, and "No public API changes" on all of them is noise. A PR
+  # that removed its changes keeps its section, so the same line reads as the all-clear it is.
+  def comment_needed?(reports_by_target, breaks, existing_body, module_name)
+    return true if breaks.any? || changed_modules(reports_by_target).any?
+
+    existing_body.to_s.include?(api_diff_section_open(module_name))
+  end
+
   def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil, announced_fingerprint: nil)
     inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
     parts = [api_diff_section_open(module_name), inner]

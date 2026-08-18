@@ -2577,6 +2577,11 @@ platform :ios do
     repo = "RevenueCat/#{REPO_NAME}"
     existing = find_pr_comment(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
 
+    unless ApiDiffHelper.comment_needed?(options[:reports_by_target], options[:breaks], existing&.dig("body"), options[:scheme])
+      UI.message("No public API changes and none reported before, skipping the API diff comment")
+      next
+    end
+
     section = ApiDiffHelper.api_diff_comment_section(
       options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
       notice: options[:notice], announced_fingerprint: options[:announced_fingerprint]
