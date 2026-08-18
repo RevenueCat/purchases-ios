@@ -81,27 +81,32 @@ class MockOperationDispatcher: OperationDispatcher {
     var invokedDispatchAsyncOnWorkerThreadDelayParam: JitterableDelay?
     private(set) var dispatchedAsyncWorkerThreadBlocks: [@Sendable () async -> Void] = []
 
+    @discardableResult
     override func dispatchOnWorkerThread(
         jitterableDelay delay: JitterableDelay = .none,
         block: @escaping @Sendable () async -> Void
-    ) {
+    ) -> Task<Void, Never> {
         self.invokedDispatchAsyncOnWorkerThreadDelayParam = delay
         self.invokedDispatchAsyncOnWorkerThread = true
         self.invokedDispatchAsyncOnWorkerThreadCount += 1
         self.dispatchedAsyncWorkerThreadBlocks.append(block)
 
         if self.forwardToOriginalDispatchOnWorkerThread {
-            super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         } else if self.shouldInvokeDispatchOnWorkerThreadBlock {
             // We want to wait for the async task to finish before leaving this function
             // Use a dispatch group to wait for the async task to finish    
             let dispatchGroup = DispatchGroup()
             dispatchGroup.enter()
 
+            let task: Task<Void, Never> = Task {
+                await block()
+            }
+
             // Execute the async task on a background queue to avoid blocking
             DispatchQueue.global(qos: .userInitiated).async {
                 Task {
-                    await block()
+                    await task.value
                     dispatchGroup.leave()
                 }
             }
@@ -112,6 +117,9 @@ class MockOperationDispatcher: OperationDispatcher {
             if result == .timedOut {
                 XCTFail("Dispatch on worker thread timed out")
             }
+            return task
+        } else {
+            return super.dispatchOnWorkerThread(jitterableDelay: delay, block: block)
         }
     }
 
