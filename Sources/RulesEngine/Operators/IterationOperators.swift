@@ -17,13 +17,14 @@ extension RulesEngine {
     ///   evaluated in the outer scope and must resolve to an array; anything
     ///   else is treated as an empty source. The second argument is a
     ///   literal template that is evaluated per-item with `vars` rebound to
-    ///   the current item, with no parent-scope inheritance.
+    ///   the current item, with no parent-scope inheritance for `var`; the
+    ///   preserved root scope remains available to custom operators.
     /// - **Shape** (`reduce`):
     ///   `{"reduce": [arrayExpr, predicateExpr, initialAccumulator]}`. Both
     ///   the first and third arguments are evaluated in the outer scope.
     ///   The predicate is evaluated per-item with `vars` rebound to
-    ///   `{"current": <item>, "accumulator": <acc>}`, with no parent-scope
-    ///   inheritance.
+    ///   `{"current": <item>, "accumulator": <acc>}`; `var` sees only that
+    ///   object, but the root scope is preserved for custom operators.
     ///
     /// **Empty- and non-array sources** per the JSON Logic JS spec:
     /// - `some` / `all` return `false`.
@@ -35,14 +36,14 @@ extension RulesEngine {
         /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is
         /// truthy for at least one item. The array expression is evaluated in
         /// the current scope; the predicate is re-evaluated per item with
-        /// `vars` rebound to that item, with no parent-scope inheritance.
-        /// Empty array or non-array source returns `false`. Short-circuits on
-        /// the first truthy result.
-        static func opSome(args: Value, vars: Value) throws -> Value {
+        /// `vars` rebound to that item (`var` reads the item only; the root
+        /// scope is preserved for custom operators). Empty array or non-array
+        /// source returns `false`. Short-circuits on the first truthy result.
+        static func opSome(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items else { return .bool(false) }
             for item in items {
-                let result = try Evaluator.evaluateValue(predicate, vars: item)
+                let result = try Evaluator.evaluateValue(predicate, vars: vars.scoped(to: item))
                 if result.isTruthy { return .bool(true) }
             }
             return .bool(false)
@@ -51,14 +52,15 @@ extension RulesEngine {
         /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
         /// truthy for every item. The array expression is evaluated in the
         /// current scope; the predicate is re-evaluated per item with `vars`
-        /// rebound to that item, with no parent-scope inheritance. Empty array
-        /// returns `false` per the JSON Logic JS spec. Non-array source
-        /// returns `false`. Short-circuits on the first non-truthy result.
-        static func opAll(args: Value, vars: Value) throws -> Value {
+        /// rebound to that item (`var` reads the item only; the root scope is
+        /// preserved for custom operators). Empty array returns `false` per
+        /// the JSON Logic JS spec. Non-array source returns `false`.
+        /// Short-circuits on the first non-truthy result.
+        static func opAll(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items, !items.isEmpty else { return .bool(false) }
             for item in items {
-                let result = try Evaluator.evaluateValue(predicate, vars: item)
+                let result = try Evaluator.evaluateValue(predicate, vars: vars.scoped(to: item))
                 if !result.isTruthy { return .bool(false) }
             }
             return .bool(true)
@@ -68,11 +70,11 @@ extension RulesEngine {
         /// falsy for every item. Inverse of `some`. Short-circuits on the
         /// first truthy item. Empty and non-array sources both return `true`,
         /// matching the JS reference's `!Array.isArray(x) || !x.length` guard.
-        static func opNone(args: Value, vars: Value) throws -> Value {
+        static func opNone(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items else { return .bool(true) }
             for item in items {
-                let result = try Evaluator.evaluateValue(predicate, vars: item)
+                let result = try Evaluator.evaluateValue(predicate, vars: vars.scoped(to: item))
                 if result.isTruthy { return .bool(false) }
             }
             return .bool(true)
@@ -81,13 +83,13 @@ extension RulesEngine {
         /// `{"map": [arrayExpr, predicate]}` — apply `predicate` to each
         /// item, return the new array of *raw* (non-truthy-coerced) results.
         /// Empty or non-array source yields `[]`.
-        static func opMap(args: Value, vars: Value) throws -> Value {
+        static func opMap(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items else { return .array([]) }
             var results: [Value] = []
             results.reserveCapacity(items.count)
             for item in items {
-                results.append(try Evaluator.evaluateValue(predicate, vars: item))
+                results.append(try Evaluator.evaluateValue(predicate, vars: vars.scoped(to: item)))
             }
             return .array(results)
         }
@@ -96,12 +98,12 @@ extension RulesEngine {
         /// which `predicate` is truthy. Empty or non-array source yields
         /// `[]`. The retained items are the *original* values, not the
         /// predicate results.
-        static func opFilter(args: Value, vars: Value) throws -> Value {
+        static func opFilter(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items else { return .array([]) }
             var results: [Value] = []
             for item in items {
-                let result = try Evaluator.evaluateValue(predicate, vars: item)
+                let result = try Evaluator.evaluateValue(predicate, vars: vars.scoped(to: item))
                 if result.isTruthy { results.append(item) }
             }
             return .array(results)
@@ -118,7 +120,7 @@ extension RulesEngine {
         /// accumulator defaults to `.null` — `json-logic-js` seeds the fold
         /// with `typeof values[2] !== "undefined" ? values[2] : null`.
         /// Arguments past the third are ignored.
-        static func opReduce(args: Value, vars: Value) throws -> Value {
+        static func opReduce(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
             let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null
             let predicate: Value = raw.indices.contains(1) ? raw[1] : .undefined
@@ -128,11 +130,11 @@ extension RulesEngine {
                 : .null
             guard case .array(let items) = source else { return accumulator }
             for item in items {
-                let scope: Value = .object([
+                let itemScope = vars.scoped(to: .object([
                     "current": item,
                     "accumulator": accumulator
-                ])
-                accumulator = try Evaluator.evaluateValue(predicate, vars: scope)
+                ]))
+                accumulator = try Evaluator.evaluateValue(predicate, vars: itemScope)
             }
             return accumulator
         }
@@ -152,7 +154,7 @@ extension RulesEngine {
         /// `function(scopedData, scopedLogic)` signature.
         private static func parseIterationArgs(
             _ args: Value,
-            vars: Value
+            vars: Scope
         ) throws -> (items: [Value]?, predicate: Value) {
             let raw = Operators.argsAsList(args)
             let sourceArg: Value = raw.indices.contains(0) ? raw[0] : .null

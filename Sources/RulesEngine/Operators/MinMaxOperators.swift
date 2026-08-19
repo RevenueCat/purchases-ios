@@ -22,12 +22,12 @@ extension RulesEngine {
     enum MinMaxOperators {
 
         /// `{"max": [v1, v2, ...]}` — variadic numeric maximum.
-        static func opMax(args: Value, vars: Value) throws -> Value {
+        static func opMax(args: Value, vars: Scope) throws -> Value {
             try reduceExtremum(args, vars: vars, empty: -.infinity) { Swift.max($0, $1) }
         }
 
         /// `{"min": [v1, v2, ...]}` — variadic numeric minimum.
-        static func opMin(args: Value, vars: Value) throws -> Value {
+        static func opMin(args: Value, vars: Scope) throws -> Value {
             try reduceExtremum(args, vars: vars, empty: .infinity) { Swift.min($0, $1) }
         }
 
@@ -37,7 +37,7 @@ extension RulesEngine {
         /// operand poisons the accumulator, mirroring `Math.max` / `Math.min`.
         private static func reduceExtremum(
             _ args: Value,
-            vars: Value,
+            vars: Scope,
             empty: Double,
             combine: (Double, Double) -> Double
         ) throws -> Value {
