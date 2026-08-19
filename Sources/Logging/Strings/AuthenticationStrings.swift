@@ -13,13 +13,11 @@
 
 import Foundation
 
-// swiftlint:disable identifier_name
 enum AuthenticationStrings {
 
     case unknownItem(_ key: String)
     case failedModification(_ key: String, _ error: any Error)
 }
-
 
 extension AuthenticationStrings: LogMessage {
 
