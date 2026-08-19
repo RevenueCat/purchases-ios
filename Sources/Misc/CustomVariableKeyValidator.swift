@@ -16,13 +16,13 @@ import Foundation
 
 private enum CustomVariableKeyValidatorStrings: LogMessage {
 
-    case invalidKey(String)
+    case invalidKey(String, maxLength: Int)
 
     var description: String {
         switch self {
-        case .invalidKey(let key):
+        case let .invalidKey(key, maxLength):
             return "Custom variable key '\(key)' is invalid and will be ignored. " +
-                "Keys must be 1–256 characters and contain only ASCII letters, numbers, and underscores."
+                "Keys must be 1–\(maxLength) characters and contain only ASCII letters, numbers, and underscores."
         }
     }
 
@@ -34,11 +34,13 @@ private enum CustomVariableKeyValidatorStrings: LogMessage {
 @_spi(Internal)
 public struct CustomVariableKeyValidator {
 
+    private static let maxLength = 255
+
     private init() {}
 
     /// Returns whether a key can be addressed using a `custom.<key>` path.
     public static func isValidKey(_ key: String) -> Bool {
-        guard (1...256).contains(key.utf8.count) else { return false }
+        guard (1...Self.maxLength).contains(key.utf8.count) else { return false }
 
         return key.utf8.allSatisfy { character in
             switch character {
@@ -58,7 +60,7 @@ public struct CustomVariableKeyValidator {
         return variables.filter { key, _ in
             guard Self.isValidKey(key) else {
                 #if DEBUG
-                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key))
+                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key, maxLength: Self.maxLength))
                 #endif
                 return false
             }
