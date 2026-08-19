@@ -91,30 +91,31 @@
       "expected": true
     },
     {
-      "id": "fromEntries_skips_malformed_entry_with_warning",
-      "description": "Non-array elements are skipped; surviving pairs still build the object",
-      "predicate": {
-        "and": [
-          {
-            "some": [
-              {"rc.entries": {"rc.fromEntries": [[["a", 1], "not-an-array", ["b", 2]]]}},
-              {"===": [{"var": "0"}, "b"]}
-            ]
-          }
-        ]
-      },
+      "id": "fromEntries_malformed_entry_is_type_error",
+      "description": "A non-array entry is a type error rather than being skipped, so a partial object can never pass for a legitimate result",
+      "predicate": {"rc.fromEntries": [[["a", 1], "not-an-array", ["b", 2]]]},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.fromEntries: skipping non-array entry"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
     },
     {
-      "id": "fromEntries_non_array_argument_returns_empty_object_with_warning",
-      "predicate": {
-        "===": [{"reduce": [{"rc.entries": {"rc.fromEntries": null}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]
-      },
+      "id": "fromEntries_entry_missing_value_is_type_error",
+      "description": "A one-element entry has no value to bind; it throws instead of defaulting to null",
+      "predicate": {"rc.fromEntries": [[["a"]]]},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.fromEntries: expected array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_entry_with_extra_element_is_type_error",
+      "description": "Deliberate divergence from JS Object.fromEntries, which ignores elements past the second; an over-long entry is ambiguous so it throws",
+      "predicate": {"rc.fromEntries": [[["a", 1, 2]]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_non_array_argument_is_type_error",
+      "predicate": {"rc.fromEntries": null},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
     },
     {
       "id": "fromEntries_empty_array_returns_empty_object",

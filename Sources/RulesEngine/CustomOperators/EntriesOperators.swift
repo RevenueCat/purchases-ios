@@ -68,34 +68,34 @@ extension RulesEngine {
         /// silently ignored, matching `!` and `!!`.
         ///
         /// - **Array of two-element arrays**: builds an object. Keys are coerced
-        ///   via `jsString` (same helper `var` uses for path segments). Values
-        ///   come from element `1`, or `.null` when absent.
+        ///   via `jsString` (same helper `var` uses for path segments).
         /// - **Duplicate keys**: last occurrence wins, matching JS.
-        /// - **Non-array element**: skipped with a warning.
-        /// - **Non-array argument** or **empty array**: `{}` (empty array also
-        ///   yields `{}`; non-array input logs a warning).
+        /// - **Empty array**: `{}`.
+        /// - **Non-array argument**, or any entry that is not a two-element
+        ///   array: throws `EvaluationError.typeMismatch`.
+        ///
+        /// Malformed entries throw rather than being skipped. Dropping them
+        /// would build a partial object that reads as a legitimate result, so a
+        /// rule could match on the surviving keys alone.
         static func opFromEntries(args: Value, vars: Scope) throws -> Value {
             let input = try Operators.firstArgEvaluated(args, vars: vars)
 
             guard case .array(let entries) = input else {
-                RulesEngine.logger.warn(
-                    "rc.fromEntries: expected array, got \(input)"
+                throw EvaluationError.typeMismatch(
+                    message: "operator 'rc.fromEntries' expected array, got \(input)"
                 )
-                return .object([:])
             }
 
             var result: [String: Value] = [:]
             for entry in entries {
-                guard case .array(let pair) = entry else {
-                    RulesEngine.logger.warn(
-                        "rc.fromEntries: skipping non-array entry"
+                guard case .array(let pair) = entry, pair.count == 2 else {
+                    throw EvaluationError.typeMismatch(
+                        message: "operator 'rc.fromEntries' expected a two-element "
+                            + "[key, value] entry, got \(entry)"
                     )
-                    continue
                 }
 
-                let key = jsString(pair.first ?? .undefined)
-                let value = pair.count >= 2 ? pair[1] : .null
-                result[key] = value
+                result[jsString(pair[0])] = pair[1]
             }
             return .object(result)
         }
