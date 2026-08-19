@@ -446,7 +446,9 @@
 		3B41364A5DFC4039B3026F40 /* RemoteConfigAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3A2DB969D72432B87F48C5F /* RemoteConfigAPI.swift */; };
 		3D3FCA672E03ABA71D7C0AF3 /* PackageComponentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C5FC914F4E87D00963A8F1D /* PackageComponentTests.swift */; };
 		C0DE00000000000000000102 /* CheckpointWorkflowResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */; };
+		C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000206 /* CheckpointEvent.swift */; };
 		C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */; };
+		C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */; };
 		42F1DF385E3C1F9903A07FBF /* ProductsFetcherSK1.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFB3CBAA73855779FE828CE2 /* ProductsFetcherSK1.swift */; };
 		451441F0014BC13272B179CC /* View+ExitOfferPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8FCE0314FF930204BE4D33 /* View+ExitOfferPresentation.swift */; };
 		49554883F2D5ED48F0907FB9 /* ExitOfferTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D26169F24D341F77345716D /* ExitOfferTests.swift */; };
@@ -554,6 +556,7 @@
 		4FF6E4B92B069B8C000141ED /* HTTPRequest+Signing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */; };
 		4FF8464D2A32554300617F00 /* DiagnosticsStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */; };
 		4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED852AA941D200118EF4 /* FeatureEventsRequest.swift */; };
+		C0DE00000000000000000107 /* FeatureEventsRequest+CheckpointEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000207 /* FeatureEventsRequest+CheckpointEvent.swift */; };
 		4FFCED892AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFCED862AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift */; };
 		4FFFE6C42AA9464100B2955C /* EventsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6C32AA9464100B2955C /* EventsManager.swift */; };
 		4FFFE6CA2AA946A700B2955C /* MockInternalAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4FFFE6C92AA946A700B2955C /* MockInternalAPI.swift */; };
@@ -1172,6 +1175,7 @@
 		90A1B2C72F96927E00D32EDF /* AdRewardTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 90A1B2C62F96927E00D32EDF /* AdRewardTests.swift */; };
 		923A22C9437BD0A6223B866D /* RulesEngineEvaluate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F7428736E4FABCF7AD45798 /* RulesEngineEvaluate.swift */; };
 		94BA76C3AAF699D59AA685FC /* PurchasesWorkflowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */; };
+		C0DE00000000000000000109 /* PurchasesCheckpointEventsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0DE00000000000000000209 /* PurchasesCheckpointEventsTests.swift */; };
 		961B6FC99052B19102AE5AEC /* WorkflowNavigator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A10AD61D82EB73FC5338DA2 /* WorkflowNavigator.swift */; };
 		97B9F00926E0977B0DAAD7D7 /* EnvironmentValues+Workflow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C553D7740916F157FA16753 /* EnvironmentValues+Workflow.swift */; };
 		986C48FD2F55A58C00D8CEA5 /* PaywallSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57B1D7B32F2A213800A77E21 /* PaywallSource.swift */; };
@@ -2231,6 +2235,7 @@
 		4FF6E4B82B069B8C000141ED /* HTTPRequest+Signing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "HTTPRequest+Signing.swift"; sourceTree = "<group>"; };
 		4FF8464C2A32554300617F00 /* DiagnosticsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticsStrings.swift; sourceTree = "<group>"; };
 		4FFCED852AA941D200118EF4 /* FeatureEventsRequest.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeatureEventsRequest.swift; sourceTree = "<group>"; };
+		C0DE00000000000000000207 /* FeatureEventsRequest+CheckpointEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "FeatureEventsRequest+CheckpointEvent.swift"; sourceTree = "<group>"; };
 		4FFCED862AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FeatureEventHTTPRequestPath.swift; sourceTree = "<group>"; };
 		4FFD88BE2A4B56E2008E98AC /* __Snapshots__ */ = {isa = PBXFileReference; lastKnownFileType = folder; path = __Snapshots__; sourceTree = "<group>"; };
 		4FFFE6C32AA9464100B2955C /* EventsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EventsManager.swift; sourceTree = "<group>"; };
@@ -2645,6 +2650,7 @@
 		77BA1AB02CCBAB80009BF0EA /* RootViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewModel.swift; sourceTree = "<group>"; };
 		77BA1AB22CCBB6EE009BF0EA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesWorkflowTests.swift; sourceTree = "<group>"; };
+		C0DE00000000000000000209 /* PurchasesCheckpointEventsTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PurchasesCheckpointEventsTests.swift; sourceTree = "<group>"; };
 		7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowContextTests.swift; sourceTree = "<group>"; };
 		7F8F8AD16519E1EFCE1B99F4 /* ValueTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ValueTests.swift; sourceTree = "<group>"; };
 		800A129055A298C390AED0B5 /* WorkflowPaywallView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPaywallView.swift; sourceTree = "<group>"; };
@@ -2659,7 +2665,9 @@
 		80CDB7B52E69C35100D7DB9E /* CustomerCenterStylingUtilities.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerCenterStylingUtilities.swift; sourceTree = "<group>"; };
 		80E80EF026970DC3008F245A /* ReceiptFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptFetcher.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolver.swift; sourceTree = "<group>"; };
+		C0DE00000000000000000206 /* CheckpointEvent.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEvent.swift; sourceTree = "<group>"; };
 		C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowResolverTests.swift; sourceTree = "<group>"; };
+		C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CheckpointEventsRequestTests.swift; sourceTree = "<group>"; };
 		830003FE2E26161D00143F9F /* PlatformFont.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformFont.swift; sourceTree = "<group>"; };
 		830004002E261ABE00143F9F /* PlatformImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlatformImage.swift; sourceTree = "<group>"; };
 		831660B52E3AAA4900855312 /* FixMacButtonsModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FixMacButtonsModifier.swift; sourceTree = "<group>"; };
@@ -3515,6 +3523,7 @@
 			children = (
 				346145E8EF291B0E8BB68D12 /* Checkpoints.swift */,
 				C0DE00000000000000000202 /* CheckpointWorkflowResolver.swift */,
+				C0DE00000000000000000206 /* CheckpointEvent.swift */,
 			);
 			name = Checkpoints;
 			path = Checkpoints;
@@ -3550,6 +3559,7 @@
 			children = (
 				73A620000000000000000011 /* CheckpointValueTests.swift */,
 				C0DE00000000000000000205 /* CheckpointWorkflowResolverTests.swift */,
+				C0DE00000000000000000208 /* CheckpointEventsRequestTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -5285,6 +5295,7 @@
 				57E415F02846997B00EA5460 /* PurchasesAttributionDataTests.swift */,
 				57E415FE28469EAB00EA5460 /* PurchasesGetProductsTests.swift */,
 				78B1498BA2288B4643B248A5 /* PurchasesWorkflowTests.swift */,
+				C0DE00000000000000000209 /* PurchasesCheckpointEventsTests.swift */,
 				57FDAA952846BDE2009A48F1 /* PurchasesTransactionHandlingTests.swift */,
 				57FDAA992846C2BD009A48F1 /* PurchasesDelegateTests.swift */,
 				57DBFA5C28AADA43002D18CA /* PurchasesLogInTests.swift */,
@@ -6281,6 +6292,7 @@
 			isa = PBXGroup;
 			children = (
 				4FFCED852AA941D200118EF4 /* FeatureEventsRequest.swift */,
+				C0DE00000000000000000207 /* FeatureEventsRequest+CheckpointEvent.swift */,
 				DB001003AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift */,
 				4FFCED862AA941D200118EF4 /* FeatureEventHTTPRequestPath.swift */,
 				9025C53C2EA66E2500845BCE /* PostFeatureEventsOperation.swift */,
@@ -7693,6 +7705,7 @@
 				678DA8034D806EABC46A0960 /* WorkflowManager.swift in Sources */,
 				B34605CB279A6E380031CA74 /* PostReceiptDataOperation.swift in Sources */,
 				4FFCED882AA941D200118EF4 /* FeatureEventsRequest.swift in Sources */,
+				C0DE00000000000000000107 /* FeatureEventsRequest+CheckpointEvent.swift in Sources */,
 				DB001004AAAA0001AAAA0001 /* FeatureEventsRequest+WorkflowEvent.swift in Sources */,
 				354895D4267AE4B4001DC5B1 /* AttributionKey.swift in Sources */,
 				F5714EA826D7A83A00635477 /* Store+Extensions.swift in Sources */,
@@ -7876,6 +7889,7 @@
 				A0D100000000000000000003 /* DimensionResolver.swift in Sources */,
 				FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */,
 				C0DE00000000000000000102 /* CheckpointWorkflowResolver.swift in Sources */,
+				C0DE00000000000000000106 /* CheckpointEvent.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -7958,6 +7972,7 @@
 				16E4A3C89791426AAD027A49 /* PlatformInfoTests.swift in Sources */,
 				57E415FF28469EAB00EA5460 /* PurchasesGetProductsTests.swift in Sources */,
 				94BA76C3AAF699D59AA685FC /* PurchasesWorkflowTests.swift in Sources */,
+				C0DE00000000000000000109 /* PurchasesCheckpointEventsTests.swift in Sources */,
 				900D270E2F96A00000D32EDF /* PurchasesRewardVerificationTests.swift in Sources */,
 				57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */,
 				351B514726D44A0D00BD2BD7 /* MockSystemInfo.swift in Sources */,
@@ -8134,6 +8149,7 @@
 				75978D092F277258008C916B /* CodableIdempotencyTests.swift in Sources */,
 				579189E928F47E8D00BF4963 /* PurchasesDiagnosticsTests.swift in Sources */,
 				C0DE00000000000000000105 /* CheckpointWorkflowResolverTests.swift in Sources */,
+				C0DE00000000000000000108 /* CheckpointEventsRequestTests.swift in Sources */,
 				351B51B626D450E800BD2BD7 /* ReceiptFetcherTests.swift in Sources */,
 				4F3D56632A1E66A10070105A /* CustomerInfoManagerPostReceiptTests.swift in Sources */,
 				5796A3C027D7D64500653165 /* ResultExtensionsTests.swift in Sources */,
