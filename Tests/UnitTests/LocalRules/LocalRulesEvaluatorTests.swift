@@ -143,10 +143,12 @@ struct LocalRulesEvaluatorTests {
             namespace: .device,
             snapshots: [[
                 "": .string("empty"),
+                " \n": .string("blank"),
                 "user.tier": .string("gold"),
                 "platform": .string("ios"),
                 "profile": .object([
                     "": .string("empty"),
+                    "\t": .string("blank"),
                     "account.tier": .string("gold"),
                     "name": .string("Rick"),
                     "preferences": .object([
@@ -160,6 +162,7 @@ struct LocalRulesEvaluatorTests {
                 "events": .objectList([
                     [
                         "": .string("empty"),
+                        " ": .string("blank"),
                         "event.name": .string("purchase"),
                         "name": .string("purchase")
                     ],

@@ -144,7 +144,7 @@ private enum DimensionValueConverter {
     }
 
     private static func isValidName(_ name: String) -> Bool {
-        return !name.isEmpty && !name.contains(Self.pathSeparator)
+        return name.notEmptyOrWhitespaces != nil && !name.contains(Self.pathSeparator)
     }
 
     private static let pathSeparator: Character = "."

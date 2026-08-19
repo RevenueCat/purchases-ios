@@ -133,7 +133,7 @@ extension RemoteConfigStrings: LogMessage {
             return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
         case let .invalidDimensionName(name, parentPath):
             return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
-                "a dimension name cannot be empty or contain '.'."
+                "a dimension name cannot be empty, whitespace-only, or contain '.'."
         case let .uiConfigDecodeFailed(error):
             return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:

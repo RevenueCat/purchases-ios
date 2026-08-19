@@ -66,9 +66,9 @@ protocol DimensionProvider: Sendable {
     /// Returns the complete current set of dimensions relative to ``namespace``.
     ///
     /// Keys are lower camel-case names such as `appVersion`. The resolver
-    /// adds the provider's namespace and recursively ignores empty keys or keys
-    /// containing the `.` path separator. Missing individual values must be
-    /// omitted. Throwing is reserved for a systemic failure to produce the
+    /// adds the provider's namespace and recursively ignores empty,
+    /// whitespace-only, or `.`-containing keys. Missing individual values must
+    /// be omitted. Throwing is reserved for a systemic failure to produce the
     /// provider's dimensions.
     ///
     /// `date` is the common reference date for the evaluation. It does not
