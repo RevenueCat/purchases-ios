@@ -44,7 +44,7 @@ enum DimensionValue: Equatable, Sendable {
     /// Records are only expressible inside a collection. Collection operators
     /// evaluate each record in its own scope, so a record must contain every
     /// value needed to evaluate it.
-    indirect case objectList([[String: DimensionValue]])
+    case objectList([[String: DimensionValue]])
 }
 
 /// Supplies one current subtree of dimensions.
