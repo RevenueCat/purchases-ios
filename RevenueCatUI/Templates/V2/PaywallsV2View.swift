@@ -274,6 +274,7 @@ struct PaywallsV2View: View {
             // Resolved inside the loaded view, where the render environment (custom variables, screen
             // condition) and the eligibility contexts are available.
             workflowDefaultPackage: self.workflowPackageContext?.selectedPackage ?? self.workflowDefaultPackage,
+            workflowPackages: self.workflowPackages,
             onDismiss: self.onDismiss,
             closeWorkflowAction: self.closeWorkflowAction
         )
@@ -577,7 +578,8 @@ struct PaywallsV2View: View {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct LoadedPaywallsV2View: View {
+/// Internal rather than private so tests can host it with a `PaywallState` they built.
+struct LoadedPaywallsV2View: View {
 
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
 
@@ -586,6 +588,8 @@ private struct LoadedPaywallsV2View: View {
     private let onDismiss: () -> Void
     private let closeWorkflowAction: (() -> Void)?
     private let workflowDefaultPackage: Package?
+    /// Only used to rebuild the variable context on a reconcile, matching what `init` seeded.
+    private let workflowPackages: [Package]?
 
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
@@ -608,6 +612,7 @@ private struct LoadedPaywallsV2View: View {
         uiConfigProvider: UIConfigProvider,
         selectedPackageContext: PackageContext,
         workflowDefaultPackage: Package?,
+        workflowPackages: [Package]? = nil,
         onDismiss: @escaping () -> Void,
         closeWorkflowAction: (() -> Void)? = nil
     ) {
@@ -616,6 +621,7 @@ private struct LoadedPaywallsV2View: View {
         self.uiConfigProvider = uiConfigProvider
         self.selectedPackageContext = selectedPackageContext
         self.workflowDefaultPackage = workflowDefaultPackage
+        self.workflowPackages = workflowPackages
         self.onDismiss = onDismiss
         self.closeWorkflowAction = closeWorkflowAction
     }
@@ -642,15 +648,11 @@ private struct LoadedPaywallsV2View: View {
     }
 
     /// Moves the selection off a package that isn't rendering.
+    ///
+    /// Scoped to packages outside the tabs; a tab's own selection is reconciled in
+    /// `LoadedTabsComponentView`.
     private func reconcileSelection() {
         let packageValidator = self.paywallState.viewModelFactory.packageValidator
-
-        // Selection is tab-local, so a tabbed paywall reconciles inside `LoadedTabsComponentView`.
-        // Resolving here would walk document order across every tab and could select a package from a
-        // tab the user isn't on.
-        guard !packageValidator.containsTabScopedPackages else {
-            return
-        }
 
         guard let resolved = packageValidator.reconciledSelection(
             current: self.selectedPackageContext.package,
@@ -659,9 +661,15 @@ private struct LoadedPaywallsV2View: View {
             return
         }
 
+        // A tab propagates its own variable context up, so rebuild the page's before using it.
         self.selectedPackageContext.update(
             package: resolved,
-            variableContext: self.selectedPackageContext.variableContext
+            variableContext: .init(
+                packages: self.workflowPackages ?? self.paywallState.packages,
+                showZeroDecimalPlacePrices: self.selectedPackageContext.variableContext
+                    .showZeroDecimalPlacePrices
+            ),
+            isReconcile: true
         )
     }
 
@@ -706,6 +714,11 @@ private struct LoadedPaywallsV2View: View {
             // Intro and promo eligibility both land after first render and can flip a package's
             // visibility. `isPaywallLoading` goes false once both have resolved.
             .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection()
+            }
+            // Leaving a tab can restore a package a rule hides, and this doesn't depend on
+            // `onAppear` ordering.
+            .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
                 self.reconcileSelection()
             }
         }

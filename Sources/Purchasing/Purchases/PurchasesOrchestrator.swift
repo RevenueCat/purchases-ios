@@ -44,6 +44,7 @@ final class PurchasesOrchestrator {
     private let _allowSharingAppStoreAccount: Atomic<Bool?> = nil
     private let cachedPurchaseContextByProductID: Atomic<[String: CachedPurchaseContext]> = .init([:])
     private let purchaseCompleteCallbacksByProductID: Atomic<[String: PurchaseCompletedBlock]> = .init([:])
+    private let inFlightPurchasesByProductID: Atomic<[String: DeferredTask<PurchaseResultData>]> = .init([:])
     private let isSyncingCachedTransactionMetadata: Atomic<Bool> = .init(false)
 
     private var appUserID: String { self.currentUserProvider.currentAppUserID }
@@ -739,7 +740,6 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    // swiftlint:disable:next function_body_length cyclomatic_complexity
     func purchase(sk2Product: SK2Product,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
@@ -750,6 +750,57 @@ final class PurchasesOrchestrator {
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil) async throws -> PurchaseResultData {
+        // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
+        // the same product can await, so the attributed purchase post reaches the backend first. The
+        // task only starts once registered, so a transaction reaching `Transaction.updates`
+        // mid-purchase always finds it.
+        let purchaseTask = DeferredTask {
+            try await self.performSK2Purchase(
+                sk2Product: sk2Product,
+                package: package,
+                promotionalOffer: promotionalOffer,
+                winBackOffer: winBackOffer,
+                introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
+                billingPlanType: billingPlanType,
+                promotionalOfferOptions: promotionalOfferOptions,
+                metadata: metadata,
+                paywallEvent: paywallEvent,
+                quantity: quantity
+            )
+        }
+
+        self.inFlightPurchasesByProductID.modify { $0[sk2Product.id] = purchaseTask }
+        defer {
+            self.inFlightPurchasesByProductID.modify { tasks in
+                // Only remove if it's still ours, so a newer concurrent purchase isn't evicted.
+                if tasks[sk2Product.id] === purchaseTask {
+                    tasks.removeValue(forKey: sk2Product.id)
+                }
+            }
+        }
+
+        purchaseTask.start()
+
+        return try await withTaskCancellationHandler {
+            try await purchaseTask.value
+        } onCancel: {
+            // The receipt post doesn't observe cancellation, so it still completes.
+            purchaseTask.cancel()
+        }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    // swiftlint:disable:next function_body_length cyclomatic_complexity
+    private func performSK2Purchase(sk2Product: SK2Product,
+                                    package: Package?,
+                                    promotionalOffer: PromotionalOffer.SignedData? = nil,
+                                    winBackOffer: Product.SubscriptionOffer? = nil,
+                                    introductoryOfferEligibilityJWS: String?,
+                                    billingPlanType: BillingPlanType?,
+                                    promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+                                    metadata: [String: String]? = nil,
+                                    paywallEvent: PaywallEvent? = nil,
+                                    quantity: Int? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
@@ -1024,6 +1075,17 @@ final class PurchasesOrchestrator {
 
     func clearCachedPurchaseData(productIdentifier: String) {
         self.cachedPurchaseContextByProductID.modify { $0.removeValue(forKey: productIdentifier) }
+    }
+
+    /// Waits for an in-flight `purchase()`-initiated receipt post for the given product to finish, if any.
+    /// Used to order a queue-initiated receipt post after the attributed purchase post for the same product.
+    private func awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: String) async {
+        guard let purchaseTask = self.inFlightPurchasesByProductID.value[productIdentifier] else {
+            return
+        }
+
+        Logger.debug(Strings.purchase.sk2_queue_receipt_post_waiting_for_purchase(productID: productIdentifier))
+        _ = await purchaseTask.result
     }
 
     func postEventsIfNeeded(delayed: Bool = false) {
@@ -1536,6 +1598,12 @@ extension PurchasesOrchestrator: StoreKit2TransactionListenerDelegate {
         // will safely return nil for non-matching transactions, making the misattribution case
         // extremely unlikely.
         let isKnownRenewal = transaction.reason == .renewal
+
+        // There's nothing to order a renewal behind, since it's never attributed.
+        if !isKnownRenewal {
+            await self.awaitInFlightPurchaseReceiptPostIfNeeded(productIdentifier: transaction.productIdentifier)
+        }
+
         let cached = isKnownRenewal ? nil : self.getAndRemoveCachedPurchaseContext(for: transaction)
         let offeringContext = cached?.offeringContext
         let paywall = cached?.paywallEvent
