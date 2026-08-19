@@ -2341,12 +2341,6 @@ workflows:
       - revenuecat-admob-tests:
           context:
             - slack-secrets
-      - run-workflow-maestro-tests:
-          context:
-            - e2e-tests
-            - slack-secrets
-      # Needs no context: the paywall under test is a local sample, so no API key is involved.
-      - run-paywall-accessibility-ui-tests
 
       # =============================================================
       # Hold gate for the Full Test Suite
@@ -2435,6 +2429,10 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      # Needs no context: the paywall under test is a local sample, so no API key is involved.
+      - run-paywall-accessibility-ui-tests:
+          requires:
+            - approve-full-tests
       - record-and-upload-paywalls-v1-snapshots:
           requires:
             - approve-full-tests
@@ -2482,6 +2480,12 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - run-workflow-maestro-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - e2e-tests
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           requires:
             - approve-full-tests
@@ -2511,7 +2515,6 @@ workflows:
             - emerge_purchases_ui_snapshot_tests
             - emerge_binary_size_analysis
             - build-tv-watch-mac-and-visionos
-            - run-workflow-maestro-tests
             # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
@@ -2527,6 +2530,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - run-paywall-accessibility-ui-tests
             - record-and-upload-paywalls-v1-snapshots
             - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
@@ -2536,6 +2540,7 @@ workflows:
             - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
             - deploy-purchase-tester
+            - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
             - docs-build
 
