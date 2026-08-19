@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000002 /* StoreDimensionProvider.swift */; };
 		D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000004 /* StoreDimensionProviderTests.swift */; };
+		D18A00000000000000000003 /* DimensionValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18A00000000000000000004 /* DimensionValueTests.swift */; };
 		C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000002 /* CustomVariableKeyValidator.swift */; };
 		C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */; };
 		A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000001 /* LocalRulesEvaluator.swift */; };
@@ -1596,6 +1597,7 @@
 /* Begin PBXFileReference section */
 		D17A00000000000000000002 /* StoreDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProvider.swift; sourceTree = "<group>"; };
 		D17A00000000000000000004 /* StoreDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProviderTests.swift; sourceTree = "<group>"; };
+		D18A00000000000000000004 /* DimensionValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionValueTests.swift; sourceTree = "<group>"; };
 		C05A00000000000000000002 /* CustomVariableKeyValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidator.swift; sourceTree = "<group>"; };
 		C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidatorTests.swift; sourceTree = "<group>"; };
 		A0D200000000000000000001 /* LocalRulesEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRulesEvaluator.swift; sourceTree = "<group>"; };
@@ -3303,6 +3305,7 @@
 				A0D200000000000000000005 /* LocalRulesEvaluatorTests.swift */,
 				A0D200000000000000000007 /* DeviceDimensionProviderTests.swift */,
 				D17A00000000000000000004 /* StoreDimensionProviderTests.swift */,
+				D18A00000000000000000004 /* DimensionValueTests.swift */,
 			);
 			path = LocalRules;
 			sourceTree = "<group>";
@@ -8328,6 +8331,7 @@
 				A0D100000000000000000005 /* LocalRulesEvaluatorTests.swift in Sources */,
 				A0D100000000000000000007 /* DeviceDimensionProviderTests.swift in Sources */,
 				D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */,
+				D18A00000000000000000003 /* DimensionValueTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

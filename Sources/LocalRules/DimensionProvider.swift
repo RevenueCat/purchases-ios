@@ -24,7 +24,7 @@ enum DimensionNamespace: String, CaseIterable, Sendable {
     case client
 }
 
-/// A scalar dimension exposed to the local rules engine.
+/// A dimension exposed to the local rules engine.
 ///
 /// This keeps providers independent from the RulesEngine representation.
 enum DimensionValue: Equatable, Sendable {
@@ -33,6 +33,18 @@ enum DimensionValue: Equatable, Sendable {
     case bool(Bool)
     case int(Int64)
     case double(Double)
+
+    /// A date that can be compared and ordered by local rules.
+    ///
+    /// Dates are exposed to the rules engine as Unix epoch milliseconds.
+    case date(Date)
+
+    /// A collection of records that can be inspected by local rules.
+    ///
+    /// Records are only expressible inside a collection. Collection operators
+    /// evaluate each record in its own scope, so a record must contain every
+    /// value needed to evaluate it.
+    case objectList([[String: DimensionValue]])
 }
 
 /// Supplies one current subtree of dimensions.
@@ -44,7 +56,7 @@ protocol DimensionProvider: Sendable {
     /// Root namespace containing the returned dimensions.
     var namespace: DimensionNamespace { get }
 
-    /// Returns the complete current set of scalar dimensions relative to ``namespace``.
+    /// Returns the complete current set of dimensions relative to ``namespace``.
     ///
     /// Keys are lower camel-case names such as `appVersion`. The resolver
     /// adds the provider's namespace. Missing individual values must be

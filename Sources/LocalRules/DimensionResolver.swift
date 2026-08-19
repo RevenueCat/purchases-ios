@@ -98,7 +98,7 @@ struct DimensionResolver: Sendable {
 
 private extension DimensionValue {
 
-    /// Converts a provider scalar into its RulesEngine equivalent.
+    /// Converts a provider value into its RulesEngine equivalent.
     ///
     /// For example, `.double(3)` becomes `.float(3)`.
     var rulesEngineValue: RulesEngine.Value {
@@ -107,6 +107,11 @@ private extension DimensionValue {
         case .bool(let value): return .bool(value)
         case .int(let value): return .int(value)
         case .double(let value): return .float(value)
+        case .date(let value): return .int(Int64(value.timeIntervalSince1970 * 1_000))
+        case .objectList(let values):
+            return .array(values.map { value in
+                .object(value.mapValues(\.rulesEngineValue))
+            })
         }
     }
 }
