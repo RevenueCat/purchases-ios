@@ -84,6 +84,24 @@ class EventsManagerTests: TestCase {
         ]
     }
 
+    func testTrackCheckpointEvent() async throws {
+        let event = CheckpointEvent(
+            identifier: "onboarding_complete",
+            date: Date(timeIntervalSince1970: 1_699_270_688.995)
+        )
+
+        await self.manager.track(featureEvent: event)
+
+        let events = await self.store.storedEvents
+        expect(events) == [
+            try XCTUnwrap(.init(event: event,
+                                userID: Self.userID,
+                                feature: .checkpoints,
+                                appSessionID: self.appSessionID,
+                                eventDiscriminator: nil))
+        ]
+    }
+
     /// We should remove this test once we support the purchase initiated event in the backend.
     func testTrackPurchaseInitiatedEventDoesNotStore() async throws {
         let event: PaywallEvent = .purchaseInitiated(.random(), .random())
@@ -120,6 +138,21 @@ class EventsManagerTests: TestCase {
         expect(map["display_mode"] as? String) == data.displayMode.identifier
         expect(map["locale"] as? String) == data.localeIdentifier
         expect(map["dark_mode"] as? Bool) == data.darkMode
+    }
+
+    func testCheckpointHitToMap() {
+        let event = CheckpointEvent(
+            identifier: "onboarding_complete",
+            date: Date(timeIntervalSince1970: 1_699_270_688.995)
+        )
+
+        let map = event.toMap()
+
+        expect(map["discriminator"] as? String) == "checkpoint"
+        expect(map["type"] as? String) == "checkpoint_hit"
+        expect(map["id"] as? String) == event.id.uuidString
+        expect(map["timestamp"] as? UInt64) == event.date.millisecondsSince1970
+        expect(map["identifier"] as? String) == "onboarding_complete"
     }
 
     func testPaywallCloseToMap() {
