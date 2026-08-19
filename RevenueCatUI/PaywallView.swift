@@ -255,6 +255,11 @@ public struct PaywallView: View {
         return nil
     }
 
+    private var canRenderWithoutCustomerInfo: Bool {
+        guard self.mode == .fullScreen else { return false }
+        return self.workflowContext != nil || self.offering?.internalPaywallComponents != nil
+    }
+
     // swiftlint:disable:next missing_docs
     public var body: some View {
         self.content
@@ -277,10 +282,11 @@ public struct PaywallView: View {
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
-                if let offering = self.offering, let customerInfo = self.customerInfo {
+                if let offering = self.offering,
+                   self.customerInfo != nil || self.canRenderWithoutCustomerInfo {
                     self.paywallView(for: offering,
                                      workflowContext: self.workflowContext,
-                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
+                                     activelySubscribedProductIdentifiers: self.customerInfo?.activeSubscriptions ?? [],
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
@@ -308,7 +314,7 @@ public struct PaywallView: View {
                                     self.workflowContext = paywallData.workflowContext
                                 }
 
-                                if self.customerInfo == nil {
+                                if self.customerInfo == nil, !self.canRenderWithoutCustomerInfo {
                                     self.customerInfo = try await Purchases.shared.customerInfo()
                                 }
                             } catch let error as NSError {
