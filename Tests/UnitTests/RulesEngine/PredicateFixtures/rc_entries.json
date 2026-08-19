@@ -3,18 +3,7 @@
     {
       "id": "entries_object_pairs_sorted_lexicographically_by_key",
       "description": "Object keys are emitted in lexicographic order regardless of declaration order; pair shape and order are verified via JS string coercion of the nested pair arrays",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": {
-              "c": 3,
-              "a": 1,
-              "b": 2
-            }
-          },
-          "a,1,b,2,c,3"
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": {"c": 3, "a": 1, "b": 2}}, "a,1,b,2,c,3"]},
       "variables": {},
       "expected": true
     },
@@ -23,42 +12,8 @@
       "description": "Each pair is a two-element array; some finds the expected key and value without comparing compound values directly",
       "predicate": {
         "and": [
-          {
-            "some": [
-              {
-                "rc.entries": {
-                  "z": 9,
-                  "a": 1
-                }
-              },
-              {
-                "===": [
-                  {
-                    "var": "0"
-                  },
-                  "a"
-                ]
-              }
-            ]
-          },
-          {
-            "some": [
-              {
-                "rc.entries": {
-                  "z": 9,
-                  "a": 1
-                }
-              },
-              {
-                "===": [
-                  {
-                    "var": "1"
-                  },
-                  1
-                ]
-              }
-            ]
-          }
+          {"some": [{"rc.entries": {"z": 9, "a": 1}}, {"===": [{"var": "0"}, "a"]}]},
+          {"some": [{"rc.entries": {"z": 9, "a": 1}}, {"===": [{"var": "1"}, 1]}]}
         ]
       },
       "variables": {},
@@ -67,174 +22,65 @@
     {
       "id": "entries_array_produces_string_index_keys",
       "description": "Array input yields [[\"0\", elem0], [\"1\", elem1], ...]; literal array operands must be wrapped ([[...]]) per json-logic-js spread semantics",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": [
-              [
-                "a",
-                "b"
-              ]
-            ]
-          },
-          "0,a,1,b"
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": [["a", "b"]]}, "0,a,1,b"]},
       "variables": {},
       "expected": true
     },
     {
       "id": "entries_multi_element_arg_list_uses_first_only",
       "description": "json-logic-js spreads the arg array into the operator; {\"rc.entries\": [\"a\", \"b\"]} uses only the first argument (\"a\", a string → []), extra args silently ignored like ! and !!",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": [
-              "a",
-              "b"
-            ]
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": ["a", "b"]}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "entries_singleton_wrapped_object_form",
       "description": "Single-arg list wrapping ({\"rc.entries\": [obj]}) is equivalent to the bare object form",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": [
-              {
-                "b": 2,
-                "a": 1
-              }
-            ]
-          },
-          "a,1,b,2"
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": [{"b": 2, "a": 1}]}, "a,1,b,2"]},
       "variables": {},
       "expected": true
     },
     {
       "id": "entries_null_returns_empty_array_with_warning",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": null
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": null}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "entries_undefined_returns_empty_array_with_warning",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": {
-              "and": []
-            }
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": {"and": []}}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "entries_bool_returns_empty_array_with_warning",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": true
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": true}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "entries_number_returns_empty_array_with_warning",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": 42
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": 42}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "entries_string_returns_empty_array_with_warning",
       "description": "Deliberate divergence from JS Object.entries(\"ab\"), which yields character pairs; we return [] so iteration operators stay safe",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": "ab"
-          },
-          ""
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": "ab"}, ""]},
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.entries: expected object or array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
     },
     {
       "id": "fromEntries_round_trips_object_through_entries",
       "description": "rc.fromEntries(rc.entries(obj)) reproduces the object; verified by re-stringifying entries because compound equality is always false",
-      "predicate": {
-        "==": [
-          {
-            "rc.entries": {
-              "rc.fromEntries": {
-                "rc.entries": {
-                  "b": 2,
-                  "a": 1
-                }
-              }
-            }
-          },
-          "a,1,b,2"
-        ]
-      },
+      "predicate": {"==": [{"rc.entries": {"rc.fromEntries": {"rc.entries": {"b": 2, "a": 1}}}}, "a,1,b,2"]},
       "variables": {},
       "expected": true
     },
@@ -243,46 +89,8 @@
       "description": "Later pairs overwrite earlier ones for the same key; verified via some on the round-tripped entries",
       "predicate": {
         "some": [
-          {
-            "rc.entries": {
-              "rc.fromEntries": [
-                [
-                  [
-                    "a",
-                    1
-                  ],
-                  [
-                    "a",
-                    2
-                  ],
-                  [
-                    "b",
-                    3
-                  ]
-                ]
-              ]
-            }
-          },
-          {
-            "and": [
-              {
-                "===": [
-                  {
-                    "var": "0"
-                  },
-                  "a"
-                ]
-              },
-              {
-                "===": [
-                  {
-                    "var": "1"
-                  },
-                  2
-                ]
-              }
-            ]
-          }
+          {"rc.entries": {"rc.fromEntries": [[["a", 1], ["a", 2], ["b", 3]]]}},
+          {"and": [{"===": [{"var": "0"}, "a"]}, {"===": [{"var": "1"}, 2]}]}
         ]
       },
       "variables": {},
@@ -295,103 +103,30 @@
         "and": [
           {
             "some": [
-              {
-                "rc.entries": {
-                  "rc.fromEntries": [
-                    [
-                      [
-                        "a",
-                        1
-                      ],
-                      "not-an-array",
-                      [
-                        "b",
-                        2
-                      ]
-                    ]
-                  ]
-                }
-              },
-              {
-                "===": [
-                  {
-                    "var": "0"
-                  },
-                  "b"
-                ]
-              }
+              {"rc.entries": {"rc.fromEntries": [[["a", 1], "not-an-array", ["b", 2]]]}},
+              {"===": [{"var": "0"}, "b"]}
             ]
           }
         ]
       },
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.fromEntries: skipping non-array entry"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.fromEntries: skipping non-array entry"]}
     },
     {
       "id": "fromEntries_non_array_argument_returns_empty_object_with_warning",
       "predicate": {
-        "===": [
-          {
-            "reduce": [
-              {
-                "rc.entries": {
-                  "rc.fromEntries": null
-                }
-              },
-              {
-                "+": [
-                  {
-                    "var": "accumulator"
-                  },
-                  1
-                ]
-              },
-              0
-            ]
-          },
-          0
-        ]
+        "===": [{"reduce": [{"rc.entries": {"rc.fromEntries": null}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]
       },
       "variables": {},
       "expected": true,
-      "expectedWarnings": {
-        "contains": [
-          "rc.fromEntries: expected array"
-        ]
-      }
+      "expectedWarnings": {"contains": ["rc.fromEntries: expected array"]}
     },
     {
       "id": "fromEntries_empty_array_returns_empty_object",
       "description": "An empty pair list is a single wrapped operand: {\"rc.fromEntries\": [[]]}",
       "predicate": {
-        "===": [
-          {
-            "reduce": [
-              {
-                "rc.entries": {
-                  "rc.fromEntries": [
-                    []
-                  ]
-                }
-              },
-              {
-                "+": [
-                  {
-                    "var": "accumulator"
-                  },
-                  1
-                ]
-              },
-              0
-            ]
-          },
-          0
-        ]
+        "===": [{"reduce": [{"rc.entries": {"rc.fromEntries": [[]]}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]
       },
       "variables": {},
       "expected": true
@@ -406,32 +141,11 @@
               {
                 "rc.entries": {
                   "rc.fromEntries": {
-                    "filter": [
-                      {
-                        "rc.entries": {
-                          "var": "subscriptions"
-                        }
-                      },
-                      {
-                        "===": [
-                          {
-                            "var": "1.status"
-                          },
-                          "active"
-                        ]
-                      }
-                    ]
+                    "filter": [{"rc.entries": {"var": "subscriptions"}}, {"===": [{"var": "1.status"}, "active"]}]
                   }
                 }
               },
-              {
-                "+": [
-                  {
-                    "var": "accumulator"
-                  },
-                  1
-                ]
-              },
+              {"+": [{"var": "accumulator"}, 1]},
               0
             ]
           },
@@ -440,18 +154,9 @@
       },
       "variables": {
         "subscriptions": {
-          "prod_a": {
-            "status": "active",
-            "price": 10
-          },
-          "prod_b": {
-            "status": "expired",
-            "price": 5
-          },
-          "prod_c": {
-            "status": "active",
-            "price": 15
-          }
+          "prod_a": {"status": "active", "price": 10},
+          "prod_b": {"status": "expired", "price": 5},
+          "prod_c": {"status": "active", "price": 15}
         }
       },
       "expected": true
