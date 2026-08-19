@@ -63,6 +63,7 @@ class OtherPaywallViewTests: BaseSnapshotTest {
 }
 
 #if !os(tvOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension OtherPaywallViewTests {
 
     static func v2Offering(title: String) throws -> Offering {
@@ -106,6 +107,7 @@ private extension OtherPaywallViewTests {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension UIView {
 
     func containsText(_ text: String) -> Bool {
