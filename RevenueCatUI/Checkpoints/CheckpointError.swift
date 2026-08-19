@@ -17,7 +17,6 @@ import Foundation
 
 enum CheckpointError: Error {
 
-    case invalidIdentifier(String)
     case missingPresenter
     case operationAlreadyInProgress
     case noPresentationContext
@@ -33,7 +32,7 @@ extension CheckpointError: CustomNSError {
 
     var errorCode: Int {
         switch self {
-        case .invalidIdentifier, .missingPresenter, .noPresentationContext, .presentationFailed:
+        case .missingPresenter, .noPresentationContext, .presentationFailed:
             return ErrorCode.configurationError.rawValue
         case .operationAlreadyInProgress:
             return ErrorCode.operationAlreadyInProgressForProductError.rawValue
@@ -46,9 +45,6 @@ extension CheckpointError: CustomNSError {
 
     private var errorDescription: String {
         switch self {
-        case .invalidIdentifier(let identifier):
-            return "Checkpoint identifier '\(identifier)' is invalid. Identifiers must start with a letter, " +
-                "contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 100 characters."
         case .missingPresenter:
             return "Cannot present checkpoint UI: no presentation handler was supplied."
         case .operationAlreadyInProgress:

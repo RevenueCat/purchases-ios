@@ -14,11 +14,13 @@
 
 enum CheckpointIdentifierValidator {
 
+    static let maxLength = 255
+
     static func isValid(_ identifier: String) -> Bool {
         let characters = identifier.utf8
 
         guard
-            (1...100).contains(characters.count),
+            (1...Self.maxLength).contains(characters.count),
             let firstCharacter = characters.first,
             Self.isASCIILetter(firstCharacter)
         else {
@@ -26,6 +28,12 @@ enum CheckpointIdentifierValidator {
         }
 
         return characters.dropFirst().allSatisfy(Self.isAllowedCharacter)
+    }
+
+    static func invalidIdentifierLogMessage(_ identifier: String) -> String {
+        return "Dropping invalid checkpoint identifier '\(identifier)'. Identifiers must start with a letter, " +
+            "contain only ASCII letters, numbers, underscores, and hyphens, and be no more than " +
+            "\(Self.maxLength) characters."
     }
 
     private static func isAllowedCharacter(_ character: UInt8) -> Bool {

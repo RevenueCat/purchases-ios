@@ -33,7 +33,7 @@ public extension Purchases {
     /// The call resolves when the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
-    ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 100 characters.
+    ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - params: Optional per-call parameters.
     ///   - completion: Called with the result, or an error if the checkpoint could not be handled.
     func checkpoint(
@@ -54,7 +54,7 @@ public extension Purchases {
     /// The call resolves when the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
-    ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 100 characters.
+    ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - params: Optional per-call parameters.
     /// - Returns: The result for this checkpoint.
     /// - Throws: An error if the checkpoint could not be handled.
@@ -77,7 +77,7 @@ public extension Purchases {
 public extension Purchases {
 
     /// Objective-C-compatible checkpoint API. The identifier must start with a letter and contain only ASCII letters,
-    /// numbers, underscores, and hyphens, and be no more than 100 characters.
+    /// numbers, underscores, and hyphens, and be no more than 255 characters.
     @_disfavoredOverload
     @objc(checkpointWithIdentifier:params:completion:)
     func checkpoint(
