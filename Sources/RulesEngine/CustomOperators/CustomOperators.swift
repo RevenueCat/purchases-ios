@@ -20,6 +20,9 @@ extension RulesEngine {
             vars: Scope
         ) throws -> Value {
             switch operatorName {
+            case "rc.rootVar":
+                return try RootVarOperator.opRootVar(args: args, vars: vars)
+
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
