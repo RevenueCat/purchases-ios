@@ -574,6 +574,38 @@ module ApiDiffHelper
     end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
   end
 
+  ATTRIBUTE_SUMMARY_WIDTH = 40
+
+  # `message:` carries a whole sentence, so the attribute and its first arguments are the news.
+  def summarize_attribute(attribute)
+    short = attribute.to_s.sub(/,\s*message:.*/, "…)")
+
+    short.length > ATTRIBUTE_SUMMARY_WIDTH ? "#{short[0, ATTRIBUTE_SUMMARY_WIDTH - 1]}…" : short
+  end
+
+  def attribute_changes(declaration)
+    declaration.to_s.lines.map(&:strip).filter_map do |line|
+      match = ATTRIBUTE_CHANGE_LINE.match(line)
+      next unless match
+
+      verb, attribute = match.captures
+      "#{verb.downcase} #{summarize_attribute(attribute)}"
+    end
+  end
+
+  # A modification is neither an addition nor necessarily a break: an attribute-only one is waved
+  # through by the gate, and without this it reached the feed as a headline and nothing else.
+  def modified_declarations(reports_by_target)
+    reports_by_target.values.compact.flat_map do |report|
+      next [] unless api_changes_reported?(report)
+
+      parse_report(report).select { |change| change.kind == :modified }.map do |change|
+        { summary: attribute_changes(change.declaration).join(", "),
+          declaration: significant_first_line(change.declaration) }
+      end
+    end.reject { |change| change[:declaration].empty? }.uniq
+  end
+
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
   # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
@@ -604,21 +636,33 @@ module ApiDiffHelper
 
   # Not all breaks are removals, so each carries its reason; additions match the `+` Android uses.
   # An enum case or protocol requirement is both an addition and a break, so it is listed once.
-  def slack_declaration_lines(breaks, new_declarations)
+  def slack_declaration_lines(breaks, new_declarations, modifications = [])
     break_lines = breaks.map do |change|
       owner = change[:owner] ? " in #{change[:owner]}" : ""
       "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: #{change[:declaration]}"
     end
     broken = breaks.map { |change| change[:declaration] }
 
-    break_lines + (new_declarations - broken).map { |declaration| "+ #{declaration}" }
+    break_lines +
+      modifications.map { |change| "~ #{[change[:summary], change[:declaration]].reject(&:empty?).join(': ')}" } +
+      (new_declarations - broken).map { |declaration| "+ #{declaration}" }
   end
 
-  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [])
+  # A modification the gate already reports as a break needs no second line.
+  def unbroken_modifications(modifications, breaks)
+    broken = breaks.map { |change| change[:declaration] }
+
+    modifications.reject { |change| broken.include?(change[:declaration]) }
+  end
+
+  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
+    changed = unbroken_modifications(modifications, breaks)
     headline = if breaks.any?
                  gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
-               else
+               elsif new_declarations.any?
                  ":sparkles: *New public API*"
+               else
+                 ":pencil2: *Public API changed*"
                end
     headline = [headline, announcement_identity(modules)].join(" · ")
 
@@ -628,9 +672,10 @@ module ApiDiffHelper
     counts = []
     counts << "#{breaks.count} potential break#{'s' if breaks.count != 1}" if breaks.any?
     counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
+    counts << "#{changed.count} modification#{'s' if changed.count != 1}" if changed.any?
     lines << counts.join(", ") if counts.any?
 
-    declaration_lines = slack_declaration_lines(breaks, new_declarations)
+    declaration_lines = slack_declaration_lines(breaks, new_declarations, changed)
     lines << slack_declaration_block(declaration_lines) if declaration_lines.any?
 
     lines.join("\n")
