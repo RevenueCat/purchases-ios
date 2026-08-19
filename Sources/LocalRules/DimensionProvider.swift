@@ -20,6 +20,7 @@ enum DimensionNamespace: String, CaseIterable, Sendable {
     case custom
     case device
     case store
+    case subscriberAttributes
     case session
     case client
 }
@@ -38,6 +39,12 @@ enum DimensionValue: Equatable, Sendable {
     ///
     /// Dates are exposed to the rules engine as Unix epoch milliseconds.
     case date(Date)
+
+    /// A named group of values that rules can read through using a dot path.
+    ///
+    /// Unlike a record inside ``objectList(_:)``, reading an object does not
+    /// change the rule's evaluation scope.
+    indirect case object([String: DimensionValue])
 
     /// A collection of records that can be inspected by local rules.
     ///
@@ -59,8 +66,9 @@ protocol DimensionProvider: Sendable {
     /// Returns the complete current set of dimensions relative to ``namespace``.
     ///
     /// Keys are lower camel-case names such as `appVersion`. The resolver
-    /// adds the provider's namespace. Missing individual values must be
-    /// omitted. Throwing is reserved for a systemic failure to produce the
+    /// adds the provider's namespace and recursively ignores empty,
+    /// whitespace-only, or `.`-containing keys. Missing individual values must
+    /// be omitted. Throwing is reserved for a systemic failure to produce the
     /// provider's dimensions.
     ///
     /// `date` is the common reference date for the evaluation. It does not

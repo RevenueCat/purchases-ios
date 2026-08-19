@@ -42,6 +42,8 @@ enum RemoteConfigStrings {
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
+    case subscriberAttributesUnavailable(Error)
+    case invalidDimensionName(String, parentPath: String)
     case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
 
@@ -127,6 +129,11 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
+        case let .subscriberAttributesUnavailable(error):
+            return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
+        case let .invalidDimensionName(name, parentPath):
+            return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
+                "a dimension name cannot be empty, whitespace-only, or contain '.'."
         case let .uiConfigDecodeFailed(error):
             return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:
