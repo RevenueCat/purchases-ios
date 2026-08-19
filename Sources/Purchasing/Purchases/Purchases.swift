@@ -658,7 +658,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
                     DeviceDimensionProvider(),
-                    StoreDimensionProvider()
+                    StoreDimensionProvider(),
+                    SubscriberAttributesDimensionProvider(
+                        deviceCache: deviceCache,
+                        currentUserProvider: identityManager
+                    )
                 ]
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
