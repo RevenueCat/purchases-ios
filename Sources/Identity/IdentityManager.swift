@@ -118,6 +118,11 @@ class IdentityManager: CurrentUserProvider {
             return
         }
 
+        if self.currentUserIsAnonymous {
+            completion(ErrorUtils.logOutAnonymousUserError())
+            return
+        }
+
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
             if self.tokenManager.enabled {
                 self.performTokenRevocation(for: self.currentAppUserID, completion: completion)
@@ -244,11 +249,6 @@ private extension IdentityManager {
 
     func performLogOut(completion: @escaping (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
-
-        if self.currentUserIsAnonymous {
-            completion(ErrorUtils.logOutAnonymousUserError())
-            return
-        }
 
         let newUserID = Self.generateRandomID()
         self.resetCacheAndSave(newUserID: newUserID)

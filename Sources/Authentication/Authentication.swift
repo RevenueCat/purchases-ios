@@ -189,7 +189,9 @@ public final class Authentication: NSObject {
                         completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard tokenManager.enabled else {
             let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
-            completion?(nil, error.asPublicError)
+            self.operationDispatcher.dispatchOnMainThread {
+                completion?(nil, error.asPublicError)
+            }
             if userInitiated == false { self.reportAuthenticationError(error.asPublicError) }
             return
         }
@@ -217,7 +219,9 @@ public final class Authentication: NSObject {
     internal func logOut(userInitiated: Bool, completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError
-            completion?(nil, error)
+            self.operationDispatcher.dispatchOnMainThread {
+                completion?(nil, error)
+            }
             if userInitiated == false { self.reportAuthenticationError(error) }
             return
         }
