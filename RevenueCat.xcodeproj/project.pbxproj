@@ -68,6 +68,8 @@
 		03F446572D303FA10046129A /* CornerRadiusesPropertyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03F446562D303FA10046129A /* CornerRadiusesPropertyTests.swift */; };
 		0882A0238A0B15DCAA63DCA5 /* WorkflowManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DA47C656406D58B636FD82D /* WorkflowManagerTests.swift */; };
 		0DCCBCD6C7CA32B59407A391 /* IterationOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB697245B7ED4A8855FF027E /* IterationOperators.swift */; };
+		7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B9C0D1E2F304152637480 /* Scope.swift */; };
+		A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
 		116EA498A344F7446083E8C5 /* EqualityOperators.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41EEB3B4E7701F8CC8B811A9 /* EqualityOperators.swift */; };
 		11CC2EA83C56933E40D8E5D8 /* WebViewEnvelope.swift in Sources */ = {isa = PBXBuildFile; fileRef = 89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */; };
@@ -2951,6 +2953,8 @@
 		AAE17E010000000000000002 /* EntitlementReward.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EntitlementReward.swift; sourceTree = "<group>"; };
 		AAE17E010000000000000004 /* RewardVerificationStatusResponseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponseTests.swift; sourceTree = "<group>"; };
 		AB697245B7ED4A8855FF027E /* IterationOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IterationOperators.swift; sourceTree = "<group>"; };
+		7A8B9C0D1E2F304152637480 /* Scope.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Scope.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CustomOperators.swift; sourceTree = "<group>"; };
 		AC01FEB700000000000000B5 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
 		AC06C294F30E7D8000000002 /* SelectedPackageId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPackageId.swift; sourceTree = "<group>"; };
 		AD5000000000000000ADAD01 /* AdsStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdsStrings.swift; sourceTree = "<group>"; };
@@ -6440,17 +6444,28 @@
 		AE36F9E53F62E943493B3F2B /* RulesEngine */ = {
 			isa = PBXGroup;
 			children = (
+				A1B2C3D4E5F60718293A4B5C /* CustomOperators */,
 				80257F068E02666644D1ED62 /* Operators */,
 				5A76308A40945327EA3F6744 /* EvaluationError.swift */,
 				A07B6040B4AB4332DB547725 /* Evaluator.swift */,
 				232493C1C6A935B7FE1C6873 /* RulesEngineLogger.swift */,
 				E32EE3749710C439BCB9AFD6 /* RulesEngine.swift */,
 				2F7428736E4FABCF7AD45798 /* RulesEngineEvaluate.swift */,
+				7A8B9C0D1E2F304152637480 /* Scope.swift */,
 				DF4D7487E0B0348ED8ECCBD3 /* Value+JSON.swift */,
 				BDE6FC116D66BBEFEE662547 /* Value.swift */,
 			);
 			name = RulesEngine;
 			path = RulesEngine;
+			sourceTree = "<group>";
+		};
+		A1B2C3D4E5F60718293A4B5C /* CustomOperators */ = {
+			isa = PBXGroup;
+			children = (
+				A1B2C3D4E5F60718293A4B5D /* CustomOperators.swift */,
+			);
+			name = CustomOperators;
+			path = CustomOperators;
 			sourceTree = "<group>";
 		};
 		B324DC482720C15300103EE9 /* Error Handling */ = {
@@ -7853,6 +7868,8 @@
 				909114C714204DFB8C4F3F72 /* TransactionReason.swift in Sources */,
 				2DF8D9550354ECBAE400C547 /* EvaluationError.swift in Sources */,
 				6A24585F01C6C2310AECC0B0 /* Evaluator.swift in Sources */,
+				7A8B9C0D1E2F304152637481 /* Scope.swift in Sources */,
+				A1B2C3D4E5F60718293A4B5E /* CustomOperators.swift in Sources */,
 				1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */,
 				A91C0A012FEA000000000001 /* RulesEngineLoggerBridge.swift in Sources */,
 				A447209D359C42F9EC541F35 /* RulesEngine.swift in Sources */,
