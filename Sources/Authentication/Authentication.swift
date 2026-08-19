@@ -187,7 +187,15 @@ public final class Authentication: NSObject {
                     self.reportAuthenticationError(error.asPublicError)
                 }
             } else {
-                self.internalDelegate?.authenticatorDidChangeIdentity { result in
+                guard let delegate = self.internalDelegate else {
+                    // there was no error, but we also don't have a CustomerInfo object to provide
+                    // that *should* be provided by the delegate, but for some unknown reason,
+                    // the delegate is missing.
+                    let error = NewErrorUtils.customerInfoError(withMessage: "Missing internal auth delegate")
+                    completion?(nil, error.asPublicError)
+                    return
+                }
+                delegate.authenticatorDidChangeIdentity { result in
                     completion?(result.value, result.error)
                 }
             }

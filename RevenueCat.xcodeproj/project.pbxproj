@@ -616,6 +616,7 @@
 		55DACE97302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
 		55DACE98302E320C005EE017 /* MockTokenManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACE96302E320C005EE017 /* MockTokenManager.swift */; };
 		55DACEAC302E837B005EE017 /* TokenManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACEAB302E837B005EE017 /* TokenManagerTests.swift */; };
+		55DACFD230366629005EE017 /* AuthenticationStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55DACFCC30366625005EE017 /* AuthenticationStrings.swift */; };
 		57045B3829C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */; };
 		57045B3A29C51751001A5417 /* GetProductEntitlementMappingOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */; };
 		57045B3C29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */; };
@@ -2346,6 +2347,7 @@
 		55DACE8F302E2BBB005EE017 /* MockSecureItemStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSecureItemStorage.swift; sourceTree = "<group>"; };
 		55DACE96302E320C005EE017 /* MockTokenManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockTokenManager.swift; sourceTree = "<group>"; };
 		55DACEAB302E837B005EE017 /* TokenManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenManagerTests.swift; sourceTree = "<group>"; };
+		55DACFCC30366625005EE017 /* AuthenticationStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationStrings.swift; sourceTree = "<group>"; };
 		55FCA85B959807F2D3DD175A /* TransactionReason.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TransactionReason.swift; sourceTree = "<group>"; };
 		57045B3729C514A8001A5417 /* ProductEntitlementMappingDecodingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductEntitlementMappingDecodingTests.swift; sourceTree = "<group>"; };
 		57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetProductEntitlementMappingOperation.swift; sourceTree = "<group>"; };
@@ -4011,6 +4013,7 @@
 				AD5000000000000000ADAD01 /* AdsStrings.swift */,
 				5704CDC82D706E5500C7F01A /* AnalyticsStrings.swift */,
 				2D11F5E0250FF886005A70E8 /* AttributionStrings.swift */,
+				55DACFCC30366625005EE017 /* AuthenticationStrings.swift */,
 				B302206D2728B798008F1A0D /* BackendErrorStrings.swift */,
 				F5714EE426DC2F1D00635477 /* CodableStrings.swift */,
 				9A65E03525918B0500DE00B0 /* ConfigureStrings.swift */,
@@ -7802,6 +7805,7 @@
 				B34605BC279A6E380031CA74 /* CallbackCache.swift in Sources */,
 				3592E8862C2ED51700D7F91D /* CustomerCenterConfigCallback.swift in Sources */,
 				75ADC0722E437F8600210ECA /* SimulatedStoreProduct.swift in Sources */,
+				55DACFD230366629005EE017 /* AuthenticationStrings.swift in Sources */,
 				75ADC0732E437F8600210ECA /* WebBillingProduct+SimulatedStoreProduct.swift in Sources */,
 				B3E26A4A26BE0A8E003ACCF3 /* Error+Extensions.swift in Sources */,
 				2C2AEB3B2CA7209F00A50F38 /* PaywallPackageComponent.swift in Sources */,

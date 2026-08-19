@@ -104,6 +104,7 @@ extension SecureItemStorage {
 
     fileprivate func string(for key: TokenManager.Key) -> String? {
         guard let data = try? self.readItem(identifier: key.identifier) else {
+            Logger.debug(Strings.authentication.unknownItem(key.identifier))
             return nil
         }
         return String(bytes: data, encoding: .utf8)
@@ -111,7 +112,11 @@ extension SecureItemStorage {
 
     fileprivate func setString(_ string: String?, for key: TokenManager.Key) {
         let data = string.map { Data($0.utf8) }
-        try? self.modifyItem(identifier: key.identifier, contents: data)
+        do {
+            try self.modifyItem(identifier: key.identifier, contents: data)
+        } catch {
+            Logger.warn(Strings.authentication.failedModification(key.identifier, error))
+        }
     }
 
 }
