@@ -70,24 +70,31 @@ struct DimensionResolver: Sendable {
                 namespaceValues = existing
             }
 
-            for (name, value) in providerValues {
+            for (name, value) in DimensionValueConverter.convert(
+                providerValues,
+                parentPath: namespace
+            ) {
                 guard namespaceValues[name] == nil else {
                     throw DimensionResolutionError.conflictingValue(
                         path: "\(namespace).\(name)"
                     )
                 }
 
-                namespaceValues[name] = value.rulesEngineValue
+                namespaceValues[name] = value
             }
 
-            values[namespace] = .object(namespaceValues)
+            if !namespaceValues.isEmpty {
+                values[namespace] = .object(namespaceValues)
+            }
         }
 
         let validCustomVariables = CustomVariableKeyValidator.validateAndFilter(customVariables)
-        if !validCustomVariables.isEmpty {
-            values[DimensionNamespace.custom.rawValue] = .object(
-                validCustomVariables.mapValues(\.rulesEngineValue)
-            )
+        let customVariables = DimensionValueConverter.convert(
+            validCustomVariables,
+            parentPath: DimensionNamespace.custom.rawValue
+        )
+        if !customVariables.isEmpty {
+            values[DimensionNamespace.custom.rawValue] = .object(customVariables)
         }
 
         try Task.checkCancellation()
@@ -96,22 +103,49 @@ struct DimensionResolver: Sendable {
     }
 }
 
-private extension DimensionValue {
+private enum DimensionValueConverter {
 
-    /// Converts a provider value into its RulesEngine equivalent.
-    ///
-    /// For example, `.double(3)` becomes `.float(3)`.
-    var rulesEngineValue: RulesEngine.Value {
-        switch self {
+    static func convert(
+        _ dimensions: [String: DimensionValue],
+        parentPath: String
+    ) -> [String: RulesEngine.Value] {
+        return dimensions.reduce(into: [:]) { result, dimension in
+            let (name, value) = dimension
+            guard Self.isValidName(name) else {
+                Logger.warn(Strings.remoteConfig.invalidDimensionName(name, parentPath: parentPath))
+                return
+            }
+
+            guard let converted = Self.convert(value, path: "\(parentPath).\(name)") else {
+                return
+            }
+
+            result[name] = converted
+        }
+    }
+
+    /// Converts a provider value into its RulesEngine equivalent while filtering invalid nested names.
+    private static func convert(_ dimension: DimensionValue, path: String) -> RulesEngine.Value? {
+        switch dimension {
         case .string(let value): return .string(value)
         case .bool(let value): return .bool(value)
         case .int(let value): return .int(value)
         case .double(let value): return .float(value)
         case .date(let value): return .int(Int64(value.timeIntervalSince1970 * 1_000))
+        case .object(let value):
+            let converted = Self.convert(value, parentPath: path)
+            return converted.isEmpty ? nil : .object(converted)
         case .objectList(let values):
-            return .array(values.map { value in
-                .object(value.mapValues(\.rulesEngineValue))
+            return .array(values.enumerated().compactMap { index, value in
+                let converted = Self.convert(value, parentPath: "\(path).\(index)")
+                return converted.isEmpty ? nil : .object(converted)
             })
         }
     }
+
+    private static func isValidName(_ name: String) -> Bool {
+        return !name.isEmpty && !name.contains(Self.pathSeparator)
+    }
+
+    private static let pathSeparator: Character = "."
 }

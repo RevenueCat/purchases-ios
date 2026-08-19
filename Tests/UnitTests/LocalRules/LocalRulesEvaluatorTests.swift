@@ -138,6 +138,59 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
+    func recursivelyOmitsInvalidProviderDimensionNames() async throws {
+        let provider = TestDimensionProvider(
+            namespace: .device,
+            snapshots: [[
+                "": .string("empty"),
+                "user.tier": .string("gold"),
+                "platform": .string("ios"),
+                "profile": .object([
+                    "": .string("empty"),
+                    "account.tier": .string("gold"),
+                    "name": .string("Rick"),
+                    "preferences": .object([
+                        "invalid.key": .bool(false),
+                        "notificationsEnabled": .bool(true)
+                    ])
+                ]),
+                "invalidObject": .object([
+                    "invalid.key": .string("value")
+                ]),
+                "events": .objectList([
+                    [
+                        "": .string("empty"),
+                        "event.name": .string("purchase"),
+                        "name": .string("purchase")
+                    ],
+                    [
+                        "invalid.key": .string("value")
+                    ]
+                ])
+            ]]
+        )
+
+        let snapshot = try await DimensionResolver(dimensionProviders: [provider]).snapshot()
+
+        guard case .object(let deviceValues) = snapshot.values["device"] else {
+            Issue.record("Expected device dimensions")
+            return
+        }
+        #expect(deviceValues == [
+            "platform": .string("ios"),
+            "profile": .object([
+                "name": .string("Rick"),
+                "preferences": .object([
+                    "notificationsEnabled": .bool(true)
+                ])
+            ]),
+            "events": .array([
+                .object(["name": .string("purchase")])
+            ])
+        ])
+    }
+
+    @Test
     func customVariablesAreAvailableInCustomNamespace() async throws {
         let evaluator = Self.evaluator(dimensionProviders: [])
 

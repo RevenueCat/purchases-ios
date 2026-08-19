@@ -29,6 +29,10 @@ struct DimensionValueTests {
         let date = Date(timeIntervalSince1970: 1_700_000_000)
         let snapshot = try await Self.snapshot([
             "date": .date(date),
+            "record": .object([
+                "id": .string("one"),
+                "createdAt": .date(date)
+            ]),
             "records": .objectList([
                 [
                     "id": .string("one"),
@@ -40,6 +44,10 @@ struct DimensionValueTests {
         #expect(snapshot.values == [
             "device": .object([
                 "date": .int(1_700_000_000_000),
+                "record": .object([
+                    "id": .string("one"),
+                    "createdAt": .int(1_700_000_000_000)
+                ]),
                 "records": .array([
                     .object([
                         "id": .string("one"),
@@ -48,6 +56,27 @@ struct DimensionValueTests {
                 ])
             ])
         ])
+    }
+
+    @Test
+    func objectDimensionIsReadThroughByName() async throws {
+        let snapshot = try await Self.snapshot([
+            "goal": .object([
+                "value": .string("lose_weight"),
+                "updatedAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
+            ])
+        ])
+
+        let predicate = try RulesEngine.Value.fromJSONString(
+            #"""
+            {"and":[
+                {"==":[{"var":"device.goal.value"},"lose_weight"]},
+                {">":[{"var":"device.goal.updatedAt"},1699999999999]}
+            ]}
+            """#
+        )
+
+        #expect(try RulesEngine.Evaluator.evaluate(predicate: predicate, variables: snapshot.values))
     }
 
     @Test
