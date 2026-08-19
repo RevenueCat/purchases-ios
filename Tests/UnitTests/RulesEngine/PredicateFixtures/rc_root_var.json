@@ -1,0 +1,227 @@
+{
+  "fixtures": [
+    {
+      "id": "rc_root_var_resolves_top_level_key",
+      "predicate": { "===": [{ "rc.rootVar": "name" }, "ada"] },
+      "variables": { "name": "ada" },
+      "expected": true,
+      "expectedWarnings": { "contains": [] }
+    },
+    {
+      "id": "rc_root_var_expired_subscription_motivating_case",
+      "description": "Inside some, var cannot reach root now (null coerces to 0); rc.rootVar reads now=100 so expires<now detects expired items",
+      "predicate": {
+        "some": [
+          { "var": "subscriptions" },
+          { "<": [{ "var": "expires" }, { "rc.rootVar": "now" }] }
+        ]
+      },
+      "variables": {
+        "now": 100,
+        "subscriptions": [
+          { "expires": 50 },
+          { "expires": 150 }
+        ]
+      },
+      "expected": true,
+      "expectedWarnings": { "contains": [] }
+    },
+    {
+      "id": "rc_root_var_var_inside_some_would_miss_expired",
+      "description": "Same predicate with var instead of rc.rootVar: now resolves to null (0), so no subscription appears expired",
+      "predicate": {
+        "some": [
+          { "var": "subscriptions" },
+          { "<": [{ "var": "expires" }, { "var": "now" }] }
+        ]
+      },
+      "variables": {
+        "now": 100,
+        "subscriptions": [
+          { "expires": 50 },
+          { "expires": 150 }
+        ]
+      },
+      "expected": false,
+      "expectedWarnings": { "contains": ["missing variable"] }
+    },
+    {
+      "id": "rc_root_var_survives_nested_some",
+      "predicate": {
+        "some": [
+          { "var": "groups" },
+          {
+            "some": [
+              { "var": "items" },
+              { "===": [{ "rc.rootVar": "threshold" }, { "var": "value" }] }
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "threshold": 7,
+        "groups": [
+          { "items": [{ "value": 3 }, { "value": 7 }] },
+          { "items": [{ "value": 1 }] }
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_survives_map",
+      "description": "map result compared by JS string coercion since strict == is false for array-vs-array",
+      "predicate": {
+        "==": [
+          {
+            "map": [
+              { "var": "items" },
+              { "+": [{ "var": "x" }, { "rc.rootVar": "offset" }] }
+            ]
+          },
+          "11,12,13"
+        ]
+      },
+      "variables": {
+        "offset": 10,
+        "items": [{ "x": 1 }, { "x": 2 }, { "x": 3 }]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_survives_filter",
+      "description": "filter keeps items whose score exceeds root min_score, then reduce counts survivors to a scalar",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "filter": [
+                  { "var": "items" },
+                  { ">": [{ "var": "score" }, { "rc.rootVar": "min_score" }] }
+                ]
+              },
+              { "+": [{ "var": "accumulator" }, 1] },
+              0
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {
+        "min_score": 5,
+        "items": [{ "score": 3 }, { "score": 8 }, { "score": 12 }]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_survives_reduce",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              { "var": "items" },
+              { "+": [{ "var": "accumulator" }, { "rc.rootVar": "base" }] },
+              0
+            ]
+          },
+          30
+        ]
+      },
+      "variables": {
+        "base": 10,
+        "items": [{ "ignored": 1 }, { "ignored": 2 }, { "ignored": 3 }]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_empty_path_returns_whole_root",
+      "description": "Inside some over a falsy item, rc.rootVar empty path returns the truthy root object",
+      "predicate": {
+        "some": [
+          { "var": "items" },
+          { "!!": { "rc.rootVar": "" } }
+        ]
+      },
+      "variables": {
+        "a": 1,
+        "items": [0]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_var_empty_path_inside_some_stays_falsy",
+      "description": "Same shape with var: empty path returns the falsy current item, not the root",
+      "predicate": {
+        "some": [
+          { "var": "items" },
+          { "!!": { "var": "" } }
+        ]
+      },
+      "variables": {
+        "a": 1,
+        "items": [0]
+      },
+      "expected": false
+    },
+    {
+      "id": "rc_root_var_missing_with_default",
+      "predicate": { "===": [{ "rc.rootVar": ["missing", "fallback"] }, "fallback"] },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "contains": [] }
+    },
+    {
+      "id": "rc_root_var_missing_without_default_warns",
+      "predicate": { "===": [{ "rc.rootVar": "missing_key" }, null] },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "contains": ["missing variable: missing_key"] }
+    },
+    {
+      "id": "rc_root_var_dot_path_with_numeric_array_index",
+      "predicate": { "===": [{ "rc.rootVar": "items.1" }, "second"] },
+      "variables": { "items": ["first", "second", "third"] },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_path_computed_from_current_scope",
+      "description": "Path arg evaluates against current scope (row key_name → nested.value); root key_name points elsewhere, so lookup only succeeds if the path came from the row",
+      "predicate": {
+        "some": [
+          { "var": "rows" },
+          {
+            "===": [
+              { "rc.rootVar": { "var": "key_name" } },
+              "found"
+            ]
+          }
+        ]
+      },
+      "variables": {
+        "key_name": "wrong.path",
+        "wrong": { "path": "not_found" },
+        "nested": { "value": "found" },
+        "rows": [{ "key_name": "nested.value" }]
+      },
+      "expected": true
+    },
+    {
+      "id": "rc_root_var_extra_args_warn_with_operator_prefix",
+      "predicate": {
+        "===": [
+          { "rc.rootVar": ["missing_key", "fallback", "ignored"] },
+          "fallback"
+        ]
+      },
+      "variables": { "a": 1 },
+      "expected": true,
+      "expectedWarnings": { "contains": ["rc.rootVar: ignoring 1 extra"] }
+    },
+    {
+      "id": "rc_unknown_operator_throws",
+      "predicate": { "rc.unknownOp": true },
+      "variables": {},
+      "expected": { "error": "unsupportedOperator", "operator": "rc.unknownOp" }
+    }
+  ]
+}
