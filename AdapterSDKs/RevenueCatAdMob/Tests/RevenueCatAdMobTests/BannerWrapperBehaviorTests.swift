@@ -1,0 +1,49 @@
+import XCTest
+
+#if os(iOS) && canImport(GoogleMobileAds)
+import GoogleMobileAds
+@_spi(Experimental) @testable import RevenueCatAdMob
+
+@available(iOS 15.0, *)
+final class BannerWrapperBehaviorTests: AdapterTestCase {
+
+    func testLoadAndTrackPrefersExplicitDelegateOverExistingDelegate() {
+        let bannerView = BannerView(adSize: AdSizeBanner)
+        let existingDelegate = BannerDelegateMarker()
+        let explicitDelegate = BannerDelegateMarker()
+        bannerView.delegate = existingDelegate
+
+        bannerView.loadAndTrack(
+            request: Request(),
+            placement: "home_banner",
+            delegate: explicitDelegate
+        )
+
+        let trackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
+        XCTAssertNotNil(trackingDelegate)
+        XCTAssertTrue(trackingDelegate?.delegate === explicitDelegate)
+    }
+
+    func testLoadAndTrackTwiceDoesNotNestTrackingDelegates() {
+        let bannerView = BannerView(adSize: AdSizeBanner)
+        let userDelegate = BannerDelegateMarker()
+        bannerView.delegate = userDelegate
+
+        bannerView.loadAndTrack(request: Request(), placement: "home_banner")
+        let firstTrackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
+        XCTAssertNotNil(firstTrackingDelegate)
+
+        bannerView.loadAndTrack(request: Request(), placement: "home_banner")
+        let secondTrackingDelegate = bannerView.delegate as? Tracking.BannerViewDelegate
+
+        XCTAssertNotNil(secondTrackingDelegate)
+        XCTAssertTrue(secondTrackingDelegate?.delegate === userDelegate)
+        XCTAssertFalse(secondTrackingDelegate?.delegate === firstTrackingDelegate)
+    }
+
+}
+
+@available(iOS 15.0, *)
+private final class BannerDelegateMarker: NSObject, BannerViewDelegate {}
+
+#endif

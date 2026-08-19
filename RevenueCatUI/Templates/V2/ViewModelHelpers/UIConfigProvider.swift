@@ -23,15 +23,71 @@ final class UIConfigProvider {
 
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
+    /// Dashboard flag: Dynamic Type only when `automatically_scale_font_size` is true on paywall components.
+    private let automaticallyScaleFontSize: Bool
     private var loggedMessages: Set<LogMessage> = []
 
-    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
+    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool = true) {
         self.uiConfig = uiConfig
         self.failedToLoadFont = failedToLoadFont
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
+    }
+
+    /// Dynamic Type is enabled unless the dashboard explicitly sets `automatically_scale_font_size` to `false`.
+    func useDynamicType() -> Bool {
+        return self.automaticallyScaleFontSize
     }
 
     var variableConfig: UIConfig.VariableConfig {
         return self.uiConfig.variableConfig
+    }
+
+    /// Returns the default values for custom variables defined in the dashboard.
+    /// Keys are variable names (without the `custom.` prefix), values are typed `CustomVariableValue`.
+    var defaultCustomVariables: [String: CustomVariableValue] {
+        return self.uiConfig.customVariables.compactMapValues { definition in
+            Self.parseCustomVariableValue(type: definition.type, defaultValue: definition.defaultValue)
+        }
+    }
+
+    /// Parses a custom variable definition into a typed `CustomVariableValue`.
+    /// The backend sends types: "string", "number", "boolean" with validated default values.
+    private static func parseCustomVariableValue(type: String, defaultValue: String) -> CustomVariableValue? {
+        switch type {
+        case "string":
+            return .string(defaultValue)
+        case "number":
+            guard let doubleValue = Double(defaultValue) else {
+                Logger.warning(Strings.paywall_custom_variable_invalid_number(value: defaultValue))
+                return .string(defaultValue)
+            }
+            return .number(doubleValue)
+        case "boolean":
+            // Backend validates that defaultValue is exactly "true" or "false"
+            return .bool(defaultValue == "true")
+        default:
+            Logger.warning(Strings.paywall_custom_variable_unknown_type(type: type))
+            return .string(defaultValue)
+        }
+    }
+
+    /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    /// `stateValues` / `stateDefaults` carry the presentation session's state-store snapshot for
+    /// `state` condition evaluation; they default to empty for call sites without a store (wired
+    /// per component in later state-driven-paywalls phases).
+    func conditionContext(
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+    ) -> ConditionContext {
+        ConditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            defaultCustomVariables: self.defaultCustomVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
+        )
     }
 
     func getColor(for name: String) -> PaywallComponent.ColorScheme? {
@@ -80,7 +136,7 @@ final class UIConfigProvider {
                 let textStyle = GenericFont.textStyle(for: fontSize)
                 return Font.custom(fontName, size: fontSize, relativeTo: textStyle)
             } else {
-                return Font.custom(fontName, size: fontSize)
+                return Font.custom(fontName, fixedSize: fontSize)
             }
         } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))

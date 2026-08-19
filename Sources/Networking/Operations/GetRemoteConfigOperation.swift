@@ -1,0 +1,146 @@
+//
+//  GetRemoteConfigOperation.swift
+//  RevenueCat
+//
+//  Created by Rick van der Linden on 27/05/2026.
+//  Copyright © 2026 RevenueCat, Inc. All rights reserved.
+
+import Foundation
+
+final class GetRemoteConfigOperation: CacheableNetworkOperation {
+
+    private let callbackCache: CallbackCache<RemoteConfigCallback>
+    private let request: RemoteConfigRequest
+
+    static func createFactory(
+        configuration: NetworkConfiguration,
+        callbackCache: CallbackCache<RemoteConfigCallback>,
+        request: RemoteConfigRequest
+    ) -> CacheableNetworkOperationFactory<GetRemoteConfigOperation> {
+        return .init({ cacheKey in
+                .init(
+                    configuration: configuration,
+                    callbackCache: callbackCache,
+                    request: request,
+                    cacheKey: cacheKey
+                )
+        },
+                     individualizedCacheKeyPart: request.cacheKey)
+    }
+
+    private init(
+        configuration: NetworkConfiguration,
+        callbackCache: CallbackCache<RemoteConfigCallback>,
+        request: RemoteConfigRequest,
+        cacheKey: String
+    ) {
+        self.callbackCache = callbackCache
+        self.request = request
+        super.init(configuration: configuration, cacheKey: cacheKey)
+    }
+
+    override func begin(completion: @escaping () -> Void) {
+        self.getRemoteConfig(completion: completion)
+    }
+
+}
+
+struct RemoteConfigRequest: Codable, Equatable, HTTPRequestBody {
+
+    let fetchContext: RemoteConfigFetchContext
+    let appUserID: String
+    let domain: String
+    let manifest: String?
+    let prefetchedBlobs: [String]
+    let lastRefreshTime: Date?
+
+    private enum CodingKeys: String, CodingKey {
+        case fetchContext
+        case appUserID = "appUserId"
+        case manifest
+        case prefetchedBlobs
+    }
+
+    init(
+        fetchContext: RemoteConfigFetchContext,
+        appUserID: String,
+        domain: String = RemoteConfiguration.defaultDomain,
+        manifest: String? = nil,
+        prefetchedBlobs: [String] = [],
+        lastRefreshTime: Date? = nil
+    ) {
+        self.fetchContext = fetchContext
+        self.appUserID = appUserID
+        self.domain = domain
+        self.manifest = manifest
+        self.prefetchedBlobs = prefetchedBlobs
+        self.lastRefreshTime = lastRefreshTime
+    }
+
+    var cacheKey: String {
+        [
+            "app_user_id=\(self.appUserID)",
+            "domain=\(self.domain)",
+            "manifest=\(self.manifest ?? "")",
+            "prefetched_blobs=\(self.prefetchedBlobs.sorted().joined(separator: ","))",
+            "last_refresh_time=\(self.lastRefreshTime?.millisecondsSince1970.description ?? "")"
+        ].joined(separator: "|")
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        guard let lastRefreshTime else { return [:] }
+
+        return [
+            HTTPClient.RequestHeader.lastRefreshTime.rawValue: lastRefreshTime.millisecondsSince1970.description
+        ]
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.fetchContext, forKey: .fetchContext)
+        try container.encode(self.appUserID, forKey: .appUserID)
+        try container.encodeIfPresent(self.manifest, forKey: .manifest)
+        try container.encode(self.prefetchedBlobs, forKey: .prefetchedBlobs)
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.fetchContext = try container.decode(RemoteConfigFetchContext.self, forKey: .fetchContext)
+        self.appUserID = try container.decode(String.self, forKey: .appUserID)
+        self.domain = RemoteConfiguration.defaultDomain
+        self.manifest = try container.decodeIfPresent(String.self, forKey: .manifest)
+        self.prefetchedBlobs = try container.decodeIfPresent([String].self, forKey: .prefetchedBlobs) ?? []
+        self.lastRefreshTime = nil
+    }
+
+}
+
+// Restating inherited @unchecked Sendable from Foundation's Operation
+extension GetRemoteConfigOperation: @unchecked Sendable {}
+
+private extension GetRemoteConfigOperation {
+
+    func getRemoteConfig(completion: @escaping () -> Void) {
+        let request = HTTPRequest(
+            method: .post(self.request),
+            path: HTTPRequest.Path.remoteConfig(domain: self.request.domain),
+            additionalHeaders: self.request.additionalHeaders
+        )
+
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<RemoteConfigContainer?>.Result) in
+            defer {
+                completion()
+            }
+
+            self.callbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callback in
+                callback.completion(
+                    response
+                        .map(RemoteConfigFetchResult.init(response:))
+                        .mapError(BackendError.networkError)
+                )
+            }
+        }
+    }
+
+}

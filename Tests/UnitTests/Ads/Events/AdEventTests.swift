@@ -1,0 +1,536 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  AdEventTests.swift
+//
+//  Created by RevenueCat on 1/23/26.
+
+import Nimble
+import XCTest
+
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+class AdEventTests: TestCase {
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
+    }
+
+    // MARK: - AdFailedToLoad Equality
+
+    func testAdFailedToLoadEqualityWithDifferentAdFormat() {
+        let event1 = AdFailedToLoad(
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        let event2 = AdFailedToLoad(
+            mediatorName: .appLovin,
+            adFormat: .interstitial,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdFailedToLoadEqualityWithSameProperties() {
+        let event1 = AdFailedToLoad(
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        let event2 = AdFailedToLoad(
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            mediatorErrorCode: 3
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdLoaded Equality
+
+    func testAdLoadedEqualityWithDifferentAdFormat() {
+        let event1 = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdLoadedEqualityWithSameProperties() {
+        let event1 = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .interstitial,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdLoaded(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .interstitial,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdDisplayed Equality
+
+    func testAdDisplayedEqualityWithDifferentAdFormat() {
+        let event1 = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .native,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdDisplayedEqualityWithSameProperties() {
+        let event1 = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdDisplayed(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdOpened Equality
+
+    func testAdOpenedEqualityWithDifferentAdFormat() {
+        let event1 = AdOpened(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdOpened(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .appOpen,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdOpenedEqualityWithSameProperties() {
+        let event1 = AdOpened(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .native,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdOpened(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .native,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdRevenue Equality
+
+    func testAdRevenueEqualityWithDifferentAdFormat() {
+        let event1 = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .banner,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        )
+
+        let event2 = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .other,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdRevenueEqualityWithSameProperties() {
+        let event1 = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .other,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        )
+
+        let event2 = AdRevenue(
+            networkName: "AdMob",
+            mediatorName: .appLovin,
+            adFormat: .other,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            revenueMicros: 1500000,
+            currency: "USD",
+            precision: .exact
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdRewardEarnedUnverified Equality
+
+    func testAdRewardEarnedUnverifiedEqualityWithDifferentRewardVerificationEnabled() {
+        let event1 = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: true
+        )
+
+        let event2 = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: false
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdRewardEarnedUnverifiedEqualityWithSameProperties() {
+        let event1 = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: true
+        )
+
+        let event2 = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: true
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdRewardVerified Equality
+
+    func testAdRewardVerifiedEqualityWithSameProperties() {
+        let event1 = AdRewardVerified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let event2 = AdRewardVerified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - AdRewardFailureReason Wire Values
+
+    func testAdRewardFailureReasonWireValuesMatchTheBackendContract() {
+        expect(AdRewardFailureReason.timeout.rawValue) == "timeout"
+        expect(AdRewardFailureReason.networkError.rawValue) == "network_error"
+        expect(AdRewardFailureReason.backendError(reason: nil).rawValue) == "backend_error"
+        expect(AdRewardFailureReason.backendError(reason: "no_reward_rule").rawValue)
+            == "no_reward_rule"
+        expect(AdRewardFailureReason.cancelled.rawValue) == "cancelled"
+        expect(AdRewardFailureReason.unknown.rawValue) == "unknown"
+    }
+
+    func testAdRewardFailureReasonRoundTripsBackendCodes() throws {
+        let reason = AdRewardFailureReason.backendError(reason: "no_reward_rule")
+
+        let encoded = try JSONEncoder.default.encode(reason)
+        expect(String(data: encoded, encoding: .utf8)) == "\"no_reward_rule\""
+        expect(try JSONDecoder.default.decode(AdRewardFailureReason.self, from: encoded)) == reason
+    }
+
+    func testAdRewardFailureReasonDecodesKnownValues() throws {
+        let expected: [String: AdRewardFailureReason] = [
+            "timeout": .timeout,
+            "network_error": .networkError,
+            "backend_error": .backendError(reason: nil),
+            "cancelled": .cancelled,
+            "unknown": .unknown
+        ]
+        for (rawValue, reason) in expected {
+            let data = try XCTUnwrap("\"\(rawValue)\"".data(using: .utf8))
+            expect(try JSONDecoder.default.decode(AdRewardFailureReason.self, from: data)) == reason
+        }
+    }
+
+    // MARK: - AdRewardGranted Equality
+
+    func testAdRewardGrantedEqualityWithDifferentReward() {
+        let event1 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let event2 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 200)
+        )
+
+        expect(event1) != event2
+    }
+
+    func testAdRewardGrantedEqualityWithSameProperties() {
+        let event1 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let event2 = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        expect(event1) == event2
+    }
+
+    // MARK: - Codable round-trip
+
+    func testAdRewardEarnedUnverifiedCodableRoundTrip() throws {
+        let original = AdRewardEarnedUnverified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            rewardVerificationEnabled: true
+        )
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(AdRewardEarnedUnverified.self, from: data)
+
+        expect(decoded) == original
+    }
+
+    func testAdRewardVerifiedCodableRoundTrip() throws {
+        let original = AdRewardVerified(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123"
+        )
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(AdRewardVerified.self, from: data)
+
+        expect(decoded) == original
+    }
+
+    func testAdRewardFailedToVerifyCodableRoundTrip() throws {
+        let original = AdRewardFailedToVerify(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            failureReason: .backendError(reason: nil)
+        )
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(AdRewardFailedToVerify.self, from: data)
+
+        expect(decoded) == original
+    }
+
+    func testAdRewardGrantedCodableRoundTrip() throws {
+        let original = AdRewardGranted(
+            networkName: "AdMob",
+            mediatorName: .adMob,
+            adFormat: .rewarded,
+            placement: "home_screen",
+            adUnitId: "ca-app-pub-123",
+            impressionId: "impression-123",
+            reward: .virtualCurrency(code: "GOLD", amount: 100)
+        )
+
+        let data = try JSONEncoder.default.encode(original)
+        let decoded = try JSONDecoder.default.decode(AdRewardGranted.self, from: data)
+
+        expect(decoded) == original
+    }
+
+}
+
+// MARK: - AdRewardGranted Decoder Fallbacks
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension AdEventTests {
+
+    private func decodeAdRewardGranted(rewardFields: String) throws -> AdRewardGranted {
+        let json = """
+        {
+            "network_name": "AdMob",
+            "mediator_name": { "raw_value": "AdMob" },
+            "ad_format": { "raw_value": "rewarded" },
+            "placement": "home_screen",
+            "ad_unit_id": "ca-app-pub-123",
+            "impression_id": "impression-123",
+            \(rewardFields)
+        }
+        """
+        return try JSONDecoder.default.decode(AdRewardGranted.self, from: Data(json.utf8))
+    }
+
+    func testAdRewardGrantedDecodingUnknownRewardKindFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(rewardFields: "\"reward_type\": \"future_reward_kind\"")
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardGrantedDecodingVirtualCurrencyWithMissingAmountFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(
+            rewardFields: "\"reward_type\": \"virtual_currency\", \"reward_virtual_currency_code\": \"GOLD\""
+        )
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+    func testAdRewardGrantedDecodingVirtualCurrencyWithNonPositiveAmountFallsBackToUnsupported() throws {
+        let decoded = try decodeAdRewardGranted(
+            rewardFields: """
+            "reward_type": "virtual_currency", "reward_virtual_currency_code": "GOLD",
+            "reward_virtual_currency_amount": 0
+            """
+        )
+        expect(decoded.reward) == .unsupportedReward
+    }
+
+}

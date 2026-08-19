@@ -13,9 +13,9 @@ import Foundation
 // swiftlint:disable type_name
 class MockETagManager: ETagManager {
 
-    init() {
+    convenience override init() {
         let mockCache = SynchronizedLargeItemCache.MockUnderlyingSynchronizedFileCache()
-        super.init(largeItemCache: .init(cache: mockCache, basePath: "MockETagManager-\(UUID().uuidString)"))
+        self.init(largeItemCache: .init(cache: mockCache, basePath: "MockETagManager-\(UUID().uuidString)"))
     }
 
     struct ETagHeaderRequest {
@@ -33,7 +33,7 @@ class MockETagManager: ETagManager {
     func stubResponseEtag(_ tag: String, validationTime: Date = Date()) {
         self.stubbedETagHeaderResult = [
             ETagManager.eTagRequestHeader.rawValue: tag,
-            ETagManager.eTagValidationTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
+            ETagManager.lastRefreshTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
         ]
     }
 

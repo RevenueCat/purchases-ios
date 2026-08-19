@@ -13,9 +13,13 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     private let defaultTimeout: TimeInterval
     private(set) var recordedResults: [HTTPRequestTimeoutManager.RequestResult] = []
+    private(set) var recordedHosts: [String?] = []
     private(set) var timeoutCallCount = 0
-    private(set) var lastTimeoutPath: HTTPRequestPath?
-    private(set) var lastTimeoutIsFallback: Bool?
+    private(set) var lastTimeoutHost: String?
+    private(set) var lastTimeoutIsFallbackHostRequest: Bool?
+    private(set) var lastTimeoutEndpointSupportsFallbackURLs: Bool?
+    private(set) var lastTimeoutIsProxied: Bool?
+    private(set) var lastTimeoutReTieredTimeoutsEnabled: Bool?
 
     init(defaultTimeout: TimeInterval) {
         self.defaultTimeout = defaultTimeout
@@ -24,22 +28,34 @@ class MockHTTPRequestTimeoutManager: HTTPRequestTimeoutManagerType {
 
     var timeoutToReturn: TimeInterval
 
-    func timeout(for path: HTTPRequestPath, isFallback: Bool) -> TimeInterval {
+    func timeout(host: String?,
+                 isFallbackHostRequest: Bool,
+                 endpointSupportsFallbackURLs: Bool,
+                 isProxied: Bool,
+                 reTieredTimeoutsEnabled: Bool) -> TimeInterval {
         timeoutCallCount += 1
-        lastTimeoutPath = path
-        lastTimeoutIsFallback = isFallback
+        lastTimeoutHost = host
+        lastTimeoutIsFallbackHostRequest = isFallbackHostRequest
+        lastTimeoutEndpointSupportsFallbackURLs = endpointSupportsFallbackURLs
+        lastTimeoutIsProxied = isProxied
+        lastTimeoutReTieredTimeoutsEnabled = reTieredTimeoutsEnabled
         return timeoutToReturn
     }
 
-    func recordRequestResult(_ result: HTTPRequestTimeoutManager.RequestResult) {
+    func recordRequestResult(host: String?, _ result: HTTPRequestTimeoutManager.RequestResult) {
+        recordedHosts.append(host)
         recordedResults.append(result)
     }
 
     func reset() {
         recordedResults.removeAll()
+        recordedHosts.removeAll()
         timeoutCallCount = 0
-        lastTimeoutPath = nil
-        lastTimeoutIsFallback = nil
+        lastTimeoutHost = nil
+        lastTimeoutIsFallbackHostRequest = nil
+        lastTimeoutEndpointSupportsFallbackURLs = nil
+        lastTimeoutIsProxied = nil
+        lastTimeoutReTieredTimeoutsEnabled = nil
         timeoutToReturn = defaultTimeout
     }
 }

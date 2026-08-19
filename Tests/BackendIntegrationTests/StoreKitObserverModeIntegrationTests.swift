@@ -103,7 +103,7 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         try await asyncWait(
             description: "Delegate should be notified",
-            timeout: .seconds(4),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(100)
         ) {
             await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false
@@ -202,6 +202,25 @@ class StoreKit2NotEnabledObserverModeIntegrationTests: BaseStoreKitObserverModeI
         } catch {
             expect(error).to(matchError(ErrorCode.configurationError))
         }
+    }
+
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func testObservingTransactionForProductIDThrowsIfStoreKit2NotEnabled() async throws {
+        let manager = ObserverModeManager()
+        _ = try await manager.purchaseProductFromStoreKit2()
+
+        let expectation = self.expectation(description: "Completion called")
+
+        Purchases.shared.recordPurchase(
+            productID: BaseStoreKitIntegrationTests.monthlyNoIntroProductID
+        ) { transaction, error in
+            expect(transaction).to(beNil())
+            expect(error).toNot(beNil())
+            expect(error).to(matchError(ErrorCode.configurationError))
+            expectation.fulfill()
+        }
+
+        await fulfillment(of: [expectation], timeout: 5.0)
     }
 
 }

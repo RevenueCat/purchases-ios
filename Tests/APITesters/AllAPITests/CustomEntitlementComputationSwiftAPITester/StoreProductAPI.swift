@@ -38,6 +38,9 @@ func checkStoreProductAPI() {
         let sk2Product: SK2Product? = product.sk2Product
         print(sk2Product!)
     }
+    if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+        let installmentsInfo: InstallmentsInfo? = product.installmentsInfo
+    }
 
     print(
         product!,

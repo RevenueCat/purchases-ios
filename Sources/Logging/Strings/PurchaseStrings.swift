@@ -16,6 +16,7 @@ import Foundation
 import StoreKit
 
 // swiftlint:disable identifier_name
+// swiftlint:disable file_length
 
 enum PurchaseStrings {
 
@@ -76,6 +77,7 @@ enum PurchaseStrings {
     case begin_refund_customer_info_error(entitlementID: String?)
     case missing_cached_customer_info
     case sk2_transactions_update_received_transaction(productID: String)
+    case sk2_queue_receipt_post_waiting_for_purchase(productID: String)
     case transaction_poster_handling_transaction(transactionID: String,
                                                  productID: String,
                                                  transactionDate: Date,
@@ -94,6 +96,14 @@ enum PurchaseStrings {
     case sync_purchases_simulated_store
     case restore_purchases_simulated_store
     case simulating_purchase_success
+    case simulated_store_unexpected_receipt_fetch
+
+    // Cached metadata
+    case posting_remaining_cached_metadata(count: Int)
+    case posting_cached_metadata(transactionId: String)
+    case cached_transaction_metadata_sync_already_in_progress
+    case no_cached_transaction_metadata_to_post
+    case finished_posting_cached_metadata
 }
 
 extension PurchaseStrings: LogMessage {
@@ -313,6 +323,10 @@ extension PurchaseStrings: LogMessage {
         case let .sk2_transactions_update_received_transaction(productID):
             return "StoreKit.Transaction.updates: received transaction for product '\(productID)'"
 
+        case let .sk2_queue_receipt_post_waiting_for_purchase(productID):
+            return "StoreKit.Transaction.updates: waiting for in-flight purchase receipt post to finish " +
+            "before posting receipt from the queue for product '\(productID)'"
+
         case let .transaction_poster_handling_transaction(transactionID,
                                                           productID,
                                                           date,
@@ -362,6 +376,24 @@ extension PurchaseStrings: LogMessage {
 
         case .simulating_purchase_success:
             return "[Test Store] Performing test purchase. This purchase won't appear in production."
+
+        case .simulated_store_unexpected_receipt_fetch:
+            return "[Test Store] Unexpectedly fetching a receipt. Returning an empty receipt."
+
+        case let .posting_remaining_cached_metadata(count):
+            return "Posting \(count) remaining cached transaction metadata entries"
+
+        case let .posting_cached_metadata(transactionId):
+            return "Posting cached metadata for transaction '\(transactionId)'"
+
+        case .cached_transaction_metadata_sync_already_in_progress:
+            return "Cached transaction metadata sync already in progress, skipping"
+
+        case .no_cached_transaction_metadata_to_post:
+            return "No cached transaction metadata to sync"
+
+        case .finished_posting_cached_metadata:
+            return "Finished syncing all cached transaction metadata"
         }
     }
 

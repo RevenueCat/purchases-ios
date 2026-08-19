@@ -92,6 +92,14 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         }
     }
 
+    var invokedClearInMemoryOfferingsCache = false
+    var invokedClearInMemoryOfferingsCacheCount = 0
+
+    override func clearInMemoryOfferingsCache() {
+        invokedClearInMemoryOfferingsCache = true
+        invokedClearInMemoryOfferingsCacheCount += 1
+    }
+
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiate = false
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount = 0
     var invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters: String?
@@ -102,6 +110,16 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         invokedInvalidateAndReFetchCachedOfferingsIfAppropiateCount += 1
         invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParameters = appUserID
         invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParametersList.append(appUserID)
+    }
+
+    var invokedRefreshCachedOfferingsForRemoteConfigDisable = false
+    var invokedRefreshCachedOfferingsForRemoteConfigDisableCount = 0
+    var invokedRefreshCachedOfferingsForRemoteConfigDisableParameters: String?
+
+    override func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
+        invokedRefreshCachedOfferingsForRemoteConfigDisable = true
+        invokedRefreshCachedOfferingsForRemoteConfigDisableCount += 1
+        invokedRefreshCachedOfferingsForRemoteConfigDisableParameters = appUserID
     }
 
 }

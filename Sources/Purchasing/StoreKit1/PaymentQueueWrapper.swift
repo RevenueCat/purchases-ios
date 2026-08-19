@@ -160,12 +160,6 @@ extension PaymentQueueWrapper: SKPaymentTransactionObserver {
 
 }
 
-// `@unchecked` because:
-// `weak var` requires it: https://twitter.com/dgregor79/status/1557166717721161728
-// `SKPaymentQueue` is not `Sendable` until Swift 5.7
-// - Not-final since it's mocked in tests.
-extension PaymentQueueWrapper: @unchecked Sendable {}
-
 extension EitherPaymentQueueWrapper {
 
     var paymentQueueWrapperType: PaymentQueueWrapperType {

@@ -15,6 +15,7 @@ import Foundation
 import RevenueCat
 
 var off: Offering!
+@available(*, deprecated) // Ignore deprecation warnings
 func checkOfferingAPI() {
     struct Data: Decodable {}
 
@@ -71,6 +72,22 @@ private func checkCreateOfferingAPI(package: Package) {
         serverDescription: "",
         metadata: [String: Any](),
         paywall: Optional<PaywallData>.none,
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
+    )
+    _ = Offering(
+        identifier: "",
+        serverDescription: "",
+        paywallComponents: Optional<Offering.PaywallComponents>.none,
+        availablePackages: [package],
+        webCheckoutUrl: URL(string: "https://revenuecat.com")
+    )
+    _ = Offering(
+        identifier: "",
+        serverDescription: "",
+        metadata: [String: Any](),
+        paywall: Optional<PaywallData>.none,
+        paywallComponents: Optional<Offering.PaywallComponents>.none,
         availablePackages: [package],
         webCheckoutUrl: URL(string: "https://revenuecat.com")
     )

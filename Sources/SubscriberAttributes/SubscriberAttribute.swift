@@ -14,7 +14,7 @@
 
 import Foundation
 
-struct SubscriberAttribute {
+struct SubscriberAttribute: Hashable {
 
     let setTime: Date
     let key: String
@@ -115,6 +115,7 @@ extension SubscriberAttribute {
 }
 
 extension SubscriberAttribute: Equatable {}
+extension SubscriberAttribute: Codable {}
 
 extension SubscriberAttribute: CustomStringConvertible {
 

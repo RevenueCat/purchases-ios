@@ -23,8 +23,9 @@ struct FeatureEventsRequest {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next cyclomatic_complexity
     init(events: [StoredFeatureEvent]) {
-        self.init(events: events.compactMap { storedEvent in
+        self.init(events: events.compactMap { storedEvent -> AnyEncodable? in
             switch storedEvent.feature {
             case .paywalls:
                 guard let event = PaywallEvent(storedEvent: storedEvent) else {
@@ -44,6 +45,16 @@ struct FeatureEventsRequest {
                     }
                     return AnyEncodable(event)
                 }
+            case .customPaywalls:
+                guard let event = CustomPaywallEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
+            case .workflows:
+                guard let event = FeatureEventsRequest.WorkflowEvent(storedEvent: storedEvent) else {
+                    return nil
+                }
+                return AnyEncodable(event)
             }
         })
     }

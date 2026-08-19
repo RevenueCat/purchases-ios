@@ -14,7 +14,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     enum Dimension: Codable, Sendable, Hashable {
 

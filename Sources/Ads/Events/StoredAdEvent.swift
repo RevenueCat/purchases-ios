@@ -21,7 +21,7 @@ struct StoredAdEvent {
     private(set) var appSessionID: UUID
 
     init?<T: Encodable>(event: T, userID: String, appSessionID: UUID) {
-        guard let data = try? JSONEncoder.sortedKeys.encode(event),
+        guard let data = try? JSONEncoder.sortedKeysAndFractionalSecondsDates.encode(event),
               let encodedJSON = String(data: data, encoding: .utf8) else {
             return nil
         }
@@ -30,6 +30,22 @@ struct StoredAdEvent {
         self.userID = userID
         self.appSessionID = appSessionID
     }
+
+}
+
+private extension JSONEncoder {
+
+    static let sortedKeysAndFractionalSecondsDates: JSONEncoder = {
+        let encoder = JSONEncoder()
+        encoder.keyEncodingStrategy = .convertToSnakeCase
+        encoder.dateEncodingStrategy = .custom { date, encoder in
+            var container = encoder.singleValueContainer()
+            try container.encode(JSONDecoder.iso8601WithFractionalSeconds.string(from: date))
+        }
+        encoder.outputFormatting = [.sortedKeys]
+
+        return encoder
+    }()
 
 }
 

@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -33,23 +33,37 @@ class AdEventStoreTests: TestCase {
 
     // - MARK: -
 
-    func testCreateDefaultDoesNotThrow() throws {
-        _ = try AdEventStore.createDefault(applicationSupportDirectory: nil)
+    func testCreateDefaultReturnsNonNil() throws {
+        #if os(tvOS)
+        // On tvOS, `DirectoryHelper.defaultPersistenceBaseUrl` resolves to `Library/Caches/`.
+        // On some CI runs, creating the fixed `revenuecat/` subdirectory under `Library/Caches/`
+        // fails with EIO (POSIX code 5). We haven't been able to reproduce this locally.
+        // This is not tvOS-specific — the same error reproduces on iOS simulators when forced
+        // to use `Library/Caches/` — but tvOS is the only platform that uses it in production.
+        // Using a UUID-based subdirectory under `Library/Caches/` sidesteps the issue
+        // while still exercising the same caches filesystem and code path.
+        let store = AdEventStore.createDefault(
+            persistenceDirectory: Self.uniqueCachesDirectory()
+        )
+        #else
+        let store = AdEventStore.createDefault(persistenceDirectory: nil)
+        #endif
+        expect(store).toNot(beNil())
     }
 
     func testPersistsEventsAcrossInitialization() async throws {
         let container = Self.temporaryFolder()
 
-        var store = try AdEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        var store = try XCTUnwrap(AdEventStore.createDefault(
+            persistenceDirectory: container
+        ))
 
         await store.store(.randomDisplayedEvent())
         await self.verifyEventsInStore(store, expectedCount: 1)
 
-        store = try AdEventStore.createDefault(
-            applicationSupportDirectory: container
-        )
+        store = try XCTUnwrap(AdEventStore.createDefault(
+            persistenceDirectory: container
+        ))
         await self.verifyEventsInStore(store, expectedCount: 1)
     }
 
@@ -247,7 +261,8 @@ extension AdEvent.CreationData {
     static func random() -> Self {
         return .init(
             id: .init(),
-            date: .now.removingMilliseconds
+            date: .now.removingMilliseconds,
+            captureMethod: .manual
         )
     }
 
@@ -260,6 +275,7 @@ extension AdDisplayed {
         return .init(
             networkName: "AdMob",
             mediatorName: .appLovin,
+            adFormat: .banner,
             placement: "home_screen",
             adUnitId: "ca-app-pub-\(UUID().uuidString)",
             impressionId: "impression-\(UUID().uuidString)"

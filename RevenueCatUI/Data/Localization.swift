@@ -13,6 +13,7 @@
 
 import Foundation
 import RevenueCat
+import SwiftUI
 
 enum Localization {
 
@@ -88,7 +89,7 @@ enum Localization {
     }
 
     /// - Returns: the `Bundle` associated with the given locale if found
-    /// Defaults to `Bundle.module`.
+    /// Defaults to `Bundle.revenueCatUI`.
     ///
     /// `SwiftUI.Text` uses `EnvironmentValues.locale` and therefore
     /// can be mocked in tests.
@@ -104,7 +105,7 @@ enum Localization {
     ///    )
     /// ```
     static func localizedBundle(_ locale: Locale) -> Bundle {
-        let containerBundle: Bundle = .module
+        let containerBundle: Bundle = .revenueCatUI
 
         let preferredLocale = Bundle.preferredLocalizations(
             from: containerBundle.localizations,
@@ -296,6 +297,39 @@ private extension Locale {
         } else {
             return self.languageCode
         }
+    }
+
+}
+
+extension Locale {
+
+    /// The SwiftUI `LayoutDirection` that matches this locale's character direction.
+    /// Used to propagate RTL layout when a locale override is in effect but the system locale is LTR.
+    var swiftUILayoutDirection: LayoutDirection {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return self.language.characterDirection == .rightToLeft ? .rightToLeft : .leftToRight
+        } else {
+            let code = self.languageCodeIdentifier ?? ""
+            return Locale.characterDirection(forLanguage: code) == .rightToLeft
+                ? .rightToLeft
+                : .leftToRight
+        }
+    }
+
+    /// Selects the best-matching locale from `availableLocales` given `preferredLocales`.
+    ///
+    /// Matches on language first, then exact region within language matches.
+    /// Returns `nil` if no language match exists for any preferred locale.
+    static func selectPreferredLocale(from availableLocales: [Locale],
+                                      preferredLocales: [Locale]) -> Locale? {
+        for preferred in preferredLocales {
+            guard let languageMatch = availableLocales.first(where: {
+                $0.languageCodeIdentifier == preferred.languageCodeIdentifier
+            }) else { continue }
+            // Prefer an exact locale match (language + region) over a language-only match.
+            return availableLocales.first(where: { $0 == preferred }) ?? languageMatch
+        }
+        return nil
     }
 
 }

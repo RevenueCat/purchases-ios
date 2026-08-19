@@ -9,12 +9,20 @@ class MockOfferingsFactory: OfferingsFactory {
 
     var emptyOfferings = false
     var nilOfferings = false
+    var invokedCreateOfferingsShouldCreatePaywallComponents: Bool?
+
+    override init(systemInfo: SystemInfo = MockSystemInfo(finishTransactions: true)) {
+        super.init(systemInfo: systemInfo)
+    }
 
     override func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
-        loadedFromDiskCache: Bool
+        loadedFromDiskCache: Bool,
+        shouldCreatePaywallComponents: Bool = true
     ) -> Offerings? {
+        self.invokedCreateOfferingsShouldCreatePaywallComponents = shouldCreatePaywallComponents
+
         if emptyOfferings {
             let response = OfferingsResponse(currentOfferingId: "base",
                                              offerings: [],
@@ -71,6 +79,7 @@ extension OfferingsResponse {
                   packages: [
                     .init(identifier: "$rc_monthly",
                           platformProductIdentifier: "monthly_freetrial",
+                          platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil)
                   ], webCheckoutUrl: nil)
         ],

@@ -49,6 +49,29 @@ class MockHTTPClient: HTTPClient {
             self.init(response: .success(response), delay: delay)
         }
 
+        init(
+            statusCode: HTTPStatusCode,
+            body: Data,
+            responseHeaders: HTTPResponse.Headers = [:],
+            verificationResult: VerificationResult = .defaultValue,
+            delay: DispatchTimeInterval = .never,
+            isLoadShedderResponse: Bool = false,
+            isFallbackUrlResponse: Bool = false
+        ) {
+            let response = VerifiedHTTPResponse(
+                response: .init(
+                    httpStatusCode: statusCode,
+                    responseHeaders: responseHeaders,
+                    body: body
+                ),
+                verificationResult: verificationResult,
+                isLoadShedderResponse: isLoadShedderResponse,
+                isFallbackUrlResponse: isFallbackUrlResponse
+            )
+
+            self.init(response: .success(response), delay: delay)
+        }
+
         init(error: NetworkError, delay: DispatchTimeInterval = .never) {
             self.init(response: .failure(error), delay: delay)
         }
@@ -59,23 +82,23 @@ class MockHTTPClient: HTTPClient {
     var calls: [Call] = []
     private var shouldAssertSnapshot: Bool = true
 
-    init(apiKey: String,
-         systemInfo: SystemInfo,
+    init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         requestTimeout: TimeInterval = 7,
+         networkTimeout: NetworkTimeout = .custom(7),
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
-        super.init(apiKey: apiKey,
-                   systemInfo: systemInfo,
+        super.init(systemInfo: systemInfo,
                    eTagManager: eTagManager,
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout,
-                   operationDispatcher: MockOperationDispatcher())
+                   networkTimeout: networkTimeout,
+                   operationDispatcher: MockOperationDispatcher(),
+                   apiSourceFailover: nil,
+                   timeoutManager: HTTPRequestTimeoutManager(networkTimeout: networkTimeout))
     }
 
     /// Disables snapshot testing for this mock HTTP client.
@@ -106,7 +129,7 @@ class MockHTTPClient: HTTPClient {
             self.calls.append(call)
 
             if self.shouldAssertSnapshot {
-                assertSnapshot(matching: call,
+                assertSnapshot(of: call,
                                as: .formattedJson,
                                file: self.sourceTestFile,
                                testName: CurrentTestCaseTracker.osVersionAndTestName)
@@ -133,6 +156,10 @@ class MockHTTPClient: HTTPClient {
     }
 
     func mock(requestPath: HTTPRequest.DiagnosticsPath, response: Response) {
+        self.mock(path: requestPath, response: response)
+    }
+
+    func mock(requestPath: HTTPRequest.FallbackPath, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 

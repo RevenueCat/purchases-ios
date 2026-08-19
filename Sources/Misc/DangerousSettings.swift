@@ -16,6 +16,7 @@ import Foundation
     internal struct Internal: InternalDangerousSettingsType {
 
         let enableReceiptFetchRetry: Bool
+        let usesRemoteConfigAPISources: Bool
 
         #if DEBUG
         let forceServerErrorStrategy: ForceServerErrorStrategy?
@@ -25,12 +26,14 @@ import Foundation
 
         init(
             enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false,
             forceServerErrorStrategy: ForceServerErrorStrategy? = nil,
             forceSignatureFailures: Bool = false,
             disableHeaderSignatureVerification: Bool = false,
             testReceiptIdentifier: String? = nil
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
             self.forceServerErrorStrategy = forceServerErrorStrategy
             self.forceSignatureFailures = forceSignatureFailures
             self.disableHeaderSignatureVerification = disableHeaderSignatureVerification
@@ -38,15 +41,29 @@ import Foundation
         }
         #else
         init(
-            enableReceiptFetchRetry: Bool = false
+            enableReceiptFetchRetry: Bool = false,
+            usesRemoteConfigAPISources: Bool = false
         ) {
             self.enableReceiptFetchRetry = enableReceiptFetchRetry
+            self.usesRemoteConfigAPISources = usesRemoteConfigAPISources
         }
 
         #endif
 
         static let `default`: Self = .init()
     }
+
+    /// `internalSettings` is intentionally excluded; it is an internal/debug-only mechanism
+    /// with no observable effect on the public configuration and contains non-`Hashable`
+    /// fields (e.g., closures in `ForceServerErrorStrategy`).
+    internal struct Storage: Hashable {
+        let autoSyncPurchases: Bool
+        let uiPreviewMode: Bool
+        let customEntitlementComputation: Bool
+    }
+
+    internal let storage: Storage
+    internal let internalSettings: InternalDangerousSettingsType
 
     /**
      * Disable or enable subscribing to the StoreKit queue. If this is disabled, RevenueCat won't observe
@@ -56,13 +73,13 @@ import Foundation
      * synced before finishing any consumable transaction, otherwise RevenueCat won't register the purchase.
      * Auto syncing of purchases is enabled by default.
      */
-    @objc public let autoSyncPurchases: Bool
+    @objc public var autoSyncPurchases: Bool { self.storage.autoSyncPurchases }
 
     /**
      * if `true`, the SDK will return a set of mock products instead of the
      * products obtained from StoreKit. This is useful for testing or preview purposes.
      */
-    @_spi(Internal) public let uiPreviewMode: Bool
+    @_spi(Internal) public var uiPreviewMode: Bool { self.storage.uiPreviewMode }
 
     /**
      * A property meant for apps that do their own entitlements computation, separated from RevenueCat.
@@ -76,9 +93,7 @@ import Foundation
      * - Important: This is a dangerous setting and should only be used if you intend to do your own entitlement
      * granting, separate from RevenueCat.
      */
-    @objc public let customEntitlementComputation: Bool
-
-    internal let internalSettings: InternalDangerousSettingsType
+    @objc public var customEntitlementComputation: Bool { self.storage.customEntitlementComputation }
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -122,11 +137,20 @@ import Foundation
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false) {
-        self.autoSyncPurchases = autoSyncPurchases
+        self.storage = Storage(
+            autoSyncPurchases: autoSyncPurchases,
+            uiPreviewMode: uiPreviewMode,
+            customEntitlementComputation: customEntitlementComputation
+        )
         self.internalSettings = internalSettings
-        self.customEntitlementComputation = customEntitlementComputation
-        self.uiPreviewMode = uiPreviewMode
     }
+
+    public override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? DangerousSettings else { return false }
+        return self.storage == other.storage
+    }
+
+    public override var hash: Int { self.storage.hashValue }
 
 }
 
@@ -138,12 +162,16 @@ internal protocol InternalDangerousSettingsType: Sendable {
     /// Whether `ReceiptFetcher` can retry fetching receipts.
     var enableReceiptFetchRetry: Bool { get }
 
+    /// Whether main-API requests resolve their base host from the remote-config API sources
+    /// instead of the static `SystemInfo.apiBaseURL`. Disabled by default; enabled in tests while
+    /// remote-config-driven host resolution is being validated.
+    var usesRemoteConfigAPISources: Bool { get }
+
     #if DEBUG
     /// The strategy for the `HTTPClient` to fake server errors. Meant for tests only.
     /// `nil` means no server errors are forced.
     ///
-    /// This is done by routing the requests to https://api.revenuecat.com/force-server-failure,
-    /// which returns a 502 status code with a HTML response body.
+    /// See `ForceServerErrorStrategy.Action` for the ways a request can be intercepted.
     var forceServerErrorStrategy: ForceServerErrorStrategy? { get }
 
     /// Whether `HTTPClient` will fake invalid signatures.
@@ -164,29 +192,36 @@ internal protocol InternalDangerousSettingsType: Sendable {
 
 struct ForceServerErrorStrategy {
 
+    /// What the `HTTPClient` does with a request.
+    enum Action {
+
+        /// The request is not performed, and this response is returned instead.
+        case fakeResponse(HTTPURLResponse, Data)
+
+        /// The request is performed against this URL instead of its original one.
+        ///
+        /// - Warning: the original method, headers and body are dropped. Use `appendQueryItems` when the
+        /// backend needs to receive the request as the SDK built it.
+        case serverErrorURL(URL)
+
+        /// The request is performed as usual, with these query items appended to its URL.
+        case appendQueryItems([URLQueryItem])
+
+        /// The request is performed as usual, without interception.
+        case performRequest
+
+        /// Routes the request to `ForceServerErrorStrategy.defaultServerErrorURL`.
+        static var defaultServerError: Self {
+            return .serverErrorURL(ForceServerErrorStrategy.defaultServerErrorURL)
+        }
+
+    }
+
+    /// Returns a 502 status code with an HTML response body.
     // swiftlint:disable:next force_unwrapping
     static let defaultServerErrorURL = URL(string: "https://api.revenuecat.com/force-server-failure")!
 
-    let serverErrorURL: URL
-
-    /// If this returns a non-nil pair of `(HTTPURLResponse, Data)`, the `HTTPClient` will not perform the request
-    /// and will just return the fake response.
-    ///
-    /// Takes precedence over `shouldForceServerError`.
-    let fakeResponseWithoutPerformingRequest: (HTTPClient.Request) -> (HTTPURLResponse, Data)?
-
-    /// If this returns `true`, the `HTTPClient` will route the request to `forceServerErrorURL`.
-    let shouldForceServerError: (HTTPClient.Request) -> Bool
-
-    init(
-        serverErrorURL: URL = Self.defaultServerErrorURL,
-        fakeResponseWithoutPerformingRequest: @escaping (HTTPClient.Request) -> (HTTPURLResponse, Data)? = { _ in nil },
-        shouldForceServerError: @escaping (HTTPClient.Request) -> Bool
-    ) {
-        self.serverErrorURL = serverErrorURL
-        self.fakeResponseWithoutPerformingRequest = fakeResponseWithoutPerformingRequest
-        self.shouldForceServerError = shouldForceServerError
-    }
+    let action: (HTTPClient.Request) -> Action
 
 }
 

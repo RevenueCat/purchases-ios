@@ -55,7 +55,7 @@ class FallbackURLSignedBackendStoreKit2IntegrationTests: BaseStoreKitIntegration
         let receivedOfferings = try await self.purchases.offerings()
 
         expect(receivedOfferings.all).toNot(beEmpty())
-        assertSnapshot(matching: receivedOfferings.response, as: .formattedJson)
+        assertSnapshot(of: receivedOfferings.response, as: .formattedJson)
         expect(receivedOfferings.contents.originalSource) == .fallbackUrl
     }
 
@@ -63,7 +63,7 @@ class FallbackURLSignedBackendStoreKit2IntegrationTests: BaseStoreKitIntegration
         let productEntitlementMapping = try await self.purchases.productEntitlementMapping()
 
         expect(productEntitlementMapping.entitlementsByProduct).toNot(beEmpty())
-        assertSnapshot(matching: productEntitlementMapping, as: .formattedJson)
+        assertSnapshot(of: productEntitlementMapping, as: .formattedJson)
     }
 
 }

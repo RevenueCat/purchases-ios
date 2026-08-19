@@ -48,8 +48,10 @@ extension AdEventsRequest {
         var appUserId: String
         var appSessionId: String
         var timestamp: UInt64
-        var networkName: String
+        var captureMethod: String?
+        var networkName: String?
         var mediatorName: String
+        var adFormat: String
         var placement: String?
         var adUnitId: String
         var impressionId: String?
@@ -59,6 +61,15 @@ extension AdEventsRequest {
         var precision: String?
         // For failed to load events only:
         var mediatorErrorCode: Int?
+        // For reward earned (unverified) events only:
+        var rewardVerificationEnabled: Bool?
+        // For reward granted events only:
+        var rewardType: String?
+        var rewardVirtualCurrencyCode: String?
+        var rewardVirtualCurrencyAmount: Int?
+        var rewardEntitlementId: String?
+        // For reward failed-to-verify events only:
+        var rewardFailureReason: String?
 
     }
 
@@ -74,6 +85,10 @@ extension AdEventsRequest.AdEventRequest {
         case displayed = "rc_ads_ad_displayed"
         case opened = "rc_ads_ad_opened"
         case revenue = "rc_ads_ad_revenue"
+        case rewardEarnedUnverified = "rc_ads_ad_reward_sdk_earned"
+        case rewardVerified = "rc_ads_ad_reward_sdk_verified"
+        case rewardFailedToVerify = "rc_ads_ad_reward_sdk_failed_to_verify"
+        case rewardGranted = "rc_ads_ad_reward_sdk_granted"
 
     }
 
@@ -95,15 +110,23 @@ extension AdEventsRequest.AdEventRequest {
                 appUserId: storedEvent.userID,
                 appSessionId: storedEvent.appSessionID.uuidString,
                 timestamp: creationData.date.millisecondsSince1970,
-                networkName: eventData.networkName,
+                captureMethod: creationData.captureMethod?.rawValue,
+                networkName: adEvent.networkName,
                 mediatorName: eventData.mediatorName.rawValue,
+                adFormat: eventData.adFormat.rawValue,
                 placement: eventData.placement,
                 adUnitId: eventData.adUnitId,
                 impressionId: adEvent.impressionIdentifier,
                 revenueMicros: adEvent.revenueData?.revenueMicros,
                 currency: adEvent.revenueData?.currency,
                 precision: adEvent.revenueData?.precision.rawValue,
-                mediatorErrorCode: adEvent.mediatorErrorCode
+                mediatorErrorCode: adEvent.mediatorErrorCode,
+                rewardVerificationEnabled: adEvent.rewardEarnedUnverifiedData?.rewardVerificationEnabled,
+                rewardType: adEvent.rewardGrantedData?.reward.kindRawValue,
+                rewardVirtualCurrencyCode: adEvent.rewardGrantedData?.reward.virtualCurrency?.code,
+                rewardVirtualCurrencyAmount: adEvent.rewardGrantedData?.reward.virtualCurrency?.amount,
+                rewardEntitlementId: adEvent.rewardGrantedData?.reward.entitlement?.identifier,
+                rewardFailureReason: adEvent.rewardFailedToVerifyData?.failureReason.rawValue
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -125,6 +148,10 @@ private extension AdEvent {
         case .displayed: return .displayed
         case .opened: return .opened
         case .revenue: return .revenue
+        case .rewardEarnedUnverified: return .rewardEarnedUnverified
+        case .rewardVerified: return .rewardVerified
+        case .rewardFailedToVerify: return .rewardFailedToVerify
+        case .rewardGranted: return .rewardGranted
         }
 
     }
@@ -147,8 +174,10 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case appUserId
         case appSessionId
         case timestamp = "timestampMs"
+        case captureMethod
         case networkName
         case mediatorName
+        case adFormat
         case placement
         case adUnitId
         case impressionId
@@ -156,6 +185,12 @@ extension AdEventsRequest.AdEventRequest: Encodable {
         case currency
         case precision
         case mediatorErrorCode
+        case rewardVerificationEnabled
+        case rewardType
+        case rewardVirtualCurrencyCode
+        case rewardVirtualCurrencyAmount
+        case rewardEntitlementId
+        case rewardFailureReason
 
     }
 

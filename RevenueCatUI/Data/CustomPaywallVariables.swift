@@ -1,0 +1,297 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CustomPaywallVariables.swift
+//
+//  Created by Facundo Menzella on 1/22/26.
+
+@_spi(Internal) import RevenueCat
+import SwiftUI
+
+/// A value type for custom variables that can be passed to RevenueCat UI at runtime.
+///
+/// Custom variables allow developers to personalize RevenueCat UI and supply values for checkpoint targeting.
+/// Variables are defined in the RevenueCat dashboard and can be supplied at runtime.
+///
+/// ### Usage
+/// ```swift
+/// PaywallView()
+///     .customPaywallVariables([
+///         "player_name": .string("John"),
+///         "level": .number(42),
+///         "is_premium": .bool(true)
+///     ])
+/// ```
+///
+/// In the paywall text (configured in the dashboard), use the `custom.` prefix:
+/// ```
+/// Hello {{ custom.player_name }}!
+/// ```
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct CustomVariableValue: Sendable, Equatable, Hashable {
+
+    private enum Storage: Sendable, Equatable, Hashable {
+        case string(String)
+        case number(Double)
+        case bool(Bool)
+    }
+
+    private let storage: Storage
+
+    private init(_ storage: Storage) {
+        self.storage = storage
+    }
+
+    /// Creates a string value.
+    public static func string(_ value: String) -> CustomVariableValue {
+        CustomVariableValue(.string(value))
+    }
+
+    /// Creates a numeric value.
+    public static func number(_ value: Double) -> CustomVariableValue {
+        CustomVariableValue(.number(value))
+    }
+
+    /// Creates a boolean value.
+    public static func bool(_ value: Bool) -> CustomVariableValue {
+        CustomVariableValue(.bool(value))
+    }
+
+    /// The string representation of this value for use in paywall text replacement.
+    public var stringValue: String {
+        switch self.storage {
+        case .string(let value):
+            return value
+        case .number(let value):
+            // Format nicely: 100.0 -> "100", 99.99 -> "99.99"
+            if value.truncatingRemainder(dividingBy: 1) == 0 {
+                return String(format: "%.0f", value)
+            } else {
+                return String(value)
+            }
+        case .bool(let value):
+            return value ? "true" : "false"
+        }
+    }
+
+    /// The numeric representation of this value.
+    /// Returns the underlying value for `.number`, attempts conversion for `.string`,
+    /// and returns `1.0` for `true` or `0.0` for `false` in `.bool` cases.
+    internal var doubleValue: Double {
+        switch self.storage {
+        case .string(let value):
+            return Double(value) ?? 0
+        case .number(let value):
+            return value
+        case .bool(let value):
+            return value ? 1.0 : 0.0
+        }
+    }
+
+    /// The boolean representation of this value.
+    /// Returns the underlying value for `.bool`, `true` for non-zero `.number`,
+    /// and `true` for `.string` values "true", "1", or "yes" (case-insensitive).
+    internal var boolValue: Bool {
+        switch self.storage {
+        case .string(let value):
+            let lowercased = value.lowercased()
+            return lowercased == "true" || lowercased == "1" || lowercased == "yes"
+        case .number(let value):
+            return value != 0
+        case .bool(let value):
+            return value
+        }
+    }
+
+    /// Returns `true` if this value was created as a string.
+    internal var isString: Bool {
+        if case .string = storage { return true }
+        return false
+    }
+
+    /// Returns `true` if this value was created as a number.
+    internal var isNumber: Bool {
+        if case .number = storage { return true }
+        return false
+    }
+
+    /// Returns `true` if this value was created as a boolean.
+    internal var isBool: Bool {
+        if case .bool = storage { return true }
+        return false
+    }
+
+    /// Maps the underlying value while keeping storage handling exhaustive.
+    ///
+    /// This intentionally switches over every storage case so adding a new custom-variable type produces a
+    /// compiler error instead of silently coercing that type to one of the existing representations.
+    internal func map<Value>(
+        string: (String) -> Value,
+        number: (Double) -> Value,
+        boolean: (Bool) -> Value
+    ) -> Value {
+        switch self.storage {
+        case let .string(value): return string(value)
+        case let .number(value): return number(value)
+        case let .bool(value): return boolean(value)
+        }
+    }
+
+}
+
+// MARK: - ExpressibleByStringLiteral
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByStringLiteral {
+
+    /// Creates a custom variable value from a string literal.
+    public init(stringLiteral value: String) {
+        self = .string(value)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByIntegerLiteral {
+
+    /// Creates a numeric custom variable value from an integer literal.
+    public init(integerLiteral value: Int64) {
+        self = .number(Double(value))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByFloatLiteral {
+
+    /// Creates a numeric custom variable value from a floating-point literal.
+    public init(floatLiteral value: Double) {
+        self = .number(value)
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue: ExpressibleByBooleanLiteral {
+
+    /// Creates a Boolean custom variable value from a Boolean literal.
+    public init(booleanLiteral value: Bool) {
+        self = .bool(value)
+    }
+
+}
+
+// MARK: - Foundation Bridge
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CustomVariableValue {
+
+    /// Creates a custom variable value from a supported Foundation primitive.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should use
+    /// ``string(_:)``, ``number(_:)``, or ``bool(_:)`` instead.
+    @_spi(Internal)
+    public init?(foundationValue: Any) {
+        guard let value = RevenueCat.CheckpointValue(foundationValue: foundationValue) else { return nil }
+
+        switch value {
+        case let .string(value): self = .string(value)
+        case let .double(value): self = .number(value)
+        case let .boolean(value): self = .bool(value)
+        }
+    }
+
+    /// The equivalent Foundation primitive value.
+    ///
+    /// This is intended only for Objective-C and hybrid SDK bridges. Native Swift integrations should pass
+    /// ``CustomVariableValue`` directly.
+    @_spi(Internal)
+    public var foundationValue: Any {
+        switch self.storage {
+        case let .string(value): return value
+        case let .number(value): return NSNumber(value: value)
+        case let .bool(value): return NSNumber(value: value)
+        }
+    }
+
+}
+
+// MARK: - Environment Key
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CustomPaywallVariablesKey: EnvironmentKey {
+
+    static let defaultValue: [String: CustomVariableValue] = [:]
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+
+    /// Custom variables to be used in paywall text replacement.
+    ///
+    /// Use the `.customPaywallVariables(_:)` view modifier to set this value.
+    public var customPaywallVariables: [String: CustomVariableValue] {
+        get { self[CustomPaywallVariablesKey.self] }
+        set {
+            self[CustomPaywallVariablesKey.self] = RevenueCat.CustomVariableKeyValidator.validateAndFilter(newValue)
+        }
+    }
+
+}
+
+// MARK: - View Modifier
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    /// Sets custom variables to be used in paywall text replacement.
+    ///
+    /// Custom variables allow you to personalize paywall text with dynamic values.
+    /// Variables are defined in the RevenueCat dashboard using the `{{ custom.key }}` syntax.
+    ///
+    /// ### Example
+    /// ```swift
+    /// PaywallView()
+    ///     .customPaywallVariables([
+    ///         "player_name": .string("John")
+    ///     ])
+    /// ```
+    ///
+    /// You can also apply this modifier at any ancestor view level:
+    /// ```swift
+    /// NavigationStack {
+    ///     ContentView()  // PaywallView somewhere inside
+    /// }
+    /// .customPaywallVariables(["player_name": .string(user.name)])
+    /// ```
+    ///
+    /// - Parameter variables: A dictionary mapping variable names to their values.
+    ///   The keys should match the variable names defined in the dashboard (without the `custom.` prefix).
+    ///   Invalid keys are ignored.
+    /// - Returns: A view with the custom variables set in the environment.
+    public func customPaywallVariables(
+        _ variables: [String: CustomVariableValue]
+    ) -> some View {
+        return environment(\.customPaywallVariables, variables)
+    }
+
+}
+
+// MARK: - Helper to convert to string dictionary
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension Dictionary where Key == String, Value == CustomVariableValue {
+
+    /// Converts the custom variables dictionary to a string dictionary for internal use.
+    var asStringDictionary: [String: String] {
+        self.mapValues { $0.stringValue }
+    }
+
+}

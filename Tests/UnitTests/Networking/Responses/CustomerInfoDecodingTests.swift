@@ -115,7 +115,7 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
     }
 
     func testRawDataIsNotEncoded() throws {
-        expect(try self.customerInfo.asDictionary().keys).toNot(contain("raw_data"))
+        expect(try self.customerInfo.asJSONDictionary().keys).toNot(contain("raw_data"))
     }
 
     func testRawDataIncludesUnparsedKeys() throws {
@@ -205,6 +205,27 @@ class CustomerInfoVersion2DecodingTests: BaseHTTPResponseTest {
         expect(subscription.purchaseDate) == dateFormatter.date(from: "2023-01-12T20:29:44Z")
         expect(subscription.store) == .appStore
         expect(subscription.unsubscribeDetectedAt).to(beNil())
+        expect(subscription.autoResumeDate).to(beNil())
+
+        let pausedSubscription = try XCTUnwrap(
+            subscriber.subscriptions["com.revenuecat.annual_39.99.2_week_intro"]
+        )
+        expect(pausedSubscription.store) == .playStore
+        expect(pausedSubscription.autoResumeDate) == dateFormatter.date(from: "2023-02-01T00:00:00Z")
+        expect(pausedSubscription.productPlanIdentifier) == "annual-plan"
+    }
+
+    func testSubscriptionsByProductIdentifierExposesAutoResumeDateAndProductPlan() throws {
+        let subscriptions = self.customerInfo.subscriptionsByProductIdentifier
+
+        let pausedSubscription = try XCTUnwrap(subscriptions["com.revenuecat.annual_39.99.2_week_intro"])
+        expect(pausedSubscription.store) == .playStore
+        expect(pausedSubscription.autoResumeDate) == dateFormatter.date(from: "2023-02-01T00:00:00Z")
+        expect(pausedSubscription.productPlanIdentifier) == "annual-plan"
+
+        let activeSubscription = try XCTUnwrap(subscriptions["com.revenuecat.monthly_4.99.1_week_intro"])
+        expect(activeSubscription.autoResumeDate).to(beNil())
+        expect(activeSubscription.productPlanIdentifier).to(beNil())
     }
 
     func testEntitlements() throws {
@@ -263,24 +284,24 @@ class CustomerInfoEncodingTests: BaseHTTPResponseTest {
     }
 
     func testEncoding() {
-        assertSnapshot(matching: self.customerInfo, as: .backwardsCompatibleFormattedJson)
+        assertSnapshot(of: self.customerInfo, as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithVerifiedResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .verified,
-                                                        httpResponseOriginalSource: .mainServer),
+        assertSnapshot(of: self.customerInfo.copy(with: .verified,
+                                                  httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingWithFailedVerificationResponse() {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
-                                                        httpResponseOriginalSource: .mainServer),
+        assertSnapshot(of: self.customerInfo.copy(with: .failed,
+                                                  httpResponseOriginalSource: .mainServer),
                        as: .backwardsCompatibleFormattedJson)
     }
 
     func testEncodingLoadShedderResponse() throws {
-        assertSnapshot(matching: self.customerInfo.copy(with: .failed,
-                                                        httpResponseOriginalSource: .loadShedder),
+        assertSnapshot(of: self.customerInfo.copy(with: .failed,
+                                                  httpResponseOriginalSource: .loadShedder),
                        as: .backwardsCompatibleFormattedJson)
     }
 

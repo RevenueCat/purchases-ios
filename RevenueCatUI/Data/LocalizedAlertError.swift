@@ -23,11 +23,7 @@ struct LocalizedAlertError: LocalizedError {
     }
 
     var errorDescription: String? {
-        if self.underlyingError is ErrorCode {
-            return "Error"
-        } else {
-            return "\(self.underlyingError.domain) \(self.underlyingError.code)"
-        }
+        return "Error"
     }
 
     var failureReason: String? {

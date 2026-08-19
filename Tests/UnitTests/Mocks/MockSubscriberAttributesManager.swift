@@ -440,6 +440,18 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedCollectDeviceIdentifiersParametersList.append((appUserID, ()))
     }
 
+    var invokedSetATTConsentStatus = false
+    var invokedSetATTConsentStatusCount = 0
+    var invokedSetATTConsentStatusParameters: (appUserID: String?, Void)?
+    var invokedSetATTConsentStatusParametersList = [(appUserID: String?, Void)]()
+
+    override func setATTConsentStatus(forAppUserID appUserID: String) {
+        invokedSetATTConsentStatus = true
+        invokedSetATTConsentStatusCount += 1
+        invokedSetATTConsentStatusParameters = (appUserID, ())
+        invokedSetATTConsentStatusParametersList.append((appUserID, ()))
+    }
+
     var invokedConvertAttributionDataAndSet = false
     var invokedConvertAttributionDataAndSetCount = 0
     var invokedConvertAttributionDataAndSetParameters: (attributionData: [String: Any], network: AttributionNetwork, appUserID: String)?

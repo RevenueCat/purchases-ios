@@ -41,6 +41,7 @@ import AppKit
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
     let quantity: Int?
+    let introductoryOfferEligibilityJWS: String?
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -51,7 +52,6 @@ import AppKit
 
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    let introductoryOfferEligibilityJWS: String?
     let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
     #endif
@@ -64,6 +64,7 @@ import AppKit
         self.product = builder.product
         self.package = builder.package
         self.quantity = builder.quantity
+        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -73,7 +74,6 @@ import AppKit
         #endif
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
         self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
 
@@ -86,6 +86,7 @@ import AppKit
         private(set) var package: Package?
         private(set) var product: StoreProduct?
         private(set) var quantity: Int?
+        private(set) var introductoryOfferEligibilityJWS: String?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -96,7 +97,6 @@ import AppKit
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-        private(set) var introductoryOfferEligibilityJWS: String?
         private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
         #endif
@@ -206,8 +206,6 @@ import AppKit
 
         #endif
 
-        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
         // swiftlint:disable line_length
         /**
          * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
@@ -223,6 +221,8 @@ import AppKit
             self.introductoryOfferEligibilityJWS = introductoryOfferEligibilityJWS
             return self
         }
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         // swiftlint:disable line_length
         /**

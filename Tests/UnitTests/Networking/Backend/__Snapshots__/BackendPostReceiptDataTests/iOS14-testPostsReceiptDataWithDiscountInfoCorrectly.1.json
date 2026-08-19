@@ -6,6 +6,7 @@
     "X-Client-Build-Version" : "12345",
     "X-Client-Bundle-ID" : "com.apple.dt.xctest.tool",
     "X-Client-Version" : "17.0.0",
+    "X-Installation-Method" : "unknown",
     "X-Is-Backgrounded" : "false",
     "X-Is-Debug-Build" : "true",
     "X-Is-Sandbox" : "true",
@@ -42,8 +43,11 @@
           "price" : "12.1"
         }
       ],
+      "payload_version" : 1,
       "price" : "15.99",
       "product_id" : "a_great_product",
+      "purchase_completed_by" : "revenuecat",
+      "sdk_originated" : false,
       "store_country" : "ESP",
       "subscription_group_id" : "sub_group"
     },

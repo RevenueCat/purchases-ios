@@ -46,6 +46,21 @@ internal struct SK1StoreTransaction: StoreTransactionType {
         return nil
     }
 
+    var reason: TransactionReason? {
+        // StoreKit 1 does not expose a transaction reason.
+        return nil
+    }
+
+    var revocationDate: Date? {
+        // StoreKit 1 does not expose revocation metadata.
+        return nil
+    }
+
+    var revocationReason: RevocationReason? {
+        // StoreKit 1 does not expose revocation metadata.
+        return nil
+    }
+
     var hasKnownPurchaseDate: Bool {
         return self.underlyingSK1Transaction.transactionDate != nil
     }

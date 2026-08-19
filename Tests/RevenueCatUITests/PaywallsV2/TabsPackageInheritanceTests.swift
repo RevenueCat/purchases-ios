@@ -37,6 +37,15 @@ import XCTest
 /// 3. **Parent Selection Tracking:**
 ///    - Tab propagation (newPackage == tab's current) → don't update `parentOwnedPackage`
 ///    - User selection (newPackage != tab's current) → update `parentOwnedPackage`
+///
+/// 4. **Root-only selection vs tab highlight (`LoadedTabsComponentView`):**
+///    - When the user selects a **root** package that is **not** in the active tab's package list,
+///      the tab's `PackageContext` selection is cleared (`package` becomes `nil`) so tab rows
+///      (including the tab default) no longer appear selected while the parent holds the root SKU.
+///    - Clearing the tab must **not** propagate `nil` to the parent: `TabPackageParentPropagation`
+///      suppresses tab→parent updates when the tab's package is `nil`, the tab has its own package
+///      ids, and the parent's package identifier is outside that set—so the purchase selection
+///      stays on the root package.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class TabsPackageInheritanceTests: TestCase {
 
@@ -589,7 +598,6 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // Given: Tab 2 has packages including B
         let tab2Packages = [self.parentPackageA, self.parentPackageB, self.tabPackageC]
-        let tab2PackageIdentifiers = Set(tab2Packages.map(\.identifier))
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: parentOwnedPackage,
@@ -728,6 +736,100 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(parentContext.package?.identifier) == self.parentPackageB.identifier
     }
 
+    // MARK: - Root-only selection vs tab highlight
+
+    func testTabPackageParentPropagationSuppressesWhenTabClearedAndParentOutsideTab() {
+        let tabIds = Set([self.tabPackageC.identifier])
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: tabIds,
+                parentPackage: self.parentPackageB
+            )
+        ) == true
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenTabIdentifiersEmpty() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: [],
+                parentPackage: self.parentPackageB
+            )
+        ) == false
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenTabStillSelected() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageC,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: self.parentPackageB
+            )
+        ) == false
+    }
+
+    // MARK: - Stale onChange invocations (pre-iOS 17)
+    //
+    // Only the nil semantics are pinned here: getting them wrong would either re-open the
+    // iOS 16 tab-switch overwrite or break within-tab deselection. The tab-switch behavior
+    // itself is covered end-to-end by TabsComponentDuplicateInstanceTests.
+
+    func testNotStaleChangeWhenBothNil() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: nil
+            )
+        ) == false
+    }
+
+    func testStaleChangeWhenObservedPackageClearedButCapturedContextStillHoldsOne() {
+        expect(
+            TabPackageParentPropagation.isStaleChange(
+                observedPackage: nil,
+                capturedTabPackage: self.tabPackageC
+            )
+        ) == true
+    }
+
+    func testTabPackageParentPropagationDoesNotSuppressWhenParentNil() {
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: nil,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: nil
+            )
+        ) == false
+    }
+
+    @MainActor
+    func testUserRootSelectionOutsideTabClearsTabPackageWithoutRequiringParentUpdate() {
+        let tabContext = PackageContext(
+            package: self.tabPackageC,
+            variableContext: .init(packages: [self.tabPackageC])
+        )
+        let parentContext = PackageContext(
+            package: self.parentPackageB,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        tabContext.update(
+            package: nil,
+            variableContext: tabContext.variableContext
+        )
+
+        expect(tabContext.package).to(beNil())
+        expect(
+            TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: tabContext.package,
+                tabPackageIdentifiers: Set([self.tabPackageC.identifier]),
+                parentPackage: parentContext.package
+            )
+        ) == true
+        expect(parentContext.package?.identifier) == self.parentPackageB.identifier
+    }
+
     @MainActor
     func testClearingParentPackageShouldUpdateParentOwnedPackage() {
         // Scenario:
@@ -790,23 +892,15 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Packages = [self.parentPackageA, self.parentPackageB]
         let tab2Default = self.parentPackageB
 
-        // Given: didUserSelectPackage starts as false (no user selection yet)
-        var didUserSelectPackage = false
-
-        // Given: parentOwnedPackage initialized from parent (could be A)
-        var parentOwnedPackage: Package? = self.parentPackageA
+        // Given: No user selection yet — resolver should use each tab's default, not parentOwnedPackage.
+        let didUserSelectPackage = false
+        let parentOwnedPackage: Package? = self.parentPackageA
 
         // Step 1: Start on Tab 1 - shows A (tab's default)
         // (This is initialization, no switching needed)
 
         // Step 2: Toggle to Tab 2 (no user selection)
-        // Determine effectiveParentOwnedPackage based on didUserSelectPackage
-        let effectiveParentOwnedPackageForTab2: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab2 = nil  // Use tab's default
-        }
+        let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
@@ -820,12 +914,7 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
 
         // Step 3: Toggle back to Tab 1 (still no user selection)
-        let effectiveParentOwnedPackageForTab1: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab1 = nil  // Use tab's default
-        }
+        let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
@@ -861,16 +950,11 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Default = self.parentPackageB
 
         // Given: User selected B (sets didUserSelectPackage = true)
-        var didUserSelectPackage = true
-        var parentOwnedPackage: Package? = self.parentPackageB
+        let didUserSelectPackage = true
+        let parentOwnedPackage: Package? = self.parentPackageB
 
         // Step 1: Toggle to Tab 2 (user has selected B)
-        let effectiveParentOwnedPackageForTab2: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab2 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab2 = nil
-        }
+        let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
@@ -884,12 +968,7 @@ final class TabsPackageInheritanceTests: TestCase {
         expect(tab2UpdatePlan.tabUpdate?.package?.identifier) == self.parentPackageB.identifier
 
         // Step 2: Toggle back to Tab 1 (user still has B selected)
-        let effectiveParentOwnedPackageForTab1: Package?
-        if didUserSelectPackage {
-            effectiveParentOwnedPackageForTab1 = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackageForTab1 = nil
-        }
+        let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
@@ -970,8 +1049,7 @@ final class TabsPackageInheritanceTests: TestCase {
         //   2. Switch to Tab 1 → shows C (tab's default)
         //   3. Switch to Tab 2 (no packages) → should show A (parent's initial selection)
 
-        // Given: No user selection yet
-        let didUserSelectPackage = false
+        // Given: No user selection yet (package-less tab still inherits parentOwnedPackage)
         let parentOwnedPackage: Package? = self.parentPackageA
         let parentOwnedVariableContext = PackageContext.VariableContext(
             packages: [self.parentPackageA, self.parentPackageB]
@@ -979,17 +1057,8 @@ final class TabsPackageInheritanceTests: TestCase {
 
         // When: Switch to Tab 2 (no packages)
         // For package-less tabs, we always use parentOwnedPackage regardless of didUserSelectPackage
-        let effectiveParentOwnedPackage: Package?
         let tab2Packages: [Package] = []  // Package-less tab
-
-        if tab2Packages.isEmpty {
-            // Package-less tab: always use parentOwnedPackage
-            effectiveParentOwnedPackage = parentOwnedPackage
-        } else if didUserSelectPackage {
-            effectiveParentOwnedPackage = parentOwnedPackage
-        } else {
-            effectiveParentOwnedPackage = nil
-        }
+        let effectiveParentOwnedPackage: Package? = parentOwnedPackage
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             parentOwnedPackage: effectiveParentOwnedPackage,
@@ -1002,6 +1071,204 @@ final class TabsPackageInheritanceTests: TestCase {
         // Then: Parent should be restored to A (the initial parentOwnedPackage)
         expect(updatePlan.parentUpdate?.package?.identifier) == self.parentPackageA.identifier
     }
+}
+
+// MARK: - Workflow Revisit Tests
+//
+// These tests cover the interaction between WorkflowPaywallView's per-step PackageContext cache
+// and LoadedTabsComponentView's tab initialization.
+//
+// Bug: on a workflow step revisit, effectiveWorkflowPackageContext always carries the authored
+// default (static config). It reaches LoadedTabsComponentView as workflowDefaultPackage.
+// The tab init used `workflowDefaultPackage ?? tabViewModel.defaultSelectedPackage`, ignoring
+// the parent PackageContext that already holds the user's cached selection. The onAppear then
+// propagated the authored default back up through the shared PackageContext reference,
+// overwriting the user's choice.
+//
+// Fix: prefer parentPackageContext.package when it is present in the tab's package list.
+// This is expressed as LoadedTabsComponentView.initialPackage(parentPackage:tabPackages:
+// workflowDefaultPackage:tabDefaultPackage:) so it can be unit-tested without constructing
+// the full SwiftUI view.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    func testInitialPackagePrefersParentCachedSelectionWhenAvailableInTab() {
+        // Scenario: user selected A (monthly) on this step before navigating away.
+        // WorkflowPaywallView restores the cached PackageContext (package = A), but
+        // effectiveWorkflowPackageContext still has the authored default (B / annual).
+        // The tab offers both A and B, so A should win over the authored default.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: self.parentPackageA,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageB
+        )
+
+        expect(result?.identifier) == self.parentPackageA.identifier
+    }
+
+    func testInitialPackageFallsBackToWorkflowDefaultWhenParentPackageAbsentFromTab() {
+        // Scenario: parent holds C (weekly) but this tab only has A and B.
+        // Since C is not in the tab's package list, fall back to workflowDefaultPackage (B).
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: self.tabPackageC,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testInitialPackageUsesTabDefaultWhenNoWorkflowDefaultAndParentAbsent() {
+        // Scenario: no workflow context (singleStepFallbackId not set) and parent
+        // package is nil (packageless step). Tab's own default (A) should be used.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: nil,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            workflowDefaultPackage: nil,
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageA.identifier
+    }
+
+    @MainActor
+    func testOnAppearDoesNotOverwriteCachedSelectionWhenTabSeededFromParent() {
+        // Scenario: with the fix in place the tab is seeded from parentPackageContext.package (A).
+        // onAppear propagates the tab package back up to packageContext — same reference as the
+        // cached context. Since both have A, this is a no-op and the cache is preserved.
+
+        // Given: cached PackageContext holds A (user's selection)
+        let parentContext = PackageContext(
+            package: self.parentPackageA,
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // Given: tab was seeded with A (fixed behaviour — prefers parent's cached selection)
+        let tabContext = PackageContext(
+            package: LoadedTabsComponentView.initialPackage(
+                parentPackage: self.parentPackageA,
+                tabPackages: [self.parentPackageA, self.parentPackageB],
+                workflowDefaultPackage: self.parentPackageB,
+                tabDefaultPackage: self.parentPackageB
+            ),
+            variableContext: .init(packages: [self.parentPackageA, self.parentPackageB])
+        )
+
+        // When: simulating onAppear (wasConfigured = false on new view identity):
+        if let pkg = tabContext.package {
+            parentContext.update(package: pkg, variableContext: tabContext.variableContext)
+        }
+
+        // Then: cached selection A survives — onAppear is effectively a no-op.
+        expect(parentContext.package?.identifier) == self.parentPackageA.identifier
+    }
+
+}
+
+// MARK: - Cross-Tab Workflow Default Tests
+//
+// Regression seen in 5.83.0 (remote config + workflows enabled by default, #7327): a tabs paywall
+// served as a single-step workflow stopped selecting the second tab's own default package.
+//
+// `WorkflowContext.collectPackages` flattens every tab into one list, so the workflow-global
+// default is whichever package is marked `isSelectedByDefault` first across all tabs (tab 1's).
+// `LoadedTabsComponentView` then preferred that workflow default over each tab's own default,
+// so tab 2 received a package that isn't even in its list and nothing rendered as selected.
+// Before 5.83.0 `workflowPackageContext` was nil for these paywalls, so the tab defaults were used.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension TabsPackageInheritanceTests {
+
+    /// Tab 2's packages, disjoint from tab 1's (mirrors the customer paywall: subscriptions in
+    /// tab 1, one-time purchases in tab 2).
+    private var tab2PackageOne: Package {
+        Package(
+            identifier: "onetime1",
+            packageType: .custom,
+            storeProduct: TestData.lifetimeProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    private var tab2PackageTwo: Package {
+        Package(
+            identifier: "onetime2",
+            packageType: .custom,
+            storeProduct: TestData.consumableProduct.toStoreProduct(),
+            offeringIdentifier: "test_offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    func testInitialPackageUsesTabDefaultWhenWorkflowDefaultBelongsToAnotherTab() {
+        // Scenario: tab 1 declares annual (parentPackageB) as its default, so the flattened
+        // workflow default is annual. Tab 2 only has one-time packages and declares its own
+        // default. Tab 2 must show its own default, not the other tab's package.
+        let result = LoadedTabsComponentView.initialPackage(
+            parentPackage: nil,
+            tabPackages: [self.tab2PackageOne, self.tab2PackageTwo],
+            workflowDefaultPackage: self.parentPackageB,
+            tabDefaultPackage: self.tab2PackageOne
+        )
+
+        expect(result?.identifier) == self.tab2PackageOne.identifier
+    }
+
+    func testTabSwitchSelectsTabDefaultWhenWorkflowDefaultBelongsToAnotherTab() {
+        // Scenario: user switches to tab 2 without having picked a package. Tab 2's own default
+        // must be selected in both the tab and the parent (purchase button) context.
+        let tab2Packages = [self.tab2PackageOne, self.tab2PackageTwo]
+        let variableContext = PackageContext.VariableContext(packages: tab2Packages)
+
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            // No explicit user selection yet, so the tabs view passes nil here.
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: variableContext,
+            parentCurrentVariableContext: variableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: LoadedTabsComponentView.effectiveTabDefaultPackage(
+                workflowDefaultPackage: self.parentPackageB,
+                tabPackages: tab2Packages,
+                tabDefaultPackage: self.tab2PackageOne
+            )
+        )
+
+        expect(updatePlan.tabUpdate?.package?.identifier) == self.tab2PackageOne.identifier
+        expect(updatePlan.parentUpdate?.package?.identifier) == self.tab2PackageOne.identifier
+    }
+
+    func testEffectiveTabDefaultKeepsWorkflowDefaultWhenTabOffersIt() {
+        // The workflow default still wins when the tab actually offers it, so a selection carried
+        // across workflow steps sharing a package set is preserved.
+        let result = LoadedTabsComponentView.effectiveTabDefaultPackage(
+            workflowDefaultPackage: self.parentPackageB,
+            tabPackages: [self.parentPackageA, self.parentPackageB],
+            tabDefaultPackage: self.parentPackageA
+        )
+
+        expect(result?.identifier) == self.parentPackageB.identifier
+    }
+
+    func testResolverIgnoresTabDefaultOutsideTabPackages() {
+        // Defense in depth: whatever the call site passes, the resolver must never hand a tab a
+        // package it doesn't list, because no row would render as selected.
+        let tab2Packages = [self.tab2PackageOne, self.tab2PackageTwo]
+        let variableContext = PackageContext.VariableContext(packages: tab2Packages)
+
+        let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: variableContext,
+            parentCurrentVariableContext: variableContext,
+            tabPackages: tab2Packages,
+            tabDefaultPackage: self.parentPackageB
+        )
+
+        expect(updatePlan.tabUpdate).to(beNil())
+        expect(updatePlan.parentUpdate).to(beNil())
+    }
+
 }
 
 // MARK: - Test Helpers

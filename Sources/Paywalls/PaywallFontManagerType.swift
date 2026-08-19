@@ -31,7 +31,33 @@ struct SystemFontRegistry: FontRegistrar {
         var errorRef: Unmanaged<CFError>?
 
         if !CTFontManagerRegisterFontsForURL(url as CFURL, .process, &errorRef) {
-            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(errorRef?.takeUnretainedValue())
+            let error = errorRef?.takeUnretainedValue()
+            if Self.isRecoverableRegistrationError(error) {
+                // Font is already available to the process; treat as success.
+                return
+            }
+
+            throw DefaultPaywallFontsManager.FontsManagerError.registrationError(error)
+        }
+    }
+
+    /// Whether registration failed only because the face is already available to the process.
+    static func isRecoverableRegistrationError(_ error: Error?) -> Bool {
+        guard let error = error else { return false }
+
+        let nsError = error as NSError
+        guard nsError.domain == (kCTFontManagerErrorDomain as String) else { return false }
+
+        switch nsError.code {
+        case CTFontManagerError.alreadyRegistered.rawValue:
+            // This exact file is already registered.
+            return true
+        case CTFontManagerError.duplicatedName.rawValue:
+            // Another file already provides a face with this name, e.g. one bundled
+            // through `UIAppFonts` or downloaded from a different URL.
+            return true
+        default:
+            return false
         }
     }
 }
@@ -59,6 +85,7 @@ struct DefaultFontFileManager: FontsFileManaging {
     }
 
     func cachesDirectory() throws -> URL {
+        // swiftlint:disable:next avoid_using_directory_apis_directly
         guard let url = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first else {
             throw CocoaError(.fileNoSuchFile)
         }
@@ -103,20 +130,13 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
     }
 
     nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
-        var availableFontNames: [String] = []
-        #if canImport(UIKit)
-        if let fontFamily = fontFamily {
-            availableFontNames = UIFont.fontNames(forFamilyName: fontFamily)
-        } else {
-            availableFontNames = UIFont.familyNames.flatMap {
-                UIFont.fontNames(forFamilyName: $0)
-            }
-        }
-        #elseif canImport(AppKit)
-        availableFontNames = NSFontManager.shared.availableFonts
-        #endif
+        guard !fontName.isEmpty else { return false }
 
-        return availableFontNames.contains(fontName)
+        if Self.fontFaceExists(named: fontName) {
+            return true
+        }
+
+        return Self.installedFontNames(inFamily: fontFamily).contains(fontName)
     }
 
     func installFont(_ font: DownloadableFont) async throws {
@@ -152,6 +172,39 @@ actor DefaultPaywallFontsManager: PaywallFontManagerType {
     }
 
     // MARK: - Private
+
+    /// Whether a font face with this name is already available to the process.
+    private static func fontFaceExists(named fontName: String) -> Bool {
+        #if canImport(UIKit)
+        guard let font = UIFont(name: fontName, size: 1) else { return false }
+        // `UIFont(name:)` also resolves family names, so confirm we matched the requested face.
+        return fontName.caseInsensitiveCompare(font.fontName) == .orderedSame
+            || fontName.caseInsensitiveCompare(font.familyName) == .orderedSame
+        #elseif canImport(AppKit)
+        guard let font = NSFont(name: fontName, size: 1) else { return false }
+        if fontName.caseInsensitiveCompare(font.fontName) == .orderedSame { return true }
+        guard let familyName = font.familyName else { return false }
+        return fontName.caseInsensitiveCompare(familyName) == .orderedSame
+        #else
+        return false
+        #endif
+    }
+
+    /// Names of the installed faces in `fontFamily`, or of every installed face when the
+    /// family is unknown to the system.
+    private static func installedFontNames(inFamily fontFamily: String?) -> [String] {
+        #if canImport(UIKit)
+        if let fontFamily = fontFamily {
+            let namesInFamily = UIFont.fontNames(forFamilyName: fontFamily)
+            if !namesInFamily.isEmpty { return namesInFamily }
+        }
+        return UIFont.familyNames.flatMap { UIFont.fontNames(forFamilyName: $0) }
+        #elseif canImport(AppKit)
+        return NSFontManager.shared.availableFonts
+        #else
+        return []
+        #endif
+    }
 
     private static func fontsDirectory(fileManager: FontsFileManaging) throws -> URL {
         let fontsDirectory = try fileManager

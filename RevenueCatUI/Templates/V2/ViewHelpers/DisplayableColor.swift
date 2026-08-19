@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/11/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -30,7 +30,7 @@ extension PaywallComponent.Background {
         case .image(let image, let fitMode, let colorScheme):
             return .image(image, fitMode, colorScheme?.asDisplayable(uiConfigProvider: uiConfigProvider))
         case let .video(video, image, loop, mute, fitMode, colorScheme):
-            let viewModel = VideoComponentViewModel(
+            let viewModel = VideoComponentViewModel.forBackground(
                 localizationProvider: localizationProvider ?? .init(locale: .current, localizedStrings: .init()),
                 uiConfigProvider: uiConfigProvider,
                 component: .init(

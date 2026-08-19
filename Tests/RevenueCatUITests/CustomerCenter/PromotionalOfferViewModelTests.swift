@@ -33,12 +33,14 @@ final class PromotionalOfferViewModelTests: TestCase {
         cancellables = Set<AnyCancellable>()
     }
 
-    @MainActor
-    func testActionWrapperTriggersActionOnPurchaseSuccess() async {
-        let mockPurchases = MockCustomerCenterPurchases()
-        let actionWrapper = CustomerCenterActionWrapper()
+    // MARK: - Helpers
 
-        var capturedAction: PromotionalOfferViewAction?
+    @MainActor
+    private func makeViewModel(
+        mockPurchases: MockCustomerCenterPurchases,
+        actionWrapper: CustomerCenterActionWrapper,
+        onComplete: @escaping (PromotionalOfferViewAction) -> Void
+    ) -> PromotionalOfferViewModel {
         let signedData = PromotionalOffer.SignedData(
             identifier: "id",
             keyIdentifier: "key_i",
@@ -56,7 +58,6 @@ final class PromotionalOfferViewModelTests: TestCase {
             numberOfPeriods: 1,
             type: .introductory
         )
-
         let product = TestStoreProduct(
             localizedTitle: "localizedTitle",
             price: 0,
@@ -67,16 +68,7 @@ final class PromotionalOfferViewModelTests: TestCase {
             localizedDescription: "localizedDescription",
             locale: Locale(identifier: "en_US")
         )
-
-        mockPurchases.purchaseResult = .success(
-            (
-                transaction: nil,
-                customerInfo: CustomerInfoFixtures.customerInfoWithAmazonSubscriptions,
-                userCancelled: false
-            )
-        )
-
-        let viewModel = PromotionalOfferViewModel(
+        return PromotionalOfferViewModel(
             promotionalOfferData: PromotionalOfferData(
                 promotionalOffer: PromotionalOffer(discount: discount, signedData: signedData),
                 product: product.toStoreProduct(),
@@ -90,9 +82,31 @@ final class PromotionalOfferViewModelTests: TestCase {
             ),
             purchasesProvider: mockPurchases,
             actionWrapper: actionWrapper,
-            onPromotionalOfferPurchaseFlowComplete: { action in
-                capturedAction = action
-            }
+            onPromotionalOfferPurchaseFlowComplete: onComplete
+        )
+    }
+
+    // MARK: - Tests
+
+    @MainActor
+    func testActionWrapperTriggersActionOnPurchaseSuccess() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let actionWrapper = CustomerCenterActionWrapper()
+
+        var capturedAction: PromotionalOfferViewAction?
+        let mockTransaction = StoreTransaction(MockStoreTransaction())
+        mockPurchases.purchaseResult = .success(
+            (
+                transaction: mockTransaction,
+                customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+                userCancelled: false
+            )
+        )
+
+        let viewModel = makeViewModel(
+            mockPurchases: mockPurchases,
+            actionWrapper: actionWrapper,
+            onComplete: { capturedAction = $0 }
         )
 
         var didReceivePromotionalOfferSuccess = false
@@ -102,10 +116,61 @@ final class PromotionalOfferViewModelTests: TestCase {
             }
             .store(in: &cancellables)
 
+        var receivedOfferId: String?
+        actionWrapper.promotionalOfferSucceeded
+            .sink { _, _, offerId in
+                receivedOfferId = offerId
+            }
+            .store(in: &cancellables)
+
         await viewModel.purchasePromo()
 
         expect(capturedAction!.isSuccess).to(beTrue())
         await expect(didReceivePromotionalOfferSuccess).toEventually(beTrue())
+        expect(receivedOfferId).to(equal("id"))
+    }
+
+    @MainActor
+    func testActionWrapperDoesNotTriggerPromotionalOfferSucceededWhenTransactionIsNil() async {
+        let mockPurchases = MockCustomerCenterPurchases()
+        let actionWrapper = CustomerCenterActionWrapper()
+
+        var capturedAction: PromotionalOfferViewAction?
+        mockPurchases.purchaseResult = .success(
+            (
+                transaction: nil,
+                customerInfo: CustomerInfoFixtures.customerInfoWithAppleSubscriptions,
+                userCancelled: false
+            )
+        )
+
+        let viewModel = makeViewModel(
+            mockPurchases: mockPurchases,
+            actionWrapper: actionWrapper,
+            onComplete: { capturedAction = $0 }
+        )
+
+        var didReceivePromotionalOfferSucceeded = false
+        actionWrapper.promotionalOfferSucceeded
+            .sink { _, _, _ in
+                didReceivePromotionalOfferSucceeded = true
+            }
+            .store(in: &cancellables)
+
+        var didReceiveDeprecatedSuccess = false
+        actionWrapper.promotionalOfferSuccess
+            .sink { _ in
+                didReceiveDeprecatedSuccess = true
+            }
+            .store(in: &cancellables)
+
+        await viewModel.purchasePromo()
+
+        expect(capturedAction!.isSuccess).to(beTrue())
+        expect(didReceivePromotionalOfferSucceeded).to(beFalse())
+        // The deprecated handler must still fire even when transaction is nil,
+        // preserving backward compat for existing integrators.
+        await expect(didReceiveDeprecatedSuccess).toEventually(beTrue())
     }
 
     @MainActor
@@ -114,54 +179,12 @@ final class PromotionalOfferViewModelTests: TestCase {
         let actionWrapper = CustomerCenterActionWrapper()
 
         var capturedAction: PromotionalOfferViewAction?
-        let signedData = PromotionalOffer.SignedData(
-            identifier: "id",
-            keyIdentifier: "key_i",
-            nonce: UUID(),
-            signature: "a signature",
-            timestamp: 1234
-        )
-        let discount = MockStoreProductDiscount(
-            offerIdentifier: "offerIdentifier",
-            currencyCode: "USD",
-            price: 1,
-            localizedPriceString: "$1.00",
-            paymentMode: .payAsYouGo,
-            subscriptionPeriod: SubscriptionPeriod(value: 1, unit: .month),
-            numberOfPeriods: 1,
-            type: .introductory
-        )
-
-        let product = TestStoreProduct(
-            localizedTitle: "localizedTitle",
-            price: 0,
-            currencyCode: "USD",
-            localizedPriceString: "",
-            productIdentifier: "productIdentifier",
-            productType: .nonRenewableSubscription,
-            localizedDescription: "localizedDescription",
-            locale: Locale(identifier: "en_US")
-        )
-
         mockPurchases.purchaseResult = .failure(NSError(domain: "", code: 0))
 
-        let viewModel = PromotionalOfferViewModel(
-            promotionalOfferData: PromotionalOfferData(
-                promotionalOffer: PromotionalOffer(discount: discount, signedData: signedData),
-                product: product.toStoreProduct(),
-                promoOfferDetails: CustomerCenterConfigData.HelpPath.PromotionalOffer(
-                    iosOfferId: "offerIdentifier",
-                    eligible: true,
-                    title: "title",
-                    subtitle: "subtitle",
-                    productMapping: [:]
-                )
-            ),
-            purchasesProvider: mockPurchases,
+        let viewModel = makeViewModel(
+            mockPurchases: mockPurchases,
             actionWrapper: actionWrapper,
-            onPromotionalOfferPurchaseFlowComplete: { action in
-                capturedAction = action
-            }
+            onComplete: { capturedAction = $0 }
         )
 
         await viewModel.purchasePromo()

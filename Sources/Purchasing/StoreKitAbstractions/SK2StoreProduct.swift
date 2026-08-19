@@ -18,6 +18,25 @@ internal struct SK2StoreProduct: StoreProductType {
 
     init(sk2Product: SK2Product) {
         self._underlyingSK2Product = .init(sk2Product)
+        self.compoundProductIdentifier = CompoundProductIdentifier(for: sk2Product)
+        self.installmentsInfo = nil
+        #if compiler(>=6.3.2)
+        self._pricingTerms = nil
+        #endif
+    }
+
+    @available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+    init(
+        sk2Product: SK2Product,
+        compoundProductIdentifier: CompoundProductIdentifier,
+        installmentsInfo: InstallmentsInfo? = nil
+    ) {
+        self._underlyingSK2Product = .init(sk2Product)
+        self.compoundProductIdentifier = compoundProductIdentifier
+        self.installmentsInfo = installmentsInfo
+        #if compiler(>=6.3.2)
+        self._pricingTerms = Self.pricingTerms(for: sk2Product, installmentsInfo: installmentsInfo)
+        #endif
     }
 
     // We can't directly store instances of StoreKit.Product, since that causes
@@ -27,7 +46,15 @@ internal struct SK2StoreProduct: StoreProductType {
     private let _underlyingSK2Product: Box<SK2Product>
     var underlyingSK2Product: SK2Product { self._underlyingSK2Product.value }
 
+    private let compoundProductIdentifier: CompoundProductIdentifier
+
     private let priceFormatterProvider: PriceFormatterProvider = .init()
+
+    let installmentsInfo: InstallmentsInfo?
+
+    #if compiler(>=6.3.2)
+    private let _pricingTerms: (any Sendable)?
+    #endif
 
     var productCategory: StoreProduct.ProductCategory {
         return self.productType.productCategory
@@ -45,7 +72,7 @@ internal struct SK2StoreProduct: StoreProductType {
 
     var localizedPriceString: String { underlyingSK2Product.displayPrice }
 
-    var productIdentifier: String { underlyingSK2Product.id }
+    var productIdentifier: String { return underlyingSK2Product.id }
 
     var isFamilyShareable: Bool { underlyingSK2Product.isFamilyShareable }
 
@@ -77,15 +104,60 @@ internal struct SK2StoreProduct: StoreProductType {
     }
 
     var introductoryDiscount: StoreProductDiscount? {
-        self.underlyingSK2Product.subscription?.introductoryOffer
-            .flatMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+        func introductoryDiscountOnProduct() -> StoreProductDiscount? {
+            return self.underlyingSK2Product.subscription?.introductoryOffer
+                .flatMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+        }
+
+        #if compiler(>=6.3.2)
+        if self.representsBillingPlan,
+           #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+
+            return self.pricingTerms?.subscriptionOffers
+                .filter({ $0.type == .introductory })
+                .first
+                .flatMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+        } else {
+            return introductoryDiscountOnProduct()
+        }
+        #else
+        return introductoryDiscountOnProduct()
+        #endif
     }
 
     var discounts: [StoreProductDiscount] {
+        #if compiler(>=6.3.2)
+        if self.representsBillingPlan,
+           #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            let promotionalOffersOnApplicablePricingTerms = self.pricingTerms
+                .map({
+                    $0.subscriptionOffers.filter({ $0.type == .promotional })
+                        .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
+                }) ?? []
+
+            return promotionalOffersOnApplicablePricingTerms
+        } else {
+            return self.promotionalOffersOnSubscriptionInfo
+        }
+        #else
+        return self.promotionalOffersOnSubscriptionInfo
+        #endif
+    }
+
+    var id: String { return self.compoundProductIdentifier.compoundProductIdentifier }
+
+    /// Whether this product represents a specific billing plan rather than the base product.
+    var representsBillingPlan: Bool {
+        self.compoundProductIdentifier.productPlanIdentifier != nil
+    }
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension SK2StoreProduct {
+    var promotionalOffersOnSubscriptionInfo: [StoreProductDiscount] {
         (self.underlyingSK2Product.subscription?.promotionalOffers ?? [])
             .compactMap { StoreProductDiscount(sk2Discount: $0, currencyCode: self.currencyCode) }
     }
-
 }
 
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -121,14 +193,59 @@ private extension SK2StoreProduct {
 
 }
 
+#if compiler(>=6.3.2)
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+extension SK2StoreProduct {
+    func containsSubscriptionOfferTypeOnBillingPlan(
+        subscriptionOfferType: StoreKit.Product.SubscriptionOffer.OfferType
+    ) -> Bool {
+        if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+            guard let pricingTerms = self.pricingTerms else { return false }
+
+            return pricingTerms.subscriptionOffers.contains(where: {
+                $0.type == subscriptionOfferType
+            })
+        } else {
+            // Billing plan doesn't exist
+            return false
+        }
+    }
+}
+
+@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)
+private extension SK2StoreProduct {
+
+    var pricingTerms: StoreKit.Product.SubscriptionInfo.PricingTerms? {
+        return self._pricingTerms as? StoreKit.Product.SubscriptionInfo.PricingTerms
+    }
+
+    static func pricingTerms(
+        for sk2Product: SK2Product,
+        installmentsInfo: InstallmentsInfo?
+    ) -> StoreKit.Product.SubscriptionInfo.PricingTerms? {
+        guard let billingPlan = installmentsInfo?.billingPlanType else {
+            return nil
+        }
+
+        return sk2Product
+            .subscription?
+            .pricingTerms
+            .first(where: { $0.billingPlanType == billingPlan.skBillingPlanType })
+    }
+}
+
+#endif
+
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 extension SK2StoreProduct: Hashable {
 
     static func == (lhs: SK2StoreProduct, rhs: SK2StoreProduct) -> Bool {
-        return lhs.underlyingSK2Product == rhs.underlyingSK2Product
+        return (lhs.compoundProductIdentifier == rhs.compoundProductIdentifier)
+            && (lhs.underlyingSK2Product == rhs.underlyingSK2Product)
     }
 
     func hash(into hasher: inout Hasher) {
+        hasher.combine(self.compoundProductIdentifier)
         hasher.combine(self.underlyingSK2Product)
     }
 

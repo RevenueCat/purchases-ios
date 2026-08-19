@@ -1,4 +1,8 @@
 "OK" = "好的";
+"Close" = "關閉";
+"Go back" = "返回";
+"Manage subscription" = "管理訂閱";
+"Redeem code" = "兌換代碼";
 "All subscriptions" = "所有訂閱";
 "Privacy" = "隱私";
 "Privacy policy" = "隱私權政策";
@@ -18,3 +22,4 @@
 "Continue" = "繼續";
 "Default_offer_details_with_intro_offer" = "試用期{{ sub_offer_duration }}，屆滿後{{ total_price_and_per_month }}。";
 "Something went wrong" = "發生錯誤";
+"Purchase" = "購買";

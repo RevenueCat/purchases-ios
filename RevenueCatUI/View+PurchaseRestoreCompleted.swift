@@ -39,6 +39,13 @@ public typealias PurchaseOfPackageStartedHandler = @MainActor @Sendable (_ packa
 /// A closure used for notifying of purchase cancellation.
 public typealias PurchaseCancelledHandler = @MainActor @Sendable () -> Void
 
+/// A closure invoked when the user taps a web checkout CTA and leaves the app to complete payment
+/// externally.
+public typealias WebCheckoutOpenedHandler = @MainActor @Sendable () -> Void
+
+/// A closure invoked when the paywall successfully opened a URL.
+public typealias URLOpenedHandler = @MainActor @Sendable (_ url: URL) -> Void
+
 /// A closure used to perform custom purchase logic implemented by your app.
 /// - Parameters:
 ///   - package: The package to be purchased.
@@ -83,6 +90,25 @@ public struct PurchaseInitiatedAction: Sendable {
     /// Invokes the action with the given product identifier and resume callback.
     func callAsFunction(_ package: RevenueCat.Package, resume: ResumeAction) {
         action(package, resume)
+    }
+}
+
+/// A wrapper for the restore initiated callback action.
+/// This allows intercepting and gating restore flows before they proceed.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct RestoreInitiatedAction: Sendable {
+    private let action: @Sendable (ResumeAction) -> Void
+
+    /// Creates a new restore initiated action.
+    /// - Parameter action: The closure to invoke when restore is initiated.
+    ///   The closure receives a resume callback that must be called to proceed.
+    public init(_ action: @escaping @Sendable (ResumeAction) -> Void) {
+        self.action = action
+    }
+
+    /// Invokes the action with the resume callback.
+    func callAsFunction(resume: ResumeAction) {
+        action(resume)
     }
 }
 
@@ -225,6 +251,41 @@ extension View {
         return self.modifier(OnPurchaseCancelledModifier(handler: handler))
     }
 
+    /// Invokes the given closure when the user taps a web checkout CTA and leaves the app to complete
+    /// payment externally. Distinct from ``onPurchaseCancelled(_:)``: the user has not cancelled.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onWebCheckoutOpened {
+    ///         print("User left to complete web checkout")
+    ///     }
+    /// ```
+    public func onWebCheckoutOpened(
+        _ handler: @escaping WebCheckoutOpenedHandler
+    ) -> some View {
+        return self.modifier(OnWebCheckoutOpenedModifier(handler: handler))
+    }
+
+    /// Invokes the given closure after the paywall successfully opened a URL, either from a button with a URL
+    /// destination or from a link inside a text component. Called for all opening methods: in-app browser,
+    /// external browser and deep link.
+    ///
+    /// Not called for web checkout URLs. Use ``onWebCheckoutOpened(_:)`` for those.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onURLOpened { url in
+    ///         print("Opened URL: \(url)")
+    ///     }
+    /// ```
+    public func onURLOpened(
+        _ handler: @escaping URLOpenedHandler
+    ) -> some View {
+        return self.modifier(OnURLOpenedModifier(handler: handler))
+    }
+
     /// Invokes the given closure when a restore begins.
     /// Example:
     /// ```swift
@@ -236,6 +297,10 @@ extension View {
     ///         }
     ///  }
     /// ```
+    ///
+    /// - Note: This callback is invoked after restore has started.
+    ///   If you need to intercept restore before it begins (for example, to require authentication
+    ///   or conditionally cancel the flow), use ``onRestoreInitiated(_:)`` instead.
     ///
     /// ### Related Articles
     /// [Documentation](https://rev.cat/paywalls)
@@ -347,6 +412,38 @@ extension View {
         self.environment(\.purchaseInitiatedAction, PurchaseInitiatedAction(action))
     }
 
+    /// Invokes the given closure when restore is about to be initiated,
+    /// allowing you to intercept and gate the restore (e.g., for authentication).
+    /// The restore will not proceed until the `resume` callback is invoked.
+    ///
+    /// Example:
+    /// ```swift
+    ///  var body: some View {
+    ///     PaywallView()
+    ///         .onRestoreInitiated { resume in
+    ///             print("Intercepting restore")
+    ///             // Perform authentication or other pre-restore logic
+    ///             authenticateUser { success in
+    ///                 if success {
+    ///                     resume()
+    ///                     print("Auth complete. Restore started")
+    ///                 } else {
+    ///                     resume(shouldProceed: false)
+    ///                     print("Auth failed, restore flow canceled")
+    ///                 }
+    ///             }
+    ///         }
+    ///  }
+    /// ```
+    ///
+    /// ### Related Articles
+    /// [Documentation](https://rev.cat/paywalls)
+    public func onRestoreInitiated(
+        _ action: @escaping @Sendable (ResumeAction) -> Void
+    ) -> some View {
+        self.environment(\.restoreInitiatedAction, RestoreInitiatedAction(action))
+    }
+
     /// Invokes the given closure when offer code redemption is about to be initiated,
     /// allowing you to intercept and gate the redemption (e.g., for authentication).
     /// The offer code redemption will not proceed until the `resume` callback is invoked.
@@ -453,6 +550,38 @@ private struct OnPurchaseCancelledModifier: ViewModifier {
             .onPreferenceChange(PurchasedResultPreferenceKey.self) { result in
                 if let result, result.userCancelled {
                     self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnWebCheckoutOpenedModifier: ViewModifier {
+
+    let handler: WebCheckoutOpenedHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(WebCheckoutOpenedPreferenceKey.self) { id in
+                if id != nil {
+                    self.handler()
+                }
+            }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct OnURLOpenedModifier: ViewModifier {
+
+    let handler: URLOpenedHandler
+
+    func body(content: Content) -> some View {
+        content
+            .onPreferenceChange(URLOpenedPreferenceKey.self) { signal in
+                if let signal {
+                    self.handler(signal.url)
                 }
             }
     }

@@ -73,6 +73,11 @@ extension Data {
         return self.hash(with: &sha512)
     }
 
+    var sha1String: String {
+        var sha1 = Insecure.SHA1()
+        return self.hashString(with: &sha1)
+    }
+
     var sha256String: String {
         var sha256 = SHA256()
         return self.hashString(with: &sha256)
@@ -106,6 +111,21 @@ extension Data {
             return self + Data(count: uuidMemorySize - self.count)
         }
         return self
+    }
+
+    init?(base64URLEncoded string: String) {
+        let remainder = string.utf8.count % 4
+
+        guard remainder != 1 else { return nil }
+
+        let paddingCount = remainder == 0 ? 0 : 4 - remainder
+
+        let input = string
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+            .appending(String(repeating: "=", count: paddingCount))
+
+        self.init(base64Encoded: input)
     }
 }
 

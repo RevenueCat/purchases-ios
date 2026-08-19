@@ -95,7 +95,7 @@ extension StoreKit2Receipt.SubscriptionStatus: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case state
-        case renewalInfoJWSToken = "renewal_info"
+        case renewalInfoJWSToken = "renewalInfo"
         case transactionJWSToken = "transaction"
     }
 
@@ -105,11 +105,11 @@ extension StoreKit2Receipt: Codable {
 
     private enum CodingKeys: String, CodingKey {
         case environment
-        case subscriptionStatusBySubscriptionGroupId = "subscription_status"
+        case subscriptionStatusBySubscriptionGroupId = "subscriptionStatus"
         case transactions
-        case bundleId = "bundle_id"
-        case originalApplicationVersion = "original_application_version"
-        case originalPurchaseDate = "original_purchase_date"
+        case bundleId
+        case originalApplicationVersion
+        case originalPurchaseDate
     }
 
 }

@@ -74,9 +74,7 @@ class BasePurchasesTests: TestCase {
         self.mockPurchasedProductsFetcher = MockPurchasedProductsFetcher()
         self.mockTransactionFetcher = MockStoreKit2TransactionFetcher()
 
-        let apiKey = "mockAPIKey"
-        let httpClient = MockHTTPClient(apiKey: apiKey,
-                                        systemInfo: self.systemInfo,
+        let httpClient = MockHTTPClient(systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
@@ -86,7 +84,9 @@ class BasePurchasesTests: TestCase {
                                           systemInfo: self.systemInfo,
                                           offlineCustomerInfoCreator: MockOfflineCustomerInfoCreator(),
                                           dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate))
-        self.backend = MockBackend(backendConfig: config, attributionFetcher: self.attributionFetcher)
+        self.backend = MockBackend(backendConfig: config,
+                                   attributionFetcher: self.attributionFetcher,
+                                   mockAdsAPI: MockAdsAPI())
         self.subscriberAttributesManager = MockSubscriberAttributesManager(
             backend: self.backend,
             deviceCache: self.deviceCache,
@@ -105,6 +105,7 @@ class BasePurchasesTests: TestCase {
                                        attributionPoster: self.attributionPoster,
                                        systemInfo: self.systemInfo)
         self.mockOfflineEntitlementsManager = MockOfflineEntitlementsManager()
+        self.mockLocalTransactionMetadataStore = MockLocalTransactionMetadataStore()
         self.customerInfoManager = CustomerInfoManager(offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                                        operationDispatcher: self.mockOperationDispatcher,
                                                        deviceCache: self.deviceCache,
@@ -130,6 +131,7 @@ class BasePurchasesTests: TestCase {
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
         self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
+        self.mockRemoteConfigManager = MockRemoteConfigManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
                                                  customerInfoManager: self.customerInfoManager)
@@ -201,6 +203,9 @@ class BasePurchasesTests: TestCase {
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
+    var mockRemoteConfigManager: MockRemoteConfigManager!
+    var mockLocalTransactionMetadataStore: MockLocalTransactionMetadataStore!
+    var transactionMetadataSyncHelper: TransactionMetadataSyncHelper!
 
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     var mockDiagnosticsTracker: MockDiagnosticsTracker {
@@ -229,7 +234,8 @@ class BasePurchasesTests: TestCase {
             backend: self.backend,
             paymentQueueWrapper: self.paymentQueueWrapper,
             systemInfo: self.systemInfo,
-            operationDispatcher: self.mockOperationDispatcher
+            operationDispatcher: self.mockOperationDispatcher,
+            localTransactionMetadataStore: self.mockLocalTransactionMetadataStore
         )
     }
 
@@ -312,6 +318,15 @@ class BasePurchasesTests: TestCase {
             identityManager: self.identityManager
         )
 
+        let transactionMetadataSyncHelper = TransactionMetadataSyncHelper(
+            customerInfoManager: self.customerInfoManager,
+            attribution: self.attribution,
+            currentUserProvider: self.identityManager,
+            operationDispatcher: self.mockOperationDispatcher,
+            transactionPoster: self.transactionPoster
+        )
+        self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
+
         self.purchases = Purchases(appUserID: appUserId,
                                    requestFetcher: self.requestFetcher,
                                    receiptFetcher: self.receiptFetcher,
@@ -332,6 +347,14 @@ class BasePurchasesTests: TestCase {
                                    eventsManager: self.eventsManager,
                                    productsManager: self.mockProductsManager,
                                    offeringsManager: self.mockOfferingsManager,
+                                   workflowManager: WorkflowManager(
+                                    workflowsConfigProvider: WorkflowsConfigProvider(
+                                        manager: self.mockRemoteConfigManager
+                                    ),
+                                    paywallCache: self.paywallCache,
+                                    operationDispatcher: self.mockOperationDispatcher
+                                   ),
+                                   remoteConfigManager: self.mockRemoteConfigManager,
                                    offlineEntitlementsManager: self.mockOfflineEntitlementsManager,
                                    purchasesOrchestrator: self.purchasesOrchestrator,
                                    purchasedProductsFetcher: self.mockPurchasedProductsFetcher,
@@ -339,7 +362,9 @@ class BasePurchasesTests: TestCase {
                                    storeMessagesHelper: self.mockStoreMessagesHelper,
                                    diagnosticsTracker: self.diagnosticsTracker,
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
-                                   healthManager: healthManager)
+                                   healthManager: healthManager,
+                                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                                   currentConfiguration: nil)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
@@ -414,6 +439,7 @@ extension BasePurchasesTests {
 
         override func getOfferings(appUserID: String,
                                    isAppBackgrounded: Bool,
+                                   decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
@@ -425,7 +451,7 @@ extension BasePurchasesTests {
                 return
             }
 
-            completion(.success(.mockContents))
+            completion(.success(.init(contents: .mockContents, rawResponseData: nil)))
         }
 
         var postOfferForSigningCalled = false
@@ -451,9 +477,48 @@ extension BasePurchasesTests {
 
     }
 
+    enum MockBackendOperation: String {
+        case getCustomerInfo
+        case healthReport
+        case healthReportAvailability
+        case postReceipt
+        case postAttribution
+    }
+
     final class MockBackend: Backend {
 
         static let referenceDate = Date(timeIntervalSinceReferenceDate: 700000000) // 2023-03-08 20:26:40
+
+        /// Tracks the order in which backend methods are called.
+        var callOrder: [MockBackendOperation] = []
+
+        convenience init(backendConfig: BackendConfiguration,
+                         attributionFetcher: AttributionFetcher,
+                         mockAdsAPI: MockAdsAPI) {
+            let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+            let identity = IdentityAPI(backendConfig: backendConfig)
+            let offerings = OfferingsAPI(backendConfig: backendConfig)
+            let webBilling = WebBillingAPI(backendConfig: backendConfig)
+            let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
+            let internalAPI = InternalAPI(backendConfig: backendConfig)
+            let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
+            let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+            let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+            let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
+
+            self.init(backendConfig: backendConfig,
+                      customerAPI: customer,
+                      identityAPI: identity,
+                      offeringsAPI: offerings,
+                      webBillingAPI: webBilling,
+                      offlineEntitlements: offlineEntitlements,
+                      internalAPI: internalAPI,
+                      customerCenterConfig: customerCenterConfig,
+                      redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                      virtualCurrenciesAPI: virtualCurrenciesAPI,
+                      adsAPI: mockAdsAPI,
+                      remoteConfigAPI: remoteConfigAPI)
+        }
 
         var userID: String?
         var originalApplicationVersion: String?
@@ -468,6 +533,7 @@ extension BasePurchasesTests {
                                       isAppBackgrounded: Bool,
                                       allowComputingOffline: Bool,
                                       completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+            self.callOrder.append(.getCustomerInfo)
             self.getCustomerInfoCallCount += 1
             self.userID = appUserID
 
@@ -479,6 +545,7 @@ extension BasePurchasesTests {
 
         var healthReportRequests = [String]()
         override func healthReportRequest(appUserID: String) async throws -> HealthReport {
+            self.callOrder.append(.healthReport)
             healthReportRequests += [appUserID]
 
             return .init(
@@ -492,12 +559,14 @@ extension BasePurchasesTests {
         var overrideHealthReportAvailabilityResponse = HealthReportAvailability(reportLogs: true)
         var healthReportAvailabilityRequests = [String]()
         override func healthReportAvailabilityRequest(appUserID: String) async throws -> HealthReportAvailability {
+            self.callOrder.append(.healthReportAvailability)
             healthReportAvailabilityRequests.append(appUserID)
 
             return overrideHealthReportAvailabilityResponse
         }
 
         var postReceiptDataCalled = false
+        var postReceiptDataCallCount = 0
         var postedReceiptData: EncodedAppleReceipt?
         var postedIsRestore: Bool?
         var postedProductID: String?
@@ -509,18 +578,29 @@ extension BasePurchasesTests {
         var postedDiscounts: [StoreProductDiscount]?
         var postedOfferingIdentifier: String?
         var postedObserverMode: Bool?
-        var postedInitiationSource: ProductRequestData.InitiationSource?
+        var postedInitiationSource: PostReceiptSource.InitiationSource?
         var postReceiptResult: Result<CustomerInfo, BackendError>?
+        var postedAssociatedTransactionIds: [String?] = []
 
         override func post(receipt: EncodedAppleReceipt,
                            productData: ProductRequestData?,
                            transactionData: PurchasedTransactionData,
+                           postReceiptSource: PostReceiptSource,
                            observerMode: Bool,
+                           originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                            appTransaction: String? = nil,
+                           associatedTransactionId: String? = nil,
+                           sdkOriginated: Bool = false,
+                           appUserID: String,
+                           containsAttributionData: Bool = false,
                            completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
+            self.callOrder.append(.postReceipt)
             self.postReceiptDataCalled = true
+            self.postReceiptDataCallCount += 1
+            self.userID = appUserID
             self.postedReceiptData = receipt
-            self.postedIsRestore = transactionData.source.isRestore
+            self.postedIsRestore = postReceiptSource.isRestore
+            self.postedAssociatedTransactionIds.append(associatedTransactionId)
 
             if let productData = productData {
                 self.postedProductID = productData.productIdentifier
@@ -536,7 +616,7 @@ extension BasePurchasesTests {
 
             self.postedOfferingIdentifier = transactionData.presentedOfferingContext?.offeringIdentifier
             self.postedObserverMode = observerMode
-            self.postedInitiationSource = transactionData.source.initiationSource
+            self.postedInitiationSource = postReceiptSource.initiationSource
 
             completion(self.postReceiptResult ?? .failure(.missingAppUserID()))
         }
@@ -557,6 +637,7 @@ extension BasePurchasesTests {
                            network: AttributionNetwork,
                            appUserID: String,
                            completion: ((BackendError?) -> Void)? = nil) {
+            self.callOrder.append(.postAttribution)
             self.invokedPostAttributionData = true
             self.invokedPostAttributionDataCount += 1
             self.invokedPostAttributionDataParameters = (attributionData, network, appUserID)
@@ -565,11 +646,225 @@ extension BasePurchasesTests {
                 completion?(result.0)
             }
         }
+
+        var invokedIsPurchaseAllowedByRestoreBehavior = false
+        var invokedIsPurchaseAllowedByRestoreBehaviorCount = 0
+        var invokedIsPurchaseAllowedByRestoreBehaviorParameters:
+        (appUserID: String, transactionJWS: String, isAppBackgrounded: Bool)?
+        var stubbedIsPurchaseAllowedByRestoreBehaviorResult:
+        Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError> = .failure(.missingAppUserID())
+
+        override func isPurchaseAllowedByRestoreBehavior(
+            appUserID: String,
+            transactionJWS: String,
+            isAppBackgrounded: Bool,
+            completion: @escaping CustomerAPI.IsPurchaseAllowedByRestoreBehaviorResponseHandler
+        ) {
+            self.invokedIsPurchaseAllowedByRestoreBehavior = true
+            self.invokedIsPurchaseAllowedByRestoreBehaviorCount += 1
+            self.invokedIsPurchaseAllowedByRestoreBehaviorParameters = (
+                appUserID,
+                transactionJWS,
+                isAppBackgrounded
+            )
+
+            completion(self.stubbedIsPurchaseAllowedByRestoreBehaviorResult)
+        }
     }
 }
 
 extension BasePurchasesTests.MockBackend: @unchecked Sendable {}
 extension BasePurchasesTests.MockOfferingsAPI: @unchecked Sendable {}
+
+final class MockRemoteConfigManager: RemoteConfigManagerType {
+
+    struct RefreshParameters {
+        let fetchContext: RemoteConfigFetchContext
+        let isAppBackgrounded: Bool
+    }
+
+    var isDisabled = false
+    var onRemoteConfigDisabled: (() -> Void)?
+    var onConfigGenerationRead: (() -> Void)?
+    var configGeneration: Int {
+        get {
+            defer { self.onConfigGenerationRead?() }
+            return self.configGenerationStorage
+        }
+        set {
+            self.configGenerationStorage = newValue
+        }
+    }
+    private var configGenerationStorage = 0
+    var stubbedHasCommittedConfig = true
+
+    private(set) var invokedRefreshRemoteConfigCount = 0
+    private(set) var invokedRefreshRemoteConfigIfStaleCount = 0
+    private(set) var invokedCommittedTopicAfterInFlightRefreshCount = 0
+    private(set) var invokedClearCacheCount = 0
+    private(set) var invokedCloseCount = 0
+    private(set) var invokedRefreshRemoteConfigParametersList: [RefreshParameters] = []
+    private(set) var invokedRefreshRemoteConfigIfStaleParametersList: [RefreshParameters] = []
+    private(set) var invokedClearCacheAppUserIDs: [String] = []
+
+    func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        self.invokedRefreshRemoteConfigCount += 1
+        self.invokedRefreshRemoteConfigParametersList.append(
+            .init(fetchContext: fetchContext, isAppBackgrounded: isAppBackgrounded)
+        )
+    }
+
+    func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {
+        self.invokedRefreshRemoteConfigIfStaleCount += 1
+        self.invokedRefreshRemoteConfigIfStaleParametersList.append(
+            .init(fetchContext: fetchContext, isAppBackgrounded: isAppBackgrounded)
+        )
+    }
+
+    func hasCommittedConfig() async -> Bool {
+        return self.stubbedHasCommittedConfig
+    }
+
+    var stubbedTopics: [RemoteConfigTopic: RemoteConfiguration.ConfigTopic] = [:]
+    var stubbedBlobData: [RemoteConfigTopic: [String: Data]] = [:]
+    // Atomic because UiConfigProvider now fetches its parts concurrently, so this can be appended to
+    // from multiple tasks at once.
+    private let _invokedBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKey: String)]> = .init([])
+    var invokedBlobDataParameters: [(topic: RemoteConfigTopic, itemKey: String)] {
+        return self._invokedBlobDataParameters.value
+    }
+    private let _invokedMergeItemsBlobDataParameters: Atomic<[(topic: RemoteConfigTopic, itemKeys: [String])]> =
+        .init([])
+    var invokedMergeItemsBlobDataParameters: [(topic: RemoteConfigTopic, itemKeys: [String])] {
+        return self._invokedMergeItemsBlobDataParameters.value
+    }
+
+    private let _invokedTopicCount: Atomic<Int> = .init(0)
+    var invokedTopicCount: Int { return self._invokedTopicCount.value }
+    /// When `true`, `topic(_:)` suspends until `completeStoredTopic()` resumes every stored
+    /// waiter (there can be several: e.g. a gated delivery plus a background refresh).
+    var shouldStoreTopicCompletion = false
+    /// Restricts held topic reads when `shouldStoreTopicCompletion` is true. `nil` preserves the
+    /// default behavior of holding every topic.
+    var storedTopicCompletionTopics: Set<RemoteConfigTopic>?
+    private let _storedTopicContinuations: Atomic<[CheckedContinuation<RemoteConfiguration.ConfigTopic?, Never>]> =
+        .init([])
+
+    func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        guard self.shouldStoreTopicCompletion,
+              self.storedTopicCompletionTopics?.contains(topic) ?? true else {
+            self._invokedTopicCount.modify { $0 += 1 }
+            return self.stubbedTopics[topic]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before incrementing, so a test polling `invokedTopicCount` can never
+            // observe readiness before `completeStoredTopic()` has something to resume.
+            self._storedTopicContinuations.modify { $0.append(continuation) }
+            self._invokedTopicCount.modify { $0 += 1 }
+        }
+    }
+
+    var committedTopicAfterInFlightRefreshHandler:
+    ((RemoteConfigTopic) -> RemoteConfiguration.ConfigTopic?)?
+
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        self.invokedCommittedTopicAfterInFlightRefreshCount += 1
+        return self.committedTopicAfterInFlightRefreshHandler?(topic) ?? self.stubbedTopics[topic]
+    }
+
+    /// Resumes every waiter held while `shouldStoreTopicCompletion` was `true`, and stops
+    /// holding subsequent calls.
+    func completeStoredTopic(with result: RemoteConfiguration.ConfigTopic? = nil) {
+        self.shouldStoreTopicCompletion = false
+        for continuation in self._storedTopicContinuations.getAndSet([]) {
+            continuation.resume(returning: result)
+        }
+    }
+
+    /// When `true`, `blobData(for:itemKey:)` suspends until `completeStoredBlobReads()` is
+    /// called, so tests can control the timing of a caller resolving blob-backed data.
+    var shouldStoreBlobDataCompletion = false
+    private typealias StoredBlobRead = (
+        topic: RemoteConfigTopic, itemKey: String, continuation: CheckedContinuation<Data?, Never>
+    )
+    private let _storedBlobReads: Atomic<[StoredBlobRead]> = .init([])
+
+    func blobData(for topic: RemoteConfigTopic, itemKey: String) async -> Data? {
+        guard self.shouldStoreBlobDataCompletion else {
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+            return self.stubbedBlobData[topic]?[itemKey]
+        }
+        return await withCheckedContinuation { continuation in
+            // Store before recording, so a poller can't observe readiness with nothing to resume.
+            self._storedBlobReads.modify { $0.append((topic, itemKey, continuation)) }
+            self._invokedBlobDataParameters.modify { $0.append((topic, itemKey)) }
+        }
+    }
+
+    /// Resumes every held blob read with its key's stubbed data and stops holding subsequent
+    /// reads, so sequential read chains (like `mergeItemsBlobData`'s loop) run to completion.
+    func completeStoredBlobReads() {
+        self.shouldStoreBlobDataCompletion = false
+        for read in self._storedBlobReads.getAndSet([]) {
+            read.continuation.resume(returning: self.stubbedBlobData[read.topic]?[read.itemKey])
+        }
+    }
+
+    func blobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKey: String,
+        as type: T.Type
+    ) async throws -> T? {
+        guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+        return try JSONDecoder.default.decode(type, from: data)
+    }
+
+    var stubbedEnsureBlobsDownloadedResult = true
+    private let _invokedEnsureBlobsDownloadedRefs: Atomic<[[String]]> = .init([])
+    var invokedEnsureBlobsDownloadedRefs: [[String]] {
+        return self._invokedEnsureBlobsDownloadedRefs.value
+    }
+
+    func ensureBlobsDownloaded(_ refs: [String]) async -> Bool {
+        self._invokedEnsureBlobsDownloadedRefs.modify { $0.append(refs) }
+        return self.stubbedEnsureBlobsDownloadedResult
+    }
+
+    func mergeItemsBlobData<T: Decodable>(
+        for topic: RemoteConfigTopic,
+        itemKeys: [String],
+        as type: T.Type
+    ) async throws -> T? {
+        self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
+        guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
+
+        var mergedBlobValues: [String: AnyDecodable] = [:]
+        for itemKey in itemKeys.deduplicated() {
+            guard let data = await self.blobData(for: topic, itemKey: itemKey) else { return nil }
+            mergedBlobValues[itemKey] = try JSONDecoder.default.decode(AnyDecodable.self, from: data)
+        }
+
+        let mergedData = try JSONEncoder.default.encode(mergedBlobValues)
+        return try JSONDecoder.default.decode(type, from: mergedData)
+    }
+
+    func clearCache() {
+        self.configGeneration += 1
+        self.invokedClearCacheCount += 1
+    }
+
+    func clearCache(forAppUserID appUserID: String) {
+        self.configGeneration += 1
+        self.invokedClearCacheCount += 1
+        self.invokedClearCacheAppUserIDs.append(appUserID)
+    }
+
+    func close() {
+        self.invokedCloseCount += 1
+    }
+
+}
 
 private extension BasePurchasesTests {
 
@@ -608,6 +903,9 @@ private extension BasePurchasesTests {
         self.paywallCache = nil
         self.eventsManager = nil
         self.webPurchaseRedemptionHelper = nil
+        self.mockRemoteConfigManager = nil
+        self.transactionMetadataSyncHelper = nil
+        self.mockLocalTransactionMetadataStore = nil
         self.purchases = nil
     }
 

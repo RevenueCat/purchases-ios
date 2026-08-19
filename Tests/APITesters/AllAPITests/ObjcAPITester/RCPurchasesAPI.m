@@ -94,6 +94,8 @@ NSURL *url;
     RCPackage *pack;
 
     [p invalidateCustomerInfoCache];
+    [p overridePreferredUILocale:@"de_DE"];
+    [p overridePreferredUILocale:nil];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
     RCAttribution __unused *attribution = p.attribution;
@@ -155,6 +157,10 @@ NSURL *url;
     #if ENABLE_TRANSACTION_METADATA
     packageParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
     #endif
+
+    if (@available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)) {
+        packageParamBuilder = [packageParamBuilder withIntroductoryOfferEligibilityJWS:@"abc123"];
+    }
     RCPurchaseParams *packageParams = [packageParamBuilder build];
 
 
@@ -162,6 +168,10 @@ NSURL *url;
     #if ENABLE_TRANSACTION_METADATA
     productParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
     #endif
+
+    if (@available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)) {
+        productParamBuilder = [productParamBuilder withIntroductoryOfferEligibilityJWS:@"abc123"];
+    }
     RCPurchaseParams *productParams = [productParamBuilder build];
 
     // Win-back offers
@@ -241,11 +251,20 @@ NSURL *url;
 
     RCVirtualCurrencies * _Nullable __unused virtualCurrencies = p.cachedVirtualCurrencies;
 
+    if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)) {
+        [p recordPurchaseForProductID:@"product_id" completion:^(RCStoreTransaction * _Nullable transaction, NSError * _Nullable error) { }];
+    }
+
 #if (TARGET_OS_IPHONE || TARGET_OS_MACCATALYST) && !TARGET_OS_TV && !TARGET_OS_WATCH
     if (@available(iOS 15.0, *)) {
         [p beginRefundRequestForProduct:@"1234" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
         [p beginRefundRequestForEntitlement:@"" completion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
         [p beginRefundRequestForActiveEntitlementWithCompletion:^(RCRefundRequestStatus s, NSError * _Nullable e) { }];
+    }
+
+    if (@available(iOS 16.0, *)) {
+        [p showStoreMessagesWithCompletion:^{ }];
+        [p showStoreMessagesForTypes:[NSSet setWithObject:@(RCStoreMessageTypeBillingIssue)] completion:^{ }];
     }
 
     if (@available(iOS 13.4, *)) {

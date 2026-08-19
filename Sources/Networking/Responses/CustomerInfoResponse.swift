@@ -43,6 +43,7 @@ extension CustomerInfoResponse {
         @DefaultDecodable.EmptyDictionary
         var entitlements: [String: Entitlement]
 
+        var subscriberAttributes: SubscriberAttributes?
     }
 
     struct Subscription {
@@ -65,6 +66,7 @@ extension CustomerInfoResponse {
         var gracePeriodExpiresDate: Date?
         var refundedAt: Date?
         var storeTransactionId: String?
+        var autoResumeDate: Date?
 
         var displayName: String?
 
@@ -105,6 +107,10 @@ extension CustomerInfoResponse {
 
     }
 
+    struct SubscriberAttributes {
+        var attributes: [SubscriberAttribute]
+    }
+
 }
 
 // MARK: - Codable
@@ -127,6 +133,50 @@ extension CustomerInfoResponse.Entitlement: Decodable {
         self.purchaseDate = try container.decodeIfPresent(Date.self, forKey: .purchaseDate)
 
         self.rawData = decoder.decodeRawData()
+    }
+
+}
+
+extension CustomerInfoResponse.SubscriberAttributes: Codable, Hashable, CustomStringConvertible {
+
+    /// The wire representation of a single subscriber attribute, decoded/encoded as the *value*
+    /// of a `[String: Entry]` dictionary (see below for why).
+    private struct Entry: Codable {
+        var value: String?
+        var updatedAtMs: Double
+    }
+
+    var description: String {
+        attributes.description
+    }
+
+    // Note: attribute names are arbitrary strings (they can contain underscores,
+    // `$`, mixed case, etc.), so they must never be run through `JSONDecoder`/`JSONEncoder`'s
+    // snake_case <-> camelCase key strategy conversion (`JSONDecoder.default` / `JSONEncoder.default`
+    // both configure this). A `KeyedDecodingContainer`/`KeyedEncodingContainer` keyed by a custom
+    // `CodingKey` type (like `AnyCodingKey`) is *not* exempt from that conversion, so using one here
+    // would silently mangle attribute names containing underscores (e.g. "custom_key" -> "customKey").
+    // Instead, manually going through singleValueContainers() will preserve the underlying casing.
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let entries = try container.decode([String: Entry].self)
+
+        self.init(attributes: entries.map { key, entry in
+            SubscriberAttribute(withKey: key,
+                                value: entry.value,
+                                isSynced: true,
+                                setTime: Date(timeIntervalSince1970: entry.updatedAtMs / 1000))
+        })
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        let entries = Dictionary(uniqueKeysWithValues: self.attributes.map { attribute in
+            (attribute.key, Entry(value: attribute.value,
+                                  updatedAtMs: attribute.setTime.timeIntervalSince1970 * 1000))
+        })
+
+        var container = encoder.singleValueContainer()
+        try container.encode(entries)
     }
 
 }
@@ -229,6 +279,7 @@ extension CustomerInfoResponse.Subscription {
         unsubscribeDetectedAt: Date? = nil,
         billingIssuesDetectedAt: Date? = nil,
         ownershipType: PurchaseOwnershipType = .defaultValue,
+        productPlanIdentifier: String? = nil,
         storeTransactionId: String? = nil
     ) {
         self.periodType = periodType
@@ -240,6 +291,7 @@ extension CustomerInfoResponse.Subscription {
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.ownershipType = ownershipType
+        self.productPlanIdentifier = productPlanIdentifier
         self.storeTransactionId = storeTransactionId
     }
 

@@ -1,0 +1,237 @@
+{
+  "fixtures": [
+    {
+      "id": "lt_basic_less_true",
+      "predicate": { "<": [1, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_basic_equal_false",
+      "predicate": { "<": [2, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_basic_greater_false",
+      "predicate": { "<": [3, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_between_form_true",
+      "predicate": { "<": [1, 2, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_between_form_first_inequality_false",
+      "description": "1 < 1 < 3 is false because the first inequality is strict",
+      "predicate": { "<": [1, 1, 3] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_between_form_second_inequality_false",
+      "description": "1 < 5 < 3 is false because the second inequality fails",
+      "predicate": { "<": [1, 5, 3] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_coerces_string_to_number",
+      "predicate": { "<": ["1", 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_coerces_bools",
+      "predicate": { "<": [false, true] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_coerces_null",
+      "predicate": { "<": [null, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_two_strings_lexicographic",
+      "description": "two string operands compare lexicographically: \"10\" < \"9\" because '1' < '9'",
+      "predicate": { "<": ["10", "9"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_two_strings_alphabetic",
+      "predicate": { "<": ["apple", "banana"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_empty_string_less_than_nonempty",
+      "description": "the empty string is lexicographically less than any non-empty string",
+      "predicate": { "<": ["", "a"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lt_mixed_string_number_coerces_numerically",
+      "description": "mixed types coerce numerically (not lex): \"10\" < 9 becomes 10 < 9, which is false",
+      "predicate": { "<": ["10", 9] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_non_numeric_string_is_nan_false",
+      "description": "a non-numeric string coerces to NaN, so the comparison is false",
+      "predicate": { "<": ["abc", 9] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_against_non_numeric_is_false_via_nan",
+      "description": "an object cannot coerce, so it becomes NaN and any comparison against NaN is false",
+      "predicate": { "<": [{}, 1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_missing_second_operand_false",
+      "description": "a missing operand resolves to undefined, coerces to NaN, and any comparison against NaN is false",
+      "predicate": { "<": [1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_missing_all_operands_false",
+      "predicate": { "<": [] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "lt_ignores_args_beyond_third",
+      "description": "< ignores arguments past the third",
+      "predicate": { "<": [1, 2, 3, 0] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_basic_less_true",
+      "predicate": { "<=": [1, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_basic_equal_true",
+      "description": "equal counts as less-than-or-equal, unlike <",
+      "predicate": { "<=": [2, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_basic_greater_false",
+      "predicate": { "<=": [3, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "le_two_strings_equal_inclusive",
+      "description": "lexicographic compare under <=: equal strings qualify",
+      "predicate": { "<=": ["abc", "abc"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_two_strings_lexicographic",
+      "predicate": { "<=": ["9", "10"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "le_between_form_true",
+      "predicate": { "<=": [1, 2, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_between_form_boundary_inclusive",
+      "description": "1 <= 1 <= 3 is true because the boundary is inclusive, distinguishing it from <",
+      "predicate": { "<=": [1, 1, 3] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "le_between_form_below_false",
+      "predicate": { "<=": [1, 0, 3] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "gt_basic_greater_true",
+      "predicate": { ">": [2, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "gt_basic_equal_false",
+      "predicate": { ">": [2, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "gt_two_strings_lexicographic",
+      "description": "two string operands compare lexicographically: \"9\" > \"10\" because '9' > '1'",
+      "predicate": { ">": ["9", "10"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "gt_ignores_args_beyond_second",
+      "description": "> is function(a, b), so extras are discarded; there is no 3-arg between form",
+      "predicate": { ">": [3, 2, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "gt_missing_second_operand_false",
+      "description": "a missing second operand coerces to NaN, and any comparison against NaN is false",
+      "predicate": { ">": [1] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "gt_missing_all_operands_false",
+      "predicate": { ">": [] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "ge_basic_greater_true",
+      "predicate": { ">=": [2, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "ge_basic_equal_true",
+      "description": "equal qualifies, unlike >",
+      "predicate": { ">=": [2, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "ge_basic_less_false",
+      "predicate": { ">=": [1, 2] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "ge_ignores_args_beyond_second",
+      "description": ">= is function(a, b), so extras are discarded; there is no 3-arg between form",
+      "predicate": { ">=": [3, 2, 1] },
+      "variables": {},
+      "expected": true
+    }
+  ]
+}

@@ -112,11 +112,12 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
     let content: (Image, CGSize) -> Content
 
     // Preferred method of loading images
+    // Using @StateObject so SwiftUI manages the lifecycle and preserves across view updates
 
-    @ObservedObject
+    @StateObject
     private var highResFileLoader: FileImageLoader
 
-    @ObservedObject
+    @StateObject
     private var lowResFileLoader: FileImageLoader
 
     // Legacy method of loading images
@@ -190,8 +191,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             for: colorScheme
         )
 
-        self.highResFileLoader = FileImageLoader(fileRepository: .shared, url: highResURL)
-        self.lowResFileLoader = FileImageLoader(fileRepository: .shared, url: lowResURL)
+        _highResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: highResURL))
+        _lowResFileLoader = StateObject(wrappedValue: FileImageLoader(fileRepository: .shared, url: lowResURL))
     }
 
     private static func selectURL(
@@ -207,6 +208,14 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
         @unknown default:
             return lightURL
         }
+    }
+
+    private var effectiveHighResURL: URL? {
+        Self.selectURL(lightURL: self.url, darkURL: self.darkUrl, for: self.colorScheme)
+    }
+
+    private var effectiveLowResURL: URL? {
+        Self.selectURL(lightURL: self.lowResUrl, darkURL: self.darkLowResUrl ?? self.lowResUrl, for: self.colorScheme)
     }
 
     var body: some View {
@@ -239,6 +248,13 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
             }
         }
         .transition(self.transition)
+        // Keep file loaders in sync with effective URLs as selection/color scheme changes.
+        .onChangeOf(self.effectiveHighResURL) { newURL in
+            self.highResFileLoader.updateURL(newURL)
+        }
+        .onChangeOf(self.effectiveLowResURL) { newURL in
+            self.lowResFileLoader.updateURL(newURL)
+        }
         // This cancels the previous task when the URL or color scheme change, ensuring a proper update of the UI
         .task(id: "\(self.url)\(self.colorScheme)") {
             #if DEBUG
@@ -253,8 +269,8 @@ private struct ColorSchemeRemoteImage<Content: View>: View {
                 return
             }
 
-            async let high: Void = await self.lowResFileLoader.load()
-            async let low: Void = await self.highResFileLoader.load()
+            async let high: Void = await self.highResFileLoader.load()
+            async let low: Void = await self.lowResFileLoader.load()
             _ = await (high, low)
 
             if self.highResFileLoader.result == nil {

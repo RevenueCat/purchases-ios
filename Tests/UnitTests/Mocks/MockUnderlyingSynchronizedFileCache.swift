@@ -23,7 +23,6 @@ extension SynchronizedLargeItemCache {
 
         var cacheDirectory: URL?
         var workingCacheDirectory: URL?
-        var workingDocsDirectory: URL?
         let lock = NSLock()
 
         var saveDataInvocations: [SaveData] = []
@@ -114,7 +113,12 @@ extension SynchronizedLargeItemCache {
 
         func stubLoadFile(at url: URL, with result: Result<Data, Error>) {
             lock.withLock {
-                loadFileResponsesByURL[cacheURL(from: url)] = result
+                let cacheKey = cacheURL(from: url)
+                loadFileResponsesByURL[cacheKey] = result
+
+                if case .success = result {
+                    cachedContentExistsByURL[cacheKey] = true
+                }
             }
         }
 
@@ -146,20 +150,25 @@ extension SynchronizedLargeItemCache {
             removeInvocations.append(cacheURL(from: url))
         }
 
-        func createCacheDirectoryIfNeeded(basePath: String) -> URL? {
-            let url = cacheDirectory?.appendingPathComponent(basePath)
-            workingCacheDirectory = url
-            return url
+        func createDirectoryIfNeeded(
+            basePath: String,
+            directoryType: DirectoryHelper.DirectoryType,
+            inAppSpecificDirectory: Bool
+        ) -> URL? {
+            workingCacheDirectory = cacheDirectoryURL(basePath: basePath)
+            return workingCacheDirectory
         }
 
-        func createDocumentDirectoryIfNeeded(basePath: String) -> URL? {
-            let url = cacheDirectory?.appendingPathComponent("docs–" + basePath)
-            workingDocsDirectory = url
-            return url
+        func cacheDirectoryURL(basePath: String) -> URL? {
+            cacheDirectory?.appendingPathComponent(basePath)
+        }
+
+        func contentsOfDirectory(at url: URL) throws -> [URL] {
+            return []
         }
 
         private func cacheURL(from url: URL) -> URL {
-            workingDocsDirectory.unsafelyUnwrapped.appendingPathComponent(url.absoluteString.asData.md5String)
+            workingCacheDirectory.unsafelyUnwrapped.appendingPathComponent(url.absoluteString.asData.md5String)
         }
 
         // swiftlint:disable:next nesting

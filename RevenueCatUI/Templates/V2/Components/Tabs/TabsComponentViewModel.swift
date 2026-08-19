@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 1/9/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -28,13 +28,39 @@ class TabsComponentViewModel {
     let controlStackViewModel: StackComponentViewModel
     let tabViewModels: [String: TabViewModel]
     let tabIds: [String]
+    let tabContextNamesById: [String: String]
     let defaultTabId: String?
+    let name: String?
+
+    /// Guards the one-time propagation of the initial tab's package into the parent
+    /// `PackageContext`. Lives here, not as per-view `@State`, so SwiftUI's duplicate
+    /// `LoadedTabsComponentView` instances (from `ViewThatFits` measuring both of its branches)
+    /// share the guard instead of each re-seeding and clobbering a real tab switch.
+    var didSeedInitialState = false
+
+    /// The `TabControlContext` shared by every `LoadedTabsComponentView` backed by this view
+    /// model, so a `ViewThatFits` duplicate can't diverge from the tab the user actually selected.
+    lazy var tabControlContext = TabControlContext(
+        controlStackViewModel: self.controlStackViewModel,
+        tabIds: self.tabIds,
+        defaultTabId: self.defaultTabId,
+        name: self.name,
+        tabContextNamesById: self.tabContextNamesById
+    )
+
+    /// State-store updates, dispatched when the selected tab changes
+    /// (e.g. `{ "set": "<tab state key>", "to": "$value" }`, where `$value`
+    /// is the newly selected tab id). `nil`/empty when the paywall declares no tab state.
+    var stateUpdates: [PaywallComponent.StateUpdate]? {
+        self.component.stateUpdates
+    }
 
     init(
         component: PaywallComponent.TabsComponent,
         controlStackViewModel: StackComponentViewModel,
         tabViewModels: [TabViewModel],
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) {
         self.component = component
         self.controlStackViewModel = controlStackViewModel
@@ -42,10 +68,54 @@ class TabsComponentViewModel {
             return (tabViewModel.tab.id, tabViewModel)
         })
         self.tabIds = tabViewModels.map(\.tab.id)
+        self.tabContextNamesById = Dictionary(
+            uniqueKeysWithValues: tabViewModels.compactMap { tabViewModel in
+                tabViewModel.name.map { (tabViewModel.tab.id, $0) }
+            }
+        )
         self.defaultTabId = component.defaultTabId
+        self.name = component.name
         self.uiConfigProvider = uiConfigProvider
 
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        colorScheme: ColorScheme
+    ) -> TabsComponentStyle {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
+        )
+
+        let partial = PresentedTabsPartial.buildPartial(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
+            with: self.presentedOverrides
+        )
+
+        return TabsComponentStyle(
+            uiConfigProvider: self.uiConfigProvider,
+            visible: partial?.visible ?? self.component.visible ?? true,
+            size: partial?.size ?? self.component.size,
+            padding: partial?.padding ?? self.component.padding,
+            margin: partial?.margin ?? self.component.margin,
+            background: partial?.background ?? self.component.background,
+            shape: partial?.shape ?? self.component.shape,
+            border: partial?.border ?? self.component.border,
+            shadow: partial?.shadow ?? self.component.shadow,
+            colorScheme: colorScheme
+        )
     }
 
 }
@@ -56,21 +126,35 @@ class TabViewModel {
     let tab: PaywallComponent.TabsComponent.Tab
     let uiConfigProvider: UIConfigProvider
     let stackViewModel: StackComponentViewModel
-    let defaultSelectedPackage: Package?
     let packages: [Package]
+
+    /// Held rather than pre-resolved because a package's visibility can depend on custom variables and
+    /// offer eligibility, which are only known at render time.
+    private let packageValidator: PackageValidator
+
+    var name: String? {
+        return self.tab.name
+    }
 
     init(
         tab: PaywallComponent.TabsComponent.Tab,
         stackViewModel: StackComponentViewModel,
-        defaultSelectedPackage: Package?,
-        packages: [Package],
+        packageValidator: PackageValidator,
         uiConfigProvider: UIConfigProvider
-    ) throws {
+    ) {
         self.tab = tab
         self.stackViewModel = stackViewModel
-        self.defaultSelectedPackage = defaultSelectedPackage
-        self.packages = packages
+        self.packageValidator = packageValidator
+        self.packages = packageValidator.packages
         self.uiConfigProvider = uiConfigProvider
+    }
+
+    func defaultSelectedPackage(in context: PackageSelectionContext) -> Package? {
+        return self.packageValidator.defaultSelectedPackage(in: context)
+    }
+
+    func reconciledSelection(current: Package?, in context: PackageSelectionContext) -> Package? {
+        return self.packageValidator.reconciledSelection(current: current, in: context)
     }
 
 }
@@ -123,7 +207,7 @@ struct TabsComponentStyle {
         size: PaywallComponent.Size,
         padding: PaywallComponent.Padding,
         margin: PaywallComponent.Padding,
-        backgroundColor: PaywallComponent.ColorScheme?,
+        background: PaywallComponent.Background?,
         shape: PaywallComponent.Shape?,
         border: PaywallComponent.Border?,
         shadow: PaywallComponent.Shadow?,
@@ -131,7 +215,7 @@ struct TabsComponentStyle {
     ) {
         self.visible = visible
         self.size = size
-        self.backgroundStyle = backgroundColor?.asDisplayable(uiConfigProvider: uiConfigProvider).backgroundStyle
+        self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)
         self.padding = padding.edgeInsets
         self.margin = margin.edgeInsets
         self.shape = shape?.shape

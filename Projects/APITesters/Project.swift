@@ -22,9 +22,18 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     tvOS: "13.0"
 )
 
+let checkpointObjCAPITesterSettings: Settings = .settings(
+    base: Environment.extraSwiftConditions.contains("ENABLE_CHECKPOINTS_OBJC")
+        ? [
+            "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) ENABLE_CHECKPOINTS_OBJC=1"
+        ]
+        : [:]
+)
+
 let project = Project(
     name: "APITesters",
     organizationName: .revenueCatOrgName,
+    packages: .projectPackages,
     settings: .framework,
     targets: [
         .target(
@@ -45,8 +54,10 @@ let project = Project(
                 ]
             ),
             dependencies: [
-                .revenueCat
+                .revenueCat,
+                .revenueCatUI
             ],
+            settings: checkpointObjCAPITesterSettings,
             metadata: .metadata(tags: ["APITester"])
         ),
 
@@ -85,7 +96,7 @@ let project = Project(
                 ]
             ),
             dependencies: [
-                .receiptparser
+                .receiptParser
             ],
             metadata: .metadata(tags: ["APITester"])
         ),
@@ -134,7 +145,7 @@ let project = Project(
             ],
             metadata: .metadata(tags: ["APITester"])
         )
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "All API Tests",

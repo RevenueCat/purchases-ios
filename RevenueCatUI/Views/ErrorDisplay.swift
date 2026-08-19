@@ -29,7 +29,7 @@ struct ErrorDisplay: ViewModifier {
 
                     self.onDismiss?()
                 } label: {
-                    Text("OK", bundle: .module)
+                    Text("OK", bundle: .revenueCatUI)
                 }
             } message: { error in
                 Text(error.failureReason ?? "")

@@ -7,11 +7,22 @@
 
 import Foundation
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import StoreKit
 import SwiftUI
 
-#if DEBUG && swift(>=5.8) && (os(iOS) || os(macOS) || VISION_OS)
+#if os(iOS) || os(tvOS) || VISION_OS
+import UIKit
+
+func checkUIApplicationSPIAPI() {
+    Task { @MainActor in
+        let _: UIViewController? = UIApplication.shared.currentPresentationViewController
+    }
+}
+
+#endif
+
+#if DEBUG && (os(iOS) || os(macOS) || VISION_OS)
 
 @available(iOS 16.0, macOS 13.0, *)
 struct AppView: View {
@@ -28,7 +39,7 @@ struct AppView: View {
 
 #endif
 
-#if DEBUG && os(iOS) && swift(>=5.8)
+#if DEBUG && os(iOS)
 
 @available(iOS 16.0, *)
 func debugViewController() {

@@ -26,6 +26,7 @@ extension ProductEntitlementMappingResponse {
     struct Product: Equatable {
 
         var identifier: String
+        var basePlanId: String?
         var entitlements: [String]
 
     }
@@ -39,6 +40,7 @@ extension ProductEntitlementMappingResponse.Product: Codable {
     private enum CodingKeys: String, CodingKey {
 
         case identifier = "productIdentifier"
+        case basePlanId
         case entitlements
 
     }

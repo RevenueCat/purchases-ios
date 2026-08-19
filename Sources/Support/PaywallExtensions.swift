@@ -110,6 +110,32 @@ extension SubscriptionStoreView where Content == AutomaticSubscriptionStoreMarke
 
 }
 
+#if compiler(>=6.0)
+@available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, *)
+extension SubscriptionStoreView {
+
+    /// Creates a ``SubscriptionStoreView`` from an ``Offering``
+    /// with a custom content structure.
+    /// When the user purchases products through this paywall, the `RevenueCat` SDK will handle
+    /// the result automatically. All you need to do is to dismiss the paywall.
+    ///
+    /// - Warning: In order to use StoreKit paywalls you must configure the `RevenueCat` SDK
+    /// in SK2 mode using ``Configuration/Builder/with(storeKitVersion:)``.
+    public static func forOffering<C>(
+        _ offering: Offering,
+        @StoreContentBuilder content: () -> C
+    ) -> some View where Content == SubscriptionStoreContentView<C>, C: StoreContent {
+        return self
+            .init(
+                productIDs: offering.subscriptionProductIdentifiers,
+                content: content
+            )
+            .handlePurchases(offering)
+    }
+
+}
+#endif
+
 // MARK: - Private
 
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
@@ -131,10 +157,11 @@ private extension View {
                     $0.storeProduct.productIdentifier == product.id
                 }?.presentedOfferingContext
 
-                Purchases.shared.cachePresentedOfferingContext(
-                    offeringContext ?? .init(
+                Purchases.shared.cachePurchaseData(
+                    presentedOfferingContext: offeringContext ?? .init(
                         offeringIdentifier: offering.identifier
                     ),
+                    paywallEvent: nil,
                     productIdentifier: product.id
                 )
             }

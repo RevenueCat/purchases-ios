@@ -17,7 +17,17 @@ import StoreKit
 /// Contains all information from a StoreKit 2 transaction necessary to create an ``EntitlementInfo``.
 struct PurchasedSK2Product {
 
+    /// The product identifier from StoreKit of the purchased item, i.e. `com.revenuecat.annual`
     let productIdentifier: String
+
+    /// The product's id.
+    /// When no billing plan is present, or it is an upFront billing plan, it's just the
+    /// product identifier,  i.e. `com.revenuecat.annual`. When a billing plan is present, it will
+    /// contain the billing plan, i.e. `com.revenuecat.annual:monthly`.
+    let id: String
+
+    /// The billing plan, if a non-upFront one is present.
+    let productPlanIdentifier: String?
     let subscription: CustomerInfoResponse.Subscription
     let entitlement: CustomerInfoResponse.Entitlement
 
@@ -35,6 +45,11 @@ extension PurchasedSK2Product {
         let expiration = transaction.expirationDate
 
         self.productIdentifier = transaction.productID
+        self.productPlanIdentifier = Self.productPlanIdentifier(from: transaction)
+        self.id = CompoundProductIdentifier(
+            productIdentifier: transaction.productID,
+            productPlanIdentifier: self.productPlanIdentifier
+        )?.compoundProductIdentifier ?? transaction.productID
         self.subscription = .init(
             periodType: transaction.offerType?.periodType ?? .normal,
             purchaseDate: transaction.purchaseDate,
@@ -42,7 +57,8 @@ extension PurchasedSK2Product {
             expiresDate: transaction.expirationDate,
             store: .appStore,
             isSandbox: sandboxEnvironmentDetector.isSandbox,
-            ownershipType: transaction.ownershipType.type
+            ownershipType: transaction.ownershipType.type,
+            productPlanIdentifier: self.productPlanIdentifier
         )
         self.entitlement = .init(
             expiresDate: expiration,
@@ -86,4 +102,23 @@ private extension StoreKit.Transaction.OwnershipType {
         }
     }
 
+}
+
+@available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+private extension PurchasedSK2Product {
+    static func productPlanIdentifier(from transaction: StoreKit.Transaction) -> String? {
+        #if compiler(>=6.3.2)
+        if #available(iOS 26.4, macOS 26.4, tvOS 26.4, watchOS 26.4, visionOS 26.4, *),
+           let skBillingPlanType = transaction.billingPlanType,
+           let billingPlanType = BillingPlanType.from(storeKitBillingPlanType: skBillingPlanType) {
+
+            return billingPlanType.compoundProductIDPlanComponent
+
+        } else {
+            return nil
+        }
+        #else
+        return nil
+        #endif
+    }
 }

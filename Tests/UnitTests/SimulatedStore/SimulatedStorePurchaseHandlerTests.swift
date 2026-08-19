@@ -37,13 +37,19 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
 
     func testSubsequentPurchaseProductCallsOnlyCallPurchaseUIOnce() async {
 
+        #if compiler(>=5.9)
         let expectation = self.expectation(description: "All purchase product calls happened")
+        #else
+        let canProceed = Atomic<Bool>(false)
+        #endif
 
         mockSimulatedStorePurchaseUI.stubbedPurchaseResult.value = {
             #if compiler(>=5.9)
             await self.fulfillment(of: [expectation])
             #else
-            self.wait(for: [expectation], timeout: 2)
+            while !canProceed.value {
+                try? await Task.sleep(nanoseconds: 50_000_000)
+            }
             #endif
             return .cancel
         }
@@ -58,7 +64,11 @@ class SimulatedStorePurchaseHandlerTests: TestCase {
         async let result1 = hander.purchase(product: Self.testStoreProduct)
         async let result2 = hander.purchase(product: Self.testStoreProduct)
 
+        #if compiler(>=5.9)
         expectation.fulfill()
+        #else
+        canProceed.value = true
+        #endif
 
         let results = await (result0, result1, result2)
 

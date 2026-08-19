@@ -1,4 +1,8 @@
 "OK" = "ХОРОШО";
+"Close" = "Закрыть";
+"Go back" = "Назад";
+"Manage subscription" = "Управление подпиской";
+"Redeem code" = "Использовать код";
 "All subscriptions" = "Все подписки";
 "Privacy" = "Конфиденциальность";
 "Privacy policy" = "Политика конфиденциальности";
@@ -18,3 +22,4 @@
 "Continue" = "Продолжать";
 "Default_offer_details_with_intro_offer" = "Начните пробную версию {{ sub_offer_duration }}, затем {{ total_price_and_per_month }}.";
 "Something went wrong" = "Что-то пошло не так";
+"Purchase" = "Купить";

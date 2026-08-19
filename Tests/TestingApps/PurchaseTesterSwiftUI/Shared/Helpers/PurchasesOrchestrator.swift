@@ -18,7 +18,7 @@ final class PurchasesOrchestrator: NSObject {
     private var purchaseCompleteCallbacksByProductID: [String: (PurchaseCompletedResult) -> Void] = [:]
 
     override init() {
-        self.paymentQueue = .init()
+        self.paymentQueue = .default()
 
         super.init()
 

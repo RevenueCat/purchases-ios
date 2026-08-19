@@ -34,6 +34,9 @@ func main() -> Int {
     checkPromotionalOfferAPI()
 
     checkPurchasesAPI()
+    #if os(iOS) || os(tvOS) || VISION_OS
+    checkUIApplicationSPIAPI()
+    #endif
 
     checkConfigurationAPI()
 
@@ -71,6 +74,10 @@ func main() -> Int {
     checkVerificationResultAPI()
 
     checkDangerousSettingsAPI()
+
+    checkAdRewardAPI()
+    checkVirtualCurrencyRewardAPI()
+    checkEntitlementRewardAPI()
 
     return 0
 }

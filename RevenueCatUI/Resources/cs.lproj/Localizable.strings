@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Zavřít";
+"Go back" = "Zpět";
+"Manage subscription" = "Správa předplatného";
+"Redeem code" = "Použít kód";
 "All subscriptions" = "Všechna předplatná";
 "Privacy" = "Soukromí";
 "Privacy policy" = "Zásady ochrany osobních údajů";
@@ -18,3 +22,4 @@
 "Continue" = "Pokračovat";
 "Default_offer_details_with_intro_offer" = "Začněte {{ sub_offer_duration }} zkušební období, poté {{ total_price_and_per_month }}.";
 "Something went wrong" = "Něco se pokazilo";
+"Purchase" = "Koupit";

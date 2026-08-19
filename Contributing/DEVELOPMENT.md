@@ -55,6 +55,25 @@ Set the `TUIST_RC_LOCAL` environment variable to `false` to resolve `RevenueCat`
 TUIST_RC_LOCAL=false tuist generate
 ```
 
+## Working in a git worktree
+
+Each `git worktree` is its own checkout, so the gitignored, per-worktree bits (`Local.xcconfig`, the generated `RevenueCat-Tuist.xcworkspace`, `Derived/`) don't carry over and have to be set up again. The Tuist binary cache in `~/.cache/tuist` is content-addressed, so it's shared across worktrees for free, but the workspace still needs generating per worktree.
+
+To handle the per-worktree boilerplate in one command:
+
+```bash
+mise trust          # each worktree's mise.toml is untrusted until you trust it
+mise run setup-worktree
+```
+
+`setup-worktree` links `Local.xcconfig` from your primary checkout (so you don't re-enter the API key per worktree) and runs `tuist install`. Then generate whatever you need as usual:
+
+```bash
+tuist generate PaywallsTester
+```
+
+> Note: because `Local.xcconfig` is a symlink to the primary checkout, it's shared across worktrees. If you need a per-worktree key or bundle ID (e.g. `TUIST_RC_API_KEY` / `TUIST_PAYWALLS_TESTER_BUNDLE_ID` to test against another project), replace the symlink with a real file in that worktree first, otherwise generation writes the override into the shared config.
+
 ## Troubleshooting
 
 - **Missing files after generation**  

@@ -8,11 +8,13 @@ import Foundation
 
 class MockDateProvider: DateProvider {
 
-    private var dates: [Date]
-    private var currentIndex = 0
+    private let dates: [Date]
+    // `now()` can be called concurrently (e.g. parallel `post(receipt:)` calls), so the
+    // index must be mutated atomically to avoid a data race that drops increments.
+    private let currentIndex: Atomic<Int> = .init(0)
 
     var invokedNowCount: Int {
-        return currentIndex
+        return self.currentIndex.value
     }
     var invokedNow: Bool {
         return invokedNowCount > 0
@@ -31,8 +33,11 @@ class MockDateProvider: DateProvider {
     }
 
     override func now() -> Date {
-        defer { currentIndex += 1 }
-        return dates[min(currentIndex, dates.count - 1)]
+        return self.currentIndex.modify { index in
+            let date = self.dates[min(index, self.dates.count - 1)]
+            index += 1
+            return date
+        }
     }
 }
 

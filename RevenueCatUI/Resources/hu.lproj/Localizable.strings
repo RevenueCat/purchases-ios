@@ -1,4 +1,8 @@
 "OK" = "rendben";
+"Close" = "Bezárás";
+"Go back" = "Vissza";
+"Manage subscription" = "Előfizetés kezelése";
+"Redeem code" = "Kód beváltása";
 "All subscriptions" = "Minden előfizetés";
 "Privacy" = "Magánélet";
 "Privacy policy" = "Adatvédelmi irányelvek";
@@ -18,3 +22,4 @@
 "Continue" = "Folytatni";
 "Default_offer_details_with_intro_offer" = "Indítsa el a {{ sub_offer_duration }} próbaidőszakot, majd {{ total_price_and_per_month }}.";
 "Something went wrong" = "Valami elromlott";
+"Purchase" = "Vásárlás";

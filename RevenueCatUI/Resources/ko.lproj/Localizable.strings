@@ -1,4 +1,8 @@
 "OK" = "확인";
+"Close" = "닫기";
+"Go back" = "뒤로";
+"Manage subscription" = "구독 관리";
+"Redeem code" = "코드 사용";
 "All subscriptions" = "모든 구독";
 "Privacy" = "개인정보 방침";
 "Privacy policy" = "개인정보 처리방침";
@@ -18,3 +22,4 @@
 "Continue" = "계속";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} 무료 체험을 시작한 후 {{ total_price_and_per_month }}을(를) 시작하세요.";
 "Something went wrong" = "문제가 발생했습니다";
+"Purchase" = "구매";

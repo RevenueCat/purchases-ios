@@ -1,4 +1,8 @@
 "OK" = "わかりました";
+"Close" = "閉じる";
+"Go back" = "戻る";
+"Manage subscription" = "サブスクリプションを管理";
+"Redeem code" = "コードを使う";
 "All subscriptions" = "すべてのサブスクリプション";
 "Privacy" = "プライバシー";
 "Privacy policy" = "プライバシーポリシー";
@@ -18,3 +22,4 @@
 "Continue" = "続く";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} トライアルを開始してから、{{ total_price_and_per_month }} を開始してください。";
 "Something went wrong" = "問題が発生しました";
+"Purchase" = "購入";

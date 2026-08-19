@@ -34,6 +34,7 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
+    checkRewardVerificationAPI(purchases: purch)
 
     let _: Attribution = purch.attribution
 
@@ -180,6 +181,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
 
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        packageParamsBuilder = packageParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
     }
@@ -192,6 +197,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     #if ENABLE_TRANSACTION_METADATA
     productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        productParamsBuilder = productParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
 
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
@@ -275,6 +284,27 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
+private func checkRewardVerificationAPI(purchases: Purchases) {
+    let token: RewardVerificationToken = purchases.generateRewardVerificationToken(impressionId: "")
+    let _: String = token.customData
+    let _: String = token.clientTransactionID
+    let _: String = token.appUserID
+
+    let result: RewardVerificationResult = .failed
+    let reward: AdReward? = result.verifiedReward
+    let _: Bool = result == .failed
+
+    let _: AdReward = .noReward
+    let _: AdReward = .unsupportedReward
+    let _: Bool = reward == .noReward
+
+    if let virtualCurrency: VirtualCurrencyReward = reward?.virtualCurrency {
+        let _: String = virtualCurrency.code
+        let _: Int = virtualCurrency.amount
+        let _: Bool = virtualCurrency == virtualCurrency
+    }
+}
+
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -296,7 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])
@@ -365,6 +394,19 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
             webPurchaseRedemption
         )
+
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(
+            clientTransactionID: "",
+            trackingMetadata: RewardedAdTrackingMetadata(
+                networkName: nil,
+                mediatorName: .adMob,
+                adFormat: .rewarded,
+                placement: nil,
+                adUnitId: "",
+                impressionId: ""
+            )
+        )
     } catch {}
 }
 
@@ -426,6 +468,10 @@ func checkNonAsyncMethods(_ purchases: Purchases) {
     }
     #endif
 
+    if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+        purchases.recordPurchase(productID: "") { (_: StoreTransaction?, _: PublicError?) in }
+    }
+
     purchases.redeemWebPurchase(webPurchaseRedemption: webPurchaseRedemption, completion: redemptionCompletion)
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
@@ -454,12 +500,6 @@ private func checkConfigure() -> Purchases! {
     Purchases.configure(withAPIKey: "", appUserID: nil, purchasesAreCompletedBy: .myApp, storeKitVersion: .default)
 
     return nil
-}
-
-private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        await purchases.track(paywallEvent: event)
-    }
 }
 
 private func checkPreferredUILocaleAPIs(purchases: Purchases) {

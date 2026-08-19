@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -26,16 +26,36 @@ class TabControlContext: ObservableObject {
 
     let controlStackViewModel: StackComponentViewModel
     let tabIds: [String]
+    let name: String?
+    let initialTabId: String
+    let tabContextNamesById: [String: String]
 
     init(controlStackViewModel: StackComponentViewModel,
          tabIds: [String],
-         defaultTabId: String?) {
+         defaultTabId: String?,
+         name: String?,
+         tabContextNamesById: [String: String] = [:]) {
         self.controlStackViewModel = controlStackViewModel
         self.tabIds = tabIds
+        self.name = name
+        self.tabContextNamesById = tabContextNamesById
 
         let calculatedDefaultTabId = defaultTabId ?? tabIds.first ?? ""
+        self.initialTabId = calculatedDefaultTabId
 
         self._selectedTabId = .init(initialValue: calculatedDefaultTabId)
+    }
+
+    var defaultTabIndex: Int? {
+        return self.index(for: self.initialTabId)
+    }
+
+    func index(for tabId: String) -> Int? {
+        return self.tabIds.firstIndex(of: tabId)
+    }
+
+    func contextName(for tabId: String) -> String? {
+        return self.tabContextNamesById[tabId]
     }
 
 }
@@ -45,6 +65,9 @@ struct TabsComponentView: View {
 
     @EnvironmentObject
     private var packageContext: PackageContext
+
+    @Environment(\.workflowPackageContext)
+    private var workflowPackageContext
 
     private let viewModel: TabsComponentViewModel
     private let onDismiss: () -> Void
@@ -58,6 +81,7 @@ struct TabsComponentView: View {
         LoadedTabsComponentView(
             viewModel: self.viewModel,
             parentPackageContext: self.packageContext,
+            workflowDefaultPackage: self.workflowPackageContext?.selectedPackage,
             onDismiss: self.onDismiss
         )
     }
@@ -72,22 +96,39 @@ struct LoadedTabsComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
     @Environment(\.componentViewState)
     private var componentViewState
 
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.colorScheme)
+    private var colorScheme
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallStateStore)
+    private var stateStore
+
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
+
     private let viewModel: TabsComponentViewModel
+    private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
 
-    @StateObject
+    @ObservedObject
     private var tabControlContext: TabControlContext
 
     @State
     private var tierPackageContexts: [String: PackageContext]
-
-    @State var wasConfigured: Bool = false
 
     // MARK: - Parent's Own Selection Tracking
     //
@@ -129,17 +170,19 @@ struct LoadedTabsComponentView: View {
         }
     }
 
+    /// `tabControlContext` is nil in production (the view reuses the shared instance owned by
+    /// `viewModel`); tests may pass an external instance to drive tab switches programmatically
+    /// without UI interaction.
     init(viewModel: TabsComponentViewModel,
          parentPackageContext: PackageContext,
-         onDismiss: @escaping () -> Void) {
+         workflowDefaultPackage: Package? = nil,
+         onDismiss: @escaping () -> Void,
+         tabControlContext: TabControlContext? = nil) {
         self.viewModel = viewModel
+        self.workflowDefaultPackage = workflowDefaultPackage
         self.onDismiss = onDismiss
 
-        self._tabControlContext = .init(wrappedValue: TabControlContext(
-            controlStackViewModel: viewModel.controlStackViewModel,
-            tabIds: viewModel.tabIds,
-            defaultTabId: viewModel.defaultTabId
-        ))
+        self.tabControlContext = tabControlContext ?? viewModel.tabControlContext
 
         // Store the parent's initial selection for restoration when switching to package-less tabs
         self._parentOwnedPackage = .init(initialValue: parentPackageContext.package)
@@ -165,9 +208,17 @@ struct LoadedTabsComponentView: View {
         self._tierPackageContexts = .init(initialValue: Dictionary(
             uniqueKeysWithValues: viewModel.tabViewModels.map { key, tabViewModel -> (String, PackageContext) in
                 if !tabViewModel.packages.isEmpty {
-                    // Tab has its own packages - create context with tab's packages
+                    // Tab has its own packages - create context with tab's packages.
                     let packageContext = PackageContext(
-                        package: tabViewModel.defaultSelectedPackage,
+                        package: Self.initialPackage(
+                            parentPackage: parentPackageContext.package,
+                            tabPackages: tabViewModel.packages,
+                            workflowDefaultPackage: workflowDefaultPackage,
+                            // Provisional: view `init` has no environment, so variable/eligibility rules
+                            // can't be evaluated yet. `reconcileSelection` corrects this once the body
+                            // resolves the real context.
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional)
+                        ),
                         variableContext: .init(
                             packages: tabViewModel.packages,
                             showZeroDecimalPlacePrices: parentPackageContext.variableContext.showZeroDecimalPlacePrices
@@ -183,12 +234,102 @@ struct LoadedTabsComponentView: View {
         ))
     }
 
+    private var packageSelectionContext: PackageSelectionContext {
+        return PackageSelectionContext(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                introOfferEligibilityContext.isEligible(package: $0)
+            },
+            isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+            }
+        )
+    }
+
+    /// Moves the selection off a package that isn't rendering.
+    ///
+    /// The selection seeded in `init` can't evaluate rules that depend on custom variables or offer
+    /// eligibility, and eligibility lands after first render, so the seeded package may turn out to be
+    /// hidden.
+    private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
+        guard let resolved = tabViewModel.reconciledSelection(
+            current: context.package,
+            in: self.packageSelectionContext
+        ) else {
+            return
+        }
+
+        context.update(package: resolved, variableContext: context.variableContext)
+    }
+
+    /// Determines the initial package selection for a tab that has its own packages.
+    ///
+    /// On a workflow step revisit `parentPackage` already holds the user's cached selection
+    /// (stored in `WorkflowPaywallView.stepPackageContexts`). Prefer it when it is present in
+    /// this tab's package list so that the tab's `onAppear` propagation back to the parent
+    /// is a no-op rather than silently restoring the authored default and destroying the choice.
+    static func initialPackage(
+        parentPackage: Package?,
+        tabPackages: [Package],
+        workflowDefaultPackage: Package?,
+        tabDefaultPackage: Package?
+    ) -> Package? {
+        if let cached = parentPackage,
+           tabPackages.contains(where: { $0.identifier == cached.identifier }) {
+            return cached
+        }
+        return Self.effectiveTabDefaultPackage(
+            workflowDefaultPackage: workflowDefaultPackage,
+            tabPackages: tabPackages,
+            tabDefaultPackage: tabDefaultPackage
+        )
+    }
+
+    /// Picks the default selection for a tab, preferring the workflow-global default only when this
+    /// tab actually offers it.
+    ///
+    /// `WorkflowContext` derives its default by flattening every tab, so on a paywall whose tabs hold
+    /// disjoint packages that default belongs to whichever tab declares one first. Letting it win
+    /// everywhere leaves the other tabs with a package they don't list, so nothing renders as selected.
+    static func effectiveTabDefaultPackage(
+        workflowDefaultPackage: Package?,
+        tabPackages: [Package],
+        tabDefaultPackage: Package?
+    ) -> Package? {
+        if let workflowDefaultPackage,
+           tabPackages.contains(where: { $0.identifier == workflowDefaultPackage.identifier }) {
+            return workflowDefaultPackage
+        }
+        return tabDefaultPackage
+    }
+
     var body: some View {
-        if let activeTabViewModel,
+        let style = viewModel.styles(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
+                package: self.packageContext.package
+            ),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
+                for: self.packageContext.package
+            ),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            colorScheme: self.colorScheme
+        )
+
+        if style.visible,
+            let activeTabViewModel,
             let tierPackageContext = self.tierPackageContexts[self.tabControlContext.selectedTabId] {
             LoadedTabComponentView(
                 stackViewModel: activeTabViewModel.stackViewModel,
+                parentPackageContext: self.packageContext,
+                tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
+                    // A package-less tab shares the parent's context, so this would only clear it.
+                    guard context !== self.packageContext else { return }
+
                     self.packageContext.update(
                         package: context.package,
                         variableContext: context.variableContext
@@ -198,12 +339,34 @@ struct LoadedTabsComponentView: View {
             )
             .environmentObject(self.tabControlContext)
             .environmentObject(tierPackageContext)
+            .environment(
+                \.planSelectionDefaultPackage,
+                Self.effectiveTabDefaultPackage(
+                    workflowDefaultPackage: self.workflowDefaultPackage,
+                    tabPackages: activeTabViewModel.packages,
+                    tabDefaultPackage: activeTabViewModel.defaultSelectedPackage(
+                        in: self.packageSelectionContext
+                    )
+                )
+            )
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
+            .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
             .onAppear {
-                if !wasConfigured {
-                    self.wasConfigured = true
+                // The provisional selection made in `init` couldn't evaluate variable/eligibility rules.
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+                if !self.viewModel.didSeedInitialState {
+                    self.viewModel.didSeedInitialState = true
+                    // Seed the store with the initial selection so components that react to the tab
+                    // render their correct state on first appearance. A no-op when the declared
+                    // default already matches the initial tab.
+                    self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    if let package = tierPackageContext.package {
+                    // A package-less tab shares that context, so it has nothing to propagate.
+                    if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
@@ -223,6 +386,10 @@ struct LoadedTabsComponentView: View {
             //    - Otherwise → use tab's default
             //
             .onChangeOf(self.tabControlContext.selectedTabId) { newTabId in
+                // Publish the new selection before the package-restoration guard so dependent
+                // components re-resolve their `state` conditions even for tabs without packages.
+                self.publishSelectedTabState(newTabId)
+
                 guard let newTabViewModel = self.viewModel.tabViewModels[newTabId],
                       let newTierPackageContext = self.tierPackageContexts[newTabId] else {
                     return
@@ -233,7 +400,13 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: Self.effectiveTabDefaultPackage(
+                        workflowDefaultPackage: self.workflowDefaultPackage,
+                        tabPackages: newTabViewModel.packages,
+                        tabDefaultPackage: newTabViewModel.defaultSelectedPackage(
+                            in: self.packageSelectionContext
+                        )
+                    )
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
@@ -242,9 +415,11 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
+                    // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
                         package: parentUpdate.package,
-                        variableContext: parentUpdate.variableContext
+                        variableContext: parentUpdate.variableContext,
+                        isReconcile: true
                     )
                 }
             }
@@ -279,8 +454,10 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it
-                self.didUserSelectPackage = true
+                // A user selection, unless a reconcile made it. Set-only: it can't clear an earlier one.
+                if !self.packageContext.lastUpdateWasReconcile {
+                    self.didUserSelectPackage = true
+                }
                 self.parentOwnedPackage = newPackage
                 self.parentOwnedVariableContext = self.packageContext.variableContext
 
@@ -290,11 +467,26 @@ struct LoadedTabsComponentView: View {
                         package: newPackage,
                         variableContext: self.packageContext.variableContext
                     )
+                } else if !tabHasNoPackages {
+                    // Root-only selection: clear tab highlight. Parent is not updated here;
+                    // `LoadedTabComponentView` suppresses propagating this nil to the parent.
+                    tierPackageContext.update(
+                        package: nil,
+                        variableContext: tierPackageContext.variableContext
+                    )
                 }
-                // If package is NOT in tab's packages, we still track it as parentOwnedPackage
-                // but we don't update the tab (it can't display this package)
             }
         }
+    }
+
+    private func publishSelectedTabState(_ tabId: String) {
+        guard let stateStore = self.stateStore,
+              let stateUpdates = self.viewModel.stateUpdates,
+              !stateUpdates.isEmpty else {
+            return
+        }
+
+        stateStore.apply(stateUpdates, payload: .string(tabId))
     }
 
 }
@@ -306,13 +498,21 @@ struct LoadedTabComponentView: View {
     private var tabPackageContext: PackageContext
 
     private let stackViewModel: StackComponentViewModel
+    private let parentPackageContext: PackageContext
+    private let tabPackageIdentifiers: Set<String>
     private let onChange: (PackageContext) -> Void
     private let onDismiss: () -> Void
 
-    init(stackViewModel: StackComponentViewModel,
-         onChange: @escaping (PackageContext) -> Void,
-         onDismiss: @escaping () -> Void) {
+    init(
+        stackViewModel: StackComponentViewModel,
+        parentPackageContext: PackageContext,
+        tabPackageIdentifiers: Set<String>,
+        onChange: @escaping (PackageContext) -> Void,
+        onDismiss: @escaping () -> Void
+    ) {
         self.stackViewModel = stackViewModel
+        self.parentPackageContext = parentPackageContext
+        self.tabPackageIdentifiers = tabPackageIdentifiers
         self.onChange = onChange
         self.onDismiss = onDismiss
     }
@@ -324,10 +524,54 @@ struct LoadedTabComponentView: View {
         )
         .environmentObject(self.tabPackageContext)
         // Comparing on tabPackageContext.package but sending tabPackageContext to parent
-        .onChangeOf(self.tabPackageContext.package) { _ in
+        .onChangeOf(self.tabPackageContext.package) { newPackage in
+            // Pre-iOS 17, onChange runs a closure captured from the previous body, where
+            // `tabPackageContext` can still be the previous tab's context. Skip those stale
+            // calls: the tab-switch handler already updated the parent.
+            if TabPackageParentPropagation.isStaleChange(
+                observedPackage: newPackage,
+                capturedTabPackage: self.tabPackageContext.package
+            ) {
+                return
+            }
+            if TabPackageParentPropagation.shouldSuppressNotifyingParent(
+                tabPackage: self.tabPackageContext.package,
+                tabPackageIdentifiers: self.tabPackageIdentifiers,
+                parentPackage: self.parentPackageContext.package
+            ) {
+                return
+            }
             self.onChange(self.tabPackageContext)
         }
     }
+
+}
+
+/// Decides when a tab `PackageContext` change should not overwrite the paywall (parent) selection.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum TabPackageParentPropagation {
+
+	/// True when an `onChange` closure captured from a previous body observes a change that
+	/// belongs to a different tab context (pre-iOS 17 `onChange(of:perform:)` behavior).
+	static func isStaleChange(
+		observedPackage: Package?,
+		capturedTabPackage: Package?
+	) -> Bool {
+		return observedPackage?.identifier != capturedTabPackage?.identifier
+	}
+
+	/// When the tab clears local selection to `nil` while the parent holds a root-only package,
+	/// do not notify the parent (avoids clearing the purchase selection).
+	static func shouldSuppressNotifyingParent(
+		tabPackage: Package?,
+		tabPackageIdentifiers: Set<String>,
+		parentPackage: Package?
+	) -> Bool {
+		guard tabPackage == nil else { return false }
+		guard !tabPackageIdentifiers.isEmpty else { return false }
+		guard let parentId = parentPackage?.identifier else { return false }
+		return !tabPackageIdentifiers.contains(parentId)
+	}
 
 }
 
@@ -352,7 +596,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -362,7 +606,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -390,7 +634,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -400,7 +644,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -428,7 +672,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -438,7 +682,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -453,7 +697,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -466,13 +710,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -482,13 +726,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -498,13 +742,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))
@@ -527,7 +771,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -537,7 +781,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -562,7 +806,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -572,7 +816,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -597,7 +841,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                         .text(.init(
                                             text: "tab_3_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -607,7 +851,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .rectangle(.init(topLeading: 8,
                                                             topTrailing: 8,
@@ -625,7 +869,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit)
+                    size: .init(width: .fit(nil), height: .fit(nil))
                 )
             ),
             tabs: [
@@ -635,13 +879,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -651,13 +895,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -667,13 +911,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))
@@ -690,7 +934,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_toggle",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControlToggle(.init(
                             defaultValue: false,
@@ -701,7 +945,7 @@ struct TabsComponentView_Previews: PreviewProvider {
                         ))
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit)
+                    size: .init(width: .fit(nil), height: .fit(nil))
                 )
             ),
             tabs: [
@@ -711,13 +955,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_1_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_1_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -727,13 +971,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_2_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_2_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 )),
@@ -743,13 +987,13 @@ struct TabsComponentView_Previews: PreviewProvider {
                         .text(.init(
                             text: "tab_3_text_1",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         )),
                         .tabControl(.init()),
                         .text(.init(
                             text: "tab_3_text_2",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit)
+                            size: .init(width: .fit(nil), height: .fit(nil))
                         ))
                     ]
                 ))

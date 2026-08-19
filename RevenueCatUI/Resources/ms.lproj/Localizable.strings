@@ -1,4 +1,8 @@
 "OK" = "okey";
+"Close" = "Tutup";
+"Go back" = "Kembali";
+"Manage subscription" = "Urus langganan";
+"Redeem code" = "Tebus kod";
 "All subscriptions" = "Semua langganan";
 "Privacy" = "Privasi";
 "Privacy policy" = "Dasar privasi";
@@ -18,3 +22,4 @@
 "Continue" = "teruskan";
 "Default_offer_details_with_intro_offer" = "Mulakan percubaan {{ sub_offer_duration }} anda, kemudian {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ada sesuatu yang tidak kena";
+"Purchase" = "Beli";

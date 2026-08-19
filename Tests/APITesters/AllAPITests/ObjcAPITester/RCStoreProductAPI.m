@@ -26,6 +26,9 @@
     if (@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)) {
         BOOL isFamilyShareable  __unused = product.isFamilyShareable;
     }
+    if (@available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *)) {
+        RCInstallmentsInfo *installmentsInfo  __unused = product.installmentsInfo;
+    }
     NSString *subscriptionGroupIdentifier  __unused = product.subscriptionGroupIdentifier;
     NSNumberFormatter *priceFormatter  __unused = product.priceFormatter;
 

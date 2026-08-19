@@ -105,5 +105,25 @@ extension Atomic: ExpressibleByBooleanLiteral where T == Bool {
 
 }
 
+extension Atomic where T: BinaryInteger {
+
+    @discardableResult
+    func increment(by amount: T = 1) -> T {
+        self.modify {
+            $0 += amount
+            return $0
+        }
+    }
+
+    @discardableResult
+    func decrement(by amount: T = 1) -> T {
+        self.modify {
+            $0 -= amount
+            return $0
+        }
+    }
+
+}
+
 // `@unchecked` because of the mutable `_value`, but it's thread-safety is guaranteed with `Lock`.
 extension Atomic: @unchecked Sendable {}

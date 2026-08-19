@@ -525,3 +525,111 @@ private extension String {
     private static let rtlMarker: CharacterSet = .init(charactersIn: "\u{200f}")
 
 }
+
+// MARK: - Locale.swiftUILayoutDirection
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class LocaleLayoutDirectionTests: TestCase {
+
+    // RTL languages
+    func testHebrewIsRTL() {
+        expect(Locale(identifier: "he").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testHebrewRegionIsRTL() {
+        expect(Locale(identifier: "he-IL").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testArabicIsRTL() {
+        expect(Locale(identifier: "ar").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testArabicRegionIsRTL() {
+        expect(Locale(identifier: "ar_AE").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testFarsiIsRTL() {
+        expect(Locale(identifier: "fa").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    func testUrduIsRTL() {
+        expect(Locale(identifier: "ur").swiftUILayoutDirection) == .rightToLeft
+    }
+
+    // LTR languages
+    func testEnglishIsLTR() {
+        expect(Locale(identifier: "en").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testEnglishRegionIsLTR() {
+        expect(Locale(identifier: "en_US").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testFrenchIsLTR() {
+        expect(Locale(identifier: "fr-FR").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testJapaneseIsLTR() {
+        expect(Locale(identifier: "ja").swiftUILayoutDirection) == .leftToRight
+    }
+
+    func testUnknownLocaleDefaultsToLTR() {
+        expect(Locale(identifier: "").swiftUILayoutDirection) == .leftToRight
+    }
+
+}
+
+// MARK: - Locale.selectPreferredLocale
+
+// Verifies that layout direction derives from the content locale actually chosen by
+// selectPreferredLocale, not from the raw device/override locale.
+// Critical case: RTL device language + LTR-only paywall → content resolves to LTR → layout is LTR.
+
+class PaywallsV2LocaleResolutionTests: TestCase {
+
+    // RTL device, LTR-only paywall → resolved locale is LTR (nil → falls back to default en_US)
+    func testRTLDeviceWithLTROnlyPaywallResolvesToLTR() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US")],
+            preferredLocales: [Locale(identifier: "ar")]
+        ) ?? Locale(identifier: "en_US")
+        expect(chosen.swiftUILayoutDirection) == .leftToRight
+    }
+
+    // RTL override, paywall has RTL localization → resolved locale is RTL
+    func testRTLOverrideWithRTLPaywallResolvesToRTL() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "he")],
+            preferredLocales: [Locale(identifier: "he-IL"), Locale(identifier: "en_US")]
+        )
+        expect(chosen?.swiftUILayoutDirection) == .rightToLeft
+    }
+
+    // No preferred locale match → returns nil (caller falls back to defaultLocale)
+    func testNoMatchReturnsNil() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US")],
+            preferredLocales: [Locale(identifier: "ja")]
+        )
+        expect(chosen).to(beNil())
+    }
+
+    // Exact region match takes priority over language-only match
+    func testExactRegionMatchTakesPriority() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "en_CA")],
+            preferredLocales: [Locale(identifier: "en_CA")]
+        )
+        expect(chosen) == Locale(identifier: "en_CA")
+    }
+
+    // Language-only match returned when exact region unavailable
+    func testLanguageMatchFallsBackWhenNoRegionMatch() {
+        let chosen = Locale.selectPreferredLocale(
+            from: [Locale(identifier: "en_US"), Locale(identifier: "fr_FR")],
+            preferredLocales: [Locale(identifier: "fr_CA")]
+        )
+        expect(chosen) == Locale(identifier: "fr_FR")
+    }
+
+}

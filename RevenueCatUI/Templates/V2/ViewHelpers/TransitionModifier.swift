@@ -11,18 +11,25 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/20/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TransitionModifier: ViewModifier {
     let transition: PaywallComponent.Transition
 
+    #if !os(tvOS)
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+    #endif
+
     @State var isPresented: Bool = false
 
     func body(content: Content) -> some View {
         ZStack {
-            if isPresented {
+            if self.shouldRenderContentImmediately {
+                content
+            } else if isPresented {
                 content
                     .transition(transition.toTransition)
             } else {
@@ -31,6 +38,7 @@ struct TransitionModifier: ViewModifier {
                     case .greedy:
                         content
                             .hidden()
+                            .allowsHitTesting(false)
                             .accessibilityHidden(true)
                     case .lazy:
                         EmptyView()
@@ -40,11 +48,34 @@ struct TransitionModifier: ViewModifier {
                 }
                 .transition(transition.toTransition)
             }
-        }.onAppear {
-            withAnimation(transition.animation?.toAnimation ?? .none) {
+        }
+        .task(id: self.shouldRenderContentImmediately) {
+            guard !self.shouldRenderContentImmediately else {
+                self.isPresented = true
+                return
+            }
+
+            // Delay the state change by msDelay before showing the content
+            let delayMs = transition.animation?.msDelay ?? 0
+            if delayMs > 0 {
+                try? await Task.sleep(nanoseconds: UInt64(delayMs) * 1_000_000)
+            }
+            withAnimation(transition.animation?.toAnimation ?? .default) {
                 isPresented = true
             }
         }
+    }
+
+    private var shouldRenderContentImmediately: Bool {
+        #if !os(tvOS)
+        // Workflow page transitions animate whole page snapshots. If child components
+        // also run their configured delayed transitions while the page is sliding, they
+        // can flash or appear late inside the preserved outgoing/incoming page trees.
+        // Render them immediately and let WorkflowPaywallView own the page-level motion.
+        return self.workflowRenderingContext.pageTransition.isTransitioning
+        #else
+        return false
+        #endif
     }
 }
 
@@ -80,16 +111,17 @@ extension PaywallComponent.Transition {
 }
 
 extension PaywallComponent.Animation {
+    /// The animation without delay (delay is handled separately via Task.sleep)
     var toAnimation: SwiftUI.Animation {
         switch self.type {
         case .easeIn:
-            return .easeIn(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeIn(duration: msDuration.asSeconds)
         case .easeInOut:
-            return .easeInOut(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeInOut(duration: msDuration.asSeconds)
         case .easeOut:
-            return .easeOut(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .easeOut(duration: msDuration.asSeconds)
         case .linear:
-            return .linear(duration: msDuration.seconds).delay(msDelay.seconds)
+            return .linear(duration: msDuration.asSeconds)
         @unknown default:
             return .default
         }
@@ -97,7 +129,7 @@ extension PaywallComponent.Animation {
 }
 
 private extension Int {
-    var seconds: TimeInterval {
+    var asSeconds: TimeInterval {
         return TimeInterval(Double(self) / 1000)
     }
 }

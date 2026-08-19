@@ -18,9 +18,9 @@ import UniformTypeIdentifiers
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 @MainActor
@@ -325,8 +325,8 @@ extension BaseStoreKitIntegrationTests {
     }
 
     static let finishingAnyTransactionLog = "Finishing transaction"
-    static func finishingSpecificTransactionLog(transaction: StoreTransaction) -> String {
-        return "Finishing transaction '\(transaction.id)' for product '\(transaction.productIdentifier)'"
+    static func finishingSpecificTransactionLog(transactionId: String, productId: String) -> String {
+        return "Finishing transaction '\(transactionId)' for product '\(productId)'"
     }
 
     static func finishingTransactionLogRegexPattern(productIdentifier: String) -> String {
@@ -334,6 +334,7 @@ extension BaseStoreKitIntegrationTests {
         return "Finishing transaction '\\d+' for product '\(productIdentifier)'"
     }
 
+    static let finishedPostingCachedMetadataLog = "Finished syncing all cached transaction metadata"
 }
 
 // MARK: - Extensions

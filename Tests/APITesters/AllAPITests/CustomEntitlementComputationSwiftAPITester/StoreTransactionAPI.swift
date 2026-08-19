@@ -9,8 +9,8 @@ import StoreKit
 
 import RevenueCat_CustomEntitlementComputation
 
-private  var transaction: StoreTransaction!
-func checkStoreTransactionAPI() {
+private var transaction: StoreTransaction!
+func checkStoreTransactionAPI(storefront: RevenueCat_CustomEntitlementComputation.Storefront?) {
     let productIdentifier: String = transaction.productIdentifier
     let purchaseDate: Date = transaction.purchaseDate
     let transactionIdentifier: String = transaction.transactionIdentifier
@@ -28,5 +28,32 @@ func checkStoreTransactionAPI() {
         transactionIdentifier,
         quantity,
         sk1!
+    )
+
+    // Initializer
+    let _: StoreTransaction = StoreTransaction(
+        productIdentifier: "product",
+        purchaseDate: Date(),
+        transactionIdentifier: "transaction"
+    )
+    let _: StoreTransaction = StoreTransaction(
+        productIdentifier: "product",
+        purchaseDate: Date(),
+        transactionIdentifier: "transaction",
+        quantity: 1
+    )
+    let _: StoreTransaction = StoreTransaction(
+        productIdentifier: "product",
+        purchaseDate: Date(),
+        transactionIdentifier: "transaction",
+        quantity: 1,
+        storefront: storefront
+    )
+
+    let _: StoreTransaction = StoreTransaction(
+        productIdentifier: "product",
+        purchaseDate: Date(),
+        transactionIdentifier: "transaction",
+        storefront: storefront
     )
 }

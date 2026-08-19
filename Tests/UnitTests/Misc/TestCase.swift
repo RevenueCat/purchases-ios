@@ -38,8 +38,6 @@ class TestCase: XCTestCase {
     @MainActor
     override class func setUp() {
         XCTestObservationCenter.shared.addTestObserver(CurrentTestCaseTracker.shared)
-
-        SnapshotTests.updateSnapshotsIfNeeded()
     }
 
     @MainActor
@@ -54,6 +52,18 @@ class TestCase: XCTestCase {
         self.initializeLogger()
     }
 
+    override func invokeTest() {
+        if SnapshotTests.shouldRecordSnapshots {
+            withSnapshotTesting(record: .all) {
+                super.invokeTest()
+            }
+        } else {
+            withSnapshotTesting(record: .never) {
+                super.invokeTest()
+            }
+        }
+    }
+
     @MainActor
     override func tearDown() {
         self.logger = nil
@@ -65,30 +75,44 @@ class TestCase: XCTestCase {
 
 }
 
-private enum SnapshotTests {
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+extension TestCase {
 
-    private static var environmentVariableChecked = false
-
-    static func updateSnapshotsIfNeeded() {
-        guard !Self.environmentVariableChecked else { return }
-
-        if ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1" {
-            isRecording = true
+    static func uniqueCachesDirectory() -> URL {
+        let caches: URL
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            caches = URL.cachesDirectory
+        } else {
+            // swiftlint:disable:next force_unwrapping
+            caches = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first!
         }
+        return caches.appendingPathComponent(UUID().uuidString, isDirectory: true)
     }
 
+}
+
+private enum SnapshotTests {
+    static var shouldRecordSnapshots: Bool {
+        return ProcessInfo.processInfo.environment["CIRCLECI_TESTS_GENERATE_SNAPSHOTS"] == "1"
+    }
 }
 
 extension ForceServerErrorStrategy {
 
     /// Forces server error in all requests, including requests made to the fallback API hosts.
     static let allServersDown: ForceServerErrorStrategy = .init { _ in
-        return true // All requests fail
+        return .defaultServerError
     }
 
     /// Forces server error in all requests except those made to the fallback API hosts.
     static let failExceptFallbackUrls: ForceServerErrorStrategy = .init { (request: HTTPClient.Request) in
-        return !request.isRequestToFallbackUrl
+        return request.isRequestToFallbackUrl ? .performRequest : .defaultServerError
+    }
+
+    /// Forces server error by pointing all requests to an unreachable address.
+    static let noNetwork: ForceServerErrorStrategy = .init { _ in
+        // swiftlint:disable:next force_unwrapping
+        return .serverErrorURL(URL(string: "http://localhost:100/unreachable-address")!)
     }
 
 }
@@ -98,12 +122,5 @@ extension HTTPClient.Request {
     var isRequestToFallbackUrl: Bool {
         return self.fallbackUrlIndex != nil
     }
-
-    /// Forces server error by pointing to an unreachable address.
-    static let noNetwork = ForceServerErrorStrategy(
-        // swiftlint:disable:next force_unwrapping
-        serverErrorURL: URL(string: "http://localhost:100/unreachable-address")!,
-        shouldForceServerError: { _ in true }
-    )
 
 }

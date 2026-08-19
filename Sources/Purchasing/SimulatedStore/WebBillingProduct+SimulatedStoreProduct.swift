@@ -36,7 +36,7 @@ extension WebBillingProductsResponse.Product {
 
         let price: WebBillingProductsResponse.Price
         var period: SubscriptionPeriod?
-        let introDiscount: SimulatedStoreProductDiscount? = nil // Not supported in Simulated Store products for now
+        var introDiscount: SimulatedStoreProductDiscount?
 
         if let basePrice = purchaseOption.basePrice {
             price = basePrice
@@ -53,6 +53,13 @@ extension WebBillingProductsResponse.Product {
             if let periodDuration = basePhase.periodDuration {
                 period = SubscriptionPeriod.from(iso8601: periodDuration)
             }
+
+            introDiscount = self.buildIntroductoryDiscount(
+                trial: purchaseOption.trial,
+                introPrice: purchaseOption.introPrice,
+                baseCurrency: basePrice.currency,
+                locale: locale
+            )
         }
 
         let decimalPrice = Decimal(Double(price.amountMicros) / 1_000_000)
@@ -84,6 +91,60 @@ extension WebBillingProductsResponse.Product {
         let formatter = Self.priceFormatterProvider.priceFormatterForWebProducts(withCurrencyCode: currencyCode,
                                                                                  locale: locale)
         return formatter.string(from: price as NSDecimalNumber) ?? ""
+    }
+
+    private func buildIntroductoryDiscount(
+        trial: WebBillingProductsResponse.PricingPhase?,
+        introPrice: WebBillingProductsResponse.PricingPhase?,
+        baseCurrency: String,
+        locale: Locale
+    ) -> SimulatedStoreProductDiscount? {
+        // Free trial takes precedence over a paid intro price when both phases are present.
+        if let trial, let periodDuration = trial.periodDuration {
+            guard let subscriptionPeriod = SubscriptionPeriod.from(iso8601: periodDuration) else {
+                Logger.warn(Strings.offering.simulated_store_invalid_trial_period(
+                    productId: self.identifier,
+                    periodDuration: periodDuration
+                ))
+                return nil
+            }
+            let zeroPrice: Decimal = 0
+            return SimulatedStoreProductDiscount(
+                identifier: "$rc_free_trial",
+                price: zeroPrice,
+                localizedPriceString: formatPrice(zeroPrice, currencyCode: baseCurrency, locale: locale),
+                paymentMode: .freeTrial,
+                subscriptionPeriod: subscriptionPeriod,
+                numberOfPeriods: trial.cycleCount,
+                type: .introductory
+            )
+        }
+
+        if let introPrice,
+           let periodDuration = introPrice.periodDuration,
+           let introPriceObj = introPrice.price {
+            guard let subscriptionPeriod = SubscriptionPeriod.from(iso8601: periodDuration) else {
+                Logger.warn(Strings.offering.simulated_store_invalid_intro_price_period(
+                    productId: self.identifier,
+                    periodDuration: periodDuration
+                ))
+                return nil
+            }
+            let decimalPrice = Decimal(Double(introPriceObj.amountMicros) / 1_000_000)
+            return SimulatedStoreProductDiscount(
+                identifier: "$rc_intro_price",
+                price: decimalPrice,
+                localizedPriceString: formatPrice(decimalPrice,
+                                                  currencyCode: introPriceObj.currency,
+                                                  locale: locale),
+                paymentMode: .payAsYouGo,
+                subscriptionPeriod: subscriptionPeriod,
+                numberOfPeriods: introPrice.cycleCount,
+                type: .introductory
+            )
+        }
+
+        return nil
     }
 
 }

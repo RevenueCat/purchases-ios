@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Fermer";
+"Go back" = "Retour";
+"Manage subscription" = "Gérer l’abonnement";
+"Redeem code" = "Utiliser un code";
 "All subscriptions" = "Tous les abonnements";
 "Privacy" = "Confidentialité";
 "Privacy policy" = "Politique de confidentialité";
@@ -18,3 +22,4 @@
 "Continue" = "Continuer";
 "Default_offer_details_with_intro_offer" = "Démarrez votre essai de {{ sub_offer_duration }}, puis de {{ total_price_and_per_month }}.";
 "Something went wrong" = "Une erreur s’est produite";
+"Purchase" = "Acheter";

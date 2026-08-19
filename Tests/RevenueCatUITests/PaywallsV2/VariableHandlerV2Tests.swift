@@ -14,7 +14,8 @@
 
 import Nimble
 @testable import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -94,7 +95,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.currency_code }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
 
         expect(result).to(equal("USD"))
@@ -105,8 +107,158 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.currency_symbol }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolUsesProductCurrencyNotLocale() {
+        // A Romanian locale user with a USD product should see "$", not "¤"
+        let romanianLocale = Locale(identifier: "ro_RO")
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: TestData.monthlyPackage,
+            locale: romanianLocale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolUsesDisplayedPriceWhenFormatterLocaleDoesNotMatchCurrency() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "USD",
+                localizedPriceString: "$6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_regression",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "ro_RO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolSupportsMultiCharacterDisplayedSymbols() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: TestData.annualPackage60Taiwan,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("US$"))
+    }
+
+    func testProductCurrencySymbolSupportsPrefixSymbolsWithPunctuation() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "BOB",
+                localizedPriceString: "Bs.6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_prefix_punctuation",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "es_BO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("Bs."))
+    }
+
+    func testProductCurrencySymbolSupportsSuffixSymbols() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "SEK",
+                localizedPriceString: "6,99 kr",
+                productIdentifier: "com.revenuecat.product.currency_symbol_suffix",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "sv_SE")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("kr"))
+    }
+
+    func testProductCurrencySymbolFallsBackWhenDisplayedPriceHasNoDigits() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 0,
+                currencyCode: "USD",
+                localizedPriceString: "Free",
+                productIdentifier: "com.revenuecat.product.currency_symbol_free",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "en_US")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
         expect(result).to(equal("$"))
     }
 
@@ -115,7 +267,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.periodly }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("monthly"))
     }
@@ -125,7 +278,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.periodly }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -135,7 +289,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99"))
     }
@@ -145,7 +300,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99/month"))
     }
@@ -155,7 +311,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$4.99/3 months"))
     }
@@ -165,7 +322,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99/mo"))
     }
@@ -175,7 +333,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_period_abbreviated }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$4.99/3mo"))
     }
@@ -185,7 +344,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_day }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$0.23"))
     }
@@ -195,7 +355,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_week }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.60"))
     }
@@ -205,7 +366,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$6.99"))
     }
@@ -215,7 +377,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.price_per_year }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$83.88"))
     }
@@ -225,7 +388,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("month"))
     }
@@ -235,7 +399,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -245,7 +410,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("mo"))
     }
@@ -255,7 +421,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_abbreviated }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3mo"))
     }
@@ -265,7 +432,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_days }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("30"))
     }
@@ -275,7 +443,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_weeks }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("4"))
     }
@@ -285,7 +454,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_months }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1"))
     }
@@ -295,7 +465,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_in_years }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("0"))
     }
@@ -305,7 +476,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_with_unit }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1 month"))
     }
@@ -315,7 +487,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period_with_unit }}",
             with: TestData.threeMonthPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3 months"))
     }
@@ -325,7 +498,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
@@ -335,7 +509,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_day }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
@@ -345,27 +520,30 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_week }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("free"))
     }
 
-    func testProductFreeOfferPricePerMonth() {
+    func testOfferPricePerMonthReturnsEmptyForDayBasedTrial() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
 
-    func testProductFreeOfferPricePerYear() {
+    func testOfferPricePerYearReturnsEmptyForDayBasedTrial() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_year }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -375,7 +553,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.99"))
     }
@@ -385,7 +564,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_day }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$0.28"))
     }
@@ -397,6 +577,7 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithPromoOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
             promoOffer: .init(
                 discount: discount,
                 signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
@@ -413,6 +594,7 @@ class VariableHandlerV2Test: TestCase {
             with: TestData.packageWithPromoOfferPayUpFront,
             locale: locale,
             localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
             promoOffer: .init(
                 discount: discount,
                 signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
@@ -426,7 +608,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_week }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.99"))
     }
@@ -436,7 +619,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_month }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -446,7 +630,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_price_per_year }}",
             with: TestData.packageWithIntroOfferPayUpFront,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -456,7 +641,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("week"))
     }
@@ -466,7 +652,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_abbreviated }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("wk"))
     }
@@ -476,7 +663,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_days }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("7"))
     }
@@ -486,7 +674,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_weeks }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1"))
     }
@@ -496,7 +685,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_months }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -506,7 +696,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_in_years }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -516,7 +707,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_period_with_unit }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("1 week"))
     }
@@ -526,7 +718,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.offer_end_date }}",
             with: TestData.packageWithIntroOffer,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("December 19, 2024"))
     }
@@ -536,7 +729,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -546,7 +740,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_period }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -556,7 +751,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.secondary_offer_period_abbreviated }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }
@@ -573,7 +769,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.relative_discount }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("30%"))
     }
@@ -583,7 +780,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | uppercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("MONTH"))
     }
@@ -593,7 +791,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | lowercase }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("month"))
     }
@@ -603,7 +802,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.period | capitalize }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Month"))
     }
@@ -622,7 +822,8 @@ class VariableHandlerV2Test: TestCase {
             in: "Name is {{ product_name }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Name is Monthly"))
     }
@@ -639,7 +840,8 @@ class VariableHandlerV2Test: TestCase {
             in: "Name is {{ product_name_that_does_not_exist }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Name is "))
     }
@@ -658,7 +860,8 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.store_product_name || loud }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("MONTHLY"))
     }
@@ -675,9 +878,316 @@ class VariableHandlerV2Test: TestCase {
             in: "{{ product.store_product_name || loud }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal("Monthly"))
+    }
+
+    // MARK: - Intro Offer Ineligibility Fallback Tests
+
+    func testOfferPriceFallsBackToProductPriceWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // packageWithIntroOffer product price is $3.99
+        expect(result).to(equal("$3.99"))
+    }
+
+    func testOfferPricePerDayFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per day ($3.99/month => ~$0.13/day)
+        expect(result).to(equal("$0.13"))
+    }
+
+    func testOfferPricePerWeekFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per week ($3.99/month => ~$0.91/week)
+        expect(result).to(equal("$0.91"))
+    }
+
+    func testOfferPricePerMonthFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per month ($3.99)
+        expect(result).to(equal("$3.99"))
+    }
+
+    func testOfferPricePerYearFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_year }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product price per year ($3.99/month => ~$47.88/year)
+        expect(result).to(equal("$47.88"))
+    }
+
+    func testOfferPeriodFallsBackToProductPeriodWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period (month)
+        expect(result).to(equal("month"))
+    }
+
+    func testOfferPeriodAbbreviatedFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_abbreviated }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period abbreviated (mo)
+        expect(result).to(equal("mo"))
+    }
+
+    func testOfferPeriodInDaysFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_days }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in days (1 month = 30 days)
+        expect(result).to(equal("30"))
+    }
+
+    func testOfferPeriodInWeeksFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_weeks }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in weeks (1 month = 4 weeks)
+        expect(result).to(equal("4"))
+    }
+
+    func testOfferPeriodInMonthsFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_months }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in months (1)
+        expect(result).to(equal("1"))
+    }
+
+    func testOfferPeriodInYearsFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_in_years }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period in years (1 month = 0 years)
+        expect(result).to(equal("0"))
+    }
+
+    func testOfferPeriodWithUnitFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period_with_unit }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Falls back to product period with unit (1 month)
+        expect(result).to(equal("1 month"))
+    }
+
+    func testOfferEndDateReturnsEmptyWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testOfferEndDateReturnsEmptyWhenNoIntroOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_end_date }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        // Unlike other offer variables, there's no product fallback for end date
+        expect(result).to(equal(""))
+    }
+
+    func testPromoOfferPriceWorksWhenIneligibleForIntro() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    func testPromoOfferPeriodWorksWhenIneligibleForIntro() {
+        let discount = TestData.packageWithPromoOfferPayUpFront.storeProduct.discounts.first!
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_period }}",
+            with: TestData.packageWithPromoOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false,
+            promoOffer: .init(
+                discount: discount,
+                signedData: .init(identifier: "", keyIdentifier: "", nonce: .init(), signature: "", timestamp: 0)
+            )
+        )
+        expect(result).to(equal("week"))
+    }
+
+    func testOfferPriceUsesIntroWhenEligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("free"))
+    }
+
+    func testAnnualProductOfferPriceFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal("$53.99"))
+    }
+
+    func testAnnualProductOfferPricePerMonthFallsBackWhenIneligible() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal("$4.49"))
+    }
+
+    func testOfferVariablesWithLifetimeProduct() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }} for {{ product.offer_period }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$119.49 for "))
+    }
+
+    func testOfferVariablesWithConsumableProduct() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$4.99"))
+    }
+
+    // MARK: - Non-Subscription Tests
+
+    func testProductPricePerPeriodForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        // Lifetime products should not have a period suffix (no slash)
+        expect(result).to(equal("$119.49"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForLifetime() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        // Lifetime products should not have a period suffix (no slash)
+        expect(result).to(equal("$119.49"))
+    }
+
+    func testProductPricePerPeriodForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForConsumable() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.consumablePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        // Consumable products should not have a period suffix (no slash)
+        expect(result).to(equal("$4.99"))
     }
 
 }
@@ -769,7 +1279,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$60"))
 
@@ -778,7 +1289,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$60.00"))
     }
@@ -789,7 +1301,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$5"))
 
@@ -798,7 +1311,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_month }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$5.00"))
     }
@@ -809,7 +1323,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$60/year"))
 
@@ -818,9 +1333,92 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price_per_period }}",
             with: TestData.annualPackage60,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$60.00/year"))
+    }
+
+    // MARK: - Discount Zero Decimal Place Tests
+
+    func testOfferPriceRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$2"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$2.00"))
+    }
+
+    func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$2"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price_per_month }}",
+            with: TestData.packageWithIntroOfferPayUpFrontWholeDollar,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$2.00"))
+    }
+
+    func testOfferPriceNonWholeNumberUnaffectedByZeroDecimalFlag() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithZeroDecimal).to(equal("$1.99"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$1.99"))
+    }
+
+    func testOfferPriceFallbackRespectsZeroDecimalPlacePrices() {
+        let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(resultWithZeroDecimal).to(equal("$60"))
+
+        let resultWithoutZeroDecimal = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(resultWithoutZeroDecimal).to(equal("$60.00"))
     }
 
     func testNonWholeNumberPricesAreUnaffected() {
@@ -829,7 +1427,8 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithZeroDecimal).to(equal("$6.99"))
 
@@ -837,9 +1436,620 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
             in: "{{ product.price }}",
             with: TestData.monthlyPackage,
             locale: locale,
-            localizations: localizations["en_US"]!
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(resultWithoutZeroDecimal).to(equal("$6.99"))
+    }
+
+    // MARK: - Optional Package Tests
+
+    func testProductVariablesReturnEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductCurrencyCodeReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_code }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPricePerPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductPeriodReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.period }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductStoreProductNameReturnsEmptyStringWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.store_product_name }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductCurrencySymbolReturnsEmptyWhenPackageIsNil() {
+        let result = variableHandlerWithoutZeroDecimal.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testRelativeDiscountWorksWhenPackageIsNil() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: 0.25,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.relative_discount }}",
+            with: nil,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("25%"))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class CustomVariablesV2Tests: TestCase {
+
+    let localizations = [
+        "en_US": [
+            "month": "month"
+        ]
+    ]
+
+    let locale = Locale(identifier: "en_US")
+
+    // MARK: - Custom Variables Tests
+
+    func testCustomVariableWithSDKProvidedValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": .string("John")],
+            defaultCustomVariables: ["player_name": .string("Player")]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.player_name }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello John!"))
+    }
+
+    func testCustomVariableFallsBackToDefaultValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [:],
+            defaultCustomVariables: ["player_name": .string("Player")]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.player_name }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello Player!"))
+    }
+
+    func testCustomVariableReturnsEmptyWhenNotFound() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [:],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.unknown_var }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello !"))
+    }
+
+    func testCustomVariableWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": .string("john")],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.player_name | uppercase }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello JOHN!"))
+    }
+
+    func testCustomVariableWithNumericValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["max_health": .number(100)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Your max health is {{ custom.max_health }}.",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Your max health is 100."))
+    }
+
+    func testCustomVariableWithBooleanValue() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["is_premium": .bool(true)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Premium status: {{ custom.is_premium }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Premium status: true"))
+    }
+
+    func testMultipleCustomVariables() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: [
+                "player_name": .string("John"),
+                "level": .number(42)
+            ],
+            defaultCustomVariables: [
+                "max_health": .number(100)
+            ]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ custom.player_name }} (Level {{ custom.level }}) - Max HP: {{ custom.max_health }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("John (Level 42) - Max HP: 100"))
+    }
+
+    func testCustomVariableMixedWithBuiltInVariables() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player_name": .string("John")],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom.player_name }}! Subscribe for {{ product.price }}/{{ product.period }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello John! Subscribe for $6.99/month"))
+    }
+
+    func testSDKProvidedValueOverridesDefault() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["setting": .string("override")],
+            defaultCustomVariables: ["setting": .string("default")]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Setting: {{ custom.setting }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Setting: override"))
+    }
+
+    func testCustomVariableWithDecimalNumber() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["price": .number(9.99)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Price: {{ custom.price }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Price: 9.99"))
+    }
+
+    func testCustomVariableWithNegativeNumber() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["offset": .number(-10)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Offset: {{ custom.offset }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Offset: -10"))
+    }
+
+    func testCustomVariableWithBooleanFalse() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["enabled": .bool(false)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Enabled: {{ custom.enabled }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Enabled: false"))
+    }
+
+    func testCustomVariableNumberWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["level": .number(42)],
+            defaultCustomVariables: [:]
+        )
+
+        // Functions like uppercase on a number just return the number as string
+        let result = variableHandler.processVariables(
+            in: "Level: {{ custom.level | uppercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Level: 42"))
+    }
+
+    func testCustomVariableBoolWithFunction() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["enabled": .bool(true)],
+            defaultCustomVariables: [:]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Status: {{ custom.enabled | uppercase }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Status: TRUE"))
+    }
+
+    func testDefaultCustomVariableWithDifferentTypeThanSDKProvided() {
+        // SDK provides a number, default is a string - SDK value should win
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["value": .number(100)],
+            defaultCustomVariables: ["value": .string("default")]
+        )
+
+        let result = variableHandler.processVariables(
+            in: "Value: {{ custom.value }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Value: 100"))
+    }
+
+    func testVariableLookingLikeCustomButIncorrectSyntaxReturnsEmpty() {
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: [:],
+            functionCompatibilityMap: [:],
+            discountRelativeToMostExpensivePerMonth: nil,
+            showZeroDecimalPlacePrices: false,
+            customVariables: ["player": .string("John")],
+            defaultCustomVariables: [:]
+        )
+
+        // Using "custom_player" instead of "custom.player" - should return empty
+        // and log a warning about incorrect syntax
+        let result = variableHandler.processVariables(
+            in: "Hello {{ custom_player }}!",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("Hello !"))
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+class CustomVariableValueTests: TestCase {
+
+    func testEnvironmentFiltersInvalidCustomVariableKeys() {
+        var environment = EnvironmentValues()
+
+        environment.customPaywallVariables = [
+            "valid_key": "kept",
+            "invalid-key": "dropped",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]
+
+        expect(environment.customPaywallVariables).to(equal([
+            "valid_key": "kept",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]))
+    }
+
+    // MARK: - stringValue Tests
+
+    func testStringValueForString() {
+        let value = CustomVariableValue.string("Hello")
+        expect(value.stringValue).to(equal("Hello"))
+    }
+
+    func testStringValueForWholeNumber() {
+        let value = CustomVariableValue.number(100.0)
+        expect(value.stringValue).to(equal("100"))
+    }
+
+    func testStringValueForDecimalNumber() {
+        let value = CustomVariableValue.number(99.99)
+        expect(value.stringValue).to(equal("99.99"))
+    }
+
+    func testStringValueForBoolTrue() {
+        let value = CustomVariableValue.bool(true)
+        expect(value.stringValue).to(equal("true"))
+    }
+
+    func testStringValueForBoolFalse() {
+        let value = CustomVariableValue.bool(false)
+        expect(value.stringValue).to(equal("false"))
+    }
+
+    // MARK: - doubleValue Tests
+
+    func testDoubleValueForNumber() {
+        let value = CustomVariableValue.number(42.5)
+        expect(value.doubleValue).to(equal(42.5))
+    }
+
+    func testDoubleValueForString() {
+        let value = CustomVariableValue.string("123.45")
+        expect(value.doubleValue).to(equal(123.45))
+    }
+
+    func testDoubleValueForInvalidString() {
+        let value = CustomVariableValue.string("not a number")
+        expect(value.doubleValue).to(equal(0))
+    }
+
+    func testDoubleValueForBoolTrue() {
+        let value = CustomVariableValue.bool(true)
+        expect(value.doubleValue).to(equal(1.0))
+    }
+
+    func testDoubleValueForBoolFalse() {
+        let value = CustomVariableValue.bool(false)
+        expect(value.doubleValue).to(equal(0.0))
+    }
+
+    // MARK: - boolValue Tests
+
+    func testBoolValueForBool() {
+        expect(CustomVariableValue.bool(true).boolValue).to(beTrue())
+        expect(CustomVariableValue.bool(false).boolValue).to(beFalse())
+    }
+
+    func testBoolValueForNumber() {
+        expect(CustomVariableValue.number(1).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(42).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(-1).boolValue).to(beTrue())
+        expect(CustomVariableValue.number(0).boolValue).to(beFalse())
+    }
+
+    func testBoolValueForString() {
+        expect(CustomVariableValue.string("true").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("TRUE").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("1").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("yes").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("YES").boolValue).to(beTrue())
+        expect(CustomVariableValue.string("false").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("0").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("no").boolValue).to(beFalse())
+        expect(CustomVariableValue.string("random").boolValue).to(beFalse())
+    }
+
+    // MARK: - ExpressibleBy Literal Tests
+
+    func testExpressibleByStringLiteral() {
+        let value: CustomVariableValue = "test"
+        expect(value).to(equal(.string("test")))
+    }
+
+    func testExpressibleByNumericAndBooleanLiterals() {
+        let integer: CustomVariableValue = 42
+        let double: CustomVariableValue = 4.5
+        let boolean: CustomVariableValue = true
+
+        expect(integer).to(equal(.number(42)))
+        expect(double).to(equal(.number(4.5)))
+        expect(boolean).to(equal(.bool(true)))
+    }
+
+    // MARK: - Foundation Bridge Tests
+
+    func testFoundationValuesPreserveSupportedPrimitiveTypes() {
+        expect(CustomVariableValue(foundationValue: "value")).to(equal(.string("value")))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: true))).to(equal(.bool(true)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: false))).to(equal(.bool(false)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Int64(42)))).to(equal(.number(42)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(4.5)))).to(equal(.number(4.5)))
+    }
+
+    func testFoundationValuesSupportAllNSNumberIntegerAndFloatingPointStorageTypes() {
+        let integers: [NSNumber] = [
+            NSNumber(value: Int8(1)), NSNumber(value: Int16(2)), NSNumber(value: Int32(3)),
+            NSNumber(value: Int64(4)), NSNumber(value: UInt8(5)), NSNumber(value: UInt16(6)),
+            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8))
+        ]
+
+        for number in integers {
+            expect(CustomVariableValue(foundationValue: number)).to(equal(.number(number.doubleValue)))
+        }
+
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Float(1.5)))).to(equal(.number(1.5)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(2.5)))).to(equal(.number(2.5)))
+    }
+
+    func testFoundationValueRejectsUnsupportedTypes() {
+        expect(CustomVariableValue(foundationValue: Date())).to(beNil())
+        expect(CustomVariableValue(foundationValue: NSNull())).to(beNil())
+        expect(CustomVariableValue(foundationValue: ["nested": "value"])).to(beNil())
+    }
+
+    func testFoundationValueRoundTripsEverySupportedType() {
+        let values: [CustomVariableValue] = [
+            .string("value"),
+            .number(42),
+            .number(4.5),
+            .bool(true),
+            .bool(false)
+        ]
+
+        for value in values {
+            expect(CustomVariableValue(foundationValue: value.foundationValue)).to(equal(value))
+        }
+    }
+
+    // MARK: - Dictionary Conversion Tests
+
+    func testAsStringDictionary() {
+        let variables: [String: CustomVariableValue] = [
+            "name": .string("John"),
+            "level": .number(42),
+            "premium": .bool(true)
+        ]
+
+        let stringDict = variables.asStringDictionary
+
+        expect(stringDict["name"]).to(equal("John"))
+        expect(stringDict["level"]).to(equal("42"))
+        expect(stringDict["premium"]).to(equal("true"))
     }
 
 }

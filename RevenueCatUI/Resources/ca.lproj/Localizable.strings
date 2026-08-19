@@ -1,4 +1,8 @@
 "OK" = "D'acord";
+"Close" = "Tanca";
+"Go back" = "Enrere";
+"Manage subscription" = "Gestiona la subscripció";
+"Redeem code" = "Bescanvia el codi";
 "All subscriptions" = "Totes les subscripcions";
 "Privacy" = "Privadesa";
 "Privacy policy" = "Política de privacitat";
@@ -18,3 +22,4 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Inicieu la vostra prova de {{ sub_offer_duration }} i després {{ total_price_and_per_month }}.";
 "Something went wrong" = "Alguna cosa ha anat malament";
+"Purchase" = "Comprar";

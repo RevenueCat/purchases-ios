@@ -14,65 +14,90 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class TabControlButtonComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
         public let tabId: String
+        public let name: String?
         public let stack: StackComponent
+        public let hapticFeedbackEnabled: Bool?
 
-        public init(tabId: String, stack: StackComponent) {
+        public init(
+            tabId: String,
+            stack: StackComponent,
+            name: String? = nil,
+            hapticFeedbackEnabled: Bool? = nil
+        ) {
             self.type = .tabControlButton
             self.tabId = tabId
+            self.name = name
             self.stack = stack
+            self.hapticFeedbackEnabled = hapticFeedbackEnabled
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(tabId)
+            hasher.combine(name)
             hasher.combine(stack)
+            hasher.combine(hapticFeedbackEnabled)
         }
 
         public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
-            return lhs.type == rhs.type && lhs.tabId == rhs.tabId && lhs.stack == rhs.stack
+            return lhs.type == rhs.type &&
+                lhs.tabId == rhs.tabId &&
+                lhs.name == rhs.name &&
+                lhs.stack == rhs.stack &&
+                lhs.hapticFeedbackEnabled == rhs.hapticFeedbackEnabled
         }
     }
 
     final class TabControlToggleComponent: Codable, Sendable, Hashable, Equatable {
 
         let type: ComponentType
+        public let name: String?
         public let thumbColorOn: ColorScheme
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
+        public let hapticFeedbackEnabled: Bool?
 
         public init(defaultValue: Bool,
+                    name: String? = nil,
                     thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
-                    trackColorOff: ColorScheme) {
+                    trackColorOff: ColorScheme,
+                    hapticFeedbackEnabled: Bool? = nil) {
             self.type = .tabControlToggle
+            self.name = name
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
             self.trackColorOn = trackColorOn
             self.trackColorOff = trackColorOff
+            self.hapticFeedbackEnabled = hapticFeedbackEnabled
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(thumbColorOn)
             hasher.combine(thumbColorOff)
             hasher.combine(trackColorOn)
             hasher.combine(trackColorOff)
+            hasher.combine(hapticFeedbackEnabled)
         }
 
         public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.thumbColorOn == rhs.thumbColorOn &&
                    lhs.thumbColorOff == rhs.thumbColorOff &&
                    lhs.trackColorOn == rhs.trackColorOn &&
-                   lhs.trackColorOff == rhs.trackColorOff
+                   lhs.trackColorOff == rhs.trackColorOff &&
+                   lhs.hapticFeedbackEnabled == rhs.hapticFeedbackEnabled
         }
     }
 
@@ -98,20 +123,25 @@ public extension PaywallComponent {
         final public class Tab: Codable, Sendable, Hashable, Equatable {
 
             public let id: String
+            public let name: String?
             public let stack: StackComponent
 
-            public init(id: String, stack: PaywallComponent.StackComponent) {
+            public init(id: String, name: String? = nil, stack: PaywallComponent.StackComponent) {
                 self.id = id
+                self.name = name
                 self.stack = stack
             }
 
             public func hash(into hasher: inout Hasher) {
                 hasher.combine(id)
+                hasher.combine(name)
                 hasher.combine(stack)
             }
 
             public static func == (lhs: Tab, rhs: Tab) -> Bool {
-                return lhs.id == rhs.id && lhs.stack == rhs.stack
+                return lhs.id == rhs.id &&
+                    lhs.name == rhs.name &&
+                    lhs.stack == rhs.stack
             }
         }
 
@@ -142,6 +172,7 @@ public extension PaywallComponent {
         }
 
         let type: ComponentType
+        public let name: String?
         public let visible: Bool?
         public let size: Size
         public let padding: Padding
@@ -156,10 +187,13 @@ public extension PaywallComponent {
         public let defaultTabId: String?
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
+        /// State updates applied when a tab is selected. Decode-only in Phase 0.
+        public let stateUpdates: [StateUpdate]?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             padding: Padding = .zero,
             margin: Padding = .zero,
             background: Background? = nil,
@@ -171,9 +205,11 @@ public extension PaywallComponent {
             tabs: [Tab],
             defaultTabId: String? = nil,
 
-            overrides: ComponentOverrides<PartialTabsComponent>? = nil
+            overrides: ComponentOverrides<PartialTabsComponent>? = nil,
+            stateUpdates: [StateUpdate]? = nil
         ) {
             self.type = .stack
+            self.name = name
             self.visible = visible
             self.size = size
             self.padding = padding
@@ -188,10 +224,12 @@ public extension PaywallComponent {
             self.defaultTabId = defaultTabId
 
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
         }
 
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)
@@ -204,10 +242,12 @@ public extension PaywallComponent {
             hasher.combine(tabs)
             hasher.combine(defaultTabId)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
             return lhs.type == rhs.type &&
+                   lhs.name == rhs.name &&
                    lhs.visible == rhs.visible &&
                    lhs.size == rhs.size &&
                    lhs.padding == rhs.padding &&
@@ -219,7 +259,8 @@ public extension PaywallComponent {
                    lhs.control == rhs.control &&
                    lhs.tabs == rhs.tabs &&
                    lhs.defaultTabId == rhs.defaultTabId &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.stateUpdates == rhs.stateUpdates
         }
     }
 

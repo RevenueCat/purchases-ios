@@ -29,6 +29,25 @@ enum SimulatedStoreMockData {
         cycleCount: 1
     )
 
+    private static let sevenDayFreeTrialPricingPhase = WebBillingProductsResponse.PricingPhase(
+        periodDuration: "P7D",
+        price: nil,
+        cycleCount: 1
+    )
+
+    private static let threeMonthIntroPricingPhase = WebBillingProductsResponse.PricingPhase(
+        periodDuration: "P1M",
+        price: WebBillingProductsResponse.Price(amountMicros: 1_990_000,
+                                                currency: "EUR"),
+        cycleCount: 3
+    )
+
+    private static let malformedTrialPricingPhase = WebBillingProductsResponse.PricingPhase(
+        periodDuration: "not-a-valid-iso8601-period",
+        price: nil,
+        cycleCount: 1
+    )
+
     private static let oneTimePurchasePrice = WebBillingProductsResponse.Price(
         amountMicros: 199_900_000, currency: "GBP")
 
@@ -36,6 +55,34 @@ enum SimulatedStoreMockData {
         basePrice: .init(wrappedValue: nil),
         base: .init(wrappedValue: yearlyPricingPhase),
         trial: .init(wrappedValue: nil),
+        introPrice: .init(wrappedValue: nil)
+    )
+
+    private static let yearlyPurchaseOptionWithFreeTrial = WebBillingProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: nil),
+        base: .init(wrappedValue: yearlyPricingPhase),
+        trial: .init(wrappedValue: sevenDayFreeTrialPricingPhase),
+        introPrice: .init(wrappedValue: nil)
+    )
+
+    private static let yearlyPurchaseOptionWithIntroPrice = WebBillingProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: nil),
+        base: .init(wrappedValue: yearlyPricingPhase),
+        trial: .init(wrappedValue: nil),
+        introPrice: .init(wrappedValue: threeMonthIntroPricingPhase)
+    )
+
+    private static let yearlyPurchaseOptionWithFreeTrialAndIntroPrice = WebBillingProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: nil),
+        base: .init(wrappedValue: yearlyPricingPhase),
+        trial: .init(wrappedValue: sevenDayFreeTrialPricingPhase),
+        introPrice: .init(wrappedValue: threeMonthIntroPricingPhase)
+    )
+
+    private static let yearlyPurchaseOptionWithMalformedTrialPeriod = WebBillingProductsResponse.PurchaseOption(
+        basePrice: .init(wrappedValue: nil),
+        base: .init(wrappedValue: yearlyPricingPhase),
+        trial: .init(wrappedValue: malformedTrialPricingPhase),
         introPrice: .init(wrappedValue: nil)
     )
 
@@ -69,6 +116,50 @@ enum SimulatedStoreMockData {
         defaultPurchaseOptionId: "base_option",
         purchaseOptions: [
             "base_option": yearlyPurchaseOption
+        ]
+    )
+
+    static let yearlyProductWithFreeTrial = WebBillingProductsResponse.Product(
+        identifier: "product_annual_with_free_trial",
+        productType: .subscription,
+        title: "Test Yearly Subscription With Free Trial",
+        description: "A test yearly subscription product with a free trial",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": yearlyPurchaseOptionWithFreeTrial
+        ]
+    )
+
+    static let yearlyProductWithIntroPrice = WebBillingProductsResponse.Product(
+        identifier: "product_annual_with_intro_price",
+        productType: .subscription,
+        title: "Test Yearly Subscription With Intro Price",
+        description: "A test yearly subscription product with an introductory price",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": yearlyPurchaseOptionWithIntroPrice
+        ]
+    )
+
+    static let yearlyProductWithFreeTrialAndIntroPrice = WebBillingProductsResponse.Product(
+        identifier: "product_annual_with_free_trial_and_intro_price",
+        productType: .subscription,
+        title: "Test Yearly Subscription With Free Trial And Intro Price",
+        description: "A test yearly subscription product with a free trial and an introductory price",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": yearlyPurchaseOptionWithFreeTrialAndIntroPrice
+        ]
+    )
+
+    static let yearlyProductWithMalformedTrialPeriod = WebBillingProductsResponse.Product(
+        identifier: "product_annual_with_malformed_trial_period",
+        productType: .subscription,
+        title: "Test Yearly Subscription With Malformed Trial Period",
+        description: "A test yearly subscription product whose trial period_duration is unparseable",
+        defaultPurchaseOptionId: "base_option",
+        purchaseOptions: [
+            "base_option": yearlyPurchaseOptionWithMalformedTrialPeriod
         ]
     )
 

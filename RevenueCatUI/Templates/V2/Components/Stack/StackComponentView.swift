@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 // swiftlint:disable file_length
@@ -39,6 +39,24 @@ struct StackComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
+    @Environment(\.paywallRootStackIsZLayer)
+    private var paywallRootStackIsZLayer
+
+    @Environment(\.paywallAncestorScrollsVertically)
+    private var paywallAncestorScrollsVertically
+
     private let viewModel: StackComponentViewModel
     private let isScrollableByDefault: Bool
     private let onDismiss: () -> Void
@@ -62,15 +80,21 @@ struct StackComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let isEligibleForPromoOffer = self.paywallPromoOfferCache.isMostLikelyEligible(
+            for: self.packageContext.package
+        )
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(
-                for: self.packageContext.package
-            ),
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -113,7 +137,7 @@ struct StackComponentView: View {
                 ZStack(alignment: alignment.stackAlignment) {
                     ComponentsView(
                         componentViewModels: self.viewModel.viewModels,
-                        ignoreSafeArea: self.viewModel.shouldApplySafeAreaInset,
+                        pushNonFirstChildrenBelowSafeArea: self.viewModel.firstChildIsFullWidthMedia,
                         onDismiss: self.onDismiss
                     )
                 }
@@ -132,7 +156,9 @@ struct StackComponentView: View {
         .scrollableIfEnabled(
             style.dimension,
             size: style.size,
-            enabled: style.scrollable ?? self.isScrollableByDefault
+            enabled: style.scrollable ?? self.isScrollableByDefault,
+            paywallRootStackIsZLayer: self.paywallRootStackIsZLayer,
+            ancestorScrollsVertically: self.paywallAncestorScrollsVertically
         )
         .shape(border: nil,
                shape: style.shape,
@@ -159,15 +185,16 @@ private extension Axis {
 fileprivate extension View {
 
     @ViewBuilder
-
     func scrollableIfEnabled(
         _ dimension: PaywallComponent.Dimension,
         size: PaywallComponent.Size,
-        enabled: Bool = true
+        enabled: Bool = true,
+        paywallRootStackIsZLayer: Bool = false,
+        ancestorScrollsVertically: Bool = false
     ) -> some View {
-        if enabled {
-            switch dimension {
-            case .horizontal(let verticalAlignment, let distribution):
+        switch dimension {
+        case .horizontal(let verticalAlignment, let distribution):
+            if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
                     fillContent: size.width == .fill,
@@ -176,7 +203,11 @@ fileprivate extension View {
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
-            case .vertical(let horizontalAlignment, let distribution):
+            } else {
+                self
+            }
+        case .vertical(let horizontalAlignment, let distribution):
+            if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
                     fillContent: size.height == .fill,
@@ -185,11 +216,23 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-            case .zlayer:
+            } else {
                 self
             }
-        } else {
-            self
+        case .zlayer(let alignment):
+            if PaywallZLayerScrollPolicy.shouldApplyScroll(
+                stackScrollingEnabled: enabled,
+                paywallRootStackIsZLayer: paywallRootStackIsZLayer,
+                ancestorScrollsVertically: ancestorScrollsVertically
+            ) {
+                self.scrollableIfNecessaryWhenAvailable(
+                    .vertical,
+                    fillContent: true,
+                    alignment: alignment.stackAlignment
+                )
+            } else {
+                self
+            }
         }
     }
 
@@ -288,7 +331,10 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing
             ) {
-                ComponentsView(componentViewModels: self.viewModels, onDismiss: self.onDismiss)
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
             }
         case .flex:
             FlexHStack(
@@ -321,7 +367,7 @@ struct StackComponentView_Previews: PreviewProvider {
                     ],
                     size: .init(
                         width: .fill,
-                        height: .fit
+                        height: .fit(nil)
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
@@ -350,8 +396,8 @@ struct StackComponentView_Previews: PreviewProvider {
                             color: .init(light: .hex("#000000"))))
                     ],
                     size: .init(
-                        width: .fit,
-                        height: .fit
+                        width: .fit(nil),
+                        height: .fit(nil)
                     ),
                     backgroundColor: .init(light: .hex("#ff0000"))
                 ),
@@ -382,7 +428,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fill,
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
@@ -407,8 +453,8 @@ struct StackComponentView_Previews: PreviewProvider {
                                 color: .init(light: .hex("#000000"))))
                         ],
                         size: .init(
-                            width: .fit,
-                            height: .fit
+                            width: .fit(nil),
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#0000ff"))
                     ),
@@ -434,7 +480,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fixed(100),
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#00ff00"))
                     ),
@@ -460,7 +506,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         ],
                         size: .init(
                             width: .fill,
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         backgroundColor: .init(light: .hex("#ff0000"))
                     ),
@@ -510,7 +556,7 @@ struct StackComponentView_Previews: PreviewProvider {
                         dimension: .horizontal(.center, .start),
                         size: .init(
                             width: .fixed(400),
-                            height: .fit
+                            height: .fit(nil)
                         ),
                         spacing: 10,
                         backgroundColor: .init(light: .hex("#ffcc00")),
@@ -595,7 +641,7 @@ struct StackComponentView_Previews: PreviewProvider {
                                     text: "text_1",
                                     color: .init(light: .hex("#000000")),
                                     backgroundColor: .init(light: .hex("#ffcc00")),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 )),
                                 .stack(PaywallComponent.StackComponent(
@@ -604,12 +650,12 @@ struct StackComponentView_Previews: PreviewProvider {
                                             text: "text_1",
                                             color: .init(light: .hex("#000000")),
                                             backgroundColor: .init(light: .hex("#ffcc00")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                         ))
                                     ],
                                     dimension: .vertical(.center, .center),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     backgroundColor: .init(light: .hex("#dedede")),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 )),
@@ -619,18 +665,18 @@ struct StackComponentView_Previews: PreviewProvider {
                                             text: "text_1",
                                             color: .init(light: .hex("#000000")),
                                             backgroundColor: .init(light: .hex("#ffcc00")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                         ))
                                     ],
                                     dimension: .horizontal(.center, .center),
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     backgroundColor: .init(light: .hex("#dedede")),
                                     margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                                 ))
                             ],
                             dimension: .vertical(.center, .center),
-                            size: .init(width: .fit, height: .fit),
+                            size: .init(width: .fit(nil), height: .fit(nil)),
                             backgroundColor: .init(light: .hex("#0000ff")),
                             margin: .init(top: 10, bottom: 10, leading: 10, trailing: 10)
                         ))
@@ -784,7 +830,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
@@ -796,7 +841,6 @@ extension StackComponentViewModel {
             try factory.toViewModel(
                 component: component,
                 packageValidator: validator,
-                firstItemIgnoresSafeAreaInfo: nil,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,

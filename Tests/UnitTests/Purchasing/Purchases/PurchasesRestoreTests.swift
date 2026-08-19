@@ -340,7 +340,7 @@ class PurchasesRestoreTrackingTests: BasePurchasesTests {
         expect(calls.count) == 1
         let callParams = calls[0]
         expect(callParams.errorCode) == ErrorCode.invalidAppUserIdError.rawValue
-        expect(callParams.errorMessage) == "The app user id is not valid."
+        expect(callParams.errorMessage) == "The app user ID is not valid."
         expect(callParams.responseTime).to(beGreaterThanOrEqualTo(0))
     }
 }

@@ -109,6 +109,26 @@ func checkAttributionAPI() {
     #endif
 
     checkSetAppsFlyerConversionDataAPI()
+    checkSetAppstackAttributionParamsAPI()
+}
+
+func checkSetAppstackAttributionParamsAPI() {
+    attribution.setAppstackAttributionParams(nil) { _, _ in }
+
+    let stringAnyDict: [String: Any] = [:]
+    attribution.setAppstackAttributionParams(stringAnyDict) { _, _ in }
+
+    let optionalStringAnyDict: [String: Any]? = [:]
+    attribution.setAppstackAttributionParams(optionalStringAnyDict) { _, _ in }
+
+    let stringStringDict: [String: String] = [:]
+    attribution.setAppstackAttributionParams(stringStringDict) { _, _ in }
+
+    let stringIntDict: [String: Int] = [:]
+    attribution.setAppstackAttributionParams(stringIntDict) { _, _ in }
+
+    let nsDictionary: NSDictionary = [:]
+    attribution.setAppstackAttributionParams(nsDictionary as? [String: Any]) { _, _ in }
 }
 
 func checkSetAppsFlyerConversionDataAPI() {

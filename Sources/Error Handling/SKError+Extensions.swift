@@ -23,6 +23,11 @@ extension SKError: PurchasesErrorConvertible {
              .overlayTimeout,
              .overlayPresentedInBackgroundScene:
             return ErrorUtils.storeProblemError(error: self)
+        #if compiler(>=6.3.2)
+        // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+        case .paymentMethodBindingConfigurationRequired:
+            return ErrorUtils.storeProblemError(error: self)
+        #endif
         case .clientInvalid,
              .paymentNotAllowed,
              .cloudServicePermissionDenied,
@@ -137,6 +142,11 @@ extension SKError.Code {
             return "unsupported_platform"
         case .overlayPresentedInBackgroundScene:
             return "overlay_presented_in_background_scene"
+        #if compiler(>=6.3.2)
+        // paymentMethodBindingConfigurationRequired introduced in Xcode 26.5
+        case .paymentMethodBindingConfigurationRequired:
+            return "payment_method_binding_configuration_required"
+        #endif
         @unknown default:
             return "unknown_store_kit_error"
         }

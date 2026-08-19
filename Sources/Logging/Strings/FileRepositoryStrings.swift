@@ -18,7 +18,6 @@ enum FileRepositoryStrings {
     case failedToSaveCachedFile(URL, Error)
     case failedToFetchFileFromRemoteSource(URL, Error)
     case failedToCreateCacheDirectory(URL)
-    case failedToCreateDocumentDirectory(URL)
     case failedToCreateTemporaryFile(URL)
 
 }
@@ -32,8 +31,6 @@ extension FileRepositoryStrings: LogMessage {
             return "Failed to download file from \(url.absoluteString): \(error)"
         case .failedToCreateCacheDirectory(let url):
             return "Failed to create cache directory for \(url.absoluteString)"
-        case .failedToCreateDocumentDirectory(let url):
-            return "Failed to create Document directory for \(url.absoluteString)"
         case .failedToCreateTemporaryFile(let url):
             return "Failed to create a temporary file for \(url.absoluteString)"
         }

@@ -40,6 +40,9 @@ struct WatchTemplateView: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     init(_ configuration: TemplateViewConfiguration) {
         self._selectedPackage = .init(initialValue: configuration.packages.default)
         self.configuration = configuration
@@ -103,7 +106,10 @@ struct WatchTemplateView: TemplateViewType {
 
         case .multiple:
             VStack(spacing: Self.packageSpacing) {
-                self.packageList(self.configuration.packages.all)
+                self.packageList(
+                    self.configuration.packages.all,
+                    defaultPackage: self.configuration.packages.default.content
+                )
             }
 
         case let .multiTier(_, tiers, tierNames):
@@ -112,7 +118,10 @@ struct WatchTemplateView: TemplateViewType {
                     Text(verbatim: "\(tierNames[tier]!)")
                         .font(self.font(for: .title3))
 
-                    self.packageList(tiers[tier]!.all)
+                    self.packageList(
+                        tiers[tier]!.all,
+                        defaultPackage: tiers[tier]!.default.content
+                    )
                 }
             }
         }
@@ -120,17 +129,34 @@ struct WatchTemplateView: TemplateViewType {
         Spacer()
     }
 
-    private func packageList(_ packages: [TemplateViewConfiguration.Package]) -> some View {
+    private func packageList(
+        _ packages: [TemplateViewConfiguration.Package],
+        defaultPackage: Package
+    ) -> some View {
         ForEach(packages, id: \.content.id) { package in
-            self.packageButton(package)
+            self.packageButton(package, defaultPackage: defaultPackage)
         }
     }
 
     @ViewBuilder
-    private func packageButton(_ package: TemplateViewConfiguration.Package) -> some View {
+    private func packageButton(
+        _ package: TemplateViewConfiguration.Package,
+        defaultPackage: Package
+    ) -> some View {
         let isSelected = self.selectedPackage.content === package.content
 
         Button {
+            let origin = self.selectedPackage.content
+            let destination = package.content
+            if origin.identifier != destination.identifier {
+                self.componentInteractionLogger(
+                    .paywallPackageRowSelection(
+                        destination: destination,
+                        origin: origin,
+                        defaultPackage: defaultPackage
+                    )
+                )
+            }
             self.selectedPackage = package
         } label: {
             self.packageLabel(package, selected: isSelected)

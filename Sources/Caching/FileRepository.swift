@@ -39,7 +39,15 @@ import Foundation
         self.networkService = networkService
         self.fileManager = fileManager
 
-        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(basePath: basePath)
+        self.cacheURL = fileManager.createCacheDirectoryIfNeeded(
+            basePath: basePath,
+            /*
+             In order to use the app specific directory structure the existing
+             cached files will have to be moved first.
+             Until that happens we'll keep using the existing 'RevenueCat' directory
+            */
+            inAppSpecificDirectory: false
+        )
     }
 
     /// Create a file repository
@@ -122,6 +130,8 @@ import Foundation
     ) async throws {
         do {
             try await fileManager.saveData(bytes, to: url, checksum: checksum)
+        } catch is Checksum.ChecksumValidationFailure {
+            throw Error.checksumMismatch
         } catch {
             let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
@@ -172,6 +182,9 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
+
+        /// Used when the downloaded file's checksum does not match the expected value
+        case checksumMismatch
     }
 }
 

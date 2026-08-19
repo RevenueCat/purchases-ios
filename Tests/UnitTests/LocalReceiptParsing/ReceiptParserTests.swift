@@ -1,7 +1,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class ReceiptParserTests: TestCase {
 

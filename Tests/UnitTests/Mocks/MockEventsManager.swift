@@ -12,10 +12,16 @@
 //  Created by Nacho Soto on 9/6/23.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 actor MockEventsManager: EventsManagerType {
+
+    nonisolated var eventsListener: EventsListener? {
+        get { self._eventsListener.value }
+        set { self._eventsListener.value = newValue }
+    }
+    private let _eventsListener = Atomic<EventsListener?>(nil)
 
     let invokedFlushAllEventsWithBackgroundTask: Atomic<Bool> = .init(false)
     let invokedFlushAllEventsCountWithBackgroundTask: Atomic<Int> = .init(0)

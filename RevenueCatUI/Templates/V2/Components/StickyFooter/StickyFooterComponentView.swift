@@ -12,7 +12,7 @@
 //  Created by Jay Shortway on 24/10/2024.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2

@@ -635,6 +635,91 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         cancellable.cancel()
     }
 
+    func testCustomActionPathPurchaseInformationTakesPrecedenceOverWithActiveProductId() async throws {
+        let purchaseInformation = PurchaseInformation.subscription
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        let expectation = XCTestExpectation(description: "Custom action triggered with purchaseInformation identifier")
+
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: purchaseInformation,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_change_plans",
+            title: "Change Plans",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "change_plans"
+        )
+
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: "com.example.override_should_be_ignored")
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "change_plans"
+        expect(customActionData.purchaseIdentifier) == purchaseInformation.productIdentifier
+
+        cancellable.cancel()
+    }
+
+    func testCustomActionPathUsesWithActiveProductIdWhenPurchaseInformationIsNil() async throws {
+        let actionWrapper = CustomerCenterActionWrapper()
+        var capturedCustomActionData: CustomActionData?
+
+        let expectation = XCTestExpectation(description: "Custom action triggered with withActiveProductId fallback")
+
+        let cancellable = actionWrapper.customActionSelected
+            .sink { actionIdentifier, purchaseIdentifier in
+                capturedCustomActionData = CustomActionData(
+                    actionIdentifier: actionIdentifier,
+                    purchaseIdentifier: purchaseIdentifier
+                )
+                expectation.fulfill()
+            }
+
+        // Simulates the RelevantPurchasesListViewModel: purchaseInformation is nil
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: Self.managementScreen(refundWindowDuration: .forever),
+            actionWrapper: actionWrapper,
+            purchaseInformation: nil,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        let customActionPath = CustomerCenterConfigData.HelpPath(
+            id: "custom_change_plans",
+            title: "Change Plans",
+            type: .customAction,
+            detail: nil,
+            customActionIdentifier: "change_plans"
+        )
+
+        // withActiveProductId provided by the caller (e.g. single subscription in list view)
+        await viewModel.handleHelpPath(customActionPath, withActiveProductId: "com.example.annual")
+
+        await fulfillment(of: [expectation], timeout: 1.0)
+
+        let customActionData = try XCTUnwrap(capturedCustomActionData)
+        expect(customActionData.actionIdentifier) == "change_plans"
+        expect(customActionData.purchaseIdentifier) == "com.example.annual"
+
+        cancellable.cancel()
+    }
+
     func testCustomActionPathWithNilActivePurchaseId() async throws {
         let actionWrapper = CustomerCenterActionWrapper()
         var capturedCustomActionData: CustomActionData?
@@ -779,6 +864,25 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
 
         // Non-consumable (lifetime) products should not show cancel path
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testAutoRenewableSubscriptionDoesNotShowChangePlansIfExpired() {
+        let purchase = PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isExpired: true
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Expired subscriptions should not show change plans
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
     func testAutoRenewableSubscriptionDoesNotShowChangePlansIfLifetime() {

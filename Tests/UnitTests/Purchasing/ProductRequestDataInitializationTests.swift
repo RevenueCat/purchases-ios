@@ -20,7 +20,10 @@ class ProductRequestDataSK1ProductInitializationTests: TestCase {
     }
 
     private func extract() -> ProductRequestData {
-        return ProductRequestData(with: StoreProduct(sk1Product: self.product), storefront: self.storefront)
+        return ProductRequestData(
+            with: StoreProduct(sk1Product: self.product),
+            storeCountry: self.storefront.countryCode
+        )
     }
 
     func testExtractInfoFromProductExtractsProductIdentifier() {
@@ -32,7 +35,7 @@ class ProductRequestDataSK1ProductInitializationTests: TestCase {
     func testExtractInfoFromProductExtractsStorefrontCountryCode() {
         let receivedProductData = self.extract()
 
-        expect(receivedProductData.storefront?.countryCode) == Self.storefrontCountryCode
+        expect(receivedProductData.storeCountry) == Self.storefrontCountryCode
     }
 
     func testExtractInfoFromProductExtractsPrice() {

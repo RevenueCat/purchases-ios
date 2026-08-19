@@ -773,6 +773,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCOCOAPODS_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -798,6 +799,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCOCOAPODS_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;
@@ -876,6 +878,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCOCOAPODS_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
@@ -901,6 +904,7 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				OTHER_SWIFT_FLAGS = "-DCOCOAPODS_INSTALLATION";
 				PRODUCT_BUNDLE_IDENTIFIER = com.revenuecat.CocoapodsIntegrationTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_COMPILATION_MODE = wholemodule;

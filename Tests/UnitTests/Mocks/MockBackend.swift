@@ -12,8 +12,14 @@ class MockBackend: Backend {
     typealias PostReceiptParameters = (data: EncodedAppleReceipt?,
                                        productData: ProductRequestData?,
                                        transactionData: PurchasedTransactionData,
+                                       postReceiptSource: PostReceiptSource,
                                        observerMode: Bool,
+                                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                                        appTransaction: String?,
+                                       associatedTransactionId: String?,
+                                       sdkOriginated: Bool,
+                                       appUserID: String,
+                                       containsAttributionData: Bool,
                                        completion: CustomerAPI.CustomerInfoResponseHandler?)
 
     var invokedPostReceiptData = false
@@ -23,10 +29,13 @@ class MockBackend: Backend {
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
     var onPostReceipt: (() -> Void)?
 
+    /// When set, the next `post(receipt:)` call defers its completion until this gate is opened.
+    /// Consumed after a single use. Used to deterministically test ordering of concurrent receipt posts.
+    let deferredPostReceiptCompletionGate: Atomic<MockAsyncGate?> = nil
+
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
-                                        dangerousSettings: nil,
                                         preferredLocalesProvider: .mock())
         let attributionFetcher = AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                     systemInfo: systemInfo)
@@ -41,6 +50,8 @@ class MockBackend: Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
+        let adsAPI = MockAdsAPI()
+        let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
@@ -51,33 +62,61 @@ class MockBackend: Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
-                  virtualCurrenciesAPI: virtualCurrenciesAPI)
+                  virtualCurrenciesAPI: virtualCurrenciesAPI,
+                  adsAPI: adsAPI,
+                  remoteConfigAPI: remoteConfigAPI)
     }
 
     override func post(receipt: EncodedAppleReceipt,
                        productData: ProductRequestData?,
                        transactionData: PurchasedTransactionData,
+                       postReceiptSource: PostReceiptSource,
                        observerMode: Bool,
+                       originalPurchaseCompletedBy: PurchasesAreCompletedBy?,
                        appTransaction: String? = nil,
+                       associatedTransactionId: String? = nil,
+                       sdkOriginated: Bool = false,
+                       appUserID: String,
+                       containsAttributionData: Bool = false,
                        completion: @escaping CustomerAPI.CustomerInfoResponseHandler) {
         invokedPostReceiptData = true
         invokedPostReceiptDataCount += 1
         invokedPostReceiptDataParameters = (receipt,
                                             productData,
                                             transactionData,
+                                            postReceiptSource,
                                             observerMode,
+                                            originalPurchaseCompletedBy,
                                             appTransaction,
+                                            associatedTransactionId,
+                                            sdkOriginated,
+                                            appUserID,
+                                            containsAttributionData,
                                             completion)
         invokedPostReceiptDataParametersList.append((receipt,
                                                      productData,
                                                      transactionData,
+                                                     postReceiptSource,
                                                      observerMode,
+                                                     originalPurchaseCompletedBy,
                                                      appTransaction,
+                                                     associatedTransactionId,
+                                                     sdkOriginated,
+                                                     appUserID,
+                                                     containsAttributionData,
                                                      completion))
 
         self.onPostReceipt?()
 
-        completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
+        let result = stubbedPostReceiptResult ?? .failure(.missingAppUserID())
+        if let gate = self.deferredPostReceiptCompletionGate.getAndSet(nil) {
+            Task {
+                await gate.wait()
+                completion(result)
+            }
+        } else {
+            completion(result)
+        }
     }
 
     var invokedGetSubscriberData = false
@@ -164,6 +203,30 @@ class MockBackend: Backend {
         } else {
             completion?(nil)
         }
+    }
+
+    var invokedIsPurchaseAllowedByRestoreBehavior = false
+    var invokedIsPurchaseAllowedByRestoreBehaviorCount = 0
+    var invokedIsPurchaseAllowedByRestoreBehaviorParameters:
+    (appUserID: String, transactionJWS: String, isAppBackgrounded: Bool)?
+    var stubbedIsPurchaseAllowedByRestoreBehaviorResult:
+    Result<IsPurchaseAllowedByRestoreBehaviorResponse, BackendError> = .failure(.missingAppUserID())
+
+    override func isPurchaseAllowedByRestoreBehavior(
+        appUserID: String,
+        transactionJWS: String,
+        isAppBackgrounded: Bool,
+        completion: @escaping CustomerAPI.IsPurchaseAllowedByRestoreBehaviorResponseHandler
+    ) {
+        self.invokedIsPurchaseAllowedByRestoreBehavior = true
+        self.invokedIsPurchaseAllowedByRestoreBehaviorCount += 1
+        self.invokedIsPurchaseAllowedByRestoreBehaviorParameters = (
+            appUserID,
+            transactionJWS,
+            isAppBackgrounded
+        )
+
+        completion(self.stubbedIsPurchaseAllowedByRestoreBehaviorResult)
     }
 
     var invokedClearHTTPClientCaches = false

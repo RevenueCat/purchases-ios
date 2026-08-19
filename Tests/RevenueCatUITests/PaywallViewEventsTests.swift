@@ -13,7 +13,7 @@
 // swiftlint:disable type_name
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -121,8 +121,8 @@ class BasePaywallViewEventsTests: TestCase {
 
         await self.waitForCloseEvent()
 
-        expect(self.events).to(haveCount(3))
-        expect(self.events.map(\.eventType)).to(contain([.impression, .cancel, .close]))
+        expect(self.events).to(haveCount(4))
+        expect(self.events.map(\.eventType)).to(contain([.impression, .purchaseInitiated, .cancel, .close]))
         expect(Set(self.events.map(\.data.sessionIdentifier))).to(haveCount(1))
 
         let data = try XCTUnwrap(self.events.first { $0.eventType == .cancel }).data
@@ -210,6 +210,9 @@ private extension BasePaywallViewEventsTests {
         case .cancel: break
         case .close: self.closeEventExpectation.fulfill()
         case .exitOffer: self.exitOfferEventExpectation.fulfill()
+        case .purchaseInitiated: break
+        case .purchaseError: break
+        case .componentInteraction: break
         }
     }
 
@@ -256,6 +259,9 @@ private extension PaywallEvent {
         case cancel
         case close
         case exitOffer
+        case purchaseInitiated
+        case purchaseError
+        case componentInteraction
 
     }
 
@@ -265,6 +271,9 @@ private extension PaywallEvent {
         case .cancel: return .cancel
         case .close: return .close
         case .exitOffer: return .exitOffer
+        case .purchaseInitiated: return .purchaseInitiated
+        case .purchaseError: return .purchaseError
+        case .componentInteraction: return .componentInteraction
         }
     }
 

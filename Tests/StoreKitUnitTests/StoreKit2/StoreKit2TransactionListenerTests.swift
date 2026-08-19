@@ -78,19 +78,27 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 
         let fakeTransaction = try await self.simulateAnyPurchase()
 
-        let (isCancelled, transaction) = try await self.listener.handle(
+        let result = try await self.listener.handle(
             purchaseResult: .success(fakeTransaction)
         )
-        expect(isCancelled) == false
-        expect(transaction?.sk2Transaction) == fakeTransaction.underlyingTransaction
+        switch result {
+        case let .successfulVerifiedTransaction(transaction):
+            expect(transaction.sk2Transaction) == fakeTransaction.underlyingTransaction
+        case .userCancelled:
+            fail("Expected successfulVerifiedTransaction")
+        }
     }
 
     func testIsCancelledIsTrueWhenPurchaseIsCancelled() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
 
-        let (isCancelled, transaction) = try await self.listener.handle(purchaseResult: .userCancelled)
-        expect(isCancelled) == true
-        expect(transaction).to(beNil())
+        let result = try await self.listener.handle(purchaseResult: .userCancelled)
+        switch result {
+        case .userCancelled:
+            break // Expected
+        case .successfulVerifiedTransaction:
+            fail("Expected userCancelled")
+        }
     }
 
     func testPendingTransactionsReturnPaymentPendingError() async throws {
@@ -138,8 +146,12 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
         let (purchaseResult, _, purchasedTransaction) = try await self.purchase()
 
         let resultData = try await self.listener.handle(purchaseResult: purchaseResult)
-        expect(resultData.transaction?.sk2Transaction) == purchasedTransaction
-        expect(resultData.userCancelled) == false
+        switch resultData {
+        case let .successfulVerifiedTransaction(transaction):
+            expect(transaction.sk2Transaction) == purchasedTransaction
+        case .userCancelled:
+            fail("Expected successfulVerifiedTransaction")
+        }
 
         try await self.verifyUnfinishedTransaction(withId: purchasedTransaction.id)
     }
@@ -171,8 +183,12 @@ class StoreKit2TransactionListenerTests: StoreKit2TransactionListenerBaseTests {
 
     func testHandlePurchaseResultWithCancelledPurchase() async throws {
         let result = try await self.listener.handle(purchaseResult: .userCancelled)
-        expect(result.userCancelled) == true
-        expect(result.transaction).to(beNil())
+        switch result {
+        case .userCancelled:
+            break // Expected
+        case .successfulVerifiedTransaction:
+            fail("Expected userCancelled")
+        }
     }
 
     func testHandlePurchaseResultWithDeferredPurchase() async throws {

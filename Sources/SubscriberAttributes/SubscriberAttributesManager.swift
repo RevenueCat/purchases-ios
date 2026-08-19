@@ -77,6 +77,10 @@ class SubscriberAttributesManager {
         setAttributionID(appsflyerID, forNetworkID: .appsFlyerID, appUserID: appUserID)
     }
 
+    func setAppstackID(_ appstackID: String?, appUserID: String) {
+        setAttributionID(appstackID, forNetworkID: .appstackID, appUserID: appUserID)
+    }
+
     func setFBAnonymousID(_ fBAnonymousID: String?, appUserID: String) {
         setAttributionID(fBAnonymousID, forNetworkID: .fBAnonID, appUserID: appUserID)
     }
@@ -219,6 +223,15 @@ class SubscriberAttributesManager {
         setReservedAttribute(.deviceVersion, value: "true", appUserID: appUserID)
     }
 
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `Attribution.setATTConsentStatus` which is invoked by
+    /// `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and by `syncAttributesForAllUsers` (foreground/background/login/logout).
+    func setATTConsentStatus(forAppUserID appUserID: String) {
+        let status = attributionFetcher.authorizationStatus
+        setReservedAttribute(.consentStatus, value: status.description, appUserID: appUserID)
+    }
+
     /// - Parameter syncedAttribute: will be called for every attribute that is updated
     /// - Parameter completion: will be called once all attributes have completed syncing
     /// - Returns: the number of attributes that will be synced
@@ -226,6 +239,7 @@ class SubscriberAttributesManager {
     func syncAttributesForAllUsers(currentAppUserID: String,
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
+        setATTConsentStatus(forAppUserID: currentAppUserID)
         let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
         let total = unsyncedAttributesForAllUsers.count
 

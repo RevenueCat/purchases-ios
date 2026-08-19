@@ -63,7 +63,7 @@ private extension PaywallViewDynamicTypeTests {
 
     static func test(_ type: DynamicTypeSize) {
         Self.createView(type)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     private static func createView(_ type: DynamicTypeSize) -> some View {

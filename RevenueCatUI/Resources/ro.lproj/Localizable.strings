@@ -1,4 +1,8 @@
 "OK" = "Bine";
+"Close" = "Închide";
+"Go back" = "Înapoi";
+"Manage subscription" = "Gestionează abonamentul";
+"Redeem code" = "Revendică codul";
 "All subscriptions" = "Toate abonamentele";
 "Privacy" = "Confidențialitate";
 "Privacy policy" = "Politica de confidențialitate";
@@ -18,3 +22,4 @@
 "Continue" = "Continua";
 "Default_offer_details_with_intro_offer" = "Începeți perioada de încercare de {{ sub_offer_duration }}, apoi {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ceva n-a mers bine";
+"Purchase" = "Cumpără";

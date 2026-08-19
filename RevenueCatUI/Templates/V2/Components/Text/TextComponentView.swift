@@ -40,10 +40,25 @@ struct TextComponentView: View {
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     // Observing dynamicTypeSize triggers view rebuilds when Dynamic Type settings change,
     // which causes fonts to be recreated with the correct scaled size.
     @Environment(\.dynamicTypeSize)
     private var dynamicTypeSize
+
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
 
     private let viewModel: TextComponentViewModel
 
@@ -52,25 +67,33 @@ struct TextComponentView: View {
     }
 
     var body: some View {
+        let isEligibleForIntroOffer = self.introOfferEligibilityContext.isEligible(
+            package: self.packageContext.package
+        )
+        let promoOffer = self.paywallPromoOfferCache.get(for: self.packageContext.package)
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
-            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
-                package: self.packageContext.package
-            ),
-            promoOffer: self.paywallPromoOfferCache.get(for: self.packageContext.package),
-            countdownTime: countdownTime
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            promoOffer: promoOffer,
+            countdownTime: countdownTime,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
                     text: style.text,
                     font: style.font,
-                    fontWeight: style.fontWeight
+                    fontWeight: style.fontWeight,
+                    componentName: style.name
                 )
                     .fixedSize(horizontal: false, vertical: true)
                     .multilineTextAlignment(style.textAlignment)
                     .foregroundColorScheme(style.color)
+                    .redacted(reason: isPaywallLoading ? .placeholder : [])
                     .padding(style.padding)
                     .size(style.size,
                           horizontalAlignment: style.horizontalAlignment)
@@ -86,13 +109,21 @@ struct TextComponentView: View {
 /// Parses markdown using AttributedString and does not use bundle assets for localization
 private struct NonLocalizedMarkdownText: View {
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
+    @Environment(\.openURL)
+    private var parentOpenURL
+
+    @Environment(\.urlOpenedNotifier)
+    private var urlOpenedNotifier
+
     let text: String
     let font: Font
     let fontWeight: Font.Weight
+    let componentName: String?
 
     var markdownText: AttributedString? {
-        #if swift(>=5.7)
-
         /*
          The intended behavior is:
          * If the font weight of the text is <= Bold, Markdown bold should be Bold
@@ -126,18 +157,31 @@ private struct NonLocalizedMarkdownText: View {
         }
 
         return attrString
-
-        #else
-        return nil
-        #endif
     }
 
     var body: some View {
-        #if swift(>=5.7)
         Group {
             if let markdownText = self.markdownText {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
+                    .environment(\.openURL, OpenURLAction { url in
+                        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
+                            componentName: self.componentName,
+                            url: url
+                        ))
+#if os(watchOS)
+                        // watchOS doesn't report whether opening succeeded, so we notify right away.
+                        self.parentOpenURL(url)
+                        self.urlOpenedNotifier(url)
+#else
+                        self.parentOpenURL(url) { success in
+                            if success {
+                                self.urlOpenedNotifier(url)
+                            }
+                        }
+#endif
+                        return .handled
+                    })
             } else {
                 // Display text as is because markdown is priority
                 Text(self.text)
@@ -145,12 +189,6 @@ private struct NonLocalizedMarkdownText: View {
                     .fontWeight(self.fontWeight)
             }
         }
-        #else
-        // Display text as is because markdown is priority
-        Text(self.text)
-            .font(self.font)
-            .fontWeight(self.fontWeight)
-        #endif
     }
 }
 
@@ -227,6 +265,14 @@ struct TextComponentView_Previews: PreviewProvider {
 
         platformPreview
         .previewDisplayName("Detected Platform")
+
+        defaultPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Default (Loading)")
+
+        platformPreview
+        .environment(\.isPaywallLoading, true)
+        .previewDisplayName("Detected Platform (Loading)")
 
         // Markdown
         TextComponentView(

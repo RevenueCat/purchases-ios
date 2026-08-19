@@ -11,7 +11,7 @@
 //
 //  Created by James Borthwick on 2024-08-20.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -27,21 +27,73 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
     let badgeViewModels: [PaywallComponentViewModel]
-    let shouldApplySafeAreaInset: Bool
+
+    /// Whether the first child is a full-width image, video, or web view.
+    /// Used by ZStack rendering to push non-hero children below the safe area.
+    var firstChildIsFullWidthMedia: Bool {
+        guard case .zlayer = component.dimension else { return false }
+        guard let first = component.components.first(where: {
+            if case .fallbackHeader = $0 { return false }
+            return true
+        }) else { return false }
+        switch first {
+        case .image(let image):
+            return image.size.width == .fill
+        case .video(let video):
+            return video.size.width == .fill
+        case .webView(let webView):
+            return webView.size.width == .fill
+        default:
+            return false
+        }
+    }
+
+    /// Whether this stack renders anything a screen reader can announce, at any depth.
+    /// Anything uncertain counts as `true`, so a derived label never overrides wording that works.
+    var containsAnnounceableContent: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
+        return self.viewModels.contains(where: Self.announces)
+            || self.badgeViewModels.contains(where: Self.announces)
+    }
+
+    private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
+        switch viewModel {
+        case .text(let text):
+            return text.announcesText
+        case .stack(let stack):
+            return stack.containsAnnounceableContent
+        case .stickyFooter(let footer):
+            return footer.stackViewModel.containsAnnounceableContent
+
+        // Composites that own text of their own, or a subtree we do not walk.
+        case .root, .button, .package, .purchaseButton, .timeline, .tabs, .tabControl,
+             .tabControlButton, .tabControlToggle, .carousel, .countdown:
+            return true
+
+        // Purely visual.
+        case .icon, .image, .video, .webView:
+            return false
+        }
+    }
+
+    private let discardRules: Bool
 
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
         badgeViewModels: [PaywallComponentViewModel],
-        shouldApplySafeAreaInset: Bool = false,
-        uiConfigProvider: UIConfigProvider
+        uiConfigProvider: UIConfigProvider,
+        discardRules: Bool = false
     ) {
         self.component = component
         self.viewModels = viewModels
         self.uiConfigProvider = uiConfigProvider
         self.badgeViewModels = badgeViewModels
-        self.shouldApplySafeAreaInset = shouldApplySafeAreaInset
-        self.presentedOverrides = self.component.overrides?.toPresentedOverrides { $0 }
+        self.discardRules = discardRules
+        self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     func copy(withViewModels newViewModels: [PaywallComponentViewModel]) -> StackComponentViewModel {
@@ -49,30 +101,40 @@ class StackComponentViewModel {
             component: self.component,
             viewModels: newViewModels,
             badgeViewModels: self.badgeViewModels,
-            shouldApplySafeAreaInset: self.shouldApplySafeAreaInset,
-            uiConfigProvider: self.uiConfigProvider
+            uiConfigProvider: self.uiConfigProvider,
+            discardRules: self.discardRules
         )
     }
 
-    @ViewBuilder
     // swiftlint:disable:next function_parameter_count
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
-        colorScheme: ColorScheme,
-        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
-    ) -> some View {
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        colorScheme: ColorScheme
+    ) -> StackComponentStyle {
+        let conditionContext = self.uiConfigProvider.conditionContext(
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
+        )
+
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
+            conditionContext: conditionContext,
             with: self.presentedOverrides
         )
 
-        let style = StackComponentStyle(
+        return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             badgeViewModels: self.badgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
@@ -90,7 +152,33 @@ class StackComponentViewModel {
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )
+    }
 
+    @ViewBuilder
+    // swiftlint:disable:next function_parameter_count
+    func styles(
+        state: ComponentViewState,
+        condition: ScreenCondition,
+        isEligibleForIntroOffer: Bool,
+        isEligibleForPromoOffer: Bool,
+        selectedPackageId: String?,
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        colorScheme: ColorScheme,
+        @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
+    ) -> some View {
+        let style = styles(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: isEligibleForIntroOffer,
+            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
+            colorScheme: colorScheme
+        )
         apply(style)
     }
 
@@ -103,6 +191,7 @@ extension PresentedStackPartial: PresentedPartial {
         with other: PaywallComponent.PartialStackComponent?
     ) -> Self {
 
+        let name = other?.name ?? base?.name
         let visible = other?.visible ?? base?.visible
         let dimension = other?.dimension ?? base?.dimension
         let size = other?.size ?? base?.size
@@ -117,6 +206,7 @@ extension PresentedStackPartial: PresentedPartial {
         let badge = other?.badge ?? base?.badge
 
         return .init(
+            name: name,
             visible: visible,
             dimension: dimension,
             size: size,
@@ -210,9 +300,10 @@ struct StackComponentStyle {
         case .spaceBetween, .spaceAround, .spaceEvenly:
             // We dont want to use a flex stack if its axis is set to fit.
             // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            if self.size.height == .fit {
+            switch self.size.height {
+            case .fit:
                 return .normal
-            } else {
+            default:
                 return .flex
             }
         }
@@ -230,9 +321,10 @@ struct StackComponentStyle {
         case .spaceBetween, .spaceAround, .spaceEvenly:
             // We dont want to use a flex stack if its axis is set to fit.
             // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            if self.size.width == .fit {
+            switch self.size.width {
+            case .fit:
                 return .normal
-            } else {
+            default:
                 return .flex
             }
         }

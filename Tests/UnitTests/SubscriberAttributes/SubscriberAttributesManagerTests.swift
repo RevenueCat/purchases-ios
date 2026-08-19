@@ -2453,6 +2453,263 @@ class SubscriberAttributesManagerTests: TestCase {
     }
 
     // endregion
+    // region Appstack Attribution Data
+
+    func testSetAppstackAttributionParamsSetsAllAttributes() {
+        let fullData: [String: Any] = [
+            "appstack_id": "appstack_id_value",
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "summer_sale",
+            "appstack_adset": "test_adset",
+            "appstack_ad": "test_ad",
+            "appstack_keywords": "test_keywords",
+            "fbclid": "fb_click_id",
+            "gclid": "google_click_id",
+            "wbraid": "wbraid_value",
+            "gbraid": "gbraid_value",
+            "ttclid": "tiktok_click_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(fullData, appUserID: "kratos")
+
+        // 5 campaign pairs (reserved + custom) = 10, 5 click IDs = 5, 4 device identifiers + 1 appstack_id = 5
+        expect(self.mockDeviceCache.invokedStoreCount) == 20
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "appstack_id_value"
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "summer_sale"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "summer_sale"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "test_adset"
+        expect(self.findInvokedAttribute(withName: "appstack_adset").value) == "test_adset"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "test_ad"
+        expect(self.findInvokedAttribute(withName: "appstack_ad").value) == "test_ad"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "test_keywords"
+        expect(self.findInvokedAttribute(withName: "appstack_keywords").value) == "test_keywords"
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "fb_click_id"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "google_click_id"
+        expect(self.findInvokedAttribute(withName: "wbraid").value) == "wbraid_value"
+        expect(self.findInvokedAttribute(withName: "gbraid").value) == "gbraid_value"
+        expect(self.findInvokedAttribute(withName: "ttclid").value) == "tiktok_click_id"
+    }
+
+    func testSetAppstackAttributionParamsWithNilDoesNothing() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(nil, appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppstackAttributionParamsWithEmptyDictDoesNothing() {
+        self.subscriberAttributesManager.setAppstackAttributionParams([:], appUserID: "kratos")
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetAppstackAttributionParamsMissingAppstackIdDoesNotTriggerDeviceIdentifiers() {
+        let dataWithoutId: [String: Any] = [
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "summer_sale"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithoutId, appUserID: "kratos")
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfa" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$idfv" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$appstackId" }))
+    }
+
+    func testSetAppstackAttributionParamsAppstackIdTriggersDeviceIdentifiers() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        // 4 device identifiers + 1 appstack_id
+        expect(self.mockDeviceCache.invokedStoreCount) == 5
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+        checkDeviceIdentifiersAreSet()
+    }
+
+    func testSetAppstackAttributionParamsAppstackIdDoesNotTriggerDeviceIdentifiersIfOptionDisabled() {
+        self.subscriberAttributesManager = SubscriberAttributesManager(
+            backend: mockBackend,
+            deviceCache: mockDeviceCache,
+            operationDispatcher: MockOperationDispatcher(),
+            attributionFetcher: mockAttributionFetcher,
+            attributionDataMigrator: mockAttributionDataMigrator,
+            automaticDeviceIdentifierCollectionEnabled: false
+        )
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+        checkDeviceIdentifiersAreNotSet()
+    }
+
+    func testSetAppstackAttributionParamsCampaignKeysDualStorage() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_adnetwork": "google"],
+            appUserID: "kratos"
+        )
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "google"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "google"
+    }
+
+    func testSetAppstackAttributionParamsHandlesNilValuesInDictionary() {
+        let nilValue: String? = nil
+        let dataWithNilValues: [String: Any] = [
+            "appstack_adnetwork": nilValue as Any,
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithNilValues, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppstackAttributionParamsHandlesEmptyStringValues() {
+        let dataWithEmptyStrings: [String: Any] = [
+            "appstack_adnetwork": "",
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithEmptyStrings, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "valid_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "valid_campaign"
+    }
+
+    func testSetAppstackAttributionParamsHandlesNSNullValues() {
+        let dataWithNSNull: [String: Any] = [
+            "appstack_adnetwork": NSNull(),
+            "appstack_campaign": "valid_campaign"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithNSNull, appUserID: "kratos")
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).to(containElementSatisfying({ $0.attribute.key == "$campaign" }))
+    }
+
+    func testSetAppstackAttributionParamsHandlesIntegerValues() {
+        let dataWithIntegers: [String: Any] = [
+            "appstack_adnetwork": 12345
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithIntegers, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "12345"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "12345"
+    }
+
+    func testSetAppstackAttributionParamsHandlesDoubleValues() {
+        let dataWithDoubles: [String: Any] = [
+            "appstack_campaign": 12345.67
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithDoubles, appUserID: "kratos")
+
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "12345.67"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "12345.67"
+    }
+
+    func testSetAppstackAttributionParamsWithOnlyClickIds() {
+        let clickIdData: [String: Any] = [
+            "fbclid": "fb_click_id",
+            "gclid": "google_click_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(clickIdData, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "fb_click_id"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "google_click_id"
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$appstackId" }))
+    }
+
+    func testSetAppstackAttributionParamsWithOnlyAppstackIdSetsOnlyReservedId() {
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            ["appstack_id": "test_id"],
+            appUserID: "kratos"
+        )
+
+        let invokedParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$mediaSource" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "appstack_adnetwork" }))
+        expect(invokedParams).toNot(containElementSatisfying({ $0.attribute.key == "$campaign" }))
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+    }
+
+    func testSetAppstackAttributionParamsIgnoresUnrelatedFields() {
+        let dataWithExtraFields: [String: Any] = [
+            "appstack_adnetwork": "google",
+            "some_random_field": "value",
+            "install_time": "2024-01-15",
+            "unrelated": NSNull()
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(dataWithExtraFields, appUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 2
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "google"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "google"
+    }
+
+    func testSetAppstackAttributionParamsWithNSDictionary() {
+        let nsDictionary: NSDictionary = [
+            "appstack_adnetwork": "facebook",
+            "appstack_campaign": "test_campaign",
+            "appstack_id": "test_id"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(
+            nsDictionary as? [String: Any],
+            appUserID: "kratos"
+        )
+
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "facebook"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "appstack_campaign").value) == "test_campaign"
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "test_id"
+    }
+
+    func testSetAppstackAttributionParamsTypicalIntegration() {
+        let attributionParams: [String: Any] = [
+            "appstack_id": "as_install_abc123",
+            "appstack_adnetwork": "Meta",
+            "appstack_campaign": "Summer Sale 2024",
+            "appstack_adset": "US Lookalike",
+            "appstack_ad": "video_v2",
+            "appstack_keywords": "fitness app",
+            "fbclid": "IwAR2abc123",
+            "gclid": "Cj0KCQiA",
+            "ttclid": "tt_click_xyz"
+        ]
+        self.subscriberAttributesManager.setAppstackAttributionParams(attributionParams, appUserID: "kratos")
+
+        // 5 campaign pairs = 10, 3 click IDs = 3, 4 device identifiers + 1 appstack_id = 5
+        expect(self.mockDeviceCache.invokedStoreCount) == 18
+
+        expect(self.findInvokedAttribute(withName: "$appstackId").value) == "as_install_abc123"
+        expect(self.findInvokedAttribute(withName: "$mediaSource").value) == "Meta"
+        expect(self.findInvokedAttribute(withName: "appstack_adnetwork").value) == "Meta"
+        expect(self.findInvokedAttribute(withName: "$campaign").value) == "Summer Sale 2024"
+        expect(self.findInvokedAttribute(withName: "$adGroup").value) == "US Lookalike"
+        expect(self.findInvokedAttribute(withName: "$ad").value) == "video_v2"
+        expect(self.findInvokedAttribute(withName: "$keyword").value) == "fitness app"
+        expect(self.findInvokedAttribute(withName: "fbclid").value) == "IwAR2abc123"
+        expect(self.findInvokedAttribute(withName: "gclid").value) == "Cj0KCQiA"
+        expect(self.findInvokedAttribute(withName: "ttclid").value) == "tt_click_xyz"
+    }
+
+    // endregion
     // region Attribution Data conversion
 
     func testConvertAttributionDataAndSetAsSubscriberAttributesConvertsAndSetsTheAttributes() {
@@ -2501,6 +2758,182 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedStoreParameters).to(beNil())
     }
     // endregion
+
+    // MARK: - setATTConsentStatus
+
+    func testSetATTConsentStatusStoresValueAsConsentStatus() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let storedAttribute = self.mockDeviceCache.invokedStoreParameters?.attribute else {
+            fail("Expected stored attribute")
+            return
+        }
+        expect(storedAttribute.key) == "$attConsentStatus"
+        expect(storedAttribute.value) == "authorized"
+        expect(storedAttribute.isSynced) == false
+    }
+
+    func testSetATTConsentStatusDoesNotWriteWhenValueUnchanged() {
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .notDetermined
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSetATTConsentStatusMarksUnsyncedWhenValueChanged() {
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        guard let storedAttribute = self.mockDeviceCache.invokedStoreParameters?.attribute else {
+            fail("Expected stored attribute")
+            return
+        }
+        expect(storedAttribute.key) == "$attConsentStatus"
+        expect(storedAttribute.value) == "authorized"
+        expect(storedAttribute.isSynced) == false
+    }
+
+    func testUnsyncedAttributesByKeyDoesNotSetATTConsentStatus() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        _ = self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: "kratos")
+
+        // unsyncedAttributesByKey is a pure read — it should not write ATT status as a side effect
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+    }
+
+    func testSyncAttributesForAllUsersSyncsATTConsentStatusWhenChanged() {
+        // Simulate a previously synced "notDetermined" value
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "notDetermined",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+
+        // ATT status has changed to authorized (e.g. user responded to ATT prompt)
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // Return the newly-written attribute as unsynced so it gets posted to backend
+        let unsyncedATTAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                       value: "authorized",
+                                                       isSynced: false,
+                                                       setTime: Date())
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "kratos": ["$attConsentStatus": unsyncedATTAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Verify the changed value was cached
+        let storeParams = self.mockDeviceCache.invokedStoreParametersList
+        expect(storeParams).to(containElementSatisfying({
+            $0.attribute.key == "$attConsentStatus" && $0.attribute.value == "authorized"
+        }))
+
+        // Verify it was posted to the backend
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 1
+        let postedAttributes = self.mockBackend.invokedPostSubscriberAttributesParameters?.subscriberAttributes
+        expect(postedAttributes?["$attConsentStatus"]?.value) == "authorized"
+    }
+
+    func testSyncAttributesForAllUsersDoesNotSyncATTConsentStatusWhenUnchanged() {
+        // Simulate a previously synced "authorized" value
+        let existingAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                    value: "authorized",
+                                                    isSynced: true,
+                                                    setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = existingAttribute
+
+        // ATT status is still authorized — no change
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // No unsynced attributes
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [:]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Should not have written a new value (no change)
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+
+        // Should not have posted to backend
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
+    }
+
+    func testATTConsentStatusNotRepostedAfterAlreadySyncedViaSetATTConsentStatus() {
+        // No cached value initially
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = nil
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // 1. First call (simulates receipt-post path calling setATTConsentStatus)
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: "kratos")
+
+        // Verify it was stored
+        expect(self.mockDeviceCache.invokedStoreCount) == 1
+        expect(self.mockDeviceCache.invokedStoreParameters?.attribute.key) == "$attConsentStatus"
+        expect(self.mockDeviceCache.invokedStoreParameters?.attribute.value) == "authorized"
+
+        // 2. Simulate that the value was synced (receipt post succeeded and marked it synced)
+        let syncedAttribute = SubscriberAttribute(withKey: "$attConsentStatus",
+                                                  value: "authorized",
+                                                  isSynced: true,
+                                                  setTime: Date())
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = syncedAttribute
+
+        // Reset store count to track only new writes
+        self.mockDeviceCache.invokedStoreCount = 0
+
+        // No unsynced attributes (everything was synced by the receipt post)
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [:]
+
+        // 3. Foreground/background triggers syncAttributesForAllUsers
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // Should NOT write again — value hasn't changed
+        expect(self.mockDeviceCache.invokedStoreCount) == 0
+
+        // Should NOT post to backend — nothing unsynced
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount) == 0
+    }
+
+    func testSyncAttributesForAllUsersOnlySetsATTConsentStatusForCurrentUser() {
+        self.mockAttributionFetcher.stubbedAuthorizationStatus = .authorized
+
+        // Unsynced attributes exist for both current and old anonymous user
+        let oldAttribute = SubscriberAttribute(withKey: "$email",
+                                               value: "test@example.com",
+                                               isSynced: false,
+                                               setTime: Date())
+        mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "kratos": [:],
+            "old-anonymous-user": ["$email": oldAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForAllUsers(currentAppUserID: "kratos")
+
+        // ATT consent status should only be written for the current user
+        let attStores = self.mockDeviceCache.invokedStoreParametersList.filter {
+            $0.attribute.key == "$attConsentStatus"
+        }
+        for store in attStores {
+            expect(store.appUserID) == "kratos"
+        }
+    }
 }
 
 private extension SubscriberAttributesManagerTests {

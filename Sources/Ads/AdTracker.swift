@@ -73,18 +73,25 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
-     await Purchases.shared.adTracker.trackAdFailedToLoad(.init(
-         networkName: "AdMob",
+     Purchases.shared.adTracker.trackAdFailedToLoad(.init(
          mediatorName: .appLovin,
+         adFormat: .banner,
          placement: "home_screen",
          adUnitId: "ca-app-pub-123",
          mediatorErrorCode: 3
      ))
      ```
      */
-    @_spi(Experimental) public func trackAdFailedToLoad(_ data: AdFailedToLoad) async {
-        let event = AdEvent.failedToLoad(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(adEvent: event)
+    @_spi(Experimental) @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
+        self.trackAdFailedToLoad(data, captureMethod: .manual)
+    }
+
+    /// Adapter entry point that stamps the event's `capture_method`.
+    @_spi(Internal) public func trackAdFailedToLoad(_ data: AdFailedToLoad, captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.failedToLoad(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
     }
 
     /**
@@ -97,7 +104,7 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
-     await Purchases.shared.adTracker.trackAdLoaded(.init(
+     Purchases.shared.adTracker.trackAdLoaded(.init(
          networkName: "AdMob",
          mediatorName: .appLovin,
          placement: "home_screen",
@@ -106,9 +113,16 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) public func trackAdLoaded(_ data: AdLoaded) async {
-        let event = AdEvent.loaded(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(adEvent: event)
+    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded) {
+        self.trackAdLoaded(data, captureMethod: .manual)
+    }
+
+    /// Adapter entry point that stamps the event's `capture_method`.
+    @_spi(Internal) public func trackAdLoaded(_ data: AdLoaded, captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.loaded(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
     }
 
     /**
@@ -121,7 +135,7 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
-     await Purchases.shared.adTracker.trackAdDisplayed(.init(
+     Purchases.shared.adTracker.trackAdDisplayed(.init(
          networkName: "AdMob",
          mediatorName: .appLovin,
          placement: "home_screen",
@@ -130,9 +144,16 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) public func trackAdDisplayed(_ data: AdDisplayed) async {
-        let event = AdEvent.displayed(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(adEvent: event)
+    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed) {
+        self.trackAdDisplayed(data, captureMethod: .manual)
+    }
+
+    /// Adapter entry point that stamps the event's `capture_method`.
+    @_spi(Internal) public func trackAdDisplayed(_ data: AdDisplayed, captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.displayed(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
     }
 
     /**
@@ -144,7 +165,7 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
-     await Purchases.shared.adTracker.trackAdOpened(.init(
+     Purchases.shared.adTracker.trackAdOpened(.init(
          networkName: "AdMob",
          mediatorName: .appLovin,
          placement: "home_screen",
@@ -153,9 +174,16 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) public func trackAdOpened(_ data: AdOpened) async {
-        let event = AdEvent.opened(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(adEvent: event)
+    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened) {
+        self.trackAdOpened(data, captureMethod: .manual)
+    }
+
+    /// Adapter entry point that stamps the event's `capture_method`.
+    @_spi(Internal) public func trackAdOpened(_ data: AdOpened, captureMethod: AdEventCaptureMethod) {
+        Task {
+            let event = AdEvent.opened(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
+        }
     }
 
     /**
@@ -168,7 +196,7 @@ public final class AdTracker: NSObject {
 
      ## Example:
      ```swift
-     await Purchases.shared.adTracker.trackAdRevenue(.init(
+     Purchases.shared.adTracker.trackAdRevenue(.init(
          networkName: "AdMob",
          mediatorName: .appLovin,
          placement: "home_screen",
@@ -180,99 +208,67 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) public func trackAdRevenue(_ data: AdRevenue) async {
-        let event = AdEvent.revenue(.init(id: UUID(), date: Date()), data)
-        await self.eventsManager?.track(adEvent: event)
+    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue) {
+        self.trackAdRevenue(data, captureMethod: .manual)
     }
 
-    // MARK: - Objective-C Compatible Methods
-
-    /**
-     Tracks when an ad fails to load (Objective-C compatible).
-
-     Call this method from your ad SDK's failure callback to report load failures to RevenueCat.
-     Include the optional `mediatorErrorCode` if provided by the mediation SDK.
-     This is the completion handler version for Objective-C compatibility.
-
-     - Parameters:
-       - data: The failed to load ad event data
-       - completion: Called when the tracking is complete
-     */
-    @_spi(Experimental) @objc public func trackAdFailedToLoad(
-        _ data: AdFailedToLoad,
-        completion: @escaping () -> Void
-    ) {
+    /// Adapter entry point that stamps the event's `capture_method`.
+    @_spi(Internal) public func trackAdRevenue(_ data: AdRevenue, captureMethod: AdEventCaptureMethod) {
         Task {
-            await self.trackAdFailedToLoad(data)
-            completion()
+            let event = AdEvent.revenue(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
         }
     }
 
     /**
-     Tracks when an ad successfully loads (Objective-C compatible).
+     Tracks when the ad SDK reports a user-earned reward, before server-side verification has completed.
 
-     Call this method from your ad SDK's load callback to report successful ad loads to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
-
-     - Parameters:
-       - data: The loaded ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The earned (unverified) reward event data
      */
-    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded, completion: @escaping () -> Void) {
+    @_spi(Internal) public func trackAdRewardEarnedUnverified(_ data: AdRewardEarnedUnverified,
+                                                              captureMethod: AdEventCaptureMethod) {
         Task {
-            await self.trackAdLoaded(data)
-            completion()
+            let event = AdEvent.rewardEarnedUnverified(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
         }
     }
 
     /**
-     Tracks when an ad impression is displayed (Objective-C compatible).
+     Tracks when server-side verification confirms the reward delivered by the ad SDK.
 
-     Call this method from your ad SDK's impression callback to report ad displays to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
-
-     - Parameters:
-       - data: The displayed ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The verified reward event data
      */
-    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed, completion: @escaping () -> Void) {
+    @_spi(Internal) public func trackAdRewardVerified(_ data: AdRewardVerified,
+                                                      captureMethod: AdEventCaptureMethod) {
         Task {
-            await self.trackAdDisplayed(data)
-            completion()
+            let event = AdEvent.rewardVerified(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
         }
     }
 
     /**
-     Tracks when an ad is opened or clicked (Objective-C compatible).
+     Tracks when server-side reward verification terminally fails.
 
-     Call this method from your ad SDK's click callback to report ad interactions to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
-
-     - Parameters:
-       - data: The opened/clicked ad event data
-       - completion: Called when the tracking is complete
+     - Parameter data: The failed-to-verify reward event data
      */
-    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened, completion: @escaping () -> Void) {
+    @_spi(Internal) public func trackAdRewardFailedToVerify(_ data: AdRewardFailedToVerify,
+                                                            captureMethod: AdEventCaptureMethod) {
         Task {
-            await self.trackAdOpened(data)
-            completion()
+            let event = AdEvent.rewardFailedToVerify(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
         }
     }
 
     /**
-     Tracks ad revenue from an impression (Objective-C compatible).
+     Tracks a single reward grant resulting from successful server-side verification.
 
-     Call this method from your ad SDK's revenue callback to report ad revenue to RevenueCat.
-     This is the completion handler version for Objective-C compatibility.
-
-     - Parameters:
-       - data: The ad revenue data including amount, currency, and precision
-       - completion: Called when the tracking is complete
+     - Parameter data: The reward-granted event data
      */
-    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue, completion: @escaping () -> Void) {
+    @_spi(Internal) public func trackAdRewardGranted(_ data: AdRewardGranted,
+                                                     captureMethod: AdEventCaptureMethod) {
         Task {
-            await self.trackAdRevenue(data)
-            completion()
+            let event = AdEvent.rewardGranted(.init(captureMethod: captureMethod), data)
+            await self.eventsManager?.track(adEvent: event)
         }
     }
 

@@ -45,6 +45,9 @@ struct Template5View: TemplateViewType {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     init(_ configuration: TemplateViewConfiguration) {
         self._selectedPackage = .init(initialValue: configuration.packages.default)
         self.configuration = configuration
@@ -174,7 +177,7 @@ struct Template5View: TemplateViewType {
     @ViewBuilder
     private var features: some View {
         VStack(spacing: self.defaultVerticalPaddingLength) {
-            ForEach(self.selectedLocalization.features, id: \.title) { feature in
+            ForEach(self.selectedLocalization.features, id: \.self) { feature in
                 HStack {
                     Rectangle()
                         .foregroundStyle(.clear)
@@ -204,6 +207,17 @@ struct Template5View: TemplateViewType {
                 let isSelected = self.selectedPackage.content === package.content
 
                 Button {
+                    let origin = self.selectedPackage.content
+                    let destination = package.content
+                    if origin.identifier != destination.identifier {
+                        self.componentInteractionLogger(
+                            .paywallPackageRowSelection(
+                                destination: destination,
+                                origin: origin,
+                                defaultPackage: self.configuration.packages.default.content
+                            )
+                        )
+                    }
                     self.selectedPackage = package
                 } label: {
                     self.packageButton(package, selected: isSelected)

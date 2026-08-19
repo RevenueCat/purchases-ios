@@ -1,4 +1,8 @@
 "OK" = "в порядку";
+"Close" = "Закрити";
+"Go back" = "Назад";
+"Manage subscription" = "Керування підпискою";
+"Redeem code" = "Використати код";
 "All subscriptions" = "Всі підписки";
 "Privacy" = "Конфіденційність";
 "Privacy policy" = "Політика конфіденційності";
@@ -18,3 +22,4 @@
 "Continue" = "Продовжити";
 "Default_offer_details_with_intro_offer" = "Розпочніть {{ sub_offer_duration }} пробний період, а потім {{ total_price_and_per_month }}.";
 "Something went wrong" = "Щось пішло не так";
+"Purchase" = "Придбати";

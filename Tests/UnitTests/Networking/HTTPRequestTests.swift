@@ -23,6 +23,7 @@ class HTTPRequestTests: TestCase {
 
     private static let userID = "the_user"
     private static let anonymousUser = "$RCAnonymousID:8252eb283bbc4453a3f81c978f1a6ee1"
+    private static let clientTransactionID = "AABBCCDD-1111-2222-3333-444455556666"
 
     private static let paths: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: userID),
@@ -34,13 +35,16 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .postSubscriberAttributes(appUserID: userID),
         .health,
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .remoteConfig(domain: "app")
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
-        .health
+        .health,
+        .remoteConfig(domain: "app")
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
@@ -48,13 +52,17 @@ class HTTPRequestTests: TestCase {
         .postReceiptData,
         .health,
         .getOfferings(appUserID: userID),
-        .getProductEntitlementMapping
+        .getProductEntitlementMapping,
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
+        .remoteConfig(domain: "app")
     ]
     private static let pathsThatRequireNonce: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),
         .logIn,
         .postReceiptData,
-        .health
+        .health,
+        .remoteConfig(domain: "app"),
+        .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID)
     ]
     private static let pathsWithUserID: [HTTPRequest.Path] = [
         .getCustomerInfo(appUserID: anonymousUser),
@@ -197,6 +205,34 @@ class HTTPRequestTests: TestCase {
         }
     }
 
+    func testRemoteConfigPathEscapesDomain() {
+        let path = HTTPRequest.Path.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+    }
+
+    func testFallbackConfigPathUsesFallbackHostAndEscapesDomain() {
+        let path = HTTPRequest.FallbackPath.remoteConfig(domain: "app workflows/project")
+
+        expect(path.relativePath) == "/v1/config/app%20workflows%2Fproject"
+        expect(path.url?.absoluteString)
+            == "https://api-production.8-lives-cat.io/v1/config/app%20workflows%2Fproject"
+        expect(path.fallbackUrls).to(beEmpty())
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beTrue())
+        expect(path.supportsSignatureVerification).to(beTrue())
+        expect(path.needsNonceForSigning).to(beFalse())
+        expect(path.name) == "remote_config_fallback"
+        expect(path.isFallbackHostPath).to(beTrue())
+    }
+
+    func testMainPathsAreNotFallbackHostPaths() {
+        expect(HTTPRequest.Path.remoteConfig(domain: "app").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.getOfferings(appUserID: "user").isFallbackHostPath).to(beFalse())
+        expect(HTTPRequest.Path.logIn.isFallbackHostPath).to(beFalse())
+    }
+
     func testUserIDEscaping() {
         let encodeableUserID = "userid with spaces"
         let encodedUserID = "userid%20with%20spaces"
@@ -223,6 +259,52 @@ class HTTPRequestTests: TestCase {
     func testURLWithProxy() {
         let path: HTTPRequest.Path = .health
         expect(path.url(proxyURL: URL(string: "https://test_url"))?.absoluteString) == "https://test_url/v1/health"
+    }
+
+    func testURLWithAPISource() {
+        let path: HTTPRequest.Path = .health
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"))?.absoluteString)
+            == "https://api.rc-backup.com/v1/health"
+    }
+
+    func testURLProxyTakesPrecedenceOverAPISource() {
+        // A proxy pins every request to itself; passing an api source alongside it is a caller error
+        // and must not silently route around the proxy.
+        let path: HTTPRequest.Path = .health
+        expect(path.url(proxyURL: URL(string: "https://test_url"),
+                        apiSourceURL: URL(string: "https://api.rc-backup.com/"))).to(beNil())
+    }
+
+    func testURLFallbackIndexTakesPrecedenceOverAPISource() {
+        let path: HTTPRequest.Path = .getOfferings(appUserID: Self.userID)
+        expect(path.url(apiSourceURL: URL(string: "https://api.rc-backup.com/"),
+                        fallbackUrlIndex: 0)?.absoluteString)
+            == path.fallbackUrls.first?.absoluteString
+    }
+
+    func testMainPathsUseAPISources() {
+        for path in Self.paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testWebBillingPathsUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
+            HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
+            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
+        }
+    }
+
+    func testNonMainPathsDoNotUseAPISources() {
+        let paths: [any HTTPRequestPath] = [
+            HTTPRequest.DiagnosticsPath.postDiagnostics
+        ]
+        for path in paths {
+            expect(path.usesAPISources).to(beFalse(), description: "Path '\(path)' should not use API sources")
+        }
     }
 
     func testAddNonceIfRequiredWithExistingNonceDoesNotReplaceNonce() throws {
@@ -274,5 +356,61 @@ class HTTPRequestTests: TestCase {
     func testRequestIsRetryableIfSet() {
         let request: HTTPRequest = .init(method: .get, path: .getCustomerInfo(appUserID: "user"), isRetryable: true)
         expect(request.isRetryable).to(beTrue())
+    }
+
+    func testRemoteConfigUsesRCContainerAcceptHeaders() {
+        let request: HTTPRequest = .init(
+            method: .post(RemoteConfigRequest(fetchContext: .appStart, appUserID: "app-user-id")),
+            path: HTTPRequest.Path.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]) == HTTPClient.rcContainerFormatAcceptHeaderValue
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue])
+            == HTTPClient.rcContainerFormatElementEncodingHeaderValue
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testFallbackConfigDoesNotRequestRCContainerFormat() {
+        let request: HTTPRequest = .init(
+            method: .get,
+            path: HTTPRequest.FallbackPath.remoteConfig(domain: "app")
+        )
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [:],
+            verificationMode: .disabled,
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        expect(headers[HTTPClient.RequestHeader.accept.rawValue]).to(beNil())
+        expect(headers[HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue]).to(beNil())
+        expect(headers["Accept-Encoding"]).to(beNil())
+    }
+
+    func testHeaderSignatureUsesAdditionalHeaderOverride() {
+        let sandboxHeader = HTTPClient.RequestHeader.sandbox.rawValue
+        let request = HTTPRequest(
+            method: .get,
+            path: .getCustomerInfo(appUserID: "user"),
+            additionalHeaders: [sandboxHeader: "false"]
+        )
+
+        let headers = request.headers(
+            with: [:],
+            defaultHeaders: [sandboxHeader: "true"],
+            verificationMode: Signing.verificationMode(with: .informational),
+            internalSettings: DangerousSettings.Internal.default
+        )
+
+        let expectedHash = HTTPRequest.signingParameterHash(["false"])
+        expect(headers[sandboxHeader]) == "false"
+        expect(headers[HTTPClient.RequestHeader.headerParametersForSignature.rawValue])
+            == HTTPRequest.signatureHashHeader(keys: [sandboxHeader], hash: expectedHash)
     }
 }

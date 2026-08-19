@@ -29,11 +29,9 @@ class StoreMessagesTypeTests: TestCase {
     }
 
     func testMessageReasonIsMappedToCorrectStoreMessageType() async throws {
-        #if swift(>=5.8)
         if #available(iOS 16.4, *) {
             expect(Message.Reason.billingIssue.messageType) == .billingIssue
         }
-        #endif
         expect(Message.Reason.priceIncreaseConsent.messageType) == .priceIncreaseConsent
         expect(Message.Reason.generic.messageType) == .generic
 
