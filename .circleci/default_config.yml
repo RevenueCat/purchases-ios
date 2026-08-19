@@ -2065,8 +2065,6 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
       - run:
           name: Check RevenueCat API changes
-          environment:
-            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCat
       - store_artifacts:
@@ -2116,8 +2114,6 @@ jobs:
             bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
       - run:
           name: Check RevenueCatUI API changes
-          environment:
-            SLACK_CHANNEL_SDK_NEW_API: "#feed-sdk-new-api"
           command: |
             bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
       - store_artifacts:
