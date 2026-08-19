@@ -312,7 +312,7 @@ final class PurchasesOrchestrator {
               let manager = self.eventsManager else { return }
 
         await manager.track(
-            featureEvent: CheckpointEvent(identifier: identifier, date: self.dateProvider.now())
+            featureEvent: CheckpointEvent.hit(.init(identifier: identifier, date: self.dateProvider.now()))
         )
     }
 

@@ -46,13 +46,13 @@ extension FeatureEventsRequest.CheckpointEvent {
             let event = try JSONDecoder.default.decode(StoredCheckpointEvent.self, from: jsonData)
 
             self.init(
-                id: event.id.uuidString,
+                id: event.data.id.uuidString,
                 version: Self.schemaVersion,
-                type: Self.typeValue,
-                identifier: event.identifier,
+                type: event.eventType,
+                identifier: event.data.identifier,
                 appUserID: storedEvent.userID,
                 sessionID: storedEvent.appSessionID?.uuidString,
-                timestamp: event.date.millisecondsSince1970
+                timestamp: event.data.date.millisecondsSince1970
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -61,7 +61,6 @@ extension FeatureEventsRequest.CheckpointEvent {
     }
 
     private static let schemaVersion = 1
-    private static let typeValue = "checkpoint_hit"
 
 }
 

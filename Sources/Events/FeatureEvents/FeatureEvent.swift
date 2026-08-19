@@ -275,10 +275,10 @@ private extension CheckpointEvent {
     func checkpointEventMap() -> [String: Any] {
         return [
             "discriminator": "checkpoint",
-            "type": "checkpoint_hit",
-            "id": self.id.uuidString,
-            "timestamp": self.date.millisecondsSince1970,
-            "identifier": self.identifier
+            "type": self.eventType,
+            "id": self.data.id.uuidString,
+            "timestamp": self.data.date.millisecondsSince1970,
+            "identifier": self.data.identifier
         ]
     }
 

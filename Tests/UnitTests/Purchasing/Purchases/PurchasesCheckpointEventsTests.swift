@@ -30,8 +30,8 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
 
         let event = try await self.singleTrackedCheckpointEvent()
-        expect(event.identifier) == "onboarding_complete"
-        expect(event.date) == Self.hitDate
+        expect(event.data.identifier) == "onboarding_complete"
+        expect(event.data.date) == Self.hitDate
     }
 
     /// The hit is what tells the backend the checkpoint exists, so it has to be reported even when the SDK

@@ -11,24 +11,56 @@
 
 import Foundation
 
-/// Records that a checkpoint was hit. Sent through the shared feature events pipeline, which is also how the
-/// backend learns the checkpoint exists: hits register it, there is no separate registration call.
-struct CheckpointEvent: FeatureEvent {
+/// Checkpoint events. Sent through the shared feature events pipeline, which is also how the backend learns
+/// a checkpoint exists: hits register it, there is no separate registration call.
+enum CheckpointEvent: FeatureEvent {
 
     var feature: Feature { .checkpoints }
 
     var eventDiscriminator: String? { nil }
 
-    let id: UUID
-    let identifier: String
-    let date: Date
+    /// A checkpoint was hit.
+    case hit(Data)
 
-    init(id: UUID = .init(), identifier: String, date: Date) {
-        self.id = id
-        self.identifier = identifier
-        self.date = date
+}
+
+extension CheckpointEvent {
+
+    /// The content of a ``CheckpointEvent``.
+    struct Data {
+
+        var id: UUID
+        var identifier: String
+        var date: Date
+
+        init(id: UUID = .init(), identifier: String, date: Date) {
+            self.id = id
+            self.identifier = identifier
+            self.date = date
+        }
+
     }
 
 }
 
+extension CheckpointEvent {
+
+    /// - Returns: the underlying ``CheckpointEvent/Data-swift.struct`` for this event.
+    var data: Data {
+        switch self {
+        case let .hit(data): return data
+        }
+    }
+
+    /// The value khepri discriminates the analytics events union on. Single source of truth for both the wire
+    /// format and ``FeatureEvent/toMap()``, so a new case has to be given one here before it compiles.
+    var eventType: String {
+        switch self {
+        case .hit: return "checkpoint_hit"
+        }
+    }
+
+}
+
+extension CheckpointEvent.Data: Equatable, Codable, Sendable {}
 extension CheckpointEvent: Equatable, Codable, Sendable {}

@@ -67,7 +67,7 @@ class CheckpointEventsRequestTests: TestCase {
     }
 
     func testReturnsNilForNonCheckpointStoredEvent() throws {
-        let event = CheckpointEvent(id: self.id, identifier: "onboarding_complete", date: self.date)
+        let event = CheckpointEvent.hit(.init(id: self.id, identifier: "onboarding_complete", date: self.date))
         let stored = try XCTUnwrap(StoredFeatureEvent(
             event: event,
             userID: Self.userID,
@@ -83,7 +83,7 @@ class CheckpointEventsRequestTests: TestCase {
 
     private func storedEvent(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID) throws
     -> StoredFeatureEvent {
-        let event = CheckpointEvent(id: self.id, identifier: "onboarding_complete", date: self.date)
+        let event = CheckpointEvent.hit(.init(id: self.id, identifier: "onboarding_complete", date: self.date))
 
         return try XCTUnwrap(StoredFeatureEvent(
             event: event,
