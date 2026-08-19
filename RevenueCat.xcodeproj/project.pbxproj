@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000002 /* StoreDimensionProvider.swift */; };
 		D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17A00000000000000000004 /* StoreDimensionProviderTests.swift */; };
+		D18A00000000000000000003 /* DimensionValueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D18A00000000000000000004 /* DimensionValueTests.swift */; };
+		D19A00000000000000000001 /* SubscriberAttributesDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19A00000000000000000002 /* SubscriberAttributesDimensionProvider.swift */; };
+		D19A00000000000000000003 /* SubscriberAttributesDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */; };
 		C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000002 /* CustomVariableKeyValidator.swift */; };
 		C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */; };
 		A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0D200000000000000000001 /* LocalRulesEvaluator.swift */; };
@@ -1402,6 +1405,7 @@
 		73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A690000000000000000011 /* ObjCCheckpointTypes.swift */; };
 		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
 		73A660000000000000000001 /* CheckpointError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A660000000000000000011 /* CheckpointError.swift */; };
+		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
 		73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */; };
 		73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
@@ -1599,6 +1603,9 @@
 /* Begin PBXFileReference section */
 		D17A00000000000000000002 /* StoreDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProvider.swift; sourceTree = "<group>"; };
 		D17A00000000000000000004 /* StoreDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreDimensionProviderTests.swift; sourceTree = "<group>"; };
+		D18A00000000000000000004 /* DimensionValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionValueTests.swift; sourceTree = "<group>"; };
+		D19A00000000000000000002 /* SubscriberAttributesDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesDimensionProvider.swift; sourceTree = "<group>"; };
+		D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesDimensionProviderTests.swift; sourceTree = "<group>"; };
 		C05A00000000000000000002 /* CustomVariableKeyValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidator.swift; sourceTree = "<group>"; };
 		C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidatorTests.swift; sourceTree = "<group>"; };
 		A0D200000000000000000001 /* LocalRulesEvaluator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalRulesEvaluator.swift; sourceTree = "<group>"; };
@@ -1994,11 +2001,13 @@
 		73A690000000000000000011 /* ObjCCheckpointTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCCheckpointTypes.swift; sourceTree = "<group>"; };
 		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
 		73A660000000000000000011 /* CheckpointError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointError.swift; sourceTree = "<group>"; };
+		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
 		73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenter.swift; sourceTree = "<group>"; };
 		73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowExecutor.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidatorTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -3295,6 +3304,7 @@
 				A91C0A022FEA000000000001 /* RulesEngineLoggerBridge.swift */,
 				A0D200000000000000000006 /* DeviceDimensionProvider.swift */,
 				D17A00000000000000000002 /* StoreDimensionProvider.swift */,
+				D19A00000000000000000002 /* SubscriberAttributesDimensionProvider.swift */,
 				A0D200000000000000000002 /* DimensionProvider.swift */,
 				A0D200000000000000000003 /* DimensionResolver.swift */,
 			);
@@ -3308,6 +3318,8 @@
 				A0D200000000000000000005 /* LocalRulesEvaluatorTests.swift */,
 				A0D200000000000000000007 /* DeviceDimensionProviderTests.swift */,
 				D17A00000000000000000004 /* StoreDimensionProviderTests.swift */,
+				D18A00000000000000000004 /* DimensionValueTests.swift */,
+				D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */,
 			);
 			path = LocalRules;
 			sourceTree = "<group>";
@@ -3541,6 +3553,7 @@
 				73A690000000000000000011 /* ObjCCheckpointTypes.swift */,
 				73A640000000000000000011 /* CheckpointCallStore.swift */,
 				73A660000000000000000011 /* CheckpointError.swift */,
+				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
 				73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */,
 				73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
@@ -3554,6 +3567,7 @@
 			children = (
 				73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
+				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -7902,6 +7916,7 @@
 				A0D100000000000000000001 /* LocalRulesEvaluator.swift in Sources */,
 				A0D100000000000000000006 /* DeviceDimensionProvider.swift in Sources */,
 				D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */,
+				D19A00000000000000000001 /* SubscriberAttributesDimensionProvider.swift in Sources */,
 				A0D100000000000000000002 /* DimensionProvider.swift in Sources */,
 				A0D100000000000000000003 /* DimensionResolver.swift in Sources */,
 				FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */,
@@ -8339,6 +8354,8 @@
 				A0D100000000000000000005 /* LocalRulesEvaluatorTests.swift in Sources */,
 				A0D100000000000000000007 /* DeviceDimensionProviderTests.swift in Sources */,
 				D17A00000000000000000003 /* StoreDimensionProviderTests.swift in Sources */,
+				D18A00000000000000000003 /* DimensionValueTests.swift in Sources */,
+				D19A00000000000000000003 /* SubscriberAttributesDimensionProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -8396,6 +8413,7 @@
 				73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */,
 				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
 				73A660000000000000000001 /* CheckpointError.swift in Sources */,
+				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
 				73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */,
 				73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
