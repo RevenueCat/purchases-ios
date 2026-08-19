@@ -23,6 +23,38 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
         super.createClient(#file)
     }
 
+    func testReusesInFlightReceiptPostByDefault() {
+        self.mockInFlightReceiptPostAndCustomerInfo()
+
+        self.postReceipt()
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+
+        // The `getCustomerInfo` callback rides the in-flight receipt post instead of being requested.
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+    }
+
+    func testDoesNotReuseInFlightReceiptPostWhenPostsRunOnTheirOwnLane() {
+        let laneClient = self.createClient(#file)
+        laneClient.disableSnapshotTesting()
+        self.createDependencies(unsyncedTransactionsWaitPolicy: .doNotWait,
+                                receiptPostLaneClient: laneClient)
+        self.mockInFlightReceiptPostAndCustomerInfo()
+        laneClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            delay: .milliseconds(50))
+        )
+
+        self.postReceipt()
+        self.backend.getCustomerInfo(appUserID: Self.userID, isAppBackgrounded: false) { _ in }
+
+        // The customer info request is performed instead of riding the in-flight receipt post.
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+        expect(self.httpClient.calls.first?.request.path.relativePath)
+            == HTTPRequest.Path.getCustomerInfo(appUserID: Self.userID).relativePath
+    }
+
     func testCachesCustomerGetsForSameCustomer() {
         httpClient.mock(
             requestPath: .getCustomerInfo(appUserID: Self.userID),
@@ -184,6 +216,28 @@ class BackendGetCustomerInfoTests: BaseBackendTests {
 
         expect(response).to(beSuccess())
         expect(response?.value?.requestDate).to(beCloseTo(requestDate, within: 0.01))
+    }
+
+}
+
+private extension BackendGetCustomerInfoTests {
+
+    /// Mocks both endpoints, with a slow receipt post so it's still in flight when `getCustomerInfo`
+    /// is requested.
+    func mockInFlightReceiptPostAndCustomerInfo() {
+        // These tests assert on which requests are performed, not on their contents.
+        self.httpClient.disableSnapshotTesting()
+
+        self.httpClient.mock(
+            requestPath: .postReceiptData,
+            response: .init(statusCode: .success,
+                            response: Self.validCustomerResponse,
+                            delay: .milliseconds(50))
+        )
+        self.httpClient.mock(
+            requestPath: .getCustomerInfo(appUserID: Self.userID),
+            response: .init(statusCode: .success, response: Self.validCustomerResponse)
+        )
     }
 
 }

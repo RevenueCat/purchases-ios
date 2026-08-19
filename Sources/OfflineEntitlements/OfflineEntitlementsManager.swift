@@ -19,15 +19,18 @@ class OfflineEntitlementsManager {
     private let operationDispatcher: OperationDispatcher
     private let api: OfflineEntitlementsAPI
     private let systemInfo: SystemInfo
+    private let customerInfoCreator: OfflineCustomerInfoCreator?
 
     init(deviceCache: DeviceCache,
          operationDispatcher: OperationDispatcher,
          api: OfflineEntitlementsAPI,
-         systemInfo: SystemInfo) {
+         systemInfo: SystemInfo,
+         customerInfoCreator: OfflineCustomerInfoCreator? = nil) {
         self.deviceCache = deviceCache
         self.operationDispatcher = operationDispatcher
         self.api = api
         self.systemInfo = systemInfo
+        self.customerInfoCreator = customerInfoCreator
     }
 
     func updateProductsEntitlementsCacheIfStale(
@@ -70,6 +73,21 @@ class OfflineEntitlementsManager {
     func shouldComputeOfflineCustomerInfo(appUserID: String) -> Bool {
         return self.isOfflineEntitlementsEnabled() &&
         self.deviceCache.cachedCustomerInfoData(appUserID: appUserID) == nil
+    }
+
+    /// Computes ``CustomerInfo`` from the transactions on the device, without hitting the network.
+    /// - Throws: ``OfflineEntitlementsManager/Error/notAvailable`` if offline entitlements aren't
+    /// supported, or the underlying error if the product entitlement mapping isn't cached yet.
+    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
+    func computeOfflineCustomerInfo(appUserID: String) async throws -> CustomerInfo {
+        guard let customerInfoCreator = self.customerInfoCreator,
+              self.systemInfo.supportsOfflineEntitlements else {
+            throw Error.notAvailable
+        }
+
+        // Not an offline entitlements fallback: the app asked for device side computation, so it
+        // shouldn't show up as the SDK entering offline mode.
+        return try await customerInfoCreator.create(for: appUserID, trackingOfflineEntitlementsMode: false)
     }
 
     // We diable offline entitlements for the Test Store since there's no store where to store the client's purchases

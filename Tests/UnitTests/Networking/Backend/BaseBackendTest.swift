@@ -38,6 +38,7 @@ class BaseBackendTests: TestCase {
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
+    private(set) var receiptPostLaneClient: MockHTTPClient?
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -49,7 +50,9 @@ class BaseBackendTests: TestCase {
     }
 
     final func createDependencies(dangerousSettings: DangerousSettings? = nil,
-                                  localesProvider: PreferredLocalesProvider = .mock()) {
+                                  localesProvider: PreferredLocalesProvider = .mock(),
+                                  unsyncedTransactionsWaitPolicy: UnsyncedTransactionsWaitPolicy = .wait,
+                                  receiptPostLaneClient: MockHTTPClient? = nil) {
         // Need to force StoreKit 1 because we use iOS 13 snapshots
         // for watchOS tests which contain StoreKit 1 headers
         #if os(watchOS)
@@ -66,7 +69,8 @@ class BaseBackendTests: TestCase {
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,
-            preferredLocalesProvider: localesProvider
+            preferredLocalesProvider: localesProvider,
+            unsyncedTransactionsWaitPolicy: unsyncedTransactionsWaitPolicy
         )
         self.httpClient = self.createClient()
         self.operationDispatcher = MockOperationDispatcher()
@@ -86,7 +90,22 @@ class BaseBackendTests: TestCase {
             dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
         )
 
-        let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
+        self.receiptPostLaneClient = receiptPostLaneClient
+        let receiptPostBackendConfig = receiptPostLaneClient.map {
+            BackendConfiguration(
+                httpClient: $0,
+                operationDispatcher: self.operationDispatcher,
+                operationQueue: MockBackend.QueueProvider.createReceiptPostQueue(),
+                diagnosticsQueue: MockBackend.QueueProvider.createDiagnosticsQueue(),
+                systemInfo: self.systemInfo,
+                offlineCustomerInfoCreator: self.mockOfflineCustomerInfoCreator,
+                dateProvider: MockDateProvider(stubbedNow: MockBackend.referenceDate)
+            )
+        }
+
+        let customer = CustomerAPI(backendConfig: backendConfig,
+                                   receiptPostBackendConfig: receiptPostBackendConfig,
+                                   attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.webBilling = WebBillingAPI(backendConfig: backendConfig)
@@ -109,7 +128,8 @@ class BaseBackendTests: TestCase {
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
                                adsAPI: self.adsAPI,
-                               remoteConfigAPI: self.remoteConfigAPI)
+                               remoteConfigAPI: self.remoteConfigAPI,
+                               receiptPostBackendConfig: receiptPostBackendConfig)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {
@@ -156,6 +176,23 @@ extension BaseBackendTests {
         "code": "7225",
         "message": "something is bad up in the cloud"
     ]
+
+    /// Posts a receipt through `backend`, with the minimum arguments the endpoint needs.
+    final func postReceipt(completion: @escaping CustomerAPI.CustomerInfoResponseHandler = { _ in }) {
+        self.backend.post(receipt: .receipt("a receipt".asData),
+                          productData: nil,
+                          transactionData: .init(presentedOfferingContext: nil,
+                                                 unsyncedAttributes: nil,
+                                                 storeCountry: nil),
+                          postReceiptSource: .init(isRestore: false, initiationSource: .queue),
+                          observerMode: false,
+                          originalPurchaseCompletedBy: nil,
+                          appTransaction: nil,
+                          associatedTransactionId: nil,
+                          appUserID: Self.userID,
+                          containsAttributionData: false,
+                          completion: completion)
+    }
 
     static let validCustomerResponse: [String: Any] = [
         "request_date": "2019-08-16T10:30:42Z",
