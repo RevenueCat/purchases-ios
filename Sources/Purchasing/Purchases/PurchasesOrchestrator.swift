@@ -719,9 +719,9 @@ final class PurchasesOrchestrator {
                     billingPlanType: billingPlanType,
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
-                    storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
                     paywallEvent: paywallEvent,
                     quantity: quantity,
+                    storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
                 )
 
                 if !result.userCancelled {
@@ -761,10 +761,9 @@ final class PurchasesOrchestrator {
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
+                  paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
                   storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
-                  paywallEvent: PaywallEvent? = nil,
-                  quantity: Int? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
         // task only starts once registered, so a transaction reaching `Transaction.updates`
@@ -780,7 +779,8 @@ final class PurchasesOrchestrator {
                 promotionalOfferOptions: promotionalOfferOptions,
                 metadata: metadata,
                 paywallEvent: paywallEvent,
-                quantity: quantity
+                quantity: quantity,
+                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
             )
         }
 
@@ -815,7 +815,8 @@ final class PurchasesOrchestrator {
                                     promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                                     metadata: [String: String]? = nil,
                                     paywallEvent: PaywallEvent? = nil,
-                                    quantity: Int? = nil) async throws -> PurchaseResultData {
+                                    quantity: Int? = nil,
+                                    storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
