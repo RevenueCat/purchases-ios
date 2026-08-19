@@ -40,7 +40,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
                 receivedResult = result
                 expectation.fulfill()
             },
-            pollRewardVerification: { _ in .verified(.unsupportedReward) }
+            pollRewardVerification: { _, _ in .verified(.unsupportedReward) }
         )
 
         handler()
@@ -62,7 +62,7 @@ final class PresentRewardVerificationTests: AdapterTestCase {
                 receivedResult = result
                 expectation.fulfill()
             },
-            pollRewardVerification: { _ in .failed }
+            pollRewardVerification: { _, _ in .failed }
         )
 
         handler()
@@ -84,12 +84,45 @@ final class PresentRewardVerificationTests: AdapterTestCase {
                 events.append("result")
                 expectation.fulfill()
             },
-            pollRewardVerification: { _ in .verified(.noReward) }
+            pollRewardVerification: { _, _ in .verified(.noReward) }
         )
 
         handler()
         self.wait(for: [expectation], timeout: 2.0)
         XCTAssertEqual(events, ["started", "result"])
+    }
+
+    func testCreateUserDidEarnRewardHandlerPassesNoTrackingMetadataWhenAdWasNotTracked() throws {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+
+        let metadata = try self.pollTrackingMetadata(for: fakeAd)
+        XCTAssertNil(metadata)
+    }
+
+    func testCreateUserDidEarnRewardHandlerPassesTrackingMetadataFromTheTrackingDelegate() throws {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+        self.installTrackingDelegate(on: fakeAd, placement: "load_time_placement")
+
+        let metadata = try XCTUnwrap(self.pollTrackingMetadata(for: fakeAd))
+        XCTAssertEqual(metadata.mediatorName, .adMob)
+        XCTAssertEqual(metadata.adFormat, .rewarded)
+        XCTAssertEqual(metadata.placement, "load_time_placement")
+        XCTAssertEqual(metadata.adUnitId, "ad_unit_id")
+        XCTAssertEqual(metadata.impressionId, "response_id")
+        XCTAssertEqual(metadata.networkName, "")
+    }
+
+    func testCreateUserDidEarnRewardHandlerPassesTrackingMetadataWithTheShowTimePlacement() throws {
+        let fakeAd = FakeCapableAd()
+        RewardVerification.Setup.install(on: fakeAd, token: Self.testToken)
+        self.installTrackingDelegate(on: fakeAd, placement: "load_time_placement")
+
+        Tracking.setShowTimePlacement("show_time_placement", on: fakeAd)
+
+        let metadata = try XCTUnwrap(self.pollTrackingMetadata(for: fakeAd))
+        XCTAssertEqual(metadata.placement, "show_time_placement")
     }
 
     func testCreateUserDidEarnRewardHandlerAssertsWhenResultCallbackProvidedWithoutVerificationState() {
@@ -102,6 +135,38 @@ final class PresentRewardVerificationTests: AdapterTestCase {
             )
         }.to(throwAssertion())
     }
+
+    // MARK: - Helpers
+
+    private func installTrackingDelegate(on fakeAd: FakeCapableAd, placement: String?) {
+        let trackingDelegate = Tracking.FullScreenContentDelegate(
+            delegate: nil,
+            placement: placement,
+            adUnitID: "ad_unit_id",
+            adFormat: .rewarded,
+            responseInfoProvider: { fakeAd.responseInfo }
+        )
+        Tracking.Adapter.shared.fullScreenDelegateStore.set(trackingDelegate, for: fakeAd)
+    }
+
+    /// Runs the reward handler and returns the tracking metadata the adapter handed to the poll call.
+    private func pollTrackingMetadata(for fakeAd: FakeCapableAd) throws -> RewardedAdTrackingMetadata? {
+        let expectation = self.expectation(description: "poll called")
+        let received = Box<RewardedAdTrackingMetadata?>(nil)
+        let handler = fakeAd.createUserDidEarnRewardHandler(
+            rewardVerificationStarted: nil,
+            rewardVerificationCompleted: { _ in },
+            pollRewardVerification: { _, trackingMetadata in
+                received.value = trackingMetadata
+                expectation.fulfill()
+                return .verified(.noReward)
+            }
+        )
+
+        handler()
+        self.wait(for: [expectation], timeout: 2.0)
+        return received.value
+    }
 }
 
 // MARK: - Test doubles
@@ -109,7 +174,31 @@ final class PresentRewardVerificationTests: AdapterTestCase {
 @available(iOS 15.0, *)
 private final class FakeCapableAd: RewardVerification.CapableAd {
     var serverSideVerificationOptions: GoogleMobileAds.ServerSideVerificationOptions?
-    let responseInfo = GoogleMobileAds.ResponseInfo()
+    let responseInfo: GoogleMobileAds.ResponseInfo = unsafeBitCast(
+        FakeResponseInfo(),
+        to: GoogleMobileAds.ResponseInfo.self
+    )
+}
+
+@available(iOS 15.0, *)
+private final class FakeResponseInfo: NSObject {
+    @objc var responseIdentifier: String? { "response_id" }
+    @objc var loadedAdNetworkResponseInfo: AnyObject? { nil }
+}
+
+/// Minimal box so the poll closure can hand its argument back to the test body.
+private final class Box<Value>: @unchecked Sendable {
+    private let lock = NSLock()
+    private var storage: Value
+
+    init(_ value: Value) {
+        self.storage = value
+    }
+
+    var value: Value {
+        get { self.lock.withLock { self.storage } }
+        set { self.lock.withLock { self.storage = newValue } }
+    }
 }
 
 #endif
