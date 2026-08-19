@@ -518,6 +518,7 @@ final class PurchasesOrchestrator {
                  completion: completion)
     }
 
+    // swiftlint:disable:next function_body_length
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
@@ -806,17 +807,19 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     // swiftlint:disable:next function_body_length cyclomatic_complexity
-    private func performSK2Purchase(sk2Product: SK2Product,
-                                    package: Package?,
-                                    promotionalOffer: PromotionalOffer.SignedData? = nil,
-                                    winBackOffer: Product.SubscriptionOffer? = nil,
-                                    introductoryOfferEligibilityJWS: String?,
-                                    billingPlanType: BillingPlanType?,
-                                    promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
-                                    metadata: [String: String]? = nil,
-                                    paywallEvent: PaywallEvent? = nil,
-                                    quantity: Int? = nil,
-                                    storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
+    private func performSK2Purchase(
+        sk2Product: SK2Product,
+        package: Package?,
+        promotionalOffer: PromotionalOffer.SignedData? = nil,
+        winBackOffer: Product.SubscriptionOffer? = nil,
+        introductoryOfferEligibilityJWS: String?,
+        billingPlanType: BillingPlanType?,
+        promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+        metadata: [String: String]? = nil,
+        paywallEvent: PaywallEvent? = nil,
+        quantity: Int? = nil,
+        storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil
+    ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
