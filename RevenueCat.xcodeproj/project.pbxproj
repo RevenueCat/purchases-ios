@@ -5188,6 +5188,7 @@
 				57E6194F28D291DC0093170C /* StoreKit2CachingProductsManagerTests.swift */,
 				4FD291BD2A1E9A2E0098D1B9 /* StoreKit2TransactionFetcherTests.swift */,
 				FDAADFD52BE2C67700BD1659 /* StoreKit2ObserverModePurchaseDetectorTests.swift */,
+				FDAC7B5D2CF100000DFC0D9 /* Win-Back Offers */,
 				FD1197292D6E5EDE002718E3 /* StoreKit2ProductPurchaserTests.swift */,
 			);
 			path = StoreKit2;
