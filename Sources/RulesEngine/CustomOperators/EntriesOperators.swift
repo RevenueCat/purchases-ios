@@ -10,10 +10,6 @@ extension RulesEngine {
 
     /// `rc.entries` and `rc.fromEntries` — convert between keyed objects and
     /// the `[key, value]` pair arrays that JSON Logic iteration operators accept.
-    ///
-    /// Cross-engine contract: any evaluator (including a `json-logic-js` web
-    /// polyfill) must match these semantics, not bare `Object.entries` /
-    /// `Object.fromEntries`.
     enum EntriesOperators {
 
         /// `{"rc.entries": value}` — convert a keyed object or array into an
@@ -30,7 +26,7 @@ extension RulesEngine {
         /// - **Object**: pairs sorted **lexicographically by key**. Swift
         ///   dictionaries have no insertion order; this deliberately diverges
         ///   from JS `Object.entries` insertion order. Rules must not depend on
-        ///   insertion order (same rationale as `.sortedKeys` in `Audience.swift`).
+        ///   insertion order.
         /// - **Array**: index/value pairs with **string** keys (`"0"`, `"1"`, …),
         ///   matching `Object.entries(["a","b"]) === [["0","a"],["1","b"]]`.
         /// - **Everything else** (null, undefined, bool, number, string): `[]`
