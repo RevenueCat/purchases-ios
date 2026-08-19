@@ -76,16 +76,18 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResult {
-        guard CheckpointIdentifierValidator.isValid(identifier) else {
-            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            return CheckpointNoActionResult(
-                checkpoint: CheckpointInfo(identifier: identifier, params: params),
-                reason: .invalidCheckpointIdentifier
-            )
-        }
-
         let checkpoint = CheckpointInfo(identifier: identifier, params: params)
         self.listener?.onCheckpointHit(checkpoint)
+
+        guard CheckpointIdentifierValidator.isValid(identifier) else {
+            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
+            let result = CheckpointNoActionResult(
+                checkpoint: checkpoint,
+                reason: .invalidCheckpointIdentifier
+            )
+            self.listener?.onCheckpointCompleted(checkpoint, result: result)
+            return result
+        }
 
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {

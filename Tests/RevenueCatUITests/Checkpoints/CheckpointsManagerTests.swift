@@ -272,7 +272,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(listener.events, [.hit("A-1_b"), .completed("A-1_b")])
     }
 
-    func testInvalidCheckpointIdentifierIsLoggedAndDroppedBeforeListenerOrResolution() async throws {
+    func testInvalidCheckpointIdentifierIsLoggedAndReportedToListenerWithoutResolution() async throws {
         let invalidIdentifier = " checkout😀"
         var resolutionCount = 0
         let manager = CheckpointsManager { _, _ in
@@ -291,7 +291,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(noActionResult.reason, .invalidCheckpointIdentifier)
         XCTAssertEqual(noActionResult.checkpoint.identifier, invalidIdentifier)
         XCTAssertEqual(resolutionCount, 0)
-        XCTAssertTrue(listener.events.isEmpty)
+        XCTAssertEqual(listener.events, [.hit(invalidIdentifier), .completed(invalidIdentifier)])
         self.logger.verifyMessageWasLogged(
             CheckpointIdentifierValidator.invalidIdentifierLogMessage(invalidIdentifier),
             level: .error

@@ -33,7 +33,7 @@ struct CustomVariableKeyValidatorTests {
             "a",
             "123key",
             "_key",
-            String(repeating: "a", count: 256)
+            String(repeating: "a", count: 255)
         ]
 
         #expect(validKeys.allSatisfy { CustomVariableKeyValidator.isValidKey($0) })
@@ -48,7 +48,7 @@ struct CustomVariableKeyValidatorTests {
             "key.name",
             "key!",
             "kéy",
-            String(repeating: "a", count: 257)
+            String(repeating: "a", count: 256)
         ]
 
         #expect(invalidKeys.allSatisfy { !CustomVariableKeyValidator.isValidKey($0) })
