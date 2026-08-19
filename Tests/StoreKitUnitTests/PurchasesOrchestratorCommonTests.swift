@@ -222,7 +222,10 @@ class PurchasesOrchestratorCommonTests: BasePurchasesOrchestratorTests {
         let storeKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                                delegate: nil,
+                                userDefaults: nil
+                               ),
                                storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                                diagnosticsSynchronizer: mockDiagnosticsSynchronizer)

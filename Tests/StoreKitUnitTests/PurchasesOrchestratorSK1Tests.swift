@@ -1370,7 +1370,10 @@ class PurchasesOrchestratorSK1Tests: BasePurchasesOrchestratorTests, PurchasesOr
         let storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                                delegate: nil,
+                                userDefaults: nil
+                               ),
                                storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                                diagnosticsSynchronizer: diagnosticsSynchronizer)
@@ -1493,7 +1496,10 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsTracker = MockDiagnosticsTracker()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                                delegate: nil,
+                                userDefaults: nil
+                               ),
                                storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                                diagnosticsSynchronizer: diagnosticsSynchronizer,
@@ -1549,7 +1555,10 @@ class PurchasesOrchestratorSK1TrackingTests: PurchasesOrchestratorSK1Tests {
         let diagnosticsTracker = MockDiagnosticsTracker()
 
         self.setUpOrchestrator(storeKit2TransactionListener: transactionListener,
-                               storeKit2StorefrontListener: StoreKit2StorefrontListener(delegate: nil, userDefaults: nil),
+                               storeKit2StorefrontListener: StoreKit2StorefrontListener(
+                                delegate: nil,
+                                userDefaults: nil
+                               ),
                                storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                                diagnosticsSynchronizer: diagnosticsSynchronizer,
