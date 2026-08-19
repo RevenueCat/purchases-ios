@@ -95,6 +95,14 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # A step-level `environment:` overrides the context, so a channel pinned here would keep
+  # conversations.history unusable however the context is set.
+  def test_ci_config_leaves_the_feed_channel_to_the_context
+    config_path = File.expand_path('../.circleci/default_config.yml', __dir__)
+
+    refute_includes File.read(config_path), "SLACK_CHANNEL_SDK_NEW_API:"
+  end
+
   # Finding 4: pr_labels_for_api_gate calls github_api with no error_handlers, so a non-2xx
   # response raises and reds check-api-changes-* on every PR, including ones with no breaks to
   # judge labels against. fastlane/Fastfile is a DSL evaluated inside Fastlane::FastFile, so it
