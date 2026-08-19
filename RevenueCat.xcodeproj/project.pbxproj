@@ -1398,6 +1398,7 @@
 		73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A690000000000000000011 /* ObjCCheckpointTypes.swift */; };
 		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
 		73A660000000000000000001 /* CheckpointError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A660000000000000000011 /* CheckpointError.swift */; };
+		73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A670000000000000000011 /* CheckpointIdentifierValidator.swift */; };
 		73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */; };
 		73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */; };
 		73A640000000000000000005 /* CheckpointsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000015 /* CheckpointsManager.swift */; };
@@ -1990,11 +1991,13 @@
 		73A690000000000000000011 /* ObjCCheckpointTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCCheckpointTypes.swift; sourceTree = "<group>"; };
 		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
 		73A660000000000000000011 /* CheckpointError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointError.swift; sourceTree = "<group>"; };
+		73A670000000000000000011 /* CheckpointIdentifierValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidator.swift; sourceTree = "<group>"; };
 		73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenter.swift; sourceTree = "<group>"; };
 		73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowExecutor.swift; sourceTree = "<group>"; };
 		73A640000000000000000015 /* CheckpointsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManager.swift; sourceTree = "<group>"; };
 		73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointWorkflowPresenterTests.swift; sourceTree = "<group>"; };
 		73A650000000000000000012 /* CheckpointsManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointsManagerTests.swift; sourceTree = "<group>"; };
+		73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointIdentifierValidatorTests.swift; sourceTree = "<group>"; };
 		73A620000000000000000011 /* CheckpointValueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointValueTests.swift; sourceTree = "<group>"; };
 		73A630000000000000000011 /* NSNumber+JSON.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSNumber+JSON.swift"; sourceTree = "<group>"; };
 		350A1B84226E3E8700CCA10F /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
@@ -3532,6 +3535,7 @@
 				73A690000000000000000011 /* ObjCCheckpointTypes.swift */,
 				73A640000000000000000011 /* CheckpointCallStore.swift */,
 				73A660000000000000000011 /* CheckpointError.swift */,
+				73A670000000000000000011 /* CheckpointIdentifierValidator.swift */,
 				73A640000000000000000014 /* CheckpointWorkflowExecutor.swift */,
 				73A640000000000000000013 /* CheckpointWorkflowPresenter.swift */,
 				73A640000000000000000015 /* CheckpointsManager.swift */,
@@ -3545,6 +3549,7 @@
 			children = (
 				73A650000000000000000011 /* CheckpointWorkflowPresenterTests.swift */,
 				73A650000000000000000012 /* CheckpointsManagerTests.swift */,
+				73A650000000000000000013 /* CheckpointIdentifierValidatorTests.swift */,
 			);
 			path = Checkpoints;
 			sourceTree = "<group>";
@@ -8380,6 +8385,7 @@
 				73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */,
 				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
 				73A660000000000000000001 /* CheckpointError.swift in Sources */,
+				73A670000000000000000001 /* CheckpointIdentifierValidator.swift in Sources */,
 				73A640000000000000000004 /* CheckpointWorkflowExecutor.swift in Sources */,
 				73A640000000000000000003 /* CheckpointWorkflowPresenter.swift in Sources */,
 				73A640000000000000000005 /* CheckpointsManager.swift in Sources */,
