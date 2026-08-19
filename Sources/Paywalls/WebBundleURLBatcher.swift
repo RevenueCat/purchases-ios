@@ -30,9 +30,10 @@ protocol WebBundleURLBatcherType: Sendable {
 /// batch per screen to ``WebBundleEventBus``.
 ///
 /// Each batch is every web-view URL on that screen so the receiver can cache a complete screen
-/// instead of a partial one. Batches are sent in visit order: current offering, then each
+/// instead of a partial one. Batches are sent in cache-priority order: current offering, then each
 /// placement's offering, then the placement fallback. Prefetch-only workflows are not included.
-/// Screen order is a BFS of the workflow graph.
+/// Within a workflow, the initial screen is first, its single-step fallback is second, then the
+/// remaining reachable screens follow in breadth-first order.
 actor WebBundleURLBatcher: WebBundleURLBatcherType {
 
     static let shared = WebBundleURLBatcher()
@@ -102,7 +103,7 @@ extension WebBundleURLBatcher {
         return ids
     }
 
-    /// One batch per screen, in visit order. Workflows first (remote config), otherwise the
+    /// One batch per screen, in cache-priority order. Workflows first (remote config), otherwise the
     /// offering's inline V2 tree as a single screen. Same workflow behind several offerings is
     /// enqueued once, at the first offering that mapped to it.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
@@ -131,7 +132,7 @@ extension WebBundleURLBatcher {
         return batches
     }
 
-    /// Flattened visit-order URLs. First occurrence of a URL wins.
+    /// Flattened cache-priority URLs. First occurrence of a URL wins.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func orderedWebViewURLs(
         offerings: Offerings,
@@ -145,9 +146,10 @@ extension WebBundleURLBatcher {
         )
     }
 
-    /// BFS from `initial_step_id` then `single_step_fallback_id`. `screens` and `steps` are lookup
-    /// tables keyed by opaque IDs (`pw…` / nanoid); visit order is the step graph, not key sort or
-    /// display names. Unreachable screens are omitted.
+    /// Cache priority starts with `initial_step_id`, followed by `single_step_fallback_id`, because
+    /// either can be among the first paywalls shown. Remaining screens follow in breadth-first graph
+    /// order. `screens` and `steps` are lookup tables keyed by opaque IDs (`pw…` / nanoid), so their
+    /// keys and display names do not determine priority. Other unreachable screens are omitted.
     nonisolated static func screensInVisitOrder(for workflow: PublishedWorkflow) -> [WorkflowScreen] {
         var queue: [String] = [workflow.initialStepId]
         if let fallback = workflow.singleStepFallbackId, fallback != workflow.initialStepId {
@@ -175,7 +177,7 @@ extension WebBundleURLBatcher {
         return visitedScreens
     }
 
-    /// One batch per visited screen that has web-view URLs. A screen's URLs stay together.
+    /// One batch per prioritized screen that has web-view URLs. A screen's URLs stay together.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     nonisolated static func screenURLBatches(in workflow: PublishedWorkflow) -> [[URLWithValidation]] {
         return Self.screensInVisitOrder(for: workflow).compactMap { screen in
@@ -222,7 +224,7 @@ extension WebBundleURLBatcher {
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension WebBundleURLBatcher {
 
-    /// Each event is one screen's URLs in first-occurrence visit order.
+    /// Each event is one screen's URLs in first-occurrence cache-priority order.
     func publishBatches(_ batches: [[URLWithValidation]]) async {
         guard !batches.isEmpty else { return }
 

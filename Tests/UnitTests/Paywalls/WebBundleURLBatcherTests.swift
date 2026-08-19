@@ -108,11 +108,11 @@ final class WebBundleURLBatcherTests: TestCase {
         ]
     }
 
-    // MARK: - Screen visit order
+    // MARK: - Screen cache priority
 
-    func testScreenVisitOrderFollowsStepGraphNotKeysOrDisplayNames() throws {
+    func testScreenCachePriorityFollowsStepGraphNotKeysOrDisplayNames() throws {
         // Screen keys are opaque `pw…` IDs; alphabetically the second screen sorts first.
-        // Display names are also inverted so neither keys nor names encode visit order.
+        // Display names are also inverted so neither keys nor names encode cache priority.
         let workflow = try Self.workflowFromJSON(
             id: "wf_paywall",
             screensJSON: """
@@ -152,23 +152,34 @@ final class WebBundleURLBatcherTests: TestCase {
         expect(screens.compactMap(\.name)) == ["Screen 2", "Screen 1"]
     }
 
-    func testSingleStepFallbackIsASecondRoot() throws {
+    func testSingleStepFallbackIsPrioritizedBeforeInitialStepChildren() throws {
+        let childStepId = "C4h1ldX"
+        let childScreenId = "pw0123456789abcdef"
         let workflow = try Self.workflowFromJSON(
             id: "wf",
             screensJSON: """
             "\(Self.secondScreenId)": \(Self.screenJSON(name: "Exit", url: "https://example.com/exit")),
+            "\(childScreenId)": \(Self.screenJSON(name: "Child", url: "https://example.com/child")),
             "\(Self.firstScreenId)": \(Self.screenJSON(name: "Main", url: "https://example.com/main"))
             """,
             stepsJSON: """
             "\(Self.firstStepId)": {
               "id": "\(Self.firstStepId)",
               "type": "screen",
-              "screen_id": "\(Self.firstScreenId)"
+              "screen_id": "\(Self.firstScreenId)",
+              "trigger_actions": {
+                "continue": { "type": "step", "step_id": "\(childStepId)" }
+              }
             },
             "\(Self.secondStepId)": {
               "id": "\(Self.secondStepId)",
               "type": "screen",
               "screen_id": "\(Self.secondScreenId)"
+            },
+            "\(childStepId)": {
+              "id": "\(childStepId)",
+              "type": "screen",
+              "screen_id": "\(childScreenId)"
             }
             """,
             initialStepId: Self.firstStepId,
@@ -178,7 +189,8 @@ final class WebBundleURLBatcherTests: TestCase {
         let screens = WebBundleURLBatcher.screensInVisitOrder(for: workflow)
         expect(Self.webViewURLs(in: screens)) == [
             "https://example.com/main",
-            "https://example.com/exit"
+            "https://example.com/exit",
+            "https://example.com/child"
         ]
     }
 
