@@ -28,11 +28,10 @@
     },
     {
       "id": "entries_multi_element_arg_list_uses_first_only",
-      "description": "json-logic-js spreads the arg array into the operator; {\"rc.entries\": [\"a\", \"b\"]} uses only the first argument (\"a\", a string → []), extra args silently ignored like ! and !!",
-      "predicate": {"==": [{"rc.entries": ["a", "b"]}, ""]},
+      "description": "json-logic-js spreads the arg array into the operator; {\"rc.entries\": [\"a\", \"b\"]} uses only the first argument (\"a\", a string → type error), extra args silently ignored like ! and !!. Treating the list as one array operand would instead succeed",
+      "predicate": {"rc.entries": ["a", "b"]},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
       "id": "entries_singleton_wrapped_object_form",
@@ -42,40 +41,35 @@
       "expected": true
     },
     {
-      "id": "entries_null_returns_empty_array_with_warning",
-      "predicate": {"==": [{"rc.entries": null}, ""]},
+      "id": "entries_null_is_type_error",
+      "predicate": {"rc.entries": null},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
-      "id": "entries_undefined_returns_empty_array_with_warning",
-      "predicate": {"==": [{"rc.entries": {"and": []}}, ""]},
+      "id": "entries_undefined_is_type_error",
+      "predicate": {"rc.entries": {"and": []}},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
-      "id": "entries_bool_returns_empty_array_with_warning",
-      "predicate": {"==": [{"rc.entries": true}, ""]},
+      "id": "entries_bool_is_type_error",
+      "predicate": {"rc.entries": true},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
-      "id": "entries_number_returns_empty_array_with_warning",
-      "predicate": {"==": [{"rc.entries": 42}, ""]},
+      "id": "entries_number_is_type_error",
+      "predicate": {"rc.entries": 42},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
-      "id": "entries_string_returns_empty_array_with_warning",
-      "description": "Deliberate divergence from JS Object.entries(\"ab\"), which yields character pairs; we return [] so iteration operators stay safe",
-      "predicate": {"==": [{"rc.entries": "ab"}, ""]},
+      "id": "entries_string_is_type_error",
+      "description": "Deliberate divergence from JS Object.entries(\"ab\"), which yields character pairs; a string is a type error so a misaimed rule fails loudly instead of iterating characters",
+      "predicate": {"rc.entries": "ab"},
       "variables": {},
-      "expected": true,
-      "expectedWarnings": {"contains": ["rc.entries: expected object or array"]}
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
     },
     {
       "id": "fromEntries_round_trips_object_through_entries",

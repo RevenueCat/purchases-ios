@@ -29,14 +29,13 @@ extension RulesEngine {
         ///   insertion order.
         /// - **Array**: index/value pairs with **string** keys (`"0"`, `"1"`, …),
         ///   matching `Object.entries(["a","b"]) === [["0","a"],["1","b"]]`.
-        /// - **Everything else** (null, undefined, bool, number, string): `[]`
-        ///   plus a warning. Returning empty matches how iteration operators treat
-        ///   a non-array source and composes cleanly (`some` → `false`).
+        /// - **Anything else** (null, undefined, bool, number, string): throws
+        ///   `EvaluationError.typeMismatch`.
         ///
-        /// **String divergence**: JS `Object.entries("ab")` yields character
-        /// pairs; we return `[]` with a warning. A web polyfill written as bare
-        /// `Object.entries` would disagree on strings and would *throw* on
-        /// null/undefined where we return `[]`.
+        /// Strings throw rather than yielding the character pairs JS
+        /// `Object.entries("ab")` produces. A string reaching here means the rule
+        /// points at the wrong field, and iterating its characters would let that
+        /// rule keep evaluating to a confident wrong answer.
         static func opEntries(args: Value, vars: Scope) throws -> Value {
             let input = try Operators.firstArgEvaluated(args, vars: vars)
 
@@ -55,10 +54,9 @@ extension RulesEngine {
                 return .array(pairs)
 
             default:
-                RulesEngine.logger.warn(
-                    "rc.entries: expected object or array, got \(input)"
+                throw EvaluationError.typeMismatch(
+                    message: "operator 'rc.entries' expected object or array, got \(input)"
                 )
-                return .array([])
             }
         }
 
