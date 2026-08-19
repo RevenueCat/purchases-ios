@@ -56,6 +56,22 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(params.value.customVariables, ["valid": .string("value")])
     }
 
+    func testObjectiveCResultWrapsInvalidIdentifierNoActionResult() throws {
+        let identifier = "invalid checkpoint"
+        let checkpoint = CheckpointInfo(identifier: identifier, params: .init())
+        let result = CheckpointNoActionResult(
+            checkpoint: checkpoint,
+            reason: .invalidCheckpointIdentifier
+        )
+
+        let objcResult = try XCTUnwrap(
+            ObjCCheckpointResult.wrapping(result) as? ObjCCheckpointNoActionResult
+        )
+
+        XCTAssertEqual(objcResult.checkpoint.identifier, identifier)
+        XCTAssertEqual(objcResult.reason.value, "INVALID_CHECKPOINT_IDENTIFIER")
+    }
+
     #endif
 
     func testCheckpointParamsConvertCustomVariableValuesForCoreResolution() {
@@ -235,6 +251,68 @@ final class CheckpointsManagerTests: TestCase {
                 return XCTFail("Expected a no-action result")
             }
             XCTAssertEqual(noAction.reason, .disabled)
+            completion.fulfill()
+        }
+
+        self.waitForExpectations(timeout: 1)
+    }
+
+    func testValidCheckpointIdentifierReachesListenerAndResolution() async throws {
+        var resolvedIdentifiers: [String] = []
+        let manager = CheckpointsManager { identifier, _ in
+            resolvedIdentifiers.append(identifier)
+            return .noAction(.noMatch)
+        }
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        _ = try await manager.checkpoint(identifier: "A-1_b", params: .init())
+
+        XCTAssertEqual(resolvedIdentifiers, ["A-1_b"])
+        XCTAssertEqual(listener.events, [.hit("A-1_b"), .completed("A-1_b")])
+    }
+
+    func testInvalidCheckpointIdentifierIsLoggedAndReportedToListenerWithoutResolution() async throws {
+        let invalidIdentifier = " checkout😀"
+        var resolutionCount = 0
+        let manager = CheckpointsManager { _, _ in
+            resolutionCount += 1
+            return .noAction(.noMatch)
+        }
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        let result = try await manager.checkpoint(identifier: invalidIdentifier, params: .init())
+
+        guard let noActionResult = result as? CheckpointNoActionResult else {
+            return XCTFail("Expected a no-action result")
+        }
+
+        XCTAssertEqual(noActionResult.reason, .invalidCheckpointIdentifier)
+        XCTAssertEqual(noActionResult.checkpoint.identifier, invalidIdentifier)
+        XCTAssertEqual(resolutionCount, 0)
+        XCTAssertEqual(listener.events, [.hit(invalidIdentifier), .completed(invalidIdentifier)])
+        self.logger.verifyMessageWasLogged(
+            CheckpointIdentifierValidator.invalidIdentifierLogMessage(invalidIdentifier),
+            level: .error
+        )
+    }
+
+    func testCompletionAPIReturnsInvalidIdentifierNoActionResult() {
+        let completion = self.expectation(description: "Checkpoint completes")
+        var resolutionCount = 0
+        let manager = CheckpointsManager { _, _ in
+            resolutionCount += 1
+            return .noAction(.noMatch)
+        }
+
+        manager.checkpoint(identifier: "invalid checkpoint", params: .init()) { result in
+            guard case let .success(noAction as CheckpointNoActionResult) = result else {
+                return XCTFail("Expected an invalid-identifier no-action result")
+            }
+
+            XCTAssertEqual(noAction.reason, .invalidCheckpointIdentifier)
+            XCTAssertEqual(resolutionCount, 0)
             completion.fulfill()
         }
 
