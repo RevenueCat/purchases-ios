@@ -18,13 +18,13 @@ extension RulesEngine {
     ///   else is treated as an empty source. The second argument is a
     ///   literal template that is evaluated per-item with `vars` rebound to
     ///   the current item, with no parent-scope inheritance for `var`; the
-    ///   preserved root scope remains available to custom operators.
+    ///   preserved root scope remains available (`rc.rootVar` reads it).
     /// - **Shape** (`reduce`):
     ///   `{"reduce": [arrayExpr, predicateExpr, initialAccumulator]}`. Both
     ///   the first and third arguments are evaluated in the outer scope.
     ///   The predicate is evaluated per-item with `vars` rebound to
     ///   `{"current": <item>, "accumulator": <acc>}`; `var` sees only that
-    ///   object, but the root scope is preserved for custom operators.
+    ///   object, but `rc.rootVar` still reaches the root.
     ///
     /// **Empty- and non-array sources** per the JSON Logic JS spec:
     /// - `some` / `all` return `false`.
@@ -36,9 +36,9 @@ extension RulesEngine {
         /// `{"some": [arrayExpr, predicate]}` — `true` iff `predicate` is
         /// truthy for at least one item. The array expression is evaluated in
         /// the current scope; the predicate is re-evaluated per item with
-        /// `vars` rebound to that item (`var` reads the item only; the root
-        /// scope is preserved for custom operators). Empty array or non-array
-        /// source returns `false`. Short-circuits on the first truthy result.
+        /// `vars` rebound to that item (`var` reads the item; `rc.rootVar`
+        /// reads the root). Empty array or non-array source returns `false`.
+        /// Short-circuits on the first truthy result.
         static func opSome(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items else { return .bool(false) }
@@ -52,10 +52,10 @@ extension RulesEngine {
         /// `{"all": [arrayExpr, predicate]}` — `true` iff `predicate` is
         /// truthy for every item. The array expression is evaluated in the
         /// current scope; the predicate is re-evaluated per item with `vars`
-        /// rebound to that item (`var` reads the item only; the root scope is
-        /// preserved for custom operators). Empty array returns `false` per
-        /// the JSON Logic JS spec. Non-array source returns `false`.
-        /// Short-circuits on the first non-truthy result.
+        /// rebound to that item (`var` reads the item; `rc.rootVar` reads the
+        /// root). Empty array returns `false` per the JSON Logic JS spec.
+        /// Non-array source returns `false`. Short-circuits on the first
+        /// non-truthy result.
         static func opAll(args: Value, vars: Scope) throws -> Value {
             let (items, predicate) = try parseIterationArgs(args, vars: vars)
             guard let items, !items.isEmpty else { return .bool(false) }

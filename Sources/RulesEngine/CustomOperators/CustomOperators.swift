@@ -24,6 +24,10 @@ extension RulesEngine {
                 return try EntriesOperators.opEntries(args: args, vars: vars)
             case "rc.fromEntries":
                 return try EntriesOperators.opFromEntries(args: args, vars: vars)
+
+            case "rc.rootVar":
+                return try RootVarOperator.opRootVar(args: args, vars: vars)
+
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
