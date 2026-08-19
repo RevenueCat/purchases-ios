@@ -76,6 +76,10 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResult {
+        guard CheckpointIdentifierValidator.isValid(identifier) else {
+            throw CheckpointError.invalidIdentifier(identifier)
+        }
+
         let checkpoint = CheckpointInfo(identifier: identifier, params: params)
         self.listener?.onCheckpointHit(checkpoint)
 
