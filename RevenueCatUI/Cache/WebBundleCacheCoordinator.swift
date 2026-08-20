@@ -66,6 +66,9 @@ final class WebBundleCacheCoordinator {
                     await self.scheduleSweep()
                 }
             case .receivedAssetURLs:
+                // Plan for sending the batches to the warmer.
+                // Get the store ID once per batch
+                // Assign the batch to a task that can be cleared on cache cleanup
                 break // will do in upcoming PRs
             case .empty:
                 break
