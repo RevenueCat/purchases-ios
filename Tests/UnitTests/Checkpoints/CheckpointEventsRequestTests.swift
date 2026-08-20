@@ -60,10 +60,10 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).toNot(contain("discriminator"))
     }
 
-    func testAppSessionIDAbsentFromJSONWhenMissing() throws {
-        let json = try self.encodedJSON(appSessionID: nil)
+    func testReturnsNilWhenAppSessionIDIsMissing() throws {
+        let stored = try self.storedEvent(appSessionID: nil)
 
-        expect(json).toNot(contain("app_session_id"))
+        expect(FeatureEventsRequest.CheckpointEvent(storedEvent: stored)).to(beNil())
     }
 
     func testReturnsNilForNonCheckpointStoredEvent() throws {
@@ -94,8 +94,8 @@ class CheckpointEventsRequestTests: TestCase {
         ))
     }
 
-    private func encodedJSON(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID) throws -> String {
-        let stored = try self.storedEvent(appSessionID: appSessionID)
+    private func encodedJSON() throws -> String {
+        let stored = try self.storedEvent()
         let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
