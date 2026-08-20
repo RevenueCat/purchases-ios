@@ -47,6 +47,13 @@ final class PurchaseInformationTests: TestCase {
         localizedStrings: [:]
     )
 
+    static let mockLocalizationWithLastPaidPrice = CustomerCenterConfigData.Localization(
+        locale: "en_US",
+        localizedStrings: [
+            "renews_on_date_with_last_paid_price": "Renews {{ date }}; previously paid {{ price }}."
+        ]
+    )
+
     private class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
         var mockRenewalPrice: RenewalPriceData?
 
@@ -124,7 +131,7 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.subtitle(localizations: Self.mockLocalization)) ==
-            "Renews on Apr 12, 2062. Paid $6.99."
+            "Renews on Apr 12, 2062. Last paid $6.99."
         expect(subscriptionInfo.isLifetime).to(beFalse())
         expect(subscriptionInfo.changePlan).toNot(beNil())
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
@@ -247,12 +254,12 @@ final class PurchaseInformationTests: TestCase {
             numberFormatter: Self.mockNumberFormatter,
             managementURL: URL(string: "https://www.revenuecat.com")!,
             changePlan: nil,
-            localization: Self.mockLocalization
+            localization: Self.mockLocalizationWithLastPaidPrice
         )
 
         expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalization)) ==
-            "Renews on Apr 12, 2062. Paid $6.99."
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews Apr 12, 2062; previously paid $6.99."
     }
 
     func testAppleEntitlementAndLifetimeProduct() async throws {

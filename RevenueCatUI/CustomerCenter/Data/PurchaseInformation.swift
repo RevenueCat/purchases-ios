@@ -473,14 +473,7 @@ extension PurchaseInformation {
                 return renewalPriceString
             }
 
-            guard let renewalDateString = renewalDateString(localizations: localizations) else {
-                return nil
-            }
-            guard let pricePaidString = pricePaidSubtitleString(localizations: localizations) else {
-                return renewalDateString
-            }
-
-            return [renewalDateString, pricePaidString].joined(separator: " ")
+            return renewalDateString(localizations: localizations)
         } else if expirationDate != nil {
             return expirationString(localizations: localizations)
         } else {
@@ -494,20 +487,6 @@ extension PurchaseInformation {
             return localizations[.free]
         case let .nonFree(priceString):
             return priceString
-        case .unknown:
-            return nil
-        }
-    }
-
-    private func pricePaidSubtitleString(
-        localizations: CustomerCenterConfigData.Localization
-    ) -> String? {
-        switch pricePaid {
-        case .free:
-            return localizations[.free]
-        case .nonFree(let priceString):
-            return localizations[.pricePaid]
-                .replacingOccurrences(of: "{{ price }}", with: priceString)
         case .unknown:
             return nil
         }
@@ -539,8 +518,21 @@ extension PurchaseInformation {
             return nil
         }
 
-        return localizations[.renewsOnDate]
-            .replacingOccurrences(of: "{{ date }}", with: dateFormatter.string(from: renewalDate))
+        let dateString = dateFormatter.string(from: renewalDate)
+        let lastPaidPrice: String
+        switch pricePaid {
+        case .free:
+            lastPaidPrice = localizations[.free].lowercased()
+        case let .nonFree(priceString):
+            lastPaidPrice = priceString
+        case .unknown:
+            return localizations[.renewsOnDate]
+                .replacingOccurrences(of: "{{ date }}", with: dateString)
+        }
+
+        return localizations[.renewsOnDateWithLastPaidPrice]
+            .replacingOccurrences(of: "{{ date }}", with: dateString)
+            .replacingOccurrences(of: "{{ price }}", with: lastPaidPrice)
     }
 
     private func expirationString(
