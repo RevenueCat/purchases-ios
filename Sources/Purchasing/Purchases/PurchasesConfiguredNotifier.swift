@@ -30,7 +30,7 @@ enum PurchasesConfiguredNotifier {
     static func notify() {
         for name in serviceClassNames {
             guard let service = NSClassFromString(name) as? PurchasesPostConfigurationStep.Type else {
-                return
+                continue
             }
 
             service.purchasesDidConfigure()
