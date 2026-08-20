@@ -24,7 +24,7 @@ extension FeatureEventsRequest {
         let type: String
         let identifier: String
         let appUserID: String
-        let sessionID: String?
+        let appSessionID: String?
         let timestamp: UInt64
 
     }
@@ -51,7 +51,7 @@ extension FeatureEventsRequest.CheckpointEvent {
                 type: event.eventType,
                 identifier: event.data.identifier,
                 appUserID: storedEvent.userID,
-                sessionID: storedEvent.appSessionID?.uuidString,
+                appSessionID: storedEvent.appSessionID?.uuidString,
                 timestamp: event.data.date.millisecondsSince1970
             )
         } catch {
@@ -75,7 +75,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case type
         case identifier
         case appUserID = "app_user_id"
-        case sessionID = "session_id"
+        case appSessionID = "app_session_id"
         case timestamp
 
     }
@@ -87,7 +87,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.type, forKey: .type)
         try container.encode(self.identifier, forKey: .identifier)
         try container.encode(self.appUserID, forKey: .appUserID)
-        try container.encodeIfPresent(self.sessionID, forKey: .sessionID)
+        try container.encodeIfPresent(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)
     }
 
