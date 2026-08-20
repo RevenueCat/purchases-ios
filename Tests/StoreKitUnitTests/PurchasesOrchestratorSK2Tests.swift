@@ -331,7 +331,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             .build()
 
         _ = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(params: params, trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+            self.orchestrator.purchase(
+                params: params, trackDiagnostics: false
+            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
@@ -361,7 +363,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             .build()
 
         _ = await withCheckedContinuation { continuation in
-            self.orchestrator.purchase(params: params, trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+            self.orchestrator.purchase(
+                params: params, trackDiagnostics: false
+            ) { transaction, customerInfo, error, userCancelled in
                 continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
             }
         }
