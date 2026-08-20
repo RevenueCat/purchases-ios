@@ -2934,6 +2934,107 @@ class SubscriberAttributesManagerTests: TestCase {
             expect(store.appUserID) == "kratos"
         }
     }
+
+    // MARK: - Attributes sent inline with log in
+
+    func testStoreAttributesBuffersThemUnsyncedAndReturnsOnlyTheGivenKeys() throws {
+        let plan = SubscriberAttribute(withKey: "plan", value: "annual")
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = [
+            "plan": plan,
+            "unrelated": SubscriberAttribute(withKey: "unrelated", value: "value")
+        ]
+
+        let stored = self.subscriberAttributesManager.store(attributes: ["plan": "annual"], appUserID: "user")
+
+        expect(stored) == ["plan": plan]
+
+        let cached = try XCTUnwrap(self.mockDeviceCache.invokedStoreParametersList.onlyElement)
+        expect(cached.attribute.key) == "plan"
+        expect(cached.attribute.value) == "annual"
+        expect(cached.attribute.isSynced) == false
+        expect(cached.appUserID) == "user"
+    }
+
+    func testStoreAttributesSkipsOnesAlreadyStoredWithTheSameValue() {
+        self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "plan",
+                                                                                    value: "annual",
+                                                                                    isSynced: true,
+                                                                                    setTime: Date())
+
+        self.subscriberAttributesManager.store(attributes: ["plan": "annual"], appUserID: "user")
+
+        expect(self.mockDeviceCache.invokedStoreParametersList).to(beEmpty())
+    }
+
+    func testRefreshATTStatusAndGetUnsyncedAttributesSetsConsentStatus() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = self.mockAttributes
+
+        let attributes = self.subscriberAttributesManager
+            .refreshATTStatusAndGetUnsyncedAttributes(appUserID: "user")
+
+        expect(attributes) == self.mockAttributes
+        expect(self.mockDeviceCache.invokedStoreParametersList)
+            .to(containElementSatisfying { $0.attribute.key == "$attConsentStatus" })
+    }
+
+    func testHandleAttributesSentOnLogInMarksThemSyncedWhenThereIsNoError() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = self.mockAttributes
+
+        self.subscriberAttributesManager.handleAttributesSentOnLogIn(self.mockAttributes,
+                                                                     appUserID: "user",
+                                                                     errorResponse: nil)
+
+        let stored = self.mockDeviceCache.invokedStoreSubscriberAttributesParameters?.attributesByKey
+        expect(stored?["height"]?.isSynced) == true
+        expect(stored?["weight"]?.isSynced) == true
+        expect(self.mockDeviceCache.invokedDeleteSubscriberAttributesParametersList).to(beEmpty())
+    }
+
+    func testHandleAttributesSentOnLogInKeepsThemBufferedOnTransientError() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = self.mockAttributes
+
+        self.subscriberAttributesManager.handleAttributesSentOnLogIn(
+            self.mockAttributes,
+            appUserID: "user",
+            errorResponse: .init(code: .internalServerError,
+                                 originalCode: BackendErrorCode.internalServerError.rawValue,
+                                 message: "Internal server error")
+        )
+
+        expect(self.mockDeviceCache.invokedStoreSubscriberAttributes) == false
+        expect(self.mockDeviceCache.invokedDeleteSubscriberAttributesParametersList).to(beEmpty())
+    }
+
+    func testHandleAttributesSentOnLogInDropsMalformedKeysAndSyncsTheRest() throws {
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = self.mockAttributes
+
+        self.subscriberAttributesManager.handleAttributesSentOnLogIn(
+            self.mockAttributes,
+            appUserID: "user",
+            errorResponse: .init(code: .invalidSubscriberAttributes,
+                                 originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                                 message: "Some subscriber attributes keys were unable to be saved.",
+                                 attributeErrors: ["height": "Invalid key"])
+        )
+
+        let deleted = try XCTUnwrap(self.mockDeviceCache.invokedDeleteSubscriberAttributesParametersList.onlyElement)
+        expect(deleted.keys) == ["height"]
+        expect(deleted.appUserID) == "user"
+
+        let stored = try XCTUnwrap(self.mockDeviceCache.invokedStoreSubscriberAttributesParameters?.attributesByKey)
+        expect(stored["weight"]?.isSynced) == true
+        expect(stored["height"]?.isSynced) == false
+    }
+
+    func testHandleAttributesSentOnLogInIgnoresEmptyAttributes() {
+        self.subscriberAttributesManager.handleAttributesSentOnLogIn([:],
+                                                                     appUserID: "user",
+                                                                     errorResponse: nil)
+
+        expect(self.mockDeviceCache.invokedStoreSubscriberAttributes) == false
+        expect(self.mockDeviceCache.invokedDeleteSubscriberAttributesParametersList).to(beEmpty())
+    }
+
 }
 
 private extension SubscriberAttributesManagerTests {

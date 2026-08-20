@@ -119,6 +119,19 @@ extension ErrorResponse: Decodable {
 
 }
 
+/// The non-fatal `attributes_error_response` returned by `POST /subscribers/identify` when the subscriber
+/// attributes sent inline with the log in request could not be applied.
+///
+/// - Note: the log in itself succeeded. A bucket that isn't present here was stored successfully.
+struct IdentifyAttributesErrorResponse: Decodable, Equatable {
+
+    /// The error for the attributes that are always written to the logged-in subscriber.
+    let attributes: ErrorResponse?
+    /// The error for the attributes flushed to the pre-login subscriber.
+    let previousUnsyncedAttributes: ErrorResponse?
+
+}
+
 extension ErrorResponse {
 
     /// For some endpoints the backend may return `ErrorResponse` inside of this wrapper.

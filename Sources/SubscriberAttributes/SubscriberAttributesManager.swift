@@ -340,6 +340,46 @@ extension SubscriberAttributesManager: AttributeSyncing {
                                        completion: completion)
     }
 
+    @discardableResult
+    func store(attributes: [String: String], appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.setAttributes(attributes, appUserID: appUserID)
+
+        return self.unsyncedAttributesByKey(appUserID: appUserID).filter { attributes.keys.contains($0.key) }
+    }
+
+    func refreshATTStatusAndGetUnsyncedAttributes(appUserID: String) -> SubscriberAttribute.Dictionary {
+        self.setATTConsentStatus(forAppUserID: appUserID)
+
+        return self.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    func handleAttributesSentOnLogIn(_ attributes: SubscriberAttribute.Dictionary,
+                                     appUserID: String,
+                                     errorResponse: ErrorResponse?) {
+        guard !attributes.isEmpty else { return }
+
+        guard let errorResponse = errorResponse else {
+            self.markAttributesAsSynced(attributes, appUserID: appUserID)
+            return
+        }
+
+        Logger.error(Strings.attribution.attributes_sent_on_login_error(appUserID: appUserID,
+                                                                        code: errorResponse.originalCode,
+                                                                        message: errorResponse.message,
+                                                                        attributeErrors: errorResponse.attributeErrors))
+
+        guard errorResponse.code == .invalidSubscriberAttributes else {
+            // Any other code is transient, so these stay queued for the next sync.
+            return
+        }
+
+        // The malformed keys will never be accepted, so they're dropped instead of retried forever.
+        // The rest of the bucket did apply.
+        let malformedKeys = Set(errorResponse.attributeErrors.keys)
+        self.deviceCache.deleteSubscriberAttributes(keys: malformedKeys, appUserID: appUserID)
+        self.markAttributesAsSynced(attributes.filter { !malformedKeys.contains($0.key) }, appUserID: appUserID)
+    }
+
 }
 
 private extension SubscriberAttributesManager {

@@ -1136,9 +1136,33 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        self.logIn(appUserID, attributes: [:], completion: completion)
+    }
+
+    @available(*, deprecated, message: """
+    The appUserID passed to logIn is a constant string known at compile time.
+    This is likely a programmer error. This ID is used to identify the current user.
+    See https://docs.revenuecat.com/docs/user-ids for more information.
+    """)
+    func logIn(_ appUserID: StaticString,
+               attributes: [String: String],
+               completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        Logger.warn(Strings.identity.logging_in_with_static_string)
+
+        self.logIn("\(appUserID)", attributes: attributes, completion: completion)
+    }
+
+    // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // This allows us to provide a compile-time warning to developers who accidentally
+    // call logIn with hardcoded user ids in their app
+    @_disfavoredOverload
+    @objc(logIn:attributes:completion:)
+    func logIn(_ appUserID: String,
+               attributes: [String: String],
+               completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
-        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
+        self.identityManager.logIn(appUserID: normalizedAppUserID, attributes: attributes) { result in
             self.operationDispatcher.dispatchOnMainThread {
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
@@ -1168,7 +1192,27 @@ public extension Purchases {
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        return try await self.logInAsync(appUserID)
+        return try await self.logInAsync(appUserID, attributes: [:])
+    }
+
+    func logIn(
+        _ appUserID: StaticString,
+        attributes: [String: String]
+    ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        Logger.warn(Strings.identity.logging_in_with_static_string)
+
+        return try await self.logIn("\(appUserID)", attributes: attributes)
+    }
+
+    // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
+    // This allows us to provide a compile-time warning to developers who accidentally
+    // call logIn with hardcoded user ids in their app
+    @_disfavoredOverload
+    func logIn(
+        _ appUserID: String,
+        attributes: [String: String]
+    ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        return try await self.logInAsync(appUserID, attributes: attributes)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {

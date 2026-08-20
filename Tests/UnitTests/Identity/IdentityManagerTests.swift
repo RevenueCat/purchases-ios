@@ -170,7 +170,7 @@ class IdentityManagerTests: TestCase {
         let manager = self.create(appUserID: nil)
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: "", completion: completed)
+            manager.logIn(appUserID: "", attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.error) == .missingAppUserID()
@@ -184,7 +184,7 @@ class IdentityManagerTests: TestCase {
         self.mockDeviceCache.stubbedAppUserID = appUserID
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: appUserID, completion: completed)
+            manager.logIn(appUserID: appUserID, attributes: [:], completion: completed)
         }
 
         expect(receivedResult).toNot(beNil())
@@ -205,7 +205,7 @@ class IdentityManagerTests: TestCase {
         self.mockCustomerInfoManager.stubbedCustomerInfoResult = .failure(stubbedError)
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: appUserID, completion: completed)
+            manager.logIn(appUserID: appUserID, attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.error) == stubbedError
@@ -222,10 +222,10 @@ class IdentityManagerTests: TestCase {
 
         self.mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: newAppUserID, completion: completed)
+            manager.logIn(appUserID: newAppUserID, attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.value?.created) == true
@@ -248,7 +248,7 @@ class IdentityManagerTests: TestCase {
         self.mockCustomerInfoManager.stubbedCustomerInfoResult = .failure(stubbedError)
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: newAppUserID, completion: completed)
+            manager.logIn(appUserID: newAppUserID, attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.error) == stubbedError
@@ -267,10 +267,10 @@ class IdentityManagerTests: TestCase {
 
         let manager = self.create(appUserID: nil)
 
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         waitUntil { completed in
-            manager.logIn(appUserID: newAppUserID) { _ in
+            manager.logIn(appUserID: newAppUserID, attributes: [:]) { _ in
                 completed()
             }
         }
@@ -286,10 +286,10 @@ class IdentityManagerTests: TestCase {
 
         self.mockDeviceCache.stubbedAppUserID = oldAppUserID
 
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         waitUntil { completed in
-            manager.logIn(appUserID: newAppUserID) { _ in
+            manager.logIn(appUserID: newAppUserID, attributes: [:]) { _ in
                 completed()
             }
         }
@@ -345,10 +345,10 @@ class IdentityManagerTests: TestCase {
         let manager = self.create(appUserID: nil)
         let remoteConfigManager = MockRemoteConfigManager()
         manager.remoteConfigManager = remoteConfigManager
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         waitUntil { completed in
-            manager.logIn(appUserID: "myUser") { _ in completed() }
+            manager.logIn(appUserID: "myUser", attributes: [:]) { _ in completed() }
         }
 
         expect(remoteConfigManager.invokedClearCacheCount) == 1
@@ -382,12 +382,121 @@ class IdentityManagerTests: TestCase {
         expect(remoteConfigManager.invokedClearCacheAppUserIDs) == ["newUser"]
     }
 
-    func testLogInSyncsAttributes() {
+    func testLogInSendsPreviousUnsyncedAttributesInsteadOfSyncingThemSeparately() {
+        let manager = self.create(appUserID: "old_user")
+        let unsyncedAttribute = SubscriberAttribute(withKey: "channel", value: "tiktok")
+        self.mockAttributeSyncing.stubbedUnsyncedAttributes = ["channel": unsyncedAttribute]
+
+        manager.logIn(appUserID: "nacho", attributes: [:]) { _ in }
+
+        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs).to(beEmpty())
+        expect(self.mockAttributeSyncing.invokedRefreshATTStatusAndGetUnsyncedAttributesUserIDs) == ["old_user"]
+        expect(self.mockIdentityAPI.invokedLogInParameters?.previousUnsyncedAttributes) == [
+            "channel": unsyncedAttribute
+        ]
+        expect(self.mockIdentityAPI.invokedLogInParameters?.attributes).to(beEmpty())
+    }
+
+    func testLogInSendsGivenAttributesForTheNewUser() throws {
         let manager = self.create(appUserID: "old_user")
 
-        manager.logIn(appUserID: "nacho") { _ in }
+        manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in }
 
-        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == ["old_user"]
+        expect(self.mockAttributeSyncing.invokedStoreAttributesParametersList).to(haveCount(1))
+        let storedParameters = try XCTUnwrap(self.mockAttributeSyncing.invokedStoreAttributesParametersList.first)
+        expect(storedParameters.attributes) == ["plan": "annual"]
+        expect(storedParameters.appUserID) == "nacho"
+
+        let sentAttributes = try XCTUnwrap(self.mockIdentityAPI.invokedLogInParameters?.attributes)
+        expect(sentAttributes["plan"]?.value) == "annual"
+    }
+
+    /// A merge is refused when the new user already has an anonymous alias, which may belong to a different
+    /// person's device. Keeping the buckets separate is what stops the buffered anonymous attributes from
+    /// landing on the identified account in that case.
+    func testLogInKeepsTheCallerAttributesAndTheBufferedOnesInSeparateBuckets() throws {
+        let manager = self.create(appUserID: "old_user")
+        let bufferedAttribute = SubscriberAttribute(withKey: "channel", value: "tiktok")
+        self.mockAttributeSyncing.stubbedUnsyncedAttributes = ["channel": bufferedAttribute]
+        self.mockAttributeSyncing.stubbedStoredAttributes = [
+            "plan": SubscriberAttribute(withKey: "plan", value: "annual")
+        ]
+
+        manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in }
+
+        let parameters = try XCTUnwrap(self.mockIdentityAPI.invokedLogInParameters)
+        expect(Set(parameters.attributes.keys)) == ["plan"]
+        expect(Set(parameters.previousUnsyncedAttributes.keys)) == ["channel"]
+    }
+
+    func testLogInDoesNotStoreAttributesWhenNoneAreGiven() {
+        let manager = self.create(appUserID: "old_user")
+
+        manager.logIn(appUserID: "nacho", attributes: [:]) { _ in }
+
+        expect(self.mockAttributeSyncing.invokedStoreAttributesParametersList).to(beEmpty())
+    }
+
+    func testLogInMarksSentAttributesAsSyncedWhenBackendReportsNoAttributeErrors() throws {
+        let manager = self.create(appUserID: "old_user")
+        let unsyncedAttribute = SubscriberAttribute(withKey: "channel", value: "tiktok")
+        self.mockAttributeSyncing.stubbedUnsyncedAttributes = ["channel": unsyncedAttribute]
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((self.mockCustomerInfo, true, nil))
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in completed() }
+        }
+
+        let handled = self.mockAttributeSyncing.invokedHandleAttributesSentOnLogInParametersList
+        expect(handled).to(haveCount(2))
+        expect(handled.map(\.appUserID)) == ["old_user", "nacho"]
+        expect(handled.map(\.errorResponse)).to(allPass { $0 == nil })
+    }
+
+    func testLogInForwardsEachAttributeBucketError() throws {
+        let manager = self.create(appUserID: "old_user")
+        self.mockAttributeSyncing.stubbedUnsyncedAttributes = [
+            "channel": SubscriberAttribute(withKey: "channel", value: "tiktok")
+        ]
+
+        let attributesError = ErrorResponse(code: .invalidSubscriberAttributes,
+                                            originalCode: BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                                            message: "Invalid keys",
+                                            attributeErrors: ["$$invalid": "Invalid key"])
+        let previousError = ErrorResponse(code: .internalServerError,
+                                          originalCode: BackendErrorCode.internalServerError.rawValue,
+                                          message: "Subscriber not found")
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success(
+            (self.mockCustomerInfo,
+             true,
+             IdentifyAttributesErrorResponse(attributes: attributesError,
+                                             previousUnsyncedAttributes: previousError))
+        )
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in completed() }
+        }
+
+        let handled = self.mockAttributeSyncing.invokedHandleAttributesSentOnLogInParametersList
+        expect(handled).to(haveCount(2))
+        expect(handled[0].appUserID) == "old_user"
+        expect(handled[0].errorResponse) == previousError
+        expect(handled[1].appUserID) == "nacho"
+        expect(handled[1].errorResponse) == attributesError
+    }
+
+    func testLogInDoesNotHandleAttributesWhenLogInFails() {
+        let manager = self.create(appUserID: "old_user")
+        self.mockAttributeSyncing.stubbedUnsyncedAttributes = [
+            "channel": SubscriberAttribute(withKey: "channel", value: "tiktok")
+        ]
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .failure(.missingAppUserID())
+
+        waitUntil { completed in
+            manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in completed() }
+        }
+
+        expect(self.mockAttributeSyncing.invokedHandleAttributesSentOnLogInParametersList).to(beEmpty())
     }
 
     func testLogOutSyncsAttributes() {
@@ -402,10 +511,10 @@ class IdentityManagerTests: TestCase {
         let manager = self.create(appUserID: nil)
         let anonymousUserID = manager.currentAppUserID
 
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         waitUntil { completed in
-            manager.logIn(appUserID: "test-user-id") { _ in
+            manager.logIn(appUserID: "test-user-id", attributes: [:]) { _ in
                 completed()
             }
         }
@@ -418,10 +527,10 @@ class IdentityManagerTests: TestCase {
     func testLogInDoesNotCopyAttributesToNewUserIfPreviousUserWasNotAnonymous() {
         let manager = self.create(appUserID: "old-user-id")
 
-        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true))
+        self.mockIdentityAPI.stubbedLogInCompletionResult = .success((mockCustomerInfo, true, nil))
 
         waitUntil { completed in
-            manager.logIn(appUserID: "test-user-id") { _ in
+            manager.logIn(appUserID: "test-user-id", attributes: [:]) { _ in
                 completed()
             }
         }
@@ -515,7 +624,7 @@ class IdentityManagerTests: TestCase {
         let manager = create(appUserID: nil)
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: "user_id", completion: completed)
+            manager.logIn(appUserID: "user_id", attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.error) == .unsupportedInUIPreviewMode()
@@ -532,7 +641,7 @@ class IdentityManagerTests: TestCase {
         let manager = create(appUserID: nil)
 
         let receivedResult = waitUntilValue { completed in
-            manager.logIn(appUserID: IdentityManager.uiPreviewModeAppUserID, completion: completed)
+            manager.logIn(appUserID: IdentityManager.uiPreviewModeAppUserID, attributes: [:], completion: completed)
         }
 
         expect(receivedResult?.error) == .unsupportedInUIPreviewMode()

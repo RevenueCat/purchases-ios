@@ -202,6 +202,7 @@ NSURL *url;
     [p purchasePackage:pack withPromotionalOffer:pro completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *e, BOOL userCancelled) { }];
 
     [p logIn:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
+    [p logIn:@"" attributes:@{} completion:^(RCCustomerInfo *i, BOOL created, NSError *e) { }];
     [p logOutWithCompletion:^(RCCustomerInfo *i, NSError *e) { }];
 
     [p redeemWebPurchaseWithWebPurchaseRedemption:webPurchaseRedemptionLink

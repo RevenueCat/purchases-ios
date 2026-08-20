@@ -114,6 +114,29 @@ public protocol PurchasesType: AnyObject {
             _ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void)
 
         /**
+         * This function will log in the current user with an ``appUserID``, setting `attributes` on them
+         * as part of the same request.
+         *
+         * - Parameter appUserID: The ``appUserID`` that should be linked to the current user.
+         * - Parameter attributes: Subscriber attributes to set on the user being logged in. These always
+         * reach that user, whether or not the anonymous user is merged into them.
+         *
+         * The `completion` block will be called with the latest ``CustomerInfo`` and a `Bool` specifying
+         * whether the user was created for the first time in the RevenueCat backend.
+         *
+         * - Note: attributes that couldn't be set don't fail the log in. They're logged and retried on the
+         * next attribute sync.
+         *
+         * #### Related Articles
+         * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
+         * - [Subscriber Attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+         */
+        func logIn(
+            _ appUserID: String,
+            attributes: [String: String],
+            completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void)
+
+        /**
          * This function will log in the current user with an ``appUserID``.
          *
          * - Parameter appUserID: The ``appUserID`` that should be linked to the current user.
@@ -138,6 +161,28 @@ public protocol PurchasesType: AnyObject {
          * - ``Purchases/appUserID``
          */
         func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool)
+
+        /**
+         * This function will log in the current user with an ``appUserID``, setting `attributes` on them
+         * as part of the same request.
+         *
+         * - Parameter appUserID: The ``appUserID`` that should be linked to the current user.
+         * - Parameter attributes: Subscriber attributes to set on the user being logged in. These always
+         * reach that user, whether or not the anonymous user is merged into them.
+         * - returns: A tuple of: the latest ``CustomerInfo`` and a `Bool` specifying
+         * whether the user was created for the first time in the RevenueCat backend.
+         *
+         * - Note: attributes that couldn't be set don't fail the log in. They're logged and retried on the
+         * next attribute sync.
+         *
+         * #### Related Articles
+         * - [Identifying Users](https://docs.revenuecat.com/docs/user-ids)
+         * - [Subscriber Attributes](https://docs.revenuecat.com/docs/subscriber-attributes)
+         */
+        func logIn(
+            _ appUserID: String,
+            attributes: [String: String]
+        ) async throws -> (customerInfo: CustomerInfo, created: Bool)
 
         /**
          * Logs out the ``Purchases`` client, clearing the saved ``appUserID``.
