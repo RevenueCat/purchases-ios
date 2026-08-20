@@ -42,10 +42,10 @@
     },
     {
       "id": "var_oversized_float_path_does_not_crash",
-      "description": "1e19 exceeds Int64.max; the path formatter must round-trip safely so the lookup just misses instead of trapping",
+      "description": "1e19 exceeds Int64.max; the path formatter must round-trip safely so the lookup just misses instead of trapping. The rendered path is left unpinned because the platforms format this magnitude differently.",
       "predicate": { "===": [{ "var": 1e19 }, null] },
       "variables": {},
-      "expected": { "error": "unresolvedVariable", "path": "1e+19" }
+      "expected": { "error": "unresolvedVariable" }
     },
     {
       "id": "var_does_not_apply_flat_key_fallback",
