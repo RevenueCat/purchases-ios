@@ -1,4 +1,4 @@
-// swift-tools-version:6.2.3
+// swift-tools-version:5.9
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import class Foundation.ProcessInfo
@@ -144,6 +144,5 @@ let package = Package(
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
                     ])
-    ],
-    swiftLanguageModes: [.v5]
+    ]
 )
