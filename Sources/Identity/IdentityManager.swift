@@ -174,16 +174,19 @@ private extension IdentityManager {
 
         guard newAppUserID != oldAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
-                                                  fetchPolicy: .cachedOrFetched) { @Sendable result in
-                completion(
-                    result.map { (info: $0, created: false, attributesErrorResponse: nil) }
-                )
+
+            // There's no identify request to carry them, so they go through a regular sync.
+            self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: oldAppUserID) {
+                self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
+                                                      fetchPolicy: .cachedOrFetched) { @Sendable result in
+                    completion(
+                        result.map { (info: $0, created: false, attributesErrorResponse: nil) }
+                    )
+                }
             }
             return
         }
 
-        // Sent inline with the log in request instead of as a separate pre-login sync.
         let previousUnsyncedAttributes = self.attributeSyncing
             .refreshATTStatusAndGetUnsyncedAttributes(appUserID: oldAppUserID)
 

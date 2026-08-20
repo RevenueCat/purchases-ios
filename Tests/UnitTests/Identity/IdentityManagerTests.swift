@@ -193,6 +193,22 @@ class IdentityManagerTests: TestCase {
         expect(self.mockCustomerInfoManager.invokedCustomerInfoCount) == 1
     }
 
+    func testLogInWithSameAppUserIDSyncsAttributesSeparately() {
+        let appUserID = "myUser"
+
+        let manager = self.create(appUserID: nil)
+
+        self.mockDeviceCache.stubbedAppUserID = appUserID
+
+        waitUntil { completed in
+            manager.logIn(appUserID: appUserID, attributes: ["plan": "annual"]) { _ in completed() }
+        }
+
+        expect(self.mockAttributeSyncing.invokedStoreAttributesParametersList).to(haveCount(1))
+        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == [appUserID]
+        expect(self.mockIdentityAPI.invokedLogInCount) == 0
+    }
+
     func testLogInWithSameAppUserIDPassesBackendCustomerInfoErrors() {
         let appUserID = "myUser"
 
