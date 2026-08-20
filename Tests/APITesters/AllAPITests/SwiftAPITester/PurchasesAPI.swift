@@ -433,7 +433,7 @@ func checkPurchaseParamBuilderUIKitAPIs(
     builder: PurchaseParams.Builder,
     uiScene: UIScene
 ) {
-    if #available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *) {
+    if #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *) {
         let builder: PurchaseParams.Builder = builder.with(confirmInScene: uiScene)
     }
 }
