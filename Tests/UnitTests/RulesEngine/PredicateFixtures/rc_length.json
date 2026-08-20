@@ -97,6 +97,23 @@
       "expected": true
     },
     {
+      "id": "length_multi_element_arg_list_uses_first_only",
+      "description": "json-logic-js spread semantics: only the first argument is used; extra args silently ignored. Treating the list as one array operand would instead yield 2",
+      "predicate": {
+        "===": [
+          {
+            "rc.length": [
+              "abc",
+              "ignored"
+            ]
+          },
+          3
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "length_null_is_type_error",
       "predicate": {
         "rc.length": null
