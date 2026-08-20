@@ -321,8 +321,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             return
         }
 
-        let productPurchaser = MockStoreKit2ProductPurchaser()
-        self.orchestrator.storeKit2ProductPurchaser = productPurchaser
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
@@ -338,8 +338,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        expect(productPurchaser.invokedPurchaseCount) == 1
-        expect(productPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInScene).to(equal(scene))
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        expect(self.mockStoreKit2ProductPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInScene).to(equal(scene))
     }
     #endif
 
@@ -353,8 +353,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             return
         }
 
-        let productPurchaser = MockStoreKit2ProductPurchaser()
-        self.orchestrator.storeKit2ProductPurchaser = productPurchaser
+        self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
+        self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
 
         let product = try await self.fetchSk2Product()
@@ -370,8 +370,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             }
         }
 
-        expect(productPurchaser.invokedPurchaseCount) == 1
-        expect(productPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInWindow).to(equal(window))
+        expect(self.mockStoreKit2ProductPurchaser.invokedPurchaseCount) == 1
+        expect(self.mockStoreKit2ProductPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInWindow).to(equal(window))
     }
     #endif
 
