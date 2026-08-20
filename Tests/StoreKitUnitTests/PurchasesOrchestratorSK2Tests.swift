@@ -318,6 +318,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testPurchaseWithPurchaseParamsForwardsConfirmInSceneToProductPurchaser() async throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
+        let product = try await self.fetchSk2Product()
+
         guard let scene = await UIScene.mock() else {
             fail("Failed to create UIScene mock")
             return
@@ -325,9 +327,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
         self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
 
-        let product = try await self.fetchSk2Product()
         let params = PurchaseParams.Builder(product: StoreProduct(sk2Product: product))
             .with(confirmInScene: scene)
             .build()
@@ -350,6 +352,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     func testPurchaseWithPurchaseParamsForwardsConfirmInWindowToProductPurchaser() async throws {
         try AvailabilityChecks.macOS15_2APIAvailableOrSkipTest()
 
+        let product = try await self.fetchSk2Product()
+
         guard let window = await NSWindow.mock() else {
             fail("Failed to create NSWindow mock")
             return
@@ -357,9 +361,9 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
         self.mockStoreKit2ProductPurchaser = MockStoreKit2ProductPurchaser()
         self.setUpOrchestrator(storeKit2ProductPurchaser: self.mockStoreKit2ProductPurchaser)
+        self.setUpStoreKit2Listener()
         self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
 
-        let product = try await self.fetchSk2Product()
         let params = PurchaseParams.Builder(product: StoreProduct(sk2Product: product))
             .with(confirmInWindow: window)
             .build()
