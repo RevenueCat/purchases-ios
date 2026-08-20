@@ -143,6 +143,18 @@ let package = Package(
                         .copy("Resources/header.heic"),
                         .copy("Resources/background.heic"),
                         .copy("PaywallsV2/__PreviewResources__")
-                    ])
+                    ]),
+        // Isolated from RevenueCatUITests so a Swift reference to PurchasesUIService
+        // cannot keep the ObjC class alive. Run via the RevenueCatUI-Stripped scheme.
+        .testTarget(
+            name: "PurchasesUIServiceIntegrationTests",
+            dependencies: [
+                "RevenueCat",
+                "RevenueCatUI"
+            ],
+            linkerSettings: [
+                .unsafeFlags(["-dead_strip"], .when(configuration: .release))
+            ]
+        )
     ]
 )
