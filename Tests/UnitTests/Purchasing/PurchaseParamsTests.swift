@@ -198,7 +198,7 @@ class PurchaseParamsTests: TestCase {
     #endif
 
     #if canImport(UIKit) && !os(watchOS)
-    @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
     func testPurchaseParamsBuilderWithConfirmInScene() throws {
         try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
 
