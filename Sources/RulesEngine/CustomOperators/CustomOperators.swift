@@ -25,6 +25,9 @@ extension RulesEngine {
             case "rc.fromEntries":
                 return try EntriesOperators.opFromEntries(args: args, vars: vars)
 
+            case "rc.length":
+                return try LengthOperator.opLength(args: args, vars: vars)
+
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)
 
