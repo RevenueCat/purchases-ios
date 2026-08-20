@@ -81,59 +81,127 @@
       "expected": true
     },
     {
-      "id": "lower_null_coerces_via_js_string",
-      "description": "jsString(null) is the literal \"null\", not cat's empty-string join rendering",
+      "id": "lower_null_is_type_error",
+      "description": "Deliberate divergence from JS String(null).toLowerCase() === \"null\": coercing absent data into the literal \"null\" would let a rule match by accident, so non-strings throw",
       "predicate": {
-        "===": [
-          {
-            "rc.lower": null
-          },
-          "null"
-        ]
+        "rc.lower": null
       },
       "variables": {},
-      "expected": true
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
     },
     {
-      "id": "lower_undefined_coerces_via_js_string",
+      "id": "upper_null_is_type_error",
+      "description": "rc.upper enforces the same string-only contract as rc.lower",
       "predicate": {
-        "===": [
-          {
-            "rc.lower": {
-              "and": []
-            }
-          },
-          "undefined"
-        ]
+        "rc.upper": null
       },
       "variables": {},
-      "expected": true
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.upper"
+      }
     },
     {
-      "id": "lower_number_coerces_via_js_string",
+      "id": "lower_undefined_is_type_error",
+      "description": "{\"and\": []} yields undefined, which JS would coerce to \"undefined\"",
       "predicate": {
-        "===": [
-          {
-            "rc.lower": 42
-          },
-          "42"
-        ]
+        "rc.lower": {
+          "and": []
+        }
       },
       "variables": {},
-      "expected": true
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
     },
     {
-      "id": "lower_bool_coerces_via_js_string",
+      "id": "lower_number_is_type_error",
+      "description": "Numbers throw rather than being stringified, which also keeps the engine's number formatting out of case comparisons",
       "predicate": {
-        "===": [
-          {
-            "rc.lower": true
-          },
-          "true"
+        "rc.lower": 42
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "upper_number_is_type_error",
+      "description": "rc.upper rejects numbers too",
+      "predicate": {
+        "rc.upper": 42
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.upper"
+      }
+    },
+    {
+      "id": "lower_bool_is_type_error",
+      "description": "Booleans throw; JS would produce \"true\"",
+      "predicate": {
+        "rc.lower": true
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_array_is_type_error",
+      "description": "Unlike rc.length, an array is not valid input: there is no element-wise casing",
+      "predicate": {
+        "rc.lower": [
+          [
+            "A",
+            "B"
+          ]
         ]
       },
       "variables": {},
-      "expected": true
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_object_is_type_error",
+      "description": "Objects throw; JS would produce \"[object Object]\"",
+      "predicate": {
+        "rc.lower": {
+          "var": "obj"
+        }
+      },
+      "variables": {
+        "obj": {
+          "a": 1
+        }
+      },
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_missing_variable_is_type_error",
+      "description": "Motivating case for throwing: a typo'd path resolves to null, and coercion would make {\"===\": [{\"rc.lower\": {\"var\": \"typo\"}}, \"null\"]} quietly true",
+      "predicate": {
+        "rc.lower": {
+          "var": "missing"
+        }
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
     },
     {
       "id": "lower_multi_element_arg_list_uses_first_only",
