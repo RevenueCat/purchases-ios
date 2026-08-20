@@ -46,6 +46,7 @@ final class CheckpointsManagerTests: TestCase {
     func testObjectiveCParamsDropUnsupportedValuesAndNonStringKeys() {
         let params = ObjCCheckpointParams(customVariables: [
             "valid": "value",
+            "invalid-key": "value",
             "null": NSNull(),
             "date": Date(),
             "array": ["nested"],
@@ -53,6 +54,22 @@ final class CheckpointsManagerTests: TestCase {
         ])
 
         XCTAssertEqual(params.value.customVariables, ["valid": .string("value")])
+    }
+
+    func testObjectiveCResultWrapsInvalidIdentifierNoActionResult() throws {
+        let identifier = "invalid checkpoint"
+        let checkpoint = CheckpointInfo(identifier: identifier, params: .init())
+        let result = CheckpointNoActionResult(
+            checkpoint: checkpoint,
+            reason: .invalidCheckpointIdentifier
+        )
+
+        let objcResult = try XCTUnwrap(
+            ObjCCheckpointResult.wrapping(result) as? ObjCCheckpointNoActionResult
+        )
+
+        XCTAssertEqual(objcResult.checkpoint.identifier, identifier)
+        XCTAssertEqual(objcResult.reason.value, "INVALID_CHECKPOINT_IDENTIFIER")
     }
 
     #endif
@@ -73,6 +90,27 @@ final class CheckpointsManagerTests: TestCase {
         ]
 
         XCTAssertEqual(params.coreParams.customVariables, expected)
+    }
+
+    func testCheckpointParamsDropInvalidCustomVariableKeys() {
+        let params = RevenueCatUI.CheckpointParams(customVariables: [
+            "valid_key": "value",
+            "invalid-key": "value",
+            "1valid": "value",
+            "_valid": "value",
+            "": "value"
+        ])
+
+        XCTAssertEqual(params.customVariables, [
+            "valid_key": "value",
+            "1valid": "value",
+            "_valid": "value"
+        ])
+        XCTAssertEqual(params.coreParams.customVariables, [
+            "valid_key": .string("value"),
+            "1valid": .string("value"),
+            "_valid": .string("value")
+        ])
     }
 
     func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {
@@ -97,6 +135,24 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
+    func testInvalidCustomVariableKeysDoNotReachResolution() async throws {
+        var resolvedParams: RevenueCatUI.CheckpointParams?
+        let manager = CheckpointsManager { _, params in
+            resolvedParams = params
+            return .noAction(.noMatch)
+        }
+
+        _ = try await manager.checkpoint(
+            identifier: "test",
+            params: CheckpointParams(customVariables: [
+                "valid_key": "value",
+                "invalid-key": "value"
+            ])
+        )
+
+        XCTAssertEqual(resolvedParams?.customVariables, ["valid_key": "value"])
+    }
+
     func testResolvedWorkflowProducesPaywallResult() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         executor.outcome = CheckpointPaywallDismissedOutcome.shared
@@ -105,13 +161,27 @@ final class CheckpointsManagerTests: TestCase {
             executor: executor
         )
 
-        let result = try await manager.checkpoint(identifier: "soft_paywall", params: .init())
+        let customVariables: [String: CustomVariableValue] = [
+            "name": "Rick",
+            "attempt": 2,
+            "enabled": true,
+            "invalid-key": "not forwarded"
+        ]
+        let result = try await manager.checkpoint(
+            identifier: "soft_paywall",
+            params: .init(customVariables: customVariables)
+        )
 
         guard let presented = result as? CheckpointPaywallPresentedResult else {
             return XCTFail("Expected a presented-paywall result")
         }
         XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallDismissedOutcome)
-        XCTAssertEqual(executor.executedWorkflows.map(\.workflow.id), ["workflow-id"])
+        XCTAssertEqual(executor.presentations.map(\.workflow.workflow.id), ["workflow-id"])
+        XCTAssertEqual(executor.presentations.first?.customVariables, [
+            "name": "Rick",
+            "attempt": 2,
+            "enabled": true
+        ])
     }
 
     func testResolvedOfferingProducesReceivedOfferingResultWithoutPresenting() async throws {
@@ -131,7 +201,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(received.offering.identifier, "offering-id")
         XCTAssertEqual(received.checkpoint.identifier, "onboarding")
         // Data-only, so it never claims the executor's one-presentation-at-a-time slot.
-        XCTAssertTrue(executor.executedWorkflows.isEmpty)
+        XCTAssertTrue(executor.presentations.isEmpty)
         XCTAssertEqual(listener.events, [.hit("onboarding"), .completed("onboarding")])
     }
 
@@ -181,6 +251,68 @@ final class CheckpointsManagerTests: TestCase {
                 return XCTFail("Expected a no-action result")
             }
             XCTAssertEqual(noAction.reason, .disabled)
+            completion.fulfill()
+        }
+
+        self.waitForExpectations(timeout: 1)
+    }
+
+    func testValidCheckpointIdentifierReachesListenerAndResolution() async throws {
+        var resolvedIdentifiers: [String] = []
+        let manager = CheckpointsManager { identifier, _ in
+            resolvedIdentifiers.append(identifier)
+            return .noAction(.noMatch)
+        }
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        _ = try await manager.checkpoint(identifier: "A-1_b", params: .init())
+
+        XCTAssertEqual(resolvedIdentifiers, ["A-1_b"])
+        XCTAssertEqual(listener.events, [.hit("A-1_b"), .completed("A-1_b")])
+    }
+
+    func testInvalidCheckpointIdentifierIsLoggedAndReportedToListenerWithoutResolution() async throws {
+        let invalidIdentifier = " checkout😀"
+        var resolutionCount = 0
+        let manager = CheckpointsManager { _, _ in
+            resolutionCount += 1
+            return .noAction(.noMatch)
+        }
+        let listener = ListenerRecorder()
+        manager.listener = listener
+
+        let result = try await manager.checkpoint(identifier: invalidIdentifier, params: .init())
+
+        guard let noActionResult = result as? CheckpointNoActionResult else {
+            return XCTFail("Expected a no-action result")
+        }
+
+        XCTAssertEqual(noActionResult.reason, .invalidCheckpointIdentifier)
+        XCTAssertEqual(noActionResult.checkpoint.identifier, invalidIdentifier)
+        XCTAssertEqual(resolutionCount, 0)
+        XCTAssertEqual(listener.events, [.hit(invalidIdentifier), .completed(invalidIdentifier)])
+        self.logger.verifyMessageWasLogged(
+            CheckpointIdentifierValidator.invalidIdentifierLogMessage(invalidIdentifier),
+            level: .error
+        )
+    }
+
+    func testCompletionAPIReturnsInvalidIdentifierNoActionResult() {
+        let completion = self.expectation(description: "Checkpoint completes")
+        var resolutionCount = 0
+        let manager = CheckpointsManager { _, _ in
+            resolutionCount += 1
+            return .noAction(.noMatch)
+        }
+
+        manager.checkpoint(identifier: "invalid checkpoint", params: .init()) { result in
+            guard case let .success(noAction as CheckpointNoActionResult) = result else {
+                return XCTFail("Expected an invalid-identifier no-action result")
+            }
+
+            XCTAssertEqual(noAction.reason, .invalidCheckpointIdentifier)
+            XCTAssertEqual(resolutionCount, 0)
             completion.fulfill()
         }
 
@@ -237,6 +369,28 @@ final class CheckpointsManagerTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointWorkflowExecutorTests: TestCase {
 
+    func testCustomVariablesAreForwardedToThePresenter() async throws {
+        let expected: [String: CustomVariableValue] = [
+            "name": "Rick",
+            "attempt": 2,
+            "enabled": true
+        ]
+        let presenter = MockCheckpointPresenter()
+        presenter.onPresent = { presentation in
+            presentation.delegate.checkpointPresentationFinished(
+                outcome: CheckpointPaywallDismissedOutcome.shared
+            )
+        }
+        let executor = CheckpointWorkflowExecutor { presenter }
+
+        _ = try await executor.execute(Self.presentation(customVariables: expected))
+
+        XCTAssertEqual(
+            presenter.presentations.first?.checkpointPresentation.customVariables,
+            expected
+        )
+    }
+
     func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
         let presenter = MockCheckpointPresenter()
         let expectedError = NSError(domain: "test", code: 42)
@@ -244,7 +398,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let executor = CheckpointWorkflowExecutor { presenter }
 
         do {
-            _ = try await executor.execute(Self.workflow())
+            _ = try await executor.execute(Self.presentation())
             XCTFail("Expected presentation failure")
         } catch {
             XCTAssertEqual(error as NSError, expectedError)
@@ -256,7 +410,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
                 outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
-        _ = try await executor.execute(Self.workflow())
+        _ = try await executor.execute(Self.presentation())
 
         XCTAssertEqual(presenter.presentations.count, 1)
     }
@@ -266,11 +420,11 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presentationStarted = self.expectation(description: "Presentation starts")
         presenter.onPresent = { _ in presentationStarted.fulfill() }
         let executor = CheckpointWorkflowExecutor { presenter }
-        let firstExecution = Task { try await executor.execute(Self.workflow()) }
+        let firstExecution = Task { try await executor.execute(Self.presentation()) }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
 
         do {
-            _ = try await executor.execute(Self.workflow())
+            _ = try await executor.execute(Self.presentation())
             XCTFail("Expected concurrent execution to throw")
         } catch {
             XCTAssertEqual(
@@ -295,8 +449,8 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         }
         let executor = CheckpointWorkflowExecutor { presenter }
 
-        _ = try await executor.execute(Self.workflow())
-        _ = try await executor.execute(Self.workflow())
+        _ = try await executor.execute(Self.presentation())
+        _ = try await executor.execute(Self.presentation())
 
         XCTAssertEqual(presenter.presentations.count, 2)
     }
@@ -306,7 +460,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presentationStarted = self.expectation(description: "Presentation starts")
         presenter.onPresent = { _ in presentationStarted.fulfill() }
         let executor = CheckpointWorkflowExecutor { presenter }
-        let firstExecution = Task { try await executor.execute(Self.workflow()) }
+        let firstExecution = Task { try await executor.execute(Self.presentation()) }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
 
         firstExecution.cancel()
@@ -322,7 +476,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
                 outcome: CheckpointPaywallDismissedOutcome.shared
             )
         }
-        _ = try await executor.execute(Self.workflow())
+        _ = try await executor.execute(Self.presentation())
 
         XCTAssertEqual(presenter.presentations.count, 2)
         XCTAssertEqual(presenter.dismissCallCount, 1)
@@ -336,14 +490,14 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         presenter.onPresent = { _ in presentationStarted.fulfill() }
         presenter.onDismiss = { dismissalStarted.fulfill() }
         let executor = CheckpointWorkflowExecutor { presenter }
-        let firstExecution = Task { try await executor.execute(Self.workflow()) }
+        let firstExecution = Task { try await executor.execute(Self.presentation()) }
         await self.fulfillment(of: [presentationStarted], timeout: 1)
 
         firstExecution.cancel()
         await self.fulfillment(of: [dismissalStarted], timeout: 1)
 
         do {
-            _ = try await executor.execute(Self.workflow())
+            _ = try await executor.execute(Self.presentation())
             XCTFail("Expected execution to remain active while dismissing")
         } catch {
             XCTAssertEqual(
@@ -374,7 +528,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         }
         let executor = CheckpointWorkflowExecutor { presenter }
 
-        execution = Task { try await executor.execute(Self.workflow()) }
+        execution = Task { try await executor.execute(Self.presentation()) }
         let outcome = try await XCTUnwrap(execution).value
 
         guard let errorOutcome = outcome as? CheckpointPaywallErrorOutcome else {
@@ -393,6 +547,15 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         )
 
         XCTAssertTrue(presenter.presentations.isEmpty)
+    }
+
+    private static func presentation(
+        customVariables: [String: CustomVariableValue] = [:]
+    ) -> CheckpointPresentation {
+        return CheckpointPresentation(
+            workflow: self.workflow(),
+            customVariables: customVariables
+        )
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {
@@ -425,10 +588,10 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
     var error: Error?
-    private(set) var executedWorkflows: [ResolvedCheckpointWorkflow] = []
+    private(set) var presentations: [CheckpointPresentation] = []
 
-    func execute(_ workflow: ResolvedCheckpointWorkflow) async throws -> CheckpointPaywallOutcome {
-        self.executedWorkflows.append(workflow)
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
+        self.presentations.append(presentation)
         if let error {
             throw error
         }
@@ -442,7 +605,7 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 private final class MockCheckpointPresenter: CheckpointPresenter {
 
     struct Presentation {
-        let workflow: ResolvedCheckpointWorkflow
+        let checkpointPresentation: CheckpointPresentation
         let delegate: CheckpointPresentationDelegate
     }
 
@@ -455,15 +618,15 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
     private var dismissalCompletions: [() -> Void] = []
 
     func present(
-        workflow: ResolvedCheckpointWorkflow,
+        presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws {
         if let presentationError {
             throw presentationError
         }
-        let presentation = Presentation(workflow: workflow, delegate: delegate)
-        self.presentations.append(presentation)
-        self.onPresent?(presentation)
+        let record = Presentation(checkpointPresentation: presentation, delegate: delegate)
+        self.presentations.append(record)
+        self.onPresent?(record)
     }
 
     func dismiss(completion: @escaping () -> Void) {

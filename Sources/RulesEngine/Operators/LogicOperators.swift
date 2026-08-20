@@ -16,14 +16,14 @@ extension RulesEngine {
 
         /// `{"!": x}` — boolean negation. Coerces to bool first per JSON Logic
         /// truthiness rules.
-        static func opNot(args: Value, vars: Value) throws -> Value {
-            let value = try firstArgEvaluated(args, vars: vars)
+        static func opNot(args: Value, vars: Scope) throws -> Value {
+            let value = try Operators.firstArgEvaluated(args, vars: vars)
             return .bool(!value.isTruthy)
         }
 
         /// `{"!!": x}` — boolean cast. Spec: equivalent to `!!x` in JS.
-        static func opNotNot(args: Value, vars: Value) throws -> Value {
-            let value = try firstArgEvaluated(args, vars: vars)
+        static func opNotNot(args: Value, vars: Scope) throws -> Value {
+            let value = try Operators.firstArgEvaluated(args, vars: vars)
             return .bool(value.isTruthy)
         }
 
@@ -32,7 +32,7 @@ extension RulesEngine {
         /// `and` returns the actual value, not a coerced boolean). Empty input
         /// returns `.undefined` (json-logic-js reduces an empty `and` to
         /// `undefined`, which is falsy but `!== null`).
-        static func opAnd(args: Value, vars: Value) throws -> Value {
+        static func opAnd(args: Value, vars: Scope) throws -> Value {
             let items = Operators.argsAsList(args)
             var last: Value = .undefined
             for item in items {
@@ -48,7 +48,7 @@ extension RulesEngine {
         /// value or, if all are falsy, the last value. Empty input returns
         /// `.undefined` (json-logic-js reduces an empty `or` to `undefined`,
         /// which is falsy but `!== null`).
-        static func opOr(args: Value, vars: Value) throws -> Value {
+        static func opOr(args: Value, vars: Scope) throws -> Value {
             let items = Operators.argsAsList(args)
             var last: Value = .undefined
             for item in items {
@@ -63,7 +63,7 @@ extension RulesEngine {
         /// `{"if": [cond, then, else]}` — also supports chained
         /// `[c1, t1, c2, t2, ..., else]` (think `else if`). Without an `else`
         /// clause and with no truthy condition, returns `null`.
-        static func opIf(args: Value, vars: Value) throws -> Value {
+        static func opIf(args: Value, vars: Scope) throws -> Value {
             let items = Operators.argsAsList(args)
             var index = 0
             while index + 1 < items.count {
@@ -77,14 +77,6 @@ extension RulesEngine {
                 return try Evaluator.evaluateValue(items[index], vars: vars)
             }
             return .null
-        }
-
-        // MARK: - Helpers
-
-        private static func firstArgEvaluated(_ args: Value, vars: Value) throws -> Value {
-            let items = Operators.argsAsList(args)
-            let first = items.first ?? .null
-            return try Evaluator.evaluateValue(first, vars: vars)
         }
     }
 }

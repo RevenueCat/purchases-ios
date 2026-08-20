@@ -2535,15 +2535,21 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
+      announcement = notify_api_changes_on_slack(
+        reports_by_target: reports_by_target,
+        breaks: all_breaks,
+        labels: labels
+      )
       schemes.each do |scheme|
         upsert_api_diff_comment(
           scheme: scheme,
           reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
           breaks: all_breaks,
-          labels: labels
+          labels: labels,
+          notice: announcement[:notice],
+          announced_fingerprint: announcement[:fingerprint]
         )
       end
-      notify_api_changes_on_slack(reports_by_target: reports_by_target, breaks: all_breaks, labels: labels)
     rescue StandardError => e
       UI.important("Could not publish the API diff report: #{e.message}")
     end
@@ -2567,28 +2573,31 @@ platform :ios do
     end
 
     repo = "RevenueCat/#{REPO_NAME}"
-    existing_id = find_pr_comment_with_marker(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
+    existing = find_pr_comment(repo, pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER)
+
+    unless ApiDiffHelper.comment_needed?(options[:reports_by_target], options[:breaks], existing&.dig("body"), options[:scheme])
+      UI.message("No public API changes and none reported before, skipping the API diff comment")
+      next
+    end
+
+    announced_fingerprint = options[:announced_fingerprint] ||
+                            ApiDiffHelper.announced_fingerprint_in(existing&.dig("body"), options[:scheme])
 
     section = ApiDiffHelper.api_diff_comment_section(
-      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels]
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
+      notice: options[:notice], announced_fingerprint: announced_fingerprint
     )
 
-    if existing_id
+    if existing
       # The other module's job owns its own section of this comment.
-      existing = github_api(
-        server_url: 'https://api.github.com',
-        api_token: token,
-        http_method: 'GET',
-        path: "/repos/#{repo}/issues/comments/#{existing_id}"
-      )
-      body = ApiDiffHelper.merge_api_diff_comment(existing[:json]["body"], options[:scheme], section)
+      body = ApiDiffHelper.merge_api_diff_comment(existing["body"], options[:scheme], section)
 
-      UI.message("Updating API diff comment #{existing_id}")
+      UI.message("Updating API diff comment #{existing['id']}")
       github_api(
         server_url: 'https://api.github.com',
         api_token: token,
         http_method: 'PATCH',
-        path: "/repos/#{repo}/issues/comments/#{existing_id}",
+        path: "/repos/#{repo}/issues/comments/#{existing['id']}",
         body: { body: body }
       )
     else
@@ -2603,34 +2612,73 @@ platform :ios do
     end
   end
 
+  # Returns { fingerprint:, notice: }; the notice ends up in the PR comment.
   private_lane :notify_api_changes_on_slack do |options|
     breaks = options[:breaks]
     changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
 
     if breaks.empty? && changed_targets.empty?
       UI.message("No public API changes, nothing to post to Slack")
-      next
+      next({ fingerprint: nil, notice: nil })
     end
 
+    bot_token = ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"]
+    channel = ENV["SLACK_CHANNEL_SDK_NEW_API"]
+
+    source = api_gate_pr_link
+    modules = ApiDiffHelper.changed_modules(options[:reports_by_target])
+
+    summary = ApiDiffHelper.slack_summary(
+      breaks,
+      options[:labels],
+      source: source,
+      new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
+      modules: modules
+    )
+    fingerprint = ApiDiffHelper.announcement_fingerprint(summary)
+
     request = ApiDiffHelper.slack_post_request(
-      ApiDiffHelper.slack_summary(
-        breaks,
-        options[:labels],
-        source: api_gate_pr_link,
-        new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target])
-      ),
+      summary,
       webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
-      bot_token: ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"],
-      channel: ENV["SLACK_CHANNEL_SDK_NEW_API"]
+      bot_token: bot_token,
+      channel: channel
     )
 
     if request.nil?
       UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API, or SLACK_URL_SDK_NEW_API. Skipping.")
-      next
+      next({ fingerprint: nil, notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE })
     end
 
-    ApiDiffHelper.post_slack_message(request)
-    UI.success("Posted the API change summary to Slack")
+    state, history_error = ApiDiffHelper.announcement_state(
+      summary, bot_token: bot_token, channel: channel, source: source, modules: modules
+    )
+    if ApiDiffHelper.already_announced?(state, fingerprint) { api_diff_comment_body_on_pr }
+      UI.message("This API change is already in the SDK API feed, not posting it again")
+      next({ fingerprint: fingerprint, notice: nil })
+    end
+
+    notice = "Could not read the SDK API feed, so this change may be announced twice: #{history_error}." if history_error
+
+    begin
+      ApiDiffHelper.post_slack_message(request)
+      UI.success("Posted the API change summary to Slack")
+      { fingerprint: fingerprint, notice: notice }
+    rescue StandardError => e
+      UI.important("Could not announce the API change: #{e.message}")
+      { fingerprint: nil, notice: "This change was not announced in the SDK API feed: #{e.message}." }
+    end
+  end
+
+  private_lane :api_diff_comment_body_on_pr do
+    pr_number = detect_pr_number
+    token = ENV["DANGER_GITHUB_API_TOKEN"]
+    next "" if pr_number.nil? || token.nil? || token.empty?
+
+    comment = find_pr_comment(
+      "RevenueCat/#{REPO_NAME}", pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER
+    )
+
+    comment ? comment["body"].to_s : ""
   end
 
   private_lane :api_gate_pr_link do
@@ -2935,6 +2983,10 @@ def update_paywall_preview_resources_commit(hash)
 end
 
 def find_pr_comment_with_marker(repo, pr_number, token, marker)
+  find_pr_comment(repo, pr_number, token, marker)&.fetch("id")
+end
+
+def find_pr_comment(repo, pr_number, token, marker)
   # A missed marker posts a duplicate instead of updating.
   page = 1
 
@@ -2947,7 +2999,7 @@ def find_pr_comment_with_marker(repo, pr_number, token, marker)
     )
     comments = resp[:json] || []
     comment = comments.find { |c| c["body"].to_s.include?(marker) }
-    return comment["id"] if comment
+    return comment if comment
     return nil if comments.count < 100
 
     page += 1

@@ -272,7 +272,9 @@ class BasePurchasesTests: TestCase {
 
     func initializePurchasesInstance(
         appUserId: String?,
-        withDelegate: Bool = true
+        withDelegate: Bool = true,
+        checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
+        dateProvider: DateProvider = DateProvider()
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -297,7 +299,9 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
-            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper
+            webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
+            checkpointResolver: checkpointResolver,
+            dateProvider: dateProvider
         )
         self.trialOrIntroPriceEligibilityChecker = MockTrialOrIntroPriceEligibilityChecker(
             systemInfo: self.systemInfo,

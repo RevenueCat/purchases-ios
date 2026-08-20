@@ -24,7 +24,7 @@ final class StringArrayOperatorsTests: XCTestCase {
         // Only one level of flattening — inner arrays remain.
         let out = try StringArrayOperators.opMerge(
             args: arr(arr(arr(.int(1)), .int(2))),
-            vars: .null
+            vars: RulesEngine.Scope(root: Value.null)
         )
         XCTAssertEqual(out, arr(arr(.int(1)), .int(2)))
     }

@@ -104,7 +104,6 @@ enum Strings {
     case paywall_custom_variable_invalid_number(value: String)
     case paywall_custom_variable_unknown_type(type: String)
     case paywall_variable_looks_like_custom(variableName: String)
-    case paywall_custom_variable_invalid_key(key: String)
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
@@ -120,6 +119,7 @@ enum Strings {
     case paywall_web_view_loaded(URL?)
     case paywall_web_view_load_failed(String)
     case paywall_web_view_http_error(statusCode: Int)
+    case web_view_data_store_removal_failed(UUID, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -373,10 +373,6 @@ extension Strings: CustomStringConvertible {
             return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
             "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
 
-        case .paywall_custom_variable_invalid_key(let key):
-            return "Custom variable key '\(key)' is invalid. " +
-            "Keys must start with a letter and contain only letters, numbers, and underscores."
-
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
         case .video_failed_to_cache(let url, let error):
@@ -402,6 +398,8 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_http_error(let statusCode):
             return "Paywalls V2 web_view failed to load and will be removed. " +
                 "The server responded with HTTP status code \(statusCode)."
+        case let .web_view_data_store_removal_failed(identifier, error):
+            return "Failed to remove web view website data store '\(identifier)': \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"

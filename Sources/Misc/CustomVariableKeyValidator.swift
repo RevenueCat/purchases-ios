@@ -16,13 +16,13 @@ import Foundation
 
 private enum CustomVariableKeyValidatorStrings: LogMessage {
 
-    case invalidKey(String)
+    case invalidKey(String, maxLength: Int)
 
     var description: String {
         switch self {
-        case .invalidKey(let key):
+        case let .invalidKey(key, maxLength):
             return "Custom variable key '\(key)' is invalid and will be ignored. " +
-                "Keys must start with a letter and contain only letters, numbers, and underscores."
+                "Keys must be 1–\(maxLength) characters and contain only ASCII letters, numbers, and underscores."
         }
     }
 
@@ -34,19 +34,34 @@ private enum CustomVariableKeyValidatorStrings: LogMessage {
 @_spi(Internal)
 public struct CustomVariableKeyValidator {
 
+    private static let maxLength = 255
+
     private init() {}
 
     /// Returns whether a key can be addressed using a `custom.<key>` path.
     public static func isValidKey(_ key: String) -> Bool {
-        guard let first = key.first, first.isLetter else { return false }
-        return key.allSatisfy { $0.isLetter || $0.isNumber || $0 == "_" }
+        guard (1...Self.maxLength).contains(key.utf8.count) else { return false }
+
+        return key.utf8.allSatisfy { character in
+            switch character {
+            case UInt8(ascii: "a")...UInt8(ascii: "z"),
+                 UInt8(ascii: "A")...UInt8(ascii: "Z"),
+                 UInt8(ascii: "0")...UInt8(ascii: "9"),
+                 UInt8(ascii: "_"):
+                return true
+            default:
+                return false
+            }
+        }
     }
 
-    /// Drops invalid keys and logs a warning for each removed entry.
+    /// Drops invalid keys and, in debug builds, logs a warning for each removed entry.
     public static func validateAndFilter<Value>(_ variables: [String: Value]) -> [String: Value] {
         return variables.filter { key, _ in
             guard Self.isValidKey(key) else {
-                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key))
+                #if DEBUG
+                Logger.warn(CustomVariableKeyValidatorStrings.invalidKey(key, maxLength: Self.maxLength))
+                #endif
                 return false
             }
 

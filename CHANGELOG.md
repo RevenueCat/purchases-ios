@@ -1,3 +1,55 @@
+## 5.85.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): admob adapter support for reward tracking (#7344) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* fix: order queue receipt post after in-flight purchase post (#7072) via Antonio Pallares (@ajpallares)
+
+## RevenueCatUI SDK
+### Paywallsv2
+#### 🐞 Bugfixes
+* Fix font scaling setting on workflow paywalls (#7428) via Cesar de la Vega (@vegaro)
+
+### 🔄 Other Changes
+* Add rc.rootVar operator for root scope in RulesEngine (#7432) via Antonio Pallares (@ajpallares)
+* feat(checkpoints): Add the app's subscriber attributes as a rules dimension (#7443) via Rick (@rickvdl)
+* feat(checkpoints): Add date and record collection rules dimension values (#7442) via Rick (@rickvdl)
+* feat(Checkpoints): validate checkpoint identifiers (#7441) via Rick (@rickvdl)
+* Read the SDK API feed channel from the CI context (#7446) via Álvaro Brey (@AlvaroBrey)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `7fbbe66` to `7dd9ab9` (#7449) via dependabot[bot] (@dependabot[bot])
+* Add Scope plumbing and custom operator extension point (#7433) via Antonio Pallares (@ajpallares)
+* Announce a public API change in the SDK API feed once per PR (#7431) via Álvaro Brey (@AlvaroBrey)
+
+## 5.84.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): add optional tracking metadata to pollRewardVerification (#7341) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* fix(paywalls): Resolve bundled fonts by name before downloading (#7394) via Monika Mateska (@MonikaMateska)
+* fix(paywalls): tolerate duplicate font names when registering (#7396) via Monika Mateska (@MonikaMateska)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* fix(paywalls): don't leave a hidden package selected on paywalls with tabs (#7404) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Evaluate checkpoint audiences 2/2 (#7426) via Facundo Menzella (@facumenzella)
+* Label the platform and inline declarations in the API feed message (#7425) via Álvaro Brey (@AlvaroBrey)
+* Unify custom variable validation across paywall entry points (#7406) via Rick (@rickvdl)
+* feat(checkpoints): expose CheckpointParams custom variables as paywall custom variables (#7403) via Rick (@rickvdl)
+* Chore: Convert to Set to Array on WebBunbleEventBus (#7430) via Jacob Rakidzich (@JZDesign)
+* Evaluate checkpoint audiences 1/2 (#7414) via Facundo Menzella (@facumenzella)
+* feat(checkpoints): Support headless offering checkpoints (#7405) via Facundo Menzella (@facumenzella)
+* feat(ads): add AdRewardGranted ad tracking event (#7335) via Peter Porfy (@peterporfy)
+* feat(checkpoints): Integrate Checkpoint audience rules (#7401) via Rick (@rickvdl)
+* refactor(checkpoints): Reuse CustomVariableValue for checkpoint parameters (#7400) via Rick (@rickvdl)
+* Fix tvOS paywall cache warming test compilation (#7416) via Rick (@rickvdl)
+* Remove duplicate Slack failure notifications (#7413) via Cesar de la Vega (@vegaro)
+* IAM Login, Part 1 (#7398) via Dave DeLong (@davedelong)
+* feat(checkpoints): add store dimensions for local rule evaluation (#7399) via Rick (@rickvdl)
+* feat(checkpoints): support custom variables in local rules (#7393) via Rick (@rickvdl)
+* feat(checkpoints): add device dimensions for local rule evaluation (#7391) via Rick (@rickvdl)
+
 ## 5.83.2
 ## RevenueCat SDK
 ### 🐞 Bugfixes
