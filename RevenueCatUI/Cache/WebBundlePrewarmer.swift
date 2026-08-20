@@ -29,10 +29,13 @@ final class WebBundlePrewarmer {
     private let maxConcurrentLoads: Int
     private let load: @MainActor @Sendable (URL) async -> Void
 
-    init(maxConcurrentLoads: Int = defaultMaxConcurrentLoads) {
+    init(
+        maxConcurrentLoads: Int = defaultMaxConcurrentLoads,
+        identifierStore: WebViewDataStoreIdentifierStore = .init()
+    ) {
         self.maxConcurrentLoads = maxConcurrentLoads
         self.load = { url in
-            await Self.loadURL(url)
+            await Self.loadURL(url, storeID: identifierStore.identifier())
         }
     }
 
@@ -83,10 +86,10 @@ private extension WebBundlePrewarmer {
     static let loadTimeout: TimeInterval = 15
 
     @MainActor
-    static func loadURL(_ url: URL) async {
+    static func loadURL(_ url: URL, storeID: UUID) async {
         #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
         if #available(iOS 17.0, macOS 14.0, *) {
-            await self.loadUsingWKWebView(url)
+            await self.loadUsingWKWebView(url, storeID: storeID)
         }
         #endif
     }
@@ -94,10 +97,9 @@ private extension WebBundlePrewarmer {
     #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
     @available(iOS 17.0, macOS 14.0, *)
     @MainActor
-    static func loadUsingWKWebView(_ url: URL) async {
+    static func loadUsingWKWebView(_ url: URL, storeID: UUID) async {
         let configuration = WKWebViewConfiguration()
-        // Update to use the store by UUID from other PR
-        configuration.websiteDataStore = .nonPersistent()
+        configuration.setPersistentStoreIfAble(withID: storeID)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
         let delegate = NavigationCompletion()
@@ -168,3 +170,17 @@ private extension WebBundlePrewarmer {
     #endif
 
 }
+
+#if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+extension WKWebViewConfiguration {
+    func setPersistentStoreIfAble(withID id: UUID) {
+        #if compiler(>=5.9)
+        if #available(iOS 17.0, macOS 14.0, *) {
+            self.websiteDataStore = .init(forIdentifier: id)
+            return
+        }
+        #endif
+        self.websiteDataStore = .nonPersistent()
+    }
+}
+#endif
