@@ -133,15 +133,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     /// config is on, those trees are empty and ``WorkflowManager/publishWebBundleURLs(offerings:)``
     /// is the real list. Video warming is still future work (FUN-2274).
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
-        guard !self.hasLoadedPaywallAssets else { return }
-        self.hasLoadedPaywallAssets = true
-
-        let cacheAssets = offerings.allPaywallV2CacheAssets
-
         await self.webBundleURLBatcher.publish(
             offerings: offerings,
             workflowsByOfferingId: [:]
         )
+
+        guard !self.hasLoadedPaywallAssets else { return }
+        self.hasLoadedPaywallAssets = true
+
+        let cacheAssets = offerings.allPaywallV2CacheAssets
 
         let imageSources: Set<URLWithValidation>
         #if !os(tvOS)

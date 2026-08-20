@@ -457,7 +457,7 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
-    func testOfferingsAssetPrewarmingDownloadsImagesOnlyOnce() async throws {
+    func testOfferingsAssetPrewarmingPublishesEveryTimeButDownloadsImagesOnlyOnce() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
@@ -481,9 +481,25 @@ final class PaywallCacheWarmingTests: TestCase {
             webCheckoutUrl: nil
         )
         let offerings = try Self.createOfferings([offering])
+        let refreshedData = Self.paywallComponentsData(components: [
+            .image(.init(source: Self.cacheWarmingImage("refreshed-offering-image"))),
+            .webView(.init(
+                id: "refreshed-webview",
+                protocolVersion: 1,
+                url: "https://example.com/refreshed-cache"
+            ))
+        ])
+        let refreshedOffering = Offering(
+            identifier: Self.offeringIdentifier,
+            serverDescription: "Refreshed",
+            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: refreshedData),
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let refreshedOfferings = try Self.createOfferings([refreshedOffering])
 
         await cache.warmUpPaywallAssetsCache(offerings: offerings)
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.warmUpPaywallAssetsCache(offerings: refreshedOfferings)
 
         let requests = await fileRepository.requests
         XCTAssertEqual(requests.count, 1)
@@ -494,8 +510,8 @@ final class PaywallCacheWarmingTests: TestCase {
             data.allCacheAssets.webBundles,
             [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
         )
-        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
-        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === offerings
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
+        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === refreshedOfferings
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
