@@ -2030,7 +2030,7 @@ extension RevenueCat.Attribution : @unchecked Swift.Sendable {
     @objc public init(product: RevenueCat.StoreProduct)
     @objc public func with(promotionalOffer: RevenueCat.PromotionalOffer) -> Self
     @objc public func with(quantity: Swift.Int) -> Self
-    @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
     @objc public func with(confirmInScene: UIKit.UIScene) -> Self
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     @objc public func with(winBackOffer: RevenueCat.WinBackOffer) -> Self
