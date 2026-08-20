@@ -129,6 +129,7 @@ private extension WebBundlePrewarmer {
     }
 
     @MainActor
+    @available(iOS 17.0, macOS 14.0, *)
     final class NavigationCompletion: NSObject, WKNavigationDelegate {
 
         private var continuation: CheckedContinuation<Void, Never>?
@@ -159,13 +160,13 @@ private extension WebBundlePrewarmer {
         }
 
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+            guard !self.isFinished else { return }
             Logger.debug(Strings.paywall_web_view_loaded(webView.url))
             self.finish()
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            Logger.debug(Strings.paywall_web_view_load_failed(error.localizedDescription))
-            self.finish()
+            self.finish(withError: error.localizedDescription)
         }
 
         func webView(
@@ -173,7 +174,30 @@ private extension WebBundlePrewarmer {
             didFailProvisionalNavigation navigation: WKNavigation!,
             withError error: Error
         ) {
-            Logger.debug(Strings.paywall_web_view_load_failed(error.localizedDescription))
+            self.finish(withError: error.localizedDescription)
+        }
+
+        func webView(
+            _ webView: WKWebView,
+            decidePolicyFor navigationResponse: WKNavigationResponse,
+            decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
+        ) {
+            if let response = navigationResponse.response as? HTTPURLResponse,
+               WebViewNavigationPolicy.isTerminalHTTPError(
+                statusCode: response.statusCode,
+                isMainFrame: navigationResponse.isForMainFrame
+               ) {
+                self.finish(withError: "HTTP status code \(response.statusCode)")
+                decisionHandler(.cancel)
+                return
+            }
+
+            decisionHandler(.allow)
+        }
+
+        private func finish(withError error: String) {
+            guard !self.isFinished else { return }
+            Logger.debug(Strings.paywall_web_view_load_failed(error))
             self.finish()
         }
 
