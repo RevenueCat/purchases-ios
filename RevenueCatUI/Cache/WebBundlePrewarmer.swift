@@ -61,10 +61,11 @@ final class WebBundlePrewarmer {
             var nextIndex = 0
 
             func startNext() {
-                guard nextIndex < urls.count else { return }
+                guard !Task.isCancelled, nextIndex < urls.count else { return }
                 let url = urls[nextIndex].url
                 nextIndex += 1
                 group.addTask { [load] in
+                    guard !Task.isCancelled else { return }
                     await load(url)
                 }
             }
@@ -87,6 +88,8 @@ private extension WebBundlePrewarmer {
 
     @MainActor
     static func loadURL(_ url: URL, storeID: UUID) async {
+        guard !Task.isCancelled else { return }
+
         #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
         if #available(iOS 17.0, macOS 14.0, *) {
             await self.loadUsingWKWebView(url, storeID: storeID)

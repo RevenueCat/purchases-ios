@@ -98,6 +98,36 @@ final class WebBundlePrewarmerTests: TestCase {
         await task.value
     }
 
+    func testCancellationDoesNotStartRemainingLoads() async throws {
+        let probe = LoadProbe(gated: true)
+        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 2) { url in
+            await probe.load(url)
+        }
+        let urls = Self.urls(
+            "https://example.com/a",
+            "https://example.com/b",
+            "https://example.com/c",
+            "https://example.com/d"
+        )
+
+        let task = Task {
+            await prewarmer.prewarm(urls)
+        }
+
+        try await asyncWait(description: "first two loads started") {
+            await probe.startedCount == 2
+        }
+
+        task.cancel()
+        await probe.releaseAll()
+        await task.value
+
+        let startedCount = await probe.startedCount
+        let loaded = await probe.loaded
+        XCTAssertEqual(startedCount, 2)
+        XCTAssertEqual(Set(loaded), Set(urls.prefix(2).map(\.url)))
+    }
+
     func testALoadThatReturnsEarlyDoesNotCancelTheRestOfTheBatch() async {
         let probe = LoadProbe()
         let early = Self.url("https://example.com/a")
