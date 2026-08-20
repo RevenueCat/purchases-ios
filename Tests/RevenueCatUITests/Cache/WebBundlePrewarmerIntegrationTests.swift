@@ -31,7 +31,7 @@ final class WebBundlePrewarmerIntegrationTests: TestCase {
 
         await prewarmer.prewarm([
             .init(url: Self.aboutBlank, checksum: nil)
-        ])
+        ], storeID: UUID())
 
         XCTAssertLessThan(Date().timeIntervalSince(start), Self.completionLimit)
         XCTAssertEqual(self.loadLogCount, 1, self.loadLogDescription)
@@ -46,7 +46,7 @@ final class WebBundlePrewarmerIntegrationTests: TestCase {
             .init(url: Self.dataURL("one"), checksum: nil),
             .init(url: Self.dataURL("two"), checksum: nil),
             .init(url: Self.dataURL("three"), checksum: nil)
-        ])
+        ], storeID: UUID())
 
         XCTAssertLessThan(Date().timeIntervalSince(start), Self.completionLimit)
         XCTAssertEqual(self.loadLogCount, 4, self.loadLogDescription)

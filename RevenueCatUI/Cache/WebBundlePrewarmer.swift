@@ -27,15 +27,12 @@ final class WebBundlePrewarmer {
     static let defaultMaxConcurrentLoads = 3
 
     private let maxConcurrentLoads: Int
-    private let load: @MainActor @Sendable (URL) async -> Void
+    private let load: @MainActor @Sendable (URL, UUID) async -> Void
 
-    init(
-        maxConcurrentLoads: Int = defaultMaxConcurrentLoads,
-        identifierStore: WebViewDataStoreIdentifierStore = .init()
-    ) {
+    init(maxConcurrentLoads: Int = defaultMaxConcurrentLoads) {
         self.maxConcurrentLoads = maxConcurrentLoads
-        self.load = { url in
-            await Self.loadURL(url, storeID: identifierStore.identifier())
+        self.load = { url, storeID in
+            await Self.loadURL(url, storeID: storeID)
         }
     }
 
@@ -43,16 +40,16 @@ final class WebBundlePrewarmer {
     // Test initializer — creating WKWebView in XCTest crashes the suite.
     init(
         maxConcurrentLoads: Int = defaultMaxConcurrentLoads,
-        load: @escaping @MainActor @Sendable (URL) async -> Void
+        load: @escaping @MainActor @Sendable (URL, UUID) async -> Void
     ) {
         self.maxConcurrentLoads = maxConcurrentLoads
         self.load = load
     }
     #endif
 
-    /// Loads every URL in `urls` with at most ``maxConcurrentLoads`` in flight. One failure does
-    /// not cancel the rest of the batch.
-    func prewarm(_ urls: [URLWithValidation]) async {
+    /// Loads every URL in `urls` into the identified store with at most ``maxConcurrentLoads`` in
+    /// flight. One failure does not cancel the rest of the batch.
+    func prewarm(_ urls: [URLWithValidation], storeID: UUID) async {
         guard !urls.isEmpty else { return }
 
         let concurrency = min(max(self.maxConcurrentLoads, 1), urls.count)
@@ -66,7 +63,7 @@ final class WebBundlePrewarmer {
                 nextIndex += 1
                 group.addTask { [load] in
                     guard !Task.isCancelled else { return }
-                    await load(url)
+                    await load(url, storeID)
                 }
             }
 

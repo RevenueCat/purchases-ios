@@ -20,11 +20,11 @@ final class WebBundlePrewarmerTests: TestCase {
 
     func testEmptyArrayDoesNotCallLoad() async {
         let probe = LoadProbe()
-        let prewarmer = WebBundlePrewarmer { url in
+        let prewarmer = WebBundlePrewarmer { url, _ in
             await probe.load(url)
         }
 
-        await prewarmer.prewarm([])
+        await prewarmer.prewarm([], storeID: UUID())
 
         let loaded = await probe.loaded
         XCTAssertTrue(loaded.isEmpty)
@@ -32,7 +32,7 @@ final class WebBundlePrewarmerTests: TestCase {
 
     func testLoadsEveryURLInTheBatch() async {
         let probe = LoadProbe()
-        let prewarmer = WebBundlePrewarmer { url in
+        let prewarmer = WebBundlePrewarmer { url, _ in
             await probe.load(url)
         }
         let urls = Self.urls(
@@ -40,7 +40,7 @@ final class WebBundlePrewarmerTests: TestCase {
             "https://example.com/c", "https://example.com/d"
         )
 
-        await prewarmer.prewarm(urls)
+        await prewarmer.prewarm(urls, storeID: UUID())
 
         let loaded = await probe.loaded
         XCTAssertEqual(Set(loaded), Set(urls.map(\.url)))
@@ -49,7 +49,7 @@ final class WebBundlePrewarmerTests: TestCase {
 
     func testDuplicateURLsAreLoadedForEachOccurrence() async {
         let probe = LoadProbe()
-        let prewarmer = WebBundlePrewarmer { url in
+        let prewarmer = WebBundlePrewarmer { url, _ in
             await probe.load(url)
         }
         let url = Self.url("https://example.com/a")
@@ -57,15 +57,29 @@ final class WebBundlePrewarmerTests: TestCase {
         await prewarmer.prewarm([
             .init(url: url, checksum: nil),
             .init(url: url, checksum: nil)
-        ])
+        ], storeID: UUID())
 
         let loaded = await probe.loaded
         XCTAssertEqual(loaded, [url, url])
     }
 
+    func testUsesProvidedStoreIdentifierForEveryLoad() async {
+        let probe = IdentifierProbe()
+        let prewarmer = WebBundlePrewarmer { _, storeID in
+            await probe.record(storeID)
+        }
+        let storeID = UUID()
+        let urls = Self.urls("https://example.com/a", "https://example.com/b")
+
+        await prewarmer.prewarm(urls, storeID: storeID)
+
+        let identifiers = await probe.identifiers
+        XCTAssertEqual(identifiers, [storeID, storeID])
+    }
+
     func testDoesNotExceedMaxConcurrentLoads() async throws {
         let probe = LoadProbe(gated: true)
-        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 2) { url in
+        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 2) { url, _ in
             await probe.load(url)
         }
         let urls = Self.urls(
@@ -75,7 +89,7 @@ final class WebBundlePrewarmerTests: TestCase {
         )
 
         let task = Task {
-            await prewarmer.prewarm(urls)
+            await prewarmer.prewarm(urls, storeID: UUID())
         }
 
         try await asyncWait(description: "first two loads started") {
@@ -100,7 +114,7 @@ final class WebBundlePrewarmerTests: TestCase {
 
     func testCancellationDoesNotStartRemainingLoads() async throws {
         let probe = LoadProbe(gated: true)
-        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 2) { url in
+        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 2) { url, _ in
             await probe.load(url)
         }
         let urls = Self.urls(
@@ -111,7 +125,7 @@ final class WebBundlePrewarmerTests: TestCase {
         )
 
         let task = Task {
-            await prewarmer.prewarm(urls)
+            await prewarmer.prewarm(urls, storeID: UUID())
         }
 
         try await asyncWait(description: "first two loads started") {
@@ -131,13 +145,13 @@ final class WebBundlePrewarmerTests: TestCase {
     func testALoadThatReturnsEarlyDoesNotCancelTheRestOfTheBatch() async {
         let probe = LoadProbe()
         let early = Self.url("https://example.com/a")
-        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 1) { url in
+        let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 1) { url, _ in
             if url == early { return }
             await probe.load(url)
         }
         let urls = Self.urls("https://example.com/a", "https://example.com/b")
 
-        await prewarmer.prewarm(urls)
+        await prewarmer.prewarm(urls, storeID: UUID())
 
         let loaded = await probe.loaded
         XCTAssertEqual(loaded, [Self.url("https://example.com/b")])
@@ -156,6 +170,17 @@ private extension WebBundlePrewarmerTests {
     static func url(_ string: String) -> URL {
         // swiftlint:disable:next force_unwrapping
         return URL(string: string)!
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private actor IdentifierProbe {
+
+    private(set) var identifiers: [UUID] = []
+
+    func record(_ identifier: UUID) {
+        self.identifiers.append(identifier)
     }
 
 }
