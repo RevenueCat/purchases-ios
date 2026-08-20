@@ -279,6 +279,21 @@ class BackendLoginWithAttributesTests: BaseBackendLoginTests {
         expect(body.contentForSignature.map(\.key)) == ["app_user_id", "new_app_user_id"]
     }
 
+    func testLoginStillCachesForTheSameAttributes() {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        for _ in 0..<2 {
+            self.identity.logIn(currentAppUserID: "old id",
+                                newAppUserID: "new id",
+                                attributes: ["plan": Self.attribute],
+                                previousUnsyncedAttributes: ["channel": Self.previousAttribute]) { _ in }
+        }
+
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+    }
+
     func testLoginDoesNotCacheForDifferentAttributes() {
         _ = self.mockLoginRequest(appUserID: "old id",
                                   statusCode: .success,
