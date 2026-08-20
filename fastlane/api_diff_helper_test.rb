@@ -1401,6 +1401,193 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  # --- Announcing a change once ---
+
+  def history_getter(texts)
+    lambda do |_url, _headers|
+      SlackResponse.new("200", { ok: true, messages: texts.map { |text| { "text" => text } } }.to_json)
+    end
+  end
+
+  def test_slack_history_request_reads_the_channel_with_the_bot_token
+    request = ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1")
+
+    assert_includes request[:url], "https://slack.com/api/conversations.history?channel=C1"
+    assert_equal "Bearer xoxb-1", request[:headers]["Authorization"]
+    assert_equal ["new", "old"], ApiDiffHelper.recent_slack_messages(request, getter: history_getter(["new", "old"]))
+  end
+
+  def test_recent_slack_messages_raises_when_the_token_cannot_read_the_channel
+    getter = ->(_url, _headers) { SlackResponse.new("200", '{"ok":false,"error":"missing_scope"}') }
+
+    error = assert_raises(RuntimeError) do
+      ApiDiffHelper.recent_slack_messages(ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1"), getter: getter)
+    end
+    assert_match(/missing_scope/, error.message)
+  end
+
+  def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
+    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
+  end
+
+  def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
+    ApiDiffHelper.announcement_state(
+      message, bot_token: "xoxb-1", channel: "C1", source: source, modules: modules, getter: history_getter(texts)
+    )
+  end
+
+  def test_announcement_state_recognises_the_last_word_on_this_pull_request
+    summary = announcement("public func a()")
+
+    state, unusable = state_for(summary, [summary, announcement("public func older()")])
+
+    assert_equal :same, state
+    assert_nil unusable
+  end
+
+  def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
+    summary = announcement("public func a()")
+
+    state, _unusable = state_for(summary, [announcement("public func b()"), summary])
+
+    assert_equal :different, state
+  end
+
+  def test_announcement_state_ignores_another_modules_announcement
+    summary = announcement("public func a()")
+    other_module = announcement("public func a()", modules: ["RevenueCatUI"])
+
+    state, unusable = state_for(summary, [other_module])
+
+    assert_equal :unknown, state
+    assert_nil unusable
+  end
+
+  def test_announcement_state_ignores_another_pull_requests_announcement
+    summary = announcement("public func a()")
+
+    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|#7354>")])
+
+    assert_equal :unknown, state
+  end
+
+  # chat.postMessage takes a `#name`, conversations.history does not.
+  def test_announcement_state_needs_the_channel_id
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "xoxb-1", channel: "#feed", source: "<url|#1>", modules: ["RevenueCat"],
+      getter: ->(*) { raise "must not read" }
+    )
+
+    assert_equal :unknown, state
+    assert_match(/channel ID/, unusable)
+  end
+
+  def test_announcement_state_reports_a_missing_token
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
+    )
+
+    assert_equal :unknown, state
+    assert_match(/cannot be read/, unusable)
+  end
+
+  def test_announcement_state_reports_a_failed_read
+    state, unusable = ApiDiffHelper.announcement_state(
+      "summary", bot_token: "xoxb-1", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"],
+      getter: ->(*) { raise "slack is down" }
+    )
+
+    assert_equal :unknown, state
+    assert_equal "slack is down", unusable
+  end
+
+  def test_announcement_fingerprint_moves_with_the_summary
+    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
+    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
+    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
+
+    assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
+    refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
+  end
+
+  def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
+    refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
+    refute ApiDiffHelper.comment_needed?({}, [], "<!-- api-diff-report -->", "RevenueCat")
+  end
+
+  def test_comment_survives_a_pull_request_that_removed_its_api_change
+    body = ApiDiffHelper.merge_api_diff_comment(
+      nil, "RevenueCat", ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+    )
+
+    assert ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], body, "RevenueCat")
+    refute ApiDiffHelper.comment_needed?({ "RevenueCatUI iOS" => NO_CHANGES_OUTPUT }, [], body, "RevenueCatUI")
+  end
+
+  def test_comment_is_needed_whenever_there_is_anything_to_report
+    assert ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], nil, "RevenueCat")
+    assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
+  end
+
+  def test_announced_fingerprint_survives_a_run_with_nothing_to_announce
+    announced = ApiDiffHelper.merge_api_diff_comment(
+      nil, "RevenueCat",
+      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "abc123abc123")
+    )
+
+    assert_equal "abc123abc123", ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCat")
+    assert_nil ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCatUI")
+    assert_nil ApiDiffHelper.announced_fingerprint_in(nil, "RevenueCat")
+  end
+
+  # Another module's marker must not be mistaken for this module's.
+  def test_announced_fingerprint_is_read_from_this_modules_section
+    body = [
+      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], []),
+      ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [], announced_fingerprint: "def456def456")
+    ].join("\n")
+
+    assert_nil ApiDiffHelper.announced_fingerprint_in(body, "RevenueCat")
+    assert_equal "def456def456", ApiDiffHelper.announced_fingerprint_in(body, "RevenueCatUI")
+  end
+
+  def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
+    body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
+
+    assert ApiDiffHelper.already_announced?(:same, "def456def456") { raise "must not read" }
+    refute ApiDiffHelper.already_announced?(:different, "abc123abc123") { raise "must not read" }
+    assert ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { body }
+    refute ApiDiffHelper.already_announced?(:unknown, "def456def456") { body }
+    refute ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { nil }
+  end
+
+  def test_comment_section_carries_the_announced_fingerprint
+    section = ApiDiffHelper.api_diff_comment_section(
+      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
+    )
+
+    assert_includes section, ApiDiffHelper.announced_marker("abc123abc123")
+    assert section.rstrip.end_with?(ApiDiffHelper.api_diff_section_close("RevenueCat"))
+  end
+
+  def test_comment_section_omits_the_marker_when_nothing_was_announced
+    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+
+    refute_includes section, "api-diff-announced"
+  end
+
+  def test_merging_a_section_replaces_a_stale_fingerprint
+    announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
+    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
+    reannounced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "bbbbbbbbbbbb")
+
+    merged = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", reannounced)
+
+    assert_includes merged, ApiDiffHelper.announced_marker("bbbbbbbbbbbb")
+    refute_includes merged, ApiDiffHelper.announced_marker("aaaaaaaaaaaa")
+  end
+
+
   # --- One comment, two jobs ---
 
   # Two jobs write this comment, one per module. Before sections existed, whichever finished
@@ -1475,7 +1662,87 @@ class ApiDiffHelperTest < Minitest::Test
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#7355>", new_declarations: ["final public func apiDiffDemoPing() -> Swift.String"])
 
     assert_includes message, "1 new declaration"
-    refute_includes message, "apiDiffDemoPing", "Slack stays a ping; the detail belongs in the PR comment"
+    assert_includes message, "apiDiffDemoPing"
+  end
+
+  def test_comment_body_carries_the_slack_notice
+    body = ApiDiffHelper.api_diff_comment_body(
+      { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
+    )
+
+    assert_includes body, ":warning: #{ApiDiffHelper::SLACK_UNREACHABLE_NOTICE}"
+  end
+
+  def test_comment_body_omits_the_notice_when_slack_is_reachable
+    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+
+    refute_includes body, ":warning: No Slack credentials"
+  end
+
+  def test_slack_summary_labels_the_platform_and_modules
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
+
+    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+  end
+
+  def test_changed_modules_names_only_the_schemes_that_changed
+    reports = {
+      "RevenueCat iOS" => NO_CHANGES_OUTPUT,
+      "RevenueCatUI iOS" => SINGLE_ADDITION_OUTPUT,
+      "RevenueCatUI macOS" => SINGLE_ADDITION_OUTPUT
+    }
+
+    assert_equal ["RevenueCatUI"], ApiDiffHelper.changed_modules(reports)
+  end
+
+  # A removal-only PR used to show a break count and no declarations at all.
+  def test_slack_summary_lists_breaking_declarations
+    breaks = [
+      { reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" },
+      { reason: :modified, owner: nil, declaration: "public func changed() -> Swift.Int" }
+    ]
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42>")
+
+    assert_includes message, "- removed in CustomerInfo: public func gone()"
+    assert_includes message, "- signature changed: public func changed() -> Swift.Int"
+  end
+
+  # An added enum case is reported by both breaking_changes and added_declarations.
+  def test_slack_summary_lists_a_breaking_addition_once
+    breaks = [{ reason: :enum_case, owner: "PaywallEvent", declaration: "case newCase" }]
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "", new_declarations: ["case newCase", "public func added()"])
+
+    assert_includes message, "- case added to an existing enum in PaywallEvent: case newCase"
+    refute_includes message, "+ case newCase"
+    assert_includes message, "+ public func added()"
+  end
+
+  def test_slack_summary_marks_additions_with_a_plus
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: ["public func added()"])
+
+    assert_includes message, "+ public func added()"
+  end
+
+  def test_slack_summary_caps_the_declaration_block
+    declarations = (1..15).map { |index| "public func f#{index}()" }
+
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: declarations)
+
+    assert_includes message, "public func f10()"
+    refute_includes message, "public func f11()"
+    assert_includes message, "…and 5 more"
+  end
+
+  def test_slack_summary_truncates_long_declarations
+    long = "public func f(#{'a' * 400})"
+
+    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: [long])
+
+    assert_includes message, "…"
+    refute_includes message, long
+    assert message.lines.all? { |line| line.chomp.length <= ApiDiffHelper::SLACK_DECLARATION_WIDTH }
   end
 
 
@@ -1503,6 +1770,15 @@ class ApiDiffHelperTest < Minitest::Test
     refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
     refute_match(/Net::HTTP/, slack_lane, "the HTTP post belongs in ApiDiffHelper")
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
+  end
+
+  def test_the_announcement_happens_before_the_comment_is_written
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
+
+    refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
+    assert_operator publishing.index("upsert_api_diff_comment"), :>, publishing.index("notify_api_changes_on_slack"),
+                    "the comment must be written after the announcement it records"
   end
 
 

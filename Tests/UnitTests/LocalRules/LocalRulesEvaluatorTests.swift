@@ -138,6 +138,62 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
+    func recursivelyOmitsInvalidProviderDimensionNames() async throws {
+        let provider = TestDimensionProvider(
+            namespace: .device,
+            snapshots: [[
+                "": .string("empty"),
+                " \n": .string("blank"),
+                "user.tier": .string("gold"),
+                "platform": .string("ios"),
+                "profile": .object([
+                    "": .string("empty"),
+                    "\t": .string("blank"),
+                    "account.tier": .string("gold"),
+                    "name": .string("Rick"),
+                    "preferences": .object([
+                        "invalid.key": .bool(false),
+                        "notificationsEnabled": .bool(true)
+                    ])
+                ]),
+                "invalidObject": .object([
+                    "invalid.key": .string("value")
+                ]),
+                "events": .objectList([
+                    [
+                        "": .string("empty"),
+                        " ": .string("blank"),
+                        "event.name": .string("purchase"),
+                        "name": .string("purchase")
+                    ],
+                    [
+                        "invalid.key": .string("value")
+                    ]
+                ])
+            ]]
+        )
+
+        let snapshot = try await DimensionResolver(dimensionProviders: [provider]).snapshot()
+
+        guard case .object(let deviceValues) = snapshot.values["device"] else {
+            Issue.record("Expected device dimensions")
+            return
+        }
+        #expect(deviceValues == [
+            "platform": .string("ios"),
+            "profile": .object([
+                "name": .string("Rick"),
+                "preferences": .object([
+                    "notificationsEnabled": .bool(true)
+                ])
+            ]),
+            "events": .array([
+                .object(["name": .string("purchase")])
+            ])
+        ])
+    }
+
+    @Test
     func customVariablesAreAvailableInCustomNamespace() async throws {
         let evaluator = Self.evaluator(dimensionProviders: [])
 
@@ -309,6 +365,107 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
+    func resolvedPredicatesAreLookedUpOnlyUntilARuleMatches() async throws {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let resolved = Atomic<[String]>([])
+
+        let rule = try await evaluator.match(in: ["first", "second", "third"]) { rule in
+            resolved.modify { $0.append(rule) }
+            return rule == "first" ? "false" : "true"
+        }
+
+        #expect(rule == "second")
+        #expect(resolved.value == ["first", "second"])
+    }
+
+    @Test
+    func predicateLookupFailureEndsTheCallInsteadOfFallingThrough() async {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let resolved = Atomic<[String]>([])
+
+        do {
+            _ = try await evaluator.match(in: ["unreadable", "would-match"]) { rule in
+                resolved.modify { $0.append(rule) }
+                guard rule != "unreadable" else { throw TestPredicateLookupError.failed }
+                return "true"
+            }
+            Issue.record("Expected the lookup failure to be thrown")
+        } catch is TestPredicateLookupError {
+            // A rule whose predicate can't be obtained leaves its outcome unknown, so the rules after it
+            // must not be treated as the winner.
+            #expect(resolved.value == ["unreadable"])
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func resolvedPredicatesShareTheSingleSnapshot() async throws {
+        let provider = TestDimensionProvider(
+            namespace: .device,
+            snapshots: [["launchCount": .int(1)], ["launchCount": .int(2)]]
+        )
+        let evaluator = Self.evaluator(dimensionProviders: [provider])
+
+        let rule = try await evaluator.match(in: ["a", "b"]) { _ in
+            #"{"==":[{"var":"device.launchCount"},1]}"#
+        }
+
+        #expect(rule == "a")
+        #expect(await provider.invocationCount == 1)
+    }
+
+    @Test
+    func emptyRulesNeverLookUpAPredicate() async throws {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let resolved = Atomic<Int>(0)
+
+        let rule = try await evaluator.match(in: [String]()) { _ in
+            resolved.modify { $0 += 1 }
+            return "true"
+        }
+
+        #expect(rule == nil)
+        #expect(resolved.value == 0)
+    }
+
+    @Test
+    func cancellationStopsTheRuleWalk() async {
+        let evaluator = Self.evaluator(dimensionProviders: [])
+        let resolved = Atomic<[String]>([])
+        let lookupStarted = Atomic<Bool>(false)
+        let cancelled = Atomic<Bool>(false)
+
+        let task = Task {
+            try await evaluator.match(in: ["first", "second"]) { rule in
+                resolved.modify { $0.append(rule) }
+                lookupStarted.value = true
+                // Stands in for an audience read that suspends while the task is cancelled. Nothing on this
+                // path throws on its own, so the walk only stops if the evaluator checks cancellation itself.
+                while !cancelled.value {
+                    await Task.yield()
+                }
+                return "false"
+            }
+        }
+
+        while !lookupStarted.value {
+            await Task.yield()
+        }
+        task.cancel()
+        cancelled.value = true
+
+        do {
+            _ = try await task.value
+            Issue.record("Expected cancellation to be thrown")
+        } catch is CancellationError {
+            #expect(resolved.value == ["first"])
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
     func cancellationIsThrownByMatch() async {
         let evaluator = Self.evaluator(dimensionProviders: [
             CancellingDimensionProvider(namespace: .session)
@@ -344,6 +501,10 @@ private struct TestLocalRule<ID: Sendable>: LocalRule {
 
     let id: ID
     let predicate: String
+}
+
+private enum TestPredicateLookupError: Error {
+    case failed
 }
 
 private enum TestRuleID: Sendable {

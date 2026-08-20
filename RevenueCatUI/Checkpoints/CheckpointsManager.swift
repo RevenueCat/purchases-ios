@@ -79,10 +79,24 @@ final class CheckpointsManager {
         let checkpoint = CheckpointInfo(identifier: identifier, params: params)
         self.listener?.onCheckpointHit(checkpoint)
 
+        guard CheckpointIdentifierValidator.isValid(identifier) else {
+            Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
+            let result = CheckpointNoActionResult(
+                checkpoint: checkpoint,
+                reason: .invalidCheckpointIdentifier
+            )
+            self.listener?.onCheckpointCompleted(checkpoint, result: result)
+            return result
+        }
+
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
-            let outcome = try await self.executor.execute(workflow)
+            let presentation = CheckpointPresentation(
+                workflow: workflow,
+                customVariables: params.customVariables
+            )
+            let outcome = try await self.executor.execute(presentation)
             result = CheckpointPaywallPresentedResult(
                 checkpoint: checkpoint,
                 paywallOutcome: outcome

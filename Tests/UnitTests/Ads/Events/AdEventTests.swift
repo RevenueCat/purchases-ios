@@ -264,7 +264,7 @@ class AdEventTests: TestCase {
 
     // MARK: - AdRewardEarnedUnverified Equality
 
-    func testAdRewardEarnedUnverifiedEqualityWithDifferentRewardAmount() {
+    func testAdRewardEarnedUnverifiedEqualityWithDifferentRewardVerificationEnabled() {
         let event1 = AdRewardEarnedUnverified(
             networkName: "AdMob",
             mediatorName: .adMob,
@@ -272,9 +272,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         let event2 = AdRewardEarnedUnverified(
@@ -284,9 +282,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 20
+            rewardVerificationEnabled: false
         )
 
         expect(event1) != event2
@@ -300,9 +296,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         let event2 = AdRewardEarnedUnverified(
@@ -312,30 +306,10 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         expect(event1) == event2
-    }
-
-    func testAdRewardEarnedUnverifiedAllowsNilRewardFields() {
-        let event = AdRewardEarnedUnverified(
-            networkName: nil,
-            mediatorName: .adMob,
-            adFormat: .rewardedInterstitial,
-            placement: nil,
-            adUnitId: "ca-app-pub-123",
-            impressionId: "",
-            rewardVerificationEnabled: false,
-            rewardItem: nil,
-            rewardAmount: nil as Int?
-        )
-
-        expect(event.rewardItem).to(beNil())
-        expect(event.rewardAmount).to(beNil())
-        expect(event.rewardVerificationEnabled) == false
     }
 
     // MARK: - AdRewardVerified Equality
@@ -456,9 +430,7 @@ class AdEventTests: TestCase {
             placement: "home_screen",
             adUnitId: "ca-app-pub-123",
             impressionId: "impression-123",
-            rewardVerificationEnabled: true,
-            rewardItem: "coins",
-            rewardAmount: 10
+            rewardVerificationEnabled: true
         )
 
         let data = try JSONEncoder.default.encode(original)

@@ -163,13 +163,15 @@ internal extension RewardVerification.CapableAd {
     /// reward-verification result through the one-shot guard on the main actor.
     ///
     /// - Parameter pollRewardVerification: For unit tests; pass `nil` in production to use
-    ///   `Purchases.shared.pollRewardVerification(clientTransactionID:)`. Virtual-currency cache
-    ///   invalidation happens inside the core call.
+    ///   `Purchases.shared.pollRewardVerification(clientTransactionID:trackingMetadata:captureMethod:)`.
+    ///   Virtual-currency cache invalidation happens inside the core call.
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?,
-        pollRewardVerification: (@Sendable (String) async -> RewardVerificationResult)? = nil
+        pollRewardVerification: (
+            @Sendable (String, RewardedAdTrackingMetadata?) async -> RewardVerificationResult
+        )? = nil
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
@@ -193,14 +195,24 @@ internal extension RewardVerification.CapableAd {
                 return
             }
 
-            let poll = pollRewardVerification ?? { clientTransactionID in
-                await Purchases.shared.pollRewardVerification(clientTransactionID: clientTransactionID)
+            let trackingMetadata = Tracking.Adapter.shared.fullScreenDelegateStore
+                .retrieve(for: self)?
+                .rewardTrackingMetadata()
+
+            let poll = pollRewardVerification ?? { clientTransactionID, trackingMetadata in
+                await Purchases.shared.pollRewardVerification(
+                    clientTransactionID: clientTransactionID,
+                    trackingMetadata: trackingMetadata,
+                    captureMethod: .adapter
+                )
             }
 
             RewardVerification.Dispatcher.dispatch(
                 clientTransactionID: state.clientTransactionID,
                 state: state,
-                pollRewardVerification: poll,
+                pollRewardVerification: { clientTransactionID in
+                    await poll(clientTransactionID, trackingMetadata)
+                },
                 resultHandler: { result in rewardVerificationCompleted(result) }
             )
         }

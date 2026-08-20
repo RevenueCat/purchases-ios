@@ -656,13 +656,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             let localRulesEvaluator = LocalRulesEvaluator(
                 dimensionProviders: [
                     DeviceDimensionProvider(),
-                    StoreDimensionProvider()
+                    StoreDimensionProvider(),
+                    SubscriberAttributesDimensionProvider(
+                        deviceCache: deviceCache,
+                        currentUserProvider: identityManager
+                    )
                 ]
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
-                workflowManager: workflowManager,
+                audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
                 localRulesEvaluator: localRulesEvaluator,
+                workflowManager: workflowManager,
                 offeringsProvider: {
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(
@@ -1793,28 +1798,128 @@ extension Purchases {
     /// Polls the backend until reward verification completes or the attempt budget is exhausted.
     ///
     /// Call when your ad network's reward callback fires, passing the `clientTransactionID` returned by
-    /// ``generateRewardVerificationToken(impressionId:)``.
+    /// ``generateRewardVerificationToken(impressionId:)``. Pass `trackingMetadata` to have the SDK
+    /// automatically track the reward events as verification progresses
+    ///
     /// Refreshes local reward state before returning verified rewards.
     @_spi(Experimental) public func pollRewardVerification(
-        clientTransactionID: String
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
         await self.pollRewardVerification(
             clientTransactionID: clientTransactionID,
+            trackingMetadata: trackingMetadata,
+            captureMethod: .manual,
+            poller: RewardVerification.Poller.makeDefault()
+        )
+    }
+
+    /// Adapter entry point: identical to the public overload, but lets an official RevenueCat
+    /// ad-network adapter stamp `captureMethod: .adapter` on the tracked events instead of `.manual`.
+    @_spi(Internal) public func pollRewardVerification(
+        clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) async -> RewardVerificationResult {
+        await self.pollRewardVerification(
+            clientTransactionID: clientTransactionID,
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod,
             poller: RewardVerification.Poller.makeDefault()
         )
     }
 
     internal func pollRewardVerification(
         clientTransactionID: String,
+        trackingMetadata: RewardedAdTrackingMetadata? = nil,
+        captureMethod: AdEventCaptureMethod = .manual,
         poller: RewardVerification.Poller
     ) async -> RewardVerificationResult {
+        self.trackRewardEarnedUnverified(
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod
+        )
+
         let outcome = await poller.run(clientTransactionID: clientTransactionID)
+        self.trackRewardOutcome(
+            outcome,
+            trackingMetadata: trackingMetadata,
+            captureMethod: captureMethod
+        )
+
         let result = await self.rewardVerificationResult(for: outcome, clientTransactionID: clientTransactionID)
         Logger.info(AdsStrings.reward_verification_completed(
             result: result,
             transactionID: clientTransactionID
         ))
         return result
+    }
+
+    /// Tracks the "earned, not yet verified" moment.
+    private func trackRewardEarnedUnverified(
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) {
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+        let data = AdRewardEarnedUnverified(
+            networkName: trackingMetadata.networkName,
+            mediatorName: trackingMetadata.mediatorName,
+            adFormat: trackingMetadata.adFormat,
+            placement: trackingMetadata.placement,
+            adUnitId: trackingMetadata.adUnitId,
+            impressionId: trackingMetadata.impressionId,
+            rewardVerificationEnabled: true
+        )
+        self.adTracker.trackAdRewardEarnedUnverified(data, captureMethod: captureMethod)
+    }
+
+    /// Tracks the terminal verification outcome: one verified/failed-to-verify event, plus one granted
+    /// event per non-empty reward.
+    private func trackRewardOutcome(
+        _ outcome: RewardVerification.Outcome,
+        trackingMetadata: RewardedAdTrackingMetadata?,
+        captureMethod: AdEventCaptureMethod
+    ) {
+        guard let trackingMetadata,
+              #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) else { return }
+
+        switch outcome {
+        case let .verified(reward, moreRewards):
+            let verified = AdRewardVerified(
+                networkName: trackingMetadata.networkName,
+                mediatorName: trackingMetadata.mediatorName,
+                adFormat: trackingMetadata.adFormat,
+                placement: trackingMetadata.placement,
+                adUnitId: trackingMetadata.adUnitId,
+                impressionId: trackingMetadata.impressionId
+            )
+            self.adTracker.trackAdRewardVerified(verified, captureMethod: captureMethod)
+
+            for grant in ([reward] + moreRewards) where grant != .noReward {
+                let granted = AdRewardGranted(
+                    networkName: trackingMetadata.networkName,
+                    mediatorName: trackingMetadata.mediatorName,
+                    adFormat: trackingMetadata.adFormat,
+                    placement: trackingMetadata.placement,
+                    adUnitId: trackingMetadata.adUnitId,
+                    impressionId: trackingMetadata.impressionId,
+                    reward: grant
+                )
+                self.adTracker.trackAdRewardGranted(granted, captureMethod: captureMethod)
+            }
+        case let .failed(reason):
+            let failed = AdRewardFailedToVerify(
+                networkName: trackingMetadata.networkName,
+                mediatorName: trackingMetadata.mediatorName,
+                adFormat: trackingMetadata.adFormat,
+                placement: trackingMetadata.placement,
+                adUnitId: trackingMetadata.adUnitId,
+                impressionId: trackingMetadata.impressionId,
+                failureReason: reason.trackingFailureReason
+            )
+            self.adTracker.trackAdRewardFailedToVerify(failed, captureMethod: captureMethod)
+        }
     }
 
     /// Applies local side effects before building the result delivered to the caller.

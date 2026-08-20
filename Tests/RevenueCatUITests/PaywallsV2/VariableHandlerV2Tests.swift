@@ -15,6 +15,7 @@
 import Nimble
 @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -1875,6 +1876,23 @@ class CustomVariablesV2Tests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class CustomVariableValueTests: TestCase {
+
+    func testEnvironmentFiltersInvalidCustomVariableKeys() {
+        var environment = EnvironmentValues()
+
+        environment.customPaywallVariables = [
+            "valid_key": "kept",
+            "invalid-key": "dropped",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]
+
+        expect(environment.customPaywallVariables).to(equal([
+            "valid_key": "kept",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]))
+    }
 
     // MARK: - stringValue Tests
 

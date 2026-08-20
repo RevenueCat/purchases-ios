@@ -17,6 +17,7 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+#if DEBUG
 private enum CheckpointStrings: LogMessage {
 
     case invalidObjectiveCCustomVariable(Any.Type)
@@ -31,6 +32,7 @@ private enum CheckpointStrings: LogMessage {
     var category: String { return "checkpoints" }
 
 }
+#endif
 
 /// Objective-C-compatible checkpoint parameters.
 @_spi(CheckpointsInternal)
@@ -47,7 +49,9 @@ public final class ObjCCheckpointParams: NSObject {
         for (rawKey, rawValue) in customVariables {
             guard let key = rawKey as? String,
                   let value = CustomVariableValue(foundationValue: rawValue) else {
+                #if DEBUG
                 Logger.warning(CheckpointStrings.invalidObjectiveCCustomVariable(type(of: rawValue)))
+                #endif
                 continue
             }
             values[key] = value

@@ -37,7 +37,7 @@ public final class CheckpointParams: Equatable, Hashable, CustomStringConvertibl
 
     /// Creates checkpoint parameters with the supplied custom variables.
     public init(customVariables: [String: CustomVariableValue] = [:]) {
-        self.customVariables = customVariables
+        self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
     }
 
     /// Returns whether two parameter collections contain the same custom variables.
@@ -116,6 +116,8 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
     public static let disabled = CheckpointNoActionReason(value: "DISABLED")
     /// The checkpoint identifier is not configured.
     public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
+    /// The checkpoint identifier is invalid.
+    public static let invalidCheckpointIdentifier = CheckpointNoActionReason(value: "INVALID_CHECKPOINT_IDENTIFIER")
 
     init(value: String) {
         self.value = value

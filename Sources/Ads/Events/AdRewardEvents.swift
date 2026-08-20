@@ -73,8 +73,6 @@ import Foundation
     public let adUnitId: String
     public let impressionId: String
     public let rewardVerificationEnabled: Bool
-    public let rewardItem: String?
-    public let rewardAmount: Int?
 
     public init(
         networkName: String?,
@@ -83,9 +81,7 @@ import Foundation
         placement: String?,
         adUnitId: String,
         impressionId: String,
-        rewardVerificationEnabled: Bool,
-        rewardItem: String?,
-        rewardAmount: Int?
+        rewardVerificationEnabled: Bool
     ) {
         self.networkName = networkName
         self.mediatorName = mediatorName
@@ -94,8 +90,6 @@ import Foundation
         self.adUnitId = adUnitId
         self.impressionId = impressionId
         self.rewardVerificationEnabled = rewardVerificationEnabled
-        self.rewardItem = rewardItem
-        self.rewardAmount = rewardAmount
     }
     // swiftlint:enable missing_docs
 
