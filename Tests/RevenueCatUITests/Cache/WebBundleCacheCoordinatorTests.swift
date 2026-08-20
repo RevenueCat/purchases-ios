@@ -66,7 +66,7 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         let bus = WebBundleEventBus()
         let coordinator = WebBundleCacheCoordinator(store: store, bus: bus, sweeper: NoOpSweeper())
         let identifier = store.identifier()
-        let urls: Set<URLWithValidation> = [
+        let urls: [URLWithValidation] = [
             .init(url: URL(string: "https://example.com/a")!, checksum: nil)
         ]
 
