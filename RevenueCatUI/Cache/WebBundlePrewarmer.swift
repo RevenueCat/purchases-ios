@@ -100,8 +100,10 @@ private extension WebBundlePrewarmer {
     static func loadUsingWKWebView(_ url: URL, storeID: UUID) async {
         let configuration = WKWebViewConfiguration()
         configuration.setPersistentStoreIfAble(withID: storeID)
+        configuration.mediaTypesRequiringUserActionForPlayback = .all
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.setAllMediaPlaybackSuspended(true, completionHandler: nil)
         let delegate = NavigationCompletion()
         webView.navigationDelegate = delegate
         webView.load(URLRequest(url: url))
@@ -131,11 +133,17 @@ private extension WebBundlePrewarmer {
 
         func completed() async {
             if self.isFinished { return }
-            await withCheckedContinuation { continuation in
-                if self.isFinished {
-                    continuation.resume()
-                } else {
-                    self.continuation = continuation
+            await withTaskCancellationHandler {
+                await withCheckedContinuation { continuation in
+                    if self.isFinished {
+                        continuation.resume()
+                    } else {
+                        self.continuation = continuation
+                    }
+                }
+            } onCancel: { [weak self] in
+                Task { @MainActor [weak self] in
+                    self?.finish()
                 }
             }
         }
