@@ -18,6 +18,7 @@ import Foundation
 enum DimensionNamespace: String, CaseIterable, Sendable {
 
     case custom
+    case customerInfo
     case device
     case store
     case subscriberAttributes

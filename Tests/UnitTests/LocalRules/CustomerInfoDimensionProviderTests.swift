@@ -1,0 +1,530 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CustomerInfoDimensionProviderTests.swift
+//
+//  Created by Facundo Menzella on 8/20/26.
+//
+
+// Swift Testing is only available with the Xcode 16+ toolchain
+#if compiler(>=5.9)
+#if canImport(Testing)
+
+import Foundation
+import Testing
+
+@testable import RevenueCat
+
+@Suite("Customer info dimension provider")
+struct CustomerInfoDimensionProviderTests {
+
+    @Test
+    func exposesTheCustomersIdentityAndLifecycle() async throws {
+        let dimensions = try await Self.provider().dimensions(at: Self.evaluationDate)
+
+        #expect(dimensions["appUserId"] == .string("current_user"))
+        #expect(dimensions["originalAppUserId"] == .string("original_user"))
+        #expect(dimensions["firstSeenAt"] == .date(Self.firstSeenDate))
+        #expect(dimensions["lastSeenAt"] == .date(Self.requestDate))
+        #expect(dimensions["originalPurchasedAt"] == .date(Self.originalPurchaseDate))
+        #expect(dimensions["evaluatedAt"] == .date(Self.evaluationDate))
+    }
+
+    @Test
+    func describesEveryPurchaseOfEitherKindNewestFirst() async throws {
+        let purchases = try await Self.purchases(of: Self.provider())
+
+        #expect(purchases.map { $0["purchasedProductIdentifier"] } == [
+            .string("premium:monthly"),
+            .string("coins")
+        ])
+        #expect(purchases.map { $0["kind"] } == [
+            .string("subscription"),
+            .string("nonSubscription")
+        ])
+    }
+
+    @Test
+    func describesASubscriptionWithEverythingTheSDKKnowsAboutIt() async throws {
+        let subscription = try await Self.purchase(withProductIdentifier: "premium", of: Self.provider())
+
+        #expect(subscription == [
+            "kind": .string("subscription"),
+            "productIdentifier": .string("premium"),
+            "productPlanIdentifier": .string("monthly"),
+            "purchasedProductIdentifier": .string("premium:monthly"),
+            "storeTransactionId": .string("GPA.0000-0000-0000-00000"),
+            "displayName": .string("Premium Monthly"),
+            "store": .string("play_store"),
+            "ownershipType": .string("PURCHASED"),
+            "periodType": .string("trial"),
+            "status": .string("paused"),
+            "priceAmountMicros": .int(4_990_000),
+            "priceCurrency": .string("USD"),
+            "purchasedAt": .date(Self.subscriptionPurchaseDate),
+            "originalPurchasedAt": .date(Self.originalPurchaseDate),
+            "expiresAt": .date(Self.distantExpiryDate),
+            "unsubscribeDetectedAt": .date(Self.unsubscribeDetectedDate),
+            "billingIssueDetectedAt": .date(Self.billingIssueDetectedDate),
+            "gracePeriodExpiresAt": .date(Self.expiredGracePeriodDate),
+            "refundedAt": .date(Self.refundedDate),
+            "autoResumeAt": .date(Self.autoResumeDate),
+            "isSandbox": .bool(true),
+            "isActive": .bool(true),
+            "willRenew": .bool(false),
+            "isInGracePeriod": .bool(false),
+            "isRefunded": .bool(true),
+            "isPaused": .bool(true),
+            "evaluatedAt": .date(Self.evaluationDate)
+        ])
+    }
+
+    @Test
+    func describesAOneTimePurchaseWithoutTheFieldsOnlyASubscriptionHas() async throws {
+        let transaction = try await Self.purchase(withProductIdentifier: "coins", of: Self.provider())
+
+        #expect(transaction == [
+            "kind": .string("nonSubscription"),
+            "productIdentifier": .string("coins"),
+            "purchasedProductIdentifier": .string("coins"),
+            "transactionIdentifier": .string("abc123"),
+            "storeTransactionId": .string("amzn.1234"),
+            "store": .string("amazon"),
+            "priceAmountMicros": .int(1_990_000),
+            "priceCurrency": .string("EUR"),
+            "purchasedAt": .date(Self.transactionPurchaseDate),
+            "isSandbox": .bool(false),
+            "evaluatedAt": .date(Self.evaluationDate)
+        ])
+    }
+
+    @Test
+    func describesEveryEntitlementOrderedByIdentifier() async throws {
+        let entitlements = try await Self.entitlements(of: Self.provider())
+
+        #expect(entitlements.map { $0["identifier"] } == [.string("extra"), .string("premium")])
+        #expect(entitlements.first == [
+            "identifier": .string("extra"),
+            "productIdentifier": .string("premium"),
+            "productPlanIdentifier": .string("monthly"),
+            "purchasedProductIdentifier": .string("premium:monthly"),
+            "store": .string("play_store"),
+            "ownershipType": .string("PURCHASED"),
+            "periodType": .string("trial"),
+            "latestPurchasedAt": .date(Self.subscriptionPurchaseDate),
+            "originalPurchasedAt": .date(Self.originalPurchaseDate),
+            "expiresAt": .date(Self.distantExpiryDate),
+            "unsubscribeDetectedAt": .date(Self.unsubscribeDetectedDate),
+            "billingIssueDetectedAt": .date(Self.billingIssueDetectedDate),
+            "isSandbox": .bool(true),
+            "isActive": .bool(true),
+            "willRenew": .bool(false),
+            "evaluatedAt": .date(Self.evaluationDate)
+        ])
+    }
+
+    @Test
+    func reportsWhereTheCustomerIsInEachSubscriptionsLifecycle() async throws {
+        let lifecycles: [(subscription: [String: Any], status: String)] = [
+            (Self.subscription(periodType: "normal"), "active"),
+            (Self.subscription(periodType: "intro"), "active"),
+            (Self.subscription(periodType: "trial"), "trialing"),
+            (Self.subscription(expiresDate: Self.lapsedExpiryDate), "expired"),
+            (
+                Self.subscription(expiresDate: Self.lapsedExpiryDate, gracePeriodExpiresDate: Self.distantExpiryDate),
+                "in_grace_period"
+            ),
+            (Self.subscription(autoResumeDate: Self.autoResumeDate), "paused")
+        ]
+
+        for lifecycle in lifecycles {
+            let provider = Self.provider(
+                subscriptions: ["premium": lifecycle.subscription],
+                entitlements: [:]
+            )
+
+            let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+            #expect(purchase["status"] == .string(lifecycle.status))
+        }
+    }
+
+    @Test
+    func theGracePeriodStatusAndTheGracePeriodFlagAlwaysAgree() async throws {
+        let provider = Self.provider(
+            subscriptions: [
+                "premium": Self.subscription(
+                    expiresDate: Self.lapsedExpiryDate,
+                    gracePeriodExpiresDate: Self.distantExpiryDate
+                )
+            ],
+            entitlements: [:]
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+        #expect(purchase["status"] == .string("in_grace_period"))
+        #expect(purchase["isInGracePeriod"] == .bool(true))
+    }
+
+    @Test
+    func aOneTimePurchaseHasNoStatusSinceOnlyASubscriptionHasALifecycle() async throws {
+        let transaction = try await Self.purchase(withProductIdentifier: "coins", of: Self.provider())
+
+        #expect(transaction["status"] == nil)
+        #expect(transaction["isActive"] == nil)
+        #expect(transaction["expiresAt"] == nil)
+        #expect(transaction["willRenew"] == nil)
+    }
+
+    @Test
+    func aCustomerWhoHasNeverBoughtAnythingReportsEmptyCollectionsRatherThanNone() async throws {
+        let provider = Self.provider(subscriptions: [:], nonSubscriptions: [:], entitlements: [:])
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(dimensions["purchases"] == .objectList([]))
+        #expect(dimensions["entitlements"] == .objectList([]))
+    }
+
+    @Test
+    func aLifetimePurchaseReportsNoExpiryAndStaysActive() async throws {
+        let provider = Self.provider(
+            subscriptions: ["lifetime": Self.subscription(expiresDate: nil)],
+            entitlements: [:]
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "lifetime", of: provider)
+
+        #expect(purchase["expiresAt"] == nil)
+        #expect(purchase["isActive"] == .bool(true))
+        #expect(purchase["status"] == .string("active"))
+    }
+
+    @Test
+    func anUnknownOwnershipTypeIsReportedAsNoOwnershipTypeAtAll() async throws {
+        let provider = Self.provider(
+            subscriptions: ["premium": Self.subscription(ownershipType: "SOMETHING_ELSE")],
+            entitlements: [:]
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+        #expect(purchase["ownershipType"] == nil)
+    }
+
+    @Test
+    func reportsPricesAsWholeMillionthsOfACurrencyUnit() async throws {
+        let provider = Self.provider(
+            subscriptions: ["premium": Self.subscription(price: ["currency": "USD", "amount": 0.1])],
+            entitlements: [:]
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+        #expect(purchase["priceAmountMicros"] == .int(100_000))
+        #expect(purchase["priceCurrency"] == .string("USD"))
+    }
+
+    @Test
+    func ordersPurchasesSharingAPurchaseDateByProduct() async throws {
+        let productIdentifiers = (1...8).map { "product_\($0)" }
+        let provider = Self.provider(
+            subscriptions: productIdentifiers.reduce(into: [:]) { subscriptions, productIdentifier in
+                subscriptions[productIdentifier] = Self.subscription()
+            },
+            nonSubscriptions: [:],
+            entitlements: [:]
+        )
+
+        let purchases = try await Self.purchases(of: provider)
+
+        #expect(purchases.map { $0["productIdentifier"] } == productIdentifiers.map { .string($0) })
+    }
+
+    @Test
+    func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
+        let provider = CustomerInfoDimensionProvider(
+            appUserIDProvider: { "current_user" },
+            customerInfoProvider: { throw ErrorUtils.offlineConnectionError() }
+        )
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(dimensions == ["appUserId": .string("current_user")])
+    }
+
+    @Test
+    func anUnknownAppUserIDLeavesTheRestOfTheDimensionsUsable() async throws {
+        let provider = Self.provider(appUserID: nil)
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(dimensions["appUserId"] == nil)
+        #expect(dimensions["originalAppUserId"] == .string("original_user"))
+    }
+
+    @Test
+    func cancellationWhileReadingTheCustomerInfoPropagates() async throws {
+        let provider = CustomerInfoDimensionProvider(
+            appUserIDProvider: { "current_user" },
+            customerInfoProvider: { throw CancellationError() }
+        )
+
+        await #expect(throws: CancellationError.self) {
+            try await provider.dimensions(at: Self.evaluationDate)
+        }
+    }
+
+    @Test
+    func readsTheCustomerInfoOnEveryEvaluation() async throws {
+        let reader = CountingCustomerInfoReader(customerInfo: try Self.customerInfo())
+        let provider = CustomerInfoDimensionProvider(
+            appUserIDProvider: { "current_user" },
+            customerInfoProvider: { await reader.read() }
+        )
+
+        _ = try await provider.dimensions(at: Self.evaluationDate)
+        _ = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(await reader.readCount == 2)
+    }
+
+    @Test
+    func makesTheRecordsSearchableByARule() async throws {
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [Self.provider()],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+        ).snapshot()
+
+        let hasAnActiveTrial = """
+        {"some": [{"var": "customerInfo.purchases"}, \
+        {"and": [{"var": "isActive"}, {"==": [{"var": "periodType"}, "trial"]}]}]}
+        """
+        let hasAnEntitlementCalledExtra = """
+        {"some": [{"var": "customerInfo.entitlements"}, {"==": [{"var": "identifier"}, "extra"]}]}
+        """
+
+        #expect(RulesEngine.evaluate(predicate: hasAnActiveTrial, variables: snapshot.values) == .success(true))
+        #expect(
+            RulesEngine.evaluate(predicate: hasAnEntitlementCalledExtra, variables: snapshot.values)
+            == .success(true)
+        )
+    }
+
+    @Test
+    func nestsEveryDimensionUnderTheCustomerInfoRoot() async throws {
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [Self.provider()],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+        ).snapshot()
+
+        let readsTheAppUserID = #"{"==": [{"var": "customerInfo.appUserId"}, "current_user"]}"#
+        let readsTheNewestPurchase = """
+        {"==": [{"var": "customerInfo.purchases.0.productIdentifier"}, "premium"]}
+        """
+
+        #expect(RulesEngine.evaluate(predicate: readsTheAppUserID, variables: snapshot.values) == .success(true))
+        #expect(
+            RulesEngine.evaluate(predicate: readsTheNewestPurchase, variables: snapshot.values) == .success(true)
+        )
+    }
+
+}
+
+// MARK: - Fixtures
+
+private extension CustomerInfoDimensionProviderTests {
+
+    static let evaluationDate = Self.date("2026-06-15T12:00:00Z")
+    static let requestDate = Self.date("2026-06-15T12:00:00Z")
+    static let firstSeenDate = Self.date("2022-01-01T00:00:00Z")
+    static let originalPurchaseDate = Self.date("2021-01-01T00:00:00Z")
+    static let subscriptionPurchaseDate = Self.date("2026-05-01T00:00:00Z")
+    static let transactionPurchaseDate = Self.date("2023-03-03T00:00:00Z")
+    static let distantExpiryDate = Self.date("2100-01-01T00:00:00Z")
+    static let lapsedExpiryDate = Self.date("2026-05-20T00:00:00Z")
+    static let unsubscribeDetectedDate = Self.date("2026-05-03T00:00:00Z")
+    static let billingIssueDetectedDate = Self.date("2026-05-04T00:00:00Z")
+    static let expiredGracePeriodDate = Self.date("2026-05-10T00:00:00Z")
+    static let refundedDate = Self.date("2026-05-05T00:00:00Z")
+    static let autoResumeDate = Self.date("2026-06-20T00:00:00Z")
+
+    static func provider(
+        appUserID: String? = "current_user",
+        subscriptions: [String: Any]? = nil,
+        nonSubscriptions: [String: Any]? = nil,
+        entitlements: [String: Any]? = nil
+    ) -> CustomerInfoDimensionProvider {
+        // swiftlint:disable:next force_try
+        let customerInfo = try! Self.customerInfo(
+            subscriptions: subscriptions,
+            nonSubscriptions: nonSubscriptions,
+            entitlements: entitlements
+        )
+
+        return CustomerInfoDimensionProvider(
+            appUserIDProvider: { appUserID },
+            customerInfoProvider: { customerInfo }
+        )
+    }
+
+    static func customerInfo(
+        subscriptions: [String: Any]? = nil,
+        nonSubscriptions: [String: Any]? = nil,
+        entitlements: [String: Any]? = nil
+    ) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": Self.string(from: Self.requestDate),
+            "subscriber": [
+                "original_app_user_id": "original_user",
+                "first_seen": Self.string(from: Self.firstSeenDate),
+                "original_purchase_date": Self.string(from: Self.originalPurchaseDate),
+                "original_application_version": "1.0",
+                "subscriptions": subscriptions ?? Self.defaultSubscriptions,
+                "non_subscriptions": nonSubscriptions ?? Self.defaultNonSubscriptions,
+                "entitlements": entitlements ?? Self.defaultEntitlements
+            ] as [String: Any]
+        ])
+    }
+
+    static let defaultSubscriptions: [String: Any] = [
+        "premium": Self.subscription(
+            productPlanIdentifier: "monthly",
+            periodType: "trial",
+            autoResumeDate: Self.autoResumeDate
+        )
+    ]
+
+    static let defaultNonSubscriptions: [String: Any] = [
+        "coins": [
+            [
+                "id": "abc123",
+                "store_transaction_id": "amzn.1234",
+                "purchase_date": Self.string(from: Self.transactionPurchaseDate),
+                "original_purchase_date": Self.string(from: Self.transactionPurchaseDate),
+                "store": "amazon",
+                "is_sandbox": false,
+                "display_name": "100 Coins",
+                "price": ["currency": "EUR", "amount": 1.99]
+            ] as [String: Any]
+        ]
+    ]
+
+    static let defaultEntitlements: [String: Any] = [
+        "premium": Self.entitlement(),
+        "extra": Self.entitlement()
+    ]
+
+    static func entitlement(productIdentifier: String = "premium") -> [String: Any] {
+        return [
+            "product_identifier": productIdentifier,
+            "purchase_date": Self.string(from: Self.subscriptionPurchaseDate),
+            "expires_date": Self.string(from: Self.distantExpiryDate)
+        ]
+    }
+
+    static func subscription(
+        productPlanIdentifier: String? = nil,
+        periodType: String = "normal",
+        ownershipType: String = "PURCHASED",
+        expiresDate: Date? = Self.distantExpiryDate,
+        gracePeriodExpiresDate: Date? = Self.expiredGracePeriodDate,
+        autoResumeDate: Date? = nil,
+        price: [String: Any] = ["currency": "USD", "amount": 4.99]
+    ) -> [String: Any] {
+        var subscription: [String: Any] = [
+            "period_type": periodType,
+            "purchase_date": Self.string(from: Self.subscriptionPurchaseDate),
+            "original_purchase_date": Self.string(from: Self.originalPurchaseDate),
+            "store": "play_store",
+            "is_sandbox": true,
+            "unsubscribe_detected_at": Self.string(from: Self.unsubscribeDetectedDate),
+            "billing_issues_detected_at": Self.string(from: Self.billingIssueDetectedDate),
+            "ownership_type": ownershipType,
+            "refunded_at": Self.string(from: Self.refundedDate),
+            "store_transaction_id": "GPA.0000-0000-0000-00000",
+            "display_name": "Premium Monthly",
+            "price": price
+        ]
+
+        subscription["product_plan_identifier"] = productPlanIdentifier
+        subscription["expires_date"] = expiresDate.map(Self.string(from:))
+        subscription["grace_period_expires_date"] = gracePeriodExpiresDate.map(Self.string(from:))
+        subscription["auto_resume_date"] = autoResumeDate.map(Self.string(from:))
+
+        return subscription
+    }
+
+    static func date(_ string: String) -> Date {
+        // swiftlint:disable:next force_unwrapping
+        return ISO8601DateFormatter().date(from: string)!
+    }
+
+    static func string(from date: Date) -> String {
+        return ISO8601DateFormatter().string(from: date)
+    }
+
+}
+
+// MARK: - Reading records
+
+private extension CustomerInfoDimensionProviderTests {
+
+    static func purchases(of provider: CustomerInfoDimensionProvider) async throws -> [[String: DimensionValue]] {
+        return try await Self.records("purchases", of: provider)
+    }
+
+    static func entitlements(of provider: CustomerInfoDimensionProvider) async throws -> [[String: DimensionValue]] {
+        return try await Self.records("entitlements", of: provider)
+    }
+
+    static func purchase(
+        withProductIdentifier productIdentifier: String,
+        of provider: CustomerInfoDimensionProvider
+    ) async throws -> [String: DimensionValue] {
+        return try #require(
+            try await Self.purchases(of: provider)
+                .first { $0["productIdentifier"] == .string(productIdentifier) }
+        )
+    }
+
+    static func records(
+        _ name: String,
+        of provider: CustomerInfoDimensionProvider
+    ) async throws -> [[String: DimensionValue]] {
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        guard case .objectList(let records) = dimensions[name] else {
+            Issue.record("'\(name)' is not a collection of records: \(String(describing: dimensions[name]))")
+            return []
+        }
+
+        return records
+    }
+
+}
+
+private actor CountingCustomerInfoReader {
+
+    private let customerInfo: CustomerInfo
+    private(set) var readCount = 0
+
+    init(customerInfo: CustomerInfo) {
+        self.customerInfo = customerInfo
+    }
+
+    func read() -> CustomerInfo {
+        self.readCount += 1
+        return self.customerInfo
+    }
+
+}
+
+#endif
+#endif
