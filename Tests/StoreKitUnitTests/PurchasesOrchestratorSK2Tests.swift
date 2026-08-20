@@ -31,6 +31,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
 
     override class var storeKitVersion: StoreKitVersion { .storeKit2 }
 
+    private var mockStoreKit2ProductPurchaser: MockStoreKit2ProductPurchaser!
+
     override func setUp() async throws {
         try AvailabilityChecks.iOS16APIAvailableOrSkipTest()
         try await super.setUp()
