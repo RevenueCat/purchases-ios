@@ -95,7 +95,8 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
 
     @MainActor
     private static func loadExistingIdentifiers() async -> Set<UUID> {
-        #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+        #if compiler(>=5.9) && !os(tvOS) && !os(watchOS) && canImport(WebKit)
+        // Compiler 5.9 is beyond Xcode 14. Even with the following guard 👇 Xcode 14 fails to compile
         if #available(iOS 17.0, macOS 14.0, *) {
             return Set(await WKWebsiteDataStore.allDataStoreIdentifiers)
         }
@@ -106,7 +107,8 @@ final class WebViewWebsiteDataStoreSweeper: WebViewDataStoreSweeping {
 
     @MainActor
     private static func removeStore(for identifier: UUID) async -> Bool {
-        #if !os(tvOS) && !os(watchOS) && canImport(WebKit)
+        #if compiler(>=5.9) && !os(tvOS) && !os(watchOS) && canImport(WebKit)
+        // Compiler 5.9 is beyond Xcode 14. Even with the following guard 👇 Xcode 14 fails to compile
         if #available(iOS 17.0, macOS 14.0, *) {
             do {
                 try await WKWebsiteDataStore.remove(forIdentifier: identifier)
