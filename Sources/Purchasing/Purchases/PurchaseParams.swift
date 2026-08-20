@@ -164,9 +164,9 @@ import AppKit
          * - Parameter confirmInScene: The scene to show the purchase confirmation UI in proximity to.
          * - Note: This value is only used when StoreKit 2 is in use.
          *
-         * Availability: iOS 17.0+, macCatalyst 15.0+, tvOS 17.0+, visionOS 1.0+
+         * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
-        @available(iOS 17.0, macCatalyst 15.0, tvOS 17.0, visionOS 1.0, *)
+        @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
         @objc public func with(confirmInScene: UIScene) -> Self {
             self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
             return self
