@@ -125,7 +125,8 @@ private struct HostedWebViewComponentView: View {
         if !self.instance.processTerminated, !self.instance.loadFailed {
             WebViewRepresentable(
                 url: self.url,
-                instance: self.instance
+                instance: self.instance,
+                idStore: .init() // need to wire it in somewhere… maybe we do shared instead
             )
             .webViewSize(
                 self.size,
@@ -152,6 +153,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     let url: URL
     let instance: WebViewInstance
+    let idStore: WebViewDataStoreIdentifierStore
 
     var expectedOrigin: WebViewOrigin {
         self.instance.session.expectedOrigin
@@ -219,9 +221,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     }
 
     @MainActor
-    static func makeConfiguration(session: WebViewSession?) -> WKWebViewConfiguration {
+    static func makeConfiguration(session: WebViewSession?, storeID: UUID) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
-        configuration.websiteDataStore = .nonPersistent()
+        configuration.setPersistentStoreIfAble(withId: storeID)
         configuration.userContentController = WKUserContentController()
 
         if let session {
@@ -251,7 +253,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     @MainActor
     private func makeWebView(context: Context) -> PlatformWebView {
-        let configuration = Self.makeConfiguration(session: self.instance.session)
+        let configuration = Self.makeConfiguration(session: self.instance.session, storeID: idStore.identifier())
         let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
 
