@@ -20,18 +20,18 @@
       "expected": true
     },
     {
-      "id": "var_missing_key_returns_null_and_warns",
+      "id": "var_missing_key_without_default_is_unresolved_variable_error",
+      "description": "an absent key with no default is unknown rather than null, so the engine raises unresolvedVariable instead of handing back a value that would coerce to 0 or \"\"",
       "predicate": { "===": [{ "var": "missing_key" }, null] },
       "variables": { "a": 1 },
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing_key"] }
+      "expected": { "error": "unresolvedVariable", "path": "missing_key" }
     },
     {
-      "id": "var_missing_dot_path_returns_null_and_warns",
+      "id": "var_missing_dot_path_without_default_is_unresolved_variable_error",
+      "description": "the error carries the full dot-path that failed, not just its first segment",
       "predicate": { "===": [{ "var": "a.c" }, null] },
       "variables": { "a": { "b": 1 } },
-      "expected": true,
-      "expectedWarnings": { "contains": ["a.c"] }
+      "expected": { "error": "unresolvedVariable", "path": "a.c" }
     },
     {
       "id": "var_missing_with_default_returns_default_and_does_not_warn",
@@ -45,16 +45,14 @@
       "description": "1e19 exceeds Int64.max; the path formatter must round-trip safely so the lookup just misses instead of trapping",
       "predicate": { "===": [{ "var": 1e19 }, null] },
       "variables": {},
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing variable"] }
+      "expected": { "error": "unresolvedVariable", "path": "1e+19" }
     },
     {
       "id": "var_does_not_apply_flat_key_fallback",
       "description": "the literal key \"a.b\" exists flat, but the spec-strict lookup walks \"a\" then \"b\" and finds nothing",
       "predicate": { "===": [{ "var": "a.b" }, null] },
       "variables": { "a.b": 42 },
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing variable"] }
+      "expected": { "error": "unresolvedVariable", "path": "a.b" }
     },
     {
       "id": "var_extra_args_are_ignored_with_warning",
@@ -120,11 +118,10 @@
     },
     {
       "id": "var_object_path_stringifies_and_misses",
-      "description": "object paths stringify to \"[object Object]\" and never match a real key, so var returns null and warns",
+      "description": "object paths stringify to \"[object Object]\" and never match a real key, so the lookup misses and the stringified path is what the error reports",
       "predicate": { "===": [{ "var": [{ "foo": 1, "bar": 2 }] }, null] },
       "variables": { "x": 1 },
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing variable"] }
+      "expected": { "error": "unresolvedVariable", "path": "[object Object]" }
     },
     {
       "id": "var_splits_dot_paths_double_dot",

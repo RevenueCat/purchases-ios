@@ -18,6 +18,11 @@ extension RulesEngine {
         /// `not_found = (b === undefined) ? null : b`. `{"var": ""}` returns
         /// the entire data scope.
         ///
+        /// A path that does not resolve and carries no default throws
+        /// `EvaluationError.unresolvedVariable` rather than degrading to
+        /// `null`. A key that *is* present but holds an explicit `null` is a
+        /// known value, not a missing one, and resolves normally.
+        ///
         /// Per the JSON Logic spec, the path and default arguments are
         /// recursively evaluated before lookup (e.g.
         /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
@@ -48,8 +53,7 @@ extension RulesEngine {
                 if case .undefined = defaultValue { return .null }
                 return defaultValue
             }
-            RulesEngine.logger.warn("missing variable: \(path)")
-            return .null
+            throw RulesEngine.EvaluationError.unresolvedVariable(path: path)
         }
 
         /// `{"missing": ["a", "b.c"]}` returns the array of keys whose `var`
