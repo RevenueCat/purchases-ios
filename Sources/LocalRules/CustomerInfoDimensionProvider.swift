@@ -49,19 +49,9 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
     }
 
     func dimensions(at date: Date) async throws -> [String: DimensionValue] {
-        var dimensions = self.appUserIDDimension()
-
-        for (name, value) in try await self.customerInfoDimensions(at: date) {
-            dimensions[name] = value
-        }
-
-        return dimensions
-    }
-
-    /// Read apart from the rest so a rule targeting the app user ID does not depend on the
-    /// network: the ID is known as soon as the SDK is configured, the rest may still be in flight.
-    private func appUserIDDimension() -> [String: DimensionValue] {
-        var dimensions: [String: DimensionValue] = [:]
+        var dimensions = try await self.customerInfoDimensions(at: date)
+        // The app user ID is read apart from the rest so a rule targeting it does not depend on the
+        // network: the ID is known as soon as the SDK is configured, the rest may still be in flight.
         dimensions.put(Self.appUserIDKey, string: self.appUserIDProvider())
         return dimensions
     }
@@ -222,12 +212,11 @@ private extension CustomerInfoDimensionProvider {
     static func purchasedProductIdentifier(
         productIdentifier: String,
         productPlanIdentifier: String?
-    ) -> String {
-        guard let productPlanIdentifier, !productPlanIdentifier.isEmpty else {
-            return productIdentifier
-        }
-
-        return "\(productIdentifier)\(Self.billingPlanSeparator)\(productPlanIdentifier)"
+    ) -> String? {
+        return CompoundProductIdentifier(
+            productIdentifier: productIdentifier,
+            productPlanIdentifier: productPlanIdentifier
+        )?.compoundProductIdentifier
     }
 
     /// Where the customer is in this subscription's lifecycle, as one value instead of a combination
@@ -341,12 +330,6 @@ private extension CustomerInfoDimensionProvider {
     static let pausedStatus = "paused"
     static let trialingStatus = "trialing"
 
-    static let billingPlanSeparator = ":"
-
-    /// Prices reach the engine as whole millionths of a currency unit, so a rule compares them
-    /// without carrying a fractional amount's rounding.
-    static let priceMicrosPerUnit: Double = 1_000_000
-
 }
 
 // MARK: - Building records
@@ -368,12 +351,14 @@ private extension Dictionary where Key == String, Value == DimensionValue {
         self[key] = .bool(bool)
     }
 
+    /// Prices reach the engine as whole millionths of a currency unit, so a rule compares them
+    /// without carrying a fractional amount's rounding.
+    ///
     /// The formatted price is deliberately left out: it is rendered in the device's locale, so it is
     /// not something a rule authored once can compare against.
     mutating func put(price: ProductPaidPrice?) {
         guard let price else { return }
-        let micros = price.amount * CustomerInfoDimensionProvider.priceMicrosPerUnit
-        self[CustomerInfoDimensionProvider.priceAmountMicrosKey] = .int(Int64(micros.rounded()))
+        self[CustomerInfoDimensionProvider.priceAmountMicrosKey] = .int(Int64((price.amount * 1_000_000).rounded()))
         self.put(CustomerInfoDimensionProvider.priceCurrencyKey, string: price.currency)
     }
 
