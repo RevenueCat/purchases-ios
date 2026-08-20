@@ -80,6 +80,7 @@ final class PurchasesOrchestrator {
     private let dateProvider: DateProvider
     private let checkpointsManager = Atomic<AnyObject?>(nil)
     private let checkpointResolver: CheckpointWorkflowResolver
+    private let storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
 
     let notificationCenter: NotificationCenter
 
@@ -113,8 +114,6 @@ final class PurchasesOrchestrator {
         // swiftlint:disable:next force_cast force_unwrapping
         return self._storeKit2StorefrontListener! as! StoreKit2StorefrontListener
     }
-
-    var storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     var diagnosticsSynchronizer: DiagnosticsSynchronizerType? {
