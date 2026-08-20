@@ -628,6 +628,15 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
         expect(eligibility) == .eligible
     }
 
+    func testEligibleForIntroBeforePurchaseForPackage() async throws {
+        try await self.verifyReceiptIsPresentBeforeEligibilityChecking()
+
+        let package = try await self.monthlyPackage
+
+        let eligibility = try await self.purchases.checkTrialOrIntroDiscountEligibility(package: package)
+        expect(eligibility) == .eligible
+    }
+
     func testNoIntroOfferIfProductHasNoIntro() async throws {
         let product = try await XCTAsyncUnwrap(await self.monthlyNoIntroProduct)
 
