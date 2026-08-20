@@ -1007,12 +1007,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         _ purchases: @autoclosure () -> Purchases,
         dedupingAgainst configuration: Configuration? = nil
     ) -> Purchases {
-        return self.purchases.modify { currentInstance in
+        let (newInstance, didConfigure): (Purchases, Bool) = self.purchases.modify { currentInstance in
             if let configuration,
                let existingInstance = currentInstance,
                existingInstance.currentConfiguration == configuration {
                 Logger.info(Strings.configure.instance_already_exists_with_same_config)
-                return existingInstance
+                return (existingInstance, false)
             }
 
             if currentInstance != nil {
@@ -1029,8 +1029,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
             let newInstance = purchases()
             currentInstance = newInstance
-            return newInstance
+            return (newInstance, true)
         }
+
+        // Outside the singleton lock so RevenueCatUI can safely use ``Purchases/shared``.
+        if didConfigure {
+            PurchasesConfiguredNotifier.notify()
+        }
+
+        return newInstance
     }
 
 }

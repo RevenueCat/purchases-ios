@@ -20,6 +20,9 @@ extension RulesEngine {
             vars: Scope
         ) throws -> Value {
             switch operatorName {
+            case "rc.length":
+                return try LengthOperator.opLength(args: args, vars: vars)
+
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)
 
