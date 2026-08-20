@@ -127,9 +127,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
-    /// that prevented it: the item is unknown, its body can't be parsed, or `ui_config` isn't available.
-    /// A workflow is only rendered with styling resolved from the `ui_config` topic, matching Android's
-    /// `PaywallViewModel` failing the whole render when its concurrent `ui_config` fetch fails.
+    /// that prevented it: the item is unknown, its body can't be parsed, or (for a workflow with
+    /// screens) `ui_config` isn't available. A UI workflow is only rendered with styling resolved from
+    /// the `ui_config` topic, matching Android's `PaywallViewModel` failing the whole render when its
+    /// concurrent `ui_config` fetch fails — a screenless, data-only workflow (e.g. an `ad` or `offering`
+    /// step) never renders anything, so it has no such dependency and resolves with `UIConfig.empty`.
     ///
     /// `enrolled_variants` is not populated here: per-user A/B enrollment doesn't fit this shared,
     /// content-addressed read model and is being designed separately.
@@ -272,7 +274,14 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return .failure(error)
         }
 
-        guard let uiConfig = await self.uiConfigProvider.getUiConfig() else {
+        // A workflow with no screens renders no UI at all (e.g. a data-only `ad` or `offering` step), so
+        // it has no use for `ui_config`'s styling/localizations and shouldn't fail resolution over it.
+        let uiConfig: UIConfig
+        if workflow.screens.isEmpty {
+            uiConfig = .empty
+        } else if let resolvedUiConfig = await self.uiConfigProvider.getUiConfig() {
+            uiConfig = resolvedUiConfig
+        } else {
             return .failure(.uiConfigUnavailable)
         }
         guard await isCurrent() else { return .failure(.notFound) }

@@ -108,6 +108,23 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(result.error) == .uiConfigUnavailable
     }
 
+    func testResolvesAScreenlessWorkflowWithoutRequiringUiConfig() async throws {
+        // A data-only workflow (e.g. an `ad` step) renders no UI at all, so it must resolve even when
+        // `ui_config` is entirely unavailable — unlike a real UI workflow (see the test above).
+        let workflowJSON = try Self.screenlessWorkflowJSON(id: "wf-ad", stepType: "ad")
+        self.commit(
+            workflows: ["wf-ad": .init(blobRef: "wf-ad-ref", content: [:])],
+            blobs: ["wf-ad-ref": workflowJSON]
+        )
+
+        let result = await self.provider.getWorkflow(workflowId: "wf-ad")
+        let workflowResult = try XCTUnwrap(result.value)
+
+        expect(workflowResult.uiConfig) == .empty
+        // Only the workflow body itself was attempted; ui_config's parts were never touched.
+        expect(self.blobFetcher.invokedEnsureDownloadedRefs) == ["wf-ad-ref"]
+    }
+
     func testAssemblesUiConfigFromItsOwnTopicWhenResolvingAWorkflow() async throws {
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
@@ -639,6 +656,21 @@ class WorkflowsConfigProviderTests: TestCase {
               "offering_identifier": "default"
             }
           }\(metadataJSON)
+        }
+        """
+        return try XCTUnwrap(json.data(using: .utf8))
+    }
+
+    private static func screenlessWorkflowJSON(id: String, stepType: String) throws -> Data {
+        let json = """
+        {
+          "id": "\(id)",
+          "display_name": "Test",
+          "initial_step_id": "step_1",
+          "steps": {
+            "step_1": { "id": "step_1", "type": "\(stepType)", "param_values": {} }
+          },
+          "screens": {}
         }
         """
         return try XCTUnwrap(json.data(using: .utf8))
