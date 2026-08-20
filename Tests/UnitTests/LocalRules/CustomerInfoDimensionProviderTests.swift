@@ -249,6 +249,28 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func ordersOneTimePurchasesSharingAPurchaseDateByProduct() async throws {
+        let purchasedAt = Self.string(from: Self.transactionPurchaseDate)
+        let provider = Self.provider(
+            subscriptions: [:],
+            nonSubscriptions: [
+                "gems": Self.transaction(id: "t2", purchasedAt: purchasedAt),
+                "coins": Self.transaction(id: "t1", purchasedAt: purchasedAt),
+                "keys": Self.transaction(id: "t3", purchasedAt: purchasedAt)
+            ],
+            entitlements: [:]
+        )
+
+        let purchases = try await Self.purchases(of: provider)
+
+        #expect(purchases.map { $0["productIdentifier"] } == [
+            .string("coins"),
+            .string("gems"),
+            .string("keys")
+        ])
+    }
+
+    @Test
     func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
         let provider = CustomerInfoDimensionProvider(
             customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
@@ -533,6 +555,16 @@ private extension CustomerInfoDimensionProviderTests {
         subscription["auto_resume_date"] = autoResumeDate.map(Self.string(from:))
 
         return subscription
+    }
+
+    static func transaction(id: String, purchasedAt: String) -> [[String: Any]] {
+        return [[
+            "id": id,
+            "store_transaction_id": "store.\(id)",
+            "purchase_date": purchasedAt,
+            "store": "app_store",
+            "is_sandbox": false
+        ]]
     }
 
     static func date(_ string: String) -> Date {

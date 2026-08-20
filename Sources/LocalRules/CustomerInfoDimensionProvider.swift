@@ -95,8 +95,16 @@ private extension CustomerInfoDimensionProvider {
         let subscriptions = customerInfo.subscriptionsByProductIdentifier.values
             .sorted { $0.productIdentifier < $1.productIdentifier }
             .map { Self.record(of: $0, at: date) }
-        // Already sorted by purchase date by `CustomerInfo`.
-        let transactions = customerInfo.nonSubscriptions.map { Self.record(of: $0, at: date) }
+        // `CustomerInfo` builds these from a dictionary and orders them by date alone, so two bought
+        // at the same instant arrive in no set order. Ordered here so the merge below is repeatable.
+        let transactions = customerInfo.nonSubscriptions
+            .sorted { lhs, rhs in
+                guard lhs.productIdentifier == rhs.productIdentifier else {
+                    return lhs.productIdentifier < rhs.productIdentifier
+                }
+                return lhs.transactionIdentifier < rhs.transactionIdentifier
+            }
+            .map { Self.record(of: $0, at: date) }
 
         // Ties break on the position built above rather than on `sorted` being stable, which it does
         // not promise to be.
