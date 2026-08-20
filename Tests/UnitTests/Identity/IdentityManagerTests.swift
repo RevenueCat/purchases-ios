@@ -445,12 +445,42 @@ class IdentityManagerTests: TestCase {
         expect(Set(parameters.previousUnsyncedAttributes.keys)) == ["channel"]
     }
 
-    func testLogInDoesNotStoreAttributesWhenNoneAreGiven() {
+    /// The new user may have attributes left over from a previous session, which the request carries too.
+    func testLogInSendsTheAttributesAlreadyBufferedForTheNewUser() throws {
+        let manager = self.create(appUserID: "old_user")
+        let bufferedAttribute = SubscriberAttribute(withKey: "plan", value: "annual")
+        self.mockAttributeSyncing.stubbedStoredAttributes = ["plan": bufferedAttribute]
+
+        manager.logIn(appUserID: "nacho", attributes: [:]) { _ in }
+
+        expect(self.mockIdentityAPI.invokedLogInParameters?.attributes) == ["plan": bufferedAttribute]
+    }
+
+    /// The request only carries the two users it identifies, so anyone else stays on the regular sync path.
+    func testLogInSyncsTheAttributesBufferedForEveryOtherUser() throws {
         let manager = self.create(appUserID: "old_user")
 
         manager.logIn(appUserID: "nacho", attributes: [:]) { _ in }
 
-        expect(self.mockAttributeSyncing.invokedStoreAttributesParametersList).to(beEmpty())
+        let parameters = try XCTUnwrap(
+            self.mockAttributeSyncing.invokedSyncAttributesForUsersOtherThanParametersList.onlyElement
+        )
+        expect(parameters.appUserIDs) == ["old_user", "nacho"]
+        expect(parameters.currentAppUserID) == "old_user"
+    }
+
+    /// Both share one serial operation queue, so syncing first would put those requests ahead of the log in.
+    func testLogInSyncsTheOtherUsersOnlyAfterRequestingTheLogIn() {
+        let manager = self.create(appUserID: "old_user")
+
+        var logInWasAlreadyRequested: Bool?
+        self.mockAttributeSyncing.onSyncAttributesForUsersOtherThan = { [weak self] in
+            logInWasAlreadyRequested = self?.mockIdentityAPI.invokedLogIn
+        }
+
+        manager.logIn(appUserID: "nacho", attributes: [:]) { _ in }
+
+        expect(logInWasAlreadyRequested) == true
     }
 
     func testLogInMarksSentAttributesAsSyncedWhenBackendReportsNoAttributeErrors() throws {
@@ -501,7 +531,8 @@ class IdentityManagerTests: TestCase {
         expect(handled[1].errorResponse) == attributesError
     }
 
-    func testLogInDoesNotHandleAttributesWhenLogInFails() {
+    /// Neither bucket is marked synced, so both stay queued for the next attribute sync.
+    func testLogInLeavesAttributesBufferedWhenLogInFails() throws {
         let manager = self.create(appUserID: "old_user")
         self.mockAttributeSyncing.stubbedUnsyncedAttributes = [
             "channel": SubscriberAttribute(withKey: "channel", value: "tiktok")
@@ -512,6 +543,9 @@ class IdentityManagerTests: TestCase {
             manager.logIn(appUserID: "nacho", attributes: ["plan": "annual"]) { _ in completed() }
         }
 
+        let stored = try XCTUnwrap(self.mockAttributeSyncing.invokedStoreAttributesParametersList.onlyElement)
+        expect(stored.attributes) == ["plan": "annual"]
+        expect(stored.appUserID) == "nacho"
         expect(self.mockAttributeSyncing.invokedHandleAttributesSentOnLogInParametersList).to(beEmpty())
     }
 

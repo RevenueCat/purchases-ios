@@ -2937,16 +2937,17 @@ class SubscriberAttributesManagerTests: TestCase {
 
     // MARK: - Attributes sent inline with log in
 
-    func testStoreAttributesBuffersThemUnsyncedAndReturnsOnlyTheGivenKeys() throws {
-        let plan = SubscriberAttribute(withKey: "plan", value: "annual")
-        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = [
-            "plan": plan,
-            "unrelated": SubscriberAttribute(withKey: "unrelated", value: "value")
+    func testStoreAndGetUnsyncedAttributesBuffersThemUnsyncedAndReturnsTheWholeBuffer() throws {
+        let buffer = [
+            "plan": SubscriberAttribute(withKey: "plan", value: "annual"),
+            "bufferedEarlier": SubscriberAttribute(withKey: "bufferedEarlier", value: "value")
         ]
+        self.mockDeviceCache.stubbedUnsyncedAttributesByKeyResult = buffer
 
-        let stored = self.subscriberAttributesManager.store(attributes: ["plan": "annual"], appUserID: "user")
+        let stored = self.subscriberAttributesManager.storeAndGetUnsyncedAttributes(["plan": "annual"],
+                                                                                    appUserID: "user")
 
-        expect(stored) == ["plan": plan]
+        expect(stored) == buffer
 
         let cached = try XCTUnwrap(self.mockDeviceCache.invokedStoreParametersList.onlyElement)
         expect(cached.attribute.key) == "plan"
@@ -2955,15 +2956,55 @@ class SubscriberAttributesManagerTests: TestCase {
         expect(cached.appUserID) == "user"
     }
 
-    func testStoreAttributesSkipsOnesAlreadyStoredWithTheSameValue() {
+    func testStoreAndGetUnsyncedAttributesSkipsOnesAlreadyStoredWithTheSameValue() {
         self.mockDeviceCache.stubbedSubscriberAttributeResult = SubscriberAttribute(withKey: "plan",
                                                                                     value: "annual",
                                                                                     isSynced: true,
                                                                                     setTime: Date())
 
-        self.subscriberAttributesManager.store(attributes: ["plan": "annual"], appUserID: "user")
+        self.subscriberAttributesManager.storeAndGetUnsyncedAttributes(["plan": "annual"], appUserID: "user")
 
         expect(self.mockDeviceCache.invokedStoreParametersList).to(beEmpty())
+    }
+
+    func testSyncAttributesForUsersOtherThanSkipsTheGivenUsers() {
+        let otherUserAttribute = SubscriberAttribute(withKey: "channel", value: "tiktok")
+        self.mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "old_user": ["plan": SubscriberAttribute(withKey: "plan", value: "annual")],
+            "new_user": ["band": SubscriberAttribute(withKey: "band", value: "Led Zeppelin")],
+            "other_user": ["channel": otherUserAttribute]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForUsersOtherThan(["old_user", "new_user"],
+                                                                         currentAppUserID: "old_user")
+
+        expect(self.mockBackend.invokedPostSubscriberAttributesCount).toEventually(equal(1))
+        expect(self.mockBackend.invokedPostSubscriberAttributesParameters?.appUserID) == "other_user"
+        expect(self.mockBackend.invokedPostSubscriberAttributesParameters?.subscriberAttributes) == [
+            "channel": otherUserAttribute
+        ]
+    }
+
+    func testSyncAttributesForUsersOtherThanDeletesThemOnceSynced() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "other_user": ["channel": SubscriberAttribute(withKey: "channel", value: "tiktok")]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForUsersOtherThan(["old_user", "new_user"],
+                                                                         currentAppUserID: "old_user")
+
+        expect(self.mockDeviceCache.invokedDeleteAttributesIfSyncedParametersList).toEventually(equal(["other_user"]))
+    }
+
+    func testSyncAttributesForUsersOtherThanDoesNothingWhenNoOtherUserHasAttributes() {
+        self.mockDeviceCache.stubbedUnsyncedAttributesForAllUsersResult = [
+            "old_user": ["plan": SubscriberAttribute(withKey: "plan", value: "annual")]
+        ]
+
+        self.subscriberAttributesManager.syncAttributesForUsersOtherThan(["old_user", "new_user"],
+                                                                         currentAppUserID: "old_user")
+
+        expect(self.mockBackend.invokedPostSubscriberAttributes) == false
     }
 
     func testRefreshATTStatusAndGetUnsyncedAttributesSetsConsentStatus() {

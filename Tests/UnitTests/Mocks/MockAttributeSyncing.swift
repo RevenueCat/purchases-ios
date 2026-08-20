@@ -30,8 +30,8 @@ class MockAttributeSyncing: AttributeSyncing {
     var invokedStoreAttributesParametersList: [(attributes: [String: String], appUserID: String)] = []
     var stubbedStoredAttributes: SubscriberAttribute.Dictionary?
 
-    @discardableResult
-    func store(attributes: [String: String], appUserID: String) -> SubscriberAttribute.Dictionary {
+    func storeAndGetUnsyncedAttributes(_ attributes: [String: String],
+                                       appUserID: String) -> SubscriberAttribute.Dictionary {
         self.invokedStoreAttributesParametersList.append((attributes, appUserID))
 
         if let stubbedStoredAttributes = self.stubbedStoredAttributes {
@@ -50,6 +50,16 @@ class MockAttributeSyncing: AttributeSyncing {
         self.invokedRefreshATTStatusAndGetUnsyncedAttributesUserIDs.append(appUserID)
 
         return self.stubbedUnsyncedAttributes
+    }
+
+    var invokedSyncAttributesForUsersOtherThanParametersList: [
+        (appUserIDs: Set<String>, currentAppUserID: String)
+    ] = []
+    var onSyncAttributesForUsersOtherThan: (() -> Void)?
+
+    func syncAttributesForUsersOtherThan(_ appUserIDs: Set<String>, currentAppUserID: String) {
+        self.invokedSyncAttributesForUsersOtherThanParametersList.append((appUserIDs, currentAppUserID))
+        self.onSyncAttributesForUsersOtherThan?()
     }
 
     var invokedHandleAttributesSentOnLogInParametersList: [

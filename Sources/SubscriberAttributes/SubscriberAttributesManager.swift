@@ -240,13 +240,24 @@ class SubscriberAttributesManager {
                                    syncedAttribute: (@Sendable (PurchasesError?) -> Void)? = nil,
                                    completion: (@Sendable () -> Void)? = nil) -> Int {
         setATTConsentStatus(forAppUserID: currentAppUserID)
-        let unsyncedAttributesForAllUsers = unsyncedAttributesByKeyForAllUsers()
-        let total = unsyncedAttributesForAllUsers.count
+
+        return self.sync(self.unsyncedAttributesByKeyForAllUsers(),
+                         currentAppUserID: currentAppUserID,
+                         syncedAttribute: syncedAttribute,
+                         completion: completion)
+    }
+
+    @discardableResult
+    private func sync(_ unsyncedAttributes: [String: SubscriberAttribute.Dictionary],
+                      currentAppUserID: String,
+                      syncedAttribute: (@Sendable (PurchasesError?) -> Void)?,
+                      completion: (@Sendable () -> Void)?) -> Int {
+        let total = unsyncedAttributes.count
 
         operationDispatcher.dispatchOnWorkerThread {
             let completed: Atomic<Int> = .init(0)
 
-            for (syncingAppUserID, attributes) in unsyncedAttributesForAllUsers {
+            for (syncingAppUserID, attributes) in unsyncedAttributes {
                 self.syncAttributes(attributes: attributes, appUserID: syncingAppUserID) { error in
                     self.handleAttributesSynced(syncingAppUserId: syncingAppUserID,
                                                 currentAppUserId: currentAppUserID,
@@ -340,17 +351,29 @@ extension SubscriberAttributesManager: AttributeSyncing {
                                        completion: completion)
     }
 
-    @discardableResult
-    func store(attributes: [String: String], appUserID: String) -> SubscriberAttribute.Dictionary {
+    func storeAndGetUnsyncedAttributes(_ attributes: [String: String],
+                                       appUserID: String) -> SubscriberAttribute.Dictionary {
         self.setAttributes(attributes, appUserID: appUserID)
 
-        return self.unsyncedAttributesByKey(appUserID: appUserID).filter { attributes.keys.contains($0.key) }
+        return self.unsyncedAttributesByKey(appUserID: appUserID)
     }
 
     func refreshATTStatusAndGetUnsyncedAttributes(appUserID: String) -> SubscriberAttribute.Dictionary {
         self.setATTConsentStatus(forAppUserID: appUserID)
 
         return self.unsyncedAttributesByKey(appUserID: appUserID)
+    }
+
+    func syncAttributesForUsersOtherThan(_ appUserIDs: Set<String>, currentAppUserID: String) {
+        let unsyncedAttributes = self.unsyncedAttributesByKeyForAllUsers()
+            .filter { !appUserIDs.contains($0.key) }
+
+        guard !unsyncedAttributes.isEmpty else { return }
+
+        self.sync(unsyncedAttributes,
+                  currentAppUserID: currentAppUserID,
+                  syncedAttribute: nil,
+                  completion: nil)
     }
 
     func handleAttributesSentOnLogIn(_ attributes: SubscriberAttribute.Dictionary,
