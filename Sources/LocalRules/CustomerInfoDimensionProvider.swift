@@ -22,38 +22,27 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.customerInfo
 
-    private let appUserIDProvider: @Sendable () -> String
     private let customerInfoProvider: @Sendable (String) async throws -> CustomerInfo
 
-    init(
-        customerInfoManager: CustomerInfoManager,
-        currentUserProvider: any CurrentUserProvider
-    ) {
-        self.init(
-            appUserIDProvider: { currentUserProvider.currentAppUserID },
-            customerInfoProvider: { appUserID in
-                try await customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default)
-            }
-        )
+    init(customerInfoManager: CustomerInfoManager) {
+        self.init { appUserID in
+            try await customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default)
+        }
     }
 
     init(
-        appUserIDProvider: @escaping @Sendable () -> String,
         customerInfoProvider: @escaping @Sendable (String) async throws -> CustomerInfo
     ) {
-        self.appUserIDProvider = appUserIDProvider
         self.customerInfoProvider = customerInfoProvider
     }
 
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
-        // Read once and used for both the customer info request and the reported ID. Reading it
-        // again after the request would describe a different customer than the purchases below
-        // whenever the app logs in, logs out, or switches user while that request is suspended.
-        let appUserID = self.appUserIDProvider()
-
-        var dimensions = try await self.customerInfoDimensions(forAppUserID: appUserID, at: date)
-        // Reported even when the read below failed, so a rule targeting only the ID still resolves.
-        dimensions.put(Self.appUserIDKey, string: appUserID)
+    /// The customer comes from `context` rather than from the current user, so the purchases
+    /// below and the ID they are reported under always describe the same customer, however long
+    /// the read suspends for.
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
+        var dimensions = try await self.customerInfoDimensions(in: context)
+        // Reported even when the read failed, so a rule targeting only the ID still resolves.
+        dimensions.put(Self.appUserIDKey, string: context.appUserID)
         return dimensions
     }
 
@@ -65,11 +54,13 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
     /// absence rule such as `{"none": [purchases, ...]}` matches. See
     /// `anUnreadableCustomerInfoLetsAbsenceRulesMatch`.
     private func customerInfoDimensions(
-        forAppUserID appUserID: String,
-        at date: Date
+        in context: DimensionContext
     ) async throws -> [String: DimensionValue] {
         do {
-            return Self.dimensions(of: try await self.customerInfoProvider(appUserID), at: date)
+            return Self.dimensions(
+                of: try await self.customerInfoProvider(context.appUserID),
+                at: context.date
+            )
         } catch let error as CancellationError {
             throw error
         } catch {

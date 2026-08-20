@@ -31,14 +31,20 @@ struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
     private let dateProvider: DateProvider
+    private let appUserIDProvider: @Sendable () -> String
 
-    /// Creates a resolver from injected providers and a clock.
+    /// Creates a resolver from injected providers, a clock, and the current customer.
+    ///
+    /// `appUserIDProvider` defaults to no customer, which contributes no customer-scoped
+    /// dimensions rather than the wrong ones.
     init(
         dimensionProviders: [any DimensionProvider],
-        dateProvider: DateProvider = DateProvider()
+        dateProvider: DateProvider = DateProvider(),
+        appUserIDProvider: @escaping @Sendable () -> String = { "" }
     ) {
         self.dimensionProviders = dimensionProviders
         self.dateProvider = dateProvider
+        self.appUserIDProvider = appUserIDProvider
     }
 
     /// Collects each provider once and merges its values under its namespace.
@@ -46,7 +52,13 @@ struct DimensionResolver: Sendable {
     /// For example, device `appVersion: "1.2.3"` becomes
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
     func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
-        let date = self.dateProvider.now()
+        // Both read once, so every provider below describes the same customer at the same
+        // instant however long any one of them suspends for.
+        let context = DimensionContext(
+            date: self.dateProvider.now(),
+            appUserID: self.appUserIDProvider()
+        )
+        let date = context.date
         var values: [String: RulesEngine.Value] = [:]
 
         for provider in self.dimensionProviders {
@@ -54,7 +66,7 @@ struct DimensionResolver: Sendable {
 
             let providerValues: [String: DimensionValue]
             do {
-                providerValues = try await provider.dimensions(at: date)
+                providerValues = try await provider.dimensions(in: context)
             } catch let error as CancellationError {
                 throw error
             } catch {

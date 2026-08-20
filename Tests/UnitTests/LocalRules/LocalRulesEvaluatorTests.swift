@@ -530,8 +530,8 @@ private actor TestDimensionProvider: DimensionProvider {
         self.snapshots = snapshots
     }
 
-    func dimensions(at date: Date) -> [String: DimensionValue] {
-        self.receivedDates.append(date)
+    func dimensions(in context: DimensionContext) -> [String: DimensionValue] {
+        self.receivedDates.append(context.date)
         defer { self.invocationCount += 1 }
         guard !self.snapshots.isEmpty else { return [:] }
         return self.snapshots[min(self.invocationCount, self.snapshots.count - 1)]
@@ -544,7 +544,7 @@ private struct FailingDimensionProvider: DimensionProvider {
 
     let namespace: DimensionNamespace
 
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         throw ProviderError()
     }
 }
@@ -553,7 +553,7 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
     let namespace: DimensionNamespace
 
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         throw CancellationError()
     }
 }

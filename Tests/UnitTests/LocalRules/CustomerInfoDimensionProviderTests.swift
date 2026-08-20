@@ -26,7 +26,7 @@ struct CustomerInfoDimensionProviderTests {
 
     @Test
     func exposesTheCustomersIdentityAndLifecycle() async throws {
-        let dimensions = try await Self.provider().dimensions(at: Self.evaluationDate)
+        let dimensions = try await Self.provider().dimensions(in: Self.context)
 
         #expect(dimensions["appUserId"] == .string("current_user"))
         #expect(dimensions["originalAppUserId"] == .string("original_user"))
@@ -187,7 +187,7 @@ struct CustomerInfoDimensionProviderTests {
     func aCustomerWhoHasNeverBoughtAnythingReportsEmptyCollectionsRatherThanNone() async throws {
         let provider = Self.provider(subscriptions: [:], nonSubscriptions: [:], entitlements: [:])
 
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await provider.dimensions(in: Self.context)
 
         #expect(dimensions["purchases"] == .objectList([]))
         #expect(dimensions["entitlements"] == .objectList([]))
@@ -251,56 +251,87 @@ struct CustomerInfoDimensionProviderTests {
     @Test
     func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
         let provider = CustomerInfoDimensionProvider(
-            appUserIDProvider: { "current_user" },
             customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
         )
 
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await provider.dimensions(in: Self.context)
 
         #expect(dimensions == ["appUserId": .string("current_user")])
     }
 
     @Test
     func anEmptyAppUserIDLeavesTheRestOfTheDimensionsUsable() async throws {
-        let provider = Self.provider(appUserID: "")
+        let context = DimensionContext(date: Self.evaluationDate, appUserID: "")
 
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await Self.provider().dimensions(in: context)
 
         #expect(dimensions["appUserId"] == nil)
         #expect(dimensions["originalAppUserId"] == .string("original_user"))
     }
 
     @Test
-    func pinsThePurchasesAndTheAppUserIDToTheSameCustomer() async throws {
-        let currentAppUserID: Atomic<String> = .init("user_a")
+    func readsAndReportsTheCustomerTheSnapshotIsFor() async throws {
         let requestedAppUserID: Atomic<String?> = .init(nil)
         let customerInfo = try Self.customerInfo()
+        let provider = CustomerInfoDimensionProvider(customerInfoProvider: { appUserID in
+            requestedAppUserID.value = appUserID
+            return customerInfo
+        })
 
-        let provider = CustomerInfoDimensionProvider(
-            appUserIDProvider: { currentAppUserID.value },
-            customerInfoProvider: { appUserID in
-                requestedAppUserID.value = appUserID
-                // The app switches user while this read is suspended.
-                currentAppUserID.value = "user_b"
-                return customerInfo
-            }
+        let dimensions = try await provider.dimensions(
+            in: DimensionContext(date: Self.evaluationDate, appUserID: "user_a")
         )
-
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
 
         #expect(requestedAppUserID.value == "user_a")
         #expect(dimensions["appUserId"] == .string("user_a"))
     }
 
     @Test
+    func describesOneCustomerEvenWhenTheUserChangesMidSnapshot() async throws {
+        let currentAppUserID: Atomic<String> = .init("user_a")
+        let customerInfo = try Self.customerInfo()
+
+        // Reads the customer the snapshot pinned, and switches user while suspended, the way a
+        // `logIn` completing during the customer info request would.
+        let customerInfoProvider = CustomerInfoDimensionProvider(customerInfoProvider: { appUserID in
+            currentAppUserID.value = "user_b"
+            #expect(appUserID == "user_a")
+            return customerInfo
+        })
+        let attributesProvider = SubscriberAttributesDimensionProvider { appUserID in
+            [appUserID: SubscriberAttribute(withKey: appUserID, value: "seen")]
+        }
+
+        // Customer info first: it switches user while suspended, so a resolver that read the
+        // current user once per provider would hand the attributes provider the new one.
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [customerInfoProvider, attributesProvider],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            appUserIDProvider: { currentAppUserID.value }
+        ).snapshot()
+
+        // Both namespaces describe user_a, even though the current user is user_b by now.
+        let describesOneCustomer = """
+        {"and": [{"==": [{"var": "customerInfo.appUserId"}, "user_a"]}, \
+        {"==": [{"var": "subscriberAttributes.user_a.value"}, "seen"]}]}
+        """
+
+        #expect(currentAppUserID.value == "user_b")
+        #expect(
+            RulesEngine.evaluate(predicate: describesOneCustomer, variables: snapshot.values)
+            == .success(true)
+        )
+    }
+
+    @Test
     func anUnreadableCustomerInfoLetsAbsenceRulesMatch() async throws {
         let provider = CustomerInfoDimensionProvider(
-            appUserIDProvider: { "current_user" },
             customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
         )
         let snapshot = try await DimensionResolver(
             dimensionProviders: [provider],
-            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            appUserIDProvider: { "current_user" }
         ).snapshot()
 
         let hasNoActivePurchase = """
@@ -318,12 +349,11 @@ struct CustomerInfoDimensionProviderTests {
     @Test
     func cancellationWhileReadingTheCustomerInfoPropagates() async throws {
         let provider = CustomerInfoDimensionProvider(
-            appUserIDProvider: { "current_user" },
             customerInfoProvider: { _ in throw CancellationError() }
         )
 
         await #expect(throws: CancellationError.self) {
-            try await provider.dimensions(at: Self.evaluationDate)
+            try await provider.dimensions(in: Self.context)
         }
     }
 
@@ -331,12 +361,11 @@ struct CustomerInfoDimensionProviderTests {
     func readsTheCustomerInfoOnEveryEvaluation() async throws {
         let reader = CountingCustomerInfoReader(customerInfo: try Self.customerInfo())
         let provider = CustomerInfoDimensionProvider(
-            appUserIDProvider: { "current_user" },
             customerInfoProvider: { _ in await reader.read() }
         )
 
-        _ = try await provider.dimensions(at: Self.evaluationDate)
-        _ = try await provider.dimensions(at: Self.evaluationDate)
+        _ = try await provider.dimensions(in: Self.context)
+        _ = try await provider.dimensions(in: Self.context)
 
         #expect(await reader.readCount == 2)
     }
@@ -345,7 +374,8 @@ struct CustomerInfoDimensionProviderTests {
     func makesTheRecordsSearchableByARule() async throws {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [Self.provider()],
-            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            appUserIDProvider: { "current_user" }
         ).snapshot()
 
         let hasAnActiveTrial = """
@@ -367,7 +397,8 @@ struct CustomerInfoDimensionProviderTests {
     func nestsEveryDimensionUnderTheCustomerInfoRoot() async throws {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [Self.provider()],
-            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            appUserIDProvider: { "current_user" }
         ).snapshot()
 
         let readsTheAppUserID = #"{"==": [{"var": "customerInfo.appUserId"}, "current_user"]}"#
@@ -388,6 +419,7 @@ struct CustomerInfoDimensionProviderTests {
 private extension CustomerInfoDimensionProviderTests {
 
     static let evaluationDate = Self.date("2026-06-15T12:00:00Z")
+    static let context = DimensionContext(date: Self.evaluationDate, appUserID: "current_user")
     static let requestDate = Self.date("2026-06-15T12:00:00Z")
     static let firstSeenDate = Self.date("2022-01-01T00:00:00Z")
     static let originalPurchaseDate = Self.date("2021-01-01T00:00:00Z")
@@ -402,7 +434,6 @@ private extension CustomerInfoDimensionProviderTests {
     static let autoResumeDate = Self.date("2026-06-20T00:00:00Z")
 
     static func provider(
-        appUserID: String = "current_user",
         subscriptions: [String: Any]? = nil,
         nonSubscriptions: [String: Any]? = nil,
         entitlements: [String: Any]? = nil
@@ -414,10 +445,7 @@ private extension CustomerInfoDimensionProviderTests {
             entitlements: entitlements
         )
 
-        return CustomerInfoDimensionProvider(
-            appUserIDProvider: { appUserID },
-            customerInfoProvider: { _ in customerInfo }
-        )
+        return CustomerInfoDimensionProvider(customerInfoProvider: { _ in customerInfo })
     }
 
     static func customerInfo(
@@ -544,7 +572,7 @@ private extension CustomerInfoDimensionProviderTests {
         _ name: String,
         of provider: CustomerInfoDimensionProvider
     ) async throws -> [[String: DimensionValue]] {
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await provider.dimensions(in: Self.context)
         guard case .objectList(let records) = dimensions[name] else {
             Issue.record("'\(name)' is not a collection of records: \(String(describing: dimensions[name]))")
             return []

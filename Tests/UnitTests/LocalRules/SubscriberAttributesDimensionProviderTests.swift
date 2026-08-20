@@ -106,7 +106,7 @@ struct SubscriberAttributesProviderTests {
 
     @Test
     func readFailureLeavesOtherDimensionsAvailable() async throws {
-        let provider = SubscriberAttributesDimensionProvider {
+        let provider = SubscriberAttributesDimensionProvider { _ in
             throw TestError.unavailable
         }
         let snapshot = try await DimensionResolver(
@@ -126,7 +126,7 @@ struct SubscriberAttributesProviderTests {
         let attributes: Atomic<SubscriberAttribute.Dictionary> = .init([
             "goal": Self.attribute("goal", value: "lose_weight")
         ])
-        let provider = SubscriberAttributesDimensionProvider {
+        let provider = SubscriberAttributesDimensionProvider { _ in
             attributes.value
         }
 
@@ -153,14 +153,14 @@ struct SubscriberAttributesProviderTests {
             subscriberAttribute: Self.attribute("goal", value: "gain_muscle"),
             appUserID: "second-user"
         )
-        let provider = SubscriberAttributesDimensionProvider(
-            deviceCache: deviceCache,
-            currentUserProvider: currentUserProvider
-        )
+        let provider = SubscriberAttributesDimensionProvider(deviceCache: deviceCache)
 
-        let first = try await provider.dimensions(at: Self.evaluationDate)
-        currentUserProvider.mockAppUserID = "second-user"
-        let second = try await provider.dimensions(at: Self.evaluationDate)
+        let first = try await provider.dimensions(
+            in: DimensionContext(date: Self.evaluationDate, appUserID: "first-user")
+        )
+        let second = try await provider.dimensions(
+            in: DimensionContext(date: Self.evaluationDate, appUserID: "second-user")
+        )
 
         #expect(Self.value(of: "goal", in: first) == .string("lose_weight"))
         #expect(Self.value(of: "goal", in: second) == .string("gain_muscle"))
@@ -234,7 +234,7 @@ struct SubscriberAttributesProviderTests {
     private static func provider(
         _ attributes: SubscriberAttribute...
     ) -> SubscriberAttributesDimensionProvider {
-        return SubscriberAttributesDimensionProvider {
+        return SubscriberAttributesDimensionProvider { _ in
             Dictionary(uniqueKeysWithValues: attributes.map { ($0.key, $0) })
         }
     }
@@ -259,7 +259,7 @@ private struct SubscriberAttributesTestDeviceProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.device
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         return ["platform": .string("ios")]
     }
 
