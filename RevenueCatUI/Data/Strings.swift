@@ -118,6 +118,7 @@ enum Strings {
     case paywall_web_view_not_rendered(reason: String)
     case paywall_web_view_load_failed(String)
     case paywall_web_view_http_error(statusCode: Int)
+    case web_view_data_store_removal_failed(UUID, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -394,6 +395,8 @@ extension Strings: CustomStringConvertible {
         case .paywall_web_view_http_error(let statusCode):
             return "Paywalls V2 web_view failed to load and will be removed. " +
                 "The server responded with HTTP status code \(statusCode)."
+        case let .web_view_data_store_removal_failed(identifier, error):
+            return "Failed to remove web view website data store '\(identifier)': \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
