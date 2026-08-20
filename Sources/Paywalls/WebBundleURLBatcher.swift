@@ -39,24 +39,17 @@ actor WebBundleURLBatcher: WebBundleURLBatcherType {
     static let shared = WebBundleURLBatcher()
 
     private let eventBus: WebBundleEventBus
-    /// Process-lifetime. Load-path `publish` always re-emits and unions IDs; present-path skips a seen ID.
-    /// Not reset on identity or config generation change.
-    private var publishedWorkflowIDs: Set<String> = []
 
     init(eventBus: WebBundleEventBus = .shared) {
         self.eventBus = eventBus
     }
 
     /// Publishes one complete-screen batch at a time from `offerings` and `workflowsByOfferingId`.
-    ///
-    /// Workflow IDs are unioned, not replaced: cache warming calls this with an empty map for inline
-    /// V2 trees and must not clear load-path IDs used by ``publishPresentedWorkflow(_:)``.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publish(
         offerings: Offerings,
         workflowsByOfferingId: [String: PublishedWorkflow]
     ) async {
-        self.publishedWorkflowIDs.formUnion(workflowsByOfferingId.values.map(\.id))
         await self.publishBatches(
             Self.orderedScreenURLBatches(
                 offerings: offerings,
@@ -65,10 +58,9 @@ actor WebBundleURLBatcher: WebBundleURLBatcherType {
         )
     }
 
-    /// Appends a presented workflow that was not already in the load-path set (dedup by workflow ID).
+    /// Publishes a presented workflow. Receivers own cache and in-flight-request deduplication.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     func publishPresentedWorkflow(_ workflow: PublishedWorkflow) async {
-        guard self.publishedWorkflowIDs.insert(workflow.id).inserted else { return }
         await self.publishBatches(Self.screenURLBatches(in: workflow))
     }
 

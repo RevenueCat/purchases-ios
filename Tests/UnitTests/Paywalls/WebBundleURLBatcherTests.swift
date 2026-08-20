@@ -591,7 +591,7 @@ final class WebBundleURLBatcherTests: TestCase {
         ]
     }
 
-    func testPresentedWorkflowIsAppendedOnce() async throws {
+    func testPresentedWorkflowIsPublishedEveryTime() async throws {
         let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
         let presented = try Self.singleScreenWorkflow(id: "wf_presented", url: "https://example.com/presented")
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
@@ -608,12 +608,14 @@ final class WebBundleURLBatcherTests: TestCase {
 
         expect(received) == [
             .receivedAssetURLs([Self.url("https://example.com/current")]),
+            .receivedAssetURLs([Self.url("https://example.com/presented")]),
             .receivedAssetURLs([Self.url("https://example.com/presented")])
         ]
     }
 
-    func testEmptyPublishDoesNotClearLoadPathDedup() async throws {
-        let current = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/current")
+    func testPresentedWorkflowPublishesChangedURLsForAnExistingWorkflowID() async throws {
+        let initial = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/initial")
+        let refreshed = try Self.singleScreenWorkflow(id: "wf_current", url: "https://example.com/refreshed")
         let offerings = Self.offerings(currentOfferingID: "default", offeringIDs: ["default"])
 
         var received: [WebBundleEvent] = []
@@ -622,12 +624,12 @@ final class WebBundleURLBatcherTests: TestCase {
             .sink { received.append($0) }
             .store(in: &self.cancellables)
 
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": current])
-        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: [:])
-        await self.batcher.publishPresentedWorkflow(current)
+        await self.batcher.publish(offerings: offerings, workflowsByOfferingId: ["default": initial])
+        await self.batcher.publishPresentedWorkflow(refreshed)
 
         expect(received) == [
-            .receivedAssetURLs([Self.url("https://example.com/current")])
+            .receivedAssetURLs([Self.url("https://example.com/initial")]),
+            .receivedAssetURLs([Self.url("https://example.com/refreshed")])
         ]
     }
 
