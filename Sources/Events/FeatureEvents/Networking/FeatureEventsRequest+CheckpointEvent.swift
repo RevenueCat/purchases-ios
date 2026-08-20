@@ -24,7 +24,7 @@ extension FeatureEventsRequest {
         let type: String
         let identifier: String
         let appUserID: String
-        let sessionID: String?
+        let appSessionID: String
         let timestamp: UInt64
 
     }
@@ -36,6 +36,11 @@ extension FeatureEventsRequest.CheckpointEvent {
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredFeatureEvent) {
         guard storedEvent.feature == .checkpoints else { return nil }
+
+        guard let appSessionID = storedEvent.appSessionID else {
+            Logger.error(Strings.paywalls.event_missing_app_session_id)
+            return nil
+        }
 
         guard let jsonData = storedEvent.encodedEvent.data(using: .utf8) else {
             Logger.error(Strings.paywalls.event_cannot_get_encoded_event)
@@ -51,7 +56,7 @@ extension FeatureEventsRequest.CheckpointEvent {
                 type: event.eventType,
                 identifier: event.data.identifier,
                 appUserID: storedEvent.userID,
-                sessionID: storedEvent.appSessionID?.uuidString,
+                appSessionID: appSessionID.uuidString,
                 timestamp: event.data.date.millisecondsSince1970
             )
         } catch {
@@ -75,7 +80,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case type
         case identifier
         case appUserID = "app_user_id"
-        case sessionID = "session_id"
+        case appSessionID = "app_session_id"
         case timestamp
 
     }
@@ -87,7 +92,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.type, forKey: .type)
         try container.encode(self.identifier, forKey: .identifier)
         try container.encode(self.appUserID, forKey: .appUserID)
-        try container.encodeIfPresent(self.sessionID, forKey: .sessionID)
+        try container.encode(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)
     }
 

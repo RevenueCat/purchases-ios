@@ -37,7 +37,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.type) == "checkpoint_hit"
         expect(request.identifier) == "onboarding_complete"
         expect(request.appUserID) == Self.userID
-        expect(request.sessionID) == Self.appSessionID.uuidString
+        expect(request.appSessionID) == Self.appSessionID.uuidString
         expect(request.timestamp) == self.date.millisecondsSince1970
     }
 
@@ -49,7 +49,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).to(contain("\"type\":\"checkpoint_hit\""))
         expect(json).to(contain("\"identifier\":\"onboarding_complete\""))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
-        expect(json).to(contain("\"session_id\":\"\(Self.appSessionID.uuidString)\""))
+        expect(json).to(contain("\"app_session_id\":\"\(Self.appSessionID.uuidString)\""))
         expect(json).to(contain("\"timestamp\":\(self.date.millisecondsSince1970)"))
     }
 
@@ -60,10 +60,10 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).toNot(contain("discriminator"))
     }
 
-    func testSessionIDAbsentFromJSONWhenMissing() throws {
-        let json = try self.encodedJSON(appSessionID: nil)
+    func testReturnsNilWhenAppSessionIDIsMissing() throws {
+        let stored = try self.storedEvent(appSessionID: nil)
 
-        expect(json).toNot(contain("session_id"))
+        expect(FeatureEventsRequest.CheckpointEvent(storedEvent: stored)).to(beNil())
     }
 
     func testReturnsNilForNonCheckpointStoredEvent() throws {
@@ -94,8 +94,8 @@ class CheckpointEventsRequestTests: TestCase {
         ))
     }
 
-    private func encodedJSON(appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID) throws -> String {
-        let stored = try self.storedEvent(appSessionID: appSessionID)
+    private func encodedJSON() throws -> String {
+        let stored = try self.storedEvent()
         let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
         let encoder = JSONEncoder()
         encoder.outputFormatting = .sortedKeys
