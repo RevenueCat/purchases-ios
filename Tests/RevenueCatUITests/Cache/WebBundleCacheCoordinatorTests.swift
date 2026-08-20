@@ -183,13 +183,55 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         await self.fulfillment(of: [duplicateStarted], timeout: 0.05)
         let invocations = await recorder.invocations
         XCTAssertEqual(invocations.count, 1)
-        XCTAssertEqual(coordinator.inFlightTasks.count, 1)
 
         await gate.open()
         withExtendedLifetime(coordinator) {}
     }
 
-    func testCompletedPrewarmIsRemovedAndCanBeStartedAgain() async throws {
+    func testReceivedAssetURLBatchesPrewarmInPublicationOrder() async throws {
+        let store = try self.makeStore()
+        let bus = WebBundleEventBus()
+        let firstStarted = self.expectation(description: "first prewarm started")
+        let secondStarted = self.expectation(description: "second prewarm started")
+        let secondStartedOutOfOrder = self.expectation(description: "second prewarm started out of order")
+        secondStartedOutOfOrder.isInverted = true
+        let gate = LoadGate()
+        let firstFinished: Atomic<Bool> = false
+        let prewarmer = makeCacheWarmer { url, _ in
+            switch url {
+            case Self.urls[0].url:
+                firstStarted.fulfill()
+                await gate.wait()
+                firstFinished.value = true
+            case Self.urls[1].url:
+                if firstFinished.value {
+                    secondStarted.fulfill()
+                } else {
+                    secondStartedOutOfOrder.fulfill()
+                }
+            default:
+                XCTFail("Unexpected URL: \(url)")
+            }
+        }
+        let coordinator = WebBundleCacheCoordinator(
+            store: store,
+            cacheWarmer: prewarmer,
+            bus: bus,
+            sweeper: NoOpSweeper()
+        )
+
+        await bus.publish([Self.urls[0]])
+        await self.fulfillment(of: [firstStarted], timeout: 1)
+        await bus.publish([Self.urls[1]])
+
+        await self.fulfillment(of: [secondStartedOutOfOrder], timeout: 0.05)
+        await gate.open()
+        await self.fulfillment(of: [secondStarted], timeout: 1)
+
+        withExtendedLifetime(coordinator) {}
+    }
+
+    func testEmptyEventAllowsCompletedPrewarmToBeStartedAgain() async throws {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
         let firstStarted = self.expectation(description: "first prewarm started")
@@ -212,7 +254,7 @@ final class WebBundleCacheCoordinatorTests: TestCase {
 
         await bus.publish(urls)
         await self.fulfillment(of: [firstStarted], timeout: 1)
-        await self.waitForInFlightTasksToFinish(coordinator)
+        await bus.empty()
 
         await bus.publish(urls)
 
@@ -227,10 +269,14 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
         let started = self.expectation(description: "prewarm started")
+        let cancelled = self.expectation(description: "prewarm cancelled")
         let gate = LoadGate()
         let prewarmer = makeCacheWarmer { _, _ in
             started.fulfill()
             await gate.wait()
+            if Task.isCancelled {
+                cancelled.fulfill()
+            }
         }
         let coordinator = WebBundleCacheCoordinator(
             store: store,
@@ -242,27 +288,13 @@ final class WebBundleCacheCoordinatorTests: TestCase {
 
         await bus.publish(urls)
         await self.fulfillment(of: [started], timeout: 1)
-        let task = try XCTUnwrap(coordinator.inFlightTasks[urls])
 
         await bus.clearCache()
-
-        XCTAssertTrue(task.isCancelled)
-        XCTAssertTrue(coordinator.inFlightTasks.isEmpty)
-
         await gate.open()
+
+        await self.fulfillment(of: [cancelled], timeout: 1)
+
         withExtendedLifetime(coordinator) {}
-    }
-
-    private func waitForInFlightTasksToFinish(_ coordinator: WebBundleCacheCoordinator) async {
-        for _ in 0..<100 {
-            if coordinator.inFlightTasks.isEmpty {
-                return
-            }
-
-            await yield()
-        }
-
-        XCTFail("Timed out waiting for prewarm tasks to finish")
     }
 
     private func makeStore() throws -> WebViewDataStoreIdentifierStore {

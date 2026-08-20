@@ -23,8 +23,8 @@ final class WebBundleCacheCoordinator {
     private let sweeper: any WebViewDataStoreSweeping
     private let cacheWarmer: WebBundlePrewarmer
     private let bus: WebBundleEventBus
+    private let taskQueue = WebBundleTaskQueue()
     private var job: AnyCancellable?
-    private(set) var inFlightTasks = [[URLWithValidation]: Task<Void, Never>]()
 
     init(
         store: WebViewDataStoreIdentifierStore,
@@ -63,30 +63,74 @@ final class WebBundleCacheCoordinator {
     }
 
     private func setUpSubscription() {
-        self.job = bus.publisher.sink { [weak self] event in
-            guard let self else { return }
+        self.job = bus.publisher
+            .removeDuplicates(by: { previous, current in
+                guard case let .receivedAssetURLs(previousURLs) = previous,
+                      case let .receivedAssetURLs(currentURLs) = current else {
+                    return false
+                }
 
-            switch event {
-            case .cacheClearRequested:
-                self.store.retireCurrentIdentifier()
-                Task(priority: .medium) {
-                    await self.scheduleSweep()
-                }
-                self.inFlightTasks.values.forEach {
-                    $0.cancel()
-                }
-                self.inFlightTasks = [:]
-            case .receivedAssetURLs(let urls):
-                if inFlightTasks[urls] == nil {
-                    let id = self.store.identifier()
-                    inFlightTasks[urls] = Task { [weak self] in
-                        defer { self?.inFlightTasks[urls] = nil }
-                        await self?.cacheWarmer.prewarm(urls, storeID: id)
+                return previousURLs == currentURLs
+            })
+            .sink { [weak self] event in
+                guard let self else { return }
+
+                switch event {
+                case .cacheClearRequested:
+                    self.store.retireCurrentIdentifier()
+                    self.taskQueue.clear()
+                    Task(priority: .medium) {
+                        await self.scheduleSweep()
                     }
+                case .receivedAssetURLs(let urls):
+                    let id = self.store.identifier()
+                    self.taskQueue.add { [weak self] in
+                        guard let self else { return }
+                        await self.cacheWarmer.prewarm(urls, storeID: id)
+                    }
+                case .empty:
+                    break
                 }
-            case .empty:
-                break
             }
+    }
+
+}
+
+/// Runs prewarm operations in insertion order and synchronously tracks their tasks for cancellation.
+private final class WebBundleTaskQueue: @unchecked Sendable {
+
+    private struct Entry {
+        let id: UUID
+        let task: Task<Void, Never>
+    }
+
+    private let queue = DispatchQueue(label: "com.revenuecat.web-bundle-task-cache")
+    private var tasks: [Entry] = []
+
+    func add(_ operation: @escaping @Sendable () async -> Void) {
+        self.queue.sync {
+            let id = UUID()
+            let previousTask = self.tasks.last?.task
+            let task = Task { [weak self] in
+                defer { self?.removeTask(withID: id) }
+                await previousTask?.value
+                guard !Task.isCancelled else { return }
+                await operation()
+            }
+            self.tasks.append(.init(id: id, task: task))
+        }
+    }
+
+    func clear() {
+        self.queue.sync {
+            self.tasks.forEach { $0.task.cancel() }
+            self.tasks.removeAll()
+        }
+    }
+
+    private func removeTask(withID id: UUID) {
+        self.queue.async {
+            self.tasks.removeAll { $0.id == id }
         }
     }
 
