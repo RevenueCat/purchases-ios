@@ -252,7 +252,7 @@ struct CustomerInfoDimensionProviderTests {
     func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
         let provider = CustomerInfoDimensionProvider(
             appUserIDProvider: { "current_user" },
-            customerInfoProvider: { throw ErrorUtils.offlineConnectionError() }
+            customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
         )
 
         let dimensions = try await provider.dimensions(at: Self.evaluationDate)
@@ -261,8 +261,8 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func anUnknownAppUserIDLeavesTheRestOfTheDimensionsUsable() async throws {
-        let provider = Self.provider(appUserID: nil)
+    func anEmptyAppUserIDLeavesTheRestOfTheDimensionsUsable() async throws {
+        let provider = Self.provider(appUserID: "")
 
         let dimensions = try await provider.dimensions(at: Self.evaluationDate)
 
@@ -271,10 +271,55 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func pinsThePurchasesAndTheAppUserIDToTheSameCustomer() async throws {
+        let currentAppUserID: Atomic<String> = .init("user_a")
+        let requestedAppUserID: Atomic<String?> = .init(nil)
+        let customerInfo = try Self.customerInfo()
+
+        let provider = CustomerInfoDimensionProvider(
+            appUserIDProvider: { currentAppUserID.value },
+            customerInfoProvider: { appUserID in
+                requestedAppUserID.value = appUserID
+                // The app switches user while this read is suspended.
+                currentAppUserID.value = "user_b"
+                return customerInfo
+            }
+        )
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(requestedAppUserID.value == "user_a")
+        #expect(dimensions["appUserId"] == .string("user_a"))
+    }
+
+    @Test
+    func anUnreadableCustomerInfoLetsAbsenceRulesMatch() async throws {
+        let provider = CustomerInfoDimensionProvider(
+            appUserIDProvider: { "current_user" },
+            customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
+        )
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [provider],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
+        ).snapshot()
+
+        let hasNoActivePurchase = """
+        {"none": [{"var": "customerInfo.purchases"}, {"var": "isActive"}]}
+        """
+
+        // Documented rather than desired: in JSON Logic `none` over a missing source is true, so a
+        // customer info this device could not read is indistinguishable from a customer who has
+        // bought nothing. A rule that must not match in that case has to test the ID as well.
+        #expect(
+            RulesEngine.evaluate(predicate: hasNoActivePurchase, variables: snapshot.values) == .success(true)
+        )
+    }
+
+    @Test
     func cancellationWhileReadingTheCustomerInfoPropagates() async throws {
         let provider = CustomerInfoDimensionProvider(
             appUserIDProvider: { "current_user" },
-            customerInfoProvider: { throw CancellationError() }
+            customerInfoProvider: { _ in throw CancellationError() }
         )
 
         await #expect(throws: CancellationError.self) {
@@ -287,7 +332,7 @@ struct CustomerInfoDimensionProviderTests {
         let reader = CountingCustomerInfoReader(customerInfo: try Self.customerInfo())
         let provider = CustomerInfoDimensionProvider(
             appUserIDProvider: { "current_user" },
-            customerInfoProvider: { await reader.read() }
+            customerInfoProvider: { _ in await reader.read() }
         )
 
         _ = try await provider.dimensions(at: Self.evaluationDate)
@@ -357,7 +402,7 @@ private extension CustomerInfoDimensionProviderTests {
     static let autoResumeDate = Self.date("2026-06-20T00:00:00Z")
 
     static func provider(
-        appUserID: String? = "current_user",
+        appUserID: String = "current_user",
         subscriptions: [String: Any]? = nil,
         nonSubscriptions: [String: Any]? = nil,
         entitlements: [String: Any]? = nil
@@ -371,7 +416,7 @@ private extension CustomerInfoDimensionProviderTests {
 
         return CustomerInfoDimensionProvider(
             appUserIDProvider: { appUserID },
-            customerInfoProvider: { customerInfo }
+            customerInfoProvider: { _ in customerInfo }
         )
     }
 

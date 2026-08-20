@@ -22,8 +22,8 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.customerInfo
 
-    private let appUserIDProvider: @Sendable () -> String?
-    private let customerInfoProvider: @Sendable () async throws -> CustomerInfo
+    private let appUserIDProvider: @Sendable () -> String
+    private let customerInfoProvider: @Sendable (String) async throws -> CustomerInfo
 
     init(
         customerInfoManager: CustomerInfoManager,
@@ -31,37 +31,45 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
     ) {
         self.init(
             appUserIDProvider: { currentUserProvider.currentAppUserID },
-            customerInfoProvider: {
-                try await customerInfoManager.customerInfo(
-                    appUserID: currentUserProvider.currentAppUserID,
-                    fetchPolicy: .default
-                )
+            customerInfoProvider: { appUserID in
+                try await customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default)
             }
         )
     }
 
     init(
-        appUserIDProvider: @escaping @Sendable () -> String?,
-        customerInfoProvider: @escaping @Sendable () async throws -> CustomerInfo
+        appUserIDProvider: @escaping @Sendable () -> String,
+        customerInfoProvider: @escaping @Sendable (String) async throws -> CustomerInfo
     ) {
         self.appUserIDProvider = appUserIDProvider
         self.customerInfoProvider = customerInfoProvider
     }
 
     func dimensions(at date: Date) async throws -> [String: DimensionValue] {
-        var dimensions = try await self.customerInfoDimensions(at: date)
-        // The app user ID is read apart from the rest so a rule targeting it does not depend on the
-        // network: the ID is known as soon as the SDK is configured, the rest may still be in flight.
-        dimensions.put(Self.appUserIDKey, string: self.appUserIDProvider())
+        // Read once and used for both the customer info request and the reported ID. Reading it
+        // again after the request would describe a different customer than the purchases below
+        // whenever the app logs in, logs out, or switches user while that request is suspended.
+        let appUserID = self.appUserIDProvider()
+
+        var dimensions = try await self.customerInfoDimensions(forAppUserID: appUserID, at: date)
+        // Reported even when the read below failed, so a rule targeting only the ID still resolves.
+        dimensions.put(Self.appUserIDKey, string: appUserID)
         return dimensions
     }
 
     /// A customer info that cannot be read contributes no dimensions instead of failing the
     /// snapshot, which would take an otherwise resolvable evaluation down with it. Cancellation
     /// is not a failure and propagates.
-    private func customerInfoDimensions(at date: Date) async throws -> [String: DimensionValue] {
+    ///
+    /// A rule then sees a customer with no purchases rather than no customer at all, so an
+    /// absence rule such as `{"none": [purchases, ...]}` matches. See
+    /// `anUnreadableCustomerInfoLetsAbsenceRulesMatch`.
+    private func customerInfoDimensions(
+        forAppUserID appUserID: String,
+        at date: Date
+    ) async throws -> [String: DimensionValue] {
         do {
-            return Self.dimensions(of: try await self.customerInfoProvider(), at: date)
+            return Self.dimensions(of: try await self.customerInfoProvider(appUserID), at: date)
         } catch let error as CancellationError {
             throw error
         } catch {
