@@ -18,6 +18,14 @@ import Nimble
 import StoreKit
 import XCTest
 
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
+
 @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
 class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOrchestratorTests {
 
@@ -302,6 +310,66 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
     }
 
     // MARK: - PurchaseParams
+
+    #if canImport(UIKit) && !os(watchOS)
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+    func testPurchaseWithPurchaseParamsForwardsConfirmInSceneToProductPurchaser() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        guard let scene = await UIScene.mock() else {
+            fail("Failed to create UIScene mock")
+            return
+        }
+
+        let productPurchaser = MockStoreKit2ProductPurchaser()
+        self.orchestrator.storeKit2ProductPurchaser = productPurchaser
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let params = PurchaseParams.Builder(product: StoreProduct(sk2Product: product))
+            .with(confirmInScene: scene)
+            .build()
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(params: params, trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(productPurchaser.invokedPurchaseCount) == 1
+        expect(productPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInScene).to(equal(scene))
+    }
+    #endif
+
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    @available(macOS 15.2, *)
+    func testPurchaseWithPurchaseParamsForwardsConfirmInWindowToProductPurchaser() async throws {
+        try AvailabilityChecks.macOS15_2APIAvailableOrSkipTest()
+
+        guard let window = await NSWindow.mock() else {
+            fail("Failed to create NSWindow mock")
+            return
+        }
+
+        let productPurchaser = MockStoreKit2ProductPurchaser()
+        self.orchestrator.storeKit2ProductPurchaser = productPurchaser
+        self.customerInfoManager.stubbedCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let product = try await self.fetchSk2Product()
+        let params = PurchaseParams.Builder(product: StoreProduct(sk2Product: product))
+            .with(confirmInWindow: window)
+            .build()
+
+        _ = await withCheckedContinuation { continuation in
+            self.orchestrator.purchase(params: params, trackDiagnostics: false) { transaction, customerInfo, error, userCancelled in
+                continuation.resume(returning: (transaction, customerInfo, error, userCancelled))
+            }
+        }
+
+        expect(productPurchaser.invokedPurchaseCount) == 1
+        expect(productPurchaser.receivedStoreKit2ConfirmInOptions?.confirmInWindow).to(equal(window))
+    }
+    #endif
 
     func testPurchaseWithPurchaseParamsPostsReceipt() async throws {
         self.backend.stubbedPostReceiptResult = .success(mockCustomerInfo)

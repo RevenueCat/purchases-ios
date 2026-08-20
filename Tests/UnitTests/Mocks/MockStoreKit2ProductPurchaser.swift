@@ -17,12 +17,17 @@ import StoreKit
 
 class MockStoreKit2ProductPurchaser: StoreKit2ProductPurchaserType {
 
+    private(set) var invokedPurchaseCount = 0
+    private(set) var receivedStoreKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
+
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     func purchase(
         product: any RevenueCat.PurchasableSK2Product,
         options: Set<StoreKit.Product.PurchaseOption>,
         storeKit2ConfirmInOptions: RevenueCat.StoreKit2ConfirmInOptions?
     ) async throws -> StoreKit.Product.PurchaseResult {
+        self.invokedPurchaseCount += 1
+        self.receivedStoreKit2ConfirmInOptions = storeKit2ConfirmInOptions
         return .pending
     }
 }
