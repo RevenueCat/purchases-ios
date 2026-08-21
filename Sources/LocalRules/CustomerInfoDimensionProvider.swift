@@ -9,10 +9,23 @@
 //
 //  CustomerInfoDimensionProvider.swift
 //
-//  Created by Facundo Menzella on 8/20/26.
+//  Created by Facundo Menzella on 20/8/26.
 //
 
 import Foundation
+
+/// Reads the customer info a snapshot describes.
+protocol CustomerInfoDimensionSource: Sendable {
+
+    func customerInfo(appUserID: String) async throws -> CustomerInfo
+}
+
+extension CustomerInfoManager: CustomerInfoDimensionSource {
+
+    func customerInfo(appUserID: String) async throws -> CustomerInfo {
+        return try await self.customerInfo(appUserID: appUserID, fetchPolicy: .default)
+    }
+}
 
 /// Supplies the current customer's purchases and entitlements to the local rules engine.
 ///
@@ -22,17 +35,9 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.customerInfo
 
-    private let customerInfoProvider: @Sendable (String) async throws -> CustomerInfo
+    private let customerInfoProvider: any CustomerInfoDimensionSource
 
-    init(customerInfoManager: CustomerInfoManager) {
-        self.init { appUserID in
-            try await customerInfoManager.customerInfo(appUserID: appUserID, fetchPolicy: .default)
-        }
-    }
-
-    init(
-        customerInfoProvider: @escaping @Sendable (String) async throws -> CustomerInfo
-    ) {
+    init(customerInfoProvider: any CustomerInfoDimensionSource) {
         self.customerInfoProvider = customerInfoProvider
     }
 
@@ -54,7 +59,7 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
     ) async throws -> [String: DimensionValue] {
         do {
             return Self.dimensions(
-                of: try await self.customerInfoProvider(context.appUserID),
+                of: try await self.customerInfoProvider.customerInfo(appUserID: context.appUserID),
                 at: context.date
             )
         } catch let error as CancellationError {

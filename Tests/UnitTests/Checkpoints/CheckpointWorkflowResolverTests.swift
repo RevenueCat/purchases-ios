@@ -175,7 +175,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
                 return self.offerings
             },
             localRulesEvaluator: evaluator,
-            appUserIDProvider: { "user_a" }
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "user_a")
         )
 
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
@@ -198,7 +198,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         )
         let resolver = self.makeResolver(
             localRulesEvaluator: evaluator,
-            appUserIDProvider: { currentAppUserID.value }
+            currentUserProvider: AtomicCurrentUserProvider(currentAppUserID)
         )
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
@@ -712,7 +712,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private func makeResolver(
         offeringsProvider: ((String) async throws -> Offerings)? = nil,
         localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: []),
-        appUserIDProvider: @escaping @Sendable () -> String = { "" }
+        currentUserProvider: any CurrentUserProvider = FixedCurrentUserProvider(currentAppUserID: "")
     ) -> DefaultCheckpointWorkflowResolver {
         return DefaultCheckpointWorkflowResolver(
             checkpointsConfigProvider: self.checkpointsProvider,
@@ -720,7 +720,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             localRulesEvaluator: localRulesEvaluator,
             workflowManager: self.workflowManager,
             offeringsProvider: offeringsProvider ?? { _ in self.offerings },
-            appUserIDProvider: appUserIDProvider
+            currentUserProvider: currentUserProvider
         )
     }
 
@@ -868,4 +868,22 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         return snapshot.configGeneration == self.configGeneration
     }
 
+}
+
+private struct AtomicCurrentUserProvider: CurrentUserProvider {
+
+    private let appUserID: Atomic<String>
+
+    init(_ appUserID: Atomic<String>) {
+        self.appUserID = appUserID
+    }
+
+    var currentAppUserID: String { self.appUserID.value }
+    var currentUserIsAnonymous: Bool { false }
+}
+
+private struct FixedCurrentUserProvider: CurrentUserProvider {
+
+    let currentAppUserID: String
+    var currentUserIsAnonymous: Bool { false }
 }

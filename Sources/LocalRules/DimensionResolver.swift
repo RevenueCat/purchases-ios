@@ -31,20 +31,20 @@ struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
     private let dateProvider: DateProvider
-    private let appUserIDProvider: @Sendable () -> String
+    private let currentUserProvider: (any CurrentUserProvider)?
 
     /// Creates a resolver from injected providers, a clock, and the current customer.
     ///
-    /// `appUserIDProvider` defaults to no customer, which contributes no customer-scoped
-    /// dimensions rather than the wrong ones.
+    /// Without a `currentUserProvider` the snapshot describes no customer, so a customer-scoped
+    /// provider contributes nothing rather than the wrong thing.
     init(
         dimensionProviders: [any DimensionProvider],
         dateProvider: DateProvider = DateProvider(),
-        appUserIDProvider: @escaping @Sendable () -> String = { "" }
+        currentUserProvider: (any CurrentUserProvider)? = nil
     ) {
         self.dimensionProviders = dimensionProviders
         self.dateProvider = dateProvider
-        self.appUserIDProvider = appUserIDProvider
+        self.currentUserProvider = currentUserProvider
     }
 
     /// Collects each provider once and merges its values under its namespace.
@@ -61,7 +61,7 @@ struct DimensionResolver: Sendable {
         // instant however long any one of them suspends for.
         let context = DimensionContext(
             date: self.dateProvider.now(),
-            appUserID: appUserID ?? self.appUserIDProvider()
+            appUserID: appUserID ?? self.currentUserProvider?.currentAppUserID ?? ""
         )
         var values: [String: RulesEngine.Value] = [:]
 

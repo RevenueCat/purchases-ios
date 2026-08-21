@@ -95,7 +95,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private let localRulesEvaluator: LocalRulesEvaluator
     private let workflowManager: WorkflowManager
     private let offeringsProvider: (String) async throws -> Offerings
-    private let appUserIDProvider: @Sendable () -> String
+    private let currentUserProvider: any CurrentUserProvider
 
     init(
         checkpointsConfigProvider: CheckpointsConfigProviderType,
@@ -103,14 +103,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         localRulesEvaluator: LocalRulesEvaluator,
         workflowManager: WorkflowManager,
         offeringsProvider: @escaping (String) async throws -> Offerings,
-        appUserIDProvider: @escaping @Sendable () -> String = { "" }
+        currentUserProvider: any CurrentUserProvider
     ) {
         self.checkpointsConfigProvider = checkpointsConfigProvider
         self.audiencesConfigProvider = audiencesConfigProvider
         self.localRulesEvaluator = localRulesEvaluator
         self.workflowManager = workflowManager
         self.offeringsProvider = offeringsProvider
-        self.appUserIDProvider = appUserIDProvider
+        self.currentUserProvider = currentUserProvider
     }
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
@@ -131,7 +131,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
         // The audience walk suspends, so pin the customer the offerings are loaded for too.
-        let appUserID = self.appUserIDProvider()
+        let appUserID = self.currentUserProvider.currentAppUserID
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
@@ -173,7 +173,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
         // Same reason the config is rechecked: an answer worked out for a customer who has since
         // signed out is not an answer about the one here now, `noMatch` included.
-        guard self.currentCustomerIs(appUserID) else {
+        guard self.currentUserProvider.currentAppUserID == appUserID else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -182,15 +182,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
         let resolution = await self.resolve(rule, appUserID: appUserID)
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
-              self.currentCustomerIs(appUserID) else {
+              self.currentUserProvider.currentAppUserID == appUserID else {
             return .noAction(.configurationUnavailable)
         }
 
         return resolution
-    }
-
-    private func currentCustomerIs(_ appUserID: String) -> Bool {
-        return self.appUserIDProvider() == appUserID
     }
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.

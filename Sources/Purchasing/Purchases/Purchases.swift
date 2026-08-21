@@ -658,9 +658,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     DeviceDimensionProvider(),
                     StoreDimensionProvider(),
                     SubscriberAttributesDimensionProvider(deviceCache: deviceCache),
-                    CustomerInfoDimensionProvider(customerInfoManager: customerInfoManager)
+                    CustomerInfoDimensionProvider(customerInfoProvider: customerInfoManager)
                 ],
-                appUserIDProvider: { identityManager.currentAppUserID }
+                currentUserProvider: identityManager
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
@@ -676,7 +676,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         )
                     }
                 },
-                appUserIDProvider: { identityManager.currentAppUserID }
+                currentUserProvider: identityManager
             )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()

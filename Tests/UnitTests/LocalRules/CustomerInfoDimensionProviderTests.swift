@@ -9,7 +9,7 @@
 //
 //  CustomerInfoDimensionProviderTests.swift
 //
-//  Created by Facundo Menzella on 8/20/26.
+//  Created by Facundo Menzella on 20/8/26.
 //
 
 // Swift Testing is only available with the Xcode 16+ toolchain
@@ -313,7 +313,7 @@ struct CustomerInfoDimensionProviderTests {
     @Test
     func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
         let provider = CustomerInfoDimensionProvider(
-            customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
+            customerInfoProvider: StubCustomerInfoSource { _ in throw ErrorUtils.offlineConnectionError() }
         )
 
         let dimensions = try await provider.dimensions(in: Self.context)
@@ -335,7 +335,7 @@ struct CustomerInfoDimensionProviderTests {
     func readsAndReportsTheCustomerTheSnapshotIsFor() async throws {
         let requestedAppUserID: Atomic<String?> = .init(nil)
         let customerInfo = try Self.customerInfo()
-        let provider = CustomerInfoDimensionProvider(customerInfoProvider: { appUserID in
+        let provider = CustomerInfoDimensionProvider(customerInfoProvider: StubCustomerInfoSource { appUserID in
             requestedAppUserID.value = appUserID
             return customerInfo
         })
@@ -355,11 +355,13 @@ struct CustomerInfoDimensionProviderTests {
 
         // Reads the customer the snapshot pinned, and switches user while suspended, the way a
         // `logIn` completing during the customer info request would.
-        let customerInfoProvider = CustomerInfoDimensionProvider(customerInfoProvider: { appUserID in
-            currentAppUserID.value = "user_b"
-            #expect(appUserID == "user_a")
-            return customerInfo
-        })
+        let customerInfoProvider = CustomerInfoDimensionProvider(
+            customerInfoProvider: StubCustomerInfoSource { appUserID in
+                currentAppUserID.value = "user_b"
+                #expect(appUserID == "user_a")
+                return customerInfo
+            }
+        )
         let attributesProvider = SubscriberAttributesDimensionProvider { appUserID in
             [appUserID: SubscriberAttribute(withKey: appUserID, value: "seen")]
         }
@@ -369,7 +371,7 @@ struct CustomerInfoDimensionProviderTests {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [customerInfoProvider, attributesProvider],
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
-            appUserIDProvider: { currentAppUserID.value }
+            currentUserProvider: AtomicCurrentUserProvider(currentAppUserID)
         ).snapshot()
 
         // Both namespaces describe user_a, even though the current user is user_b by now.
@@ -388,12 +390,12 @@ struct CustomerInfoDimensionProviderTests {
     @Test
     func anUnreadableCustomerInfoLetsAbsenceRulesMatch() async throws {
         let provider = CustomerInfoDimensionProvider(
-            customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
+            customerInfoProvider: StubCustomerInfoSource { _ in throw ErrorUtils.offlineConnectionError() }
         )
         let snapshot = try await DimensionResolver(
             dimensionProviders: [provider],
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
-            appUserIDProvider: { "current_user" }
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "current_user")
         ).snapshot()
 
         let hasNoActivePurchase = """
@@ -411,7 +413,7 @@ struct CustomerInfoDimensionProviderTests {
     @Test
     func cancellationWhileReadingTheCustomerInfoPropagates() async throws {
         let provider = CustomerInfoDimensionProvider(
-            customerInfoProvider: { _ in throw CancellationError() }
+            customerInfoProvider: StubCustomerInfoSource { _ in throw CancellationError() }
         )
 
         await #expect(throws: CancellationError.self) {
@@ -423,7 +425,7 @@ struct CustomerInfoDimensionProviderTests {
     func readsTheCustomerInfoOnEveryEvaluation() async throws {
         let reader = CountingCustomerInfoReader(customerInfo: try Self.customerInfo())
         let provider = CustomerInfoDimensionProvider(
-            customerInfoProvider: { _ in await reader.read() }
+            customerInfoProvider: StubCustomerInfoSource { _ in await reader.read() }
         )
 
         _ = try await provider.dimensions(in: Self.context)
@@ -437,7 +439,7 @@ struct CustomerInfoDimensionProviderTests {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [Self.provider()],
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
-            appUserIDProvider: { "current_user" }
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "current_user")
         ).snapshot()
 
         let hasAnActiveTrial = """
@@ -460,7 +462,7 @@ struct CustomerInfoDimensionProviderTests {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [Self.provider()],
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
-            appUserIDProvider: { "current_user" }
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "current_user")
         ).snapshot()
 
         let readsTheAppUserID = #"{"==": [{"var": "customerInfo.appUserId"}, "current_user"]}"#
@@ -509,7 +511,7 @@ private extension CustomerInfoDimensionProviderTests {
             requestDate: requestDate
         )
 
-        return CustomerInfoDimensionProvider(customerInfoProvider: { _ in customerInfo })
+        return CustomerInfoDimensionProvider(customerInfoProvider: StubCustomerInfoSource { _ in customerInfo })
     }
 
     static func customerInfo(
@@ -656,6 +658,37 @@ private extension CustomerInfoDimensionProviderTests {
         return records
     }
 
+}
+
+private struct StubCustomerInfoSource: CustomerInfoDimensionSource {
+
+    let read: @Sendable (String) async throws -> CustomerInfo
+
+    init(_ read: @escaping @Sendable (String) async throws -> CustomerInfo) {
+        self.read = read
+    }
+
+    func customerInfo(appUserID: String) async throws -> CustomerInfo {
+        return try await self.read(appUserID)
+    }
+}
+
+private struct FixedCurrentUserProvider: CurrentUserProvider {
+
+    let currentAppUserID: String
+    var currentUserIsAnonymous: Bool { false }
+}
+
+private struct AtomicCurrentUserProvider: CurrentUserProvider {
+
+    private let appUserID: Atomic<String>
+
+    init(_ appUserID: Atomic<String>) {
+        self.appUserID = appUserID
+    }
+
+    var currentAppUserID: String { self.appUserID.value }
+    var currentUserIsAnonymous: Bool { false }
 }
 
 private actor CountingCustomerInfoReader {
