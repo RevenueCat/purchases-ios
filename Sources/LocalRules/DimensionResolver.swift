@@ -27,6 +27,9 @@ enum DimensionResolutionError: Error, Equatable, Sendable {
 }
 
 /// Builds immutable, point-in-time dimension scopes for local rule evaluation.
+///
+/// Every provider sees the same reference instant, and that instant is in the scope itself as
+/// ``evaluatedAtKey``.
 struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
@@ -51,6 +54,7 @@ struct DimensionResolver: Sendable {
     ///
     /// For example, device `appVersion: "1.2.3"` becomes
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
+    ///
     /// `appUserID` pins the customer for this snapshot. When nil the resolver reads the current one,
     /// which is only right for a caller that has nothing else to keep consistent with it.
     func snapshot(
@@ -63,7 +67,9 @@ struct DimensionResolver: Sendable {
             date: self.dateProvider.now(),
             appUserID: appUserID ?? self.currentUserProvider?.currentAppUserID ?? ""
         )
-        var values: [String: RulesEngine.Value] = [:]
+        var values: [String: RulesEngine.Value] = [
+            Self.evaluatedAtKey: DimensionValueConverter.millis(context.date)
+        ]
 
         for provider in self.dimensionProviders {
             try Task.checkCancellation()
@@ -117,6 +123,9 @@ struct DimensionResolver: Sendable {
 
         return DimensionSnapshot(values: values, evaluationDate: context.date)
     }
+
+    /// The instant the snapshot was taken, at the root of the scope rather than repeated on every record.
+    static let evaluatedAtKey = "evaluatedAt"
 }
 
 private enum DimensionValueConverter {
@@ -147,7 +156,7 @@ private enum DimensionValueConverter {
         case .bool(let value): return .bool(value)
         case .int(let value): return .int(value)
         case .double(let value): return .float(value)
-        case .date(let value): return .int(Int64(value.timeIntervalSince1970 * 1_000))
+        case .date(let value): return Self.millis(value)
         case .object(let value):
             let converted = Self.convert(value, parentPath: path)
             return converted.isEmpty ? nil : .object(converted)
@@ -157,6 +166,10 @@ private enum DimensionValueConverter {
                 return converted.isEmpty ? nil : .object(converted)
             })
         }
+    }
+
+    static func millis(_ date: Date) -> RulesEngine.Value {
+        return .int(Int64(date.timeIntervalSince1970 * 1_000))
     }
 
     private static func isValidName(_ name: String) -> Bool {

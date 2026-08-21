@@ -38,16 +38,16 @@ struct SubscriberAttributesProviderTests {
     }
 
     @Test
-    func exposesValueUpdatedAtAndEvaluatedAt() async throws {
+    func exposesValueAndUpdatedAt() async throws {
         let provider = Self.provider(Self.attribute("goal", value: "lose_weight"))
 
         let dimensions = try await provider.dimensions(at: Self.evaluationDate)
 
+        // The evaluation instant is at the root of the scope, not copied onto every attribute.
         #expect(dimensions == [
             "goal": .object([
                 "value": .string("lose_weight"),
-                "updatedAt": .date(Self.setDate),
-                "evaluatedAt": .date(Self.evaluationDate)
+                "updatedAt": .date(Self.setDate)
             ])
         ])
     }
@@ -109,14 +109,17 @@ struct SubscriberAttributesProviderTests {
         let provider = SubscriberAttributesDimensionProvider { _ in
             throw TestError.unavailable
         }
+        let date = Date(timeIntervalSince1970: 1_234)
         let snapshot = try await DimensionResolver(
             dimensionProviders: [
                 SubscriberAttributesTestDeviceProvider(),
                 provider
-            ]
+            ],
+            dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot()
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(1_234_000),
             "device": .object(["platform": .string("ios")])
         ])
     }
@@ -187,7 +190,7 @@ struct SubscriberAttributesProviderTests {
             #"{">":[{"var":"subscriberAttributes.seats.value"},2]}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.tier.evaluatedAt"},
+                {"-":[{"var":"evaluatedAt"},
                       {"var":"subscriberAttributes.tier.updatedAt"}]},
                 604800000
             ]}
@@ -199,7 +202,7 @@ struct SubscriberAttributesProviderTests {
             #"{"!!":{"var":"subscriberAttributes.goal.isSynced"}}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.goal.evaluatedAt"},
+                {"-":[{"var":"evaluatedAt"},
                       {"var":"subscriberAttributes.goal.updatedAt"}]},
                 604800000
             ]}
