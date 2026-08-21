@@ -178,6 +178,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
             return .noAction(.configurationUnavailable)
         }
+        // Same reason the config is rechecked: a customer who signed out mid-resolution must not be
+        // served what was resolved for the previous one.
+        guard self.appUserIDProvider() == appUserID else {
+            return .noAction(.configurationUnavailable)
+        }
 
         return resolution
     }

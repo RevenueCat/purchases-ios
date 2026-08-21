@@ -190,6 +190,24 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(offeringsAppUserID.value, "user_a")
     }
 
+    func testUserSwitchDuringResolutionDoesNotServeThePreviousCustomer() async throws {
+        let currentAppUserID = Atomic<String>("user_a")
+        // Switches once the audiences have been evaluated, so the resolution is already built.
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [
+                SwitchingUserDimensionProvider { _ in currentAppUserID.value = "user_b" }
+            ]
+        )
+        let resolver = self.makeResolver(
+            localRulesEvaluator: evaluator,
+            appUserIDProvider: { currentAppUserID.value }
+        )
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
     func testCancellationWhileCollectingDimensionsPropagates() async {
         let evaluator = LocalRulesEvaluator(dimensionProviders: [CancellingDimensionProvider()])
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
