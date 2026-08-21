@@ -5,3 +5,4 @@
 gem 'fastlane-plugin-create_xcframework', git: "https://github.com/RevenueCat/fastlane-plugin-create_xcframework"
 gem "fastlane-plugin-revenuecat_internal", git: "https://github.com/RevenueCat/fastlane-plugin-revenuecat_internal"
 gem 'fastlane-plugin-emerge'
+gem 'fastlane-plugin-sentry'
