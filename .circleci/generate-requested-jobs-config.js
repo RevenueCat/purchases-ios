@@ -21,7 +21,7 @@ const JOBS = {
   "build-checkpoint-tester": ["slack-secrets"],
   "build-xcode-265": ["slack-secrets"],
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
-  "check-api-changes": ["slack-secrets-ios"],
+  "check-api-changes": ["slack-secrets-ios", "slack-secrets"],
   "docs-build": ["slack-secrets"],
   "emerge_binary_size_analysis": ["slack-secrets"],
   "emerge_purchases_ui_snapshot_tests": ["slack-secrets"],
