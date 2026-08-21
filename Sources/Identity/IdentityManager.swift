@@ -23,6 +23,26 @@ protocol CurrentUserProvider: Sendable {
 protocol AttributeSyncing: Sendable {
 
     func syncSubscriberAttributes(currentAppUserID: String, completion: @escaping @Sendable () -> Void)
+
+    /// Stores `attributes` as unsynced for `appUserID` and returns everything still pending sync for that
+    /// user, so that they stay queued if the backend doesn't apply them.
+    func storeAndGetUnsyncedAttributes(_ attributes: [String: String],
+                                       appUserID: String) -> SubscriberAttribute.Dictionary
+
+    /// Refreshes the automatically collected attributes and returns everything still pending sync
+    /// for `appUserID`.
+    func refreshATTStatusAndGetUnsyncedAttributes(appUserID: String) -> SubscriberAttribute.Dictionary
+
+    /// Syncs the attributes buffered for every user except `appUserIDs`.
+    func syncAttributesForUsersOtherThan(_ appUserIDs: Set<String>, currentAppUserID: String)
+
+    /// Updates the local buffer with the outcome of `attributes` that were sent inline with a log in request.
+    ///
+    /// - Parameter errorResponse: the bucket's entry in `attributes_error_response`, or `nil` if the
+    /// backend stored the whole bucket.
+    func handleAttributesSentOnLogIn(_ attributes: SubscriberAttribute.Dictionary,
+                                     appUserID: String,
+                                     errorResponse: ErrorResponse?)
 }
 
 class IdentityManager: CurrentUserProvider {
@@ -87,15 +107,15 @@ class IdentityManager: CurrentUserProvider {
         return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
     }
 
-    func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+    func logIn(appUserID: String,
+               attributes: [String: String],
+               completion: @escaping IdentityAPI.LogInResponseHandler) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID && appUserID != Self.uiPreviewModeAppUserID else {
             completion(.failure(.unsupportedInUIPreviewMode()))
             return
         }
 
-        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
-            self.performLogIn(appUserID: appUserID, completion: completion)
-        }
+        self.performLogIn(appUserID: appUserID, attributes: attributes, completion: completion)
     }
 
     func logOut(completion: @escaping (PurchasesError?) -> Void) {
@@ -138,7 +158,9 @@ extension IdentityManager {
 
 private extension IdentityManager {
 
-    func performLogIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+    func performLogIn(appUserID: String,
+                      attributes: [String: String],
+                      completion: @escaping IdentityAPI.LogInResponseHandler) {
         let oldAppUserID = self.currentAppUserID
         let newAppUserID = appUserID.trimmingWhitespacesAndNewLines
         guard !newAppUserID.isEmpty else {
@@ -147,19 +169,44 @@ private extension IdentityManager {
             return
         }
 
+        // Buffering these locally so that, if anything fails, they're queued for the next sync.
+        let newUserAttributes = self.attributeSyncing.storeAndGetUnsyncedAttributes(attributes,
+                                                                                    appUserID: newAppUserID)
+
         guard newAppUserID != oldAppUserID else {
             Logger.warn(Strings.identity.logging_in_with_same_appuserid)
-            self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
-                                                  fetchPolicy: .cachedOrFetched) { @Sendable result in
-                completion(
-                    result.map { (info: $0, created: false) }
-                )
+
+            // There's no identify request to carry the attributes, so they go through a regular sync.
+            self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: oldAppUserID) {
+                self.customerInfoManager.customerInfo(appUserID: oldAppUserID,
+                                                      fetchPolicy: .cachedOrFetched) { @Sendable result in
+                    completion(
+                        result.map { (info: $0, created: false, attributesErrorResponse: nil) }
+                    )
+                }
             }
             return
         }
 
-        self.backend.identity.logIn(currentAppUserID: oldAppUserID, newAppUserID: newAppUserID) { result in
-            if case let .success((customerInfo, _)) = result {
+        let previousUnsyncedAttributes = self.attributeSyncing
+            .refreshATTStatusAndGetUnsyncedAttributes(appUserID: oldAppUserID)
+
+        self.backend.identity.logIn(currentAppUserID: oldAppUserID,
+                                    newAppUserID: newAppUserID,
+                                    attributes: newUserAttributes,
+                                    previousUnsyncedAttributes: previousUnsyncedAttributes) { result in
+            if case let .success((customerInfo, _, attributesErrorResponse)) = result {
+                self.attributeSyncing.handleAttributesSentOnLogIn(
+                    previousUnsyncedAttributes,
+                    appUserID: oldAppUserID,
+                    errorResponse: attributesErrorResponse?.previousUnsyncedAttributes
+                )
+                self.attributeSyncing.handleAttributesSentOnLogIn(
+                    newUserAttributes,
+                    appUserID: newAppUserID,
+                    errorResponse: attributesErrorResponse?.attributes
+                )
+
                 self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
                 self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
                 self.customerInfoManager.cache(customerInfo: customerInfo, appUserID: newAppUserID)
@@ -169,6 +216,14 @@ private extension IdentityManager {
 
             completion(result)
         }
+
+        // The request above only carries these two users. Whatever is buffered for users the app logged in
+        // as earlier still needs a regular sync, which goes last so it queues behind the log in: both share
+        // the same serial operation queue.
+        self.attributeSyncing.syncAttributesForUsersOtherThan(
+            [oldAppUserID, newAppUserID],
+            currentAppUserID: oldAppUserID
+        )
     }
 
     func performLogOut(completion: (PurchasesError?) -> Void) {

@@ -30,9 +30,12 @@ extension Purchases {
         }
     }
 
-    func logInAsync(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+    func logInAsync(
+        _ appUserID: String,
+        attributes: [String: String]
+    ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withUnsafeThrowingContinuation { continuation in
-            logIn(appUserID) { customerInfo, created, error in
+            logIn(appUserID, attributes: attributes) { customerInfo, created, error in
                 continuation.resume(with: Result(customerInfo, error)
                                         .map { ($0, created) })
             }

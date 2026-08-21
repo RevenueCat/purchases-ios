@@ -369,6 +369,26 @@ class DeviceCache {
         }
     }
 
+    func deleteSubscriberAttributes(keys: Set<String>, appUserID: String) {
+        guard !keys.isEmpty else {
+            return
+        }
+
+        self.lockingUserDefaults.write { userDefaults in
+            var groupedAttributes = Self.storedAttributesForAllUsers(userDefaults)
+            guard var attributesForAppUserID = groupedAttributes[appUserID] as? [String: Any] else {
+                return
+            }
+
+            for key in keys {
+                attributesForAppUserID.removeValue(forKey: key)
+            }
+
+            groupedAttributes[appUserID] = attributesForAppUserID
+            userDefaults.set(groupedAttributes, forKey: CacheKeys.subscriberAttributes)
+        }
+    }
+
     func deleteAttributesIfSynced(appUserID: String) {
         self.lockingUserDefaults.write {
             guard Self.unsyncedAttributesByKey($0, appUserID: appUserID).isEmpty else {

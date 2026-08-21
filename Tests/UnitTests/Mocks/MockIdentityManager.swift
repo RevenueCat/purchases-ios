@@ -57,11 +57,15 @@ class MockIdentityManager: IdentityManager {
     var invokedLogIn = false
     var invokedLogInCount = 0
     var invokedLogInParametersList: [String] = []
+    var invokedLogInAttributesList: [[String: String]] = []
 
-    override func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
+    override func logIn(appUserID: String,
+                        attributes: [String: String],
+                        completion: @escaping IdentityAPI.LogInResponseHandler) {
         self.invokedLogIn = true
         self.invokedLogInCount += 1
         self.invokedLogInParametersList.append(appUserID)
+        self.invokedLogInAttributesList.append(attributes)
 
         completion(self.mockLogInResult)
     }

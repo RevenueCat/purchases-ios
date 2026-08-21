@@ -259,6 +259,12 @@ class MockDeviceCache: DeviceCache {
         return stubbedUnsyncedAttributesForAllUsersResult
     }
 
+    var invokedDeleteSubscriberAttributesParametersList = [(keys: Set<String>, appUserID: String)]()
+
+    override func deleteSubscriberAttributes(keys: Set<String>, appUserID: String) {
+        invokedDeleteSubscriberAttributesParametersList.append((keys, appUserID))
+    }
+
     var invokedDeleteAttributesIfSynced = false
     var invokedDeleteAttributesIfSyncedCount = 0
     var invokedDeleteAttributesIfSyncedParameters: (appUserID: String?, Void)?

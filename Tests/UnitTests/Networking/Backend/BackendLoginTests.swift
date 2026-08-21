@@ -219,6 +219,164 @@ class BackendLoginWithSignatureVerificationTests: BaseBackendLoginTests {
 
 }
 
+class BackendLoginWithAttributesTests: BaseBackendLoginTests {
+
+    private static let attribute = SubscriberAttribute(withKey: "plan", value: "annual")
+    private static let previousAttribute = SubscriberAttribute(withKey: "channel", value: "tiktok")
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.httpClient.disableSnapshotTesting()
+    }
+
+    func testLoginSendsBothAttributeBuckets() throws {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        waitUntil { completed in
+            self.identity.logIn(currentAppUserID: "old id",
+                                newAppUserID: "new id",
+                                attributes: ["plan": Self.attribute],
+                                previousUnsyncedAttributes: ["channel": Self.previousAttribute]) { _ in
+                completed()
+            }
+        }
+
+        let body = try self.encodedBodyOfFirstCall()
+        expect(body["attributes"] as? [String: NSObject]) == [
+            "plan": ["value": "annual",
+                     "updated_at_ms": Self.attribute.setTime.millisecondsSince1970] as NSDictionary
+        ]
+        expect(body["previous_unsynced_attributes"] as? [String: NSObject]) == [
+            "channel": ["value": "tiktok",
+                        "updated_at_ms": Self.previousAttribute.setTime.millisecondsSince1970] as NSDictionary
+        ]
+    }
+
+    func testLoginOmitsAttributeKeysWhenThereIsNothingToSend() throws {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        waitUntil { completed in
+            self.identity.logIn(currentAppUserID: "old id", newAppUserID: "new id") { _ in
+                completed()
+            }
+        }
+
+        let body = try self.encodedBodyOfFirstCall()
+        expect(Set(body.keys)) == ["app_user_id", "new_app_user_id"]
+    }
+
+    func testLoginDoesNotHashAttributesInPostParamsHeader() throws {
+        let body = LogInOperation.Body(appUserID: "old id",
+                                       newAppUserID: "new id",
+                                       attributes: ["plan": Self.attribute],
+                                       previousUnsyncedAttributes: ["channel": Self.previousAttribute])
+
+        expect(body.contentForSignature.map(\.key)) == ["app_user_id", "new_app_user_id"]
+    }
+
+    func testLoginStillCachesForTheSameAttributes() {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        for _ in 0..<2 {
+            self.identity.logIn(currentAppUserID: "old id",
+                                newAppUserID: "new id",
+                                attributes: ["plan": Self.attribute],
+                                previousUnsyncedAttributes: ["channel": Self.previousAttribute]) { _ in }
+        }
+
+        expect(self.httpClient.calls).toEventually(haveCount(1))
+    }
+
+    func testLoginDoesNotCacheForDifferentAttributes() {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        self.identity.logIn(currentAppUserID: "old id",
+                            newAppUserID: "new id",
+                            attributes: ["plan": Self.attribute],
+                            previousUnsyncedAttributes: [:]) { _ in }
+        self.identity.logIn(currentAppUserID: "old id",
+                            newAppUserID: "new id",
+                            attributes: [:],
+                            previousUnsyncedAttributes: [:]) { _ in }
+
+        expect(self.httpClient.calls).toEventually(haveCount(2))
+    }
+
+    func testLoginParsesAttributesErrorResponseWithoutFailing() throws {
+        var response = Self.mockCustomerInfoData
+        response["attributes_error_response"] = [
+            "attributes": [
+                "code": BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                "message": "Some subscriber attributes keys were unable to be saved.",
+                "attribute_errors": [["key_name": "$$invalid", "message": "Invalid key"]]
+            ] as [String: Any],
+            "previous_unsynced_attributes": [
+                "code": BackendErrorCode.internalServerError.rawValue,
+                "message": "Subscriber not found."
+            ] as [String: Any]
+        ]
+
+        _ = self.mockLoginRequest(appUserID: "old id", statusCode: .success, response: response)
+
+        let result = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: "old id", newAppUserID: "new id", completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+
+        let attributesErrorResponse = try XCTUnwrap(result?.value?.attributesErrorResponse)
+        expect(attributesErrorResponse.attributes?.code) == .invalidSubscriberAttributes
+        expect(attributesErrorResponse.attributes?.attributeErrors) == ["$$invalid": "Invalid key"]
+        expect(attributesErrorResponse.previousUnsyncedAttributes?.code) == .internalServerError
+    }
+
+    func testLoginHasNoAttributesErrorResponseWhenBackendDoesNotReturnOne() {
+        _ = self.mockLoginRequest(appUserID: "old id",
+                                  statusCode: .success,
+                                  response: Self.mockCustomerInfoData)
+
+        let result = waitUntilValue { completed in
+            self.identity.logIn(currentAppUserID: "old id", newAppUserID: "new id", completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.attributesErrorResponse).to(beNil())
+    }
+
+    private func encodedBodyOfFirstCall() throws -> [String: Any] {
+        let body = try XCTUnwrap(self.httpClient.calls.onlyElement?.request.requestBody as? LogInOperation.Body)
+
+        return try XCTUnwrap(
+            try JSONSerialization.jsonObject(with: JSONEncoder.default.encode(body)) as? [String: Any]
+        )
+    }
+
+}
+
+private extension IdentityAPI {
+
+    /// Convenience for the tests that don't exercise the inline attributes.
+    func logIn(currentAppUserID: String,
+               newAppUserID: String,
+               completion: @escaping LogInResponseHandler) {
+        self.logIn(currentAppUserID: currentAppUserID,
+                   newAppUserID: newAppUserID,
+                   attributes: [:],
+                   previousUnsyncedAttributes: [:],
+                   completion: completion)
+    }
+
+}
+
 private extension BaseBackendLoginTests {
 
     func mockLoginRequest(
