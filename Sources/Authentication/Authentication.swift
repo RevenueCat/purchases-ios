@@ -1,5 +1,5 @@
 //
-//  Authenticator.swift
+//  Authentication.swift
 //  RevenueCat
 //
 //  Created by Dave DeLong on 7/30/26.
@@ -7,12 +7,12 @@
 
 import Foundation
 
-/// The delegate for ``Authentication``, responsible for responding to authentication errors that occuring
+/// The delegate for ``Authentication``, responsible for responding to authentication errors that occur
 /// during passive SDK use.
 ///
 /// Typically, getting an authentication error means that the SDK needs a new ``Identity`` token provided
 /// to the ``Authentication.logIn(using:)`` method
-@_spi(Experimental)
+@_spi(Internal)
 @objc(RCPurchasesAuthenticationDelegate)
 public protocol AuthenticationDelegate: NSObjectProtocol {
 
@@ -28,7 +28,7 @@ internal protocol InternalAuthenticatorDelegate: AnyObject {
 }
 
 /// A namespace for providing authentication-related functionality to the ``Purchases`` instance
-@_spi(Experimental)
+@_spi(Internal)
 @objc(RCPurchasesAuthentication)
 public final class Authentication: NSObject {
 
@@ -47,6 +47,9 @@ public final class Authentication: NSObject {
     ///
     /// However, if an error occurs during an explicit ``logIn(using:)`` call, that will be reported
     /// via the corresponding completion handler (or thrown when called using `await`).
+    ///
+    /// - Warning: The delegate is not retained, so your app must retain a reference
+    /// to the delegate to prevent it from being unintentionally deallocated.
     @objc public weak var delegate: AuthenticationDelegate?
 
     internal init(backend: Backend,
@@ -103,14 +106,11 @@ public final class Authentication: NSObject {
 
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
             self.operationDispatcher.dispatchOnMainThread {
+                if case let .success(values) = result {
+                    self.internalDelegate?.authenticatorDidLogIn(info: values.info)
+                }
                 completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
-
-            guard case let .success(values) = result else {
-                return
-            }
-
-            self.internalDelegate?.authenticatorDidLogIn(info: values.info)
         }
 
     }
@@ -187,16 +187,18 @@ public final class Authentication: NSObject {
                     self.reportAuthenticationError(error.asPublicError)
                 }
             } else {
-                guard let delegate = self.internalDelegate else {
-                    // there was no error, but we also don't have a CustomerInfo object to provide
-                    // that *should* be provided by the delegate, but for some unknown reason,
-                    // the delegate is missing.
-                    let error = NewErrorUtils.customerInfoError(withMessage: "Missing internal auth delegate")
-                    completion?(nil, error.asPublicError)
-                    return
-                }
-                delegate.authenticatorDidChangeIdentity { result in
-                    completion?(result.value, result.error)
+                self.operationDispatcher.dispatchOnMainThread {
+                    guard let delegate = self.internalDelegate else {
+                        // there was no error, but we also don't have a CustomerInfo object to provide
+                        // that *should* be provided by the delegate, but for some unknown reason,
+                        // the delegate is missing.
+                        let error = NewErrorUtils.customerInfoError(withMessage: "Missing internal auth delegate")
+                        completion?(nil, error.asPublicError)
+                        return
+                    }
+                    delegate.authenticatorDidChangeIdentity { result in
+                        completion?(result.value, result.error)
+                    }
                 }
             }
         }

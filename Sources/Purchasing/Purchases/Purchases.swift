@@ -1147,7 +1147,7 @@ public extension Purchases {
 
 public extension Purchases {
 
-    @_spi(Experimental)
+    @_spi(Internal)
     @objc
     var authentication: Authentication { _authentication }
 

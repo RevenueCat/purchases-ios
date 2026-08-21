@@ -6,7 +6,7 @@
 //
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) import RevenueCat
 
 func checkConfigurationAPI() {
     let builder = Configuration

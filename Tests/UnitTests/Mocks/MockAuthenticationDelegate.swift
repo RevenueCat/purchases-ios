@@ -13,7 +13,7 @@
 
 import Foundation
 
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 final class MockAuthenticationDelegate: NSObject, AuthenticationDelegate {
 

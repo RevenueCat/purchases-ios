@@ -9,7 +9,7 @@
 import Foundation
 
 /// An identity from an external provider
-@_spi(Experimental)
+@_spi(Internal)
 @objc(RCIdentity)
 public final class Identity: NSObject {
 
@@ -38,7 +38,7 @@ public final class Identity: NSObject {
 }
 
 /// The source of an identity
-@_spi(Experimental)
+@_spi(Internal)
 @objc(RCIdentitySource)
 public final class IdentitySource: NSObject, CaseIterable {
 

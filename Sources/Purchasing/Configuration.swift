@@ -372,7 +372,7 @@ import Foundation
         /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
         ///
         /// - SeeAlso: ``with(iamEnabled:keychainAccessGroup:)``
-        @_spi(Experimental)
+        @_spi(Internal)
         @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
             self.iamEnabled = iamEnabled
             self.keychainAccessGroup = nil
@@ -383,7 +383,7 @@ import Foundation
         ///
         /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
         /// Use the `keychainAccessGroup` parameter to share tokens between your app and its extensions.
-        @_spi(Experimental)
+        @_spi(Internal)
         @objc(withIAMEnabled:keychainAccessGroup:) public func with(iamEnabled: Bool,
                                                                     keychainAccessGroup: String) -> Builder {
             self.iamEnabled = iamEnabled
