@@ -26,8 +26,23 @@ struct WorkflowPageTransitionContext {
     /// Whether the page is currently participating in a workflow-level transition.
     /// Child component entrance transitions and horizontal safe-area bleed should be suppressed while this is true.
     let isTransitioning: Bool
+    /// Whether the page is on-screen (the current or outgoing step). Visited pages stay mounted,
+    /// so time-based work must quiesce while this is `false`. Defaults to `true` for standalone paywalls.
+    let isPageActive: Bool
 
     static let identity = Self(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: false)
+
+    init(
+        pageOffset: CGFloat,
+        headerButtonOpacity: CGFloat,
+        isTransitioning: Bool,
+        isPageActive: Bool = true
+    ) {
+        self.pageOffset = pageOffset
+        self.headerButtonOpacity = headerButtonOpacity
+        self.isTransitioning = isTransitioning
+        self.isPageActive = isPageActive
+    }
 
 }
 

@@ -41,6 +41,9 @@ struct VideoComponentView: View {
     @Environment(\.carouselState)
     private var carouselState
 
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+
     @Environment(\.customPaywallVariables)
     private var customVariables
     @Environment(\.selectedPackageId)
@@ -190,12 +193,34 @@ struct VideoComponentView: View {
             }
             .onSizeChange { size = $0 }
             .onAppear {
-                updatePlayableState(isPlayable: carouselState?.isActiveOrNeighbor ?? true)
+                updatePlayableState(isPlayable: self.resolvePlayableState())
             }
             .onChangeOf(carouselState) { newState in
-                updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
+                updatePlayableState(isPlayable: Self.isPlayable(
+                    isActiveOrNeighbor: newState?.isActiveOrNeighbor ?? true,
+                    isWorkflowPageActive: workflowRenderingContext.pageTransition.isPageActive
+                ))
+            }
+            .onChangeOf(workflowRenderingContext.pageTransition.isPageActive) { isPageActive in
+                // A hidden workflow page stays mounted, so `onDisappear` never fires.
+                updatePlayableState(isPlayable: Self.isPlayable(
+                    isActiveOrNeighbor: carouselState?.isActiveOrNeighbor ?? true,
+                    isWorkflowPageActive: isPageActive
+                ))
             }
 
+    }
+
+    private func resolvePlayableState() -> Bool {
+        return Self.isPlayable(
+            isActiveOrNeighbor: carouselState?.isActiveOrNeighbor ?? true,
+            isWorkflowPageActive: workflowRenderingContext.pageTransition.isPageActive
+        )
+    }
+
+    /// Plays only on an active (or neighboring) carousel page *and* an on-screen workflow page.
+    static func isPlayable(isActiveOrNeighbor: Bool, isWorkflowPageActive: Bool) -> Bool {
+        return isActiveOrNeighbor && isWorkflowPageActive
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
