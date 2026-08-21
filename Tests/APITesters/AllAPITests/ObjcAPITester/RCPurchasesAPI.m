@@ -86,6 +86,8 @@ NSURL *url;
     RCPackage *pack;
 
     [p invalidateCustomerInfoCache];
+    [p overridePreferredUILocale:@"de_DE"];
+    [p overridePreferredUILocale:nil];
 
     NSDictionary<NSString *, NSString *> *attributes = nil;
     RCAttribution __unused *attribution = p.attribution;
@@ -147,6 +149,10 @@ NSURL *url;
     #if ENABLE_TRANSACTION_METADATA
     packageParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
     #endif
+
+    if (@available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)) {
+        packageParamBuilder = [packageParamBuilder withIntroductoryOfferEligibilityJWS:@"abc123"];
+    }
     RCPurchaseParams *packageParams = [packageParamBuilder build];
 
 
@@ -154,6 +160,10 @@ NSURL *url;
     #if ENABLE_TRANSACTION_METADATA
     productParamBuilder = [packageParamBuilder withMetadata:@{@"foo": @"bar"}];
     #endif
+
+    if (@available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)) {
+        productParamBuilder = [productParamBuilder withIntroductoryOfferEligibilityJWS:@"abc123"];
+    }
     RCPurchaseParams *productParams = [productParamBuilder build];
 
     // Win-back offers

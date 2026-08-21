@@ -6,7 +6,7 @@ import ProjectDescriptionHelpers
 let project = Project(
     name: "RevenueCatTests",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + .adMobPackage,
     settings: .framework,
     targets: [
 
@@ -69,7 +69,13 @@ let project = Project(
             sources: [
                 "../../Tests/UnitTestsHostApp/**/*.swift"
             ],
+            entitlements: .file(path: "../../Tests/UnitTestsHostApp/UnitTestsHostApp.entitlements"),
             dependencies: [],
+            settings: .appTarget(including: [
+                "CODE_SIGNING_ALLOWED": "YES",
+                "CODE_SIGNING_REQUIRED": "YES",
+                "CODE_SIGN_IDENTITY": "Apple Development"
+            ].automaticCodeSigning(devTeam: .revenueCatTeamID)),
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
@@ -102,7 +108,7 @@ let project = Project(
             additionalFiles: [
                 "../../Tests/StoreKitUnitTests/UnitTestsConfiguration.storekit"
             ],
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         // MARK: – BackendIntegrationTests Host App
@@ -123,13 +129,7 @@ let project = Project(
             dependencies: [
              .storeKit
             ],
-            settings: .settings(
-                base: [
-                    "APPLICATION_EXTENSION_API_ONLY": "YES",
-                    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
-                ]
-            ),
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         .target(
@@ -145,7 +145,18 @@ let project = Project(
                 "../../Tests/BackendIntegrationTests/BaseStoreKitIntegrationTests.swift",
                 "../../Tests/BackendIntegrationTests/MainThreadMonitor.swift",
                 "../../Tests/BackendIntegrationTests/Constants.swift",
-                "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                // Only the helpers that are CustomEntitlementComputation-aware (conditional import).
+                // The excluded helpers import `RevenueCat` directly and aren't used by these tests,
+                // so compiling them here would link against the wrong module.
+                .glob(
+                    "../../Tests/BackendIntegrationTests/Helpers/**/*.swift",
+                    excluding: [
+                        "../../Tests/BackendIntegrationTests/Helpers/SK1ProductFetcher.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/SK2ProductFetcher.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/ObserverModeManager.swift",
+                        "../../Tests/BackendIntegrationTests/Helpers/ExternalPurchasesManager.swift"
+                    ]
+                ),
                 "../../Tests/UnitTests/Misc/**/TestCase.swift",
                 "../../Tests/UnitTests/Mocks/MockSandboxEnvironmentDetector.swift",
                 "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
@@ -155,6 +166,9 @@ let project = Project(
                 "../../Tests/UnitTests/Misc/XCTestCase+Extensions.swift",
                 "../../Tests/StoreKitUnitTests/TestHelpers/StoreKitTestHelpers.swift",
                 "../../Tests/StoreKitUnitTests/TestHelpers/AvailabilityChecks.swift"
+            ],
+            resources: [
+                "../../Tests/BackendIntegrationTests/RevenueCat_IntegrationPurchaseTesterConfiguration.storekit"
             ],
             dependencies: [
                 .revenueCatCustomEntitlementComputation,
@@ -168,7 +182,7 @@ let project = Project(
                     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"
                 ]
             ),
-            metadata: .metadata(tags: ["RevenueCatTests"]),
+            metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
         .target(
@@ -214,6 +228,54 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         ),
 
+        // MARK: – RemoteConfigProductionTests
+        // Lean real-backend health check for the remote config CDN blob path. No StoreKit,
+        // so no host app: just RevenueCat + Nimble. Skips itself unless a live key is injected.
+        .target(
+            name: "RemoteConfigProductionTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RemoteConfigProductionTests",
+            deploymentTargets: .iOS("16.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/RemoteConfigProductionTests/**/*.swift",
+                // Shared `TestCase` base (repo convention) and its helpers.
+                "../../Tests/UnitTests/Misc/**/TestCase.swift",
+                "../../Tests/UnitTests/Misc/XCTestCase+Extensions.swift",
+                "../../Tests/UnitTests/TestHelpers/**/TestLogHandler.swift",
+                "../../Tests/UnitTests/TestHelpers/**/CurrentTestCaseTracker.swift",
+                "../../Tests/UnitTests/TestHelpers/**/AsyncTestHelpers.swift",
+                "../../Tests/UnitTests/TestHelpers/**/OSVersionEquivalent.swift"
+            ],
+            dependencies: [
+                .revenueCat,
+                .nimble,
+                .snapshotTesting
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
+        // MARK: – RevenueCatAdMobTests
+        .target(
+            name: "RevenueCatAdMobTests",
+            destinations: .iOS,
+            product: .unitTests,
+            bundleId: "com.revenuecat.RevenueCatAdMobTests",
+            deploymentTargets: .iOS("15.0"),
+            infoPlist: .default,
+            sources: [
+                "../../AdapterSDKs/RevenueCatAdMob/Tests/RevenueCatAdMobTests/**/*.swift"
+            ],
+            dependencies: [
+                .revenueCat,
+                .revenueCatAdMob,
+                .googleMobileAds,
+                .nimble
+            ],
+            metadata: .metadata(tags: ["RevenueCatTests"])
+        ),
+
         // MARK: – RevenueCatUITests
         .target(
             name: "RevenueCatUITests",
@@ -234,7 +296,7 @@ let project = Project(
             metadata: .metadata(tags: ["RevenueCatTests"])
         )
 
-    ],
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
 
         .scheme(
@@ -242,7 +304,14 @@ let project = Project(
             shared: true,
             buildAction: .buildAction(targets: ["BackendIntegrationTests"]),
             testAction: .testPlans([
-                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan")
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All-CI.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-All.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK1.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-SK2.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Offline.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-Other.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-CustomEntitlements.xctestplan"),
+                    .relativeToRoot("BackendIntegrationTests/BackendIntegrationTests-LoadShedder.xctestplan")
                 ]
             ),
             runAction: .runAction(
@@ -264,6 +333,16 @@ let project = Project(
             buildAction: .buildAction(targets: ["ReceiptParserTests"]),
             testAction: .targets([
                 .testableTarget(target: .init(stringLiteral: "ReceiptParserTests"))
+            ]),
+            runAction: .runAction(configuration: "Debug")
+        ),
+
+        .scheme(
+            name: "RevenueCatAdMobTests",
+            shared: true,
+            buildAction: .buildAction(targets: ["RevenueCatAdMobTests"]),
+            testAction: .targets([
+                .testableTarget(target: .init(stringLiteral: "RevenueCatAdMobTests"))
             ]),
             runAction: .runAction(configuration: "Debug")
         ),

@@ -11,18 +11,25 @@
 //
 //  Created by Jacob Zivan Rakidzich on 8/20/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct TransitionModifier: ViewModifier {
     let transition: PaywallComponent.Transition
 
+    #if !os(tvOS)
+    @Environment(\.workflowRenderingContext)
+    private var workflowRenderingContext
+    #endif
+
     @State var isPresented: Bool = false
 
     func body(content: Content) -> some View {
         ZStack {
-            if isPresented {
+            if self.shouldRenderContentImmediately {
+                content
+            } else if isPresented {
                 content
                     .transition(transition.toTransition)
             } else {
@@ -41,7 +48,13 @@ struct TransitionModifier: ViewModifier {
                 }
                 .transition(transition.toTransition)
             }
-        }.task {
+        }
+        .task(id: self.shouldRenderContentImmediately) {
+            guard !self.shouldRenderContentImmediately else {
+                self.isPresented = true
+                return
+            }
+
             // Delay the state change by msDelay before showing the content
             let delayMs = transition.animation?.msDelay ?? 0
             if delayMs > 0 {
@@ -51,6 +64,18 @@ struct TransitionModifier: ViewModifier {
                 isPresented = true
             }
         }
+    }
+
+    private var shouldRenderContentImmediately: Bool {
+        #if !os(tvOS)
+        // Workflow page transitions animate whole page snapshots. If child components
+        // also run their configured delayed transitions while the page is sliding, they
+        // can flash or appear late inside the preserved outgoing/incoming page trees.
+        // Render them immediately and let WorkflowPaywallView own the page-level motion.
+        return self.workflowRenderingContext.pageTransition.isTransitioning
+        #else
+        return false
+        #endif
     }
 }
 

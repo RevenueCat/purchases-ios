@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -23,6 +23,7 @@ class ImageComponentViewModel {
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.ImageComponent
+    var cachedMeasuredSize: CGSize?
 
     private let imageInfo: PaywallComponent.ThemeImageUrls
     private let presentedOverrides: PresentedOverrides<LocalizedImagePartial>?
@@ -56,11 +57,15 @@ class ImageComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         colorScheme: ColorScheme
     ) -> ImageComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
 
         let localizedPartial = LocalizedImagePartial.buildPartial(
@@ -98,6 +103,8 @@ class ImageComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (ImageComponentStyle) -> some View
     ) -> some View {
@@ -108,6 +115,8 @@ class ImageComponentViewModel {
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             colorScheme: colorScheme
         )
         apply(style)

@@ -35,6 +35,10 @@ class SystemInfo {
     }
 
     let storeKitVersion: StoreKitVersion
+
+    /// The public API key used to configure the SDK.
+    let apiKey: String
+
     private var _apiKeyValidationResult: Configuration.APIKeyValidationResult
     var apiKeyValidationResult: Configuration.APIKeyValidationResult {
         get { return self._apiKeyValidationResult }
@@ -89,6 +93,17 @@ class SystemInfo {
         return self._isSandbox
     }
 
+    /// Whether remote config lifecycle wiring is enabled. Paywall workflows read entirely through
+    /// remote config, so this is also the gate for workflows: there's no separate workflows switch,
+    /// since the two ship together.
+    ///
+    /// Enabled for everyone except under custom entitlement computation. Once enabled here, remote
+    /// config can still be turned off at runtime by the backend kill switch
+    /// (see `Purchases.remoteConfigEnabled`).
+    var remoteConfigEnabled: Bool {
+        return !self.dangerousSettings.customEntitlementComputation
+    }
+
     var isDebugBuild: Bool {
 #if DEBUG
         return true
@@ -102,7 +117,7 @@ class SystemInfo {
     }
 
     static var frameworkVersion: String {
-        return "5.64.0-SNAPSHOT"
+        return "5.86.0-SNAPSHOT"
     }
 
     static var installationMethod: String {
@@ -203,6 +218,7 @@ class SystemInfo {
          sandboxEnvironmentDetector: SandboxEnvironmentDetector = BundleSandboxEnvironmentDetector.default,
          storefrontProvider: StorefrontProviderType = DefaultStorefrontProvider(),
          storeKitVersion: StoreKitVersion = .default,
+         apiKey: String,
          apiKeyValidationResult: Configuration.APIKeyValidationResult = .validApplePlatform,
          responseVerificationMode: Signing.ResponseVerificationMode = .default,
          dangerousSettings: DangerousSettings? = nil,
@@ -217,6 +233,7 @@ class SystemInfo {
         self._isAppBackgroundedState = .init(isAppBackgrounded ?? false)
         self.operationDispatcher = operationDispatcher
         self.storeKitVersion = storeKitVersion
+        self.apiKey = apiKey
         self._apiKeyValidationResult = apiKeyValidationResult
         self.sandboxEnvironmentDetector = sandboxEnvironmentDetector
         self.storefrontProvider = storefrontProvider

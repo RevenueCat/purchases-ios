@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Sulje";
+"Go back" = "Takaisin";
+"Manage subscription" = "Hallinnoi tilausta";
+"Redeem code" = "Lunasta koodi";
 "All subscriptions" = "Kaikki tilaukset";
 "Privacy" = "Yksityisyys";
 "Privacy policy" = "Tietosuojakäytäntö";
@@ -18,3 +22,4 @@
 "Continue" = "Jatkaa";
 "Default_offer_details_with_intro_offer" = "Aloita {{ sub_offer_duration }} -kokeilu ja sitten {{ total_price_and_per_month }}.";
 "Something went wrong" = "Jotain meni pieleen";
+"Purchase" = "Osta";

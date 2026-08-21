@@ -12,6 +12,12 @@ let paywallsTesterDir = repoRoot
 if let apiKey = Environment.rcApiKey {
     let localXcconfig = repoRoot.appendingPathComponent("Local.xcconfig")
 
+    // Local.xcconfig is gitignored, so it doesn't exist on a fresh checkout. Create an empty
+    // one first so the key isn't silently dropped when TUIST_RC_API_KEY is set.
+    if !fileManager.fileExists(atPath: localXcconfig.path) {
+        try? "".write(to: localXcconfig, atomically: true, encoding: .utf8)
+    }
+
     if fileManager.fileExists(atPath: localXcconfig.path),
        var contents = try? String(contentsOf: localXcconfig, encoding: .utf8) {
         // Replace existing API key or add new one
@@ -70,6 +76,7 @@ let schemes: [Scheme] = [
         runAction: .runAction(
             configuration: "Debug",
             executable: "PaywallsTester",
+            arguments: .appendingTuistLaunchArguments(),
             options: .options(
                 storeKitConfigurationPath: storeKitConfigPath
             )
@@ -129,7 +136,7 @@ let project = Project(
             name: "PaywallsTester",
             destinations: allDestinations,
             product: .app,
-            bundleId: "com.revenuecat.PaywallsTester",
+            bundleId: Environment.paywallsTesterBundleId,
             deploymentTargets: allDeploymentTargets,
             infoPlist: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/Info.plist",
             sources: [
@@ -143,7 +150,7 @@ let project = Project(
                 .revenueCatUI,
                 .storeKit
             ],
-            settings: .appTarget
+            settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
         )
     ],
     schemes: schemes,

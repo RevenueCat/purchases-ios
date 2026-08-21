@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 6/11/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if canImport(UIKit)
@@ -29,6 +29,20 @@ class TextComponentViewModel {
 
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
+
+    /// Whether this component renders anything a screen reader can announce. An empty base string
+    /// still counts when overrides exist, since an override can supply text of its own.
+    ///
+    /// Only base visibility is consulted. State and condition overrides resolve per render, and
+    /// reaching them from here would mean threading the whole style pipeline into the walk, so text
+    /// hidden by an override still counts as announceable.
+    var announcesText: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
+        return !self.text.isEmpty || self.presentedOverrides != nil
+    }
 
     init(
         localizationProvider: LocalizationProvider,
@@ -62,12 +76,16 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
@@ -95,6 +113,7 @@ class TextComponentViewModel {
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
+            name: partial?.name ?? self.component.name,
             text: Self.processText(text, config: config),
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
@@ -213,6 +232,7 @@ struct LocalizedTextPartial: PresentedPartial {
             text: other?.text ?? base?.text,
             partial: PaywallComponent.PartialTextComponent(
                 visible: otherPartial?.visible ?? basePartial?.visible,
+                name: otherPartial?.name ?? basePartial?.name,
                 text: otherPartial?.text ?? basePartial?.text,
                 fontName: otherPartial?.fontName ?? basePartial?.fontName,
                 fontWeight: otherPartial?.fontWeightResolved ?? basePartial?.fontWeightResolved,
@@ -249,6 +269,7 @@ extension LocalizedTextPartial {
 struct TextComponentStyle {
 
     let visible: Bool
+    let name: String?
     let text: String
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
@@ -263,6 +284,7 @@ struct TextComponentStyle {
     init(
         uiConfigProvider: UIConfigProvider,
         visible: Bool,
+        name: String?,
         text: String,
         fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
@@ -275,12 +297,18 @@ struct TextComponentStyle {
         horizontalAlignment: PaywallComponent.HorizontalAlignment
     ) {
         self.visible = visible
+        self.name = name
         self.text = text
         self.fontWeight = fontWeight.fontWeight
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 
         // WIP: Take into account the fontFamily mapping
-        self.font = Self.makeFont(size: fontSize, name: fontName, uiConfigProvider: uiConfigProvider)
+        self.font = Self.makeFont(
+            size: fontSize,
+            name: fontName,
+            uiConfigProvider: uiConfigProvider,
+            useDynamicType: uiConfigProvider.useDynamicType()
+        )
 
         self.textAlignment = horizontalAlignment.textAlignment
         self.horizontalAlignment = horizontalAlignment.frameAlignment
@@ -356,14 +384,23 @@ enum GenericFont: String {
 extension TextComponentStyle {
 
     @MainActor
-    static func makeFont(size fontSize: CGFloat, name: String?, uiConfigProvider: UIConfigProvider) -> Font {
+    static func makeFont(
+        size fontSize: CGFloat,
+        name: String?,
+        uiConfigProvider: UIConfigProvider,
+        useDynamicType: Bool
+    ) -> Font {
         // Use default font if no name given
         guard let name = name else {
-            return GenericFont.sansSerif.makeFont(fontSize: fontSize)
+            return GenericFont.sansSerif.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
         }
 
-        let customFont = uiConfigProvider.resolveFont(size: fontSize, name: name)
-        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize)
+        let customFont = uiConfigProvider.resolveFont(
+            size: fontSize,
+            name: name,
+            useDynamicType: useDynamicType
+        )
+        return customFont ?? GenericFont.sansSerif.makeFont(fontSize: fontSize, useDynamicType: useDynamicType)
     }
 
 }

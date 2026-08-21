@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Stäng";
+"Go back" = "Tillbaka";
+"Manage subscription" = "Hantera abonnemang";
+"Redeem code" = "Lös in kod";
 "All subscriptions" = "Alla prenumerationer";
 "Privacy" = "Integritet";
 "Privacy policy" = "Integritetspolicy";
@@ -18,3 +22,4 @@
 "Continue" = "Fortsätta";
 "Default_offer_details_with_intro_offer" = "Starta din provperiod på {{ sub_offer_duration }} och sedan {{ total_price_and_per_month }}.";
 "Something went wrong" = "Något gick fel";
+"Purchase" = "Köp";

@@ -1121,10 +1121,12 @@ private extension BaseTemplateViewConfigurationTests {
     private static let consumableProduct = TestStoreProduct(
         localizedTitle: "Coins",
         price: 199.99,
+        currencyCode: "USD",
         localizedPriceString: "$199.99",
         productIdentifier: "com.revenuecat.coins",
         productType: .consumable,
-        localizedDescription: "Coins"
+        localizedDescription: "Coins",
+        locale: .current
     )
 
     private static let offeringIdentifier = "offering"

@@ -14,7 +14,7 @@
 
 import Foundation
 
-public struct PaywallComponentsData: Codable, Equatable, Sendable {
+@_spi(Internal) public struct PaywallComponentsData: Codable, Equatable, Sendable {
 
     public struct ComponentsConfig: Codable, Equatable, Sendable {
 
@@ -29,6 +29,7 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     public struct PaywallComponentsConfig: Codable, Equatable, Sendable {
 
         public var stack: PaywallComponent.StackComponent
+        @_spi(Internal) public let header: PaywallComponent.HeaderComponent?
         public let stickyFooter: PaywallComponent.StickyFooterComponent?
         public var background: PaywallComponent.Background
 
@@ -37,7 +38,20 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
             stickyFooter: PaywallComponent.StickyFooterComponent?,
             background: PaywallComponent.Background
         ) {
+            self.header = nil
             self.stack = stack
+            self.stickyFooter = stickyFooter
+            self.background = background
+        }
+
+        @_spi(Internal) public init(
+            stack: PaywallComponent.StackComponent,
+            header: PaywallComponent.HeaderComponent?,
+            stickyFooter: PaywallComponent.StickyFooterComponent?,
+            background: PaywallComponent.Background
+        ) {
+            self.stack = stack
+            self.header = header
             self.stickyFooter = stickyFooter
             self.background = background
         }
@@ -98,6 +112,14 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
     /// Exit offers configuration for this paywall.
     public var exitOffers: ExitOffers?
 
+    /// Declared paywall state keys (key → type + default), used to seed the presentation-session
+    /// state store. Declared at the root of the presentation unit; `nil` when the paywall declares
+    /// no state, which behaves identically to an empty declaration.
+    public private(set) var stateDeclarations: [String: PaywallComponent.StateDeclaration]?
+
+    /// When `false`, paywall text will not respect Dynamic Type and would use fixed sizing. Otherwise it will scale.
+    public var automaticallyScaleFontSize: Bool
+
     @DefaultDecodable.Zero
     internal private(set) var _revision: Int = 0
 
@@ -113,6 +135,8 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         case _revision = "revision"
         case zeroDecimalPlaceCountries
         case exitOffers
+        case automaticallyScaleFontSize
+        case stateDeclarations
     }
 
     public init(id: String? = nil,
@@ -123,7 +147,9 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
                 revision: Int,
                 defaultLocaleIdentifier: String,
                 zeroDecimalPlaceCountries: [String] = [],
-                exitOffers: ExitOffers? = nil) {
+                exitOffers: ExitOffers? = nil,
+                automaticallyScaleFontSize: Bool = true,
+                stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil) {
         self.id = id
         self.templateName = templateName
         self.assetBaseURL = assetBaseURL
@@ -133,11 +159,13 @@ public struct PaywallComponentsData: Codable, Equatable, Sendable {
         self.defaultLocale = defaultLocaleIdentifier
         self.zeroDecimalPlaceCountries = zeroDecimalPlaceCountries
         self.exitOffers = exitOffers
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
+        self.stateDeclarations = stateDeclarations
     }
 
 }
 
-extension PaywallComponentsData {
+@_spi(Internal) extension PaywallComponentsData {
 
     // swiftlint:disable:next function_body_length
     public init(from decoder: Decoder) throws {
@@ -198,6 +226,21 @@ extension PaywallComponentsData {
 
         exitOffers = try container.decodeIfPresent(ExitOffers.self, forKey: .exitOffers)
 
+        // Resilient state decoding: malformed entries are dropped individually and a malformed
+        // map is ignored entirely, so a bad declaration can never fail the whole paywall.
+        //
+        // An empty result is normalized to `nil` so that a missing key, an empty `{}` object, and
+        // a map whose entries all fail to decode are all represented identically.
+        let decodedState = ((try? container.decodeIfPresent(
+            [String: FailableStateDeclaration].self,
+            forKey: .stateDeclarations
+        )) ?? nil)?.compactMapValues(\.declaration)
+        stateDeclarations = (decodedState?.isEmpty == false) ? decodedState : nil
+
+        let shouldScale = try container.decodeIfPresent(Bool.self, forKey: .automaticallyScaleFontSize)
+        // default behavior should respect the dynamic type settings unless explicitly disabled
+        automaticallyScaleFontSize = shouldScale ?? true
+
         // Decode zeroDecimalPlaceCountries from the nested structure { "apple": [...] }
         if let zeroDecimalData = try container.decodeIfPresent(
             PaywallData.ZeroDecimalPlaceCountries.self,
@@ -229,21 +272,63 @@ extension PaywallComponentsData {
             forKey: .zeroDecimalPlaceCountries
         )
         try container.encodeIfPresent(exitOffers, forKey: .exitOffers)
+        try container.encode(automaticallyScaleFontSize, forKey: .automaticallyScaleFontSize)
+        try container.encodeIfPresent(stateDeclarations, forKey: .stateDeclarations)
     }
 
 }
 
-extension PaywallComponentsData {
+private extension PaywallComponentsData {
 
-    public struct EquatableError: Equatable, Sendable {
-        let description: String
+    /// Wrapper that swallows per-entry decoding failures so one malformed state declaration
+    /// does not discard the rest of the map.
+    struct FailableStateDeclaration: Decodable {
+
+        let declaration: PaywallComponent.StateDeclaration?
+
+        init(from decoder: Decoder) throws {
+            self.declaration = try? PaywallComponent.StateDeclaration(from: decoder)
+        }
+
+    }
+
+}
+
+@_spi(Internal) extension PaywallComponentsData {
+
+    public struct EquatableError: Equatable, Sendable, CustomStringConvertible {
+        public let description: String
 
         init(_ error: Error) {
-            self.description = String(describing: error)
+            // For decoding errors, prefer the concise underlying message over the full
+            // `String(describing:)` dump (which also includes the type and coding path).
+            if let decodingError = error as? DecodingError {
+                self.description = decodingError.debugMessage
+            } else {
+                self.description = String(describing: error)
+            }
         }
 
         public static func == (lhs: EquatableError, rhs: EquatableError) -> Bool {
             return lhs.description == rhs.description
+        }
+    }
+
+}
+
+private extension DecodingError {
+
+    /// The concise, human-readable message from the error's context (e.g.
+    /// `Failed to decode unknown type "web_view"`), without the type or coding path noise.
+    var debugMessage: String {
+        switch self {
+        case let .typeMismatch(_, context),
+             let .valueNotFound(_, context),
+             let .keyNotFound(_, context),
+             let .dataCorrupted(context):
+            return context.debugDescription
+        @unknown default:
+            return String(describing: self)
         }
     }
 

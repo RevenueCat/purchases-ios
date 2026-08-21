@@ -1,4 +1,8 @@
 "OK" = "Добре";
+"Close" = "Затваряне";
+"Go back" = "Назад";
+"Manage subscription" = "Управление на абонамента";
+"Redeem code" = "Активиране на код";
 "All subscriptions" = "Всички абонаменти";
 "Privacy" = "поверителност";
 "Privacy policy" = "Политика за поверителност";
@@ -18,3 +22,4 @@
 "Continue" = "продължи";
 "Default_offer_details_with_intro_offer" = "Започнете своя пробен период от {{ sub_offer_duration }}, след което {{ total_price_and_per_month }}.";
 "Something went wrong" = "Нещо се обърка";
+"Purchase" = "Купи";

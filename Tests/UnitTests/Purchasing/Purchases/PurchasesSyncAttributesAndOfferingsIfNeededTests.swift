@@ -53,4 +53,58 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == 1
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 1
     }
+
+    func testRefreshesRemoteConfig() throws {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        self.setupPurchases()
+        try self.stubOfferings()
+
+        let refreshCountBeforeSync = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+
+        let result: Offerings? = waitUntilValue { completed in
+            self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { offerings, _ in
+                completed(offerings)
+            })
+        }
+
+        expect(result).toNot(beNil())
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == refreshCountBeforeSync + 1
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.fetchContext) == .read
+    }
+
+    func testDoesNotRefreshRemoteConfigWhenRateLimitIsReached() throws {
+        self.systemInfo.stubbedRemoteConfigEnabled = true
+        self.setupPurchases()
+        try self.stubOfferings()
+
+        for _ in 0..<Self.rateLimitMaxCalls {
+            waitUntil { completed in
+                self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { _, _ in
+                    completed()
+                })
+            }
+        }
+
+        let refreshCountBeforeRateLimitedSync = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
+        expect(refreshCountBeforeRateLimitedSync) >= Self.rateLimitMaxCalls
+
+        waitUntil { completed in
+            self.purchases.syncAttributesAndOfferingsIfNeeded(completion: { _, _ in
+                completed()
+            })
+        }
+
+        expect(self.subscriberAttributesManager.invokedSyncAttributesForAllUsersCount) == Self.rateLimitMaxCalls
+        expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == refreshCountBeforeRateLimitedSync
+    }
+
+    private static let rateLimitMaxCalls = 5
+
+    private func stubOfferings() throws {
+        self.mockOfferingsManager.stubbedOfferingsCompletionResult = .success(
+            try XCTUnwrap(self.offeringsFactory.createOfferings(from: [:],
+                                                                contents: .mockContents,
+                                                                loadedFromDiskCache: false))
+        )
+    }
 }

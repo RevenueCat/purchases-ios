@@ -15,6 +15,14 @@ import Nimble
 @_spi(Internal) @testable import RevenueCat
 import XCTest
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 final class PaywallCacheWarmingTests: TestCase {
 
@@ -30,15 +38,13 @@ final class PaywallCacheWarmingTests: TestCase {
         self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker)
     }
 
-    func testOfferingsWithNoPaywallsDoesNotCheckEligibility() async throws {
+    func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
         await self.cache.warmUpEligibilityCache(
             offerings: try Self.createOfferings([
                 Self.createOffering(
                     identifier: Self.offeringIdentifier,
                     paywall: nil,
-                    products: [
-                        (.monthly, "product_1")
-                    ]
+                    products: []
                 )
             ])
         )
@@ -46,12 +52,11 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == false
     }
 
-    func testWarmsUpEligibilityCacheForCurrentOffering() async throws {
-        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+    func testWarmsUpEligibilityCacheForCurrentOfferingFirstThenRest() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.monthly, "product_1"),
                     (.weekly, "product_2")
@@ -59,38 +64,42 @@ final class PaywallCacheWarmingTests: TestCase {
             ),
             Self.createOffering(
                 identifier: "offering_2",
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.annual, "product_3")
                 ]
             )
         ])
 
-        // Paywall filters packages so only `monthly` and `annual` is used.
-        // `product_3` is not part of the current offering, so that is ignored too.
-        let expectedProducts: Set<String> = ["product_1"]
+        let expectedCurrent: Set<String> = ["product_1", "product_2"]
+        let expectedRemaining: Set<String> = ["product_3"]
 
         await self.cache.warmUpEligibilityCache(offerings: offerings)
 
+        // Two staggered calls: the current offering's products first, then the rest.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
-        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
 
-        expect(
-            self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters
-        ) == expectedProducts
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations.first) == expectedCurrent
+        expect(invocations.last) == expectedRemaining
 
         self.logger.verifyMessageWasLogged(
-            Strings.paywalls.warming_up_eligibility_cache(products: expectedProducts),
+            Strings.paywalls.warming_up_eligibility_cache(products: expectedCurrent),
+            level: .debug
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.warming_up_eligibility_cache(products: expectedRemaining),
             level: .debug
         )
     }
 
-    func testOnlyWarmsUpEligibilityCacheOnce() async throws {
-        let paywall = try Self.loadPaywall("PaywallData-Sample1")
+    func testWarmsUpEligibilityCacheOnlyOnceForSameOfferings() async throws {
         let offerings = try Self.createOfferings([
             Self.createOffering(
                 identifier: Self.offeringIdentifier,
-                paywall: paywall,
+                paywall: nil,
                 products: [
                     (.monthly, "product_1")
                 ]
@@ -101,6 +110,8 @@ final class PaywallCacheWarmingTests: TestCase {
         await self.cache.warmUpEligibilityCache(offerings: offerings)
 
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStore) == true
+        // Only one call for the current offering; the second `warmUpEligibilityCache` is a no-op
+        // because all products are already in the warmed set.
         expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 1
 
         self.logger.verifyMessageWasLogged(
@@ -110,7 +121,373 @@ final class PaywallCacheWarmingTests: TestCase {
         )
     }
 
+    func testWarmsUpEligibilityCacheIncrementallyForNewProducts() async throws {
+        let firstOfferings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1")
+                ]
+            )
+        ])
+
+        let secondOfferings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1"),
+                    (.weekly, "product_2")
+                ]
+            ),
+            Self.createOffering(
+                identifier: "offering_2",
+                paywall: nil,
+                products: [
+                    (.annual, "product_3")
+                ]
+            )
+        ])
+
+        await self.cache.warmUpEligibilityCache(offerings: firstOfferings)
+        await self.cache.warmUpEligibilityCache(offerings: secondOfferings)
+
+        // The second call should only warm up products that haven't been warmed yet.
+        // Current offering already had `product_1`, so only `product_2` is new there.
+        // Then the remaining offering's `product_3` is warmed.
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations) == [
+            ["product_1"],
+            ["product_2"],
+            ["product_3"]
+        ]
+    }
+
+    func testClearEligibilityCacheAllowsRewarming() async throws {
+        let offerings = try Self.createOfferings([
+            Self.createOffering(
+                identifier: Self.offeringIdentifier,
+                paywall: nil,
+                products: [
+                    (.monthly, "product_1")
+                ]
+            )
+        ])
+
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+        await self.cache.clearEligibilityCache()
+        await self.cache.warmUpEligibilityCache(offerings: offerings)
+
+        expect(self.eligibilityChecker.invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreCount) == 2
+
+        let invocations = self.eligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParametersList
+        expect(invocations) == [["product_1"], ["product_1"]]
+    }
+
 #if !os(tvOS) // For Paywalls V2
+
+    func testCollectsLeafAssetsOverridesAndLocalizations() {
+        let image = PaywallComponent.ImageComponent(
+            source: Self.image("image", dark: true),
+            overrides: [
+                .init(conditions: [.compact], properties: .init(source: Self.image("image-override")))
+            ]
+        )
+        let icon = Self.icon(
+            "icon",
+            overrides: [
+                .init(
+                    conditions: [.compact],
+                    properties: .init(formats: Self.iconFormats("icon-override"))
+                )
+            ]
+        )
+        let video = PaywallComponent.VideoComponent(
+            source: Self.video("video", dark: true, darkHasLowRes: false),
+            fallbackSource: Self.image("video-fallback"),
+            overrides: [
+                .init(conditions: [.compact], properties: .init(source: Self.video("video-override")))
+            ]
+        )
+        let validWebView = PaywallComponent.WebViewComponent(
+            id: "valid",
+            protocolVersion: 1,
+            url: "https://example.com/cache"
+        )
+        let invalidWebView = PaywallComponent.WebViewComponent(
+            id: "invalid",
+            protocolVersion: 1,
+            url: "http://example.com/not-secure"
+        )
+        let data = Self.data(
+            components: [
+                .image(image),
+                .icon(icon),
+                .video(video),
+                .webView(validWebView),
+                .webView(invalidWebView)
+            ],
+            localizations: [
+                "en_US": ["localized-image": .image(Self.image("localized", dark: true))]
+            ]
+        )
+
+        let assets = data.allCacheAssets
+
+        XCTAssertEqual(
+            Set(assets.images),
+            Set(
+                Self.imageMedia("image", dark: true) +
+                Self.imageMedia("image-override") +
+                Self.iconMedia(["icon", "icon-override"]) +
+                Self.imageMedia("video-fallback") +
+                Self.imageMedia("localized", dark: true)
+            )
+        )
+        XCTAssertEqual(
+            Set(assets.videos),
+            Set(
+                Self.videoMedia("video", dark: true, darkHasLowRes: false) +
+                Self.videoMedia("video-override")
+            )
+        )
+        XCTAssertEqual(
+            assets.webBundles,
+            [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
+        )
+
+        XCTAssertEqual(
+            Set(data.allImageURLs),
+            Set(assets.images.map { ($0.lowResURL ?? $0.highResURL).url })
+        )
+        XCTAssertEqual(
+            Set(data.allLowResVideoUrls),
+            Set(assets.videos.compactMap(\.lowResURL))
+        )
+    }
+
+    func testTraversesContainersAndMarksSheetAssetsForSynchronousRendering() {
+        let sheetImage = Self.imageComponent("sheet")
+        let sheetVideo = PaywallComponent.VideoComponent(source: Self.video("sheet-video"))
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet",
+            name: nil,
+            stack: .init(components: [.image(sheetImage), .video(sheetVideo)]),
+            backgroundBlur: false,
+            size: nil
+        )
+        let sheetButton = PaywallComponent.ButtonComponent(
+            action: .navigateTo(destination: .sheet(sheet: sheet)),
+            stack: .init(components: [.image(Self.imageComponent("sheet-button"))])
+        )
+        let tabs = PaywallComponent.TabsComponent(
+            control: .init(
+                type: .buttons,
+                stack: .init(components: [.video(.init(source: Self.video("tab-control")))])
+            ),
+            tabs: [
+                .init(id: "tab", stack: .init(components: [.image(Self.imageComponent("tab"))]))
+            ]
+        )
+        let countdown = PaywallComponent.CountdownComponent(
+            style: .date(Date(timeIntervalSince1970: 0)),
+            countFrom: .hours,
+            countdownStack: .init(components: [.image(Self.imageComponent("countdown"))]),
+            endStack: .init(components: [.image(Self.imageComponent("countdown-end"))]),
+            fallback: .init(components: [.image(Self.imageComponent("countdown-fallback"))])
+        )
+        let data = Self.data(components: [
+            .image(Self.imageComponent("outside")),
+            .button(sheetButton),
+            .stack(.init(components: [.image(Self.imageComponent("stack"))])),
+            .package(.init(
+                packageID: "$rc_monthly",
+                isSelectedByDefault: true,
+                applePromoOfferProductCode: nil,
+                stack: .init(components: [.image(Self.imageComponent("package"))])
+            )),
+            .purchaseButton(.init(
+                stack: .init(components: [.image(Self.imageComponent("purchase"))]),
+                action: nil,
+                method: nil,
+                name: nil
+            )),
+            .stickyFooter(.init(
+                stack: .init(components: [.image(Self.imageComponent("footer-component"))])
+            )),
+            .tabs(tabs),
+            .tabControlButton(.init(
+                tabId: "tab",
+                stack: .init(components: [.image(Self.imageComponent("tab-button"))])
+            )),
+            .carousel(.init(pages: [
+                .init(components: [.image(Self.imageComponent("carousel"))])
+            ])),
+            .countdown(countdown)
+        ])
+
+        let assets = data.allCacheAssets
+        let synchronousImageNames = Set(
+            assets.images
+                .filter(\.rendersSynchronously)
+                .map(\.highResURL.url.lastPathComponent)
+        )
+
+        XCTAssertEqual(synchronousImageNames, ["sheet-high.heic", "sheet-button-high.heic"])
+        XCTAssertEqual(
+            Set(assets.videos.filter(\.rendersSynchronously).map(\.highResURL.url.lastPathComponent)),
+            ["sheet-video-high.mp4"]
+        )
+        XCTAssertEqual(
+            Set(assets.videos.map(\.highResURL.url.lastPathComponent)),
+            ["sheet-video-high.mp4", "tab-control-high.mp4"]
+        )
+
+        let expectedContainerImages = [
+            "outside", "sheet", "sheet-button", "stack", "package", "purchase",
+            "footer-component", "tab", "tab-button", "carousel",
+            "countdown", "countdown-end", "countdown-fallback"
+        ]
+        XCTAssertEqual(
+            Set(assets.images.map(\.highResURL.url.lastPathComponent)),
+            Set(expectedContainerImages.map { "\($0)-high.heic" })
+        )
+        XCTAssertTrue(data.allImageURLs.contains(Self.assetURL("sheet-high.heic")))
+        XCTAssertTrue(data.allImageURLs.contains(Self.assetURL("sheet-low.heic")))
+    }
+
+    func testCollectsStackRootHeaderAndFooterBackgrounds() {
+        let config = PaywallComponentsData.PaywallComponentsConfig(
+            stack: .init(
+                components: [],
+                background: .video(
+                    Self.video("stack-background"),
+                    Self.image("stack-fallback"),
+                    true,
+                    true,
+                    .fit,
+                    nil
+                )
+            ),
+            header: .init(stack: .init(components: [.image(Self.imageComponent("header"))])),
+            stickyFooter: .init(stack: .init(
+                components: [],
+                background: .image(Self.image("footer-background"), .fit, nil)
+            )),
+            background: .video(
+                Self.video("root-background"),
+                Self.image("root-fallback"),
+                true,
+                true,
+                .fit,
+                nil
+            )
+        )
+
+        let assets = config.allCacheAssets
+
+        XCTAssertEqual(
+            Set(assets.images.map(\.highResURL.url.lastPathComponent)),
+            [
+                "stack-fallback-high.heic",
+                "header-high.heic",
+                "footer-background-high.heic",
+                "root-fallback-high.heic"
+            ]
+        )
+        XCTAssertEqual(
+            Set(assets.videos.map(\.highResURL.url.lastPathComponent)),
+            ["stack-background-high.mp4", "root-background-high.mp4"]
+        )
+    }
+
+    func testWorkflowAssetPrewarmingDownloadsPreferredImagesAndLowResVideos() async {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let sheet = PaywallComponent.ButtonComponent.Sheet(
+            id: "sheet",
+            name: nil,
+            stack: .init(components: [
+                .image(.init(source: Self.cacheWarmingImage("sheet")))
+            ]),
+            backgroundBlur: false,
+            size: nil
+        )
+        let screen = Self.workflowScreen(components: [
+            .image(.init(source: Self.cacheWarmingImage("image"))),
+            .button(.init(
+                action: .navigateTo(destination: .sheet(sheet: sheet)),
+                stack: .init(components: [])
+            )),
+            .video(.init(source: Self.cacheWarmingVideo("video"))),
+            .video(.init(source: Self.cacheWarmingVideo("high-only", hasLowRes: false)))
+        ])
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Test",
+            initialStepId: "step",
+            singleStepFallbackId: nil,
+            steps: [:],
+            screens: ["screen": screen]
+        )
+
+        await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: Self.emptyUIConfig)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.cacheWarmingURL("image-low.heic"), checksum: nil),
+            .init(url: Self.cacheWarmingURL("sheet-low.heic"), checksum: nil),
+            .init(url: Self.cacheWarmingURL("sheet-high.heic"), checksum: nil),
+            .init(
+                url: Self.cacheWarmingURL("video-low.mp4"),
+                checksum: .init(algorithm: .sha256, value: "video-low")
+            )
+        ])
+    }
+
+    func testOfferingsAssetPrewarmingDownloadsImagesOnlyOnce() async throws {
+        let fileRepository = MockCacheWarmingFileRepository()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fileRepository: fileRepository
+        )
+        let data = Self.paywallComponentsData(components: [
+            .image(.init(source: Self.cacheWarmingImage("offering-image"))),
+            .video(.init(source: Self.cacheWarmingVideo("offering-video"))),
+            .webView(.init(
+                id: "webview",
+                protocolVersion: 1,
+                url: "https://example.com/cache"
+            ))
+        ])
+        let offering = Offering(
+            identifier: Self.offeringIdentifier,
+            serverDescription: "Test",
+            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: data),
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let offerings = try Self.createOfferings([offering])
+
+        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+
+        let requests = await fileRepository.requests
+        XCTAssertEqual(requests.count, 1)
+        XCTAssertEqual(Set(requests), [
+            .init(url: Self.cacheWarmingURL("offering-image-low.heic"), checksum: nil)
+        ])
+        XCTAssertEqual(
+            data.allCacheAssets.webBundles,
+            [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
+        )
+    }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
         let font = DownloadableFont(
@@ -147,6 +524,26 @@ final class PaywallCacheWarmingTests: TestCase {
             level: .debug,
             expectedCount: 1
         )
+    }
+
+    func testWorkflowAssetPrewarmingAttemptsSharedFontOnlyOnce() async {
+        let installCallCount = await self.workflowFontInstallCallCount(fontNames: ["MockFont", "MockFont"])
+        XCTAssertEqual(installCallCount, 1)
+    }
+
+    func testWorkflowAssetPrewarmingDoesNotDeduplicateDistinctFontNames() async {
+        let installCallCount = await self.workflowFontInstallCallCount(
+            fontNames: ["Font Regular", "Font Bold"]
+        )
+        XCTAssertEqual(installCallCount, 2)
+    }
+
+    func testWorkflowAssetPrewarmingDoesNotRepeatFailedSharedFontAttempt() async {
+        let installCallCount = await self.workflowFontInstallCallCount(
+            fontNames: ["MockFont", "MockFont"],
+            shouldFailInstallation: true
+        )
+        XCTAssertEqual(installCallCount, 1)
     }
 
 #endif
@@ -257,10 +654,476 @@ final class PaywallCacheWarmingTests: TestCase {
         expect(session.dataFromURLCallCount).to(equal(1))
         expect(registrar.registerFontCallCount).to(equal(2))
     }
+
+    // MARK: - fontIsAlreadyInstalled
+
+    func testFontIsAlreadyInstalled_WhenServerFamilyDoesNotMatchSystemFamily() throws {
+        let font = try Self.fontWithMultiWordFamily()
+
+        // The backend derives the family from the PostScript name prefix, dropping the
+        // spaces the system family name has (e.g. "Avenir Next" -> "AvenirNext").
+        let derivedFamily = font.family.replacingOccurrences(of: " ", with: "")
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: derivedFamily)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyMatchesSystemFamily() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: font.family)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyIsNil() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: nil)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyIsEmpty() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: "")).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_WhenFamilyBelongsToADifferentInstalledFont() throws {
+        let font = try Self.anyInstalledFont()
+        let otherFamily = try Self.installedFamilyName(otherThan: font.family)
+
+        // A wrong-but-real family must not stop us from resolving the face by name.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: font.name,
+                                                        fontFamily: otherFamily)).to(beTrue())
+    }
+
+    func testFontIsAlreadyInstalled_AgreesWithPlatformFontLookupOnCasing() throws {
+        let font = try Self.anyInstalledFont()
+        let miscased = font.name.uppercased()
+        try XCTSkipIf(miscased == font.name)
+
+        // The paywall resolves fonts through this same lookup, so disagreeing means either
+        // re-downloading an available font or skipping one that can never be resolved.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: miscased,
+                                                        fontFamily: font.family))
+            == Self.platformResolvesFont(named: miscased)
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseForUnknownFontName() {
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: Self.unknownFamilyName)).to(beFalse())
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: nil)).to(beFalse())
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseWhenOnlyTheFamilyIsInstalled() throws {
+        let font = try Self.anyInstalledFont()
+
+        // The family exists, but no face in it is named `unknownFontName`.
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: Self.unknownFontName,
+                                                        fontFamily: font.family)).to(beFalse())
+    }
+
+    func testFontIsAlreadyInstalled_ReturnsFalseForEmptyFontName() throws {
+        let font = try Self.anyInstalledFont()
+
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: "", fontFamily: nil)).to(beFalse())
+        expect(Self.fontsManager.fontIsAlreadyInstalled(fontName: "", fontFamily: font.family)).to(beFalse())
+    }
+
+#if !os(tvOS)
+
+    func testTriggerFontDownload_SkipsDownloadWhenInstalledUnderADifferentFamily() async throws {
+        let font = try Self.fontWithMultiWordFamily()
+        let derivedFamily = font.family.replacingOccurrences(of: " ", with: "")
+
+        let session = MockSession()
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: Self.makeFontsManager(session: session)
+        )
+        let fontsConfig = try Self.fontsConfig(fontName: font.name, family: derivedFamily)
+
+        await cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+
+        expect(session.dataFromURLCallCount).to(equal(0))
+    }
+
+    func testTriggerFontDownload_DownloadsWhenFontIsNotInstalled() async throws {
+        let data = Data("valid font".utf8)
+        let session = MockSession()
+        session.dataFromURL = data
+        session.urlResponse = HTTPURLResponse(
+            url: Self.fontURL,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )
+
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: Self.makeFontsManager(session: session)
+        )
+
+        let fontsConfig = try Self.fontsConfig(fontName: Self.unknownFontName,
+                                               family: Self.unknownFamilyName,
+                                               hash: data.md5String)
+
+        await cache.triggerFontDownloadIfNeeded(fontsConfig: fontsConfig)
+
+        expect(session.dataFromURLCallCount).to(equal(1))
+    }
+
+#endif
+
+    // MARK: - Font test helpers
+
+    private static let unknownFontName = "RevenueCatNotAnInstalledFont-Regular"
+    private static let unknownFamilyName = "RevenueCatNotAnInstalledFont"
+    private static let fontURL = URL(string: "https://example.com/font.ttf")!
+
+    private static let fontsManager = PaywallCacheWarmingTests.makeFontsManager()
+
+    private static func makeFontsManager(session: MockSession = MockSession()) -> DefaultPaywallFontsManager {
+        return DefaultPaywallFontsManager(
+            fileManager: MockFileManager(),
+            session: session,
+            registrar: MockRegistrar()
+        )
+    }
+
+#if !os(tvOS)
+
+    private static func fontsConfig(
+        fontName: String,
+        family: String,
+        hash: String = "abc123"
+    ) throws -> UIConfig.FontsConfig {
+        let json = """
+        {"family": "\(family)", "url": "\(Self.fontURL.absoluteString)", "hash": "\(hash)"}
+        """
+        let webFontInfo = try JSONDecoder().decode(UIConfig.WebFontInfo.self, from: Data(json.utf8))
+
+        return UIConfig.FontsConfig(ios: UIConfig.FontInfo(name: fontName, webFontInfo: webFontInfo))
+    }
+
+#endif
+
+    /// Every installed family and its face names on the current platform.
+    private static func installedFontFamilies() -> [(family: String, names: [String])] {
+        #if canImport(UIKit)
+        return UIFont.familyNames.map { ($0, UIFont.fontNames(forFamilyName: $0)) }
+        #elseif canImport(AppKit)
+        return NSFontManager.shared.availableFontFamilies.map { family in
+            let names = (NSFontManager.shared.availableMembers(ofFontFamily: family) ?? [])
+                .compactMap { $0.first as? String }
+            return (family, names)
+        }
+        #else
+        return []
+        #endif
+    }
+
+    /// The same lookup the paywall uses to resolve a custom font.
+    private static func platformResolvesFont(named name: String) -> Bool {
+        #if canImport(UIKit)
+        return UIFont(name: name, size: 1) != nil
+        #elseif canImport(AppKit)
+        return NSFont(name: name, size: 1) != nil
+        #else
+        return false
+        #endif
+    }
+
+    private static func anyInstalledFont() throws -> (family: String, name: String) {
+        for entry in Self.installedFontFamilies() {
+            if let name = entry.names.first {
+                return (entry.family, name)
+            }
+        }
+
+        throw XCTSkip("No installed fonts on this platform")
+    }
+
+    private static func installedFamilyName(otherThan family: String) throws -> String {
+        let other = Self.installedFontFamilies()
+            .first { $0.family.caseInsensitiveCompare(family) != .orderedSame && !$0.names.isEmpty }
+
+        guard let other = other else {
+            throw XCTSkip("Only one installed font family on this platform")
+        }
+        return other.family
+    }
+
+    /// An installed font whose family name contains spaces, so that removing them produces a
+    /// family the system does not know about.
+    private static func fontWithMultiWordFamily() throws -> (family: String, name: String) {
+        let families = Self.installedFontFamilies()
+        let knownFamilies = Set(families.map { $0.family.lowercased() })
+
+        for entry in families where entry.family.contains(" ") {
+            let derived = entry.family.replacingOccurrences(of: " ", with: "").lowercased()
+            // Skip families where dropping spaces happens to produce another known family.
+            guard !knownFamilies.contains(derived), let name = entry.names.first else { continue }
+            return (entry.family, name)
+        }
+
+        throw XCTSkip("No installed font with a multi-word family name on this platform")
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
 private extension PaywallCacheWarmingTests {
+
+#if !os(tvOS)
+    static func data(
+        components: [PaywallComponent],
+        localizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary] = [:]
+    ) -> PaywallComponentsData {
+        return .init(
+            templateName: "test",
+            assetBaseURL: Self.assetURL(""),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: components),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: localizations,
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func imageComponent(_ name: String) -> PaywallComponent.ImageComponent {
+        return .init(source: Self.image(name))
+    }
+
+    static func image(_ name: String, dark: Bool = false) -> PaywallComponent.ThemeImageUrls {
+        return .init(
+            light: Self.imageURLs(name),
+            dark: dark ? Self.imageURLs("\(name)-dark") : nil
+        )
+    }
+
+    static func imageURLs(_ name: String) -> PaywallComponent.ImageUrls {
+        return .init(
+            width: 100,
+            height: 100,
+            original: Self.assetURL("\(name)-original.png"),
+            heic: Self.assetURL("\(name)-high.heic"),
+            heicLowRes: Self.assetURL("\(name)-low.heic")
+        )
+    }
+
+    static func video(
+        _ name: String,
+        dark: Bool = false,
+        darkHasLowRes: Bool = true
+    ) -> PaywallComponent.ThemeVideoUrls {
+        return .init(
+            light: Self.videoURLs(name),
+            dark: dark ? Self.videoURLs("\(name)-dark", hasLowRes: darkHasLowRes) : nil
+        )
+    }
+
+    static func videoURLs(_ name: String, hasLowRes: Bool = true) -> PaywallComponent.VideoUrls {
+        return .init(
+            width: 100,
+            height: 100,
+            url: Self.assetURL("\(name)-high.mp4"),
+            checksum: .init(algorithm: .sha256, value: "\(name)-high"),
+            urlLowRes: hasLowRes ? Self.assetURL("\(name)-low.mp4") : nil,
+            checksumLowRes: hasLowRes ? .init(algorithm: .sha256, value: "\(name)-low") : nil
+        )
+    }
+
+    static func icon(
+        _ name: String,
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialIconComponent>? = nil
+    ) -> PaywallComponent.IconComponent {
+        return .init(
+            baseUrl: Self.assetURL("").absoluteString,
+            iconName: name,
+            formats: Self.iconFormats(name),
+            size: .init(width: .fit(nil), height: .fit(nil)),
+            padding: .zero,
+            margin: .zero,
+            color: .init(light: .hex("#000000")),
+            iconBackground: nil,
+            overrides: overrides
+        )
+    }
+
+    static func iconFormats(_ name: String) -> PaywallComponent.IconComponent.Formats {
+        return .init(svg: "\(name).svg", png: "\(name).png", heic: "\(name).heic", webp: "\(name).webp")
+    }
+
+    static func imageMedia(
+        _ name: String,
+        dark: Bool = false,
+        rendersSynchronously: Bool = false
+    ) -> [CacheAssetCollection.Media] {
+        let names = dark ? [name, "\(name)-dark"] : [name]
+        return names.map {
+            .init(
+                highResURL: .init(url: Self.assetURL("\($0)-high.heic"), checksum: nil),
+                lowResURL: .init(url: Self.assetURL("\($0)-low.heic"), checksum: nil),
+                rendersSynchronously: rendersSynchronously
+            )
+        }
+    }
+
+    static func videoMedia(
+        _ name: String,
+        dark: Bool = false,
+        darkHasLowRes: Bool = true,
+        rendersSynchronously: Bool = false
+    ) -> [CacheAssetCollection.Media] {
+        let namesAndLowRes = dark ? [(name, true), ("\(name)-dark", darkHasLowRes)] : [(name, true)]
+        return namesAndLowRes.map { mediaName, hasLowRes in
+            .init(
+                highResURL: .init(
+                    url: Self.assetURL("\(mediaName)-high.mp4"),
+                    checksum: .init(algorithm: .sha256, value: "\(mediaName)-high")
+                ),
+                lowResURL: hasLowRes ? .init(
+                    url: Self.assetURL("\(mediaName)-low.mp4"),
+                    checksum: .init(algorithm: .sha256, value: "\(mediaName)-low")
+                ) : nil,
+                rendersSynchronously: rendersSynchronously
+            )
+        }
+    }
+
+    static func iconMedia(_ names: [String]) -> [CacheAssetCollection.Media] {
+        return names.map {
+            .init(
+                highResURL: .init(url: Self.assetURL("\($0).heic"), checksum: nil),
+                lowResURL: nil,
+                rendersSynchronously: false
+            )
+        }
+    }
+
+    static func assetURL(_ path: String) -> URL {
+        return Self.url("https://assets.example.com/\(path)")
+    }
+
+    static func url(_ string: String) -> URL {
+        // swiftlint:disable:next force_unwrapping
+        return URL(string: string)!
+    }
+
+    static var emptyUIConfig: UIConfig {
+        return .init(
+            app: .init(colors: [:], fonts: [:]),
+            localizations: [:],
+            variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+        )
+    }
+
+    static func workflowScreen(components: [PaywallComponent]) -> WorkflowScreen {
+        let data = Self.paywallComponentsData(components: components)
+        return .init(
+            name: "Test",
+            templateName: data.templateName,
+            assetBaseURL: data.assetBaseURL,
+            componentsConfig: data.componentsConfig,
+            componentsLocalizations: data.componentsLocalizations,
+            defaultLocale: data.defaultLocale,
+            offeringIdentifier: nil
+        )
+    }
+
+    static func paywallComponentsData(components: [PaywallComponent]) -> PaywallComponentsData {
+        return .init(
+            templateName: "test",
+            assetBaseURL: Self.cacheWarmingURL(""),
+            componentsConfig: .init(base: .init(
+                stack: .init(components: components),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [:],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func cacheWarmingImage(_ name: String) -> PaywallComponent.ThemeImageUrls {
+        return .init(light: .init(
+            width: 100,
+            height: 100,
+            original: Self.cacheWarmingURL("\(name)-original.png"),
+            heic: Self.cacheWarmingURL("\(name)-high.heic"),
+            heicLowRes: Self.cacheWarmingURL("\(name)-low.heic")
+        ))
+    }
+
+    static func cacheWarmingVideo(
+        _ name: String,
+        hasLowRes: Bool = true
+    ) -> PaywallComponent.ThemeVideoUrls {
+        return .init(light: .init(
+            width: 100,
+            height: 100,
+            url: Self.cacheWarmingURL("\(name)-high.mp4"),
+            checksum: .init(algorithm: .sha256, value: "\(name)-high"),
+            urlLowRes: hasLowRes ? Self.cacheWarmingURL("\(name)-low.mp4") : nil,
+            checksumLowRes: hasLowRes ? .init(algorithm: .sha256, value: "\(name)-low") : nil
+        ))
+    }
+
+    static func cacheWarmingURL(_ path: String) -> URL {
+        // swiftlint:disable:next force_unwrapping
+        return URL(string: "https://assets.example.com/\(path)")!
+    }
+
+    func workflowFontInstallCallCount(
+        fontNames: [String],
+        shouldFailInstallation: Bool = false
+    ) async -> Int {
+        let fontURL = URL(string: "https://example.com/font.ttf")!
+        let fontsManager = MockFontsManager(
+            installDelayInSeconds: 0,
+            shouldFailInstallation: shouldFailInstallation
+        )
+        let cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            fontsManager: fontsManager
+        )
+
+        for (index, fontName) in fontNames.enumerated() {
+            let uiConfig = UIConfig(
+                app: .init(
+                    colors: [:],
+                    fonts: [
+                        "font": .init(
+                            ios: .init(
+                                name: fontName,
+                                webFontInfo: .init(url: fontURL.absoluteString, hash: "abc123")
+                            )
+                        )
+                    ]
+                ),
+                localizations: [:],
+                variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+            )
+            let workflow = PublishedWorkflow(
+                id: "workflow-\(index)",
+                displayName: "Test",
+                initialStepId: "step",
+                singleStepFallbackId: nil,
+                steps: [:],
+                screens: [:]
+            )
+            await cache.prewarmWorkflowAssets(workflow: workflow, uiConfig: uiConfig)
+        }
+
+        return await fontsManager.installCallCount
+    }
+#endif
 
     static func createOffering(
         identifier: String,
@@ -312,6 +1175,23 @@ private extension PaywallCacheWarmingTests {
 
     static let bundle = Bundle(for: PaywallCacheWarmingTests.self)
     static let offeringIdentifier = "offering"
+
+}
+
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
+private actor MockCacheWarmingFileRepository: FileRepositoryType {
+
+    private(set) var requests: [URLWithValidation] = []
+
+    nonisolated func prefetch(urls: [InputURL]) {}
+
+    func generateOrGetCachedFileURL(
+        for url: InputURL,
+        withChecksum checksum: Checksum?
+    ) async throws -> OutputURL {
+        self.requests.append(.init(url: url, checksum: checksum))
+        return url
+    }
 
 }
 
@@ -369,12 +1249,18 @@ final actor MockFontsManager: PaywallFontManagerType {
     private(set) var installCallCount = 0
     var installDelayInSeconds: TimeInterval = 0
 
-    init(installDelayInSeconds: TimeInterval, fontIsAlreadyInstalled: Bool = false) {
+    init(
+        installDelayInSeconds: TimeInterval,
+        fontIsAlreadyInstalled: Bool = false,
+        shouldFailInstallation: Bool = false
+    ) {
         self.installDelayInSeconds = installDelayInSeconds
         self.fontIsAlreadyInstalled = fontIsAlreadyInstalled
+        self.shouldFailInstallation = shouldFailInstallation
     }
 
     let fontIsAlreadyInstalled: Bool
+    let shouldFailInstallation: Bool
 
     nonisolated func fontIsAlreadyInstalled(fontName: String, fontFamily: String?) -> Bool {
         return self.fontIsAlreadyInstalled
@@ -382,6 +1268,10 @@ final actor MockFontsManager: PaywallFontManagerType {
 
     func installFont(_ font: RevenueCat.DownloadableFont) async throws {
         installCallCount += 1
+
+        if self.shouldFailInstallation {
+            throw NSError(domain: "MockFontsManager", code: 1)
+        }
 
         let duration = UInt64(installDelayInSeconds * 1_000_000_000)
         try await Task.sleep(nanoseconds: duration)

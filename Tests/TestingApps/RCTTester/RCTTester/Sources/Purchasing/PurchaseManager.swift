@@ -5,7 +5,9 @@
 
 import Foundation
 import RevenueCat
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 
 /// Result type for purchase operations initiated outside of paywalls.
 enum PurchaseOperationResult {
@@ -52,6 +54,7 @@ struct RestoreOperationResult {
 @MainActor
 protocol PurchaseManager: AnyObject {
 
+    #if !os(tvOS)
     // MARK: - Paywall Integration
 
     /// Returns the `MyAppPurchaseLogic` to be passed to paywall modifiers.
@@ -61,6 +64,7 @@ protocol PurchaseManager: AnyObject {
     /// - Returns a configured `MyAppPurchaseLogic` when `purchasesAreCompletedBy == .myApp`,
     ///   allowing paywalls to delegate purchases to this manager.
     var myAppPurchaseLogic: MyAppPurchaseLogic? { get }
+    #endif
 
     // MARK: - Direct Purchase Operations
 
@@ -112,9 +116,11 @@ final class AnyPurchaseManager: PurchaseManager {
         self.wrapped = manager
     }
 
+    #if !os(tvOS)
     var myAppPurchaseLogic: MyAppPurchaseLogic? {
         wrapped.myAppPurchaseLogic
     }
+    #endif
 
     func purchase(package: Package) async -> PurchaseOperationResult {
         await wrapped.purchase(package: package)

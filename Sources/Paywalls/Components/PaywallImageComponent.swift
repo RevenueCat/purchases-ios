@@ -8,7 +8,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class ImageComponent: PaywallComponentBase {
 
@@ -30,7 +30,7 @@ public extension PaywallComponent {
         public init(
             visible: Bool? = nil,
             source: ThemeImageUrls,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             overrideSourceLid: LocalizationKey? = nil,
             fitMode: FitMode = .fit,
             maskShape: MaskShape? = nil,

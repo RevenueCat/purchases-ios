@@ -54,8 +54,10 @@ extension LargeItemCacheType {
         )
     }
 
+    #if !os(tvOS)
     /// Creates a directory in the persistence (applicationSupport) directory from a base path.
     /// Defaults `inAppSpecificDirectory` to true.
+    /// Note: tvOS only allows writes under the caches directory, so we don't provide this functionality there.
     func createPersistenceDirectoryIfNeeded(basePath: String, inAppSpecificDirectory: Bool = true) -> URL? {
         createDirectoryIfNeeded(
             basePath: basePath,
@@ -63,6 +65,7 @@ extension LargeItemCacheType {
             inAppSpecificDirectory: inAppSpecificDirectory
         )
     }
+    #endif
 }
 
 extension FileManager: LargeItemCacheType {
@@ -71,7 +74,7 @@ extension FileManager: LargeItemCacheType {
     func saveData(_ data: Data, to url: URL) throws {
         let directoryURL = url.deletingLastPathComponent()
         try createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
-        try data.write(to: url)
+        try data.write(to: url, options: .atomic)
     }
 
     /// Store data to a url and validate that the file is correct before saving

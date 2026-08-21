@@ -36,6 +36,7 @@ class LocalReceiptParserStoreKitTests: StoreKitConfigTestCase {
                                      finishTransactions: true,
                                      operationDispatcher: operationDispatcher,
                                      storeKitVersion: .storeKit1,
+                                     apiKey: "api_key",
                                      preferredLocalesProvider: .mock())
         self.receiptFetcher = ReceiptFetcher(requestFetcher: self.requestFetcher, systemInfo: systemInfo)
         self.parser = .default

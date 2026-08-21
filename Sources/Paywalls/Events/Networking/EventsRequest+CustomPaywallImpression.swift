@@ -27,12 +27,38 @@ extension FeatureEventsRequest {
         var appSessionID: String?
         var timestamp: UInt64
         var paywallId: String?
+        var offeringId: String?
+        var presentedOfferingContext: PresentedOfferingContextData?
 
     }
 
 }
 
 extension FeatureEventsRequest.CustomPaywallEvent {
+
+    struct PresentedOfferingContextData: Encodable {
+
+        var placementIdentifier: String?
+        var targetingRevision: Int?
+        var targetingRuleId: String?
+
+        /// Returns `nil` if all fields are `nil`.
+        init?(
+            placementIdentifier: String?,
+            targetingRevision: Int?,
+            targetingRuleId: String?
+        ) {
+            guard placementIdentifier != nil ||
+                    targetingRevision != nil ||
+                    targetingRuleId != nil else {
+                return nil
+            }
+            self.placementIdentifier = placementIdentifier
+            self.targetingRevision = targetingRevision
+            self.targetingRuleId = targetingRuleId
+        }
+
+    }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
     init?(storedEvent: StoredFeatureEvent) {
@@ -51,7 +77,13 @@ extension FeatureEventsRequest.CustomPaywallEvent {
                 appUserID: storedEvent.userID,
                 appSessionID: storedEvent.appSessionID?.uuidString,
                 timestamp: event.creationData.date.millisecondsSince1970,
-                paywallId: event.data.paywallId
+                paywallId: event.data.paywallId,
+                offeringId: event.data.offeringId,
+                presentedOfferingContext: PresentedOfferingContextData(
+                    placementIdentifier: event.data.placementIdentifier,
+                    targetingRevision: event.data.targetingRevision,
+                    targetingRuleId: event.data.targetingRuleId
+                )
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -77,6 +109,8 @@ extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
         case appSessionID = "appSessionId"
         case timestamp
         case paywallId
+        case offeringId
+        case presentedOfferingContext
 
     }
 
@@ -89,6 +123,8 @@ extension FeatureEventsRequest.CustomPaywallEvent: Encodable {
         try container.encodeIfPresent(appSessionID, forKey: .appSessionID)
         try container.encode(timestamp, forKey: .timestamp)
         try container.encodeIfPresent(paywallId, forKey: .paywallId)
+        try container.encodeIfPresent(offeringId, forKey: .offeringId)
+        try container.encodeIfPresent(presentedOfferingContext, forKey: .presentedOfferingContext)
     }
 
 }

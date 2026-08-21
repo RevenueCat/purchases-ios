@@ -12,7 +12,7 @@
 //  Created by RevenueCat on 3/10/25.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -61,7 +61,9 @@ enum TabsPackageSelectionResolver {
             return .init(parentUpdate: update, tabUpdate: update)
         }
 
-        guard let defaultPackage = tabDefaultPackage else {
+        // Never select a package the tab doesn't offer: it would leave every row unselected.
+        guard let defaultPackage = tabDefaultPackage,
+              tabPackageIdentifiers.contains(defaultPackage.identifier) else {
             return .init(parentUpdate: nil, tabUpdate: nil)
         }
 

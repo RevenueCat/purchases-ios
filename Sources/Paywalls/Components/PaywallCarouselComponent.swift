@@ -14,7 +14,7 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class CarouselComponent: PaywallComponentBase {
 
@@ -114,6 +114,7 @@ public extension PaywallComponent {
 
         let type: ComponentType
 
+        public let name: String?
         public let visible: Bool?
         public let size: Size?
         public let padding: Padding?
@@ -134,8 +135,11 @@ public extension PaywallComponent {
         public let pageControl: PageControl?
 
         public let overrides: ComponentOverrides<PartialCarouselComponent>?
+        /// State updates applied when the carousel's page changes. Decode-only in Phase 0.
+        public let stateUpdates: [StateUpdate]?
 
         public init(
+            name: String? = nil,
             visible: Bool? = nil,
             size: PaywallComponent.Size? = nil,
             padding: PaywallComponent.Padding? = .zero,
@@ -152,10 +156,12 @@ public extension PaywallComponent {
             loop: Bool = false,
             autoAdvance: PaywallComponent.CarouselComponent.AutoAdvanceSlides? = nil,
             pageControl: PageControl? = nil,
-            overrides: ComponentOverrides<PartialCarouselComponent>? = nil
+            overrides: ComponentOverrides<PartialCarouselComponent>? = nil,
+            stateUpdates: [StateUpdate]? = nil
         ) {
             self.type = .carousel
 
+            self.name = name
             self.visible = visible
             self.size = size
             self.padding = padding
@@ -173,10 +179,12 @@ public extension PaywallComponent {
             self.autoAdvance = autoAdvance
             self.pageControl = pageControl
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
         }
 
         public static func == (lhs: CarouselComponent, rhs: CarouselComponent) -> Bool {
             return lhs.type == rhs.type &&
+                lhs.name == rhs.name &&
                 lhs.visible == rhs.visible &&
                 lhs.size == rhs.size &&
                 lhs.padding == rhs.padding &&
@@ -193,12 +201,14 @@ public extension PaywallComponent {
                 lhs.loop == rhs.loop &&
                 lhs.autoAdvance == rhs.autoAdvance &&
                 lhs.pageControl == rhs.pageControl &&
-                lhs.overrides == rhs.overrides
+                lhs.overrides == rhs.overrides &&
+                lhs.stateUpdates == rhs.stateUpdates
         }
 
         // MARK: - Hashable
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
+            hasher.combine(name)
             hasher.combine(visible)
             hasher.combine(size)
             hasher.combine(padding)
@@ -216,6 +226,7 @@ public extension PaywallComponent {
             hasher.combine(autoAdvance)
             hasher.combine(pageControl)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
     }

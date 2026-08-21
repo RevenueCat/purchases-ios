@@ -1,5 +1,5 @@
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2

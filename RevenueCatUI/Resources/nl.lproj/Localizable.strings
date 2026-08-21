@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Sluiten";
+"Go back" = "Terug";
+"Manage subscription" = "Abonnement beheren";
+"Redeem code" = "Code inwisselen";
 "All subscriptions" = "Alle abonnementen";
 "Privacy" = "Privacy";
 "Privacy policy" = "Privacybeleid";
@@ -18,3 +22,4 @@
 "Continue" = "Doorgaan";
 "Default_offer_details_with_intro_offer" = "Start uw proefperiode van {{ sub_offer_duration }} en daarna {{ total_price_and_per_month }}.";
 "Something went wrong" = "Er is iets misgegaan";
+"Purchase" = "Kopen";

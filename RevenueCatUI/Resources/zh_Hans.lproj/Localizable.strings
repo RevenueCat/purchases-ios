@@ -1,4 +1,8 @@
 "OK" = "好的";
+"Close" = "关闭";
+"Go back" = "返回";
+"Manage subscription" = "管理订阅";
+"Redeem code" = "兑换代码";
 "All subscriptions" = "所有订阅";
 "Privacy" = "隐私";
 "Privacy policy" = "隐私政策";
@@ -18,3 +22,4 @@
 "Continue" = "继续";
 "Default_offer_details_with_intro_offer" = "试用期{{ sub_offer_duration }}，届满后{{ total_price_and_per_month }}。";
 "Something went wrong" = "出现错误";
+"Purchase" = "购买";

@@ -15,9 +15,9 @@ import Nimble
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 final class TestPurchaseDelegate: NSObject, PurchasesDelegate, Sendable {
@@ -80,7 +80,7 @@ class BaseBackendIntegrationTests: TestCase {
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKitVersion: Self.storeKitVersion,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-                            networkTimeout: Configuration.networkTimeoutDefault,
+                            networkTimeout: .default,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false,
@@ -263,6 +263,7 @@ extension BaseBackendIntegrationTests: InternalDangerousSettingsType {
     var forceSignatureFailures: Bool { return false }
     var disableHeaderSignatureVerification: Bool { return false }
     var testReceiptIdentifier: String? { return self.testUUID.uuidString }
+    var usesRemoteConfigAPISources: Bool { return false }
 
     final func serverDown() {
         self.forceServerErrorStrategy = .allServersDown

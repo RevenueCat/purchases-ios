@@ -14,7 +14,7 @@
 import Foundation
 import RevenueCat
 
-// swiftlint:disable identifier_name
+// swiftlint:disable identifier_name file_length
 
 enum Strings {
 
@@ -23,6 +23,7 @@ enum Strings {
     case unrecognized_variable_name(variableName: String)
 
     case product_already_subscribed
+    case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
     case displaying_paywall
@@ -31,14 +32,18 @@ enum Strings {
     case tier_has_no_available_products_for_paywall(String)
 
     case attempted_to_track_event_with_missing_data
+    case paywall_unknown_button_action_tracked_for_diagnostics(componentName: String?, actionValue: String?)
 
     case image_starting_request(URL)
     case image_result(Result<(), ImageLoader.Error>)
     case image_failed_to_load(URL, Error)
 
+    case restore_purchases_gate_start
+    case restore_purchases_gate_finish(with: Bool)
     case restoring_purchases
     case restored_purchases
     case restore_purchases_with_empty_result
+    case restore_purchases_failed(Error)
     case setting_restored_customer_info
 
     case executing_purchase_logic
@@ -58,6 +63,7 @@ enum Strings {
     case paywall_could_not_find_localization(String)
     case paywall_could_not_find_package(String)
     case paywall_could_not_find_default_package
+    case paywall_default_package_not_visible(defaultPackage: String, selectedPackage: String)
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
@@ -79,6 +85,7 @@ enum Strings {
     case promo_offer_purchase_cancelled(String, String)
     case promo_offer_purchase_succeeded(String, String, String)
     case promo_offer_purchase_failed(String, String, Error)
+    case promo_offer_nil_transaction(String, String)
     case could_not_determine_type_of_custom_url
     case active_product_is_not_apple_loading_without_product_information(Store)
     case could_not_find_product_loading_without_product_information(String)
@@ -97,11 +104,21 @@ enum Strings {
     case paywall_custom_variable_invalid_number(value: String)
     case paywall_custom_variable_unknown_type(type: String)
     case paywall_variable_looks_like_custom(variableName: String)
-    case paywall_custom_variable_invalid_key(key: String)
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
     case video_failed_to_cache(URL, Error)
+
+    // WebView
+    case paywall_web_view_message_rejected(reason: String)
+    case paywall_web_view_post_message_failed(String)
+    case paywall_web_view_post_message_skipped(reason: String)
+    case paywall_web_view_invalid_expected_origin(String)
+    case paywall_web_view_content_process_terminated
+    case paywall_web_view_not_rendered(reason: String)
+    case paywall_web_view_load_failed(String)
+    case paywall_web_view_http_error(statusCode: Int)
+    case web_view_data_store_removal_failed(UUID, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -113,6 +130,13 @@ enum Strings {
 
     // Conditional Configurability
     case paywall_contains_unsupported_condition
+    case workflow_paywall_invalid_state(currentStepId: String, screenId: String?)
+    case paywall_close_workflow_action_not_handled(componentName: String?)
+    case paywall_workflow_trigger_not_handled(componentName: String?)
+    case workflow_package_context_unresolvable(stepId: String)
+    case workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier: String, error: Error)
+    case restored_paywall_components_for_disabled_remote_config(offeringIdentifier: String)
+    case purchases_did_configure
 
 }
 
@@ -151,6 +175,10 @@ extension Strings: CustomStringConvertible {
 
         case .attempted_to_track_event_with_missing_data:
             return "Attempted to track event with missing data"
+
+        case let .paywall_unknown_button_action_tracked_for_diagnostics(componentName, actionValue):
+            return "Tracked unknown paywall button action for diagnostics. " +
+            "componentName=\(componentName ?? "nil"), actionValue=\(actionValue ?? "nil")"
 
         case let .image_starting_request(url):
             return "Starting request for image: '\(url)'"
@@ -229,6 +257,11 @@ extension Strings: CustomStringConvertible {
             "This package will not show in the paywall. This could be caused by a package that doesn't have a " +
             "product on this platform or the product might not be available for this region."
 
+        case let .paywall_default_package_not_visible(defaultPackage, selectedPackage):
+            return "Package '\(defaultPackage)' is selected by default but is hidden by a visibility " +
+            "rule, so '\(selectedPackage)' was selected instead. Check the visibility rules on the " +
+            "default package if this isn't what you expected."
+
         case .paywall_could_not_find_any_packages:
             return "Could not find any packages for the paywall"
 
@@ -262,6 +295,10 @@ extension Strings: CustomStringConvertible {
 
         case let .promo_offer_purchase_failed(productId, offerId, error):
             return "Promotional offer purchase failed for product '\(productId)' with offer '\(offerId)': \(error)"
+
+        case let .promo_offer_nil_transaction(productId, offerId):
+            return "Promotional offer purchase for product '\(productId)' with offer '\(offerId)' succeeded " +
+            "but no transaction was returned by StoreKit."
 
         case .could_not_offer_for_any_active_subscriptions:
             return "Could not find offer with id for any active subscription"
@@ -336,14 +373,31 @@ extension Strings: CustomStringConvertible {
             return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
             "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
 
-        case .paywall_custom_variable_invalid_key(let key):
-            return "Custom variable key '\(key)' is invalid. " +
-            "Keys must start with a letter and contain only letters, numbers, and underscores."
-
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
         case .video_failed_to_cache(let url, let error):
             return "Failed to cache video at \(url): \(error)"
+
+        case .paywall_web_view_message_rejected(let reason):
+            return "Paywalls V2 web_view message rejected: \(reason)"
+        case .paywall_web_view_post_message_failed(let error):
+            return "Paywalls V2 web_view postMessage failed: \(error)"
+        case .paywall_web_view_post_message_skipped(let reason):
+            return "Paywalls V2 web_view postMessage skipped: \(reason)"
+        case .paywall_web_view_invalid_expected_origin(let url):
+            return "Paywalls V2 web_view URL '\(url)' has no resolvable origin; " +
+                "the web view cannot verify message provenance and will not be shown."
+        case .paywall_web_view_content_process_terminated:
+            return "Paywalls V2 web_view content process terminated. Removing the web view."
+        case .paywall_web_view_not_rendered(let reason):
+            return "Paywalls V2 web_view will not render: \(reason)"
+        case .paywall_web_view_load_failed(let error):
+            return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
+        case .paywall_web_view_http_error(let statusCode):
+            return "Paywalls V2 web_view failed to load and will be removed. " +
+                "The server responded with HTTP status code \(statusCode)."
+        case let .web_view_data_store_removal_failed(identifier, error):
+            return "Failed to remove web view website data store '\(identifier)': \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
@@ -357,9 +411,38 @@ extension Strings: CustomStringConvertible {
             return "Presenting exit offer paywall for offering '\(offeringId)'"
         case .errorLoadingExitOffer(let error):
             return "Error loading exit offer: \(error)"
+        case .restore_purchases_gate_start:
+            return "Restore Purchases Initiated… waiting for resumable callback to proceed."
+        case .restore_purchases_gate_finish(with: let proceed):
+            // swiftlint:disable:next line_length
+            return "Restore Purchases gate complete. The SDK **\(proceed ? "will" : "will not")** attempt to restore purchases."
+        case .restore_purchases_failed(let error):
+            return "Restore failed with error: \(error)"
+        case .purchase_failed(let error):
+            return "Purchase failed with error: \(error)"
         case .paywall_contains_unsupported_condition:
             return "Unsupported paywall rule encountered. " +
             "Rendering paywall without conditional configurability rules."
+        case let .workflow_paywall_invalid_state(currentStepId, screenId):
+            return "Workflow paywall could not resolve the current screen. " +
+            "currentStepId=\(currentStepId), screenId=\(screenId ?? "nil")"
+        case let .paywall_close_workflow_action_not_handled(componentName):
+            return "Close workflow button was tapped but no close workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
+        case let .paywall_workflow_trigger_not_handled(componentName):
+            return "Workflow trigger button was tapped but no matching workflow action was available. " +
+            "componentName=\(componentName ?? "nil")"
+        case let .workflow_package_context_unresolvable(stepId):
+            return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
+            "Price/period variables may not resolve on packageless screens."
+        case let .workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier, error):
+            return "Failed to fetch workflow for offering '\(offeringIdentifier)' (\(error)). " +
+            "Falling back to the offerings-provided paywall."
+        case let .restored_paywall_components_for_disabled_remote_config(offeringIdentifier):
+            return "Remote config is disabled, so offering '\(offeringIdentifier)' was re-resolved to restore " +
+            "its offerings-provided paywall."
+        case .purchases_did_configure:
+            return "Purchases notified purchases-ui of configuration"
         }
     }
 

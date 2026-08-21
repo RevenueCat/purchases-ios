@@ -1,4 +1,8 @@
 "OK" = "ठीक है";
+"Close" = "बंद करें";
+"Go back" = "वापस जाएं";
+"Manage subscription" = "सदस्यता प्रबंधित करें";
+"Redeem code" = "कोड रिडीम करें";
 "All subscriptions" = "सभी सदस्यताएँ";
 "Privacy" = "गोपनीयता";
 "Privacy policy" = "गोपनीयता नीति";
@@ -18,3 +22,4 @@
 "Continue" = "जारी रखना";
 "Default_offer_details_with_intro_offer" = "अपना {{sub_offer_duration }} परीक्षण शुरू करें, फिर {{ total_price_and_per_month }}।";
 "Something went wrong" = "कुछ गलत हो गया";
+"Purchase" = "खरीदें";

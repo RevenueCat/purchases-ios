@@ -42,15 +42,20 @@ struct CustomerView: View {
                     Image(systemName: "2.square.fill")
                     Text("Entitlements")
                 }
-            TransactionsView(customerInfo: self.customerInfo)
+            SubscriptionsView(customerInfo: self.customerInfo)
                 .tabItem {
                     Image(systemName: "3.square.fill")
+                    Text("Subscriptions")
+                }
+            TransactionsView(customerInfo: self.customerInfo)
+                .tabItem {
+                    Image(systemName: "4.square.fill")
                     Text("Transactions")
                 }
             SubscriberAttributesView(customerInfo: self.customerInfo)
                 .tabItem {
-                    Image(systemName: "4.square.fill")
-                    Text("Subscriber Atts")
+                    Image(systemName: "5.square.fill")
+                    Text("Attributes")
                 }
         }
         .navigationTitle("Customer Info")

@@ -39,11 +39,12 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == false
     }
 
-    func testReturnsFailureIfPostingReceiptFails() async throws {
+    func testReturnsFailureWhenBothPostingReceiptAndFetchingCustomerInfoFail() async throws {
         self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
         self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(
             .networkError(.serverDown())
         )
+        self.mockBackend.stubbedGetCustomerInfoResult = .failure(.networkError(.serverDown()))
 
         do {
             _ = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
@@ -52,10 +53,56 @@ class CustomerInfoManagerPostReceiptTests: BaseCustomerInfoManagerTests {
         } catch let BackendError.networkError(networkError) {
             expect(networkError.isServerDown) == true
 
-            expect(self.mockBackend.invokedGetSubscriberData) == false
+            expect(self.mockBackend.invokedGetSubscriberData) == true
             expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
         } catch {
             fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testFallsBackToGetCustomerInfoWhenPostingReceiptFails() async throws {
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = [Self.createTransaction()]
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResult.value = .failure(
+            .networkError(.serverDown())
+        )
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                                isAppBackgrounded: false)
+        expect(info) === self.mockCustomerInfo
+
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockBackend.invokedGetSubscriberData) == true
+    }
+
+    func testFallsBackToGetCustomerInfoWhenFirstOfMultipleUnfinishedTransactionPostsFails() async throws {
+        let transactions = [
+            Self.createTransaction(),
+            Self.createTransaction(),
+            Self.createTransaction()
+        ]
+
+        self.mockTransationFetcher.stubbedUnfinishedTransactions = transactions
+        // First transaction (posted synchronously, its result drives the caller's result) fails.
+        // The other two (posted in a `Task.detached`, fire-and-forget) succeed.
+        self.mockTransactionPoster.stubbedHandlePurchasedTransactionResults.value = [
+            .failure(.networkError(.serverDown())),
+            .success(self.mockCustomerInfo),
+            .success(self.mockCustomerInfo)
+        ]
+        self.mockBackend.stubbedGetCustomerInfoResult = .success(self.mockCustomerInfo)
+
+        let info = try await self.customerInfoManager.fetchAndCacheCustomerInfo(appUserID: Self.userID,
+                                                                                isAppBackgrounded: false)
+        expect(info) === self.mockCustomerInfo
+
+        expect(self.mockTransactionPoster.invokedHandlePurchasedTransaction.value) == true
+        expect(self.mockBackend.invokedGetSubscriberData) == true
+
+        try await asyncWait(
+            description: "All unfinished transactions should be posted, including the two in the background"
+        ) { [poster = self.mockTransactionPoster!] in
+            poster.allHandledTransactions == Set(transactions)
         }
     }
 

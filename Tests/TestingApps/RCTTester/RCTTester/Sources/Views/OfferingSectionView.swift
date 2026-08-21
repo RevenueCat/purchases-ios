@@ -12,7 +12,9 @@ struct OfferingSectionView: View {
     let offering: Offering
     let configuration: SDKConfiguration
     let purchaseManager: AnyPurchaseManager
+    #if !os(tvOS)
     let onPresentPaywall: (PaywallPresentationType) -> Void
+    #endif
     let onShowMetadata: () -> Void
     let onPresentStoreView: (StoreViewSheetType) -> Void
 
@@ -42,6 +44,7 @@ struct OfferingSectionView: View {
                 )
             }
 
+            #if !os(tvOS)
             // Present Paywall menu (if offering has a paywall)
             if offering.hasPaywall {
                 Menu {
@@ -69,6 +72,7 @@ struct OfferingSectionView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            #endif
 
             // StoreView and SubscriptionStoreView buttons (iOS 17+ / SK2 only)
             if #available(iOS 17.0, *) {
@@ -101,6 +105,7 @@ struct OfferingSectionView: View {
                 }
             }
         }
+        #if !os(tvOS)
         .alert("Custom Entitlement", isPresented: $showCustomEntitlementAlert) {
             TextField("Entitlement identifier", text: $customEntitlementText)
             Button("Present") {
@@ -110,9 +115,11 @@ struct OfferingSectionView: View {
         } message: {
             Text("Enter the entitlement identifier to check.")
         }
+        #endif
     }
 }
 
+#if !os(tvOS)
 // MARK: - Paywall Presentation Type
 
 /// Represents which API to use when presenting a paywall.
@@ -128,6 +135,7 @@ enum PaywallPresentationType {
     /// Present a `PaywallView(offering:)` directly in a sheet.
     case paywallView
 }
+#endif
 
 // MARK: - StoreView Sheet Type
 
@@ -334,7 +342,9 @@ struct OfferingMetadataView: View {
                 }
             }
             .navigationTitle("Offering Details")
+            #if !os(tvOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") {
@@ -363,6 +373,7 @@ private struct MetadataRow: View {
     }
 }
 
+#if !os(tvOS)
 #Preview {
     List {
         OfferingSectionView(
@@ -380,3 +391,4 @@ private struct MetadataRow: View {
         )
     }
 }
+#endif

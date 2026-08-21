@@ -5,23 +5,54 @@
 //  Created by Nacho Soto on 7/27/23.
 //
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 #else
-import RevenueCatUI
+@_spi(Internal) import RevenueCatUI
 #endif
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 struct APIKeyDashboardList: View {
 
-    fileprivate struct Template: Hashable {
-        var name: String?
+    fileprivate enum PaywallSection: Hashable, Comparable {
+        case legacy(templateName: String)
+        case components
+        case noPaywall
+
+        init(hasPaywall: Bool, legacyTemplateName: String?) {
+            guard hasPaywall else {
+                self = .noPaywall
+                return
+            }
+
+            if let legacyTemplateName {
+                self = .legacy(templateName: legacyTemplateName)
+            } else {
+                self = .components
+            }
+        }
+
+        init(offering: Offering) {
+            self.init(
+                hasPaywall: offering.hasPaywall,
+                legacyTemplateName: offering.paywall?.templateName
+            )
+        }
+
+        static func < (lhs: Self, rhs: Self) -> Bool {
+            if lhs == .noPaywall { return false }
+            if rhs == .noPaywall { return true }
+            return lhs.description < rhs.description
+        }
     }
 
     fileprivate struct Data: Hashable {
-        var sections: [Template]
-        var offeringsBySection: [Template: [Offering]]
+        var sections: [PaywallSection]
+        var offeringsBySection: [PaywallSection: [Offering]]
     }
 
     fileprivate struct PresentedPaywall: Hashable {
@@ -43,7 +74,19 @@ struct APIKeyDashboardList: View {
 
     @State
     private var presentPaywallOffering: Offering?
-    
+
+    @State
+    private var presentWorkflowSheetOffering: Offering?
+
+    @State
+    private var presentWorkflowFullOffering: Offering?
+
+    @State
+    private var workflowExitOfferOffering: Offering?
+
+    @State
+    private var presentedWorkflowExitOffer: Offering?
+
     @State
     private var isLoadingPaywall: Bool = false
 
@@ -136,22 +179,18 @@ struct APIKeyDashboardList: View {
 
             let offeringsBySection = Dictionary(
                 grouping: offerings,
-                by: { Template(name: templateGroupName(offering: $0)) }
+                by: PaywallSection.init(offering:)
             )
 
             self.offerings = .success(
                 .init(
-                    sections: Array(offeringsBySection.keys).sorted { $0.description < $1.description },
+                    sections: Array(offeringsBySection.keys).sorted(),
                     offeringsBySection: offeringsBySection
                 )
             )
         } catch let error as NSError {
             self.offerings = .failure(error)
         }
-    }
-
-    private func templateGroupName(offering: Offering) -> String? {
-        offering.paywall?.templateName ?? offering.paywallComponents?.data.templateName
     }
 
     @ViewBuilder
@@ -172,8 +211,8 @@ struct APIKeyDashboardList: View {
         }
     }
 
-    private func filteredOfferings(for template: Template, in data: Data) -> [Offering] {
-        let offerings = data.offeringsBySection[template] ?? []
+    private func filteredOfferings(for section: PaywallSection, in data: Data) -> [Offering] {
+        let offerings = data.offeringsBySection[section] ?? []
         guard !searchText.isEmpty else { return offerings }
         return offerings.filter {
             $0.id.localizedCaseInsensitiveContains(searchText) ||
@@ -185,8 +224,8 @@ struct APIKeyDashboardList: View {
     @ViewBuilder
     private func list(with data: Data) -> some View {
         List {
-            ForEach(data.sections, id: \.self) { template in
-                let offerings = filteredOfferings(for: template, in: data)
+            ForEach(data.sections, id: \.self) { section in
+                let offerings = filteredOfferings(for: section, in: data)
                 if !offerings.isEmpty {
                     Section {
                         ForEach(offerings, id: \.id) { offering in
@@ -218,16 +257,27 @@ struct APIKeyDashboardList: View {
                                     #endif
                                 #endif
                             } else {
+                                #if !os(watchOS)
+                                OfferButton(offering: offering) {
+                                    self.isLoadingPaywall = true
+                                    self.presentedPaywall = .init(offering: offering, mode: .workflow)
+                                }
+                                .contextMenu {
+                                    self.button(for: .workflow, offering: offering)
+                                    self.button(for: .presentWorkflow, offering: offering)
+                                }
+                                #else
                                 VStack(alignment: .leading) {
                                     Text(offering.id)
                                     Text(offering.serverDescription)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
                                 }
+                                #endif
                             }
                         }
                     } header: {
-                        Text(verbatim: template.description)
+                        Text(verbatim: section.description)
                     }
                 }
             }
@@ -241,7 +291,7 @@ struct APIKeyDashboardList: View {
                 .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
-                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                    if let errorInfo = paywall.offering.internalPaywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
@@ -255,14 +305,30 @@ struct APIKeyDashboardList: View {
                 .customPaywallVariables(self.customVariables)
                 .onAppear {
                     self.isLoadingPaywall = false
-                    if let errorInfo = paywall.offering.paywallComponents?.data.errorInfo {
+                    if let errorInfo = paywall.offering.internalPaywallComponents?.data.errorInfo {
                         print("Paywall V2 Error:", errorInfo.debugDescription)
                     }
                 }
         }
         #endif
                 .presentPaywallIfNeededModifier(offering: $offeringToPresent)
-                .presentPaywall(offering: $presentPaywallOffering, onDismiss: { })
+                .presentPaywall(offering: $presentPaywallOffering,
+                                urlOpened: { url in
+                                    print("Paywall Handler - onURLOpened: \(url)")
+                                },
+                                onDismiss: { })
+                // Uses offeringIdentifier content so workflow context resolves correctly.
+                // Exit offer is wired manually because presentPaywall doesn't support workflows yet.
+                .sheet(item: self.$presentWorkflowSheetOffering, onDismiss: self.handleWorkflowDismiss) { offering in
+                    self.workflowPaywallView(for: offering)
+                }
+                .fullScreenCover(item: self.$presentWorkflowFullOffering, onDismiss: self.handleWorkflowDismiss) { offering in
+                    self.workflowPaywallView(for: offering)
+                }
+                .sheet(item: self.$presentedWorkflowExitOffer) { exitOffering in
+                    PaywallView(offering: exitOffering)
+                        .customPaywallVariables(self.customVariables)
+                }
                 .customPaywallVariables(self.customVariables)
                 .onChange(of: offeringToPresent) { offering in
                     if offering != nil {
@@ -270,6 +336,16 @@ struct APIKeyDashboardList: View {
                     }
                 }
                 .onChange(of: presentPaywallOffering) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
+                .onChange(of: presentWorkflowSheetOffering) { offering in
+                    if offering != nil {
+                        self.isLoadingPaywall = false
+                    }
+                }
+                .onChange(of: presentWorkflowFullOffering) { offering in
                     if offering != nil {
                         self.isLoadingPaywall = false
                     }
@@ -282,8 +358,60 @@ struct APIKeyDashboardList: View {
         ForEach(PaywallTesterViewMode.allCases, id: \.self) { mode in
             self.button(for: mode, offering: offering)
         }
+
+        #if os(iOS)
+        // Presents through the UIKit `PaywallViewController` so its dismissal handling and the
+        // workflow exit-offer bridge can be exercised.
+        Button {
+            self.isLoadingPaywall = true
+            self.presentUIKitPaywall(for: offering)
+        } label: {
+            Text("UIKit View Controller")
+            Image(systemName: "rectangle.portrait.on.rectangle.portrait")
+        }
+        #endif
     }
     #endif
+
+    #if os(iOS)
+    @MainActor
+    private func presentUIKitPaywall(for offering: Offering) {
+        let windows = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+        guard var top = (windows.first(where: \.isKeyWindow) ?? windows.first)?.rootViewController else {
+            self.isLoadingPaywall = false
+            return
+        }
+        while let presented = top.presentedViewController {
+            top = presented
+        }
+        top.present(PaywallViewController(offering: offering, displayCloseButton: true), animated: true)
+        self.isLoadingPaywall = false
+    }
+    #endif
+
+    @ViewBuilder
+    private func workflowPaywallView(for offering: Offering) -> some View {
+        PaywallView(offeringIdentifier: offering.identifier, displayCloseButton: true)
+        #if DEBUG
+        .environment(\.workflowExitOfferOfferingBinding, self.$workflowExitOfferOffering)
+        #endif
+        .customPaywallVariables(self.customVariables)
+        .onURLOpened { url in
+            print("Paywall Handler - onURLOpened: \(url)")
+        }
+        .onAppear {
+            self.isLoadingPaywall = false
+        }
+    }
+
+    private func handleWorkflowDismiss() {
+        if let exitOffer = self.workflowExitOfferOffering {
+            self.presentedWorkflowExitOffer = exitOffer
+            self.workflowExitOfferOffering = nil
+        }
+    }
 
     @ViewBuilder
     private func button(for selectedMode: PaywallTesterViewMode, offering: Offering) -> some View {
@@ -292,12 +420,20 @@ struct APIKeyDashboardList: View {
             switch selectedMode {
             case .fullScreen:
                 self.presentedPaywallCover = .init(offering: offering, mode: selectedMode)
-            case .sheet, .footer, .condensedFooter:
+            case .sheet:
                 self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #if !os(watchOS) && !os(macOS)
+            case .footer, .condensedFooter:
+                self.presentedPaywall = .init(offering: offering, mode: selectedMode)
+            #endif
             case .presentIfNeeded:
                 self.offeringToPresent = offering
             case .presentPaywall:
                 self.presentPaywallOffering = offering
+            case .workflow:
+                self.presentWorkflowSheetOffering = offering
+            case .presentWorkflow:
+                self.presentWorkflowFullOffering = offering
             }
         } label: {
             Text(selectedMode.name)
@@ -319,7 +455,7 @@ struct APIKeyDashboardList: View {
                             .foregroundStyle(.secondary)
                     }
                     Spacer()
-                    if let errorInfo = self.offering.paywallComponents?.data.errorInfo, !errorInfo.isEmpty {
+                    if let errorInfo = self.offering.internalPaywallComponents?.data.errorInfo, !errorInfo.isEmpty {
                         Image(systemName: "exclamationmark.circle.fill")
                             .foregroundStyle(Color.red)
                     }
@@ -339,24 +475,23 @@ struct APIKeyDashboardList: View {
 
 }
 
-extension APIKeyDashboardList.Template: CustomStringConvertible {
+extension APIKeyDashboardList.PaywallSection: CustomStringConvertible {
 
     var description: String {
-        if let name = self.name {
-            if name == "components" {
-                return "V2"
+        switch self {
+        case let .legacy(templateName):
+            #if DEBUG
+            if let template = PaywallTemplate(rawValue: templateName) {
+                return template.name
             } else {
-                #if DEBUG
-                if let template = PaywallTemplate(rawValue: name) {
-                    return template.name
-                } else {
-                    return "Unrecognized template"
-                }
-                #else
-                return "Template \(name)"
-                #endif
+                return "Unrecognized template"
             }
-        } else {
+            #else
+            return "Template \(templateName)"
+            #endif
+        case .components:
+            return "V2"
+        case .noPaywall:
             return "No paywall"
         }
     }
@@ -378,6 +513,9 @@ private struct PresentPaywallIfNeededModifier: ViewModifier {
         if let offering = offering {
             content.presentPaywallIfNeeded(offering: offering,
                                          shouldDisplay: { _ in true },
+                                         urlOpened: { url in
+                                             print("Paywall Handler - onURLOpened: \(url)")
+                                         },
                                          onDismiss: { self.offering = nil })
         } else {
             content

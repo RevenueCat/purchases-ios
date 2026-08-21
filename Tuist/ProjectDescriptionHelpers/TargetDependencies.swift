@@ -40,6 +40,18 @@ extension TargetDependency {
         }
     }
 
+    /// Returns the RevenueCatAdMob dependency based on the dependency mode.
+    /// Only supports local modes.
+    /// - Returns: A TargetDependency for RevenueCatAdMob
+    public static var revenueCatAdMob: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .revenueCatAdMobSwiftPackageDependency
+        case .localXcodeProject, .remoteXcodeProject:
+            return .revenueCatAdMobXcodeProjectDependency
+        }
+    }
+
     /// Returns the ReceiptParser dependency based on the dependency mode
     /// - Returns: A TargetDependency for ReceiptParser
     public static var receiptParser: TargetDependency {
@@ -108,6 +120,33 @@ extension TargetDependency {
         .project(
             target: "RevenueCat_CustomEntitlementComputation",
             path: .relativeToRoot("Projects/RevenueCat"))
+    }
+
+    // MARK: - RevenueCatAdMob
+
+    /// RevenueCatAdMob as a native Xcode SPM package dependency
+    static var revenueCatAdMobSwiftPackageDependency: TargetDependency {
+        .package(product: "RevenueCatAdMob", type: .runtime)
+    }
+
+    /// RevenueCatAdMob as a local Tuist project target dependency
+    static var revenueCatAdMobXcodeProjectDependency: TargetDependency {
+        .project(
+            target: "RevenueCatAdMob",
+            path: .relativeToRoot("Projects/RevenueCatAdMob"))
+    }
+
+    // MARK: - GoogleMobileAds
+
+    /// Returns the GoogleMobileAds dependency based on the dependency mode
+    /// - Returns: A TargetDependency for GoogleMobileAds
+    public static var googleMobileAds: TargetDependency {
+        switch Environment.dependencyMode {
+        case .localSwiftPackage, .remoteSwiftPackage:
+            return .package(product: "GoogleMobileAds", type: .runtime)
+        case .localXcodeProject, .remoteXcodeProject:
+            return .external(name: "GoogleMobileAds")
+        }
     }
 
     // MARK: - Receipt Parser

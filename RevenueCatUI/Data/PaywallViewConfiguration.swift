@@ -7,7 +7,7 @@
 
 import Foundation
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 /// Parameters needed to configure a ``PaywallView``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -17,11 +17,20 @@ struct PaywallViewConfiguration {
     var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
+
+    /// This is a configuration value that is for V1 paywalls and the fallback paywall. V2 paywalls
+    /// can have their own close buttons configured via the dashboard, so it's not used by the
+    /// PaywallsV2View success path.
     var displayCloseButton: Bool
-    let useDraftPaywall: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
+    #if !os(tvOS)
+    /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
+    /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
+    /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
+    var injectedWorkflowContext: WorkflowContext?
+    #endif
 
     init(
         content: Content,
@@ -29,7 +38,6 @@ struct PaywallViewConfiguration {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
         promoOfferCache: PaywallPromoOfferCache? = nil
@@ -39,10 +47,11 @@ struct PaywallViewConfiguration {
         self.mode = mode
         self.fonts = fonts
         self.displayCloseButton = displayCloseButton
-        self.useDraftPaywall = useDraftPaywall
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+
+        PurchasesUIService.activateIfNeeded()
     }
 
 }
@@ -72,7 +81,6 @@ extension PaywallViewConfiguration {
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler = PurchaseHandler.default(),
         promoOfferCache: PaywallPromoOfferCache? = nil
@@ -85,7 +93,6 @@ extension PaywallViewConfiguration {
             mode: mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,
-            useDraftPaywall: useDraftPaywall,
             introEligibility: introEligibility,
             purchaseHandler: handler,
             promoOfferCache: promoOfferCache
@@ -100,31 +107,6 @@ extension PaywallViewConfiguration.Content {
     /// - Returns: `Content.offering` or `Content.defaultOffering` if `nil`.
     static func optionalOffering(_ offering: Offering?) -> Self {
         return offering.map(Self.offering) ?? .defaultOffering
-    }
-
-    /// Resolves the content to an `Offering` by fetching from the backend if needed.
-    /// - Returns: The resolved `Offering`, or `nil` if it couldn't be fetched.
-    func resolveOffering() async -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering, .offeringIdentifier:
-            guard Purchases.isConfigured else { return nil }
-
-            do {
-                switch self {
-                case .defaultOffering:
-                    return try await Purchases.shared.offerings().current
-                case let .offeringIdentifier(identifier, _):
-                    return try await Purchases.shared.offerings().offering(identifier: identifier)
-                case .offering:
-                    fatalError("Already handled above")
-                }
-            } catch {
-                Logger.error(Strings.errorFetchingOfferings(error))
-                return nil
-            }
-        }
     }
 
 }

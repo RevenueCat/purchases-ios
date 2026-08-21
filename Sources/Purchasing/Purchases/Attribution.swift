@@ -597,6 +597,13 @@ extension Attribution {
                                                                           completion: completion)
     }
 
+    /// Caches the current ATT consent status as a subscriber attribute.
+    /// Called from `PurchasesOrchestrator.refreshATTStatusAndGetUnsyncedAttributes` (receipt posts)
+    /// and from `SubscriberAttributesManager.syncAttributesForAllUsers` (foreground/background/login/logout).
+    func setATTConsentStatus(forAppUserID appUserID: String) {
+        self.subscriberAttributesManager.setATTConsentStatus(forAppUserID: appUserID)
+    }
+
     func unsyncedAttributesByKey(appUserID: String) -> SubscriberAttribute.Dictionary {
         self.subscriberAttributesManager.unsyncedAttributesByKey(appUserID: appUserID)
     }

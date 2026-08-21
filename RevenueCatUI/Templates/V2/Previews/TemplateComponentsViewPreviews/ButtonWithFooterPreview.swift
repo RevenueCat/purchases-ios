@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/26/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -102,7 +102,7 @@ private enum ButtonWithSheetPreview {
             .package(package)
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )
@@ -125,7 +125,8 @@ private enum ButtonWithSheetPreview {
             shape: .pill
         ),
         action: nil,
-        method: nil
+        method: nil,
+        name: nil
     )
 
     static let viewAllButton = PaywallComponent.ButtonComponent(
@@ -151,7 +152,10 @@ private enum ButtonWithSheetPreview {
                                                                         fontWeight: .bold,
                                                                         color: .init(light: .hex("#ffffff")),
                                                                         backgroundColor: nil,
-                                                                        size: .init(width: .fit, height: .fit),
+                                                                        size: .init(
+                                                                            width: .fit(nil),
+                                                                            height: .fit(nil)
+                                                                        ),
                                                                         padding: .init(top: 20,
                                                                                        bottom: 20,
                                                                                        leading: 20,
@@ -159,18 +163,18 @@ private enum ButtonWithSheetPreview {
                                                                     ))
                                                                 ],
                                                                 dimension: .horizontal(.center, .start),
-                                                                size: .init(width: .fit, height: .fit),
+                                                                size: .init(width: .fit(nil), height: .fit(nil)),
                                                                 shape: .rectangle(nil)
                                                             )
                                                         )
                                                     ],
                                                     dimension: .horizontal(.center, .start),
-                                                    size: .init(width: .fit, height: .fit),
+                                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                                     shape: .rectangle(nil)
                                                 )))
                                             ],
                                             dimension: .horizontal(.center, .start),
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .rectangle(nil)
                                         )
                                     ),
@@ -191,11 +195,12 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .inAppCheckout,
-                                        method: .inAppCheckout
+                                        method: .inAppCheckout,
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -212,11 +217,12 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
-                                        method: .webCheckout(.init())
+                                        method: .webCheckout(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -233,11 +239,12 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
-                                        method: .webProductSelection(.init())
+                                        method: .webProductSelection(.init()),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -254,13 +261,14 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webCheckout,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url", packageParam: "rc_package"))
-                                        )
+                                        ),
+                                        name: nil
                                     )),
                                     .purchaseButton(.init(
                                         stack: .init(
@@ -277,23 +285,24 @@ private enum ButtonWithSheetPreview {
                                                                    trailing: 30)
                                                 ))
                                             ],
-                                            size: .init(width: .fill, height: .fit),
+                                            size: .init(width: .fill, height: .fit(nil)),
                                             shape: .pill
                                         ),
                                         action: .webProductSelection,
                                         method: .customWebCheckout(
                                             .init(customUrl: .init(url: "web_checkout_url"))
-                                        )
+                                        ),
+                                        name: nil
                                     ))
                                 ],
-                                size: .init(width: .fill, height: .fit),
+                                size: .init(width: .fill, height: .fit(nil)),
                                 background: .color(.init(light: .hex("#2b43bf"))),
                                 padding: .init(top: 0, bottom: 30, leading: 20, trailing: 20),
                                 shape: .rectangle(nil),
                                 overflow: .default
                              ),
                              backgroundBlur: true,
-                             size: .init(width: .fill, height: .fit)
+                             size: .init(width: .fill, height: .fit(nil))
                             )
             )),
         stack: .init(
@@ -326,7 +335,7 @@ private enum ButtonWithSheetPreview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
@@ -334,14 +343,14 @@ private enum ButtonWithSheetPreview {
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -382,7 +391,7 @@ private enum ButtonWithSheetPreview {
                                  detailTextLid: "monthly_desc",
                                  isSelectedByDefault: true))
         ],
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         overflow: .default
     )
 
@@ -507,13 +516,30 @@ struct ButtonWithSheetPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
+
+        PaywallsV2View(
+            paywallComponents: ButtonWithSheetPreview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [weeklyPackage, monthlyPackage],
+                            webCheckoutUrl: URL(string: "https://pay.revenuecat.com/abcd1234/the-app-user-id")!),
+            purchaseHandler: PurchaseHandler.default(),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: { },
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Template 1 (Loading)")
     }
 }
 

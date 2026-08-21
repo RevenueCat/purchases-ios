@@ -15,14 +15,23 @@
         RCCustomPaywallImpressionParams *paramsDefault __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil];
         RCCustomPaywallImpressionParams *paramsWithId __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:@"my-paywall"];
         RCCustomPaywallImpressionParams *paramsWithNil __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil];
+        RCOffering *offering = [[RCOffering alloc] initWithIdentifier:@"my-offering"
+                                                    serverDescription:@""
+                                                             metadata:@{}
+                                                    availablePackages:@[]
+                                                       webCheckoutUrl:nil];
+        RCCustomPaywallImpressionParams *paramsWithOfferingObject __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:@"my-paywall" offering:offering];
+        RCCustomPaywallImpressionParams *paramsWithOfferingObjectNilPaywall __unused = [[RCCustomPaywallImpressionParams alloc] initWithPaywallId:nil offering:offering];
 
         // CustomPaywallImpressionParams properties
         NSString *paywallId __unused = paramsWithId.paywallId;
+        NSString *offeringId __unused = paramsWithOfferingObject.offeringId;
 
         // trackCustomPaywallImpression API
         RCPurchases *purchases = RCPurchases.sharedPurchases;
         [purchases trackCustomPaywallImpression:paramsDefault];
         [purchases trackCustomPaywallImpression:paramsWithId];
+        [purchases trackCustomPaywallImpression:paramsWithOfferingObject];
         [purchases trackCustomPaywallImpression];
     }
 }

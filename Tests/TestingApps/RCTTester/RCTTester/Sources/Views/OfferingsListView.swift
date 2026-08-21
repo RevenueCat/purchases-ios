@@ -6,7 +6,9 @@
 import SwiftUI
 import StoreKit
 import RevenueCat
+#if !os(tvOS)
 import RevenueCatUI
+#endif
 
 struct OfferingsListView: View {
 
@@ -20,9 +22,11 @@ struct OfferingsListView: View {
     let purchaseManager: AnyPurchaseManager
 
     @State private var loadingState: LoadingState = .loading
+    #if !os(tvOS)
     @State private var offeringForPaywall: Offering?
     @State private var paywallIfNeededPresentation: PaywallIfNeededPresentation?
     @State private var offeringForPaywallView: Offering?
+    #endif
     @State private var offeringForMetadata: Offering?
     @State private var storeViewPresentation: StoreViewPresentation?
     @State private var showingStoreViewUnavailableAlert = false
@@ -59,37 +63,7 @@ struct OfferingsListView: View {
                 } else {
                     List {
                         ForEach(offerings) { offering in
-                            OfferingSectionView(
-                                offering: offering,
-                                configuration: configuration,
-                                purchaseManager: purchaseManager,
-                                onPresentPaywall: { type in
-                                    switch type {
-                                    case .presentPaywall:
-                                        offeringForPaywall = offering
-                                    case .presentPaywallIfNeeded(let entitlementIdentifier):
-                                        paywallIfNeededPresentation = PaywallIfNeededPresentation(
-                                            offering: offering,
-                                            entitlementIdentifier: entitlementIdentifier
-                                        )
-                                    case .paywallView:
-                                        offeringForPaywallView = offering
-                                    }
-                                },
-                                onShowMetadata: {
-                                    offeringForMetadata = offering
-                                },
-                                onPresentStoreView: { sheetType in
-                                    if configuration.storeKitVersion == .storeKit2 {
-                                        storeViewPresentation = StoreViewPresentation(
-                                            offering: offering,
-                                            sheetType: sheetType
-                                        )
-                                    } else {
-                                        showingStoreViewUnavailableAlert = true
-                                    }
-                                }
-                            )
+                            offeringSectionView(for: offering)
                         }
                     }
                 }
@@ -99,6 +73,7 @@ struct OfferingsListView: View {
         .refreshable {
             await fetchOfferings(showLoading: false)
         }
+        #if !os(tvOS)
         .presentPaywall(
             offering: $offeringForPaywall,
             myAppPurchaseLogic: purchaseManager.myAppPurchaseLogic,
@@ -130,6 +105,7 @@ struct OfferingsListView: View {
                 performRestore: purchaseManager.myAppPurchaseLogic?.performRestore
             )
         }
+        #endif
         .sheet(item: $offeringForMetadata) { offering in
             OfferingMetadataView(offering: offering)
         }
@@ -169,6 +145,63 @@ struct OfferingsListView: View {
         }
     }
 
+    #if os(tvOS)
+    private func offeringSectionView(for offering: Offering) -> some View {
+        OfferingSectionView(
+            offering: offering,
+            configuration: configuration,
+            purchaseManager: purchaseManager,
+            onShowMetadata: {
+                offeringForMetadata = offering
+            },
+            onPresentStoreView: { sheetType in
+                if configuration.storeKitVersion == .storeKit2 {
+                    storeViewPresentation = StoreViewPresentation(
+                        offering: offering,
+                        sheetType: sheetType
+                    )
+                } else {
+                    showingStoreViewUnavailableAlert = true
+                }
+            }
+        )
+    }
+    #else
+    private func offeringSectionView(for offering: Offering) -> some View {
+        OfferingSectionView(
+            offering: offering,
+            configuration: configuration,
+            purchaseManager: purchaseManager,
+            onPresentPaywall: { type in
+                switch type {
+                case .presentPaywall:
+                    offeringForPaywall = offering
+                case .presentPaywallIfNeeded(let entitlementIdentifier):
+                    paywallIfNeededPresentation = PaywallIfNeededPresentation(
+                        offering: offering,
+                        entitlementIdentifier: entitlementIdentifier
+                    )
+                case .paywallView:
+                    offeringForPaywallView = offering
+                }
+            },
+            onShowMetadata: {
+                offeringForMetadata = offering
+            },
+            onPresentStoreView: { sheetType in
+                if configuration.storeKitVersion == .storeKit2 {
+                    storeViewPresentation = StoreViewPresentation(
+                        offering: offering,
+                        sheetType: sheetType
+                    )
+                } else {
+                    showingStoreViewUnavailableAlert = true
+                }
+            }
+        )
+    }
+    #endif
+
     private func fetchOfferings(showLoading: Bool = true) async {
         if showLoading {
             loadingState = .loading
@@ -194,6 +227,7 @@ struct OfferingsListView: View {
     }
 }
 
+#if !os(tvOS)
 // MARK: - presentPaywallIfNeeded Presentation
 
 /// Pairs an offering with the entitlement identifier for `.presentPaywallIfNeeded`.
@@ -203,6 +237,7 @@ private struct PaywallIfNeededPresentation: Identifiable {
 
     var id: String { "\(offering.identifier)-\(entitlementIdentifier)" }
 }
+#endif
 
 // MARK: - StoreView Presentation
 

@@ -93,7 +93,8 @@ class PurchasesDiagnosticsTests: TestCase {
     }
 
     func testFailingOfferingsRequest() async throws {
-        let error = OfferingsManager.Error.missingProducts(identifiers: ["a"]).asPublicError
+        let error = OfferingsManager.Error
+            .missingProducts(identifiers: ["a"], apiKeyValidationResult: .validApplePlatform).asPublicError
         self.purchases.mockedOfferingsResponse = .failure(error)
 
         do {
@@ -169,7 +170,8 @@ class PurchasesDiagnosticsTests: TestCase {
     }
 
     func testFailedFetchingOfferings() {
-        let underlyingError = OfferingsManager.Error.missingProducts(identifiers: ["a"]).asPublicError
+        let underlyingError = OfferingsManager.Error
+            .missingProducts(identifiers: ["a"], apiKeyValidationResult: .validApplePlatform).asPublicError
         let error = PurchasesDiagnostics.Error.failedFetchingOfferings(underlyingError)
 
         expect(error.errorUserInfo[NSUnderlyingErrorKey] as? NSError).to(matchError(underlyingError))

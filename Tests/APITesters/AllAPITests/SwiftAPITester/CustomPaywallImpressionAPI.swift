@@ -11,7 +11,7 @@
 //
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 func checkCustomPaywallImpressionAPI() {
     if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
@@ -21,13 +21,27 @@ func checkCustomPaywallImpressionAPI() {
         let paramsDefault: CustomPaywallImpressionParams = CustomPaywallImpressionParams()
         let paramsWithId: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: "my-paywall")
         let paramsWithNil: CustomPaywallImpressionParams = CustomPaywallImpressionParams(paywallId: nil)
+        let offering: Offering = Offering(
+            identifier: "my-offering",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let paramsWithOfferingObject: CustomPaywallImpressionParams = CustomPaywallImpressionParams(
+            paywallId: "my-paywall",
+            offering: offering
+        )
+        let paramsOfferingObjectOnly: CustomPaywallImpressionParams = CustomPaywallImpressionParams(offering: offering)
 
         // CustomPaywallImpressionParams properties
         let paywallId: String? = paramsWithId.paywallId
+        let offeringId: String? = paramsWithOfferingObject.offeringId
 
         // trackCustomPaywallImpression API
         purchases.trackCustomPaywallImpression(paramsDefault)
         purchases.trackCustomPaywallImpression(paramsWithId)
+        purchases.trackCustomPaywallImpression(paramsWithOfferingObject)
+        purchases.trackCustomPaywallImpression(paramsOfferingObjectOnly)
         purchases.trackCustomPaywallImpression()
     }
 }

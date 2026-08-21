@@ -1,4 +1,8 @@
 "OK" = "نعم";
+"Close" = "إغلاق";
+"Go back" = "رجوع";
+"Manage subscription" = "إدارة الاشتراك";
+"Redeem code" = "استخدام الرمز";
 "All subscriptions" = "كل الاشتراكات";
 "Privacy" = "خصوصية";
 "Privacy policy" = "سياسة الخصوصية";
@@ -18,3 +22,4 @@
 "Continue" = "يكمل";
 "Default_offer_details_with_intro_offer" = "ابدأ الفترة التجريبية التي تبلغ {{ sub_offer_duration }}، ثم {{ Total_price_and_per_month }}.";
 "Something went wrong" = "هناك خطأ ما";
+"Purchase" = "شراء";

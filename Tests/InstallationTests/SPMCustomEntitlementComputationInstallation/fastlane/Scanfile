@@ -1,3 +1,9 @@
-# The scheme is only setup for testing, not building
-# This makes it so that the `xcodebuild` command is only `test` and not `build test`, which would fail
+# The scheme is only setup for testing, not building.
+# This makes it so that the `xcodebuild` command is only `test` and not `build test`, which would fail.
 skip_build(true)
+
+# Explicit derived data path so `fastlane scan` can locate the `.xcresult` after the test runs.
+# Without this, scan in fastlane >= 2.234.0 (see fastlane/fastlane#22231) can't determine
+# `BUILT_PRODUCTS_DIR` from the test-only scheme and leaves `derived_data_path` unset, which
+# causes "Cannot find .xcresult in derived data" even when the test itself passes.
+derived_data_path("scan_derived_data")

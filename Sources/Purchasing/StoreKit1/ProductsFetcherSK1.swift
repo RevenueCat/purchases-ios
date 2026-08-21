@@ -53,11 +53,16 @@ final class ProductsFetcherSK1: NSObject {
 
     func products(withIdentifiers identifiers: Set<String>,
                   completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
+        let resolvedIdentifiers = CompoundProductIdentifierResolver.resolve(
+            identifiers,
+            supportsBillingPlans: Self.areProductsWithBillingPlansSupported
+        )
+
         TimingUtil.measureAndLogIfTooSlow(
             threshold: .productRequest,
             message: Strings.storeKit.sk1_product_request_too_slow,
             work: { completion in
-                self.sk1Products(withIdentifiers: identifiers) { skProducts in
+                self.sk1Products(withIdentifiers: resolvedIdentifiers.storeKitProductIdentifiers) { skProducts in
                     completion(skProducts.map { Set($0.map(SK1StoreProduct.init)) })
                 }
             },
@@ -103,6 +108,16 @@ final class ProductsFetcherSK1: NSObject {
 }
 
 private extension ProductsFetcherSK1 {
+
+    static func areProductsWithBillingPlansSupported(compoundIdentifier: CompoundProductIdentifier) -> Bool {
+        Logger.warn(
+            StoreKitStrings.sk1_does_not_support_billing_plans(
+                compoundProductIdentifier: compoundIdentifier
+            )
+        )
+
+        return false
+    }
 
     struct ProductRequest {
         let identifiers: Set<String>

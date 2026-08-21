@@ -252,6 +252,14 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               eventsManager: nil,
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
+                              workflowManager: WorkflowManager(
+                                workflowsConfigProvider: WorkflowsConfigProvider(
+                                    manager: NoOpRemoteConfigManager()
+                                ),
+                                paywallCache: nil,
+                                operationDispatcher: mockOperationDispatcher
+                              ),
+                              remoteConfigManager: NoOpRemoteConfigManager(),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
@@ -262,7 +270,8 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               diagnosticsTracker: nil,
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
-                              transactionMetadataSyncHelper: transactionMetadataSyncHelper)
+                              transactionMetadataSyncHelper: transactionMetadataSyncHelper,
+                              currentConfiguration: nil)
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -1020,6 +1029,25 @@ class PurchasesSubscriberAttributesTests: TestCase {
 
         expect(self.mockBackend.invokedPostReceiptData).to(beTrue())
         expect(self.mockSubscriberAttributesManager.invokedMarkAttributes) == false
+    }
+
+    // MARK: - ATT consent status
+
+    func testUnsyncedAttributesByKeyDoesNotSetATTConsentStatus() {
+        let appUserID = mockIdentityManager.currentAppUserID
+
+        _ = self.attribution.unsyncedAttributesByKey(appUserID: appUserID)
+
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == false
+    }
+
+    func testSetATTConsentStatusForwardsToSubscriberAttributesManager() {
+        let appUserID = mockIdentityManager.currentAppUserID
+
+        self.attribution.setATTConsentStatus(forAppUserID: appUserID)
+
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatus) == true
+        expect(self.mockSubscriberAttributesManager.invokedSetATTConsentStatusParameters?.appUserID) == appUserID
     }
 
 }

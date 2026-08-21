@@ -3,6 +3,7 @@ import ProjectDescription
 import ProjectDescriptionHelpers
 
 var projects: [Path] = [
+    "./Examples/CheckpointTester/",
     "./Examples/rc-maestro/",
     "./Examples/MagicWeather/",
     "./Examples/MagicWeatherSwiftUI/",
@@ -11,15 +12,24 @@ var projects: [Path] = [
     "./Projects/PaywallsTester",
     "./Projects/APITesters",
     "./Projects/PaywallValidationTester",
-    "./Projects/RevenueCatTests",
+    "./Projects/PaywallFixtures",
     "./Projects/BinarySizeTest",
     "./Projects/RCTTester"
 ]
 
-// Include RevenueCat/RevenueCatUI Tuist projects only when using local Xcode project dependencies.
-// In all other modes (localSwiftPackage, remoteSwiftPackage, remoteXcodeProject), the SPM package
-// or external dependency provides these targets and including the local projects would cause
-// duplicate framework names ("Multiple commands produce" build errors).
+// These projects depend on external packages (Nimble, SnapshotTesting, OHHTTPStubs, GoogleMobileAds).
+// Exclude them when TUIST_INCLUDE_TEST_DEPENDENCIES=false to allow skipping those downloads on CI.
+if Environment.includeTestDependencies {
+    projects.append("./Projects/RevenueCatTests")
+    projects.append("./Projects/PaywallScreenshotTests")
+    projects.append("./Projects/RevenueCatAdMob")
+    projects.append("./Projects/AdMobIntegrationSample")
+}
+
+// `RevenueCat` and `RevenueCatUI` ARE exposed as SPM library products consumed via
+// `.package(product:)` by the workspace projects. Including the local Tuist projects
+// alongside the SPM-resolved ones would produce two definitions of the same framework name
+// → "Multiple commands produce" build errors. So they stay gated to `localXcodeProject`.
 switch Environment.dependencyMode {
 case .localXcodeProject:
     projects.append("./Projects/RevenueCat")

@@ -1,4 +1,8 @@
 "OK" = "OKE";
+"Close" = "Tutup";
+"Go back" = "Kembali";
+"Manage subscription" = "Kelola langganan";
+"Redeem code" = "Tukarkan kode";
 "All subscriptions" = "Semua langganan";
 "Privacy" = "Pribadi";
 "Privacy policy" = "Kebijakan pribadi";
@@ -18,3 +22,4 @@
 "Continue" = "Melanjutkan";
 "Default_offer_details_with_intro_offer" = "Mulai uji coba {{ sub_offer_duration }} Anda, lalu {{ total_price_and_per_month }}.";
 "Something went wrong" = "Ada yang salah";
+"Purchase" = "Beli";

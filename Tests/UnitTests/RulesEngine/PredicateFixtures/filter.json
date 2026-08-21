@@ -1,0 +1,232 @@
+{
+  "fixtures": [
+    {
+      "id": "filter_retains_items_where_predicate_is_truthy",
+      "description": "filter retains [2,4]; compared by JS string coercion since loose == is always false for array-vs-array",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              [
+                -1,
+                2,
+                -3,
+                4
+              ],
+              {
+                ">": [
+                  {
+                    "var": ""
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          "2,4"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_preserves_empty_array",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              [],
+              {
+                ">": [
+                  {
+                    "var": ""
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_null_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              null,
+              {
+                ">": [
+                  {
+                    "var": ""
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_object_source",
+      "description": "multi-key object is treated as literal data, so filter yields []; compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              {
+                "foo": 1,
+                "bar": 2
+              },
+              {
+                ">": [
+                  {
+                    "var": ""
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_returns_empty_array_for_string_source",
+      "description": "empty-array result compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              "abc",
+              {
+                ">": [
+                  {
+                    "var": ""
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_missing_predicate_returns_empty_array",
+      "description": "a missing predicate evaluates to null (falsy) per item, so filter retains nothing; compared by string coercion to the empty string",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              [
+                1,
+                2,
+                3
+              ]
+            ]
+          },
+          ""
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "filter_end_to_end_through_evaluator",
+      "description": "drives filter through the evaluator end-to-end (json-logic-js README example): odds [1,3,5] compared via string coercion",
+      "predicate": {
+        "==": [
+          {
+            "filter": [
+              {
+                "var": "integers"
+              },
+              {
+                "%": [
+                  {
+                    "var": ""
+                  },
+                  2
+                ]
+              }
+            ]
+          },
+          "1,3,5"
+        ]
+      },
+      "variables": {
+        "integers": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "expected": true
+    },
+    {
+      "id": "filter_reads_named_property_on_object_items_then_counts",
+      "description": "filter keeps objects whose 'qualified' flag is truthy (proving the per-item scope exposes named keys), then reduce counts the survivors by incrementing the accumulator per element — 2 of 3 qualify. Counting (rather than string coercion) proves filter returns a real array of the original objects.",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "filter": [
+                  {
+                    "var": "items"
+                  },
+                  {
+                    "var": "qualified"
+                  }
+                ]
+              },
+              {
+                "+": [
+                  {
+                    "var": "accumulator"
+                  },
+                  1
+                ]
+              },
+              0
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {
+        "items": [
+          {
+            "qualified": true
+          },
+          {
+            "qualified": false
+          },
+          {
+            "qualified": true
+          }
+        ]
+      },
+      "expected": true
+    }
+  ]
+}

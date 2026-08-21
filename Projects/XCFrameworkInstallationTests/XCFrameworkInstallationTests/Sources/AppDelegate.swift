@@ -1,5 +1,4 @@
 @_spi(Internal) import RevenueCat
-import RevenueCatUI
 
 #if os(iOS) || os(tvOS) || os(visionOS)
 import UIKit
@@ -42,15 +41,7 @@ class AppDelegate: NSObject, WKApplicationDelegate {
 
 class Tester {
     init() {
-        // Test that RevenueCat can be imported and configured
-        // This verifies that the xcframework is linked correctly
         Purchases.configure(withAPIKey: "")
-
-        // Tests that RevenueCatUI can be imported and the types are available
-        // This verifies that the xcframework is linked correctly
-        if #available(iOS 15.0, macOS 12.0, *) {
-            _ = PaywallViewController()
-        }
 
         assert(Purchases.installationMethod == "xcframework",
                "Expected 'xcframework' but got '\(Purchases.installationMethod)'")

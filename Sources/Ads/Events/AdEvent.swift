@@ -33,11 +33,23 @@ internal protocol AdImpressionEventData: AdEventData {
     var impressionId: String { get }
 }
 
+/// Identifies the mechanism that emitted an ad event. The SDK only ever emits these two values;
+/// pre-feature versions send nothing, which the backend treats as `unknown`.
+@_spi(Internal) public enum AdEventCaptureMethod: String, Codable, Sendable {
+
+    /// Auto-captured by an official RevenueCat ad-network adapter.
+    case adapter
+
+    /// Reported via the public `trackAd*` tracking API.
+    case manual
+
+}
+
 /// Type representing an ad mediation network name.
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable {
+@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the mediator name
     @objc public let rawValue: String
@@ -71,7 +83,7 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common ad formats, or create custom values
 /// for other ad format types.
-@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable {
+@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the ad format
     @objc public let rawValue: String
@@ -102,9 +114,6 @@ internal protocol AdImpressionEventData: AdEventData {
 
     /// App open ad format displayed at app launch
     @objc public static let appOpen = AdFormat(rawValue: "app_open")
-
-    /// Medium rectangle ad format
-    @objc public static let mrec = AdFormat(rawValue: "mrec")
 
     // MARK: - NSObject overrides for equality
 
@@ -601,6 +610,18 @@ internal enum AdEvent: Equatable, Codable, Sendable {
     /// An ad impression generated revenue.
     case revenue(CreationData, AdRevenue)
 
+    /// An ad SDK reported a user-earned reward, prior to server-side verification.
+    case rewardEarnedUnverified(CreationData, AdRewardEarnedUnverified)
+
+    /// Server-side verification confirmed the reward delivered by the ad SDK.
+    case rewardVerified(CreationData, AdRewardVerified)
+
+    /// Server-side verification terminally failed.
+    case rewardFailedToVerify(CreationData, AdRewardFailedToVerify)
+
+    /// A single reward was granted following successful verification.
+    case rewardGranted(CreationData, AdRewardGranted)
+
 }
 
 extension AdEvent {
@@ -610,13 +631,16 @@ extension AdEvent {
 
         internal var id: ID
         internal var date: Date
+        internal var captureMethod: AdEventCaptureMethod?
 
         internal init(
             id: ID = .init(),
-            date: Date = .init()
+            date: Date = .init(),
+            captureMethod: AdEventCaptureMethod
         ) {
             self.id = id
             self.date = date
+            self.captureMethod = captureMethod
         }
 
     }
@@ -633,6 +657,10 @@ extension AdEvent {
         case let .displayed(creationData, _): return creationData
         case let .opened(creationData, _): return creationData
         case let .revenue(creationData, _): return creationData
+        case let .rewardEarnedUnverified(creationData, _): return creationData
+        case let .rewardVerified(creationData, _): return creationData
+        case let .rewardFailedToVerify(creationData, _): return creationData
+        case let .rewardGranted(creationData, _): return creationData
         }
     }
 
@@ -649,49 +677,79 @@ extension AdEvent {
             return opened
         case let .revenue(_, revenue):
             return revenue
+        case let .rewardEarnedUnverified(_, unverified):
+            return unverified
+        case let .rewardVerified(_, verified):
+            return verified
+        case let .rewardFailedToVerify(_, failedToVerify):
+            return failedToVerify
+        case let .rewardGranted(_, granted):
+            return granted
         }
     }
 
     /// - Returns: the underlying ``AdRevenue`` for revenue events.
     internal var revenueData: AdRevenue? {
         switch self {
-        case .failedToLoad, .loaded, .displayed, .opened:
+        case .failedToLoad, .loaded, .displayed, .opened,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
         case let .revenue(_, revenueData):
             return revenueData
         }
     }
 
-    /// - Returns: the network name for impression events, nil for failed to load events.
-    internal var networkName: String? {
+    /// - Returns: the underlying ``AdRewardEarnedUnverified`` for unverified reward events.
+    internal var rewardEarnedUnverifiedData: AdRewardEarnedUnverified? {
         switch self {
-        case .failedToLoad:
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
-        case let .loaded(_, data):
-            return data.networkName
-        case let .displayed(_, data):
-            return data.networkName
-        case let .opened(_, data):
-            return data.networkName
-        case let .revenue(_, data):
-            return data.networkName
+        case let .rewardEarnedUnverified(_, data):
+            return data
         }
+    }
+
+    /// - Returns: the underlying ``AdRewardVerified`` for verified reward events.
+    internal var rewardVerifiedData: AdRewardVerified? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardFailedToVerify, .rewardGranted:
+            return nil
+        case let .rewardVerified(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the underlying ``AdRewardFailedToVerify`` for failed-to-verify reward events.
+    internal var rewardFailedToVerifyData: AdRewardFailedToVerify? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified, .rewardGranted:
+            return nil
+        case let .rewardFailedToVerify(_, data):
+            return data
+        }
+    }
+
+    internal var rewardGrantedData: AdRewardGranted? {
+        switch self {
+        case .failedToLoad, .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify:
+            return nil
+        case let .rewardGranted(_, data):
+            return data
+        }
+    }
+
+    /// - Returns: the network name for impression and reward events, nil for failed to load events.
+    internal var networkName: String? {
+        (self.eventData as? AdImpressionEventData)?.networkName
     }
 
     /// - Returns: the impression identifier for events that include it.
     internal var impressionIdentifier: String? {
-        switch self {
-        case .failedToLoad:
-            return nil
-        case let .loaded(_, data):
-            return data.impressionId
-        case let .displayed(_, data):
-            return data.impressionId
-        case let .opened(_, data):
-            return data.impressionId
-        case let .revenue(_, data):
-            return data.impressionId
-        }
+        (self.eventData as? AdImpressionEventData)?.impressionId
     }
 
     /// - Returns: the mediator error code for failed to load events.
@@ -699,7 +757,8 @@ extension AdEvent {
         switch self {
         case let .failedToLoad(_, data):
             return data.mediatorErrorCode?.intValue
-        case .loaded, .displayed, .opened, .revenue:
+        case .loaded, .displayed, .opened, .revenue,
+             .rewardEarnedUnverified, .rewardVerified, .rewardFailedToVerify, .rewardGranted:
             return nil
         }
     }

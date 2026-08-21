@@ -172,6 +172,45 @@ class HTTPResponseBodyTests: TestCase {
         expect(body.copy(with: Date())) == body
     }
 
+    func testOptionalResponseBodyCreatesNilForNoContentResponse() throws {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        let body = try Body?.create(
+            with: Data(),
+            httpStatusCode: .noContent
+        )
+
+        expect(body).to(beNil())
+    }
+
+    func testOptionalResponseBodyThrowsForEmptySuccessfulResponse() {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        expect {
+            try Body?.create(
+                with: Data(),
+                httpStatusCode: .success
+            )
+        }.to(throwError())
+    }
+
+    func testOptionalResponseBodyCreatesWrappedBodyForContentResponse() throws {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        let body = try Body?.create(
+            with: #"{"data":"test"}"#.asData,
+            httpStatusCode: .success
+        )
+
+        expect(body) == Body(data: "test")
+    }
+
 }
 
 // MARK: - ErrorResponse

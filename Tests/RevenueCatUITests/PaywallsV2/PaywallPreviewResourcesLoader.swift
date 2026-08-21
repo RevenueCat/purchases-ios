@@ -12,7 +12,7 @@
 //  Created by Chris Vasselli on 2025/07/09.
 
 import Foundation
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 @testable import RevenueCatUI
 
 enum PaywallPreviewResourcesError: Error {
@@ -114,7 +114,7 @@ class PaywallPreviewResourcesLoader {
                     description: offering.description,
                     packages: packages.packages,
                     paywallComponents: offering.paywallComponents,
-                    draftPaywallComponents: offering.draftPaywallComponents,
+                    hasPaywallComponents: offering.hasPaywallComponents,
                     webCheckoutUrl: offering.webCheckoutUrl
                 )
             }
@@ -127,7 +127,13 @@ class PaywallPreviewResourcesLoader {
                 uiConfig: offeringsResponse.uiConfig
             )
 
-            let offerings = OfferingsFactory().createOfferings(from: [
+            let systemInfo = SystemInfo(
+                platformInfo: nil,
+                finishTransactions: true,
+                apiKey: "preview_api_key",
+                preferredLocalesProvider: .init(preferredLocaleOverride: nil)
+            )
+            let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferings(from: [
                 "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
                     price: 1.99,
                     unit: .week,

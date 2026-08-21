@@ -1,4 +1,8 @@
 "OK" = "OK";
+"Close" = "Bağla";
+"Go back" = "Geri";
+"Manage subscription" = "Abunəliyi idarə et";
+"Redeem code" = "Kodu istifadə et";
 "All subscriptions" = "Bütün abunəliklər";
 "Privacy" = "Məxfilik";
 "Privacy policy" = "Məxfilik siyasəti";
@@ -18,3 +22,4 @@
 "Continue" = "Davam et";
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} sınaq dövrünüzü başladın, sonra {{ total_price_and_per_month }}.";
 "Something went wrong" = "Nəsə səhv oldu";
+"Purchase" = "Satın al";

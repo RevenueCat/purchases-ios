@@ -43,6 +43,9 @@ func checkStoreProductAPI() {
     if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
         let _: SK2Product? = product.sk2Product
     }
+    if #available(iOS 26.4, tvOS 26.4, watchOS 26.4, macOS 26.4, visionOS 26.4, *) {
+        let _: InstallmentsInfo? = product.installmentsInfo
+    }
 
     _ = Task<Void, Never> {
         await checkStoreProductAsyncAPI()

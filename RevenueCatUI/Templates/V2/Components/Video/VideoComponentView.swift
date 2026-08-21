@@ -51,6 +51,14 @@ struct VideoComponentView: View {
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
+    init(
+        viewModel: VideoComponentViewModel,
+        size: CGSize = .zero
+    ) {
+        self.viewModel = viewModel
+        self._size = .init(initialValue: size)
+    }
+
     /// Tracks whether this page is active or adjacent in a carousel.
     /// Updated via onChange to ensure SwiftUI detects the change.
     @State private var isPlayable: Bool = true
@@ -233,20 +241,23 @@ struct VideoComponentView: View {
         size: CGSize,
         with style: VideoComponentStyle
     ) -> some View {
-        video
-            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
+        let maxWidth = Self.calculateMaxWidth(parentWidth: size.width, style: style)
+        return video
+            .frame(maxWidth: maxWidth)
             .fitToAspectRatio(
+                maxWidth: maxWidth,
                 aspectRatio: aspectRatio(style: style),
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
     }
 
-    private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
+    static func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
-        return parentWidth - totalBorderWidth
+        let maxWidth = parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
+        return max(0, maxWidth)
     }
 }
 

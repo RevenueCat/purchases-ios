@@ -11,6 +11,7 @@
 //
 //  Created by Nacho Soto on 7/13/23.
 
+import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -98,6 +99,25 @@ extension TemplateViewType {
         return (self.configuration.mode.isFullScreen &&
                 self.verticalSizeClass == .compact)
         #endif
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum PaywallComponentInteraction {
+
+    static let allPlansButtonName = "all_plans_button"
+    static let restoreButtonName = "restore_button"
+    static let termsLinkName = "terms_link"
+    static let privacyLinkName = "privacy_link"
+    static let tierSelectorName = "tier_selector"
+    static let purchaseButtonName = "purchase_button"
+
+    enum ComponentValue: String {
+        case toggleAllPlans = "toggle_all_plans"
+        case restorePurchases = "restore_purchases"
+        case navigateToTerms = "navigate_to_terms"
+        case navigateToPrivacyPolicy = "navigate_to_privacy_policy"
     }
 
 }

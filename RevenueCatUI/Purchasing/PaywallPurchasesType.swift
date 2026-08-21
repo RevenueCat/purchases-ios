@@ -22,18 +22,37 @@ protocol PaywallPurchasesType: Sendable {
     /// Returns the preferred locales, including the locale override if set.
     var preferredLocales: [String] { get }
 
+    /// Whether the SDK is running in UI preview mode.
+    var isUIPreviewMode: Bool { get }
+
     /// `preferredLocales` will always include the preferred locale override if set, so this
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }
+
+    /// Whether remote config (and, with it, paywall workflows) is enabled.
+    var remoteConfigEnabled: Bool { get }
 
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
     @Sendable
-    func purchase(package: Package) async throws -> PurchaseResultData
+    func offerings() async throws -> Offerings
+
+    var cachedOfferings: Offerings? { get }
+
+#if !os(tvOS)
+    @Sendable
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult?
+#endif
 
     @Sendable
-    func purchase(package: Package, promotionalOffer: PromotionalOffer) async throws -> PurchaseResultData
+    func purchase(
+        package: Package,
+        promotionalOffer: PromotionalOffer?,
+        paywallEvent: PaywallEvent?
+    ) async throws -> PurchaseResultData
 
     @Sendable
     func restorePurchases() async throws -> CustomerInfo
@@ -45,7 +64,17 @@ protocol PaywallPurchasesType: Sendable {
     func track(paywallEvent: PaywallEvent) async
 
     @Sendable
-    func cachePresentedOfferingContext(_ context: PresentedOfferingContext, productIdentifier: String)
+    func track(workflowEvent: WorkflowEvent) async
+
+    @Sendable
+    func cachePurchaseData(
+        presentedOfferingContext: PresentedOfferingContext,
+        paywallEvent: PaywallEvent?,
+        productIdentifier: String
+    )
+
+    @Sendable
+    func clearCachedPurchaseData(productIdentifier: String)
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
     func invalidateCustomerInfoCache()
