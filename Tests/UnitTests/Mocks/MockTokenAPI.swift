@@ -12,7 +12,7 @@
 //  Created by RevenueCat on 8/18/26.
 
 import Foundation
-@testable @_spi(Experimental) import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class MockTokenAPI: TokenAPI {
 

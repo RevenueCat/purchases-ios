@@ -3,7 +3,7 @@
 // Copyright (c) 2020 Purchases. All rights reserved.
 //
 
-@testable @_spi(Experimental) import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class MockIdentityManager: IdentityManager {
 
