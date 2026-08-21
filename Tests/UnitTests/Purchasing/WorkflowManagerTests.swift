@@ -331,6 +331,37 @@ class WorkflowManagerTests: TestCase {
         expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
+    func testPublishWebBundleURLsDecodesSharedWorkflowOnlyOnce() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = [
+            "default": "wf_1",
+            "placement_a": "wf_1",
+            "placement_b": "wf_1"
+        ]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings(
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: [
+                    "a": "placement_a",
+                    "b": "placement_b"
+                ]
+            )
+        )
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId.mapValues(\.id)) == [
+            "default": "wf_1",
+            "placement_a": "wf_1",
+            "placement_b": "wf_1"
+        ]
+    }
+
     func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
             throw XCTSkip("publishWebBundleURLs requires iOS 15+")
@@ -363,7 +394,7 @@ class WorkflowManagerTests: TestCase {
 
     // MARK: - Helpers
 
-    private static func offerings() -> Offerings {
+    private static func offerings(placements: Offerings.Placements? = nil) -> Offerings {
         let offering = Offering(
             identifier: "default",
             serverDescription: "default",
@@ -380,7 +411,7 @@ class WorkflowManagerTests: TestCase {
         return Offerings(
             offerings: [offering.identifier: offering],
             currentOfferingID: "default",
-            placements: nil,
+            placements: placements,
             targeting: nil,
             contents: .init(response: response, httpResponseOriginalSource: .mainServer),
             loadedFromDiskCache: false

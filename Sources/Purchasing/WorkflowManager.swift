@@ -166,15 +166,23 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
 
         var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
+        var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
         for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
             guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
                 continue
             }
 
-            let cached = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
-                workflowId: workflowId
-            )
-            if case let .success(result) = cached {
+            let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
+            if let cachedResolution = resolutionsByWorkflowId[workflowId] {
+                resolution = cachedResolution
+            } else {
+                resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
+                    workflowId: workflowId
+                )
+                resolutionsByWorkflowId[workflowId] = resolution
+            }
+
+            if case let .success(result) = resolution {
                 workflowsByOfferingId[offeringId] = result.workflow
             }
         }
