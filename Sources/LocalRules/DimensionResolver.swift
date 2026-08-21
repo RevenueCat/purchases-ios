@@ -58,7 +58,6 @@ struct DimensionResolver: Sendable {
             date: self.dateProvider.now(),
             appUserID: self.appUserIDProvider()
         )
-        let date = context.date
         var values: [String: RulesEngine.Value] = [:]
 
         for provider in self.dimensionProviders {
@@ -111,7 +110,7 @@ struct DimensionResolver: Sendable {
 
         try Task.checkCancellation()
 
-        return DimensionSnapshot(values: values, evaluationDate: date)
+        return DimensionSnapshot(values: values, evaluationDate: context.date)
     }
 }
 
