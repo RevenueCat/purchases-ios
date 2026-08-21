@@ -2506,13 +2506,14 @@ platform :ios do
     merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
     UI.message("Comparing against the merge base #{merge_base}")
 
-    all_breaks = []
+    breaks_by_scheme = {}
     reports_by_target = {}
 
     schemes.each do |scheme|
       base_dir = File.join(ApiDiffHelper::MERGE_BASE_SWIFTINTERFACE_DIR, scheme)
       ApiDiffHelper.extract_baselines_at(merge_base, base_dir, scheme, runner: runner)
       prefix = ApiDiffHelper.api_file_prefix(scheme)
+      scheme_breaks = []
 
       ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
         old_file = File.join(base_dir, "#{prefix}-api#{platform[:suffix]}.swiftinterface")
@@ -2527,11 +2528,16 @@ platform :ios do
           target_name: target_name
         )
         reports_by_target[target_name] = report
-        all_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
+        scheme_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
       end
+
+      breaks_by_scheme[scheme] = ApiDiffHelper.dedupe_breaks(scheme_breaks)
     end
 
-    all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
+    # The gate and the Slack summary speak for the whole PR, so they see every module's breaks.
+    # Each PR comment section speaks for one module and gets only its own, or a break in one
+    # module would be listed under the other and open a section for a module that never changed.
+    all_breaks = ApiDiffHelper.dedupe_breaks(breaks_by_scheme.values.flatten)
 
     labels = []
     if all_breaks.any?
@@ -2557,7 +2563,7 @@ platform :ios do
         upsert_api_diff_comment(
           scheme: scheme,
           reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
-          breaks: all_breaks,
+          breaks: breaks_by_scheme.fetch(scheme, []),
           labels: labels,
           notice: announcement[:notice],
           announced_fingerprint: announcement[:fingerprint]

@@ -485,6 +485,11 @@ module ApiDiffHelper
     end
   end
 
+  # The same break surfaces once per platform, so every list of breaks is collapsed on the way out.
+  def dedupe_breaks(breaks)
+    breaks.uniq { |change| [change[:reason], change[:owner], change[:declaration]] }
+  end
+
   BREAKING_CHANGE_LABEL = "pr:breaking-api".freeze
 
   BREAK_REASONS = {

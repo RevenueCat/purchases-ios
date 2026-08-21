@@ -108,8 +108,8 @@ class ApiDiffHelperTest < Minitest::Test
     fastfile_path = File.expand_path('Fastfile', __dir__)
     lines = File.readlines(fastfile_path)
 
-    concat_line_no = lines.index { |line| line.include?("all_breaks.concat(ApiDiffHelper.breaking_changes") }
-    refute_nil concat_line_no, "expected to find the loop that accumulates all_breaks"
+    concat_line_no = lines.index { |line| line.include?("scheme_breaks.concat(ApiDiffHelper.breaking_changes") }
+    refute_nil concat_line_no, "expected to find the loop that accumulates the breaks"
 
     # The private_lane definition ("private_lane :pr_labels_for_api_gate do") is a different
     # call shape from the call site; filter it out so we isolate where check_api_changes
@@ -2054,6 +2054,39 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal 1, lane.scan(/build_swiftinterface/).count
   end
 
+  # One lane now checks both modules, so a single list of breaks would be read by both comment
+  # sections: a RevenueCatUI break would be listed under RevenueCat, and because comment_needed?
+  # returns true on breaks.any? alone it would also open a RevenueCat section that has nothing in it.
+  def test_each_comment_section_receives_only_its_own_module_breaks
+    upsert = check_lane_source[/upsert_api_diff_comment\(.*?^\s*\)$/m]
+    refute_nil upsert, "the upsert_api_diff_comment call site moved; update this test"
+
+    assert_match(/breaks:\s*breaks_by_scheme\.fetch\(scheme/, upsert,
+                 "a module's comment section must receive only that module's breaks")
+    refute_match(/breaks:\s*all_breaks/, upsert,
+                 "the whole PR's breaks would be listed under every module")
+  end
+
+  # The counterpart: the gate blocks the PR and Slack announces it once, so both judge every module.
+  def test_the_gate_and_the_announcement_see_every_module_break
+    source = check_lane_source
+
+    assert_match(/print_breaking_summary\(all_breaks/, source,
+                 "the gate must consider breaks from every module")
+
+    slack = source[/notify_api_changes_on_slack\(.*?^\s*\)$/m]
+    refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"
+    assert_match(/breaks:\s*all_breaks/, slack,
+                 "one announcement covers the PR, so it must see every module's breaks")
+  end
+
+  def test_dedupe_breaks_collapses_the_same_break_seen_on_several_platforms
+    change = { reason: :removed, owner: "Purchases", declaration: "public func foo()" }
+    other = { reason: :removed, owner: "Purchases", declaration: "public func bar()" }
+
+    assert_equal [change, other], ApiDiffHelper.dedupe_breaks([change, change.dup, other, change])
+  end
+
   # Hardcoding RevenueCatUI would make scheme:RevenueCat compile the UI module too, which the
   # update-error-codes workflow would pay for on every run.
   def test_the_generation_lane_does_not_hardcode_the_build_scheme
@@ -2062,6 +2095,13 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
   private
+
+  def check_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :check_api_changes do.*?\n  end\n/m]
+    refute_nil source, "the check_api_changes lane moved; update this test"
+
+    source
+  end
 
   def generation_lane_source
     source = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
