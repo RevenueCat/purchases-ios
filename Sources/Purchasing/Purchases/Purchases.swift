@@ -649,6 +649,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             winBackOfferEligibilityCalculator = nil
         }
 
+        let storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
+
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
@@ -732,6 +734,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         userDefaults: userDefaults
                     ),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
@@ -766,6 +769,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     eventsManager: eventsManager,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager),
