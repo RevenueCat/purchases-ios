@@ -775,6 +775,9 @@ private extension WebBundleURLBatcherTests {
         initialStepId: String,
         singleStepFallbackId: String? = nil
     ) throws -> PublishedWorkflow {
+        #if os(watchOS) || os(tvOS) || !canImport(WebKit)
+        throw XCTSkip("Web view components are not supported on this platform")
+        #else
         let fallback = singleStepFallbackId.map { ", \"single_step_fallback_id\": \"\($0)\"" } ?? ""
         let json = """
         {
@@ -787,6 +790,7 @@ private extension WebBundleURLBatcherTests {
         """
         let data = try XCTUnwrap(json.data(using: .utf8))
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
+        #endif
     }
 
     static func screenJSON(name: String, url: String) -> String {
