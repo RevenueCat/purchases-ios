@@ -78,9 +78,8 @@ private extension CustomerInfoDimensionProvider {
         // The date the backend last answered, which is when it last saw this customer through this device.
         dimensions.put(Self.lastSeenAtKey, date: customerInfo.requestDate)
         dimensions.put(Self.originalPurchasedAtKey, date: customerInfo.originalPurchaseDate)
-        dimensions.put(Self.evaluatedAtKey, date: date)
         dimensions[Self.purchasesKey] = .objectList(Self.purchaseRecords(of: customerInfo, at: date))
-        dimensions[Self.entitlementsKey] = .objectList(Self.entitlementRecords(of: customerInfo, at: date))
+        dimensions[Self.entitlementsKey] = .objectList(Self.entitlementRecords(of: customerInfo))
         return dimensions
     }
 
@@ -100,7 +99,7 @@ private extension CustomerInfoDimensionProvider {
                 }
                 return lhs.transactionIdentifier < rhs.transactionIdentifier
             }
-            .map { Self.record(of: $0, at: date) }
+            .map { Self.record(of: $0) }
 
         // Ties break on the position built above rather than on `sorted` being stable, which it does
         // not promise to be.
@@ -115,10 +114,10 @@ private extension CustomerInfoDimensionProvider {
             .map(\.element)
     }
 
-    static func entitlementRecords(of customerInfo: CustomerInfo, at date: Date) -> [[String: DimensionValue]] {
+    static func entitlementRecords(of customerInfo: CustomerInfo) -> [[String: DimensionValue]] {
         return customerInfo.entitlements.all.values
             .sorted { $0.identifier < $1.identifier }
-            .map { Self.record(of: $0, at: date) }
+            .map { Self.record(of: $0) }
     }
 
     static func record(of subscription: SubscriptionInfo, at date: Date) -> [String: DimensionValue] {
@@ -157,11 +156,10 @@ private extension CustomerInfoDimensionProvider {
         record.put(Self.isRefundedKey, bool: subscription.refundedAt != nil)
         // A resume date is only ever set while a subscription is paused, so having one *is* being paused.
         record.put(Self.isPausedKey, bool: subscription.autoResumeDate != nil)
-        record.put(Self.evaluatedAtKey, date: date)
         return record
     }
 
-    static func record(of transaction: NonSubscriptionTransaction, at date: Date) -> [String: DimensionValue] {
+    static func record(of transaction: NonSubscriptionTransaction) -> [String: DimensionValue] {
         var record: [String: DimensionValue] = [:]
         record.put(Self.kindKey, string: Self.nonSubscriptionKind)
         record.put(Self.productIdentifierKey, string: transaction.productIdentifier)
@@ -173,11 +171,10 @@ private extension CustomerInfoDimensionProvider {
         record.put(price: transaction.price)
         record.put(Self.purchasedAtKey, date: transaction.purchaseDate)
         record.put(Self.isSandboxKey, bool: transaction.isSandbox)
-        record.put(Self.evaluatedAtKey, date: date)
         return record
     }
 
-    static func record(of entitlement: EntitlementInfo, at date: Date) -> [String: DimensionValue] {
+    static func record(of entitlement: EntitlementInfo) -> [String: DimensionValue] {
         var record: [String: DimensionValue] = [:]
         record.put(Self.identifierKey, string: entitlement.identifier)
         record.put(Self.productIdentifierKey, string: entitlement.productIdentifier)
@@ -200,7 +197,6 @@ private extension CustomerInfoDimensionProvider {
         record.put(Self.isSandboxKey, bool: entitlement.isSandbox)
         record.put(Self.isActiveKey, bool: entitlement.isActive)
         record.put(Self.willRenewKey, bool: entitlement.willRenew)
-        record.put(Self.evaluatedAtKey, date: date)
         return record
     }
 
@@ -283,7 +279,6 @@ private extension CustomerInfoDimensionProvider {
 
     static let appUserIDKey = "appUserId"
     static let entitlementsKey = "entitlements"
-    static let evaluatedAtKey = "evaluatedAt"
     static let firstSeenAtKey = "firstSeenAt"
     static let lastSeenAtKey = "lastSeenAt"
     static let originalAppUserIDKey = "originalAppUserId"

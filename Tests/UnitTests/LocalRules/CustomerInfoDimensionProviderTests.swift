@@ -33,7 +33,6 @@ struct CustomerInfoDimensionProviderTests {
         #expect(dimensions["firstSeenAt"] == .date(Self.firstSeenDate))
         #expect(dimensions["lastSeenAt"] == .date(Self.requestDate))
         #expect(dimensions["originalPurchasedAt"] == .date(Self.originalPurchaseDate))
-        #expect(dimensions["evaluatedAt"] == .date(Self.evaluationDate))
     }
 
     @Test
@@ -80,8 +79,7 @@ struct CustomerInfoDimensionProviderTests {
             "willRenew": .bool(false),
             "isInGracePeriod": .bool(false),
             "isRefunded": .bool(true),
-            "isPaused": .bool(true),
-            "evaluatedAt": .date(Self.evaluationDate)
+            "isPaused": .bool(true)
         ])
     }
 
@@ -99,8 +97,7 @@ struct CustomerInfoDimensionProviderTests {
             "priceAmountMicros": .int(1_990_000),
             "priceCurrency": .string("EUR"),
             "purchasedAt": .date(Self.transactionPurchaseDate),
-            "isSandbox": .bool(false),
-            "evaluatedAt": .date(Self.evaluationDate)
+            "isSandbox": .bool(false)
         ])
     }
 
@@ -124,8 +121,7 @@ struct CustomerInfoDimensionProviderTests {
             "billingIssueDetectedAt": .date(Self.billingIssueDetectedDate),
             "isSandbox": .bool(true),
             "isActive": .bool(true),
-            "willRenew": .bool(false),
-            "evaluatedAt": .date(Self.evaluationDate)
+            "willRenew": .bool(false)
         ])
     }
 
@@ -292,7 +288,6 @@ struct CustomerInfoDimensionProviderTests {
 
         #expect(purchase["isInGracePeriod"] == .bool(true))
         #expect(purchase["status"] == .string("in_grace_period"))
-        #expect(purchase["evaluatedAt"] == .date(Self.evaluationDate))
     }
 
     @Test
