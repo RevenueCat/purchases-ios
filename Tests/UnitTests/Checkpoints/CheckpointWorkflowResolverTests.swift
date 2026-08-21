@@ -164,9 +164,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     func testOfferingsAreLoadedForTheUserTheAudiencesWereEvaluatedFor() async throws {
         let currentAppUserID = Atomic<String>("user_a")
         let offeringsAppUserID = Atomic<String?>(nil)
-        // Switches user while the audience walk is suspended, the way a `logIn` landing mid-resolution would.
+        let dimensionsAppUserID = Atomic<String?>(nil)
+        // Switches user while the rules config is read, the way a `logIn` landing mid-resolution would.
+        self.checkpointsProvider.onRules = { currentAppUserID.value = "user_b" }
         let evaluator = LocalRulesEvaluator(
-            dimensionProviders: [SwitchingUserDimensionProvider { currentAppUserID.value = "user_b" }]
+            dimensionProviders: [
+                SwitchingUserDimensionProvider { appUserID in dimensionsAppUserID.value = appUserID }
+            ]
         )
         let resolver = self.makeResolver(
             offeringsProvider: { appUserID in
@@ -180,6 +184,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(currentAppUserID.value, "user_b")
+        // Both the dimensions the audiences were evaluated against and the offerings the workflow is
+        // served from have to describe the customer the resolution started for.
+        XCTAssertEqual(dimensionsAppUserID.value, "user_a")
         XCTAssertEqual(offeringsAppUserID.value, "user_a")
     }
 
@@ -787,15 +794,15 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
 private struct SwitchingUserDimensionProvider: DimensionProvider {
 
     let namespace: DimensionNamespace = .device
-    let onCollect: @Sendable () -> Void
+    let onCollect: @Sendable (String) -> Void
 
-    init(onCollect: @escaping @Sendable () -> Void) {
+    init(onCollect: @escaping @Sendable (String) -> Void) {
         self.onCollect = onCollect
     }
 
-    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         await Task.yield()
-        self.onCollect()
+        self.onCollect(context.appUserID)
         return ["platform": .string("ios")]
     }
 }
@@ -827,10 +834,12 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
     var error: Error?
     var configGeneration = 0
+    var onRules: (() -> Void)?
     private(set) var requestedIdentifiers: [String] = []
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
         self.requestedIdentifiers.append(identifier)
+        self.onRules?()
         if let error = self.error {
             throw error
         }
