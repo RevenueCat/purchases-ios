@@ -126,12 +126,14 @@ private final class WebBundleTaskQueue: @unchecked Sendable {
     }
 
     func cancelAll(completion: @escaping () -> Void) {
+        Task {
+            // We need to ensure that the queue gets emptied. We cannot simply append the completion
+            // to the queue's tasks, because that too could get cleaned up by a cache invalidation
+            waitForQueueToEmpty()
+            completion()
+        }
         self.queue.sync {
             self.tasks.forEach { $0.task.cancel() }
-            Task {
-                waitForQueueToEmpty()
-                completion()
-            }
         }
     }
 
