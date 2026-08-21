@@ -386,6 +386,260 @@ class TokenManagerTests: TestCase {
         expect(manager.currentIdentitySource) == .oidc
     }
 
+    // MARK: - authorizationHeaders(for:)
+
+    func testAuthorizationHeadersIsEmptyWhenDisabled() {
+        let manager = TokenManager(enabled: false, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentAccessToken = "access-token"
+
+        expect(manager.authorizationHeaders(for: Self.makeRequest())).to(beEmpty())
+    }
+
+    func testAuthorizationHeadersIsEmptyWhenThereIsNoAccessToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+
+        expect(manager.authorizationHeaders(for: Self.makeRequest())).to(beEmpty())
+    }
+
+    func testAuthorizationHeadersIsEmptyForIAMPathsEvenWithAnAccessToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentAccessToken = "access-token"
+
+        expect(manager.authorizationHeaders(for: Self.makeRequest(path: .tokenRefresh))).to(beEmpty())
+    }
+
+    func testAuthorizationHeadersReturnsBearerTokenForNonIAMPathsWithAnAccessToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentAccessToken = "access-token"
+
+        expect(manager.authorizationHeaders(for: Self.makeRequest())) == [
+            HTTPClient.RequestHeader.authorization.rawValue: "Bearer access-token"
+        ]
+    }
+
+    // MARK: - tokenRefreshRequest(for:response:duplicateRequestHandler:)
+
+    func testTokenRefreshRequestReturnsNoActionWhenDisabled() {
+        let manager = TokenManager(enabled: false, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                 response: Self.unauthorizedResponse) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsNoActionForIAMPaths() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(path: .tokenRefresh),
+                                                 response: Self.unauthorizedResponse) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsNoActionWhenTheRequestHasAlreadyBeenRetried() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest().retriedRequest(),
+                                                 response: Self.unauthorizedResponse) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsNoActionWhenThereIsNoResponse() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(), response: nil) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsNoActionWhenTheResponseIsNotUnauthorized() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                 response: Self.successResponse) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsNoActionWhenThereIsNoRefreshToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                 response: Self.unauthorizedResponse) { _ in }
+
+        expect(Self.isNoAction(action)) == true
+    }
+
+    func testTokenRefreshRequestReturnsARefreshRequestUsingTheCurrentRefreshToken() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "current-refresh-token"
+
+        let action = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                 response: Self.unauthorizedResponse) { _ in }
+
+        guard case let .refresh(refreshRequest) = action else {
+            fail("Expected .refresh, got \(action)")
+            return
+        }
+        expect(refreshRequest.path as? HTTPRequest.Path) == .tokenRefresh
+        expect(refreshRequest.isRetryable) == false
+        let body = try XCTUnwrap(refreshRequest.requestBody as? TokenRefreshOperation.Body)
+        expect(body.refreshToken) == "current-refresh-token"
+    }
+
+    func testTokenRefreshRequestReturnsWaitingForOtherRequestWhileARefreshIsInFlight() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "current-refresh-token"
+
+        let firstAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                      response: Self.unauthorizedResponse) { _ in }
+        expect(Self.isRefresh(firstAction)) == true
+
+        var duplicateHandlerResult: Bool?
+        let secondAction = manager.tokenRefreshRequest(
+            for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+            response: Self.unauthorizedResponse
+        ) { wasSuccessful in
+            duplicateHandlerResult = wasSuccessful
+        }
+
+        guard case .waitingForOtherRequest = secondAction else {
+            fail("Expected the second call to wait for the first, got \(secondAction)")
+            return
+        }
+        expect(duplicateHandlerResult).to(beNil())
+
+        _ = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse()))
+
+        expect(duplicateHandlerResult) == true
+    }
+
+    func testTokenRefreshRequestStartsANewRefreshAfterThePreviousOneCompletes() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "current-refresh-token"
+
+        let firstAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                      response: Self.unauthorizedResponse) { _ in }
+        expect(Self.isRefresh(firstAction)) == true
+
+        _ = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse()))
+
+        let secondAction = manager.tokenRefreshRequest(for: Self.makeRequest(),
+                                                       response: Self.unauthorizedResponse) { _ in }
+
+        expect(Self.isRefresh(secondAction)) == true
+    }
+
+    // MARK: - handleTokenRefreshResponse(_:)
+
+    func testHandleTokenRefreshResponseReturnsFalseAndDoesNothingWhenDisabled() {
+        let manager = TokenManager(enabled: false, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        var reportedError: PublicError?
+        manager.reportError = { reportedError = $0 }
+
+        let didHandle = manager.handleTokenRefreshResponse(.failure(Self.makeNetworkError()))
+
+        expect(didHandle) == false
+        expect(reportedError).to(beNil())
+    }
+
+    func testHandleTokenRefreshResponseSavesTokensAndReturnsTrueOnSuccess() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        var reportedError: PublicError?
+        manager.reportError = { reportedError = $0 }
+
+        let didHandle = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse(
+            accessToken: "new-access",
+            idToken: "new-id",
+            refreshToken: "new-refresh"
+        )))
+
+        expect(didHandle) == true
+        expect(reportedError).to(beNil())
+        expect(manager.currentAccessToken) == "new-access"
+        expect(manager.currentIDToken) == "new-id"
+        expect(manager.currentRefreshToken) == "new-refresh"
+    }
+
+    func testHandleTokenRefreshResponseReportsTheErrorAndReturnsFalseOnFailure() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentAccessToken = "old-access"
+        var reportedError: PublicError?
+        manager.reportError = { reportedError = $0 }
+        let networkError = Self.makeNetworkError()
+
+        let didHandle = manager.handleTokenRefreshResponse(.failure(networkError))
+
+        expect(didHandle) == false
+        expect(reportedError).to(matchError(networkError.asPublicError))
+        // a failed refresh should not clear out whatever access token was already stored
+        expect(manager.currentAccessToken) == "old-access"
+    }
+
+    func testHandleTokenRefreshResponseReportsAnErrorWhenTheResponseIsNotSuccessful() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        var reportedError: PublicError?
+        manager.reportError = { reportedError = $0 }
+        let response = VerifiedHTTPResponse<TokenResponse>(
+            httpStatusCode: .unauthorized,
+            responseHeaders: [:],
+            body: TokenResponse(accessToken: "access-token",
+                                idToken: "id-token",
+                                refreshToken: "refresh-token",
+                                scope: "openid",
+                                expiresIn: 3600),
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        let didHandle = manager.handleTokenRefreshResponse(.success(response))
+
+        expect(didHandle) == false
+        expect(reportedError).toNot(beNil())
+    }
+
+    func testHandleTokenRefreshResponseNotifiesDuplicateRequestHandlersOnFailure() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentRefreshToken = "current-refresh-token"
+
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(), response: Self.unauthorizedResponse) { _ in }
+        var duplicateResult: Bool?
+        _ = manager.tokenRefreshRequest(for: Self.makeRequest(path: .getOfferings(appUserID: "user")),
+                                        response: Self.unauthorizedResponse) { wasSuccessful in
+            duplicateResult = wasSuccessful
+        }
+
+        _ = manager.handleTokenRefreshResponse(.failure(Self.makeNetworkError()))
+
+        expect(duplicateResult) == false
+    }
+
 }
 
 private extension TokenManagerTests {
@@ -415,6 +669,67 @@ private extension TokenManagerTests {
             .replacingOccurrences(of: "+", with: "-")
             .replacingOccurrences(of: "/", with: "_")
             .replacingOccurrences(of: "=", with: "")
+    }
+
+    // MARK: - Test helpers for `authorizationHeaders`/`tokenRefreshRequest`/`handleTokenRefreshResponse`
+
+    static var mockURL: URL {
+        // swiftlint:disable:next force_unwrapping
+        URL(string: "https://api.revenuecat.com/v1/subscribers/user")!
+    }
+
+    static var unauthorizedResponse: HTTPURLResponse? {
+        HTTPURLResponse(url: Self.mockURL, statusCode: 401, httpVersion: nil, headerFields: nil)
+    }
+
+    static var successResponse: HTTPURLResponse? {
+        HTTPURLResponse(url: Self.mockURL, statusCode: 200, httpVersion: nil, headerFields: nil)
+    }
+
+    /// Builds a minimal `HTTPClient.Request` for exercising `TokenManager` methods that take one,
+    /// without needing to spin up a full `HTTPClient`.
+    static func makeRequest(path: HTTPRequest.Path = .getCustomerInfo(appUserID: "user")) -> HTTPClient.Request {
+        let httpRequest = HTTPRequest(method: .get, path: path)
+        return HTTPClient.Request(httpRequest: httpRequest,
+                                  authHeaders: [:],
+                                  defaultHeaders: [:],
+                                  verificationMode: .disabled,
+                                  preferIAMPath: false,
+                                  internalSettings: DangerousSettings.Internal.default,
+                                  completionHandler: { (_: VerifiedHTTPResponse<Data>.Result) in })
+    }
+
+    static func makeTokenResponse(
+        accessToken: String = "access-token",
+        idToken: String? = "id-token",
+        refreshToken: String? = "refresh-token"
+    ) -> VerifiedHTTPResponse<TokenResponse> {
+        return VerifiedHTTPResponse<TokenResponse>(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: TokenResponse(accessToken: accessToken,
+                                idToken: idToken,
+                                refreshToken: refreshToken,
+                                scope: "openid",
+                                expiresIn: 3600),
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+    }
+
+    static func makeNetworkError() -> NetworkError {
+        return NetworkError.networkError(NSError(domain: "TokenManagerTests", code: 401))
+    }
+
+    static func isNoAction(_ action: TokenManager.TokenRefreshAction) -> Bool {
+        if case .noAction = action { return true }
+        return false
+    }
+
+    static func isRefresh(_ action: TokenManager.TokenRefreshAction) -> Bool {
+        if case .refresh = action { return true }
+        return false
     }
 
 }

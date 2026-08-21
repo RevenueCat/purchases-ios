@@ -18,6 +18,15 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
 
     /// The SDK encountered an unrecoverable authentication error while performing other operations
     ///
+    /// This method is invoked when an attempt to refresh the session tokens fails, and the error corresponds
+    /// to that error. Therefore, a single call into the SDK may result in *two* errors being reported. For example,
+    /// if a call to ``Purchases.customerInfo()`` attempts causes the SDK to refresh its session tokens
+    /// and that attempt fails, then this delegate method is invoked with the error from attempting to refresh
+    /// the tokens, and the overall call to `customerInfo()` reports that the overall operation failed.
+    ///
+    /// This method is *not* invoked when ``Authentication.logIn(using:)`` or
+    /// ``Authentication.logOut()`` fail, as both of those methods report any failures directly.
+    ///
     /// - Parameter error: The ``PublicError`` indicating why authentication has failed
     func authenticatorDidEncounterError(_ error: PublicError)
 }
@@ -51,6 +60,8 @@ public final class Authentication: NSObject {
     /// - Warning: The delegate is not retained, so your app must retain a reference
     /// to the delegate to prevent it from being unintentionally deallocated.
     @objc public weak var delegate: AuthenticationDelegate?
+
+    private let ongoingUserInitiatedRequestCount = Atomic(0)
 
     internal init(backend: Backend,
                   identityManager: IdentityManager,
@@ -108,7 +119,10 @@ public final class Authentication: NSObject {
 
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
+        self.ongoingUserInitiatedRequestCount.increment()
         self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
+            self.ongoingUserInitiatedRequestCount.decrement()
+
             self.operationDispatcher.dispatchOnMainThread {
                 if case let .success(values) = result {
                     self.internalDelegate?.authenticatorDidLogIn(info: values.info)
@@ -184,6 +198,11 @@ public final class Authentication: NSObject {
 
     // MARK: - Internals
 
+    internal func logInIfNeeded(completion: ((CustomerInfo?, PublicError?) -> Void)? = nil) {
+        guard identityManager.needsIAMLogin else { return }
+        self.logIn(using: .anonymous, userInitiated: false, completion: completion)
+    }
+
     internal func logIn(using identity: Identity,
                         userInitiated: Bool,
                         completion: ((CustomerInfo?, PublicError?) -> Void)?) {
@@ -196,7 +215,10 @@ public final class Authentication: NSObject {
             return
         }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logIn(identity: identity) { result in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let completion {
                 self.operationDispatcher.dispatchOnMainThread {
                     completion(result.value?.info, result.error?.asPublicError)
@@ -226,7 +248,10 @@ public final class Authentication: NSObject {
             return
         }
 
+        if userInitiated { self.ongoingUserInitiatedRequestCount.increment() }
         self.identityManager.logOut { error in
+            if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
+
             if let error {
                 if let completion = completion {
                     self.operationDispatcher.dispatchOnMainThread {
@@ -256,6 +281,9 @@ public final class Authentication: NSObject {
 
     internal func reportAuthenticationError(_ error: PublicError) {
         guard let delegate else { return }
+
+        // if we currently have user initiated requests going, then skip reporting this error via the delegate
+        if self.ongoingUserInitiatedRequestCount.value > 0 { return }
 
         self.operationDispatcher.dispatchOnMainThread {
             delegate.authenticatorDidEncounterError(error)

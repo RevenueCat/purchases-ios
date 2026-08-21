@@ -26,6 +26,13 @@ class AuthenticationTests: TestCase {
     private var internalDelegate: MockInternalAuthenticatorDelegate!
     private var authenticationDelegate: MockAuthenticationDelegate!
     private var secureItemStorage: MockSecureItemStorage!
+    private var tokenManager: TokenManager!
+    // `Authentication` only holds a *weak* reference to itself inside the closure it hands to
+    // `tokenManager.reportError`, so tests that don't otherwise keep the `Authentication` returned by
+    // `makeAuthentication()` alive would see it deallocated immediately, silently turning that closure
+    // into a no-op. Stashing it here keeps it alive for the lifetime of the test regardless of whether
+    // the caller captures the return value.
+    private var authentication: Authentication!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
@@ -47,6 +54,7 @@ class AuthenticationTests: TestCase {
         customEntitlementComputation: Bool = false
     ) -> Authentication {
         let tokenManager = TokenManager(enabled: tokenManagerEnabled, storage: self.secureItemStorage)
+        self.tokenManager = tokenManager
         let systemInfo = MockSystemInfo(finishTransactions: false,
                                         customEntitlementsComputation: customEntitlementComputation)
 
@@ -57,6 +65,7 @@ class AuthenticationTests: TestCase {
                                             systemInfo: systemInfo,
                                             internalDelegate: self.internalDelegate)
         authentication.delegate = self.authenticationDelegate
+        self.authentication = authentication
         return authentication
     }
 
@@ -388,6 +397,99 @@ class AuthenticationTests: TestCase {
 
         expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList) == [error]
+    }
+
+    // MARK: - logInIfNeeded(completion:)
+
+    func testLogInIfNeededDoesNothingWhenIdentityManagerDoesNotNeedIAMLogin() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = false
+
+        var completionCalled = false
+        authentication.logInIfNeeded { _, _ in completionCalled = true }
+
+        expect(completionCalled) == false
+        expect(self.identityManager.invokedLogInWithIdentity) == false
+    }
+
+    func testLogInIfNeededLogsInAnonymouslyWhenIdentityManagerNeedsIAMLogin() throws {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = true
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+
+        authentication.logInIfNeeded()
+
+        expect(self.identityManager.invokedLogInWithIdentityCount) == 1
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
+    }
+
+    func testLogInIfNeededReportsErrorToDelegateWhenTheBackgroundLoginFails() {
+        // `logInIfNeeded` always performs a non-user-initiated login, so a failure needs to be
+        // surfaced through the delegate rather than only through a completion handler (which callers
+        // of this internal API may not even provide, since it's invoked from app lifecycle hooks).
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = true
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInWithIdentityResult = .failure(backendError)
+
+        authentication.logInIfNeeded()
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
+            matchError(backendError.asPurchasesError)
+        )
+    }
+
+    // MARK: - Token refresh failure reporting
+
+    /// These tests exercise the wiring set up in `Authentication.init`, where `tokenManager.reportError`
+    /// is connected to `reportAuthenticationError(_:)`. This is how failures to refresh an expired access
+    /// token (which happen deep inside `HTTPClient`, well outside of any explicit, user-initiated call)
+    /// make their way to the `AuthenticationDelegate`.
+    func testAuthenticationDelegateIsInvokedWhenTokenRefreshFails() {
+        _ = self.makeAuthentication(tokenManagerEnabled: true)
+        let networkError = NetworkError.networkError(NSError(domain: "AuthenticationTests", code: 401))
+
+        let didHandle = self.tokenManager.handleTokenRefreshResponse(.failure(networkError))
+
+        expect(didHandle) == false
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
+            matchError(networkError.asPublicError)
+        )
+    }
+
+    func testAuthenticationDelegateIsNotInvokedWhenTokenRefreshSucceeds() {
+        _ = self.makeAuthentication(tokenManagerEnabled: true)
+        let response = VerifiedHTTPResponse<TokenResponse>(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: TokenResponse(accessToken: "new-access-token",
+                                idToken: "new-id-token",
+                                refreshToken: "new-refresh-token",
+                                scope: "openid",
+                                expiresIn: 3600),
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+
+        let didHandle = self.tokenManager.handleTokenRefreshResponse(.success(response))
+
+        expect(didHandle) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testAuthenticationDelegateIsNotInvokedForTokenRefreshFailureWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        authentication.delegate = nil
+        let networkError = NetworkError.networkError(NSError(domain: "AuthenticationTests", code: 401))
+
+        _ = self.tokenManager.handleTokenRefreshResponse(.failure(networkError))
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
     }
 
 }

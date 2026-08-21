@@ -791,6 +791,65 @@ class IdentityManagerTests: TestCase {
         expect(manager.currentAppUserID) == originalUserID
     }
 
+    // MARK: - currentUserIsAnonymous (IAM identity)
+
+    func testCurrentUserIsAnonymousIsTrueWhenTokenManagerReportsAnonymousIdentity() throws {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        self.mockTokenManager.stubbedCurrentIDToken = try Self.makeAnonymousIDToken()
+
+        let manager = create(appUserID: "explicit-user")
+
+        expect(IdentityManager.userIsAnonymous(manager.currentAppUserID)) == false
+        expect(manager.currentUserIsAnonymous) == true
+    }
+
+    func testCurrentUserIsAnonymousIsFalseWhenTheTokenManagerDoesNotReportAnAnonymousIdentity() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+
+        let manager = create(appUserID: "explicit-user")
+
+        expect(manager.currentUserIsAnonymous) == false
+    }
+
+    // MARK: - needsIAMLogin
+
+    func testNeedsIAMLoginIsFalseWhenTheTokenManagerIsDisabled() {
+        self.mockTokenManager = MockTokenManager(enabled: false)
+
+        let manager = create(appUserID: nil)
+
+        assertCorrectlyIdentifiedWithAnonymous(manager)
+        expect(manager.needsIAMLogin) == false
+    }
+
+    func testNeedsIAMLoginIsFalseWhenTheCurrentUserIsNotAnonymous() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+
+        let manager = create(appUserID: "explicit-user")
+
+        expect(manager.currentUserIsAnonymous) == false
+        expect(manager.needsIAMLogin) == false
+    }
+
+    func testNeedsIAMLoginIsFalseWhenThereIsAlreadyACurrentAccessToken() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        self.mockTokenManager.stubbedCurrentAccessToken = "existing-access-token"
+
+        let manager = create(appUserID: nil)
+
+        assertCorrectlyIdentifiedWithAnonymous(manager)
+        expect(manager.needsIAMLogin) == false
+    }
+
+    func testNeedsIAMLoginIsTrueWhenEnabledAnonymousAndMissingAnAccessToken() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+
+        let manager = create(appUserID: nil)
+
+        assertCorrectlyIdentifiedWithAnonymous(manager)
+        expect(manager.needsIAMLogin) == true
+    }
+
 }
 
 private extension IdentityManagerTests {
@@ -807,6 +866,24 @@ private extension IdentityManagerTests {
             expect(IdentityManager.userIsAnonymous(self.mockDeviceCache.userIDStoredInCache!)) == true
         }
         expect(manager.currentUserIsAnonymous) == true
+    }
+
+    /// Builds an unsigned (`alg: "none"`) JWT string whose `amr` claim marks every identity source as
+    /// anonymous, suitable for driving `TokenManager.isCurrentIdentityAnonymous` (and, in turn,
+    /// `IdentityManager.currentUserIsAnonymous`) to `true` via `MockTokenManager.stubbedCurrentIDToken`.
+    static func makeAnonymousIDToken() throws -> String {
+        let header = try JSONSerialization.data(withJSONObject: ["alg": "none", "typ": "JWT"])
+        let payload = try JSONSerialization.data(withJSONObject: ["amr": ["anonymous"]])
+        let signature = try XCTUnwrap("signature-bytes".data(using: .utf8))
+
+        return [header, payload, signature]
+            .map {
+                $0.base64EncodedString()
+                    .replacingOccurrences(of: "+", with: "-")
+                    .replacingOccurrences(of: "/", with: "_")
+                    .replacingOccurrences(of: "=", with: "")
+            }
+            .joined(separator: ".")
     }
 
 }

@@ -52,6 +52,12 @@ class MockIdentityManager: IdentityManager {
         return mockIsAnonymous
     }
 
+    var mockNeedsIAMLogin = false
+
+    override var needsIAMLogin: Bool {
+        return mockNeedsIAMLogin
+    }
+
     // MARK: - LogIn
 
     var mockLogInResult: IdentityAPI.LogInResponse!

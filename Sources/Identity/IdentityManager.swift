@@ -86,8 +86,16 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
+        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
+        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+    }
+
+    var needsIAMLogin: Bool {
+        guard tokenManager.enabled else { return false }
+        guard currentUserIsAnonymous else { return false }
+        if tokenManager.hasCurrentAccessToken { return false }
+        return true
     }
 
     func logIn(appUserID: String, completion: @escaping IdentityAPI.LogInResponseHandler) {
@@ -115,11 +123,6 @@ class IdentityManager: CurrentUserProvider {
     func logOut(completion: @escaping (PurchasesError?) -> Void) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
             completion(ErrorUtils.unsupportedInUIPreviewModeError())
-            return
-        }
-
-        if self.currentUserIsAnonymous {
-            completion(ErrorUtils.logOutAnonymousUserError())
             return
         }
 
@@ -249,6 +252,11 @@ private extension IdentityManager {
 
     func performLogOut(completion: @escaping (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
+
+        if self.currentUserIsAnonymous {
+            completion(ErrorUtils.logOutAnonymousUserError())
+            return
+        }
 
         let newUserID = Self.generateRandomID()
         self.resetCacheAndSave(newUserID: newUserID)
