@@ -57,9 +57,9 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI
             ],
-            settings: checkpointObjCAPITesterSettings,
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            settings: checkpointObjCAPITesterSettings
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "SwiftAPITester",
@@ -77,9 +77,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCat
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "ReceiptParserAPITester",
@@ -97,9 +97,9 @@ let project = Project(
             ),
             dependencies: [
                 .receiptParser
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "RevenueCatUISwiftAPITester",
@@ -122,9 +122,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatUI
-            ],
-            metadata: .metadata(tags: ["APITester"])
-        ),
+            ]
+        )
+        .tagged(["APITester"]),
 
         .target(
             name: "CustomEntitlementComputationSwiftAPITester",
@@ -142,9 +142,9 @@ let project = Project(
             ),
             dependencies: [
                 .revenueCatCustomEntitlementComputation
-            ],
-            metadata: .metadata(tags: ["APITester"])
+            ]
         )
+        .tagged(["APITester"])
     ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(

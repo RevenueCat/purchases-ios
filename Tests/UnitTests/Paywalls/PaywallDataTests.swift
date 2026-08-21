@@ -147,19 +147,34 @@ class PaywallDataTests: BaseHTTPResponseTest {
         expect(enConfig.title) == "Paywall"
     }
 
-    func testLocalesOrderedByPriority() throws {
-        #if swift(>=5.9)
-        let expected = [
-            "en-US"
-        ]
-        #else
-        let expected = [
-            // `Locale.preferredLanguages` returns `en` before Xcode 15.
-            "en"
-        ]
-        #endif
+    func testLocalesOrderedByPriorityWhenPurchasesIsNotConfigured() throws {
+        try XCTSkipUnless(Self.isRunningInSimulator)
 
-        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == expected
+        Purchases.clearSingleton()
+        defer { Purchases.clearSingleton() }
+
+        expect(Purchases.isConfigured) == false
+        expect(PaywallData.localesOrderedByPriority.first?.identifier) == Self.simulatorPreferredLocale
+    }
+
+    func testLocalesOrderedByPriorityWhenPurchasesIsConfigured() throws {
+        Purchases.clearSingleton()
+        defer { Purchases.clearSingleton() }
+
+        let preferredLocale = "es_ES"
+        let configuration = Configuration.Builder(withAPIKey: "")
+            .with(preferredUILocaleOverride: preferredLocale)
+            .build()
+
+        _ = Purchases.configure(with: configuration)
+
+        let expected = [preferredLocale] + Locale.preferredLanguages
+
+        expect(Purchases.isConfigured) == true
+        expect(PaywallData.localesOrderedByPriority.map(\.identifier)) == Self.normalizedLocaleIdentifiers(
+            from: expected
+        )
+        expect(PaywallData.localesOrderedByPriority.first?.identifier) == Locale(identifier: preferredLocale).identifier
     }
 
     func testDoesNotFindLocaleWithMissingLanguage() throws {
@@ -202,5 +217,14 @@ class PaywallDataTests: BaseHTTPResponseTest {
 private extension PaywallDataTests {
 
     static let defaultLocale = "en_US"
+    static let simulatorPreferredLocale = "en-US"
+
+    static var isRunningInSimulator: Bool {
+        return ProcessInfo.processInfo.environment["SIMULATOR_UDID"] != nil
+    }
+
+    static func normalizedLocaleIdentifiers(from identifiers: [String]) -> [String] {
+        return identifiers.map { Locale(identifier: $0).identifier }
+    }
 
 }
