@@ -2393,25 +2393,25 @@ platform :ios do
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
         project_root = File.expand_path("..")
+        # One build per platform covers every requested module, because RevenueCatUI links
+        # RevenueCat and so emits both interfaces.
+        build_scheme = ApiDiffHelper.build_scheme_for(schemes)
 
-        # Schemes stay sequential to cap concurrency at the nine platforms: CI runs one scheme per
-        # job, so building both at once would only oversubscribe a developer's machine.
-        schemes.each do |scheme|
-          threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
-            Thread.new(platform_config) do |config|
-              ApiDiffHelper.build_swiftinterface(
-                config,
-                scheme: scheme,
-                project_root: project_root,
-                output_dir: temp_dir
-              )
-            end
+        threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
+          Thread.new(platform_config) do |config|
+            ApiDiffHelper.build_swiftinterface(
+              config,
+              scheme: build_scheme,
+              modules: schemes,
+              project_root: project_root,
+              output_dir: temp_dir
+            )
           end
-
-          # Every build is awaited before reporting so one failure does not hide the others.
-          errors = threads.map(&:value).reject { |result| result[:success] }.map { |result| result[:error] }
-          UI.user_error!(errors.join("\n")) if errors.any?
         end
+
+        # Every build is awaited before reporting so one failure does not hide the others.
+        errors = threads.map(&:value).reject { |result| result[:success] }.map { |result| result[:error] }
+        UI.user_error!(errors.join("\n")) if errors.any?
 
         # Copy to expected location for CI artifacts
         FileUtils.rm_rf(ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
@@ -2601,7 +2601,8 @@ platform :ios do
     )
 
     if existing
-      # The other module's job owns its own section of this comment.
+      # The other module owns its own section of this comment; re-reading it each time is what
+      # lets the second write land beside the first rather than on top of it.
       body = ApiDiffHelper.merge_api_diff_comment(existing["body"], options[:scheme], section)
 
       UI.message("Updating API diff comment #{existing['id']}")
