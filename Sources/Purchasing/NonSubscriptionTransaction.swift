@@ -28,8 +28,8 @@ public final class NonSubscriptionTransaction: NSObject {
     /// The date that App Store charged the user’s account.
     @objc public let purchaseDate: Date
 
-    /// The date this purchase was first made, which for a repeatable purchase is not
-    /// ``purchaseDate``. `nil` when the store never reported one.
+    /// Date of the original store transaction. Earlier than ``purchaseDate`` on a restore.
+    /// `nil` when the store never reported one.
     @objc public let originalPurchaseDate: Date?
 
     /// The unique identifier for the transaction created by RevenueCat.
