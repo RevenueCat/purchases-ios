@@ -79,10 +79,9 @@ final class WebBundleCacheCoordinator {
                 switch event {
                 case .cacheClearRequested:
                     self.store.retireCurrentIdentifier()
-                    self.taskQueue.clear()
                     self.prewarmDeduplicator.clear()
-                    Task(priority: .medium) {
-                        await self.scheduleSweep()
+                    self.taskQueue.cancelAll {
+                        Task { await self.scheduleSweep() }
                     }
                 case .receivedAssetURLs(let urls):
                     let id = self.store.identifier()
@@ -126,10 +125,23 @@ private final class WebBundleTaskQueue: @unchecked Sendable {
         }
     }
 
-    func clear() {
+    func cancelAll(completion: @escaping () -> Void) {
         self.queue.sync {
             self.tasks.forEach { $0.task.cancel() }
-            self.tasks.removeAll()
+            Task {
+                waitForQueueToEmpty()
+                completion()
+            }
+        }
+    }
+
+    private func waitForQueueToEmpty() {
+        let deadline = Date().addingTimeInterval(2)
+        while !tasks.isEmpty, Date() < deadline {
+            continue
+        }
+        if !tasks.isEmpty {
+            Logger.debug(Strings.web_view_cache_queue_ejection_exceeded_deadline)
         }
     }
 

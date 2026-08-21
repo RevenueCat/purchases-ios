@@ -121,6 +121,43 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         withExtendedLifetime(coordinator) {}
     }
 
+    func testCacheClearWaitsForInFlightPrewarmsBeforeSweeping() async throws {
+        let store = try self.makeStore()
+        let bus = WebBundleEventBus()
+        let prewarmStarted = self.expectation(description: "prewarm started")
+        let sweepStartedTooEarly = self.expectation(description: "sweep started too early")
+        sweepStartedTooEarly.isInverted = true
+        let sweepFinished = self.expectation(description: "sweep finished")
+        let gate = LoadGate()
+        let observingEarlySweep: Atomic<Bool> = true
+        let prewarmer = makeCacheWarmer { _, _ in
+            prewarmStarted.fulfill()
+            await gate.wait()
+        }
+        let coordinator = WebBundleCacheCoordinator(
+            store: store,
+            cacheWarmer: prewarmer,
+            bus: bus,
+            sweeper: SweepProbe {
+                if observingEarlySweep.value {
+                    sweepStartedTooEarly.fulfill()
+                }
+                sweepFinished.fulfill()
+            }
+        )
+        await bus.publish([Self.urls[0]])
+        await self.fulfillment(of: [prewarmStarted], timeout: 1)
+        await bus.clearCache()
+
+        await self.fulfillment(of: [sweepStartedTooEarly], timeout: 0.05)
+        observingEarlySweep.value = false
+        await gate.open()
+
+        await self.fulfillment(of: [sweepFinished], timeout: 1)
+
+        withExtendedLifetime(coordinator) {}
+    }
+
     func testReceivedAssetURLsPrewarmsUsingTheCurrentIdentifier() async throws {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
