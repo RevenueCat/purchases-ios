@@ -2392,33 +2392,25 @@ platform :ios do
 
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
+        project_root = File.expand_path("..")
+
+        # Schemes stay sequential to cap concurrency at the nine platforms: CI runs one scheme per
+        # job, so building both at once would only oversubscribe a developer's machine.
         schemes.each do |scheme|
-          ApiDiffHelper::PLATFORMS.each do |platform_config|
-            UI.message("Building #{scheme} for #{platform_config[:platform]}...")
-
-            sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
-
-            Dir.chdir("..") do
-              sh("xcodebuild", "clean", "build",
-                 "-workspace", ".",
-                 "-scheme", scheme,
-                 "-derivedDataPath", ".build",
-                 "-configuration", "Release",
-                 "-sdk", sdk_path,
-                 "-destination", platform_config[:destination],
-                 "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
+          threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
+            Thread.new(platform_config) do |config|
+              ApiDiffHelper.build_swiftinterface(
+                config,
+                scheme: scheme,
+                project_root: project_root,
+                output_dir: temp_dir
+              )
             end
-
-            swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk], scheme)
-
-            if swiftinterface_files.empty?
-              UI.user_error!("Could not find #{scheme}.swiftinterface for #{platform_config[:platform]}")
-            end
-
-            output_path = "#{temp_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface"
-            FileUtils.cp(swiftinterface_files.first, output_path)
-            UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
           end
+
+          # Every build is awaited before reporting so one failure does not hide the others.
+          errors = threads.map(&:value).reject { |result| result[:success] }.map { |result| result[:error] }
+          UI.user_error!(errors.join("\n")) if errors.any?
         end
 
         # Copy to expected location for CI artifacts
