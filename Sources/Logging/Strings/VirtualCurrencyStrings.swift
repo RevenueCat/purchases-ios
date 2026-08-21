@@ -22,6 +22,10 @@ enum VirtualCurrencyStrings {
     case virtual_currencies_stale_updating_from_network
     case virtual_currencies_updated_from_network
     case virtual_currencies_updated_from_network_error(Error)
+    case empty_spend_amount
+    case negative_spend_amount(String, Int)
+    case virtual_currencies_spent_on_network
+    case virtual_currencies_spent_on_network_error(Error)
     case error_decoding_cached_virtual_currencies(Error)
 
 }
@@ -41,6 +45,15 @@ extension VirtualCurrencyStrings: LogMessage {
             return "VirtualCurrencies updated from the network."
         case let .virtual_currencies_updated_from_network_error(error):
             return "Attempt to update VirtualCurrencies from network failed.\n\(error.localizedDescription)"
+        case .empty_spend_amount:
+            return "No amount specified to spend. This will be ignored."
+        case let .negative_spend_amount(code, amount):
+            return "Attempt to spend negative currency amount \(amount) for \(code). " +
+            "This is not allowed and will be assumed to be a positive amount."
+        case .virtual_currencies_spent_on_network:
+            return "VirtualCurrencies spent on the network."
+        case let .virtual_currencies_spent_on_network_error(error):
+            return "Attempt to spend VirtualCurrencies on network failed.\n\(error.localizedDescription)"
         case let .error_decoding_cached_virtual_currencies(error):
             return "Couldn't decode cached VirtualCurrencies:\n\(error)"
         }

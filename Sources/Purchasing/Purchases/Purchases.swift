@@ -1708,6 +1708,28 @@ public extension Purchases {
     @objc func invalidateVirtualCurrenciesCache() {
         self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
     }
+
+    @_spi(Internal)
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies {
+        guard self.tokenManager.enabled else {
+            let message = "Spending virtual currencies requires .with(iamEnabled: true)"
+            let error = NewErrorUtils.unsupportedError(message: message)
+            throw error
+        }
+        
+        do {
+            return try await self.virtualCurrencyManager.spendVirtualCurrencies(amounts: amounts,
+                                                                                reference: reference)
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    @_spi(Internal)
+    func spendVirtualCurrency(code: String, amount: Int, reference: String?) async throws -> VirtualCurrencies {
+        return try await spendVirtualCurrencies(amounts: [code: amount], reference: reference)
+    }
 }
 #endif
 
