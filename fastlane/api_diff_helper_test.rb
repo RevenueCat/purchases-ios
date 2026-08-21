@@ -1682,6 +1682,56 @@ class ApiDiffHelperTest < Minitest::Test
     refute_includes body, ":warning: No Slack credentials"
   end
 
+  # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
+  # with the headline claiming new API. See purchases-ios#7439.
+  def test_slack_summary_reports_an_attribute_only_modification
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
+
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
+
+    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
+    assert_includes message, "1 modification"
+    assert_includes message, "~ added @available(*, deprecated…): "
+    assert_includes message, "purchaseDate(forEntitlement"
+    refute_includes message, ":sparkles:"
+  end
+
+  def test_modified_declarations_summarizes_a_removed_attribute
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
+
+    assert_equal 1, modifications.count
+    assert_equal "removed @objc", modifications.first[:summary]
+    assert_includes modifications.first[:declaration], "expirationDate(forProductIdentifier"
+  end
+
+  # Removing @objc is a break, and the gate already lists it; a second `~` line would repeat it.
+  def test_slack_summary_lists_a_breaking_modification_once
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
+    breaks = Dir.mktmpdir do |dir|
+      path = File.join(dir, "revenuecat-api-ios.swiftinterface")
+      File.write(path, "final public class CustomerInfo {}")
+      ApiDiffHelper.breaking_changes(OBJC_REMOVED_FROM_METHOD_REPORT, path)
+    end
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "", modules: ["RevenueCat"], modifications: modifications)
+
+    assert_equal 1, message.scan("expirationDate(forProductIdentifier").count
+    refute_includes message, "modification"
+  end
+
+  def test_slack_summary_still_leads_with_new_api_when_something_was_added
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
+
+    message = ApiDiffHelper.slack_summary(
+      [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
+    )
+
+    assert message.start_with?(":sparkles: *New public API*")
+    assert_includes message, "1 new declaration, 1 modification"
+    assert_includes message, "+ public func a()"
+    assert_includes message, "~ added @available"
+  end
+
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
