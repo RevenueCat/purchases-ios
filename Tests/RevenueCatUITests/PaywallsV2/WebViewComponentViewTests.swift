@@ -400,7 +400,12 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         let configuration = WebViewRepresentable.makeConfiguration(session: nil, storeID: storeID)
 
         if #available(iOS 17.0, macOS 14.0, *) {
+            #if compiler(>=5.9)
             XCTAssertEqual(configuration.websiteDataStore.identifier, storeID)
+            #else
+            // Xcode 14 does not support the correct apis for persistence
+            XCTAssertFalse(configuration.websiteDataStore.isPersistent)
+            #endif
         } else {
             XCTAssertFalse(configuration.websiteDataStore.isPersistent)
         }
