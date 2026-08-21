@@ -113,37 +113,14 @@ private final class WebBundleTaskQueue: @unchecked Sendable {
 
     func add(_ operation: @escaping @Sendable () async -> Void) {
         self.queue.sync {
-            let id = UUID()
-            let previousTask = self.tasks.last?.task
-            let task = Task { [weak self] in
-                defer { self?.removeTask(withID: id) }
-                await previousTask?.value
-                guard !Task.isCancelled else { return }
-                await operation()
-            }
-            self.tasks.append(.init(id: id, task: task))
+            append(operation)
         }
     }
 
     func cancelAll(completion: @escaping () -> Void) {
-        Task {
-            // We need to ensure that the queue gets emptied. We cannot simply append the completion
-            // to the queue's tasks, because that too could get cleaned up by a cache invalidation
-            waitForQueueToEmpty()
-            completion()
-        }
         self.queue.sync {
             self.tasks.forEach { $0.task.cancel() }
-        }
-    }
-
-    private func waitForQueueToEmpty() {
-        let deadline = Date().addingTimeInterval(2)
-        while !tasks.isEmpty, Date() < deadline {
-            continue
-        }
-        if !tasks.isEmpty {
-            Logger.debug(Strings.web_view_cache_queue_ejection_exceeded_deadline)
+            self.append { completion() } // execute serially after all other tasks are canceled
         }
     }
 
@@ -153,6 +130,17 @@ private final class WebBundleTaskQueue: @unchecked Sendable {
         }
     }
 
+    private func append(_ operation: @escaping @Sendable () async -> Void) {
+        let id = UUID()
+        let previousTask = self.tasks.last?.task
+        let task = Task { [weak self] in
+            defer { self?.removeTask(withID: id) }
+            await previousTask?.value
+            guard !Task.isCancelled else { return }
+            await operation()
+        }
+        self.tasks.append(.init(id: id, task: task))
+    }
 }
 
 private final class WebBundlePrewarmDeduplicator {
