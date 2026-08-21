@@ -42,6 +42,7 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(1_700_000_000_000),
             "device": .object([
                 "date": .int(1_700_000_000_000),
                 "record": .object([
@@ -137,6 +138,7 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(1_700_000_000_000),
             "device": .object(["purchases": .array([])])
         ])
 
@@ -150,7 +152,8 @@ struct DimensionValueTests {
         _ values: [String: DimensionValue]
     ) async throws -> DimensionSnapshot {
         return try await DimensionResolver(
-            dimensionProviders: [StaticDimensionProvider(values: values)]
+            dimensionProviders: [StaticDimensionProvider(values: values)],
+            dateProvider: MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 1_700_000_000))
         ).snapshot()
     }
 

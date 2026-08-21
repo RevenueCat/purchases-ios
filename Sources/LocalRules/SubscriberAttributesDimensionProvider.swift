@@ -52,13 +52,11 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
 
             dimensions[attribute.key] = .object([
                 Self.valueKey: .string(attribute.value),
-                Self.updatedAtKey: .date(attribute.setTime),
-                Self.evaluatedAtKey: .date(context.date)
+                Self.updatedAtKey: .date(attribute.setTime)
             ])
         }
     }
 
-    private static let evaluatedAtKey = "evaluatedAt"
     private static let updatedAtKey = "updatedAt"
     private static let valueKey = "value"
 

@@ -127,6 +127,7 @@ struct LocalRulesEvaluatorTests {
 
         #expect(snapshot.evaluationDate == date)
         #expect(snapshot.values == [
+            "evaluatedAt": .int(5_432_000),
             "device": .object([
                 "appVersion": .string("1.2.3"),
                 "isDebugBuild": .bool(true),
@@ -427,6 +428,72 @@ struct LocalRulesEvaluatorTests {
 
         #expect(rule == nil)
         #expect(resolved.value == 0)
+    }
+
+    @Test
+    func snapshotExposesEvaluatedAtFromTheGatheringInstant() async throws {
+        let first = Date(timeIntervalSince1970: 100)
+        let later = Date(timeIntervalSince1970: 999)
+        let dateProvider = MockDateProvider(stubbedNow: first, subsequentNows: later)
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [
+                TestDimensionProvider(namespace: .device, snapshots: [["platform": .string("ios")]])
+            ],
+            dateProvider: dateProvider
+        ).snapshot()
+
+        #expect(dateProvider.invokedNowCount == 1)
+        #expect(snapshot.evaluationDate == first)
+        #expect(snapshot.values["evaluatedAt"] == .int(100_000))
+    }
+
+    @Test
+    func everyRuleInAMatchSeesTheSameEvaluatedAt() async throws {
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [],
+            dateProvider: MockDateProvider(
+                stubbedNow: Date(timeIntervalSince1970: 100),
+                subsequentNows: Date(timeIntervalSince1970: 200)
+            )
+        )
+
+        let rule = try await evaluator.match(in: [
+            TestLocalRule(
+                id: "later-clock",
+                predicate: #"{"==":[{"var":"evaluatedAt"},200000]}"#
+            ),
+            TestLocalRule(
+                id: "gathering-clock",
+                predicate: #"{"==":[{"var":"evaluatedAt"},100000]}"#
+            )
+        ])
+
+        #expect(rule?.id == "gathering-clock")
+    }
+
+    @Test
+    func evaluatedAtIsReadableFromInsideAListWalk() async throws {
+        let evaluator = Self.evaluator(
+            dimensionProviders: [
+                TestDimensionProvider(
+                    namespace: .device,
+                    snapshots: [[
+                        "purchases": .objectList([
+                            ["expiresAt": .int(50)]
+                        ])
+                    ]]
+                )
+            ],
+            date: Date(timeIntervalSince1970: 100)
+        )
+
+        let expired = #"""
+        {"some":[{"var":"device.purchases"},
+                 {"<":[{"var":"expiresAt"},{"rc.rootVar":"evaluatedAt"}]}]}
+        """#
+        let rule = try await evaluator.match(in: [TestLocalRule(id: "expired", predicate: expired)])
+
+        #expect(rule?.id == "expired")
     }
 
     @Test
