@@ -118,6 +118,9 @@
 		16A5DD1B302E7A0300E04386 /* WebBundleCacheCoordinatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A5DD17302E6A0300E04386 /* WebBundleCacheCoordinatorTests.swift */; };
 		16A5DD1C302E7A0400E04386 /* RevenueCatUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 887A5FBA2C1D036200E1A461 /* RevenueCatUI.framework */; };
 		16A7F4C12E563B89001F9FC8 /* PaywallTransition.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */; };
+		16B7EE02302F210200E04386 /* WebBundlePrewarmer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16B7EE01302F210100E04386 /* WebBundlePrewarmer.swift */; };
+		16B7EE06302F210600E04386 /* WebBundlePrewarmerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16B7EE03302F210300E04386 /* WebBundlePrewarmerTests.swift */; };
+		16B7EE08302F210800E04386 /* WebBundlePrewarmerIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16B7EE07302F210700E04386 /* WebBundlePrewarmerIntegrationTests.swift */; };
 		16A7F4C32E563B91001F9FC8 /* PaywallAnimation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */; };
 		16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */; };
 		16BCA3662E4D9AE400B39E7F /* LargeItemCacheType.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16BCA3652E4D9AE400B39E7F /* LargeItemCacheType.swift */; };
@@ -1750,6 +1753,9 @@
 		16A5DD17302E6A0300E04386 /* WebBundleCacheCoordinatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundleCacheCoordinatorTests.swift; sourceTree = "<group>"; };
 		169FF4EB2F4E014B00D2F8ED /* ColorComputationHelpersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorComputationHelpersTests.swift; sourceTree = "<group>"; };
 		16A7F4BF2E563B89001F9FC8 /* PaywallTransition.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallTransition.swift; sourceTree = "<group>"; };
+		16B7EE01302F210100E04386 /* WebBundlePrewarmer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundlePrewarmer.swift; sourceTree = "<group>"; };
+		16B7EE03302F210300E04386 /* WebBundlePrewarmerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundlePrewarmerTests.swift; sourceTree = "<group>"; };
+		16B7EE07302F210700E04386 /* WebBundlePrewarmerIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBundlePrewarmerIntegrationTests.swift; sourceTree = "<group>"; };
 		16A7F4C22E563B91001F9FC8 /* PaywallAnimation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallAnimation.swift; sourceTree = "<group>"; };
 		16A7F4C52E564B97001F9FC8 /* TransitionModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TransitionModifier.swift; sourceTree = "<group>"; };
 		16A9F7B62FAA22D0008E8A4D /* VideoComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoComponentViewTests.swift; sourceTree = "<group>"; };
@@ -3573,6 +3579,7 @@
 			isa = PBXGroup;
 			children = (
 				16A5DD0F302E609A00E04386 /* WebBundleCacheCoordinator.swift */,
+				16B7EE01302F210100E04386 /* WebBundlePrewarmer.swift */,
 				16A5DD13302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift */,
 			);
 			path = Cache;
@@ -3582,6 +3589,8 @@
 			isa = PBXGroup;
 			children = (
 				16A5DD17302E6A0300E04386 /* WebBundleCacheCoordinatorTests.swift */,
+				16B7EE07302F210700E04386 /* WebBundlePrewarmerIntegrationTests.swift */,
+				16B7EE03302F210300E04386 /* WebBundlePrewarmerTests.swift */,
 				16A5DD16302E6A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift */,
 			);
 			path = Cache;
@@ -8339,6 +8348,8 @@
 				16A5DD19302E7A0100E04386 /* WebViewDataStoreIdentifierStoreTests.swift in Sources */,
 				16A5DD1A302E7A0200E04386 /* WebViewWebsiteDataStoreSweeperTests.swift in Sources */,
 				16A5DD1B302E7A0300E04386 /* WebBundleCacheCoordinatorTests.swift in Sources */,
+				16B7EE08302F210800E04386 /* WebBundlePrewarmerIntegrationTests.swift in Sources */,
+				16B7EE06302F210600E04386 /* WebBundlePrewarmerTests.swift in Sources */,
 				FA6ABC7C2A81673F00353AF7 /* SystemFontRegistryTests.swift in Sources */,
 				751BE2CF2EC64FE50011C4CB /* PostReceiptDataOperationFactoryTests.swift in Sources */,
 				57D04BB827D947C6006DAC06 /* HTTPResponseTests.swift in Sources */,
@@ -8516,6 +8527,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				16A5DD10302E609A00E04386 /* WebBundleCacheCoordinator.swift in Sources */,
+				16B7EE02302F210200E04386 /* WebBundlePrewarmer.swift in Sources */,
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
 				73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */,
