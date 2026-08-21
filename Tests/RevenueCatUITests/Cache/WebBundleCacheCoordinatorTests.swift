@@ -130,8 +130,11 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         let sweepFinished = self.expectation(description: "sweep finished")
         let gate = LoadGate()
         let observingEarlySweep: Atomic<Bool> = true
+        let didSignalPrewarmStart: Atomic<Bool> = false
         let prewarmer = makeCacheWarmer { _, _ in
-            prewarmStarted.fulfill()
+            if !didSignalPrewarmStart.getAndSet(true) {
+                prewarmStarted.fulfill()
+            }
             await gate.wait()
         }
         let coordinator = WebBundleCacheCoordinator(
@@ -145,7 +148,10 @@ final class WebBundleCacheCoordinatorTests: TestCase {
                 sweepFinished.fulfill()
             }
         )
-        await bus.publish([Self.urls[0]])
+        let urls = (1...50).map { _ in
+            URLWithValidation(url: URL(string: "https://example.com/\(UUID().uuidString)")!, checksum: nil)
+        }
+        await bus.publish(urls)
         await self.fulfillment(of: [prewarmStarted], timeout: 1)
         await bus.clearCache()
 
