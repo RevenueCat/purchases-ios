@@ -50,6 +50,8 @@ struct PaywallViewConfiguration {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+
+        PurchasesUIService.activateIfNeeded()
     }
 
 }

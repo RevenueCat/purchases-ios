@@ -131,6 +131,12 @@
       "paywall" : null
     }
   ],
+  "placements" : {
+    "fallback_offering_id" : "default",
+    "offering_ids_by_placement" : {
+
+    }
+  },
   "ui_config" : {
     "app" : {
       "colors" : {
