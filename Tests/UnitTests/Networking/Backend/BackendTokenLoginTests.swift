@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable @_spi(Experimental) import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class BaseBackendTokenLoginTests: BaseBackendTests {
 
