@@ -97,7 +97,7 @@ enum PredicateConformanceRunner {
 
         case "unresolvedVariable":
             if case .unresolvedVariable(let path) = error {
-                if let expectedPath = expected.path {
+                if let expectedPath = expected.unresolvedPath {
                     return path == expectedPath
                 }
                 return true
