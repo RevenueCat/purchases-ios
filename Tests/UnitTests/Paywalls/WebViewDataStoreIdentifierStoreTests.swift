@@ -26,6 +26,17 @@ final class WebViewDataStoreIdentifierStoreTests: TestCase {
         XCTAssertEqual(firstIdentifier, secondIdentifier)
     }
 
+    func testConcurrentIdentifierRequestsReturnTheSameIdentifier() throws {
+        let store = try self.makeStore()
+        let identifiers: Atomic<[UUID]> = .init([])
+
+        DispatchQueue.concurrentPerform(iterations: 100) { _ in
+            identifiers.modify { $0.append(store.identifier()) }
+        }
+
+        XCTAssertEqual(Set(identifiers.value).count, 1)
+    }
+
     func testRetiringIdentifierEnqueuesItAndRotatesOnNextUse() throws {
         let store = try self.makeStore()
         let firstIdentifier = store.identifier()

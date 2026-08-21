@@ -391,8 +391,19 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
     }
 
     func testConfigurationAllowsMediaPlaybackWithoutUserGesture() {
-        let configuration = WebViewRepresentable.makeConfiguration(session: nil)
+        let configuration = WebViewRepresentable.makeConfiguration(session: nil, storeID: UUID())
         XCTAssertTrue(configuration.mediaTypesRequiringUserActionForPlayback.isEmpty)
+    }
+
+    func testConfigurationUsesRequestedPersistentStoreWhenAvailable() {
+        let storeID = UUID()
+        let configuration = WebViewRepresentable.makeConfiguration(session: nil, storeID: storeID)
+
+        if #available(iOS 17.0, macOS 14.0, *) {
+            XCTAssertEqual(configuration.websiteDataStore.identifier, storeID)
+        } else {
+            XCTAssertFalse(configuration.websiteDataStore.isPersistent)
+        }
     }
 
     func testProcessTerminationInvokesCallbackOncePerCall() {

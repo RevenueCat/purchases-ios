@@ -126,7 +126,7 @@ private struct HostedWebViewComponentView: View {
             WebViewRepresentable(
                 url: self.url,
                 instance: self.instance,
-                idStore: .init() // need to wire it in somewhere… maybe we do shared instead
+                idStore: .shared
             )
             .webViewSize(
                 self.size,
@@ -223,7 +223,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     static func makeConfiguration(session: WebViewSession?, storeID: UUID) -> WKWebViewConfiguration {
         let configuration = WKWebViewConfiguration()
-        configuration.setPersistentStoreIfAble(withId: storeID)
+        configuration.setPersistentStoreIfAble(withID: storeID)
         configuration.userContentController = WKUserContentController()
 
         if let session {
