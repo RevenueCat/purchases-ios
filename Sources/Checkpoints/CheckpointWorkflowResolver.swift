@@ -171,20 +171,26 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        // Same reason the config is rechecked: an answer worked out for a customer who has since
+        // signed out is not an answer about the one here now, `noMatch` included.
+        guard self.currentCustomerIs(appUserID) else {
+            return .noAction(.configurationUnavailable)
+        }
+
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
         let resolution = await self.resolve(rule, appUserID: appUserID)
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
-            return .noAction(.configurationUnavailable)
-        }
-        // Same reason the config is rechecked: a customer who signed out mid-resolution must not be
-        // served what was resolved for the previous one.
-        guard self.appUserIDProvider() == appUserID else {
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
+              self.currentCustomerIs(appUserID) else {
             return .noAction(.configurationUnavailable)
         }
 
         return resolution
+    }
+
+    private func currentCustomerIs(_ appUserID: String) -> Bool {
+        return self.appUserIDProvider() == appUserID
     }
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.

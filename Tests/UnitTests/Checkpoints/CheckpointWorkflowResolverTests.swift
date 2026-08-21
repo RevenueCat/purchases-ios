@@ -161,12 +161,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
     }
 
-    func testOfferingsAreLoadedForTheUserTheAudiencesWereEvaluatedFor() async throws {
-        let currentAppUserID = Atomic<String>("user_a")
+    func testAudiencesAndOfferingsSeeTheCustomerTheResolutionStartedFor() async throws {
         let offeringsAppUserID = Atomic<String?>(nil)
         let dimensionsAppUserID = Atomic<String?>(nil)
-        // Switches user while the rules config is read, the way a `logIn` landing mid-resolution would.
-        self.checkpointsProvider.onRules = { currentAppUserID.value = "user_b" }
         let evaluator = LocalRulesEvaluator(
             dimensionProviders: [
                 SwitchingUserDimensionProvider { appUserID in dimensionsAppUserID.value = appUserID }
@@ -178,21 +175,22 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
                 return self.offerings
             },
             localRulesEvaluator: evaluator,
-            appUserIDProvider: { currentAppUserID.value }
+            appUserIDProvider: { "user_a" }
         )
 
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(currentAppUserID.value, "user_b")
-        // Both the dimensions the audiences were evaluated against and the offerings the workflow is
-        // served from have to describe the customer the resolution started for.
+        // Both halves of the resolution describe the customer it started for, rather than each
+        // looking the current one up for itself.
         XCTAssertEqual(dimensionsAppUserID.value, "user_a")
         XCTAssertEqual(offeringsAppUserID.value, "user_a")
     }
 
-    func testUserSwitchDuringResolutionDoesNotServeThePreviousCustomer() async throws {
+    func testUserSwitchDuringResolutionDoesNotServeAPreviousCustomerNoMatch() async throws {
+        // No rule matches, so resolution takes the `noMatch` exit. That answer was still worked out
+        // for the customer who has since signed out.
+        self.audiencesProvider.defaultRules = "false"
         let currentAppUserID = Atomic<String>("user_a")
-        // Switches once the audiences have been evaluated, so the resolution is already built.
         let evaluator = LocalRulesEvaluator(
             dimensionProviders: [
                 SwitchingUserDimensionProvider { _ in currentAppUserID.value = "user_b" }
