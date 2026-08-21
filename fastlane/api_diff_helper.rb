@@ -127,10 +127,27 @@ module ApiDiffHelper
       raise("No buildable scheme covers #{Array(modules).join(', ')}")
   end
 
+  BUILD_LOG_MUTEX = Mutex.new
+
+  # The nine builds share one stdout, so a bare stream would interleave into something unreadable.
+  # Tagging each line with the SDK keeps the log greppable per build, and streaming rather than
+  # buffering keeps output flowing so CircleCI's no-output timeout never fires. The mutex holds a
+  # whole line together: xcodebuild echoes multi-kilobyte compiler invocations, and a write that
+  # large is not atomic.
+  def stream_build_output(sdk, output)
+    output.each_line do |line|
+      BUILD_LOG_MUTEX.synchronize do
+        $stdout.puts("[#{sdk}] #{line.chomp}")
+        $stdout.flush
+      end
+    end
+  end
+
   # One platform runs per thread, so this avoids fastlane's `sh` and `Dir.chdir`: both mutate
   # process-global state (the default encoding and the working directory) that the other builds
   # share. Failures come back as a result rather than an exception for the same reason: raising
-  # inside a thread only surfaces wherever its value happens to be read.
+  # inside a thread only surfaces wherever its value happens to be read. Every message names the
+  # SDK because PLATFORMS reuses one platform label for a device and its simulator.
   def build_swiftinterface(platform_config, scheme:, modules:, project_root:, output_dir:)
     sdk = platform_config[:sdk]
     # Concurrent builds cannot share a derived data directory.
@@ -139,9 +156,9 @@ module ApiDiffHelper
     sdk_path, status = Open3.capture2e("xcrun", "--sdk", sdk, "--show-sdk-path")
     return { success: false, error: "xcrun failed for #{sdk}: #{sdk_path.strip}" } unless status.success?
 
-    Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]}...")
+    Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]} (#{sdk})...")
 
-    built = system(
+    build_status = Open3.popen2e(
       "xcodebuild", "clean", "build",
       "-workspace", ".",
       "-scheme", scheme,
@@ -151,9 +168,17 @@ module ApiDiffHelper
       "-destination", platform_config[:destination],
       "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
       chdir: project_root
-    )
-    unless built
-      return { success: false, error: "xcodebuild failed for #{scheme} on #{platform_config[:platform]}" }
+    ) do |stdin, output, wait_thread|
+      stdin.close
+      stream_build_output(sdk, output)
+      wait_thread.value
+    end
+
+    unless build_status.success?
+      return {
+        success: false,
+        error: "xcodebuild failed for #{scheme} on #{platform_config[:platform]} (#{sdk})"
+      }
     end
 
     missing = []
@@ -170,11 +195,13 @@ module ApiDiffHelper
     if missing.any?
       return {
         success: false,
-        error: "Could not find #{missing.join(', ')} swiftinterface for #{platform_config[:platform]}"
+        error: "Could not find #{missing.join(', ')} swiftinterface for #{platform_config[:platform]} (#{sdk})"
       }
     end
 
-    Fastlane::UI.success("Generated #{Array(modules).join(', ')} #{platform_config[:platform]} swiftinterface")
+    Fastlane::UI.success(
+      "Generated #{Array(modules).join(', ')} #{platform_config[:platform]} (#{sdk}) swiftinterface"
+    )
 
     { success: true }
   end

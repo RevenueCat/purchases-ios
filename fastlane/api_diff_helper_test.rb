@@ -2,6 +2,7 @@
 # Run with: ruby fastlane/api_diff_helper_test.rb
 
 require 'minitest/autorun'
+require 'stringio'
 require 'tmpdir'
 require 'yaml'
 
@@ -1841,6 +1842,11 @@ class ApiDiffHelperTest < Minitest::Test
       log.puts(JSON.generate("argv" => ARGV, "cwd" => Dir.pwd))
     end
 
+    if ENV["FAKE_XCODEBUILD_STDOUT"]
+      puts ENV["FAKE_XCODEBUILD_STDOUT"]
+      warn ENV["FAKE_XCODEBUILD_STDOUT"].sub("stdout", "stderr")
+    end
+
     exit_code = ENV["FAKE_XCODEBUILD_EXIT"].to_i
     exit exit_code unless exit_code.zero?
 
@@ -2000,6 +2006,32 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
+  # PLATFORMS reuses one platform label for a device and its simulator, so a failure reported by
+  # label alone cannot say which of the two builds died.
+  def test_a_failure_names_the_sdk_and_not_only_the_platform
+    simulator, device = ApiDiffHelper::PLATFORMS.values_at(0, 1)
+    assert_equal simulator[:platform], device[:platform],
+                 "this test only means something while the two share a label"
+
+    with_fake_toolchain("FAKE_XCODEBUILD_EXIT" => "65") do |project_root, output_dir, _log|
+      errors = [simulator, device].map { |platform| build(platform, project_root, output_dir)[:error] }
+
+      assert_match(/iphonesimulator/, errors.first)
+      assert_match(/iphoneos/, errors.last)
+      assert_equal 2, errors.uniq.count, "the two failures must be tellable apart"
+    end
+  end
+
+  # Nine builds write to one stdout at once, so an untagged line cannot be traced to its build.
+  def test_build_output_is_tagged_with_the_sdk_that_produced_it
+    with_fake_toolchain("FAKE_XCODEBUILD_STDOUT" => "note: stdout marker") do |project_root, output_dir, _log|
+      printed = capture_stdout { build(ApiDiffHelper::PLATFORMS[1], project_root, output_dir) }
+
+      assert_includes printed, "[iphoneos] note: stdout marker"
+      assert_includes printed, "[iphoneos] note: stderr marker", "stderr has to be tagged too"
+    end
+  end
+
   # A build can succeed and still produce nothing when BUILD_LIBRARY_FOR_DISTRIBUTION stops taking.
   def test_a_build_that_emits_no_interface_is_reported
     with_fake_toolchain("FAKE_XCODEBUILD_SKIP_INTERFACE" => "1") do |project_root, output_dir, _log|
@@ -2037,6 +2069,15 @@ class ApiDiffHelperTest < Minitest::Test
     refute_nil source, "the generate_swiftinterface lane moved; update this test"
 
     source
+  end
+
+  def capture_stdout
+    original = $stdout
+    $stdout = StringIO.new
+    yield
+    $stdout.string
+  ensure
+    $stdout = original
   end
 
   def with_env(overrides)
