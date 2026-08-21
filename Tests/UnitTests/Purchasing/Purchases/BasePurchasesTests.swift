@@ -505,6 +505,7 @@ extension BasePurchasesTests {
                          mockAdsAPI: MockAdsAPI) {
             let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
             let identity = IdentityAPI(backendConfig: backendConfig)
+            let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
             let webBilling = WebBillingAPI(backendConfig: backendConfig)
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -517,6 +518,7 @@ extension BasePurchasesTests {
             self.init(backendConfig: backendConfig,
                       customerAPI: customer,
                       identityAPI: identity,
+                      tokenAPI: token,
                       offeringsAPI: offerings,
                       webBillingAPI: webBilling,
                       offlineEntitlements: offlineEntitlements,

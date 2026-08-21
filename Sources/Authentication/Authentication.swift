@@ -65,6 +65,10 @@ public final class Authentication: NSObject {
         self.systemInfo = systemInfo
         self.internalDelegate = internalDelegate
         super.init()
+
+        tokenManager.reportError = { [weak self] in
+            self?.reportAuthenticationError($0)
+        }
     }
 
     /// Provide an app-specific alias for the current user
@@ -113,6 +117,18 @@ public final class Authentication: NSObject {
             }
         }
 
+    }
+
+    /// Log in to the SDK using the provided identity token
+    ///
+    /// - Warning: If the SDK is already logged in using a non-anonymous identity,
+    /// then a subsequent invocation of this method will *link* the two identities together.
+    /// - Parameters:
+    ///   - token: The ``Identity`` token for the user
+    ///   - completion: A handler invoked after logging in has finished.
+    @objc(logInUsingToken:completion:)
+    public func logIn(using token: Identity, completion: @escaping (CustomerInfo?, PublicError?) -> Void) {
+        self.logIn(using: token, userInitiated: true, completion: completion)
     }
 
     /// Log the current identity out
@@ -168,10 +184,44 @@ public final class Authentication: NSObject {
 
     // MARK: - Internals
 
+    internal func logIn(using identity: Identity,
+                        userInitiated: Bool,
+                        completion: ((CustomerInfo?, PublicError?) -> Void)?) {
+        guard tokenManager.enabled else {
+            let error = NewErrorUtils.unsupportedError(message: "Token login requires .with(iamEnabled: true)")
+            self.operationDispatcher.dispatchOnMainThread {
+                completion?(nil, error.asPublicError)
+            }
+            if userInitiated == false { self.reportAuthenticationError(error.asPublicError) }
+            return
+        }
+
+        self.identityManager.logIn(identity: identity) { result in
+            if let completion {
+                self.operationDispatcher.dispatchOnMainThread {
+                    completion(result.value?.info, result.error?.asPublicError)
+                }
+            }
+
+            switch result {
+            case .success(let result):
+                self.internalDelegate?.authenticatorDidLogIn(info: result.info)
+            case .failure(let error):
+                if userInitiated == false {
+                    self.reportAuthenticationError(error.asPublicError)
+                }
+            }
+
+        }
+
+    }
+
     internal func logOut(userInitiated: Bool, completion: ((CustomerInfo?, PublicError?) -> Void)?) {
         guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
             let error = NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError
-            completion?(nil, error)
+            self.operationDispatcher.dispatchOnMainThread {
+                completion?(nil, error)
+            }
             if userInitiated == false { self.reportAuthenticationError(error) }
             return
         }

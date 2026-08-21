@@ -56,6 +56,7 @@ class MockBackend: Backend {
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: MockTokenAPI(backendConfig: backendConfig),
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,

@@ -6,7 +6,7 @@
 import Nimble
 import XCTest
 
-@testable @_spi(Internal) import RevenueCat
+@testable @_spi(Internal) @_spi(Experimental) import RevenueCat
 
 class IdentityManagerTests: TestCase {
 
@@ -17,6 +17,7 @@ class IdentityManagerTests: TestCase {
     private var mockAttributeSyncing: MockAttributeSyncing!
 
     private var mockIdentityAPI: MockIdentityAPI!
+    private var mockTokenAPI: MockTokenAPI!
     private var mockCustomerInfo: CustomerInfo!
     private var mockSystemInfo: MockSystemInfo!
 
@@ -35,6 +36,7 @@ class IdentityManagerTests: TestCase {
         try super.setUpWithError()
 
         self.mockIdentityAPI = try XCTUnwrap(mockBackend.identity as? MockIdentityAPI)
+        self.mockTokenAPI = try XCTUnwrap(mockBackend.token as? MockTokenAPI)
         self.mockCustomerInfo = .emptyInfo
 
         self.mockSystemInfo = MockSystemInfo(finishTransactions: false)
@@ -429,6 +431,201 @@ class IdentityManagerTests: TestCase {
         }
 
         expect(self.mockDeviceCache.invokedCopySubscriberAttributes) == false
+    }
+
+    // MARK: - LogIn with Identity (IAM)
+
+    func testLogInWithIdentityFailsInUIPreviewMode() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+        let manager = create(appUserID: nil)
+
+        let receivedResult = waitUntilValue { completed in
+            manager.logIn(identity: .anonymous, completion: completed)
+        }
+
+        expect(receivedResult?.error) == .unsupportedInUIPreviewMode()
+        expect(self.mockTokenAPI.invokedLogIn) == false
+    }
+
+    func testLogInWithIdentitySyncsAttributes() {
+        let manager = self.create(appUserID: "old_user")
+
+        manager.logIn(identity: .anonymous) { _ in }
+
+        expect(self.mockAttributeSyncing.invokedSyncAttributesUserIDs) == ["old_user"]
+    }
+
+    func testLogInWithIdentityCallsTokenAPILoginWithTheCurrentAppUserID() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "old_user"
+        self.mockTokenAPI.stubbedLogInCompletionResult = .failure(.missingAppUserID())
+
+        waitUntil { completed in
+            manager.logIn(identity: .anonymous) { _ in completed() }
+        }
+
+        expect(self.mockTokenAPI.invokedLogInCount) == 1
+        expect(self.mockTokenAPI.invokedLogInParameters?.currentAppUserID) == "old_user"
+    }
+
+    func testLogInWithIdentityPassesTokenAPIErrors() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "old_user"
+        let stubbedError: BackendError = .missingAppUserID()
+        self.mockTokenAPI.stubbedLogInCompletionResult = .failure(stubbedError)
+
+        let receivedResult = waitUntilValue { completed in
+            manager.logIn(identity: .anonymous, completion: completed)
+        }
+
+        expect(receivedResult?.error) == stubbedError
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
+    }
+
+    func testLogInWithIdentityClearsCachesAndFetchesCustomerInfoOnSuccess() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "old_user"
+        let tokenResponse = TokenResponse(accessToken: "access-token",
+                                          idToken: "id-token",
+                                          refreshToken: "refresh-token",
+                                          scope: "openid offline_access",
+                                          expiresIn: 3600)
+        self.mockTokenAPI.stubbedLogInCompletionResult = .success((tokenResponse, "new_user_id"))
+        self.mockCustomerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
+
+        let receivedResult = waitUntilValue { completed in
+            manager.logIn(identity: .anonymous, completion: completed)
+        }
+
+        expect(receivedResult?.value?.info) == mockCustomerInfo
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == true
+        expect(self.mockCustomerInfoManager.invokedCustomerInfoParameters?.appUserID) == "new_user_id"
+    }
+
+    func testLogInWithIdentityCopiesAttributesToNewUserIfPreviousUserWasAnonymous() {
+        let manager = self.create(appUserID: nil)
+        let anonymousUserID = manager.currentAppUserID
+        let tokenResponse = TokenResponse(accessToken: "access-token",
+                                          idToken: nil,
+                                          refreshToken: "refresh-token",
+                                          scope: "openid offline_access",
+                                          expiresIn: 3600)
+        self.mockTokenAPI.stubbedLogInCompletionResult = .success((tokenResponse, "new_user_id"))
+        self.mockCustomerInfoManager.stubbedCustomerInfoResult = .success(mockCustomerInfo)
+
+        waitUntil { completed in
+            manager.logIn(identity: .anonymous) { _ in completed() }
+        }
+
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesCount) == 1
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.oldAppUserID) == anonymousUserID
+        expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.newAppUserID) == "new_user_id"
+    }
+
+    // MARK: - RevokeCurrentAccessToken
+
+    func testRevokeCurrentAccessTokenFailsInUIPreviewMode() {
+        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
+        self.mockSystemInfo = MockSystemInfo(
+            platformInfo: nil,
+            finishTransactions: false,
+            dangerousSettings: dangerousSettings
+        )
+        let manager = create(appUserID: "my_user_id")
+
+        let receivedError = waitUntilValue { completed in
+            manager.revokeCurrentAccessToken { error in completed(error as NSError?) }
+        }
+
+        expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
+        expect(self.mockTokenAPI.invokedRevokeAccessTokens) == false
+    }
+
+    func testRevokeCurrentAccessTokenDoesNothingWhenTokenManagerIsDisabled() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        let receivedError = waitUntilValue { completed in
+            manager.revokeCurrentAccessToken(completion: completed)
+        }
+
+        expect(receivedError).to(beNil())
+        expect(self.mockTokenAPI.invokedRevokeAccessTokens) == false
+    }
+
+    func testRevokeCurrentAccessTokenCallsTokenAPIWhenTokenManagerIsEnabled() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        let receivedError = waitUntilValue { completed in
+            manager.revokeCurrentAccessToken(completion: completed)
+        }
+
+        expect(receivedError).to(beNil())
+        expect(self.mockTokenAPI.invokedRevokeAccessTokensCount) == 1
+        expect(self.mockTokenAPI.invokedRevokeAccessTokensParametersList) == ["myUser"]
+    }
+
+    func testRevokeCurrentAccessTokenPassesThroughTokenAPIErrors() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+        self.mockTokenAPI.stubbedRevokeAccessTokensResult = .missingAppUserID()
+
+        let receivedError = waitUntilValue { completed in
+            manager.revokeCurrentAccessToken { error in completed(error as NSError?) }
+        }
+
+        expect(receivedError?.code) == ErrorCode.invalidAppUserIdError.rawValue
+    }
+
+    // MARK: - LogOut with IAM enabled
+
+    func testLogOutDoesNotRevokeTokensWhenTokenManagerIsDisabled() {
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+
+        waitUntil { completed in
+            manager.logOut { _ in completed() }
+        }
+
+        expect(self.mockTokenAPI.invokedRevokeTokens) == false
+    }
+
+    func testLogOutRevokesTokensForTheCurrentUserWhenTokenManagerIsEnabled() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+        // Short-circuits `performLogOut`/`performLogIn` so this test only exercises the revocation call.
+        self.mockTokenAPI.stubbedRevokeTokensResult = .missingAppUserID()
+
+        waitUntil { completed in
+            manager.logOut { _ in completed() }
+        }
+
+        expect(self.mockTokenAPI.invokedRevokeTokensCount) == 1
+        expect(self.mockTokenAPI.invokedRevokeTokensParametersList) == ["myUser"]
+    }
+
+    func testLogOutPassesThroughTokenRevocationErrorsWithoutLoggingOut() {
+        self.mockTokenManager = MockTokenManager(enabled: true)
+        let manager = self.create(appUserID: nil)
+        self.mockDeviceCache.stubbedAppUserID = "myUser"
+        self.mockTokenAPI.stubbedRevokeTokensResult = .missingAppUserID()
+
+        let receivedError = waitUntilValue { completed in
+            manager.logOut { error in completed(error as NSError?) }
+        }
+
+        expect(receivedError?.code) == ErrorCode.invalidAppUserIdError.rawValue
+        // The cache was not reset for a new (anonymous) user because revocation failed.
+        expect(self.mockDeviceCache.invokedClearCachesForAppUserID) == false
     }
 
     // MARK: - Switch user

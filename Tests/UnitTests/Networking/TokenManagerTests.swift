@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@testable @_spi(Internal) import RevenueCat
 
 class TokenManagerTests: TestCase {
 
@@ -277,6 +277,144 @@ class TokenManagerTests: TestCase {
         manager.reportError?(expectedError)
 
         expect(receivedError) == expectedError
+    }
+
+    // MARK: - currentIdentitySources
+
+    func testCurrentIdentitySourcesIsNilWhenThereIsNoCurrentIDToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+
+        expect(manager.currentIdentitySources).to(beNil())
+    }
+
+    func testCurrentIdentitySourcesIsNilWhenTheIDTokenIsNotAValidJWT() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = "not-a-jwt"
+
+        expect(manager.currentIdentitySources).to(beNil())
+    }
+
+    func testCurrentIdentitySourcesIsNilWhenTheAmrClaimIsMissing() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(payload: ["sub": "abc"])
+
+        expect(manager.currentIdentitySources).to(beNil())
+    }
+
+    func testCurrentIdentitySourcesParsesKnownSourcesFromTheAmrClaim() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: ["oidc", "google"])
+
+        expect(manager.currentIdentitySources) == [.oidc, .google]
+    }
+
+    func testCurrentIdentitySourcesFiltersOutUnrecognizedAmrValues() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: ["some-unknown-value", "anonymous"])
+
+        expect(manager.currentIdentitySources) == [.anonymous]
+    }
+
+    func testCurrentIdentitySourcesIsEmptyArrayWhenAmrClaimIsEmpty() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: [])
+
+        expect(manager.currentIdentitySources) == []
+    }
+
+    // MARK: - isCurrentIdentityAnonymous
+
+    func testIsCurrentIdentityAnonymousIsFalseWhenThereAreNoIdentitySources() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+
+        expect(manager.isCurrentIdentityAnonymous) == false
+    }
+
+    func testIsCurrentIdentityAnonymousIsFalseWhenTheAmrClaimIsEmpty() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: [])
+
+        expect(manager.isCurrentIdentityAnonymous) == false
+    }
+
+    func testIsCurrentIdentityAnonymousIsTrueWhenEveryIdentitySourceIsAnonymous() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: ["anonymous", "anonymous"])
+
+        expect(manager.isCurrentIdentityAnonymous) == true
+    }
+
+    func testIsCurrentIdentityAnonymousIsFalseWhenAnyIdentitySourceIsNotAnonymous() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: ["anonymous", "oidc"])
+
+        expect(manager.isCurrentIdentityAnonymous) == false
+    }
+
+    // MARK: - currentIdentitySource
+
+    func testCurrentIdentitySourceIsNilWhenThereAreNoIdentitySources() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+
+        expect(manager.currentIdentitySource).to(beNil())
+    }
+
+    func testCurrentIdentitySourceIsNilWhenTheAmrClaimIsEmpty() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: [])
+
+        expect(manager.currentIdentitySource).to(beNil())
+    }
+
+    func testCurrentIdentitySourceReturnsTheLastIdentitySource() throws {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        manager.currentUserProvider = self.userProvider
+        manager.currentIDToken = try Self.makeIDToken(amr: ["anonymous", "oidc"])
+
+        expect(manager.currentIdentitySource) == .oidc
+    }
+
+}
+
+private extension TokenManagerTests {
+
+    /// Builds an unsigned (`alg: "none"`) JWT string with the given payload, suitable for exercising
+    /// `TokenManager`'s ID-token-derived properties, which don't validate the JWT's signature.
+    static func makeIDToken(amr: [String]? = nil, payload: [String: Any] = [:]) throws -> String {
+        var payload = payload
+        if let amr {
+            payload["amr"] = amr
+        }
+        return try Self.makeToken(header: ["alg": "none", "typ": "JWT"], payload: payload)
+    }
+
+    static func makeToken(header: [String: Any], payload: [String: Any]) throws -> String {
+        let headerData = try JSONSerialization.data(withJSONObject: header)
+        let payloadData = try JSONSerialization.data(withJSONObject: payload)
+        let signatureData = try XCTUnwrap("signature-bytes".data(using: .utf8))
+
+        return [headerData, payloadData, signatureData]
+            .map { Self.base64URLString(from: $0) }
+            .joined(separator: ".")
+    }
+
+    static func base64URLString(from data: Data) -> String {
+        return data.base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
     }
 
 }

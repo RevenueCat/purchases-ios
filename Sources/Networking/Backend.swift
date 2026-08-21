@@ -16,6 +16,7 @@ import Foundation
 class Backend {
 
     let identity: IdentityAPI
+    let token: TokenAPI
     let offerings: OfferingsAPI
     let webBilling: WebBillingAPI
     let offlineEntitlements: OfflineEntitlementsAPI
@@ -93,6 +94,7 @@ class Backend {
                      attributionFetcher: AttributionFetcher) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
+        let token = TokenAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
         let webBilling = WebBillingAPI(backendConfig: backendConfig)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -106,6 +108,7 @@ class Backend {
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: token,
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
@@ -120,6 +123,7 @@ class Backend {
     required init(backendConfig: BackendConfiguration,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
+                  tokenAPI: TokenAPI,
                   offeringsAPI: OfferingsAPI,
                   webBillingAPI: WebBillingAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
@@ -133,6 +137,7 @@ class Backend {
 
         self.customer = customerAPI
         self.identity = identityAPI
+        self.token = tokenAPI
         self.offerings = offeringsAPI
         self.webBilling = webBillingAPI
         self.offlineEntitlements = offlineEntitlements
