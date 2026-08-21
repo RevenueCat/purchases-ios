@@ -154,19 +154,27 @@ final class WebBundleCacheCoordinatorTests: TestCase {
     func testReceivedAssetURLsDoesNotStartDuplicatePrewarms() async throws {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
-        let started = self.expectation(description: "prewarm started")
+        let firstStarted = self.expectation(description: "first prewarm started")
+        let secondStarted = self.expectation(description: "second prewarm started")
         let duplicateStarted = self.expectation(description: "duplicate prewarm started")
         duplicateStarted.isInverted = true
         let gate = LoadGate()
         let recorder = await LoadRecorder()
         let prewarmer = makeCacheWarmer { url, storeID in
             let invocationCount = recorder.record(url: url, storeID: storeID)
-            if invocationCount == 1 {
-                started.fulfill()
-            } else {
-                duplicateStarted.fulfill()
+            switch url {
+            case Self.urls[0].url:
+                if invocationCount == 1 {
+                    firstStarted.fulfill()
+                    await gate.wait()
+                } else {
+                    duplicateStarted.fulfill()
+                }
+            case Self.urls[1].url:
+                secondStarted.fulfill()
+            default:
+                XCTFail("Unexpected URL: \(url)")
             }
-            await gate.wait()
         }
         let coordinator = WebBundleCacheCoordinator(
             store: store,
@@ -174,17 +182,17 @@ final class WebBundleCacheCoordinatorTests: TestCase {
             bus: bus,
             sweeper: NoOpSweeper()
         )
-        let urls = [Self.urls[0]]
 
-        await bus.publish(urls)
-        await self.fulfillment(of: [started], timeout: 1)
-        await bus.publish(urls)
-
-        await self.fulfillment(of: [duplicateStarted], timeout: 0.05)
-        let invocations = await recorder.invocations
-        XCTAssertEqual(invocations.count, 1)
+        await bus.publish([Self.urls[0]])
+        await self.fulfillment(of: [firstStarted], timeout: 1)
+        await bus.publish(Self.urls)
 
         await gate.open()
+        await self.fulfillment(of: [secondStarted], timeout: 1)
+        await self.fulfillment(of: [duplicateStarted], timeout: 0.05)
+        let invocations = await recorder.invocations
+        XCTAssertEqual(invocations.map(\.url), Self.urls.map(\.url))
+
         withExtendedLifetime(coordinator) {}
     }
 
@@ -231,7 +239,41 @@ final class WebBundleCacheCoordinatorTests: TestCase {
         withExtendedLifetime(coordinator) {}
     }
 
-    func testEmptyEventAllowsCompletedPrewarmToBeStartedAgain() async throws {
+    func testEmptyEventDoesNotResetPrewarmDeduplication() async throws {
+        let store = try self.makeStore()
+        let bus = WebBundleEventBus()
+        let firstStarted = self.expectation(description: "first prewarm started")
+        let duplicateStarted = self.expectation(description: "duplicate prewarm started")
+        duplicateStarted.isInverted = true
+        let recorder = await LoadRecorder()
+        let prewarmer = makeCacheWarmer { url, storeID in
+            switch recorder.record(url: url, storeID: storeID) {
+            case 1: firstStarted.fulfill()
+            case 2: duplicateStarted.fulfill()
+            default: break
+            }
+        }
+        let coordinator = WebBundleCacheCoordinator(
+            store: store,
+            cacheWarmer: prewarmer,
+            bus: bus,
+            sweeper: NoOpSweeper()
+        )
+        let urls = [Self.urls[0]]
+
+        await bus.publish(urls)
+        await self.fulfillment(of: [firstStarted], timeout: 1)
+        await bus.empty()
+        await bus.publish(urls)
+
+        await self.fulfillment(of: [duplicateStarted], timeout: 0.05)
+        let invocations = await recorder.invocations
+        XCTAssertEqual(invocations.count, 1)
+
+        withExtendedLifetime(coordinator) {}
+    }
+
+    func testCacheClearResetsPrewarmDeduplication() async throws {
         let store = try self.makeStore()
         let bus = WebBundleEventBus()
         let firstStarted = self.expectation(description: "first prewarm started")
@@ -254,13 +296,13 @@ final class WebBundleCacheCoordinatorTests: TestCase {
 
         await bus.publish(urls)
         await self.fulfillment(of: [firstStarted], timeout: 1)
-        await bus.empty()
-
+        await bus.clearCache()
         await bus.publish(urls)
 
         await self.fulfillment(of: [secondStarted], timeout: 1)
         let invocations = await recorder.invocations
         XCTAssertEqual(invocations.count, 2)
+        XCTAssertNotEqual(invocations[0].storeID, invocations[1].storeID)
 
         withExtendedLifetime(coordinator) {}
     }

@@ -24,6 +24,7 @@ final class WebBundleCacheCoordinator {
     private let cacheWarmer: WebBundlePrewarmer
     private let bus: WebBundleEventBus
     private let taskQueue = WebBundleTaskQueue()
+    private let prewarmDeduplicator = WebBundlePrewarmDeduplicator()
     private var job: AnyCancellable?
 
     init(
@@ -79,16 +80,20 @@ final class WebBundleCacheCoordinator {
                 case .cacheClearRequested:
                     self.store.retireCurrentIdentifier()
                     self.taskQueue.clear()
+                    self.prewarmDeduplicator.clear()
                     Task(priority: .medium) {
                         await self.scheduleSweep()
                     }
                 case .receivedAssetURLs(let urls):
                     let id = self.store.identifier()
+                    let urlsToLoad = urls.filter { self.prewarmDeduplicator.insert($0) }
                     self.taskQueue.add { [weak self] in
                         guard let self else { return }
-                        await self.cacheWarmer.prewarm(urls, storeID: id)
+                        await self.cacheWarmer.prewarm(urlsToLoad, storeID: id)
                     }
                 case .empty:
+                    break
+                @unknown default:
                     break
                 }
             }
@@ -134,4 +139,22 @@ private final class WebBundleTaskQueue: @unchecked Sendable {
         }
     }
 
+}
+
+private final class WebBundlePrewarmDeduplicator {
+    private var urls: Set<URLWithValidation> = Set()
+    private let lock: NSLock = .init()
+    init() { }
+
+    func insert(_ url: URLWithValidation) -> Bool {
+        return lock.withLock {
+            urls.insert(url).inserted
+        }
+    }
+
+    func clear() {
+        lock.withLock {
+            urls.removeAll()
+        }
+    }
 }
