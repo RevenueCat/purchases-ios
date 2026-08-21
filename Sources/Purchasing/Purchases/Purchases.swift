@@ -326,6 +326,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
+    private let webBundleEventBus: WebBundleEventBus
+
     /// The ``Configuration`` used to configure this instance, if it was created via
     /// ``Purchases/configure(with:)-3wmd0`` (or one of its overloads). Used by
     /// ``Purchases/setDefaultInstance(_:dedupingAgainst:)`` to deduplicate subsequent
@@ -354,7 +356,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
-                     currentConfiguration: Configuration?
+                     currentConfiguration: Configuration?,
+                     webBundleEventBus: WebBundleEventBus = .shared
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -825,7 +828,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                  currentConfiguration: currentConfiguration
+                  currentConfiguration: currentConfiguration,
+                  webBundleEventBus: webBundleEventBus
         )
     }
 
@@ -861,8 +865,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
-         currentConfiguration: Configuration?
+         currentConfiguration: Configuration?,
+         webBundleEventBus: WebBundleEventBus
     ) {
+        self.webBundleEventBus = webBundleEventBus
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
@@ -1198,6 +1204,9 @@ public extension Purchases {
                 return
             }
 
+            // The web view cache must retain the cache on login to support multipage paywalls and workflows
+            // making `.identityChange` an insufficient signal.
+            Task { await self.webBundleEventBus.clearCache() }
             self.updateAllCaches(fetchContext: .identityChange) {
                 completion?($0.value, $0.error)
             }
@@ -1312,6 +1321,7 @@ extension Purchases {
         }
 
         self.identityManager.switchUser(to: newAppUserID)
+        Task { await self.webBundleEventBus.clearCache() }
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)

@@ -14,7 +14,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesSubscriberAttributesTests: TestCase {
 
@@ -274,7 +274,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                              currentConfiguration: nil)
+                              currentConfiguration: nil,
+                              webBundleEventBus: .init()
+        )
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
