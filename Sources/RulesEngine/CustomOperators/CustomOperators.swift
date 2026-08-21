@@ -28,6 +28,11 @@ extension RulesEngine {
             case "rc.length":
                 return try LengthOperator.opLength(args: args, vars: vars)
 
+            case "rc.lower":
+                return try CaseOperators.opLower(args: args, vars: vars)
+            case "rc.upper":
+                return try CaseOperators.opUpper(args: args, vars: vars)
+
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)
 
