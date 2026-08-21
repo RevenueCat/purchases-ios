@@ -1,8 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  # TEMP: dev orb from https://github.com/RevenueCat/sdks-circleci-orb/pull/88
-  # Revert to a released version before merging.
-  revenuecat: revenuecat/sdks-common-config@dev:dcbe778a5b52fbfcaa4f23ceca86c52fc263c88b
+  revenuecat: revenuecat/sdks-common-config@4.6.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
