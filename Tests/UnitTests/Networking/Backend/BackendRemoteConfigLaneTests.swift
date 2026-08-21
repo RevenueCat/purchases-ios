@@ -202,6 +202,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             systemInfo: systemInfo,
             httpClientTimeout: .default,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             operationDispatcher: OperationDispatcher(),
             attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                    systemInfo: systemInfo),

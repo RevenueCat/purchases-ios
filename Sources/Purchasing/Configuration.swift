@@ -61,6 +61,7 @@ import Foundation
         let automaticDeviceIdentifierCollectionEnabled: Bool
         let diagnosticsEnabled: Bool
         let iamEnabled: Bool
+        let keychainAccessGroup: String?
     }
 
     internal let storage: Storage
@@ -84,6 +85,7 @@ import Foundation
     }
     internal var diagnosticsEnabled: Bool { self.storage.diagnosticsEnabled }
     internal var iamEnabled: Bool { self.storage.iamEnabled }
+    internal var keychainAccessGroup: String? { self.storage.keychainAccessGroup }
 
     private init(with builder: Builder) {
         self.storage = Storage(
@@ -101,7 +103,8 @@ import Foundation
             preferredLocale: builder.preferredLocale,
             automaticDeviceIdentifierCollectionEnabled: builder.automaticDeviceIdentifierCollectionEnabled,
             diagnosticsEnabled: builder.diagnosticsEnabled,
-            iamEnabled: builder.iamEnabled
+            iamEnabled: builder.iamEnabled,
+            keychainAccessGroup: builder.keychainAccessGroup
         )
     }
 
@@ -153,6 +156,7 @@ import Foundation
         private(set) var showStoreMessagesAutomatically: Bool = true
         private(set) var diagnosticsEnabled: Bool = false
         private(set) var iamEnabled: Bool = false
+        private(set) var keychainAccessGroup: String?
         private(set) var storeKitVersion: StoreKitVersion = .default
 
         /// The preferred locale for the requests.
@@ -366,9 +370,24 @@ import Foundation
         /// Set `iamEnabled`. This is *disabled* by default.
         ///
         /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
-        @_spi(Experimental)
+        ///
+        /// - SeeAlso: ``with(iamEnabled:keychainAccessGroup:)``
+        @_spi(Internal)
         @objc(withIAMEnabled:) public func with(iamEnabled: Bool) -> Builder {
             self.iamEnabled = iamEnabled
+            self.keychainAccessGroup = nil
+            return self
+        }
+
+        /// Set `iamEnabled` with a specific keychain access group. This is *disabled* by default.
+        ///
+        /// Enabling tells the SDK to prefer using token-based user sessions for communicating with the server.
+        /// Use the `keychainAccessGroup` parameter to share tokens between your app and its extensions.
+        @_spi(Internal)
+        @objc(withIAMEnabled:keychainAccessGroup:) public func with(iamEnabled: Bool,
+                                                                    keychainAccessGroup: String) -> Builder {
+            self.iamEnabled = iamEnabled
+            self.keychainAccessGroup = keychainAccessGroup
             return self
         }
 
