@@ -9,6 +9,14 @@ import Foundation
 import SwiftUI
 import RevenueCat
 
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
+
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
+import AppKit
+#endif
+
 struct OfferingDetailView: View {
 
     let offering: RevenueCat.Offering
@@ -87,6 +95,27 @@ struct OfferingDetailView: View {
                 self.purchaseButton("Buy as Product") {
                     return await self.purchaseAsProduct()
                 }
+
+                #if canImport(UIKit) && !os(watchOS)
+                if #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *),
+                   let scene = self.currentScene {
+                    Divider()
+
+                    self.purchaseButton("Purchase w/ UIScene") {
+                        return await self.purchaseAsPackage(confirmInScene: scene)
+                    }
+                }
+                #endif
+
+                #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+                if #available(macOS 15.2, *), let window = self.currentWindow {
+                    Divider()
+
+                    self.purchaseButton("Purchase w/ NSWindow") {
+                        return await self.purchaseAsPackage(confirmInWindow: window)
+                    }
+                }
+                #endif
 
                 Divider()
 
@@ -195,6 +224,56 @@ struct OfferingDetailView: View {
 
             return result
         }
+
+        #if canImport(UIKit) && !os(watchOS)
+        @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+        private func purchaseAsPackage(confirmInScene scene: UIScene) async -> PurchaseResult {
+            self.isPurchasing = true
+            defer { self.isPurchasing = false }
+
+            do {
+                let params = PurchaseParams.Builder(package: self.package)
+                    .with(confirmInScene: scene)
+                    .build()
+                let resultData = try await Purchases.shared.purchase(params)
+                self.completedPurchase(resultData)
+
+                return resultData.userCancelled ? .userCancelled : .success
+            } catch {
+                return .failure(error)
+            }
+        }
+
+        private var currentScene: UIScene? {
+            return UIApplication.shared.connectedScenes.first(where: {
+                $0.activationState == .foregroundActive
+            })
+        }
+        #endif
+
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        @available(macOS 15.2, *)
+        private func purchaseAsPackage(confirmInWindow window: NSWindow) async -> PurchaseResult {
+            self.isPurchasing = true
+            defer { self.isPurchasing = false }
+
+            do {
+                let params = PurchaseParams.Builder(package: self.package)
+                    .with(confirmInWindow: window)
+                    .build()
+                let resultData = try await Purchases.shared.purchase(params)
+                self.completedPurchase(resultData)
+
+                return resultData.userCancelled ? .userCancelled : .success
+            } catch {
+                return .failure(error)
+            }
+        }
+
+        private var currentWindow: NSWindow? {
+            return NSApplication.shared.keyWindow ?? NSApplication.shared.windows.first
+        }
+        #endif
 
         private func purchaseAsSK1Product() async -> PurchaseResult {
             self.isPurchasing = true

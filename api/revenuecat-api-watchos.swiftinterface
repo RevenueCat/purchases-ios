@@ -1794,11 +1794,13 @@ extension RevenueCat.IntroEligibility : Swift.Sendable {
 @_hasMissingDesignatedInitializers @objc(RCNonSubscriptionTransaction) final public class NonSubscriptionTransaction : ObjectiveC.NSObject {
   @objc final public let productIdentifier: Swift.String
   @objc final public let purchaseDate: Foundation.Date
+  @objc final public let originalPurchaseDate: Foundation.Date?
   @objc final public let transactionIdentifier: Swift.String
   @objc final public let storeTransactionIdentifier: Swift.String
   @objc final public let store: RevenueCat.Store
   @objc final public let price: RevenueCat.ProductPaidPrice?
   @objc final public let isSandbox: Swift.Bool
+  @objc final public let displayName: Swift.String?
   @objc override final public var description: Swift.String {
     @objc get
   }
