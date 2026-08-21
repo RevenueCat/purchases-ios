@@ -119,6 +119,22 @@ module ApiDiffHelper
        .reject { |path| path.include?("private") }
   end
 
+  BUILD_LOG_MUTEX = Mutex.new
+
+  # The nine builds share one stdout, so a bare stream would interleave into something unreadable.
+  # Tagging each line with the SDK keeps the log greppable per build, and streaming rather than
+  # buffering keeps output flowing so CircleCI's no-output timeout never fires. The mutex holds a
+  # whole line together: xcodebuild echoes multi-kilobyte compiler invocations, and a write that
+  # large is not atomic.
+  def stream_build_output(sdk, output)
+    output.each_line do |line|
+      BUILD_LOG_MUTEX.synchronize do
+        $stdout.puts("[#{sdk}] #{line.chomp}")
+        $stdout.flush
+      end
+    end
+  end
+
   # One platform runs per thread, so this avoids fastlane's `sh` and `Dir.chdir`: both mutate
   # process-global state (the default encoding and the working directory) that the other builds
   # share. Failures come back as a result rather than an exception for the same reason: raising
@@ -131,9 +147,11 @@ module ApiDiffHelper
     sdk_path, status = Open3.capture2e("xcrun", "--sdk", sdk, "--show-sdk-path")
     return { success: false, error: "xcrun failed for #{sdk}: #{sdk_path.strip}" } unless status.success?
 
-    Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]}...")
+    Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]} (#{sdk})...")
 
-    built = system(
+    # Every failure names the SDK: PLATFORMS reuses one platform label for a device and its
+    # simulator, so the label alone cannot say which of the two builds failed.
+    build_status = Open3.popen2e(
       "xcodebuild", "clean", "build",
       "-workspace", ".",
       "-scheme", scheme,
@@ -143,15 +161,26 @@ module ApiDiffHelper
       "-destination", platform_config[:destination],
       "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
       chdir: project_root
-    )
-    unless built
-      return { success: false, error: "xcodebuild failed for #{scheme} on #{platform_config[:platform]}" }
+    ) do |stdin, output, wait_thread|
+      stdin.close
+      stream_build_output(sdk, output)
+      wait_thread.value
+    end
+
+    unless build_status.success?
+      return {
+        success: false,
+        error: "xcodebuild failed for #{scheme} on #{platform_config[:platform]} (#{sdk})"
+      }
     end
 
     swiftinterface_files = find_swiftinterface_file(derived_data, sdk, scheme)
 
     if swiftinterface_files.empty?
-      return { success: false, error: "Could not find #{scheme}.swiftinterface for #{platform_config[:platform]}" }
+      return {
+        success: false,
+        error: "Could not find #{scheme}.swiftinterface for #{platform_config[:platform]} (#{sdk})"
+      }
     end
 
     FileUtils.cp(swiftinterface_files.first, "#{output_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface")
