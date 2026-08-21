@@ -55,6 +55,7 @@ class Backend {
         // same host, and a success on any of them clears it for all.
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
+                                    tokenManager: tokenManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     networkTimeout: httpClientTimeout,
@@ -322,6 +323,7 @@ private extension HTTPClient {
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   tokenManager: tokenManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
                    networkTimeout: networkTimeout,

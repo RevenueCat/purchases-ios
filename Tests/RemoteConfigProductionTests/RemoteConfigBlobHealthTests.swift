@@ -160,7 +160,7 @@ final class RemoteConfigBlobHealthTests: TestCase {
 
 }
 
-private struct ProductionTestUserProvider: CurrentUserProvider {
+private final class ProductionTestUserProvider: CurrentUserProvider {
     var currentAppUserID: String { "remote-config-production-test-user" }
     var currentUserIsAnonymous: Bool { true }
 }
