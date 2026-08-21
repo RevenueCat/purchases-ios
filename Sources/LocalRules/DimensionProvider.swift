@@ -90,9 +90,8 @@ protocol DimensionProvider: Sendable {
     /// be omitted. Throwing is reserved for a systemic failure to produce the
     /// provider's dimensions.
     ///
-    /// A user-scoped provider must describe ``DimensionContext/appUserID`` and
-    /// must not read the current user itself, or it can end up describing a
-    /// different customer than the rest of the snapshot.
+    /// A user-scoped provider describes ``DimensionContext/appUserID`` and must
+    /// not read the current user itself, or the snapshot can mix two customers.
     func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue]
 }
 

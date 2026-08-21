@@ -130,8 +130,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // Pinned for the whole resolution: the audiences and the offerings the matched workflow is
-        // served from have to describe the same customer, and the audience walk can suspend.
+        // The audience walk suspends, so pin the customer the offerings are loaded for too.
         let appUserID = self.appUserIDProvider()
         let rulesSnapshot: CheckpointRulesSnapshot
         do {

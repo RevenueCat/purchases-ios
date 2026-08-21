@@ -46,13 +46,9 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
         return dimensions
     }
 
-    /// A customer info that cannot be read contributes no dimensions instead of failing the
-    /// snapshot, which would take an otherwise resolvable evaluation down with it. Cancellation
-    /// is not a failure and propagates.
-    ///
-    /// A rule then sees a customer with no purchases rather than no customer at all, so an
-    /// absence rule such as `{"none": [purchases, ...]}` matches. See
-    /// `anUnreadableCustomerInfoLetsAbsenceRulesMatch`.
+    /// A customer info that cannot be read contributes no dimensions rather than failing the whole
+    /// snapshot. A rule then sees a customer with nothing, so an absence rule matches: see
+    /// `anUnreadableCustomerInfoLetsAbsenceRulesMatch`. Cancellation is not a failure and propagates.
     private func customerInfoDimensions(
         in context: DimensionContext
     ) async throws -> [String: DimensionValue] {
@@ -226,17 +222,12 @@ private extension CustomerInfoDimensionProvider {
         )?.compoundProductIdentifier
     }
 
-    /// Where the customer is in this subscription's lifecycle, as one value instead of a combination
-    /// every rule has to assemble for itself.
+    /// Where the customer is in this subscription's lifecycle, so a rule doesn't assemble it from
+    /// dates. Most specific first: paused whatever the dates say, then a grace period the store is
+    /// still serving through, then the trial or renewal it interrupted.
     ///
-    /// Read most specific first: a paused subscription is paused whatever its dates say, a billing
-    /// issue the store is still serving through outranks the trial or the renewal it interrupted,
-    /// and anything not currently granting access has expired.
-    ///
-    /// `in_billing_retry` and `incomplete` belong to the same vocabulary but are never reported
-    /// here. Once a grace period is over, whether the store is still retrying is something it tells
-    /// the backend and not this device, which only sees that access lapsed; a rule that needs the
-    /// distinction reads `billingIssueDetectedAt` itself.
+    /// `in_billing_retry` and `incomplete` are never reported: once a grace period is over this
+    /// device only sees that access lapsed, so a rule needing that reads `billingIssueDetectedAt`.
     static func status(of subscription: SubscriptionInfo, at date: Date) -> String {
         if subscription.autoResumeDate != nil {
             return Self.pausedStatus
