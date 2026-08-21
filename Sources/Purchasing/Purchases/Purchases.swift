@@ -667,15 +667,16 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
                 localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
-                offeringsProvider: {
+                offeringsProvider: { appUserID in
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(
-                            appUserID: identityManager.currentAppUserID,
+                            appUserID: appUserID,
                             trackDiagnostics: false,
                             completion: { result in continuation.resume(with: result) }
                         )
                     }
-                }
+                },
+                appUserIDProvider: { identityManager.currentAppUserID }
             )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()

@@ -271,6 +271,51 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func readsTheGracePeriodFromTheEvaluationDateEvenOnAStaleCustomerInfo() async throws {
+        // Cached long before the evaluation. `isActive` and `willRenew` are not asserted here on
+        // purpose: `CustomerInfo.isDateActive` falls back to the wall clock once the request date is
+        // older than its three day grace window, so they do not follow the evaluation date the way
+        // the values this provider derives do.
+        let cachedAt = Self.date("2026-05-15T00:00:00Z")
+        let provider = Self.provider(
+            subscriptions: [
+                "premium": Self.subscription(
+                    expiresDate: Self.lapsedExpiryDate,
+                    gracePeriodExpiresDate: Self.distantExpiryDate
+                )
+            ],
+            entitlements: [:],
+            requestDate: cachedAt
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+        #expect(purchase["isInGracePeriod"] == .bool(true))
+        #expect(purchase["status"] == .string("in_grace_period"))
+        #expect(purchase["evaluatedAt"] == .date(Self.evaluationDate))
+    }
+
+    @Test
+    func closesTheGracePeriodOnceTheEvaluationDatePassesIt() async throws {
+        let cachedAt = Self.date("2026-05-15T00:00:00Z")
+        let provider = Self.provider(
+            subscriptions: [
+                "premium": Self.subscription(
+                    expiresDate: Self.lapsedExpiryDate,
+                    gracePeriodExpiresDate: Self.expiredGracePeriodDate
+                )
+            ],
+            entitlements: [:],
+            requestDate: cachedAt
+        )
+
+        let purchase = try await Self.purchase(withProductIdentifier: "premium", of: provider)
+
+        #expect(purchase["isInGracePeriod"] == .bool(false))
+        #expect(purchase["gracePeriodExpiresAt"] == .date(Self.expiredGracePeriodDate))
+    }
+
+    @Test
     func aCustomerInfoThatCannotBeReadLeavesTheIdentityDimensionsUsable() async throws {
         let provider = CustomerInfoDimensionProvider(
             customerInfoProvider: { _ in throw ErrorUtils.offlineConnectionError() }
@@ -458,13 +503,15 @@ private extension CustomerInfoDimensionProviderTests {
     static func provider(
         subscriptions: [String: Any]? = nil,
         nonSubscriptions: [String: Any]? = nil,
-        entitlements: [String: Any]? = nil
+        entitlements: [String: Any]? = nil,
+        requestDate: Date = Self.requestDate
     ) -> CustomerInfoDimensionProvider {
         // swiftlint:disable:next force_try
         let customerInfo = try! Self.customerInfo(
             subscriptions: subscriptions,
             nonSubscriptions: nonSubscriptions,
-            entitlements: entitlements
+            entitlements: entitlements,
+            requestDate: requestDate
         )
 
         return CustomerInfoDimensionProvider(customerInfoProvider: { _ in customerInfo })
@@ -473,10 +520,11 @@ private extension CustomerInfoDimensionProviderTests {
     static func customerInfo(
         subscriptions: [String: Any]? = nil,
         nonSubscriptions: [String: Any]? = nil,
-        entitlements: [String: Any]? = nil
+        entitlements: [String: Any]? = nil,
+        requestDate: Date = Self.requestDate
     ) throws -> CustomerInfo {
         return try CustomerInfo(data: [
-            "request_date": Self.string(from: Self.requestDate),
+            "request_date": Self.string(from: requestDate),
             "subscriber": [
                 "original_app_user_id": "original_user",
                 "first_seen": Self.string(from: Self.firstSeenDate),

@@ -51,12 +51,17 @@ struct DimensionResolver: Sendable {
     ///
     /// For example, device `appVersion: "1.2.3"` becomes
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
-    func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
+    /// `appUserID` pins the customer for this snapshot. When nil the resolver reads the current one,
+    /// which is only right for a caller that has nothing else to keep consistent with it.
+    func snapshot(
+        customVariables: [String: DimensionValue] = [:],
+        appUserID: String? = nil
+    ) async throws -> DimensionSnapshot {
         // Both read once, so every provider below describes the same customer at the same
         // instant however long any one of them suspends for.
         let context = DimensionContext(
             date: self.dateProvider.now(),
-            appUserID: self.appUserIDProvider()
+            appUserID: appUserID ?? self.appUserIDProvider()
         )
         var values: [String: RulesEngine.Value] = [:]
 

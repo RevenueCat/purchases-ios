@@ -147,7 +147,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let fetchCount = Atomic<Int>(0)
         let evaluator = LocalRulesEvaluator(dimensionProviders: [FailingDimensionProvider()])
         let resolver = self.makeResolver(
-            offeringsProvider: {
+            offeringsProvider: { _ in
                 fetchCount.modify { $0 += 1 }
                 return self.offerings
             },
@@ -159,6 +159,28 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
         XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+    }
+
+    func testOfferingsAreLoadedForTheUserTheAudiencesWereEvaluatedFor() async throws {
+        let currentAppUserID = Atomic<String>("user_a")
+        let offeringsAppUserID = Atomic<String?>(nil)
+        // Switches user while the audience walk is suspended, the way a `logIn` landing mid-resolution would.
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [SwitchingUserDimensionProvider { currentAppUserID.value = "user_b" }]
+        )
+        let resolver = self.makeResolver(
+            offeringsProvider: { appUserID in
+                offeringsAppUserID.value = appUserID
+                return self.offerings
+            },
+            localRulesEvaluator: evaluator,
+            appUserIDProvider: { currentAppUserID.value }
+        )
+
+        _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(currentAppUserID.value, "user_b")
+        XCTAssertEqual(offeringsAppUserID.value, "user_a")
     }
 
     func testCancellationWhileCollectingDimensionsPropagates() async {
@@ -228,10 +250,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         self.workflowsProvider.stubbedGetWorkflowResult = [:]
         self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .notFound
         let fetchCount = Atomic<Int>(0)
-        let resolver = self.makeResolver {
+        let resolver = self.makeResolver(offeringsProvider: { _ in
             fetchCount.modify { $0 += 1 }
             return self.offerings
-        }
+        })
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
@@ -240,9 +262,9 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testOfferingsFetchFailureResolvesConfigurationUnavailable() async throws {
-        let resolver = self.makeResolver {
+        let resolver = self.makeResolver(offeringsProvider: { _ in
             throw ErrorUtils.networkError(message: "Offline")
-        }
+        })
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
@@ -263,10 +285,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     func testConfigGenerationChangeDuringResolutionReturnsConfigurationUnavailable() async throws {
-        let resolver = self.makeResolver {
+        let resolver = self.makeResolver(offeringsProvider: { _ in
             self.checkpointsProvider.configGeneration += 1
             return self.offerings
-        }
+        })
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
@@ -275,10 +297,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testConfigGenerationChangeDuringAudienceEvaluationSkipsResolution() async throws {
         let fetchCount = Atomic<Int>(0)
-        let resolver = self.makeResolver {
+        let resolver = self.makeResolver(offeringsProvider: { _ in
             fetchCount.modify { $0 += 1 }
             return self.offerings
-        }
+        })
         // Audiences are read live, outside the rule snapshot's generation guard, so a refresh landing mid-walk
         // leaves the match itself built from config that is already gone.
         self.audiencesProvider.onLookup = { _ in
@@ -302,10 +324,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             id: secondWorkflowID
         )
         let fetchCount = Atomic<Int>(0)
-        let resolver = self.makeResolver {
+        let resolver = self.makeResolver(offeringsProvider: { _ in
             fetchCount.modify { $0 += 1 }
             return self.offerings
-        }
+        })
 
         _ = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
@@ -665,15 +687,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func makeResolver(
-        offeringsProvider: (() async throws -> Offerings)? = nil,
-        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: [])
+        offeringsProvider: ((String) async throws -> Offerings)? = nil,
+        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: []),
+        appUserIDProvider: @escaping @Sendable () -> String = { "" }
     ) -> DefaultCheckpointWorkflowResolver {
         return DefaultCheckpointWorkflowResolver(
             checkpointsConfigProvider: self.checkpointsProvider,
             audiencesConfigProvider: self.audiencesProvider,
             localRulesEvaluator: localRulesEvaluator,
             workflowManager: self.workflowManager,
-            offeringsProvider: offeringsProvider ?? { self.offerings }
+            offeringsProvider: offeringsProvider ?? { _ in self.offerings },
+            appUserIDProvider: appUserIDProvider
         )
     }
 
@@ -758,6 +782,22 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
         return Audience(id: identifier, rules: rules)
     }
 
+}
+
+private struct SwitchingUserDimensionProvider: DimensionProvider {
+
+    let namespace: DimensionNamespace = .device
+    let onCollect: @Sendable () -> Void
+
+    init(onCollect: @escaping @Sendable () -> Void) {
+        self.onCollect = onCollect
+    }
+
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
+        await Task.yield()
+        self.onCollect()
+        return ["platform": .string("ios")]
+    }
 }
 
 private struct FailingDimensionProvider: DimensionProvider {
