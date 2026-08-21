@@ -27,8 +27,8 @@
       "expectedWarnings": { "contains": [] }
     },
     {
-      "id": "rc_root_var_var_inside_some_is_rejected_not_silently_wrong",
-      "description": "Same predicate written with var instead of rc.rootVar. The item scope has no now, and the old null-degrading lookup turned the comparison into expires < 0 and answered false for every subscription. The rule is now rejected outright, so the authoring mistake surfaces instead of shipping a wrong audience.",
+      "id": "rc_root_var_var_inside_some_cannot_reach_now",
+      "description": "Same predicate written with var instead of rc.rootVar: the item scope holds only the subscription, so the outer now is unreachable and the lookup names it instead of quietly comparing every expires against null",
       "predicate": {
         "some": [
           { "var": "subscriptions" },
