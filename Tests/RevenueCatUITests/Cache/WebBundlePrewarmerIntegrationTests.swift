@@ -25,7 +25,8 @@ final class WebBundlePrewarmerIntegrationTests: TestCase {
 
     private static let completionLimit: TimeInterval = 10
 
-    func testProductionPrewarmerLoadsAboutBlank() async {
+    func testProductionPrewarmerLoadsAboutBlank() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         let prewarmer = WebBundlePrewarmer()
         let start = Date()
 
@@ -37,7 +38,8 @@ final class WebBundlePrewarmerIntegrationTests: TestCase {
         XCTAssertEqual(self.loadLogCount, 1, self.loadLogDescription)
     }
 
-    func testProductionPrewarmerLoadsABatchOfLocalPages() async {
+    func testProductionPrewarmerLoadsABatchOfLocalPages() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
         let prewarmer = WebBundlePrewarmer(maxConcurrentLoads: 3)
         let start = Date()
 
