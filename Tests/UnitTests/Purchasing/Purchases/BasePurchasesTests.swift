@@ -130,6 +130,7 @@ class BasePurchasesTests: TestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
         self.mockRemoteConfigManager = MockRemoteConfigManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
@@ -198,6 +199,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
@@ -299,6 +301,7 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             checkpointResolver: checkpointResolver,
             dateProvider: dateProvider
