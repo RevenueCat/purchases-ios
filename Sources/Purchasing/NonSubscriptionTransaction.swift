@@ -28,6 +28,10 @@ public final class NonSubscriptionTransaction: NSObject {
     /// The date that App Store charged the user’s account.
     @objc public let purchaseDate: Date
 
+    /// The date this purchase was first made, which for a repeatable purchase is not
+    /// ``purchaseDate``. `nil` when the store never reported one.
+    @objc public let originalPurchaseDate: Date?
+
     /// The unique identifier for the transaction created by RevenueCat.
     @objc public let transactionIdentifier: String
 
@@ -43,6 +47,9 @@ public final class NonSubscriptionTransaction: NSObject {
     /// Whether or not the purchase was made in sandbox mode.
     @objc public let isSandbox: Bool
 
+    /// The display name of the product as configured in the RevenueCat dashboard.
+    @objc public let displayName: String?
+
     init?(with transaction: CustomerInfoResponse.Transaction, productID: String) {
         guard let transactionIdentifier = transaction.transactionIdentifier,
               let storeTransactionIdentifier = transaction.storeTransactionIdentifier else {
@@ -54,6 +61,8 @@ public final class NonSubscriptionTransaction: NSObject {
         self.transactionIdentifier = transactionIdentifier
         self.storeTransactionIdentifier = storeTransactionIdentifier
         self.purchaseDate = transaction.purchaseDate
+        self.originalPurchaseDate = transaction.originalPurchaseDate
+        self.displayName = transaction.displayName
         self.productIdentifier = productID
         self.store = transaction.store
         self.price = transaction.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) }
@@ -65,6 +74,8 @@ public final class NonSubscriptionTransaction: NSObject {
         <\(String(describing: NonSubscriptionTransaction.self)):
             productIdentifier=\(self.productIdentifier)
             purchaseDate=\(self.purchaseDate)
+            originalPurchaseDate=\(String(describing: self.originalPurchaseDate))
+            displayName=\(self.displayName ?? "null")
             transactionIdentifier=\(self.transactionIdentifier)
             storeTransactionIdentifier=\(self.storeTransactionIdentifier)
         >
