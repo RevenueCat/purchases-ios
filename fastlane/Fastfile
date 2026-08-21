@@ -2394,8 +2394,9 @@ platform :ios do
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
         project_root = File.expand_path("..")
         # One build per platform covers every requested module, because RevenueCatUI links
-        # RevenueCat and so emits both interfaces.
-        build_scheme = ApiDiffHelper.build_scheme_for(schemes)
+        # RevenueCat and so emits both interfaces. Asking for only the core stays on the core
+        # scheme so it does not pay to compile RevenueCatUI as well.
+        build_scheme = schemes.include?("RevenueCatUI") ? "RevenueCatUI" : "RevenueCat"
 
         threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
           Thread.new(platform_config) do |config|

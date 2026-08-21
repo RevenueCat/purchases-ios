@@ -1926,13 +1926,6 @@ class ApiDiffHelperTest < Minitest::Test
     end
   end
 
-  def test_the_build_scheme_is_the_outermost_requested_module
-    assert_equal "RevenueCatUI", ApiDiffHelper.build_scheme_for(["RevenueCat", "RevenueCatUI"])
-    assert_equal "RevenueCatUI", ApiDiffHelper.build_scheme_for(["RevenueCatUI"])
-    assert_equal "RevenueCat", ApiDiffHelper.build_scheme_for(["RevenueCat"])
-    assert_raises(RuntimeError) { ApiDiffHelper.build_scheme_for(["NotAModule"]) }
-  end
-
   def test_build_swiftinterface_copies_the_generated_interface
     platform = ApiDiffHelper::PLATFORMS.first
 
@@ -2057,9 +2050,15 @@ class ApiDiffHelperTest < Minitest::Test
   def test_the_generation_lane_builds_each_platform_once
     lane = generation_lane_source
 
-    assert_match(/build_scheme_for/, lane, "the build scheme must be derived from the requested modules")
     refute_match(/schemes\.each/, lane, "one build per platform must cover every requested module")
     assert_equal 1, lane.scan(/build_swiftinterface/).count
+  end
+
+  # Hardcoding RevenueCatUI would make scheme:RevenueCat compile the UI module too, which the
+  # update-error-codes workflow would pay for on every run.
+  def test_the_generation_lane_does_not_hardcode_the_build_scheme
+    assert_match(/build_scheme = schemes\.include\?/, generation_lane_source,
+                 "the build scheme must be derived from the requested modules")
   end
 
   private

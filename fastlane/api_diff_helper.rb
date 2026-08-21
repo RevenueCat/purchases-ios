@@ -119,14 +119,6 @@ module ApiDiffHelper
        .reject { |path| path.include?("private") }
   end
 
-  # MODULES is ordered from the base module outwards: RevenueCatUI links RevenueCat, so building
-  # the outermost requested module emits an interface for every module before it too. Verified
-  # byte-identical against building each scheme on its own.
-  def build_scheme_for(modules)
-    MODULES.reverse.find { |name| Array(modules).include?(name) } ||
-      raise("No buildable scheme covers #{Array(modules).join(', ')}")
-  end
-
   BUILD_LOG_MUTEX = Mutex.new
 
   # The nine builds share one stdout, so a bare stream would interleave into something unreadable.
