@@ -206,6 +206,23 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testUserSwitchWhileServingTheWorkflowDoesNotServeThePreviousCustomer() async throws {
+        // Switches while the offerings are loaded, so the rule already matched and only the second
+        // recheck, after `resolve`, can catch it.
+        let currentAppUserID = Atomic<String>("user_a")
+        let resolver = self.makeResolver(
+            offeringsProvider: { _ in
+                currentAppUserID.value = "user_b"
+                return self.offerings
+            },
+            currentUserProvider: AtomicCurrentUserProvider(currentAppUserID)
+        )
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
     func testCancellationWhileCollectingDimensionsPropagates() async {
         let evaluator = LocalRulesEvaluator(dimensionProviders: [CancellingDimensionProvider()])
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
