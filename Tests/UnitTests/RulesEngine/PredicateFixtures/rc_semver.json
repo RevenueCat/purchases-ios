@@ -1,0 +1,215 @@
+{
+  "fixtures": [
+    {
+      "id": "semver_equal_versions",
+      "predicate": {"===": [{"rc.semverCompare": ["1.2.3", "1.2.3"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_major_takes_precedence",
+      "predicate": {"===": [{"rc.semverCompare": ["2.0.0", "1.9.9"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_minor_breaks_major_tie",
+      "predicate": {"===": [{"rc.semverCompare": ["1.3.0", "1.2.9"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_patch_breaks_minor_tie",
+      "predicate": {"===": [{"rc.semverCompare": ["1.2.4", "1.2.3"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_compares_numerically_not_lexicographically",
+      "description": "Motivating case: the built-in < / > compare strings, which rank \"10.0.0\" below \"9.0.0\"",
+      "predicate": {"===": [{"rc.semverCompare": ["10.0.0", "9.0.0"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_returns_minus_one_when_left_is_lower",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0", "2.0.0"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_missing_patch_defaults_to_zero",
+      "description": "Concession to real-world version strings: rule authors and app versions often omit components",
+      "predicate": {"===": [{"rc.semverCompare": ["1.2", "1.2.0"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_missing_minor_and_patch_default_to_zero",
+      "predicate": {"===": [{"rc.semverCompare": ["1", "1.0.0"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_missing_component_is_zero_not_wildcard",
+      "description": "An omitted component is 0, not \"any\": \"1.2\" does not match every 1.2.x",
+      "predicate": {"===": [{"rc.semverCompare": ["1.2", "1.2.1"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_leading_zeros_compare_numerically",
+      "description": "Semver forbids leading zeros; comparing numerically accepts them instead of failing the rule",
+      "predicate": {"===": [{"rc.semverCompare": ["1.02.0", "1.2.0"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_ranks_below_release",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-alpha", "1.0.0"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_release_ranks_above_prerelease",
+      "description": "Mirror of the previous case: the release/prerelease test is asymmetric in the implementation",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0", "1.0.0-alpha"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_numeric_identifiers_compare_numerically",
+      "description": "By ASCII these would be reversed, since \"10\" sorts before \"2\"",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-2", "1.0.0-10"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_alphanumeric_compares_by_ascii",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-alpha", "1.0.0-beta"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_ascii_puts_uppercase_first",
+      "description": "ASCII order, not case-insensitive collation, which would call these equal",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-RC1", "1.0.0-rc1"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_numeric_ranks_below_alphanumeric",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-1", "1.0.0-alpha"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_prerelease_more_fields_wins_tie",
+      "description": "When every shared identifier ties, the longer identifier list has higher precedence",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-alpha", "1.0.0-alpha.1"]}, -1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_equal_prereleases",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-alpha.1", "1.0.0-alpha.1"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_core_decides_before_prerelease",
+      "description": "A prerelease only lowers precedence against an otherwise equal core",
+      "predicate": {"===": [{"rc.semverCompare": ["2.0.0-alpha", "1.0.0"]}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_build_metadata_ignored",
+      "description": "Semver §10: build metadata is not part of precedence",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0+build.1", "1.0.0+build.2"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_build_metadata_stripped_before_prerelease",
+      "description": "Build metadata is removed before the prerelease comparison, not treated as part of it",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0-alpha+b1", "1.0.0-alpha"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "semver_non_string_left_is_type_error",
+      "description": "A bare number is not a version; 1 is not \"1.0.0\"",
+      "predicate": {"rc.semverCompare": [1, "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_non_string_right_is_type_error",
+      "description": "Both operands are validated, not just the first",
+      "predicate": {"rc.semverCompare": ["1.0.0", 2]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_missing_variable_is_type_error",
+      "description": "Motivating case for throwing: returning 0 would report \"equal\" and match a >= 0 gate",
+      "predicate": {"rc.semverCompare": [{"var": "missing"}, "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_empty_string_is_type_error",
+      "predicate": {"rc.semverCompare": ["", "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_non_numeric_core_is_type_error",
+      "predicate": {"rc.semverCompare": ["1.x.0", "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_four_components_is_type_error",
+      "description": "Truncating to three components would silently ignore data the author considered meaningful",
+      "predicate": {"rc.semverCompare": ["1.2.3.4", "1.2.3"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_empty_prerelease_is_type_error",
+      "predicate": {"rc.semverCompare": ["1.0.0-", "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_invalid_prerelease_character_is_type_error",
+      "description": "Prerelease identifiers are ASCII alphanumerics and hyphens only",
+      "predicate": {"rc.semverCompare": ["1.0.0-beta_1", "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_missing_operand_is_type_error",
+      "description": "A one-sided comparison is a lowering bug, so it fails instead of comparing against null",
+      "predicate": {"rc.semverCompare": ["1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_extra_operand_is_type_error",
+      "description": "Unlike the unary custom operators, which ignore extra arguments, arity is exact here",
+      "predicate": {"rc.semverCompare": ["1.0.0", "1.0.0", "1.0.0"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
+    },
+    {
+      "id": "semver_minimum_version_gate",
+      "description": "Motivating case: a minimum-version audience built from the three-way result",
+      "predicate": {">=": [{"rc.semverCompare": [{"var": "appVersion"}, "2.1.0"]}, 0]},
+      "variables": {"appVersion": "2.1.3"},
+      "expected": true
+    }
+  ]
+}
