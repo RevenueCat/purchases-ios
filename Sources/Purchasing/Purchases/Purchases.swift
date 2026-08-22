@@ -667,26 +667,26 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 dimensionProviders: [
                     DeviceDimensionProvider(),
                     StoreDimensionProvider(),
-                    SubscriberAttributesDimensionProvider(
-                        deviceCache: deviceCache,
-                        currentUserProvider: identityManager
-                    )
-                ]
+                    SubscriberAttributesDimensionProvider(deviceCache: deviceCache),
+                    CustomerInfoDimensionProvider(customerInfoProvider: customerInfoManager)
+                ],
+                currentUserProvider: identityManager
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
                 audiencesConfigProvider: AudiencesConfigProvider(manager: remoteConfigManager),
                 localRulesEvaluator: localRulesEvaluator,
                 workflowManager: workflowManager,
-                offeringsProvider: {
+                offeringsProvider: { appUserID in
                     try await withCheckedThrowingContinuation { continuation in
                         offeringsManager.offerings(
-                            appUserID: identityManager.currentAppUserID,
+                            appUserID: appUserID,
                             trackDiagnostics: false,
                             completion: { result in continuation.resume(with: result) }
                         )
                     }
-                }
+                },
+                currentUserProvider: identityManager
             )
         } else {
             checkpointResolver = DisabledCheckpointWorkflowResolver()

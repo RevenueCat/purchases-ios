@@ -52,8 +52,9 @@ extension Store: Encodable {
 
 }
 
-private extension Store {
+extension Store {
 
+    /// The store's backend representation, or `nil` when the store is unknown.
     var name: String? {
         switch self {
         case .appStore: return "app_store"

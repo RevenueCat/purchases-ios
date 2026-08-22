@@ -94,20 +94,23 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private let audiencesConfigProvider: AudiencesConfigProviderType
     private let localRulesEvaluator: LocalRulesEvaluator
     private let workflowManager: WorkflowManager
-    private let offeringsProvider: () async throws -> Offerings
+    private let offeringsProvider: (String) async throws -> Offerings
+    private let currentUserProvider: any CurrentUserProvider
 
     init(
         checkpointsConfigProvider: CheckpointsConfigProviderType,
         audiencesConfigProvider: AudiencesConfigProviderType,
         localRulesEvaluator: LocalRulesEvaluator,
         workflowManager: WorkflowManager,
-        offeringsProvider: @escaping () async throws -> Offerings
+        offeringsProvider: @escaping (String) async throws -> Offerings,
+        currentUserProvider: any CurrentUserProvider
     ) {
         self.checkpointsConfigProvider = checkpointsConfigProvider
         self.audiencesConfigProvider = audiencesConfigProvider
         self.localRulesEvaluator = localRulesEvaluator
         self.workflowManager = workflowManager
         self.offeringsProvider = offeringsProvider
+        self.currentUserProvider = currentUserProvider
     }
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
@@ -127,6 +130,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
+        // The audience walk suspends, so pin the customer the offerings are loaded for too.
+        let appUserID = self.currentUserProvider.currentAppUserID
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
@@ -143,7 +148,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
         let rule: CheckpointRule?
         do {
-            rule = try await self.matchingRule(in: rulesSnapshot.ruleSet.rules, params: params)
+            rule = try await self.matchingRule(
+                in: rulesSnapshot.ruleSet.rules,
+                params: params,
+                appUserID: appUserID
+            )
         } catch let error as CancellationError {
             throw error
         } catch {
@@ -162,11 +171,18 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        // Same reason the config is rechecked: an answer worked out for a customer who has since
+        // signed out is not an answer about the one here now, `noMatch` included.
+        guard self.currentUserProvider.currentAppUserID == appUserID else {
+            return .noAction(.configurationUnavailable)
+        }
+
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
-        let resolution = await self.resolve(rule)
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+        let resolution = await self.resolve(rule, appUserID: appUserID)
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
+              self.currentUserProvider.currentAppUserID == appUserID else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -176,12 +192,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     /// Walks the served rules in priority order and returns the first one whose audience matches.
     private func matchingRule(
         in rules: [CheckpointRule],
-        params: CheckpointParams
+        params: CheckpointParams,
+        appUserID: String
     ) async throws -> CheckpointRule? {
         return try await self.localRulesEvaluator.match(
             in: rules,
             // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
-            customVariables: params.customVariables.mapValues(\.dimensionValue)
+            customVariables: params.customVariables.mapValues(\.dimensionValue),
+            appUserID: appUserID
         ) { rule in
             guard let audience = await self.audiencesConfigProvider.getAudience(rule.audienceId) else {
                 throw AudienceUnavailableError(audienceID: rule.audienceId)
@@ -203,16 +221,16 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return offeringID
     }
 
-    private func loadOfferings() async -> Offerings? {
+    private func loadOfferings(for appUserID: String) async -> Offerings? {
         do {
-            return try await self.offeringsProvider()
+            return try await self.offeringsProvider(appUserID)
         } catch {
             Logger.error(error.localizedDescription)
             return nil
         }
     }
 
-    private func resolve(_ rule: CheckpointRule) async -> CheckpointResolution {
+    private func resolve(_ rule: CheckpointRule, appUserID: String) async -> CheckpointResolution {
         // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
         // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
         let workflowData: WorkflowDataResult
@@ -231,26 +249,30 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             guard workflow.steps.count == 1 else {
                 return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
             }
-            return await self.resolveOffering(rule, step: initialStep)
+            return await self.resolveOffering(rule, step: initialStep, appUserID: appUserID)
         }
 
         if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
             return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
         }
 
-        return await self.resolveWorkflow(rule, workflowData: workflowData)
+        return await self.resolveWorkflow(rule, workflowData: workflowData, appUserID: appUserID)
     }
 
     /// Serves a workflow whose only step is a terminal `offering` step as an offering the app owns.
     ///
     /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
     /// than treated as unservable, since a step of this kind renders nothing.
-    private func resolveOffering(_ rule: CheckpointRule, step: WorkflowStep) async -> CheckpointResolution {
+    private func resolveOffering(
+        _ rule: CheckpointRule,
+        step: WorkflowStep,
+        appUserID: String
+    ) async -> CheckpointResolution {
         guard case let .string(offeringID)? = step.paramValues[Self.offeringIdentifierParam],
               offeringID.isNotEmpty else {
             return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
         }
-        guard let match = await self.offering(identifier: offeringID, for: rule) else {
+        guard let match = await self.offering(identifier: offeringID, for: rule, appUserID: appUserID) else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -259,10 +281,11 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     private func resolveWorkflow(
         _ rule: CheckpointRule,
-        workflowData: WorkflowDataResult
+        workflowData: WorkflowDataResult,
+        appUserID: String
     ) async -> CheckpointResolution {
         guard let offeringID = await self.offeringID(for: rule),
-              let match = await self.offering(identifier: offeringID, for: rule) else {
+              let match = await self.offering(identifier: offeringID, for: rule, appUserID: appUserID) else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -282,9 +305,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     /// isn't there. Both resolution paths need the offering and the container it came from.
     private func offering(
         identifier: String,
-        for rule: CheckpointRule
+        for rule: CheckpointRule,
+        appUserID: String
     ) async -> (offering: Offering, offerings: Offerings)? {
-        guard let offerings = await self.loadOfferings() else { return nil }
+        guard let offerings = await self.loadOfferings(for: appUserID) else { return nil }
         guard let offering = offerings.offering(identifier: identifier) else {
             Self.unservable(rule, reason: "offering '\(identifier)' is unavailable")
             return nil

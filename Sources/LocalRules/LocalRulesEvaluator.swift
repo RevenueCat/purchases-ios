@@ -33,11 +33,13 @@ final class LocalRulesEvaluator: Sendable {
 
     init(
         dimensionProviders: [any DimensionProvider],
-        dateProvider: DateProvider = DateProvider()
+        dateProvider: DateProvider = DateProvider(),
+        currentUserProvider: (any CurrentUserProvider)? = nil
     ) {
         self.dimensionResolver = DimensionResolver(
             dimensionProviders: dimensionProviders,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            currentUserProvider: currentUserProvider
         )
     }
 
@@ -47,9 +49,14 @@ final class LocalRulesEvaluator: Sendable {
     /// Developer-supplied values are available to predicates under `custom.*`.
     func match<Rule: LocalRule>(
         in rules: [Rule],
-        customVariables: [String: DimensionValue] = [:]
+        customVariables: [String: DimensionValue] = [:],
+        appUserID: String? = nil
     ) async throws -> Rule? {
-        return try await self.match(in: rules, customVariables: customVariables) { $0.predicate }
+        return try await self.match(
+            in: rules,
+            customVariables: customVariables,
+            appUserID: appUserID
+        ) { $0.predicate }
     }
 
     /// Same, for rules that don't carry their own predicate and have to look it up.
@@ -60,13 +67,17 @@ final class LocalRulesEvaluator: Sendable {
     func match<Rule: Sendable>(
         in rules: [Rule],
         customVariables: [String: DimensionValue] = [:],
+        appUserID: String? = nil,
         predicate resolvePredicate: (Rule) async throws -> String
     ) async throws -> Rule? {
         guard !rules.isEmpty else {
             return nil
         }
 
-        let snapshot = try await self.dimensionResolver.snapshot(customVariables: customVariables)
+        let snapshot = try await self.dimensionResolver.snapshot(
+            customVariables: customVariables,
+            appUserID: appUserID
+        )
 
         var firstEvaluationError: LocalRulesEvaluationError?
 

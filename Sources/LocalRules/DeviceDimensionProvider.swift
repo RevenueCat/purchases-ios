@@ -39,7 +39,7 @@ struct DeviceDimensionProvider: DimensionProvider {
         self.sdkVersion = sdkVersion
     }
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         var variables: [String: DimensionValue] = [:]
 
         if !self.appVersion.isEmpty {

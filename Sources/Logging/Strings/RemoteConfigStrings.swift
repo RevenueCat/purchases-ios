@@ -13,6 +13,7 @@ enum RemoteConfigStrings {
     case cacheURLNotAvailable
     case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointRuleSkipped(reason: String)
+    case customerInfoUnavailable(Error)
     case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
@@ -131,6 +132,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
         case let .subscriberAttributesUnavailable(error):
             return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
+        case let .customerInfoUnavailable(error):
+            return "The customer info is unavailable, so the customer's dimensions cannot be evaluated: \(error)."
         case let .invalidDimensionName(name, parentPath):
             return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
                 "a dimension name cannot be empty, whitespace-only, or contain '.'."

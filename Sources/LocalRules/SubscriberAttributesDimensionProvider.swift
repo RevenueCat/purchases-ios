@@ -19,19 +19,16 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.subscriberAttributes
 
-    private let attributesProvider: @Sendable () throws -> SubscriberAttribute.Dictionary
+    private let attributesProvider: @Sendable (String) throws -> SubscriberAttribute.Dictionary
 
-    init(
-        deviceCache: DeviceCache,
-        currentUserProvider: any CurrentUserProvider
-    ) {
-        self.init {
-            deviceCache.subscriberAttributes(appUserID: currentUserProvider.currentAppUserID)
+    init(deviceCache: DeviceCache) {
+        self.init { appUserID in
+            deviceCache.subscriberAttributes(appUserID: appUserID)
         }
     }
 
     init(
-        attributesProvider: @escaping @Sendable () throws -> SubscriberAttribute.Dictionary
+        attributesProvider: @escaping @Sendable (String) throws -> SubscriberAttribute.Dictionary
     ) {
         self.attributesProvider = attributesProvider
     }
@@ -40,10 +37,10 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
     ///
     /// A failed read contributes no dimensions rather than preventing the other
     /// dimensions from being evaluated.
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         let attributes: SubscriberAttribute.Dictionary
         do {
-            attributes = try self.attributesProvider()
+            attributes = try self.attributesProvider(context.appUserID)
         } catch {
             Logger.warn(Strings.remoteConfig.subscriberAttributesUnavailable(error))
             return [:]
@@ -56,7 +53,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
             dimensions[attribute.key] = .object([
                 Self.valueKey: .string(attribute.value),
                 Self.updatedAtKey: .date(attribute.setTime),
-                Self.evaluatedAtKey: .date(date)
+                Self.evaluatedAtKey: .date(context.date)
             ])
         }
     }
