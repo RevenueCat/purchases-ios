@@ -39,10 +39,10 @@ extension RulesEngine {
         /// for anything else.
         ///
         /// Non-strings are **not** coerced through `jsString`, even though JS
-        /// `String(x).toLowerCase()` would accept them. Coercion makes absent
-        /// data look like real data: a missing `var` resolves to `null`, so
-        /// `{"===": [{"rc.lower": {"var": "typo"}}, "null"]}` would quietly
-        /// match. Same reasoning as `rc.length` and `rc.entries`.
+        /// `String(x).toLowerCase()` would accept them. Coercion makes data of
+        /// the wrong shape look like real data: an explicit `null` would lower
+        /// to `"null"` and compare equal to that string. Same reasoning as
+        /// `rc.length` and `rc.entries`.
         private static func stringArgument(
             _ args: Value,
             vars: Scope,

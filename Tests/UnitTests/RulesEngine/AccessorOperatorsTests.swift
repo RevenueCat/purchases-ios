@@ -71,14 +71,12 @@ final class AccessorOperatorsTests: XCTestCase {
 
     func testVarWithFractionalFloatPathDoesNotMatchAdjacentIndices() throws {
         // {"var": 1.5} must not silently collapse to "1" or "2" — its
-        // rendered path is "1.5", which doesn't resolve, so the lookup
-        // misses and warns. Guards against an over-eager rounding fix to
-        // `formatNumber`.
+        // rendered path is "1.5", which doesn't resolve. Guards against an
+        // over-eager rounding fix to `formatNumber`.
         let data = Value.array([.string("zero"), .string("one"), .string("two")])
         let scope = Scope(root: data)
-        let out = try AccessorOperators.opVar(args: .float(1.5), vars: scope)
-        XCTAssertEqual(out, .null)
-        XCTAssertEqual(logger.warnings.count, 1)
-        XCTAssertTrue(logger.warnings[0].contains("1.5"))
+        XCTAssertThrowsError(try AccessorOperators.opVar(args: .float(1.5), vars: scope)) { error in
+            XCTAssertEqual(error as? RulesEngine.EvaluationError, .unresolvedVariable(path: "1.5"))
+        }
     }
 }
