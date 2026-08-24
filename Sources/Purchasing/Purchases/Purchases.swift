@@ -1266,6 +1266,8 @@ extension Purchases: InternalAuthenticatorDelegate {
     func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
         // The web view cache must retain the cache on login to support multipage paywalls and workflows
         // making `.identityChange` an insufficient signal.
+        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
+        // we would have an issue. 
         Task { await self.webBundleEventBus.clearCache() }
         self.updateAllCaches(fetchContext: .identityChange, completion: completion)
     }
