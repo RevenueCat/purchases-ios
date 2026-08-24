@@ -225,6 +225,72 @@ class WorkflowResponseTests: TestCase {
         expect(screen.offeringIdentifier) == "default"
     }
 
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSize() throws {
+        let screen = try Self.decodeWorkflowScreen(automaticallyScaleFontSize: false)
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSizeDefaultsToTrue() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.automaticallyScaleFontSize) == true
+    }
+
+    func testWorkflowScreenInitializerCanDisableAutomaticFontScaling() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            automaticallyScaleFontSize: false
+        )
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountries() throws {
+        let screen = try Self.decodeWorkflowScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesDefaultsToEmpty() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesIgnoresMalformedValue() throws {
+        let screen = try Self.decodeWorkflowScreen(zeroDecimalPlaceCountriesJSON: "\"TWN\"")
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testWorkflowScreenInitializerAcceptsZeroDecimalPlaceCountries() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            zeroDecimalPlaceCountries: ["TWN"]
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -429,6 +495,50 @@ class WorkflowResponseTests: TestCase {
         expect(step.outputs).to(beEmpty())
         expect(step.triggerActions["btn_wagcLsIVjN"]) == .step(stepId: "ztBPCwD")
         expect(step.metadata).to(beNil())
+    }
+
+}
+
+private extension WorkflowResponseTests {
+
+    static func decodeWorkflowScreen(
+        automaticallyScaleFontSize: Bool? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil
+    ) throws -> WorkflowScreen {
+        var automaticallyScaleFontSizeFragment = ""
+        if let automaticallyScaleFontSize {
+            automaticallyScaleFontSizeFragment = """
+            , "automatically_scale_font_size": \(automaticallyScaleFontSize)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
+            """
+        }
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          "default_locale": "en_US",
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)
+        }
+        """.data(using: .utf8)!
+
+        return try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
     }
 
 }

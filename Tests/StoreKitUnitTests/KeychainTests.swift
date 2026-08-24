@@ -389,10 +389,14 @@ class KeychainAccessGroupTests: TestCase {
     private static let keychainAccessGroupsEntitlement = "keychain-access-groups"
 
     private var createdIdentifiers: [(keychain: Keychain, id: String)] = []
+    private var createdTokenManagerUsers: [(tokenManager: TokenManager, userID: String)] = []
 
     override func tearDown() {
         for (keychain, id) in createdIdentifiers {
             try? keychain.deleteItem(identifier: id)
+        }
+        for (tokenManager, userID) in createdTokenManagerUsers {
+            tokenManager.deleteTokens(for: userID)
         }
         super.tearDown()
     }
@@ -423,6 +427,29 @@ class KeychainAccessGroupTests: TestCase {
     private func track(_ id: String, in keychain: Keychain) -> String {
         createdIdentifiers.append((keychain, id))
         return id
+    }
+
+    /// Builds a `TokenManager` backed by the shared test access-group `Keychain`, mirroring exactly
+    /// how `Purchases` builds its `TokenManager` from a configured `keychainAccessGroup`:
+    /// `Keychain.AccessGroup(accessGroup: $0, appIdentifier: apiKey)`, passed to
+    /// `TokenManager(enabled:storage:)`.
+    ///
+    /// - Parameters:
+    ///   - appIdentifier: Stands in for the API key `Purchases` uses as the access group's `appIdentifier`.
+    ///   - enabled: Whether IAM/token-based sessions are enabled on the returned `TokenManager`.
+    private func makeAccessGroupTokenManager(
+        appIdentifier: String = "com.revenuecat.test",
+        enabled: Bool = true
+    ) throws -> TokenManager {
+        let keychain = try makeAccessGroupKeychain(appIdentifier: appIdentifier)
+        return TokenManager(enabled: enabled, storage: keychain)
+    }
+
+    /// Registers `userID` for cleanup against `tokenManager` at tearDown.
+    @discardableResult
+    private func trackTokenManagerUser(_ userID: String, in tokenManager: TokenManager) -> String {
+        createdTokenManagerUsers.append((tokenManager, userID))
+        return userID
     }
 
     // MARK: - Service-name scoping
@@ -574,6 +601,105 @@ class KeychainAccessGroupTests: TestCase {
         try keychain.saveItem(identifier: id, contents: data(byte: 0x01))
         try keychain.modifyItem(identifier: id, contents: nil)
         expect(try keychain.containsItem(identifier: id)) == false
+    }
+
+    // MARK: - TokenManager wiring (mirrors how `Purchases` builds its `TokenManager`)
+    //
+    // `Purchases` never talks to `Keychain` directly outside of building the `TokenManager`:
+    //
+    //   let accessGroup = keychainAccessGroup.map {
+    //       Keychain.AccessGroup(accessGroup: $0, appIdentifier: apiKey)
+    //   }
+    //   let tokenManager = TokenManager(enabled: iamEnabled, storage: Keychain(access: accessGroup))
+    //
+    // These tests exercise that exact construction through `TokenManager`'s own API, confirming
+    // the configured access group actually reaches -- and is honored by -- the `TokenManager`,
+    // not just the underlying `Keychain`.
+
+    func testTokenManagerBackedByAccessGroupKeychainSavesAndReadsTokensForAnExplicitUser() throws {
+        let tokenManager = try makeAccessGroupTokenManager()
+        let userID = trackTokenManagerUser(uniqueID(), in: tokenManager)
+
+        tokenManager.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "id", for: userID)
+
+        expect(tokenManager.idToken(for: userID)) == "id"
+    }
+
+    func testTokenManagerBackedByAccessGroupKeychainRoundTripsCurrentUserTokens() throws {
+        let tokenManager = try makeAccessGroupTokenManager()
+        let userID = trackTokenManagerUser(uniqueID(), in: tokenManager)
+        let mockUserProvider = MockCurrentUserProvider(mockAppUserID: userID)
+        tokenManager.currentUserProvider = mockUserProvider
+
+        tokenManager.currentRefreshToken = "refresh-token"
+        tokenManager.currentAccessToken = "access-token"
+        tokenManager.currentIDToken = "id-token"
+
+        expect(tokenManager.currentRefreshToken) == "refresh-token"
+        expect(tokenManager.currentAccessToken) == "access-token"
+        expect(tokenManager.currentIDToken) == "id-token"
+        expect(tokenManager.hasCurrentAccessToken) == true
+    }
+
+    func testTokenManagerTokensAreIsolatedByAppIdentifierWithinTheSameAccessGroup() throws {
+        // Mirrors two apps (different API keys) both enabling IAM with the *same* keychain
+        // access group -- `Purchases` namespaces by `appIdentifier: apiKey`, so they must not
+        // see each other's tokens even though they share the raw access group.
+        let tokenManagerApp1 = try makeAccessGroupTokenManager(appIdentifier: "com.revenuecat.app1")
+        let tokenManagerApp2 = try makeAccessGroupTokenManager(appIdentifier: "com.revenuecat.app2")
+
+        let userID = uniqueID()
+        trackTokenManagerUser(userID, in: tokenManagerApp1)
+        trackTokenManagerUser(userID, in: tokenManagerApp2)
+
+        tokenManagerApp1.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "app1-id",
+                                    for: userID)
+
+        expect(tokenManagerApp2.idToken(for: userID)).to(beNil())
+    }
+
+    func testTokenManagersWithIdenticalConfigurationShareTokens() throws {
+        // Mirrors an app and its extension: both configure IAM with the same API key and access
+        // group, so a fresh `TokenManager` instance (as the extension would create) must see
+        // tokens saved by the main app's `TokenManager`.
+        let appTokenManager = try makeAccessGroupTokenManager(appIdentifier: "com.revenuecat.sharedapp")
+        let extensionTokenManager = try makeAccessGroupTokenManager(appIdentifier: "com.revenuecat.sharedapp")
+
+        let userID = uniqueID()
+        trackTokenManagerUser(userID, in: appTokenManager)
+
+        appTokenManager.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "shared-id",
+                                   for: userID)
+
+        expect(extensionTokenManager.idToken(for: userID)) == "shared-id"
+    }
+
+    func testDeleteTokensRemovesThemFromTheAccessGroupScopedKeychain() throws {
+        let tokenManager = try makeAccessGroupTokenManager()
+        let userID = trackTokenManagerUser(uniqueID(), in: tokenManager)
+        tokenManager.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "id", for: userID)
+
+        tokenManager.deleteTokens(for: userID)
+
+        expect(tokenManager.idToken(for: userID)).to(beNil())
+    }
+
+    func testTokenManagerWithNilAccessGroupIsIsolatedFromAccessGroupScopedTokenManager() throws {
+        // Mirrors the default (`keychainAccessGroup == nil`) configuration path in `Purchases`,
+        // which builds a plain `Keychain(access: nil)`.
+        let plainTokenManager = TokenManager(enabled: true, storage: Keychain(access: nil))
+        let accessGroupTokenManager = try makeAccessGroupTokenManager()
+
+        let userID = uniqueID()
+        // The plain keychain isn't tracked by `createdTokenManagerUsers` (that array assumes an
+        // access-group keychain), so clean it up directly.
+        defer { plainTokenManager.deleteTokens(for: userID) }
+        trackTokenManagerUser(userID, in: accessGroupTokenManager)
+
+        plainTokenManager.saveTokens(refreshToken: "refresh", accessToken: "access", idToken: "plain-id",
+                                     for: userID)
+
+        expect(accessGroupTokenManager.idToken(for: userID)).to(beNil())
     }
 
 }

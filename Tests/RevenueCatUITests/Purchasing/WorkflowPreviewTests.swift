@@ -28,8 +28,20 @@ final class WorkflowPreviewTests: TestCase {
 
         // The rendered offering is the screen's offering with the workflow screen's components applied.
         expect(context.initialOffering.identifier) == "offering_a"
-        expect(context.initialOffering.paywallComponents).toNot(beNil())
+        expect(context.initialOffering.internalPaywallComponents).toNot(beNil())
         expect(context.workflow.id) == "wf_test"
+    }
+
+    func testInitialOfferingCarriesTheScreenZeroDecimalPlaceCountries() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let workflow = try Self.makeWorkflow(
+            screenOfferingIdentifier: "offering_a",
+            zeroDecimalPlaceCountries: ["TWN", "MEX"]
+        )
+
+        let context = try WorkflowPreview.makeContext(workflow: workflow, offerings: [baseOffering])
+
+        expect(context.initialOffering.internalPaywallComponents?.data.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
     }
 
     func testMakeContextPropagatesPresentedOfferingContext() throws {
@@ -44,6 +56,17 @@ final class WorkflowPreviewTests: TestCase {
         )
 
         expect(context.presentedOfferingContext?.offeringIdentifier) == "offering_a"
+    }
+
+    func testMakeContextPreservesCompleteOfferingsBundle() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let secondaryOffering = Self.makeOffering(identifier: "offering_b")
+        let offerings = Offerings.preview(offerings: [baseOffering, secondaryOffering])
+        let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_a")
+
+        let context = try WorkflowPreview.makeContext(workflow: workflow, offerings: offerings)
+
+        expect(context.offering(for: "offering_b")?.identifier) == "offering_b"
     }
 
     func testMakeContextThrowsWhenScreenOfferingMissingFromOfferings() throws {
@@ -80,7 +103,10 @@ private extension WorkflowPreviewTests {
 
     /// Builds a single-screen workflow using the `@_spi(Internal)` initializers (C-1), sourcing the
     /// `componentsConfig` sub-object from JSON since hand-building it is impractical.
-    static func makeWorkflow(screenOfferingIdentifier: String) throws -> PublishedWorkflow {
+    static func makeWorkflow(
+        screenOfferingIdentifier: String,
+        zeroDecimalPlaceCountries: [String] = []
+    ) throws -> PublishedWorkflow {
         let screen = WorkflowScreen(
             name: nil,
             templateName: "tmpl",
@@ -88,7 +114,8 @@ private extension WorkflowPreviewTests {
             componentsConfig: try Self.makeComponentsConfig(),
             componentsLocalizations: [:],
             defaultLocale: "en_US",
-            offeringIdentifier: screenOfferingIdentifier
+            offeringIdentifier: screenOfferingIdentifier,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
         let step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
 

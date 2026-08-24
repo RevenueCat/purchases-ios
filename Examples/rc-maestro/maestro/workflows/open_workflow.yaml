@@ -31,7 +31,7 @@ env:
     timeout: 15000
 - takeScreenshot: "open_workflow - screen 1"
 - tapOn:
-    text: "Continue"
+    text: "Continue 1/3"
 
 # Screen 2
 - extendedWaitUntil:
@@ -39,7 +39,7 @@ env:
     timeout: 15000
 - takeScreenshot: "open_workflow - screen 2"
 - tapOn:
-    text: "Continue"
+    text: "Continue 2/3"
 
 # Paywall screen (Yearly is preselected); the last Continue starts the purchase.
 - extendedWaitUntil:
@@ -47,7 +47,7 @@ env:
     timeout: 15000
 - takeScreenshot: "open_workflow - paywall screen"
 - tapOn:
-    text: "Continue"
+    text: "Continue 3/3"
 
 - runFlow:
     file: ../utils/confirm_purchase.yaml

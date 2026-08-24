@@ -54,6 +54,8 @@ class ButtonComponentViewModel {
     let sheetStackViewModel: StackComponentViewModel?
 
     private let componentVisible: Bool?
+    private let announcesOwnContent: Bool
+    private let localizedBundle: Bundle
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedButtonPartial>?
 
@@ -117,6 +119,51 @@ class ButtonComponentViewModel {
         case .unknown:
             self.action = .unknown
         }
+
+        // Both resolved once here: the stack walk is the expensive part, and looking up the
+        // localized bundle repeatedly would repeat a path search on every render.
+        self.announcesOwnContent = stackViewModel.containsAnnounceableContent
+        self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
+    }
+
+    /// A screen reader label for buttons that announce nothing on their own, like an icon-only
+    /// close button. `nil` when the button already announces something, or when the action's
+    /// meaning is opaque to us.
+    ///
+    /// `dismissesPaywall` distinguishes the two things a `navigate_back` button can do: inside a
+    /// workflow with somewhere to go back to it returns the user to the previous step, otherwise it
+    /// dismisses. The caller resolves that, so the word matches where the tap actually leads.
+    func derivedAccessibilityLabel(dismissesPaywall: Bool) -> String? {
+        guard !self.announcesOwnContent else {
+            return nil
+        }
+
+        let key: String?
+        switch self.action {
+        case .navigateBack:
+            key = dismissesPaywall ? "Close" : "Go back"
+        case .closeWorkflow:
+            key = "Close"
+        case .restorePurchases:
+            key = "Restore purchases"
+        case .navigateTo(.privacyPolicy):
+            key = "Privacy policy"
+        case .navigateTo(.terms):
+            key = "Terms and conditions"
+        case .navigateTo(.customerCenter):
+            key = "Manage subscription"
+        case .navigateTo(.offerCodeRedemptionSheet):
+            key = "Redeem code"
+        case .navigateTo(.url), .navigateTo(.webPaywallLink), .navigateTo(.unknown),
+             .sheet, .workflowTrigger, .unknown:
+            key = nil
+        }
+
+        guard let key else {
+            return nil
+        }
+
+        return self.localizedBundle.localizedString(forKey: key, value: nil, table: nil)
     }
 
     var hasUnknownAction: Bool {

@@ -117,6 +117,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.paywallStateStore)
     private var stateStore
 
+    @Environment(\.isPaywallLoading)
+    private var isPaywallLoading
+
     private let viewModel: TabsComponentViewModel
     private let workflowDefaultPackage: Package?
     private let onDismiss: () -> Void
@@ -211,7 +214,10 @@ struct LoadedTabsComponentView: View {
                             parentPackage: parentPackageContext.package,
                             tabPackages: tabViewModel.packages,
                             workflowDefaultPackage: workflowDefaultPackage,
-                            tabDefaultPackage: tabViewModel.defaultSelectedPackage
+                            // Provisional: view `init` has no environment, so variable/eligibility rules
+                            // can't be evaluated yet. `reconcileSelection` corrects this once the body
+                            // resolves the real context.
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional)
                         ),
                         variableContext: .init(
                             packages: tabViewModel.packages,
@@ -226,6 +232,35 @@ struct LoadedTabsComponentView: View {
                 }
             }
         ))
+    }
+
+    private var packageSelectionContext: PackageSelectionContext {
+        return PackageSelectionContext(
+            condition: self.screenCondition,
+            customVariables: self.customVariables,
+            isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                introOfferEligibilityContext.isEligible(package: $0)
+            },
+            isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+            }
+        )
+    }
+
+    /// Moves the selection off a package that isn't rendering.
+    ///
+    /// The selection seeded in `init` can't evaluate rules that depend on custom variables or offer
+    /// eligibility, and eligibility lands after first render, so the seeded package may turn out to be
+    /// hidden.
+    private func reconcileSelection(_ context: PackageContext, tabViewModel: TabViewModel) {
+        guard let resolved = tabViewModel.reconciledSelection(
+            current: context.package,
+            in: self.packageSelectionContext
+        ) else {
+            return
+        }
+
+        context.update(package: resolved, variableContext: context.variableContext)
     }
 
     /// Determines the initial package selection for a tab that has its own packages.
@@ -244,7 +279,29 @@ struct LoadedTabsComponentView: View {
            tabPackages.contains(where: { $0.identifier == cached.identifier }) {
             return cached
         }
-        return workflowDefaultPackage ?? tabDefaultPackage
+        return Self.effectiveTabDefaultPackage(
+            workflowDefaultPackage: workflowDefaultPackage,
+            tabPackages: tabPackages,
+            tabDefaultPackage: tabDefaultPackage
+        )
+    }
+
+    /// Picks the default selection for a tab, preferring the workflow-global default only when this
+    /// tab actually offers it.
+    ///
+    /// `WorkflowContext` derives its default by flattening every tab, so on a paywall whose tabs hold
+    /// disjoint packages that default belongs to whichever tab declares one first. Letting it win
+    /// everywhere leaves the other tabs with a package they don't list, so nothing renders as selected.
+    static func effectiveTabDefaultPackage(
+        workflowDefaultPackage: Package?,
+        tabPackages: [Package],
+        tabDefaultPackage: Package?
+    ) -> Package? {
+        if let workflowDefaultPackage,
+           tabPackages.contains(where: { $0.identifier == workflowDefaultPackage.identifier }) {
+            return workflowDefaultPackage
+        }
+        return tabDefaultPackage
     }
 
     var body: some View {
@@ -270,6 +327,9 @@ struct LoadedTabsComponentView: View {
                 parentPackageContext: self.packageContext,
                 tabPackageIdentifiers: Set(activeTabViewModel.packages.map(\.identifier)),
                 onChange: { context in
+                    // A package-less tab shares the parent's context, so this would only clear it.
+                    guard context !== self.packageContext else { return }
+
                     self.packageContext.update(
                         package: context.package,
                         variableContext: context.variableContext
@@ -281,9 +341,22 @@ struct LoadedTabsComponentView: View {
             .environmentObject(tierPackageContext)
             .environment(
                 \.planSelectionDefaultPackage,
-                self.workflowDefaultPackage ?? activeTabViewModel.defaultSelectedPackage
+                Self.effectiveTabDefaultPackage(
+                    workflowDefaultPackage: self.workflowDefaultPackage,
+                    tabPackages: activeTabViewModel.packages,
+                    tabDefaultPackage: activeTabViewModel.defaultSelectedPackage(
+                        in: self.packageSelectionContext
+                    )
+                )
             )
+            // Intro and promo eligibility both land after first render and can flip a package's
+            // visibility. `isPaywallLoading` goes false once both have resolved.
+            .onChangeOf(self.isPaywallLoading) { _ in
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
+            }
             .onAppear {
+                // The provisional selection made in `init` couldn't evaluate variable/eligibility rules.
+                self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
                 if !self.viewModel.didSeedInitialState {
                     self.viewModel.didSeedInitialState = true
                     // Seed the store with the initial selection so components that react to the tab
@@ -292,7 +365,8 @@ struct LoadedTabsComponentView: View {
                     self.publishSelectedTabState(self.tabControlContext.selectedTabId)
                     // Propagate the initial tab's package to parent context for the purchase button.
                     // Subsequent changes are handled by the onChange callback in LoadedTabComponentView.
-                    if let package = tierPackageContext.package {
+                    // A package-less tab shares that context, so it has nothing to propagate.
+                    if let package = tierPackageContext.package, tierPackageContext !== self.packageContext {
                         self.packageContext.update(
                             package: package,
                             variableContext: tierPackageContext.variableContext
@@ -326,7 +400,13 @@ struct LoadedTabsComponentView: View {
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
                     tabPackages: newTabViewModel.packages,
-                    tabDefaultPackage: self.workflowDefaultPackage ?? newTabViewModel.defaultSelectedPackage
+                    tabDefaultPackage: Self.effectiveTabDefaultPackage(
+                        workflowDefaultPackage: self.workflowDefaultPackage,
+                        tabPackages: newTabViewModel.packages,
+                        tabDefaultPackage: newTabViewModel.defaultSelectedPackage(
+                            in: self.packageSelectionContext
+                        )
+                    )
                 )
                 if let tabUpdate = updatePlan.tabUpdate {
                     newTierPackageContext.update(
@@ -335,9 +415,11 @@ struct LoadedTabsComponentView: View {
                     )
                 }
                 if let parentUpdate = updatePlan.parentUpdate {
+                    // Switching tabs restores a selection rather than making one, so it isn't a tap.
                     self.packageContext.update(
                         package: parentUpdate.package,
-                        variableContext: parentUpdate.variableContext
+                        variableContext: parentUpdate.variableContext,
+                        isReconcile: true
                     )
                 }
             }
@@ -372,8 +454,10 @@ struct LoadedTabsComponentView: View {
                     return
                 }
 
-                // This is a user selection - track it
-                self.didUserSelectPackage = true
+                // A user selection, unless a reconcile made it. Set-only: it can't clear an earlier one.
+                if !self.packageContext.lastUpdateWasReconcile {
+                    self.didUserSelectPackage = true
+                }
                 self.parentOwnedPackage = newPackage
                 self.parentOwnedVariableContext = self.packageContext.variableContext
 

@@ -103,6 +103,14 @@ enum WebViewNavigationPolicy {
         return origin == expectedOrigin ? .allow : .cancel
     }
 
+    // WebKit treats an HTTP 4xx/5xx as a *successful* navigation (the error body renders and `didFail*`
+    // never fires), so a navigation response's status code is the only signal that the main document
+    // actually failed to load. Sub-frame/sub-resource errors are ignored so a single failing asset
+    // doesn't remove the whole component.
+    static func isTerminalHTTPError(statusCode: Int, isMainFrame: Bool) -> Bool {
+        return isMainFrame && statusCode >= 400
+    }
+
 }
 
 #endif

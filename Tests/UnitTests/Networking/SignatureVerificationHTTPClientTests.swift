@@ -33,7 +33,8 @@ class BaseSignatureVerificationHTTPClientTests: BaseHTTPClientTests<ETagManager,
             basePath: self.suiteName
         )
         self.eTagManager = ETagManager(largeItemCache: largeItemCache)
-        self.timeoutManager = HTTPRequestTimeoutManager(defaultTimeout: defaultTimeout.timeInterval)
+        self.tokenManager = TokenManager(enabled: false, storage: Keychain(access: nil))
+        self.timeoutManager = HTTPRequestTimeoutManager(networkTimeout: .default)
 
         try super.setUpWithError()
     }

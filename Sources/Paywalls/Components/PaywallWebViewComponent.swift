@@ -17,8 +17,11 @@ import Foundation
 
     final class WebViewComponent: PaywallComponentBase {
 
-        /// Wire `type` value, kept as a `String` because `web_view` is not yet a `ComponentType` case.
-        let type: String
+        /// The host<->component bridge protocol version this SDK implements. A config declaring any
+        /// other version is treated as an unrecognized component and rendered via its `fallback`.
+        public static let supportedProtocolVersion: Int = 1
+
+        let type: ComponentType
         public let id: String
         public let name: String?
         public let visible: Bool?
@@ -30,21 +33,50 @@ import Foundation
 
         public let size: Size
 
+        public let overrides: ComponentOverrides<PartialWebViewComponent>?
+
+        /// Resolves a URL that is safe to use as a web view component entry point.
+        public static func validatedHTTPSURL(from urlString: String) -> URL? {
+            guard !urlString.contains("{{"),
+                  let url = URL(string: urlString),
+                  url.scheme?.lowercased() == "https",
+                  url.host?.isEmpty == false else {
+                return nil
+            }
+
+            return url
+        }
+
+        /// Describes why the decoded static configuration is invalid, if applicable.
+        var configurationValidationError: String? {
+            if self.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                return "Web view component ID must not be blank."
+            }
+
+            guard Self.validatedHTTPSURL(from: self.url) != nil else {
+                return "Web view component URL must be a resolved HTTPS URL with a host."
+            }
+
+            return nil
+        }
+
         public init(
             id: String,
             name: String? = nil,
             visible: Bool? = nil,
             protocolVersion: Int,
             url: String,
-            size: Size = .init(width: .fill, height: .fit(nil))
+            size: Size = .init(width: .fill, height: .fit(nil)),
+            overrides: ComponentOverrides<PartialWebViewComponent>? = nil
         ) {
-            self.type = "web_view"
+            self.type = .webView
             self.id = id
             self.name = name
             self.visible = visible
             self.protocolVersion = protocolVersion
             self.url = url
             self.size = size
+            self.overrides = overrides
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -55,6 +87,7 @@ import Foundation
             hasher.combine(protocolVersion)
             hasher.combine(url)
             hasher.combine(size)
+            hasher.combine(overrides)
         }
 
         public static func == (lhs: WebViewComponent, rhs: WebViewComponent) -> Bool {
@@ -64,7 +97,26 @@ import Foundation
                 lhs.visible == rhs.visible &&
                 lhs.protocolVersion == rhs.protocolVersion &&
                 lhs.url == rhs.url &&
-                lhs.size == rhs.size
+                lhs.size == rhs.size &&
+                lhs.overrides == rhs.overrides
+        }
+
+    }
+
+    final class PartialWebViewComponent: PaywallPartialComponent {
+
+        public let visible: Bool?
+
+        public init(visible: Bool? = nil) {
+            self.visible = visible
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
+        }
+
+        public static func == (lhs: PartialWebViewComponent, rhs: PartialWebViewComponent) -> Bool {
+            return lhs.visible == rhs.visible
         }
 
     }

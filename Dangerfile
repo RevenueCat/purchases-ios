@@ -4,7 +4,13 @@ require 'pathname'
 require 'set'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
-  'Tests/APITesters/'
+  'Tests/APITesters/',
+  # Tuist-only: these targets exist solely in Projects/PaywallFixtures/Project.swift and are
+  # deliberately absent from RevenueCat.xcodeproj.
+  'Tests/TestingApps/PaywallFixtures/',
+  'Tests/TestingApps/PaywallFixturesUITests/',
+  # SPM / Tuist-only: Release-stripped integration tests are not in RevenueCat.xcodeproj.
+  'Tests/PurchasesUIServiceIntegrationTests/'
 ].freeze
 
 COMMENT_MARKER = "<!-- purchases-ios-danger -->"
@@ -32,8 +38,7 @@ def production_swift_file?(path)
   return false unless path.end_with?('.swift')
   return false if path.start_with?('Sources/Generated/')
 
-  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/') ||
-    path.start_with?('RulesEngineInternal/')
+  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/')
 end
 
 def project_swift_file_paths(project_file)

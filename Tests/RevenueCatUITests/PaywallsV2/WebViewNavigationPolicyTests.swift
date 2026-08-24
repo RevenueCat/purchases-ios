@@ -113,6 +113,24 @@ final class WebViewNavigationPolicyTests: TestCase {
         )
     }
 
+    // MARK: - HTTP status handling
+
+    func testMainFrameClientAndServerErrorsAreTerminal() {
+        XCTAssertTrue(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 404, isMainFrame: true))
+        XCTAssertTrue(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 500, isMainFrame: true))
+    }
+
+    func testMainFrameSuccessAndRedirectStatusesAreNotTerminal() {
+        XCTAssertFalse(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 200, isMainFrame: true))
+        XCTAssertFalse(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 304, isMainFrame: true))
+    }
+
+    func testSubFrameErrorsAreNotTerminal() {
+        // A failing sub-resource must not remove the whole component; only main-frame errors do.
+        XCTAssertFalse(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 404, isMainFrame: false))
+        XCTAssertFalse(WebViewNavigationPolicy.isTerminalHTTPError(statusCode: 500, isMainFrame: false))
+    }
+
 }
 
 #endif

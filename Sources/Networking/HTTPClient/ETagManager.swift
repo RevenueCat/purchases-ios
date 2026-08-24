@@ -16,7 +16,7 @@ import Foundation
 
 class ETagManager {
     static let eTagRequestHeader = HTTPClient.RequestHeader.eTag
-    static let eTagValidationTimeRequestHeader = HTTPClient.RequestHeader.eTagValidationTime
+    static let lastRefreshTimeRequestHeader = HTTPClient.RequestHeader.lastRefreshTime
     static let eTagResponseHeader = HTTPClient.ResponseHeader.eTag
 
     private let cache: SynchronizedLargeItemCache
@@ -75,7 +75,7 @@ class ETagManager {
 
         return [
             HTTPClient.RequestHeader.eTag.rawValue: etag,
-            HTTPClient.RequestHeader.eTagValidationTime.rawValue: date
+            HTTPClient.RequestHeader.lastRefreshTime.rawValue: date
         ]
             .compactMapValues { $0 }
     }
@@ -167,7 +167,7 @@ private extension ETagManager {
 
     func storedETagAndResponse(for request: URLRequest) -> Response? {
         if let cacheKey = Self.cacheKey(for: request) {
-            return try? self.cache.value(forKey: cacheKey)
+            return try? self.cache.value(forKey: cacheKey, decoder: .default)
         }
         return nil
     }

@@ -111,6 +111,16 @@ final class PurchaseHandler: ObservableObject {
     @Published
     fileprivate(set) var consecutiveCancellationRequestID: UUID?
 
+    /// Set to a new UUID each time the user taps a web checkout CTA, propagated via
+    /// ``WebCheckoutOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var webCheckoutOpened: UUID?
+
+    /// Set to a new signal each time the paywall successfully opened a URL, propagated via
+    /// ``URLOpenedPreferenceKey``.
+    @Published
+    fileprivate(set) var urlOpened: URLOpenedSignal?
+
     /// Whether a purchase was successfully completed in the current session.
     /// Convenience property for checking if we should skip exit offers.
     var hasPurchasedInSession: Bool {
@@ -250,6 +260,7 @@ final class PurchaseHandler: ObservableObject {
     /// per-session completion signal) to avoid stale values triggering handlers. The handler is held as a
     /// `@StateObject` by the presenting modifier and reused across present/dismiss cycles, so without this
     /// a prior session's restore would leak into the next one.
+    @MainActor
     func resetForNewSession() {
         if let sessionID = self.activePaywallSessionID {
             self.paywallEventTracker.discardSession(sessionID: sessionID)
@@ -258,6 +269,8 @@ final class PurchaseHandler: ObservableObject {
         self.consecutiveCancellationRequestID = nil
         self.purchaseResult = nil
         self.restoredCustomerInfo = nil
+        self.deferredClearWebCheckoutOpened()
+        self.deferredClearURLOpened()
         self.activePaywallSessionID = nil
     }
 
@@ -336,10 +349,16 @@ extension PurchaseHandler {
         remoteConfigEnabled: Bool
     ) -> ResolvedPaywallViewData? {
         if !remoteConfigEnabled {
-            return self.cachedInitialOffering(
+            // A pruned offering has nothing to render, so don't seed it: falling through leaves the async
+            // path to re-resolve it against the offerings cache.
+            guard let offering = self.cachedInitialOffering(
                 for: content,
                 remoteConfigEnabled: remoteConfigEnabled
-            ).map { .init(offering: $0, workflowContext: nil) }
+            ), !offering.hasPrunedPaywallComponents else {
+                return nil
+            }
+
+            return .init(offering: offering, workflowContext: nil)
         }
 
         guard let cachedOfferings = self.purchases.cachedOfferings,
@@ -369,8 +388,8 @@ extension PurchaseHandler {
     }
 #endif
 
-    // Exposes the gate so tests can cover both states deterministically without depending on
-    // ENABLE_REMOTE_CONFIG being compiled in for the test target.
+    // Exposes the gate so tests can cover both states deterministically, without having to configure
+    // the SDK in the mode (custom entitlement computation) or kill-switch state that disables it.
     func cachedInitialOffering(
         for content: PaywallViewConfiguration.Content,
         remoteConfigEnabled: Bool
@@ -531,7 +550,13 @@ extension PurchaseHandler {
         remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
         guard remoteConfigEnabled, offering.paywall == nil else {
-            return .init(offering: offering, workflowContext: nil)
+            return .init(
+                offering: await self.restoringPrunedPaywallComponents(
+                    offering,
+                    remoteConfigEnabled: remoteConfigEnabled
+                ),
+                workflowContext: nil
+            )
         }
 
         do {
@@ -543,12 +568,20 @@ extension PurchaseHandler {
 
             return .init(offering: context.initialOffering, workflowContext: context)
         } catch {
+            // This very fetch may be what disabled remote config (the kill switch trips on a 4xx), so read
+            // the gate again rather than reusing the caller's snapshot: the offering's own components become
+            // restorable at that point.
+            let fallbackOffering = await self.restoringPrunedPaywallComponents(
+                offering,
+                remoteConfigEnabled: self.remoteConfigEnabled
+            )
+
             // Fall back to rendering the offering when there are components to show, or when the
             // offering simply has no workflow attached (render the default paywall, matching the
             // legacy path). Other failures with no components — including a mapped workflow whose item
             // or blob failed to resolve — still propagate so a broken rollout surfaces.
             guard error.isWorkflowFetchFallbackEligible,
-                  offering.internalPaywallComponents != nil || error.isOfferingWithoutWorkflowError else {
+                  fallbackOffering.internalPaywallComponents != nil || error.isOfferingWithoutWorkflowError else {
                 throw error
             }
 
@@ -559,7 +592,41 @@ extension PurchaseHandler {
                 )
             )
 
-            return .init(offering: offering, workflowContext: nil)
+            return .init(offering: fallbackOffering, workflowContext: nil)
+        }
+    }
+
+    /// Re-resolves an offering whose paywall components the SDK pruned while remote config was active.
+    ///
+    /// Under workflows, offerings retain only the components marker because components are served by
+    /// `/v1/config`, so an offering captured then — including one the app holds and passes back in — can no
+    /// longer render once the kill switch disables remote config mid-session. `OfferingsManager` restores the
+    /// components in its own cache on disable, so reading offerings again yields a renderable offering.
+    /// Returns the offering untouched when there is nothing to restore.
+    private func restoringPrunedPaywallComponents(
+        _ offering: Offering,
+        remoteConfigEnabled: Bool
+    ) async -> Offering {
+        guard !remoteConfigEnabled, offering.hasPrunedPaywallComponents else { return offering }
+
+        do {
+            guard let restored = try await self.purchases.offerings().offering(identifier: offering.identifier),
+                  !restored.hasPrunedPaywallComponents else {
+                return offering
+            }
+
+            Logger.debug(
+                Strings.restored_paywall_components_for_disabled_remote_config(
+                    offeringIdentifier: offering.identifier
+                )
+            )
+
+            guard let presentedOfferingContext = offering.presentedOfferingContext else { return restored }
+
+            return restored.withPresentedOfferingContext(presentedOfferingContext)
+        } catch {
+            Logger.warning(Strings.errorFetchingOfferings(error))
+            return offering
         }
     }
 
@@ -617,7 +684,8 @@ extension PurchaseHandler {
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
-            uiConfig: uiConfig
+            uiConfig: uiConfig,
+            paywallId: screenID
         )
 
         let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
@@ -856,6 +924,18 @@ extension PurchaseHandler {
         self.restoredCustomerInfo = .init(customerInfo: customerInfo, success: success)
     }
 
+    /// Sets a new UUID on ``webCheckoutOpened`` so ``WebCheckoutOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalWebCheckoutOpened() {
+        self.webCheckoutOpened = UUID()
+    }
+
+    /// Sets a new signal on ``urlOpened`` so ``URLOpenedPreferenceKey`` fires.
+    @MainActor
+    func signalURLOpened(_ url: URL) {
+        self.urlOpened = .init(id: UUID(), url: url)
+    }
+
     func trackPaywallImpression(_ eventData: PaywallEvent.Data) {
         self.activePaywallSessionID = eventData.sessionIdentifier
         self.paywallEventTracker.trackPaywallImpression(eventData)
@@ -866,6 +946,46 @@ extension PurchaseHandler {
     /// current: it reports no impression, and a purchase there must not attribute to the prior step.
     func clearActivePaywallSession() {
         self.activePaywallSessionID = nil
+    }
+
+    /// Clears a pending web checkout signal without a full session reset, for when an exit offer is
+    /// about to reuse this same `PurchaseHandler`. Must run synchronously, unlike
+    /// `deferredClearWebCheckoutOpened`: the exit offer's paywall mounts in this same step, and a
+    /// deferred clear would let its brand new `onWebCheckoutOpened` observer see the stale signal as
+    /// its own fresh one.
+    @MainActor
+    func clearWebCheckoutOpened() {
+        self.webCheckoutOpened = nil
+    }
+
+    /// Clears a pending URL opened signal without a full session reset. Synchronous for the same reason as
+    /// `clearWebCheckoutOpened`.
+    @MainActor
+    func clearURLOpened() {
+        self.urlOpened = nil
+    }
+
+    /// Deferred by a tick so a signal set earlier in the same synchronous step (e.g. right before a
+    /// dismiss) still reaches its SwiftUI render pass before being cleared. Only clears if nothing
+    /// newer arrived in the meantime (e.g. this same handler reused for a new session), so a stale
+    /// clear can't wipe out a signal it was never meant to touch.
+    @MainActor
+    private func deferredClearWebCheckoutOpened() {
+        let pendingValue = self.webCheckoutOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.webCheckoutOpened == pendingValue else { return }
+            self.webCheckoutOpened = nil
+        }
+    }
+
+    /// Deferred for the same reason as `deferredClearWebCheckoutOpened`.
+    @MainActor
+    private func deferredClearURLOpened() {
+        let pendingValue = self.urlOpened
+        DispatchQueue.main.async { [weak self] in
+            guard let self, self.urlOpened == pendingValue else { return }
+            self.urlOpened = nil
+        }
     }
 
     func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
@@ -1191,6 +1311,37 @@ struct RestoreErrorPreferenceKey: PreferenceKey {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct WebCheckoutOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: UUID?
+
+    static func reduce(value: inout UUID?, nextValue: () -> UUID?) {
+        value = nextValue()
+    }
+
+}
+
+/// A URL the paywall opened, tagged with a unique identifier so preference listeners also receive
+/// consecutive opens of the same URL.
+struct URLOpenedSignal: Equatable {
+
+    let id: UUID
+    let url: URL
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct URLOpenedPreferenceKey: PreferenceKey {
+
+    static var defaultValue: URLOpenedSignal?
+
+    static func reduce(value: inout URLOpenedSignal?, nextValue: () -> URLOpenedSignal?) {
+        value = nextValue()
+    }
+
+}
+
 // MARK: Environment keys
 
 /// `EnvironmentKey` for storing closure triggered when paywall should be dismissed.
@@ -1245,6 +1396,34 @@ extension EnvironmentValues {
     var offerCodeRedemptionInitiatedAction: OfferCodeRedemptionInitiatedAction? {
         get { self[OfferCodeRedemptionInitiatedActionKey.self] }
         set { self[OfferCodeRedemptionInitiatedActionKey.self] = newValue }
+    }
+}
+
+/// Lightweight wrapper so views can report opened URLs without depending on the full `PurchaseHandler`.
+struct URLOpenedNotifier {
+
+    private let action: (URL) -> Void
+
+    init(action: @escaping (URL) -> Void = { _ in }) {
+        self.action = action
+    }
+
+    func callAsFunction(_ url: URL) {
+        self.action(url)
+    }
+
+}
+
+/// `EnvironmentKey` for storing the notifier for URLs opened from the paywall.
+struct URLOpenedNotifierKey: EnvironmentKey {
+    static let defaultValue: URLOpenedNotifier = .init()
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var urlOpenedNotifier: URLOpenedNotifier {
+        get { self[URLOpenedNotifierKey.self] }
+        set { self[URLOpenedNotifierKey.self] = newValue }
     }
 }
 

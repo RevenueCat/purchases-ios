@@ -53,6 +53,7 @@ public class PaywallViewController: UIViewController {
     ///
     /// - Important: Set this property before presenting the view controller.
     ///   Changes made after presentation will not be reflected in the paywall.
+    ///   Invalid keys are ignored.
     ///
     /// ### Example
     /// ```swift
@@ -65,6 +66,7 @@ public class PaywallViewController: UIViewController {
     public var customVariables: [String: CustomVariableValue] = [:] {
         didSet {
             assert(hostingController == nil, "Custom variables can only be set before presenting the paywall")
+            self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(self.customVariables)
         }
     }
 
@@ -73,27 +75,24 @@ public class PaywallViewController: UIViewController {
     /// Sets a string custom variable value for the given key.
     /// - Parameters:
     ///   - value: The string value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariable(_ value: String, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .string(value)
     }
 
     /// Sets a numeric custom variable value for the given key.
     /// - Parameters:
     ///   - value: The numeric value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariableNumber(_ value: Double, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .number(value)
     }
 
     /// Sets a boolean custom variable value for the given key.
     /// - Parameters:
     ///   - value: The boolean value to set.
-    ///   - key: The variable key (without the `custom.` prefix).
+    ///   - key: The variable key (without the `custom.` prefix). Invalid keys are ignored.
     @objc public func setCustomVariableBool(_ value: Bool, forKey key: String) {
-        CustomVariableKeyValidator.validate(key)
         self.customVariables[key] = .bool(value)
     }
 
@@ -177,6 +176,33 @@ public class PaywallViewController: UIViewController {
             dismissRequestedHandler: dismissRequestedHandler
         )
     }
+
+    #if !os(tvOS)
+    /// Creates a paywall view controller from a pre-built workflow context.
+    convenience init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        self.init(
+            content: .offering(workflowContext.initialOffering),
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            shouldBlockTouchEvents: false,
+            performPurchase: performPurchase,
+            performRestore: performRestore,
+            dismissRequestedHandler: nil
+        )
+
+        var configuration = self.configuration
+        configuration.introEligibility = introEligibility
+        configuration.injectedWorkflowContext = workflowContext
+        self.configuration = configuration
+    }
+    #endif
 
     /// Initialize a `PaywallViewController` with an optional `Offering` and ``PaywallFontProvider``.
     /// - Parameter offering: The `Offering` containing the desired paywall to display.
@@ -529,6 +555,19 @@ public class PaywallViewController: UIViewController {
         }
     }
 
+    /// Dismissal handling for the exit-offer controller. The SDK presents that controller itself, so it
+    /// also dismisses it: the host's handler was written for the paywall the host presented, and one that
+    /// dismisses its own captured controller instead of the one it is handed would strand the exit offer
+    /// on screen. The handler is still called afterwards so existing close callbacks keep firing.
+    static func exitOfferDismissRequestedHandler(
+        originalHandler: ((PaywallViewController) -> Void)?
+    ) -> (PaywallViewController) -> Void {
+        return { controller in
+            controller.dismiss(animated: true)
+            originalHandler?(controller)
+        }
+    }
+
     /// Presents the exit offer paywall as a sheet.
     private func presentExitOffer(for offering: Offering) {
         Logger.debug(Strings.presentingExitOffer(offering.identifier))
@@ -574,14 +613,9 @@ public class PaywallViewController: UIViewController {
                 shouldBlockTouchEvents: shouldBlock,
                 performPurchase: performPurchase,
                 performRestore: performRestore,
-                dismissRequestedHandler: { controller in
-                    // When exit offer is dismissed, call the original handler
-                    if let handler = originalDismissHandler {
-                        handler(controller)
-                    } else {
-                        controller.dismiss(animated: true)
-                    }
-                },
+                dismissRequestedHandler: Self.exitOfferDismissRequestedHandler(
+                    originalHandler: originalDismissHandler
+                ),
                 promoOfferCache: self.promoOfferCache
             )
 
@@ -725,6 +759,18 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     @objc(paywallViewControllerDidCancelPurchase:)
     optional func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController)
 
+    /// Notifies that the user tapped a web checkout CTA and left the app to complete payment externally.
+    @objc(paywallViewControllerDidOpenWebCheckout:)
+    optional func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController)
+
+    /// Notifies that a ``PaywallViewController`` successfully opened a URL, either from a button with a URL
+    /// destination or from a link inside a text component.
+    ///
+    /// Not called for web checkout URLs. Use ``paywallViewControllerDidOpenWebCheckout(_:)`` for those.
+    @objc(paywallViewController:didOpenURL:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didOpenURL url: URL)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -825,6 +871,13 @@ private extension PaywallViewController {
                 guard let self else { return }
                 self.delegate?.paywallViewControllerDidCancelPurchase?(self)
             },
+            webCheckoutOpened: { [weak self] in
+                guard let self else { return }
+                self.delegate?.paywallViewControllerDidOpenWebCheckout?(self)
+            },
+            urlOpened: { [weak self] url in
+                self?.notifyDelegateURLOpened(url)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -859,6 +912,12 @@ private extension PaywallViewController {
         controller.view.translatesAutoresizingMaskIntoConstraints = false
 
         return controller
+    }
+
+    /// Extracted from the `urlOpened` handler so that closure needs no `guard`, keeping
+    /// `createHostingController`'s cyclomatic complexity within the linter's limit.
+    private func notifyDelegateURLOpened(_ url: URL) {
+        self.delegate?.paywallViewController?(self, didOpenURL: url)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
@@ -956,6 +1015,8 @@ private struct PaywallContainerView: View {
     let purchaseStarted: PurchaseOfPackageStartedHandler
     let purchaseCompleted: PurchaseCompletedHandler
     let purchaseCancelled: PurchaseCancelledHandler
+    let webCheckoutOpened: WebCheckoutOpenedHandler
+    let urlOpened: URLOpenedHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -976,6 +1037,8 @@ private struct PaywallContainerView: View {
             .onPurchaseStarted(self.purchaseStarted)
             .onPurchaseCompleted(self.purchaseCompleted)
             .onPurchaseCancelled(self.purchaseCancelled)
+            .onWebCheckoutOpened(self.webCheckoutOpened)
+            .onURLOpened(self.urlOpened)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)

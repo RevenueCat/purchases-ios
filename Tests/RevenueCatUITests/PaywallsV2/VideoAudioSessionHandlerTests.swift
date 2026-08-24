@@ -94,7 +94,7 @@ final class VideoAudioSessionHandlerTests: TestCase {
     func testDoesNotOverwriteHostConfigurationChangedDuringVideoPlayback() {
         let audioSession = MockAudioSession()
         let handler = VideoAudioSessionHandler(audioSession: audioSession)
-        let hostConfiguration = Configuration(category: .playAndRecord, mode: .videoChat, options: [.allowBluetoothHFP])
+        let hostConfiguration = Configuration(category: .playAndRecord, mode: .videoChat, options: [.duckOthers])
         audioSession.configuration = hostConfiguration
 
         handler.release()

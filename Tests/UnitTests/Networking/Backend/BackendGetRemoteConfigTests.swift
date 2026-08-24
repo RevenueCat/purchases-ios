@@ -136,7 +136,7 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(self.httpClient.calls.first?.request.method.httpMethod) == "GET"
         expect(self.httpClient.calls.first?.request.path as? HTTPRequest.FallbackPath)
             == HTTPRequest.FallbackPath.remoteConfig(domain: "app")
-        expect(self.httpClient.calls.first?.request.path.url?.absoluteString)
+        expect(self.httpClient.calls.first?.request.path.url(preferIAMPath: false)?.absoluteString)
             == "https://api-production.8-lives-cat.io/v1/config/app"
         expect(self.httpClient.calls.first?.request.requestBody).to(beNil())
     }
@@ -168,7 +168,28 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         }
 
         expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
-        expect(self.httpClient.calls.first?.headers[ETagManager.eTagValidationTimeRequestHeader.rawValue]).to(beNil())
+        expect(self.httpClient.calls.first?.headers[ETagManager.lastRefreshTimeRequestHeader.rawValue]).to(beNil())
+    }
+
+    func testGetRemoteConfigSendsLastRefreshTimeWithoutETag() {
+        self.mockSuccessfulResponse()
+        let lastRefreshTime = Date(timeIntervalSince1970: 1_785_309_842)
+        let request = RemoteConfigRequest(
+            fetchContext: .appStart,
+            appUserID: Self.appUserID,
+            lastRefreshTime: lastRefreshTime
+        )
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfig(
+                request: request,
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.calls.first?.headers[ETagManager.eTagRequestHeader.rawValue]).to(beNil())
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue])
+            == lastRefreshTime.millisecondsSince1970.description
     }
 
     func testGetRemoteConfigFallbackDoesNotSendSignatureRequestHeaders() {
@@ -185,6 +206,19 @@ final class BackendGetRemoteConfigTests: BaseBackendTests {
         expect(headers?[HTTPClient.RequestHeader.nonce.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.headerParametersForSignature.rawValue]).to(beNil())
         expect(headers?[HTTPClient.RequestHeader.postParameters.rawValue]).to(beNil())
+    }
+
+    func testGetRemoteConfigFallbackDoesNotSendLastRefreshTimeHeader() {
+        self.mockSuccessfulFallbackResponse()
+
+        waitUntil { completed in
+            self.remoteConfigAPI.getRemoteConfigFallback(
+                domain: "app",
+                isAppBackgrounded: false
+            ) { _ in completed() }
+        }
+
+        expect(self.httpClient.calls.first?.headers[HTTPClient.RequestHeader.lastRefreshTime.rawValue]).to(beNil())
     }
 
     func testGetRemoteConfigDoesNotSendSignatureVerificationHeaders() {

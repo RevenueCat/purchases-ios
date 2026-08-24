@@ -203,6 +203,10 @@ final class Delegate: PaywallViewControllerDelegate {
 
     func paywallViewControllerDidCancelPurchase(_ controller: PaywallViewController) {}
 
+    func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {}
+
+    func paywallViewController(_ controller: PaywallViewController, didOpenURL url: URL) {}
+
     func paywallViewController(_ controller: PaywallViewController,
                                didFailPurchasingWith error: NSError) {}
 

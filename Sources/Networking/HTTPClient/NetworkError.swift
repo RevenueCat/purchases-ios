@@ -15,6 +15,18 @@
 
 import Foundation
 
+extension Swift.Error {
+
+    /// Foundation does not bridge URL loading errors consistently across Apple platforms: the same
+    /// URLSession timeout may arrive as `URLError` on iOS but remain `NSError` on macOS. Normalize to
+    /// `NSError` so callers classify the underlying URL error domain and code consistently.
+    var isURLRequestTimeout: Bool {
+        let error = self as NSError
+        return error.domain == NSURLErrorDomain && error.code == NSURLErrorTimedOut
+    }
+
+}
+
 /// Represents an error created by `HTTPClient`.
 enum NetworkError: Swift.Error, Equatable {
 

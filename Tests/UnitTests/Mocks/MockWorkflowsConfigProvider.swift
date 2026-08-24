@@ -16,6 +16,14 @@ import Foundation
 
 final class MockWorkflowsConfigProvider: WorkflowsConfigProviderType, @unchecked Sendable {
 
+    var stubbedOfferingIdByWorkflowId: [String: String] = [:]
+    private(set) var invokedOfferingIdByWorkflowIdCount = 0
+
+    func offeringIdByWorkflowId() async -> [String: String] {
+        self.invokedOfferingIdByWorkflowIdCount += 1
+        return self.stubbedOfferingIdByWorkflowId
+    }
+
     var stubbedWorkflowIdForOfferingId: [String: String] = [:]
     private(set) var invokedWorkflowIdForOfferingIdParameters: [String] = []
 
@@ -79,5 +87,7 @@ final class MockWorkflowAssetPrewarmer: WorkflowAssetPrewarmingType, @unchecked 
     func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async {
         self.invokedPrefetchedAssetPrewarmingParameters.append(includingOfferingId)
     }
+
+    func publishWebBundleURLs(offerings: Offerings) async {}
 
 }

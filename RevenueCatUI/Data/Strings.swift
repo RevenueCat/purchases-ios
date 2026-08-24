@@ -63,6 +63,7 @@ enum Strings {
     case paywall_could_not_find_localization(String)
     case paywall_could_not_find_package(String)
     case paywall_could_not_find_default_package
+    case paywall_default_package_not_visible(defaultPackage: String, selectedPackage: String)
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
@@ -103,7 +104,6 @@ enum Strings {
     case paywall_custom_variable_invalid_number(value: String)
     case paywall_custom_variable_unknown_type(type: String)
     case paywall_variable_looks_like_custom(variableName: String)
-    case paywall_custom_variable_invalid_key(key: String)
 
     // Video
     case video_failed_to_set_audio_session_category(Error)
@@ -115,6 +115,11 @@ enum Strings {
     case paywall_web_view_post_message_skipped(reason: String)
     case paywall_web_view_invalid_expected_origin(String)
     case paywall_web_view_content_process_terminated
+    case paywall_web_view_not_rendered(reason: String)
+    case paywall_web_view_loaded(URL?)
+    case paywall_web_view_load_failed(String)
+    case paywall_web_view_http_error(statusCode: Int)
+    case web_view_data_store_removal_failed(UUID, Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -131,6 +136,8 @@ enum Strings {
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
     case workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier: String, error: Error)
+    case restored_paywall_components_for_disabled_remote_config(offeringIdentifier: String)
+    case purchases_did_configure
 
 }
 
@@ -251,6 +258,11 @@ extension Strings: CustomStringConvertible {
             "This package will not show in the paywall. This could be caused by a package that doesn't have a " +
             "product on this platform or the product might not be available for this region."
 
+        case let .paywall_default_package_not_visible(defaultPackage, selectedPackage):
+            return "Package '\(defaultPackage)' is selected by default but is hidden by a visibility " +
+            "rule, so '\(selectedPackage)' was selected instead. Check the visibility rules on the " +
+            "default package if this isn't what you expected."
+
         case .paywall_could_not_find_any_packages:
             return "Could not find any packages for the paywall"
 
@@ -362,10 +374,6 @@ extension Strings: CustomStringConvertible {
             return "Variable '\(variableName)' looks like a custom variable but uses incorrect syntax. " +
             "Custom variables must use the 'custom.' prefix with a dot, e.g., '{{ custom.variable_name }}'."
 
-        case .paywall_custom_variable_invalid_key(let key):
-            return "Custom variable key '\(key)' is invalid. " +
-            "Keys must start with a letter and contain only letters, numbers, and underscores."
-
         case .video_failed_to_set_audio_session_category(let error):
             return "Failed to set audio session category: \(error)"
         case .video_failed_to_cache(let url, let error):
@@ -382,6 +390,17 @@ extension Strings: CustomStringConvertible {
                 "the web view cannot verify message provenance and will not be shown."
         case .paywall_web_view_content_process_terminated:
             return "Paywalls V2 web_view content process terminated. Removing the web view."
+        case .paywall_web_view_not_rendered(let reason):
+            return "Paywalls V2 web_view will not render: \(reason)"
+        case .paywall_web_view_load_failed(let error):
+            return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
+        case .paywall_web_view_loaded(let url):
+            return "Paywalls V2 web_view successfully loaded: \(url?.absoluteString ?? "no_url")"
+        case .paywall_web_view_http_error(let statusCode):
+            return "Paywalls V2 web_view failed to load and will be removed. " +
+                "The server responded with HTTP status code \(statusCode)."
+        case let .web_view_data_store_removal_failed(identifier, error):
+            return "Failed to remove web view website data store '\(identifier)': \(error)"
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
@@ -422,6 +441,11 @@ extension Strings: CustomStringConvertible {
         case let .workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier, error):
             return "Failed to fetch workflow for offering '\(offeringIdentifier)' (\(error)). " +
             "Falling back to the offerings-provided paywall."
+        case let .restored_paywall_components_for_disabled_remote_config(offeringIdentifier):
+            return "Remote config is disabled, so offering '\(offeringIdentifier)' was re-resolved to restore " +
+            "its offerings-provided paywall."
+        case .purchases_did_configure:
+            return "Purchases notified purchases-ui of configuration"
         }
     }
 

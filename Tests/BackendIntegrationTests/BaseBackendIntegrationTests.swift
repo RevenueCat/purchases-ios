@@ -62,7 +62,6 @@ class BaseBackendIntegrationTests: TestCase {
     class var responseVerificationMode: Signing.ResponseVerificationMode {
         return .enforced(Signing.loadPublicKey())
     }
-    class var useWorkflows: Bool { return false }
     var enableReceiptFetchRetry: Bool = true
 
     var apiKey: String { return Constants.apiKey }
@@ -81,7 +80,7 @@ class BaseBackendIntegrationTests: TestCase {
                             responseVerificationMode: Self.responseVerificationMode,
                             storeKitVersion: Self.storeKitVersion,
                             storeKitTimeout: Configuration.storeKitRequestTimeoutDefault,
-                            networkTimeout: Configuration.networkTimeoutDefault,
+                            networkTimeout: .default,
                             dangerousSettings: self.dangerousSettings,
                             showStoreMessagesAutomatically: true,
                             diagnosticsEnabled: false,
@@ -254,8 +253,7 @@ private extension BaseBackendIntegrationTests {
 
     private var dangerousSettings: DangerousSettings {
         return .init(autoSyncPurchases: true,
-                     internalSettings: self,
-                     useWorkflows: Self.useWorkflows)
+                     internalSettings: self)
     }
 
 }

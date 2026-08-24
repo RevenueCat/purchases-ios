@@ -40,10 +40,16 @@ enum NetworkStrings {
     case parsing_json_error(error: Error)
     case serial_request_done(httpMethod: String?, path: String?, queuedRequestsCount: Int)
     case serial_request_queued(httpMethod: String, path: String, queuedRequestsCount: Int)
+    case serial_request_paused(httpMethod: String, path: String)
     case starting_next_request(request: String)
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
     case retrying_request_with_fallback_path(httpMethod: String, path: String)
+    case retrying_request_with_next_api_source(httpMethod: String, path: String, host: String)
+    case api_source_healthy_despite_failure(host: String)
+    case skipping_malformed_api_source_url(url: String)
+    case api_source_health_check_completed(url: URL, statusCode: Int, isHealthy: Bool)
+    case api_source_health_check_failed_to_connect(url: URL, error: Error)
     case failing_url_resolved_to_host(url: URL, resolvedHost: String)
     case blocked_network(url: URL, newHost: String?)
     case api_request_redirect(from: URL, to: URL)
@@ -51,8 +57,9 @@ enum NetworkStrings {
     case request_handled_by_load_shedder(HTTPRequestPath)
 
     #if DEBUG
-    case api_request_forcing_server_error(HTTPRequest)
-    case api_request_faking_error_response(HTTPRequest)
+    case api_request_forcing_server_error(HTTPRequest, serverErrorURL: URL)
+    case api_request_faking_response(HTTPRequest, statusCode: Int)
+    case api_request_appending_query_items(HTTPRequest, queryItems: [URLQueryItem])
     case api_request_forcing_signature_failure(HTTPRequest)
     case api_request_disabling_header_parameter_signature_verification(HTTPRequest)
     case api_request_response_both_fallback_and_load_shedder(HTTPRequest)
@@ -113,6 +120,9 @@ extension NetworkStrings: LogMessage {
             return "There's a request currently running and \(queuedRequestsCount) requests left in the queue, " +
                 "queueing \(httpMethod) \(path)"
 
+        case let .serial_request_paused(httpMethod, path):
+            return "Requests are currently paused, queueing \(httpMethod) \(path)"
+
         case .starting_next_request(let request):
             return "Starting the next request in the queue, \(request)"
 
@@ -124,6 +134,21 @@ extension NetworkStrings: LogMessage {
 
         case let .retrying_request_with_fallback_path(httpMethod, path):
             return "Retrying request using fallback host: \(httpMethod) \(path)"
+
+        case let .retrying_request_with_next_api_source(httpMethod, path, host):
+            return "Retrying request \(httpMethod) \(path) using next API source host \(host)"
+
+        case let .api_source_healthy_despite_failure(host):
+            return "API source \(host) is healthy despite the request failing; not failing over."
+
+        case let .skipping_malformed_api_source_url(url):
+            return "Skipping API source with malformed url \(url)"
+
+        case let .api_source_health_check_completed(url, statusCode, isHealthy):
+            return "Health check for \(url.absoluteString) returned \(statusCode) (healthy=\(isHealthy))"
+
+        case let .api_source_health_check_failed_to_connect(url, error):
+            return "Health check for \(url.absoluteString) failed to connect: \(error)"
 
         case let .failing_url_resolved_to_host(url, resolvedHost):
             return "Failing url '\(url)' resolved to host '\(resolvedHost)'"
@@ -149,11 +174,17 @@ extension NetworkStrings: LogMessage {
             return "Request \(httpMethod) \(path) failed all \(retryCount) retries."
 
         #if DEBUG
-        case let .api_request_forcing_server_error(request):
-            return "Forcing server error for request \(request.description)"
+        case let .api_request_forcing_server_error(request, serverErrorURL):
+            return "Forcing server error for request \(request.description) " +
+            "by routing it to \(serverErrorURL.absoluteString)"
 
-        case let .api_request_faking_error_response(request):
-            return "Faking error response for request \(request.description)"
+        case let .api_request_faking_response(request, statusCode):
+            return "Faking response with status code \(statusCode) " +
+            "for request \(request.description)"
+
+        case let .api_request_appending_query_items(request, queryItems):
+            let query = queryItems.map { "\($0.name)=\($0.value ?? "")" }.joined(separator: "&")
+            return "Appending query items '\(query)' to request \(request.description)"
 
         case let .api_request_forcing_signature_failure(request):
             return "Returning fake signature verification failure for '\(request.description)'"
