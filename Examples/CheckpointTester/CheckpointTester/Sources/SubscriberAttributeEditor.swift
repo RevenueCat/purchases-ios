@@ -41,12 +41,6 @@ struct SubscriberAttributeEditor: View {
             .navigationTitle("Subscriber attribute")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") {
-                        self.dismiss()
-                    }
-                }
-
                 ToolbarItemGroup(placement: .confirmationAction) {
                     Button("Unset", role: .destructive) {
                         self.updateAttribute(value: "")
