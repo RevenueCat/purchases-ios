@@ -99,10 +99,17 @@
       "expected": {"error": "typeMismatch", "operator": "rc.split"}
     },
     {
-      "id": "split_missing_variable_is_type_error",
-      "description": "A missing variable would otherwise split into a single empty field and match loosely",
+      "id": "split_missing_variable_fails_at_the_lookup",
+      "description": "A typo'd path is caught by var before rc.split ever sees it, so the error names the unresolved path rather than blaming the operator",
       "predicate": {"rc.split": [{"var": "missing"}, ","]},
       "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "missing"}
+    },
+    {
+      "id": "split_explicit_null_is_still_a_type_error",
+      "description": "A key that is present but null is a known value, not an unresolved one, so it reaches rc.split and is refused there",
+      "predicate": {"rc.split": [{"var": "maybe"}, ","]},
+      "variables": {"maybe": null},
       "expected": {"error": "typeMismatch", "operator": "rc.split"}
     },
     {

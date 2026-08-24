@@ -190,14 +190,30 @@
       }
     },
     {
-      "id": "length_missing_variable_is_type_error",
-      "description": "var resolves a missing key to null; rc.length throws rather than silently returning 0",
+      "id": "length_missing_variable_fails_at_the_lookup",
+      "description": "the missing key is caught by var before rc.length ever sees it, so the error names the unresolved path rather than blaming the operator for a null argument",
       "predicate": {
         "rc.length": {
           "var": "missing"
         }
       },
       "variables": {},
+      "expected": {
+        "error": "unresolvedVariable",
+        "path": "missing"
+      }
+    },
+    {
+      "id": "length_explicit_null_is_still_a_type_error",
+      "description": "a key that is present but null is a known value, not an unresolved one, so it reaches rc.length and fails there instead",
+      "predicate": {
+        "rc.length": {
+          "var": "maybe"
+        }
+      },
+      "variables": {
+        "maybe": null
+      },
       "expected": {
         "error": "typeMismatch",
         "operator": "rc.length"
