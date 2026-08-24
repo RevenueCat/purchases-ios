@@ -751,7 +751,7 @@ extension VariablesV2 {
         )
     }
 
-    // TODO: the per-period offer variables below still reformat through `NumberFormatter`, so their
+    // Note: the per-period offer variables below still reformat through `NumberFormatter`, so their
     // currency token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
     func productOfferPricePerDay(
         package: Package,
