@@ -22,6 +22,264 @@ import _StringProcessing
 import _SwiftConcurrencyShims
 import os
 import zlib
+@_hasMissingDesignatedInitializers @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+@objc(RCAdTracker) final public class AdTracker : ObjectiveC.NSObject {
+  @objc final public func trackAdFailedToLoad(_ data: RevenueCat.AdFailedToLoad)
+  @objc final public func trackAdLoaded(_ data: RevenueCat.AdLoaded)
+  @objc final public func trackAdDisplayed(_ data: RevenueCat.AdDisplayed)
+  @objc final public func trackAdOpened(_ data: RevenueCat.AdOpened)
+  @objc final public func trackAdRevenue(_ data: RevenueCat.AdRevenue)
+  @objc deinit
+}
+@objc(RCMediatorName) final public class MediatorName : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public let rawValue: Swift.String
+  @objc public init(rawValue: Swift.String)
+  @objc public static let adMob: RevenueCat.MediatorName
+  @objc public static let appLovin: RevenueCat.MediatorName
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdFormat) final public class AdFormat : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public let rawValue: Swift.String
+  @objc public init(rawValue: Swift.String)
+  @objc public static let other: RevenueCat.AdFormat
+  @objc public static let banner: RevenueCat.AdFormat
+  @objc public static let interstitial: RevenueCat.AdFormat
+  @objc public static let rewarded: RevenueCat.AdFormat
+  @objc public static let rewardedInterstitial: RevenueCat.AdFormat
+  @objc public static let native: RevenueCat.AdFormat
+  @objc public static let appOpen: RevenueCat.AdFormat
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdFailedToLoad) final public class AdFailedToLoad : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public var mediatorName: RevenueCat.MediatorName {
+    get
+  }
+  @objc final public var adFormat: RevenueCat.AdFormat {
+    get
+  }
+  @objc final public var placement: Swift.String? {
+    get
+  }
+  @objc final public var adUnitId: Swift.String {
+    get
+  }
+  @objc final public var mediatorErrorCode: Foundation.NSNumber? {
+    @objc get
+  }
+  final public var mediatorErrorCodeValue: Swift.Int? {
+    get
+  }
+  @objc public init(mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, mediatorErrorCode: Foundation.NSNumber?)
+  convenience public init(mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, mediatorErrorCode: Swift.Int?)
+  @objc convenience public init(mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, mediatorErrorCode: Foundation.NSNumber? = nil)
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdLoaded) final public class AdLoaded : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public var networkName: Swift.String? {
+    get
+  }
+  @objc final public var mediatorName: RevenueCat.MediatorName {
+    get
+  }
+  @objc final public var adFormat: RevenueCat.AdFormat {
+    get
+  }
+  @objc final public var placement: Swift.String? {
+    get
+  }
+  @objc final public var adUnitId: Swift.String {
+    get
+  }
+  @objc final public var impressionId: Swift.String {
+    get
+  }
+  @objc public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc convenience public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdDisplayed) final public class AdDisplayed : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public var networkName: Swift.String? {
+    get
+  }
+  @objc final public var mediatorName: RevenueCat.MediatorName {
+    get
+  }
+  @objc final public var adFormat: RevenueCat.AdFormat {
+    get
+  }
+  @objc final public var placement: Swift.String? {
+    get
+  }
+  @objc final public var adUnitId: Swift.String {
+    get
+  }
+  @objc final public var impressionId: Swift.String {
+    get
+  }
+  @objc public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc convenience public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdOpened) final public class AdOpened : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public var networkName: Swift.String? {
+    get
+  }
+  @objc final public var mediatorName: RevenueCat.MediatorName {
+    get
+  }
+  @objc final public var adFormat: RevenueCat.AdFormat {
+    get
+  }
+  @objc final public var placement: Swift.String? {
+    get
+  }
+  @objc final public var adUnitId: Swift.String {
+    get
+  }
+  @objc final public var impressionId: Swift.String {
+    get
+  }
+  @objc public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc convenience public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, impressionId: Swift.String)
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+@objc(RCAdRevenue) final public class AdRevenue : ObjectiveC.NSObject, Swift.Codable, @unchecked Swift.Sendable {
+  @objc final public var networkName: Swift.String? {
+    get
+  }
+  @objc final public var mediatorName: RevenueCat.MediatorName {
+    get
+  }
+  @objc final public var adFormat: RevenueCat.AdFormat {
+    get
+  }
+  @objc final public var placement: Swift.String? {
+    get
+  }
+  @objc final public var adUnitId: Swift.String {
+    get
+  }
+  @objc final public var impressionId: Swift.String {
+    get
+  }
+  @objc final public var revenueMicros: Swift.Int {
+    get
+  }
+  @objc final public var currency: Swift.String {
+    get
+  }
+  @objc final public var precision: RevenueCat.AdRevenue.Precision {
+    get
+  }
+  @objc public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String, revenueMicros: Swift.Int, currency: Swift.String, precision: RevenueCat.AdRevenue.Precision)
+  @objc convenience public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, adUnitId: Swift.String, impressionId: Swift.String, revenueMicros: Swift.Int, currency: Swift.String, precision: RevenueCat.AdRevenue.Precision)
+  @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+  @objc override final public var hash: Swift.Int {
+    @objc get
+  }
+  @objc deinit
+  final public func encode(to encoder: any Swift.Encoder) throws
+  public init(from decoder: any Swift.Decoder) throws
+}
+extension RevenueCat.AdRevenue {
+  @objc(RCAdRevenuePrecision) final public class Precision : ObjectiveC.NSObject, Swift.Codable {
+    @objc final public let rawValue: Swift.String
+    @objc public init(rawValue: Swift.String)
+    @objc public static let exact: RevenueCat.AdRevenue.Precision
+    @objc public static let publisherDefined: RevenueCat.AdRevenue.Precision
+    @objc public static let estimated: RevenueCat.AdRevenue.Precision
+    @objc public static let unknown: RevenueCat.AdRevenue.Precision
+    @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
+    @objc override final public var hash: Swift.Int {
+      @objc get
+    }
+    @objc deinit
+    final public func encode(to encoder: any Swift.Encoder) throws
+    public init(from decoder: any Swift.Decoder) throws
+  }
+}
+public struct AdReward : Swift.Sendable, Swift.Equatable {
+  public static let noReward: RevenueCat.AdReward
+  public static let unsupportedReward: RevenueCat.AdReward
+  public var virtualCurrency: RevenueCat.VirtualCurrencyReward? {
+    get
+  }
+  public var entitlement: RevenueCat.EntitlementReward? {
+    get
+  }
+  public static func == (a: RevenueCat.AdReward, b: RevenueCat.AdReward) -> Swift.Bool
+}
+public struct EntitlementReward : Swift.Sendable, Swift.Equatable {
+  public let identifier: Swift.String
+  public let expiresAt: Foundation.Date
+  public static func == (a: RevenueCat.EntitlementReward, b: RevenueCat.EntitlementReward) -> Swift.Bool
+}
+public struct RewardVerificationResult : Swift.Sendable, Swift.Equatable {
+  public static let failed: RevenueCat.RewardVerificationResult
+  public var verifiedReward: RevenueCat.AdReward? {
+    get
+  }
+  public var moreRewards: [RevenueCat.AdReward] {
+    get
+  }
+  public static func == (a: RevenueCat.RewardVerificationResult, b: RevenueCat.RewardVerificationResult) -> Swift.Bool
+}
+public struct RewardVerificationToken : Swift.Sendable, Swift.Equatable {
+  public let customData: Swift.String
+  public let clientTransactionID: Swift.String
+  public let appUserID: Swift.String
+  public static func == (a: RevenueCat.RewardVerificationToken, b: RevenueCat.RewardVerificationToken) -> Swift.Bool
+}
+public struct RewardedAdTrackingMetadata : Swift.Sendable {
+  public let networkName: Swift.String?
+  public let mediatorName: RevenueCat.MediatorName
+  public let adFormat: RevenueCat.AdFormat
+  public let placement: Swift.String?
+  public let adUnitId: Swift.String
+  public let impressionId: Swift.String
+  public init(networkName: Swift.String?, mediatorName: RevenueCat.MediatorName, adFormat: RevenueCat.AdFormat, placement: Swift.String?, adUnitId: Swift.String, impressionId: Swift.String)
+}
+public struct VirtualCurrencyReward : Swift.Sendable, Swift.Equatable {
+  public let code: Swift.String
+  public let amount: Swift.Int
+  public static func == (a: RevenueCat.VirtualCurrencyReward, b: RevenueCat.VirtualCurrencyReward) -> Swift.Bool
+}
 @objc(RCAttributionNetwork) public enum AttributionNetwork : Swift.Int {
   @available(*, deprecated, message: "use adServices")
   case appleSearchAds = 0
@@ -2104,6 +2362,10 @@ public typealias StartPurchaseBlock = (@escaping RevenueCat.PurchaseCompletedBlo
   @objc final public var storeFrontCountryCode: Swift.String? {
     @objc get
   }
+  @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+  @objc final public var adTracker: RevenueCat.AdTracker {
+    @objc get
+  }
   @objc deinit
 }
 extension RevenueCat.Purchases {
@@ -2193,6 +2455,10 @@ extension RevenueCat.Purchases {
 extension RevenueCat.Purchases {
   @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
   public static let paywallImageDownloadSession: Foundation.URLSession
+}
+extension RevenueCat.Purchases {
+  final public func generateRewardVerificationToken(impressionId: Swift.String) -> RevenueCat.RewardVerificationToken
+  final public func pollRewardVerification(clientTransactionID: Swift.String, trackingMetadata: RevenueCat.RewardedAdTrackingMetadata? = nil) async -> RevenueCat.RewardVerificationResult
 }
 extension RevenueCat.Purchases {
   @objc final public func overridePreferredUILocale(_ locale: Swift.String?)
