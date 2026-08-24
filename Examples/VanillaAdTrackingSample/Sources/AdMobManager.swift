@@ -3,7 +3,6 @@
 import Foundation
 import GoogleMobileAds
 import RevenueCat
-import RevenueCat
 
 // MARK: - AdMobManager
 
