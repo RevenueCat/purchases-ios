@@ -93,10 +93,12 @@ struct CustomerInfoDimensionProviderTests {
             "purchasedProductIdentifier": .string("coins"),
             "transactionIdentifier": .string("abc123"),
             "storeTransactionId": .string("amzn.1234"),
+            "displayName": .string("100 Coins"),
             "store": .string("amazon"),
             "priceAmountMicros": .int(1_990_000),
             "priceCurrency": .string("EUR"),
             "purchasedAt": .date(Self.transactionPurchaseDate),
+            "originalPurchasedAt": .date(Self.transactionPurchaseDate),
             "isSandbox": .bool(false)
         ])
     }
