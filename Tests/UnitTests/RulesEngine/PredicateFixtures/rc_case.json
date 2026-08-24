@@ -1,0 +1,262 @@
+{
+  "fixtures": [
+    {
+      "id": "lower_basic_ascii",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "Hello, World!"
+          },
+          "hello, world!"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "upper_basic_ascii",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "Hello, World!"
+          },
+          "HELLO, WORLD!"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_locale_independent_turkish_i",
+      "description": "Unicode default mapping: Latin capital I lowercases to ASCII i, not Turkish dotless ı; matches JS toLowerCase(), not toLocaleLowerCase()",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "I"
+          },
+          "i"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "upper_locale_independent_turkish_i",
+      "description": "Unicode default mapping: ASCII i uppercases to Latin capital I (U+0049), not Turkish dotted İ (U+0130); matches JS toUpperCase(), not toLocaleUpperCase()",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "i"
+          },
+          "I"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_non_ascii_accented_latin",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": "Résumé"
+          },
+          "résumé"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "upper_non_ascii_greek_sigma",
+      "predicate": {
+        "===": [
+          {
+            "rc.upper": "σ"
+          },
+          "Σ"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_null_is_type_error",
+      "description": "Deliberate divergence from JS String(null).toLowerCase() === \"null\": coercing absent data into the literal \"null\" would let a rule match by accident, so non-strings throw",
+      "predicate": {
+        "rc.lower": null
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "upper_null_is_type_error",
+      "description": "rc.upper enforces the same string-only contract as rc.lower",
+      "predicate": {
+        "rc.upper": null
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.upper"
+      }
+    },
+    {
+      "id": "lower_undefined_is_type_error",
+      "description": "{\"and\": []} yields undefined, which JS would coerce to \"undefined\"",
+      "predicate": {
+        "rc.lower": {
+          "and": []
+        }
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_number_is_type_error",
+      "description": "Numbers throw rather than being stringified, which also keeps the engine's number formatting out of case comparisons",
+      "predicate": {
+        "rc.lower": 42
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "upper_number_is_type_error",
+      "description": "rc.upper rejects numbers too",
+      "predicate": {
+        "rc.upper": 42
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.upper"
+      }
+    },
+    {
+      "id": "lower_bool_is_type_error",
+      "description": "Booleans throw; JS would produce \"true\"",
+      "predicate": {
+        "rc.lower": true
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_array_is_type_error",
+      "description": "Unlike rc.length, an array is not valid input: there is no element-wise casing",
+      "predicate": {
+        "rc.lower": [
+          [
+            "A",
+            "B"
+          ]
+        ]
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_object_is_type_error",
+      "description": "Objects throw; JS would produce \"[object Object]\"",
+      "predicate": {
+        "rc.lower": {
+          "var": "obj"
+        }
+      },
+      "variables": {
+        "obj": {
+          "a": 1
+        }
+      },
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_missing_variable_is_type_error",
+      "description": "Motivating case for throwing: a typo'd path resolves to null, and coercion would make {\"===\": [{\"rc.lower\": {\"var\": \"typo\"}}, \"null\"]} quietly true",
+      "predicate": {
+        "rc.lower": {
+          "var": "missing"
+        }
+      },
+      "variables": {},
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.lower"
+      }
+    },
+    {
+      "id": "lower_multi_element_arg_list_uses_first_only",
+      "description": "json-logic-js spread semantics: only the first argument is used; extra args silently ignored",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": [
+              "HELLO",
+              "ignored"
+            ]
+          },
+          "hello"
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "lower_case_insensitive_country_code_equality",
+      "description": "Motivating case: compare a variable country code case-insensitively against a lowercase literal",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": {
+              "var": "country"
+            }
+          },
+          "es"
+        ]
+      },
+      "variables": {
+        "country": "ES"
+      },
+      "expected": true
+    },
+    {
+      "id": "lower_case_insensitive_in_substring_check",
+      "description": "Motivating case: case-insensitive substring membership via in on lowercased haystack and needle",
+      "predicate": {
+        "in": [
+          {
+            "rc.lower": "es"
+          },
+          {
+            "rc.lower": {
+              "var": "country"
+            }
+          }
+        ]
+      },
+      "variables": {
+        "country": "United States"
+      },
+      "expected": true
+    }
+  ]
+}

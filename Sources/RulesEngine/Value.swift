@@ -242,11 +242,17 @@ extension RulesEngine {
     /// `NaN` / `±Infinity` keep their JS spellings, fractional doubles use
     /// Swift's default rendering (matches JS for non-pathological values).
     ///
-    /// Known divergence from JS: for values beyond exact integer round-trip range,
-    /// we fall through to Swift's `String(Double)`, which may use scientific
-    /// notation earlier than JS (`1e19` → `"1e+19"` vs `"10000000000000000000"`).
-    /// This only surfaces through `var` path coercion or `looseEq`'s compound-vs-
-    /// primitive arm with pathological magnitudes.
+    /// Known divergence from JS: values that `Int64(exactly:)` rejects — either
+    /// non-integral or beyond `Int64`'s range — fall through to Swift's
+    /// `String(Double)`. That agrees with JS for ordinary magnitudes, but it
+    /// switches between fixed and scientific notation at different thresholds
+    /// than ECMAScript `Number::toString` and zero-pads exponents:
+    /// `1e19` → `"1e+19"` vs `"10000000000000000000"`, `1e-6` → `"1e-06"` vs
+    /// `"0.000001"`, `1e-7` → `"1e-07"` vs `"1e-7"`.
+    ///
+    /// Reachable from any operator that stringifies a number: `cat`, `substr`,
+    /// `in`, `var` path coercion, and `looseEq` / relational comparison against
+    /// a compound value.
     static func jsNumberString(_ value: Double) -> String {
         if value.isNaN { return "NaN" }
         if value.isInfinite { return value > 0 ? "Infinity" : "-Infinity" }
