@@ -132,7 +132,6 @@ struct Keychain: SecureItemStorage {
 
         // the identifier of this particular app (and its extensions)
         // this is used to disambiguate values saved by other apps
-        // to prevent values from
         let appIdentifier: String
     }
 

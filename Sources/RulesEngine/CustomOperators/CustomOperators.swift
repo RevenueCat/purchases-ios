@@ -36,6 +36,9 @@ extension RulesEngine {
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)
 
+            case "rc.split":
+                return try SplitOperator.opSplit(args: args, vars: vars)
+
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)
             }
