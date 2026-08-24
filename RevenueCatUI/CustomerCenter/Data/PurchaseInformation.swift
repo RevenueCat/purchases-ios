@@ -519,20 +519,15 @@ extension PurchaseInformation {
         }
 
         let dateString = dateFormatter.string(from: renewalDate)
-        let lastPaidPrice: String
         switch pricePaid {
-        case .free:
-            lastPaidPrice = localizations[.free].lowercased()
         case let .nonFree(priceString):
-            lastPaidPrice = priceString
-        case .unknown:
+            return localizations[.renewsOnDateWithLastPaidPrice]
+                .replacingOccurrences(of: "{{ date }}", with: dateString)
+                .replacingOccurrences(of: "{{ price }}", with: priceString)
+        case .free, .unknown:
             return localizations[.renewsOnDate]
                 .replacingOccurrences(of: "{{ date }}", with: dateString)
         }
-
-        return localizations[.renewsOnDateWithLastPaidPrice]
-            .replacingOccurrences(of: "{{ date }}", with: dateString)
-            .replacingOccurrences(of: "{{ price }}", with: lastPaidPrice)
     }
 
     private func expirationString(

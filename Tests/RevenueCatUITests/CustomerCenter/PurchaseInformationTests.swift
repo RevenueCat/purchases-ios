@@ -72,6 +72,19 @@ final class PurchaseInformationTests: TestCase {
 
     private let mockCustomerCenterStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
 
+    func testSubtitleWithFreePricePaidAndNoRenewalPriceOnlyShowsRenewalDate() throws {
+        let renewalDate = try XCTUnwrap(Self.mockDateFormatter.date(from: "Apr 12, 2062"))
+        let purchaseInformation = PurchaseInformation.mock(
+            pricePaid: .free,
+            renewalPrice: nil,
+            dateFormatter: Self.mockDateFormatter,
+            renewalDate: renewalDate
+        )
+
+        expect(purchaseInformation.subtitle(localizations: Self.mockLocalization)) ==
+            "Renews on Apr 12, 2062."
+    }
+
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
