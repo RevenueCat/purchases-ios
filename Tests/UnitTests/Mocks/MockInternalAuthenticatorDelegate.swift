@@ -25,19 +25,19 @@ final class MockInternalAuthenticatorDelegate: InternalAuthenticatorDelegate {
         self.invokedAuthenticatorDidLogInParametersList.append(info)
     }
 
-    private(set) var invokedAuthenticatorDidLogOut = false
-    private(set) var invokedAuthenticatorDidLogOutCount = 0
+    private(set) var invokedAuthenticatorDidChangeIdentity = false
+    private(set) var invokedAuthenticatorDidChangeIdentityCount = 0
 
-    /// The result that will be handed to the completion passed to ``authenticatorDidLogOut(completion:)``.
+    /// The result that will be handed to the completion passed to ``authenticatorDidChangeIdentity(completion:)``.
     /// If left `nil`, the completion is never invoked, to make it easy to test that a caller correctly
     /// waits for this delegate callback.
-    var stubbedAuthenticatorDidLogOutResult: Result<CustomerInfo, PublicError>?
+    var stubbedAuthenticatorDidChangeIdentityResult: Result<CustomerInfo, PublicError>?
 
-    func authenticatorDidLogOut(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
-        self.invokedAuthenticatorDidLogOut = true
-        self.invokedAuthenticatorDidLogOutCount += 1
+    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
+        self.invokedAuthenticatorDidChangeIdentity = true
+        self.invokedAuthenticatorDidChangeIdentityCount += 1
 
-        if let result = self.stubbedAuthenticatorDidLogOutResult {
+        if let result = self.stubbedAuthenticatorDidChangeIdentityResult {
             completion(result)
         }
     }

@@ -1263,7 +1263,7 @@ extension Purchases: InternalAuthenticatorDelegate {
         }
     }
 
-    func authenticatorDidLogOut(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
+    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
         // The web view cache must retain the cache on login to support multipage paywalls and workflows
         // making `.identityChange` an insufficient signal.
         Task { await self.webBundleEventBus.clearCache() }

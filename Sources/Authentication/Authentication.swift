@@ -33,7 +33,7 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
 
 internal protocol InternalAuthenticatorDelegate: AnyObject {
     func authenticatorDidLogIn(info: CustomerInfo)
-    func authenticatorDidLogOut(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
+    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
 }
 
 /// A namespace for providing authentication-related functionality to the ``Purchases`` instance
@@ -271,7 +271,7 @@ public final class Authentication: NSObject {
                         completion?(nil, error.asPublicError)
                         return
                     }
-                    delegate.authenticatorDidLogOut { result in
+                    delegate.authenticatorDidChangeIdentity { result in
                         completion?(result.value, result.error)
                     }
                 }

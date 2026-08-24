@@ -265,7 +265,7 @@ class AuthenticationTests: TestCase {
         let authentication = self.makeAuthentication()
         self.identityManager.mockLogOutError = nil
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-out-user"))
-        self.internalDelegate.stubbedAuthenticatorDidLogOutResult = .success(expectedInfo)
+        self.internalDelegate.stubbedAuthenticatorDidChangeIdentityResult = .success(expectedInfo)
 
         var receivedInfo: CustomerInfo?
         var receivedError: PublicError?
@@ -278,10 +278,10 @@ class AuthenticationTests: TestCase {
         expect(receivedInfo) == expectedInfo
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogOutCount) == 1
-        expect(self.internalDelegate.invokedAuthenticatorDidLogOut) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
     }
 
-    func testLogOutForwardsIdentityManagerErrorToCompletionAndDoesNotLogOut() {
+    func testLogOutForwardsIdentityManagerErrorToCompletionAndDoesNotChangeIdentity() {
         let authentication = self.makeAuthentication()
         let logOutError = BackendError.networkError(.offlineConnection()).asPurchasesError
         self.identityManager.mockLogOutError = logOutError
@@ -292,7 +292,7 @@ class AuthenticationTests: TestCase {
         }
 
         expect(receivedError).to(matchError(logOutError))
-        expect(self.internalDelegate.invokedAuthenticatorDidLogOut) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     // MARK: - logOut(userInitiated:completion:) - custom entitlement computation
@@ -357,7 +357,7 @@ class AuthenticationTests: TestCase {
         let authentication = self.makeAuthentication()
         self.identityManager.mockLogOutError = nil
         let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-out-user"))
-        self.internalDelegate.stubbedAuthenticatorDidLogOutResult = .success(expectedInfo)
+        self.internalDelegate.stubbedAuthenticatorDidChangeIdentityResult = .success(expectedInfo)
 
         let result = try await authentication.logOut()
 
