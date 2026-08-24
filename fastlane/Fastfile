@@ -2653,7 +2653,8 @@ platform :ios do
       options[:labels],
       source: source,
       new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
-      modules: modules
+      modules: modules,
+      modifications: ApiDiffHelper.modified_declarations(options[:reports_by_target])
     )
     fingerprint = ApiDiffHelper.announcement_fingerprint(summary)
 

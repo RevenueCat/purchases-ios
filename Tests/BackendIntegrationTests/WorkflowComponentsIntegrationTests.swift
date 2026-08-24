@@ -87,7 +87,7 @@ private final class RemoteConfigKillSwitchFake: @unchecked Sendable {
         data: Data,
         request: HTTPClient.Request
     ) -> ForceServerErrorStrategy.Action {
-        guard let url = request.httpRequest.path.url,
+        guard let url = request.httpRequest.path.url(preferIAMPath: false),
               let response = HTTPURLResponse(url: url,
                                              statusCode: statusCode,
                                              httpVersion: nil,

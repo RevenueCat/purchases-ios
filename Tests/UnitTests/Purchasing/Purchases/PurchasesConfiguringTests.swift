@@ -14,7 +14,7 @@
 import Nimble
 import XCTest
 
-@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 
 class PurchasesConfiguringTests: BasePurchasesTests {
 
@@ -67,6 +67,22 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(Purchases.isConfigured) == false
         self.setupPurchases()
         expect(Purchases.isConfigured) == true
+    }
+
+    func testKeychainAccessGroupPassedThroughConfiguration() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(iamEnabled: true, keychainAccessGroup: "group.com.revenuecat.shared")
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.currentConfiguration?.keychainAccessGroup) == "group.com.revenuecat.shared"
+    }
+
+    func testKeychainAccessGroupIsNilWhenNotConfigured() {
+        let configurationBuilder = Configuration.Builder(withAPIKey: "")
+            .with(iamEnabled: true)
+        let purchases = Purchases.configure(with: configurationBuilder.build())
+
+        expect(purchases.currentConfiguration?.keychainAccessGroup).to(beNil())
     }
 
     func testConfigurationPassedThroughTimeouts() {
