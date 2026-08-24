@@ -230,7 +230,7 @@
     },
     {
       "id": "some_predicate_cannot_reach_parent_scope",
-      "description": "inside the predicate only the current item is visible; outer x is unreachable so {\"var\": \"x\"} resolves to null and equality is false for every item",
+      "description": "inside the predicate only the current item is visible, so the outer x is unreachable; the error names the path rather than letting a null stand in for a value that does exist one scope up",
       "predicate": {
         "some": [
           [
@@ -250,7 +250,10 @@
       "variables": {
         "x": "outer"
       },
-      "expected": false
+      "expected": {
+        "error": "unresolvedVariable",
+        "path": "x"
+      }
     },
     {
       "id": "some_returns_true_when_one_object_in_array_matches",
