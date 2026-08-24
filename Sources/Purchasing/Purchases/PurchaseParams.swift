@@ -167,7 +167,7 @@ import AppKit
          * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
         @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
-        @objc public func with(confirmInScene: UIScene) -> Self {
+        public func with(confirmInScene: UIScene) -> Self {
             self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
             return self
         }
@@ -183,7 +183,7 @@ import AppKit
          * Availability: macOS 15.2+
          */
         @available(macOS 15.2, *)
-        @objc public func with(confirmInWindow: NSWindow) -> Self {
+        public func with(confirmInWindow: NSWindow) -> Self {
             self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
             return self
         }
