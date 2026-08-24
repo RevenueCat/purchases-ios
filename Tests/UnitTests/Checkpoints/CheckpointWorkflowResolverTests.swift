@@ -889,7 +889,7 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
 
 }
 
-private struct AtomicCurrentUserProvider: CurrentUserProvider {
+private final class AtomicCurrentUserProvider: CurrentUserProvider {
 
     private let appUserID: Atomic<String>
 
@@ -901,7 +901,11 @@ private struct AtomicCurrentUserProvider: CurrentUserProvider {
     var currentUserIsAnonymous: Bool { false }
 }
 
-private struct FixedCurrentUserProvider: CurrentUserProvider {
+private final class FixedCurrentUserProvider: CurrentUserProvider {
+
+    init(currentAppUserID: String) {
+        self.currentAppUserID = currentAppUserID
+    }
 
     let currentAppUserID: String
     var currentUserIsAnonymous: Bool { false }
