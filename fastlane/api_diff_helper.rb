@@ -138,8 +138,9 @@ module ApiDiffHelper
   # One platform runs per thread, so this avoids fastlane's `sh` and `Dir.chdir`: both mutate
   # process-global state (the default encoding and the working directory) that the other builds
   # share. Failures come back as a result rather than an exception for the same reason: raising
-  # inside a thread only surfaces wherever its value happens to be read.
-  def build_swiftinterface(platform_config, scheme:, project_root:, output_dir:)
+  # inside a thread only surfaces wherever its value happens to be read. Every message names the
+  # SDK because PLATFORMS reuses one platform label for a device and its simulator.
+  def build_swiftinterface(platform_config, scheme:, modules:, project_root:, output_dir:)
     sdk = platform_config[:sdk]
     # Concurrent builds cannot share a derived data directory.
     derived_data = "#{project_root}/.build-#{scheme}-#{sdk}"
@@ -149,8 +150,6 @@ module ApiDiffHelper
 
     Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]} (#{sdk})...")
 
-    # Every failure names the SDK: PLATFORMS reuses one platform label for a device and its
-    # simulator, so the label alone cannot say which of the two builds failed.
     build_status = Open3.popen2e(
       "xcodebuild", "clean", "build",
       "-workspace", ".",
@@ -174,17 +173,27 @@ module ApiDiffHelper
       }
     end
 
-    swiftinterface_files = find_swiftinterface_file(derived_data, sdk, scheme)
+    missing = []
+    Array(modules).each do |module_name|
+      found = find_swiftinterface_file(derived_data, sdk, module_name).first
 
-    if swiftinterface_files.empty?
+      if found.nil?
+        missing << module_name
+      else
+        FileUtils.cp(found, "#{output_dir}/#{module_name}#{platform_config[:suffix]}.swiftinterface")
+      end
+    end
+
+    if missing.any?
       return {
         success: false,
-        error: "Could not find #{scheme}.swiftinterface for #{platform_config[:platform]} (#{sdk})"
+        error: "Could not find #{missing.join(', ')} swiftinterface for #{platform_config[:platform]} (#{sdk})"
       }
     end
 
-    FileUtils.cp(swiftinterface_files.first, "#{output_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface")
-    Fastlane::UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
+    Fastlane::UI.success(
+      "Generated #{Array(modules).join(', ')} #{platform_config[:platform]} (#{sdk}) swiftinterface"
+    )
 
     { success: true }
   end
@@ -476,6 +485,11 @@ module ApiDiffHelper
     end
   end
 
+  # The same break surfaces once per platform, so every list of breaks is collapsed on the way out.
+  def dedupe_breaks(breaks)
+    breaks.uniq { |change| [change[:reason], change[:owner], change[:declaration]] }
+  end
+
   BREAKING_CHANGE_LABEL = "pr:breaking-api".freeze
 
   BREAK_REASONS = {
@@ -524,7 +538,7 @@ module ApiDiffHelper
     "<!-- /api-diff:#{module_name} -->"
   end
 
-  # Two jobs write this comment; each owns a section or the last writer wins.
+  # The comment carries one section per module, so writing one must not drop the others.
   def merge_api_diff_comment(existing_body, module_name, section)
     open_tag = api_diff_section_open(module_name)
     close_tag = api_diff_section_close(module_name)
