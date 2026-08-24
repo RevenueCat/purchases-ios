@@ -385,7 +385,8 @@ final class CustomerCenterViewModelTests: TestCase {
         mockRenewal.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
             price: 2.99,
             currencyCode: "USD",
-            productIdentifier: productId
+            productIdentifier: productId,
+            autoRenewPreference: productId
         )
 
         let viewModelWithRenewal = CustomerCenterViewModel(
@@ -1166,7 +1167,8 @@ final class CustomerCenterViewModelTests: TestCase {
         mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
             price: 5.0,
             currencyCode: "USD",
-            productIdentifier: "com.revenuecat.product"
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
         )
 
         let viewModel = CustomerCenterViewModel(
@@ -1191,7 +1193,8 @@ final class CustomerCenterViewModelTests: TestCase {
         mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
             price: 5,
             currencyCode: "USD",
-            productIdentifier: "com.revenuecat.product"
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
         )
 
         let viewModel = CustomerCenterViewModel(

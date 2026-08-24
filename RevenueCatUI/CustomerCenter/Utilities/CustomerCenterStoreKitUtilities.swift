@@ -29,7 +29,8 @@ final class CustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType
         return RenewalPriceData(
             price: renewalPrice,
             currencyCode: currencyCode,
-            productIdentifier: renewalInfo.currentProductID
+            productIdentifier: renewalInfo.currentProductID,
+            autoRenewPreference: renewalInfo.autoRenewPreference
         )
         #else
         return nil

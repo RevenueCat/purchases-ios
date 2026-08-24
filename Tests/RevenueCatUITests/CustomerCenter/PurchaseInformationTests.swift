@@ -54,13 +54,16 @@ final class PurchaseInformationTests: TestCase {
         ]
     )
 
+    static let appleFixtureProductIdentifier = "com.revenuecat.product"
+
     private class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
         var mockRenewalPrice: RenewalPriceData?
 
         init(mockRenewalPrice: RenewalPriceData? = RenewalPriceData(
             price: 7.99,
             currencyCode: "USD",
-            productIdentifier: "com.revenuecat.product"
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
         )) {
             self.mockRenewalPrice = mockRenewalPrice
         }
@@ -213,6 +216,53 @@ final class PurchaseInformationTests: TestCase {
     }
 
     func testAppleEntitlementIgnoresRenewalInfoForDifferentProduct() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: "different_product",
+                autoRenewPreference: "different_product"
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews Apr 12, 2062; previously paid $6.99."
+    }
+
+    func testAppleEntitlementIgnoresRenewalInfoWhenProductChangeIsPending() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: Self.appleFixtureProductIdentifier,
+                autoRenewPreference: "com.revenuecat.yearly"
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews Apr 12, 2062; previously paid $6.99."
+    }
+
+    func testAppleEntitlementUsesRenewalInfoWithoutAutoRenewPreference() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: Self.appleFixtureProductIdentifier,
+                autoRenewPreference: nil
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice) == .nonFree("$7.99")
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews on Apr 12, 2062 for $7.99."
+    }
+
+    private func renewingAppleSubscriptionInfo(
+        renewalPrice: RenewalPriceData?
+    ) async throws -> PurchaseInformation {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 
@@ -250,18 +300,11 @@ final class PurchaseInformationTests: TestCase {
             isSubscription: true
         )
 
-        let storeKitUtilities = MockCustomerCenterStoreKitUtilities(
-            mockRenewalPrice: RenewalPriceData(
-                price: 7.99,
-                currencyCode: "USD",
-                productIdentifier: "different_product"
-            )
-        )
-        let subscriptionInfo = await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+        return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
             entitlement: entitlement,
             subscribedProduct: mockProduct.toStoreProduct(),
             transaction: mockTransaction,
-            customerCenterStoreKitUtilities: storeKitUtilities,
+            customerCenterStoreKitUtilities: MockCustomerCenterStoreKitUtilities(mockRenewalPrice: renewalPrice),
             customerInfoRequestedDate: Date(),
             dateFormatter: Self.mockDateFormatter,
             numberFormatter: Self.mockNumberFormatter,
@@ -269,10 +312,6 @@ final class PurchaseInformationTests: TestCase {
             changePlan: nil,
             localization: Self.mockLocalizationWithLastPaidPrice
         )
-
-        expect(subscriptionInfo.renewalPrice).to(beNil())
-        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
-            "Renews Apr 12, 2062; previously paid $6.99."
     }
 
     func testAppleEntitlementAndLifetimeProduct() async throws {

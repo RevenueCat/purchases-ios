@@ -419,6 +419,12 @@ extension PurchaseInformation {
             return nil
         }
 
+        // A pending product change means the renewal price belongs to the upcoming product, not this one.
+        if let autoRenewPreference = renewalPriceDetails.autoRenewPreference,
+           autoRenewPreference != product.productIdentifier {
+            return nil
+        }
+
         numberFormatter.currencyCode = renewalPriceDetails.currencyCode
 
         guard let formattedPrice =
