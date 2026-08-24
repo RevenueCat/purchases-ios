@@ -46,8 +46,7 @@ struct SubscriberAttributesProviderTests {
         #expect(dimensions == [
             "goal": .object([
                 "value": .string("lose_weight"),
-                "updatedAt": .date(Self.setDate),
-                "evaluatedAt": .date(Self.evaluationDate)
+                "updatedAt": .date(Self.setDate)
             ])
         ])
     }
@@ -117,6 +116,7 @@ struct SubscriberAttributesProviderTests {
         ).snapshot()
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(Int64(snapshot.evaluationDate.timeIntervalSince1970 * 1_000)),
             "device": .object(["platform": .string("ios")])
         ])
     }
@@ -187,7 +187,7 @@ struct SubscriberAttributesProviderTests {
             #"{">":[{"var":"subscriberAttributes.seats.value"},2]}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.tier.evaluatedAt"},
+                {"-":[{"var":"evaluatedAt"},
                       {"var":"subscriberAttributes.tier.updatedAt"}]},
                 604800000
             ]}
@@ -199,7 +199,7 @@ struct SubscriberAttributesProviderTests {
             #"{"!!":{"var":"subscriberAttributes.goal.isSynced"}}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.goal.evaluatedAt"},
+                {"-":[{"var":"evaluatedAt"},
                       {"var":"subscriberAttributes.goal.updatedAt"}]},
                 604800000
             ]}

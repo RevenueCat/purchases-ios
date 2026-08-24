@@ -38,6 +38,8 @@ import Foundation
     case disabled
     /// The checkpoint identifier is not configured.
     case unknownCheckpoint
+    /// The customer changed while the checkpoint was being resolved.
+    case customerChanged
 
 }
 
@@ -167,26 +169,34 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
         // Audiences are read live rather than pinned to this snapshot, so a refresh landing mid-walk leaves
         // the match built from config that is already gone.
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
-            return .noAction(.configurationUnavailable)
-        }
-
-        // Same reason the config is rechecked: an answer worked out for a customer who has since
-        // signed out is not an answer about the one here now, `noMatch` included.
-        guard self.currentUserProvider.currentAppUserID == appUserID else {
-            return .noAction(.configurationUnavailable)
+        if let outdated = self.outdated(rulesSnapshot, appUserID: appUserID) {
+            return .noAction(outdated)
         }
 
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
         let resolution = await self.resolve(rule, appUserID: appUserID)
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
-              self.currentUserProvider.currentAppUserID == appUserID else {
-            return .noAction(.configurationUnavailable)
+        if let outdated = self.outdated(rulesSnapshot, appUserID: appUserID) {
+            return .noAction(outdated)
         }
 
         return resolution
+    }
+
+    /// Why an answer worked out during the awaits above no longer describes the world it will be
+    /// delivered into, or `nil` when it still does. `noMatch` is an answer too, so it is checked.
+    private func outdated(
+        _ rulesSnapshot: CheckpointRulesSnapshot,
+        appUserID: String
+    ) -> CheckpointResolutionReason? {
+        if !self.checkpointsConfigProvider.isCurrent(rulesSnapshot) {
+            return .configurationUnavailable
+        }
+        if self.currentUserProvider.currentAppUserID != appUserID {
+            return .customerChanged
+        }
+        return nil
     }
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.

@@ -33,6 +33,9 @@ struct DimensionResolver: Sendable {
     private let dateProvider: DateProvider
     private let currentUserProvider: (any CurrentUserProvider)?
 
+    /// The instant the whole snapshot describes, readable at the root of the scope.
+    static let evaluatedAtKey = "evaluatedAt"
+
     /// Creates a resolver from injected providers, a clock, and the current customer.
     ///
     /// Without a `currentUserProvider` the snapshot describes no customer, so a customer-scoped
@@ -63,7 +66,11 @@ struct DimensionResolver: Sendable {
             date: self.dateProvider.now(),
             appUserID: appUserID ?? self.currentUserProvider?.currentAppUserID ?? ""
         )
-        var values: [String: RulesEngine.Value] = [:]
+        // At the root rather than copied onto every record. A predicate inside an iteration
+        // operator reaches it with `rc.rootVar`.
+        var values: [String: RulesEngine.Value] = [
+            Self.evaluatedAtKey: .int(Int64(context.date.timeIntervalSince1970 * 1_000))
+        ]
 
         for provider in self.dimensionProviders {
             try Task.checkCancellation()

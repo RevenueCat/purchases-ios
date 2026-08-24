@@ -203,7 +203,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .customerChanged)
     }
 
     func testUserSwitchWhileServingTheWorkflowDoesNotServeThePreviousCustomer() async throws {
@@ -220,7 +220,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .customerChanged)
     }
 
     func testCancellationWhileCollectingDimensionsPropagates() async {

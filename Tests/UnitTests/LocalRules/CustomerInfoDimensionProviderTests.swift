@@ -388,6 +388,29 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func exposesTheEvaluationInstantAtTheRootOfTheScope() async throws {
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [Self.provider()],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "current_user")
+        ).snapshot()
+
+        let readsTheInstant = #"{"==": [{"var": "evaluatedAt"}, \#(Self.milliseconds(Self.evaluationDate))]}"#
+        // A record is evaluated in its own scope, so a predicate inside an iteration operator reaches
+        // the instant through the preserved root rather than through `var`.
+        let comparesAPurchaseAgainstIt = """
+        {"some": [{"var": "customerInfo.purchases"}, \
+        {">": [{"var": "expiresAt"}, {"rc.rootVar": "evaluatedAt"}]}]}
+        """
+
+        #expect(RulesEngine.evaluate(predicate: readsTheInstant, variables: snapshot.values) == .success(true))
+        #expect(
+            RulesEngine.evaluate(predicate: comparesAPurchaseAgainstIt, variables: snapshot.values)
+            == .success(true)
+        )
+    }
+
+    @Test
     func anUnreadableCustomerInfoLetsAbsenceRulesMatch() async throws {
         let provider = CustomerInfoDimensionProvider(
             customerInfoProvider: StubCustomerInfoSource { _ in throw ErrorUtils.offlineConnectionError() }
@@ -610,6 +633,10 @@ private extension CustomerInfoDimensionProviderTests {
             "store": "app_store",
             "is_sandbox": false
         ]]
+    }
+
+    static func milliseconds(_ date: Date) -> Int64 {
+        return Int64(date.timeIntervalSince1970 * 1_000)
     }
 
     static func date(_ string: String) -> Date {

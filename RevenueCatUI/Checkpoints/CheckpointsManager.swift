@@ -133,6 +133,8 @@ private extension CheckpointResolutionReason {
             return .disabled
         case .unknownCheckpoint:
             return .unknownCheckpoint
+        case .customerChanged:
+            return .customerChanged
         }
     }
 

@@ -127,6 +127,7 @@ struct LocalRulesEvaluatorTests {
 
         #expect(snapshot.evaluationDate == date)
         #expect(snapshot.values == [
+            "evaluatedAt": .int(Int64(date.timeIntervalSince1970 * 1_000)),
             "device": .object([
                 "appVersion": .string("1.2.3"),
                 "isDebugBuild": .bool(true),

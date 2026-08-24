@@ -42,6 +42,7 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(Int64(snapshot.evaluationDate.timeIntervalSince1970 * 1_000)),
             "device": .object([
                 "date": .int(1_700_000_000_000),
                 "record": .object([
@@ -137,6 +138,7 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
+            "evaluatedAt": .int(Int64(snapshot.evaluationDate.timeIntervalSince1970 * 1_000)),
             "device": .object(["purchases": .array([])])
         ])
 
