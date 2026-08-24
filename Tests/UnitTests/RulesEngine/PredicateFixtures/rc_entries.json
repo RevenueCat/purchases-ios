@@ -1,0 +1,160 @@
+{
+  "fixtures": [
+    {
+      "id": "entries_object_pairs_sorted_lexicographically_by_key",
+      "description": "Object keys are emitted in lexicographic order regardless of declaration order; pair shape and order are verified via JS string coercion of the nested pair arrays",
+      "predicate": {"==": [{"rc.entries": {"c": 3, "a": 1, "b": 2}}, "a,1,b,2,c,3"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_object_pair_shape_exposes_key_and_value_scalars",
+      "description": "Each pair is a two-element array; some finds the expected key and value without comparing compound values directly",
+      "predicate": {
+        "and": [
+          {"some": [{"rc.entries": {"z": 9, "a": 1}}, {"===": [{"var": "0"}, "a"]}]},
+          {"some": [{"rc.entries": {"z": 9, "a": 1}}, {"===": [{"var": "1"}, 1]}]}
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_array_produces_string_index_keys",
+      "description": "Array input yields [[\"0\", elem0], [\"1\", elem1], ...]; literal array operands must be wrapped ([[...]]) per json-logic-js spread semantics",
+      "predicate": {"==": [{"rc.entries": [["a", "b"]]}, "0,a,1,b"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_multi_element_arg_list_uses_first_only",
+      "description": "json-logic-js spreads the arg array into the operator; {\"rc.entries\": [\"a\", \"b\"]} uses only the first argument (\"a\", a string → type error), extra args silently ignored like ! and !!. Treating the list as one array operand would instead succeed",
+      "predicate": {"rc.entries": ["a", "b"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "entries_singleton_wrapped_object_form",
+      "description": "Single-arg list wrapping ({\"rc.entries\": [obj]}) is equivalent to the bare object form",
+      "predicate": {"==": [{"rc.entries": [{"b": 2, "a": 1}]}, "a,1,b,2"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_null_is_type_error",
+      "predicate": {"rc.entries": null},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "entries_undefined_is_type_error",
+      "predicate": {"rc.entries": {"and": []}},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "entries_bool_is_type_error",
+      "predicate": {"rc.entries": true},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "entries_number_is_type_error",
+      "predicate": {"rc.entries": 42},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "entries_string_is_type_error",
+      "description": "Deliberate divergence from JS Object.entries(\"ab\"), which yields character pairs; a string is a type error so a misaimed rule fails loudly instead of iterating characters",
+      "predicate": {"rc.entries": "ab"},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.entries"}
+    },
+    {
+      "id": "fromEntries_round_trips_object_through_entries",
+      "description": "rc.fromEntries(rc.entries(obj)) reproduces the object; verified by re-stringifying entries because compound equality is always false",
+      "predicate": {"==": [{"rc.entries": {"rc.fromEntries": {"rc.entries": {"b": 2, "a": 1}}}}, "a,1,b,2"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "fromEntries_duplicate_keys_last_wins",
+      "description": "Later pairs overwrite earlier ones for the same key; verified via some on the round-tripped entries",
+      "predicate": {
+        "some": [
+          {"rc.entries": {"rc.fromEntries": [[["a", 1], ["a", 2], ["b", 3]]]}},
+          {"and": [{"===": [{"var": "0"}, "a"]}, {"===": [{"var": "1"}, 2]}]}
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "fromEntries_malformed_entry_is_type_error",
+      "description": "A non-array entry is a type error rather than being skipped, so a partial object can never pass for a legitimate result",
+      "predicate": {"rc.fromEntries": [[["a", 1], "not-an-array", ["b", 2]]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_entry_missing_value_is_type_error",
+      "description": "A one-element entry has no value to bind; it throws instead of defaulting to null",
+      "predicate": {"rc.fromEntries": [[["a"]]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_entry_with_extra_element_is_type_error",
+      "description": "Deliberate divergence from JS Object.fromEntries, which ignores elements past the second; an over-long entry is ambiguous so it throws",
+      "predicate": {"rc.fromEntries": [[["a", 1, 2]]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_non_array_argument_is_type_error",
+      "predicate": {"rc.fromEntries": null},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.fromEntries"}
+    },
+    {
+      "id": "fromEntries_empty_array_returns_empty_object",
+      "description": "An empty pair list is a single wrapped operand: {\"rc.fromEntries\": [[]]}",
+      "predicate": {
+        "===": [{"reduce": [{"rc.entries": {"rc.fromEntries": [[]]}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "entries_end_to_end_filter_keyed_object_and_rebuild",
+      "description": "Motivating case: filter subscriptions by status on the value (var 1) while keeping keys (var 0), then rebuild the keyed object",
+      "predicate": {
+        "===": [
+          {
+            "reduce": [
+              {
+                "rc.entries": {
+                  "rc.fromEntries": {
+                    "filter": [{"rc.entries": {"var": "subscriptions"}}, {"===": [{"var": "1.status"}, "active"]}]
+                  }
+                }
+              },
+              {"+": [{"var": "accumulator"}, 1]},
+              0
+            ]
+          },
+          2
+        ]
+      },
+      "variables": {
+        "subscriptions": {
+          "prod_a": {"status": "active", "price": 10},
+          "prod_b": {"status": "expired", "price": 5},
+          "prod_c": {"status": "active", "price": 15}
+        }
+      },
+      "expected": true
+    }
+  ]
+}

@@ -198,8 +198,10 @@ struct SubscriberAttributesProviderTests {
         ]
         let nonMatchingPredicates = [
             #"{"==":[{"var":"subscriberAttributes.goal.value"},"gain_muscle"]}"#,
-            #"{"!!":{"var":"subscriberAttributes.favoriteColor.value"}}"#,
-            #"{"!!":{"var":"subscriberAttributes.goal.isSynced"}}"#,
+            // An attribute the app never set on this device, and one the SDK does not expose. Both
+            // need a default, since reading a name that resolves to nothing is now an error.
+            #"{"!!":{"var":["subscriberAttributes.favoriteColor.value",false]}}"#,
+            #"{"!!":{"var":["subscriberAttributes.goal.isSynced",false]}}"#,
             #"""
             {"<":[
                 {"-":[{"var":"evaluatedAt"},

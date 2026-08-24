@@ -172,9 +172,11 @@ private extension CustomerInfoDimensionProvider {
         record.put(Self.purchasedProductIdentifierKey, string: transaction.productIdentifier)
         record.put(Self.transactionIdentifierKey, string: transaction.transactionIdentifier)
         record.put(Self.storeTransactionIDKey, string: transaction.storeTransactionIdentifier)
+        record.put(Self.displayNameKey, string: transaction.displayName)
         record.put(Self.storeKey, string: transaction.store.name)
         record.put(price: transaction.price)
         record.put(Self.purchasedAtKey, date: transaction.purchaseDate)
+        record.put(Self.originalPurchasedAtKey, date: transaction.originalPurchaseDate)
         record.put(Self.isSandboxKey, bool: transaction.isSandbox)
         return record
     }

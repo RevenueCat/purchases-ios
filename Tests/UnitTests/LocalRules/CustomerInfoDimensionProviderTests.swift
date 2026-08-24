@@ -93,10 +93,12 @@ struct CustomerInfoDimensionProviderTests {
             "purchasedProductIdentifier": .string("coins"),
             "transactionIdentifier": .string("abc123"),
             "storeTransactionId": .string("amzn.1234"),
+            "displayName": .string("100 Coins"),
             "store": .string("amazon"),
             "priceAmountMicros": .int(1_990_000),
             "priceCurrency": .string("EUR"),
             "purchasedAt": .date(Self.transactionPurchaseDate),
+            "originalPurchasedAt": .date(Self.transactionPurchaseDate),
             "isSandbox": .bool(false)
         ])
     }
@@ -388,7 +390,30 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func anUnreadableCustomerInfoLetsAbsenceRulesMatch() async throws {
+    func exposesTheEvaluationInstantAtTheRootOfTheScope() async throws {
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [Self.provider()],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate),
+            currentUserProvider: FixedCurrentUserProvider(currentAppUserID: "current_user")
+        ).snapshot()
+
+        let readsTheInstant = #"{"==": [{"var": "evaluatedAt"}, \#(Self.milliseconds(Self.evaluationDate))]}"#
+        // A record is evaluated in its own scope, so a predicate inside an iteration operator reaches
+        // the instant through the preserved root rather than through `var`.
+        let comparesAPurchaseAgainstIt = """
+        {"some": [{"var": "customerInfo.purchases"}, \
+        {">": [{"var": "expiresAt"}, {"rc.rootVar": "evaluatedAt"}]}]}
+        """
+
+        #expect(RulesEngine.evaluate(predicate: readsTheInstant, variables: snapshot.values) == .success(true))
+        #expect(
+            RulesEngine.evaluate(predicate: comparesAPurchaseAgainstIt, variables: snapshot.values)
+            == .success(true)
+        )
+    }
+
+    @Test
+    func anUnreadableCustomerInfoFailsAnAbsenceRuleRatherThanMatchingIt() async throws {
         let provider = CustomerInfoDimensionProvider(
             customerInfoProvider: StubCustomerInfoSource { _ in throw ErrorUtils.offlineConnectionError() }
         )
@@ -402,11 +427,11 @@ struct CustomerInfoDimensionProviderTests {
         {"none": [{"var": "customerInfo.purchases"}, {"var": "isActive"}]}
         """
 
-        // Documented rather than desired: in JSON Logic `none` over a missing source is true, so a
-        // customer info this device could not read is indistinguishable from a customer who has
-        // bought nothing. A rule that must not match in that case has to test the ID as well.
+        // A customer whose purchases could not be read is not a customer with no purchases: the
+        // dimension is missing, so the rule errors rather than matching everyone it describes.
         #expect(
-            RulesEngine.evaluate(predicate: hasNoActivePurchase, variables: snapshot.values) == .success(true)
+            RulesEngine.evaluate(predicate: hasNoActivePurchase, variables: snapshot.values)
+            == .failure(.unresolvedVariable(path: "customerInfo.purchases"))
         )
     }
 
@@ -612,6 +637,10 @@ private extension CustomerInfoDimensionProviderTests {
         ]]
     }
 
+    static func milliseconds(_ date: Date) -> Int64 {
+        return Int64(date.timeIntervalSince1970 * 1_000)
+    }
+
     static func date(_ string: String) -> Date {
         // swiftlint:disable:next force_unwrapping
         return ISO8601DateFormatter().date(from: string)!
@@ -673,13 +702,17 @@ private struct StubCustomerInfoSource: CustomerInfoDimensionSource {
     }
 }
 
-private struct FixedCurrentUserProvider: CurrentUserProvider {
+private final class FixedCurrentUserProvider: CurrentUserProvider {
+
+    init(currentAppUserID: String) {
+        self.currentAppUserID = currentAppUserID
+    }
 
     let currentAppUserID: String
     var currentUserIsAnonymous: Bool { false }
 }
 
-private struct AtomicCurrentUserProvider: CurrentUserProvider {
+private final class AtomicCurrentUserProvider: CurrentUserProvider {
 
     private let appUserID: Atomic<String>
 

@@ -1,0 +1,159 @@
+{
+  "fixtures": [
+    {
+      "id": "unresolved_numeric_comparison_is_rejected_instead_of_coercing_to_zero",
+      "description": "The motivating case. With a null-degrading lookup this becomes expires > 0, which is true for every subscription that ever existed, so an audience meant for active subscribers silently matches everyone.",
+      "predicate": {
+        ">": [{ "var": "expires" }, { "var": "now" }]
+      },
+      "variables": { "expires": 1000 },
+      "expected": { "error": "unresolvedVariable", "path": "now" }
+    },
+    {
+      "id": "unresolved_string_comparison_is_rejected_instead_of_coercing_to_empty",
+      "description": "The same hazard in string form: null stringifies to \"\", so a rule gating on an absent country would answer for a reason unrelated to where the user is",
+      "predicate": {
+        "==": [{ "var": "country" }, ""]
+      },
+      "variables": {},
+      "expected": { "error": "unresolvedVariable", "path": "country" }
+    },
+    {
+      "id": "unresolved_variable_reports_the_first_failing_path",
+      "description": "Evaluation stops at the first name it cannot resolve, so the error points at one concrete path rather than a set",
+      "predicate": {
+        "and": [{ "var": "first_missing" }, { "var": "second_missing" }]
+      },
+      "variables": {},
+      "expected": { "error": "unresolvedVariable", "path": "first_missing" }
+    },
+    {
+      "id": "present_but_null_value_is_known_and_does_not_raise",
+      "description": "An explicit null is an answer the scope actually gave, so it resolves normally; only an absent path is unknown",
+      "predicate": {
+        "===": [{ "var": "country" }, null]
+      },
+      "variables": { "country": null },
+      "expected": true
+    },
+    {
+      "id": "present_but_null_leaf_on_a_dot_path_is_known_and_does_not_raise",
+      "predicate": {
+        "===": [{ "var": "subscriber.country" }, null]
+      },
+      "variables": { "subscriber": { "country": null } },
+      "expected": true
+    },
+    {
+      "id": "default_marks_absence_as_expected_and_suppresses_the_error",
+      "description": "The spec's own escape hatch is how a rule opts into tolerating absence, which keeps the intent visible in the rule itself",
+      "predicate": {
+        "===": [{ "var": ["country", "unknown"] }, "unknown"]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "undefined_default_suppresses_the_error_and_yields_null",
+      "description": "{\"var\": [path]} with an explicitly undefined default still counts as opting in, matching json-logic-js coercing that default to null",
+      "predicate": {
+        "===": [{ "var": ["country", null] }, null]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "unevaluated_or_branch_never_raises",
+      "description": "or short-circuits on the first truthy operand, so a missing name in a branch that never runs cannot fail the rule",
+      "predicate": {
+        "or": [true, { "var": "never_read" }]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "unevaluated_and_branch_never_raises",
+      "predicate": {
+        "==": [{ "and": [false, { "var": "never_read" }] }, false]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "untaken_if_branch_never_raises",
+      "description": "Only the selected branch is evaluated, so a rule can guard a name it is not sure about",
+      "predicate": {
+        "===": [{ "if": [false, { "var": "never_read" }, "fallback"] }, "fallback"]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_operator_still_probes_absence_without_raising",
+      "description": "missing exists to ask whether a name is there, so it keeps reporting absence rather than raising on it",
+      "predicate": {
+        "==": [{ "missing": ["country"] }, "country"]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "missing_some_still_probes_absence_without_raising",
+      "predicate": {
+        "==": [{ "missing_some": [1, ["a", "b"]] }, ""]
+      },
+      "variables": { "a": 1 },
+      "expected": true
+    },
+    {
+      "id": "missing_guard_lets_a_rule_branch_on_presence",
+      "description": "The full authoring pattern for a genuinely optional dimension: probe with missing, then read it only on the branch where it exists",
+      "predicate": {
+        "if": [
+          { "missing": ["country"] },
+          false,
+          { "==": [{ "var": "country" }, "ES"] }
+        ]
+      },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "unresolved_mid_path_break_reports_the_full_path",
+      "description": "The walk fails partway through, and the error names the path as written rather than the segment that broke",
+      "predicate": {
+        "===": [{ "var": "subscriber.address.city" }, null]
+      },
+      "variables": { "subscriber": { "address": {} } },
+      "expected": { "error": "unresolvedVariable", "path": "subscriber.address.city" }
+    },
+    {
+      "id": "unresolved_variable_inside_iteration_aborts_the_whole_rule",
+      "description": "An item that lacks the field the predicate reads makes that item unanswerable, and one unanswerable item makes the some unanswerable too",
+      "predicate": {
+        "some": [
+          { "var": "subscriptions" },
+          { "==": [{ "var": "tier" }, "gold"] }
+        ]
+      },
+      "variables": {
+        "subscriptions": [{ "tier": "silver" }, { "plan": "basic" }]
+      },
+      "expected": { "error": "unresolvedVariable", "path": "tier" }
+    },
+    {
+      "id": "iteration_over_heterogeneous_items_opts_in_with_a_default",
+      "description": "Same shape as above, written the way a rule should be when items legitimately vary",
+      "predicate": {
+        "some": [
+          { "var": "subscriptions" },
+          { "==": [{ "var": ["tier", "none"] }, "gold"] }
+        ]
+      },
+      "variables": {
+        "subscriptions": [{ "tier": "silver" }, { "plan": "basic" }]
+      },
+      "expected": false
+    }
+  ]
+}

@@ -1195,8 +1195,8 @@ private extension ETagManagerTests {
                      isFallbackUrlResponse: isFallbackUrlResponse)
     }
 
-    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!
-    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url!
+    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url(preferIAMPath: false)!
+    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url(preferIAMPath: false)!
 
     static let testETag = "etag_1"
 

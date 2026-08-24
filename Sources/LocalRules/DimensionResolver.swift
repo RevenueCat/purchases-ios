@@ -36,6 +36,9 @@ struct DimensionResolver: Sendable {
     private let dateProvider: DateProvider
     private let currentUserProvider: (any CurrentUserProvider)?
 
+    /// The instant the whole snapshot describes, readable at the root of the scope.
+    static let evaluatedAtKey = "evaluatedAt"
+
     /// Creates a resolver from injected providers, a clock, and the current customer.
     ///
     /// Without a `currentUserProvider` the snapshot describes no customer, so a customer-scoped
@@ -67,6 +70,9 @@ struct DimensionResolver: Sendable {
             date: self.dateProvider.now(),
             appUserID: appUserID ?? self.currentUserProvider?.currentAppUserID ?? ""
         )
+
+        // At the root rather than copied onto every record. A predicate inside an iteration
+        // operator reaches it with `rc.rootVar`.
         var values: [String: RulesEngine.Value] = [
             Self.evaluatedAtKey: DimensionValueConverter.millis(context.date)
         ]
@@ -123,9 +129,6 @@ struct DimensionResolver: Sendable {
 
         return DimensionSnapshot(values: values, evaluationDate: context.date)
     }
-
-    /// The instant the snapshot was taken, at the root of the scope rather than repeated on every record.
-    static let evaluatedAtKey = "evaluatedAt"
 }
 
 private enum DimensionValueConverter {

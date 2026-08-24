@@ -244,6 +244,7 @@ final class BackendAPISourceFailoverIntegrationTests: TestCase {
         return Backend(
             systemInfo: systemInfo,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             operationDispatcher: OperationDispatcher(),
             attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                    systemInfo: systemInfo),

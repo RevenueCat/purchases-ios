@@ -51,6 +51,9 @@ enum BackendErrorCode: Int, Error {
     case purchaseBelongsToOtherUser = 7852
     case expiredWebRedemptionToken = 7853
 
+    case invalidIAMToken = 7981
+    case cannotAliasToAuthenticatedUser = 8077
+
     /**
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
      */
@@ -87,6 +90,7 @@ extension BackendErrorCode: ExpressibleByIntegerLiteral {
 extension BackendErrorCode {
 
     // swiftlint:disable cyclomatic_complexity
+    // swiftlint:disable function_body_length
     /// Turns ``BackendErrorCode``(RCBackendErrorCode) codes into ``ErrorCode``(RCPurchasesErrorCode) error codes
     func toPurchasesErrorCode() -> ErrorCode {
     // swiftlint:enable cyclomatic_complexity
@@ -102,7 +106,8 @@ extension BackendErrorCode {
             return .invalidReceiptError
         case .invalidAppStoreSharedSecret,
              .invalidAuthToken,
-             .invalidAPIKey:
+             .invalidAPIKey,
+             .invalidIAMToken:
             return .invalidCredentialsError
         case .invalidPaymentModeOrIntroPriceNotProvided,
              .productIdForGoogleReceiptNotProvided:
@@ -117,7 +122,8 @@ extension BackendErrorCode {
         case .invalidSubscriberAttributes,
              .invalidSubscriberAttributesBody:
             return .invalidSubscriberAttributesError
-        case .couldNotCreateAlias:
+        case .couldNotCreateAlias,
+            .cannotAliasToAuthenticatedUser:
             return .configurationError
         case .requestAlreadyInProgress,
              .subscriberAttributesAreBeingUpdated:

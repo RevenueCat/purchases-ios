@@ -779,7 +779,7 @@ class BackendPostReceiptDataTests: BaseBackendPostReceiptDataTests {
             originalSubscriberInfo.value = result.value
             callOrder.value.initialGet = true
 
-            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url!)
+            self.httpClient.mocks.removeValue(forKey: getCustomerInfoPath.url(preferIAMPath: false)!)
         }
 
         backend.post(receipt: Self.receipt,
