@@ -158,6 +158,11 @@ import AppKit
         #endif
 
         #if canImport(UIKit) && !os(watchOS)
+        // Note: This API is intentionally not marked as @objc, because it takes in a platform-specific
+        // parameter. If we mark this as @objc, then the auto-generated RevenueCat-Swift.h file will contain
+        // references to platform-specific APIs and will not be able to build on all platforms.
+        //
+        // In this case, UIScene is unavailable on native macOS.
         /**
          * Set `confirmInScene`.
          *
@@ -167,13 +172,18 @@ import AppKit
          * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
          */
         @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
-        @objc public func with(confirmInScene: UIScene) -> Self {
+        public func with(confirmInScene: UIScene) -> Self {
             self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
             return self
         }
         #endif
 
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        // Note: This API is intentionally not marked as @objc, because it takes in a platform-specific
+        // parameter. If we mark this as @objc, then the auto-generated RevenueCat-Swift.h file will contain
+        // references to platform-specific APIs and will not be able to build on all platforms.
+        //
+        // In this case, NSWindow is unavailable on iOS/visionOS/watchOS.
         /**
          * Set `confirmInWindow`.
          *
@@ -183,7 +193,7 @@ import AppKit
          * Availability: macOS 15.2+
          */
         @available(macOS 15.2, *)
-        @objc public func with(confirmInWindow: NSWindow) -> Self {
+        public func with(confirmInWindow: NSWindow) -> Self {
             self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
             return self
         }
