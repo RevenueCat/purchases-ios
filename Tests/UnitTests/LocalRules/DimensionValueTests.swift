@@ -76,7 +76,7 @@ struct DimensionValueTests {
             """#
         )
 
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: predicate, variables: snapshot.values))
+        #expect(try RulesEngine.Evaluator.evaluate(predicate: predicate, variables: snapshot.values).isTruthy)
     }
 
     @Test
@@ -90,13 +90,13 @@ struct DimensionValueTests {
                 #"{">":[{"var":"device.expiresAt"},1699999999999]}"#
             ),
             variables: snapshot.values
-        ))
+        ).isTruthy)
         #expect(try !RulesEngine.Evaluator.evaluate(
             predicate: try RulesEngine.Value.fromJSONString(
                 #"{">":[{"var":"device.expiresAt"},1700000000001]}"#
             ),
             variables: snapshot.values
-        ))
+        ).isTruthy)
     }
 
     @Test
@@ -117,17 +117,17 @@ struct DimensionValueTests {
         let active = try RulesEngine.Value.fromJSONString(
             #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"pro"]},{"var":"isActive"}]}]}"#
         )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: active, variables: snapshot.values))
+        #expect(try RulesEngine.Evaluator.evaluate(predicate: active, variables: snapshot.values).isTruthy)
 
         let inactive = try RulesEngine.Value.fromJSONString(
             #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"plus"]},{"var":"isActive"}]}]}"#
         )
-        #expect(try !RulesEngine.Evaluator.evaluate(predicate: inactive, variables: snapshot.values))
+        #expect(try !RulesEngine.Evaluator.evaluate(predicate: inactive, variables: snapshot.values).isTruthy)
 
         let byIndex = try RulesEngine.Value.fromJSONString(
             #"{"==":[{"var":"device.purchases.1.productId"},"pro"]}"#
         )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: byIndex, variables: snapshot.values))
+        #expect(try RulesEngine.Evaluator.evaluate(predicate: byIndex, variables: snapshot.values).isTruthy)
     }
 
     @Test
@@ -143,7 +143,7 @@ struct DimensionValueTests {
         let none = try RulesEngine.Value.fromJSONString(
             #"{"none":[{"var":"device.purchases"},{"var":"isActive"}]}"#
         )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: none, variables: snapshot.values))
+        #expect(try RulesEngine.Evaluator.evaluate(predicate: none, variables: snapshot.values).isTruthy)
     }
 
     private static func snapshot(
