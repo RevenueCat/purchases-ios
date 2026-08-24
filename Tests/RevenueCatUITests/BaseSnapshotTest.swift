@@ -74,7 +74,6 @@ class BaseSnapshotTest: TestCase {
         return PaywallView(
             configuration: .init(
                 offering: offering,
-                customerInfo: TestData.customerInfo,
                 mode: mode,
                 fonts: fonts,
                 introEligibility: introEligibility,

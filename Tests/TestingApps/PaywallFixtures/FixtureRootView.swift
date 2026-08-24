@@ -45,24 +45,15 @@ struct FixturePaywallView: View {
 
     let fixture: PaywallFixture
 
-    /// Eligibility is stubbed, customer info is supplied rather than fetched, and purchases are
-    /// no-ops, so nothing here reaches StoreKit or the network and the accessibility tree depends
-    /// only on the fixture.
+    /// Eligibility is stubbed and purchases are no-ops, so nothing here reaches StoreKit or the
+    /// network and the accessibility tree depends only on the fixture.
     private static let eligibility = TrialOrIntroEligibilityChecker { packages in
         Dictionary(uniqueKeysWithValues: packages.map { ($0, IntroEligibilityStatus.eligible) })
     }
 
-    private static let customerInfo = CustomerInfo(
-        entitlements: .init(),
-        requestDate: Date(timeIntervalSince1970: 0),
-        firstSeen: Date(timeIntervalSince1970: 0),
-        originalAppUserId: "fixtures"
-    )
-
     var body: some View {
         PaywallView(
             offering: self.fixture.offering,
-            customerInfo: Self.customerInfo,
             introEligibility: Self.eligibility,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: false, error: nil) }
