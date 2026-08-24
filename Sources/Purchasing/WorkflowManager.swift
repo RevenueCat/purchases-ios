@@ -14,11 +14,12 @@
 import Foundation
 
 /// Starts asset prewarming for workflows selected by remote config without making offerings delivery wait for
-/// workflow decoding or asset downloads. Implementations may await the workflow body data needed to enqueue that
-/// work, but the asset-prewarming work itself is fire-and-forget.
+/// workflow decoding, asset downloads, or web-bundle URL publish. Implementations may await the workflow body
+/// data needed to enqueue that work; image/font/video warming and URL publish are fire-and-forget.
 protocol WorkflowAssetPrewarmingType: Sendable {
 
     func scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: String?) async
+    func publishWebBundleURLs(offerings: Offerings) async
 
 }
 
@@ -47,15 +48,18 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
     private let workflowsConfigProvider: WorkflowsConfigProviderType
     private let paywallCache: PaywallCacheWarmingType?
     private let operationDispatcher: OperationDispatcher
+    private let webBundleURLBatcher: WebBundleURLBatcherType
 
     init(
         workflowsConfigProvider: WorkflowsConfigProviderType,
         paywallCache: PaywallCacheWarmingType?,
-        operationDispatcher: OperationDispatcher
+        operationDispatcher: OperationDispatcher,
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
     ) {
         self.workflowsConfigProvider = workflowsConfigProvider
         self.paywallCache = paywallCache
         self.operationDispatcher = operationDispatcher
+        self.webBundleURLBatcher = webBundleURLBatcher
     }
 
     /// Resolves `workflowId`, or throws the error explaining why it couldn't be resolved: genuinely
@@ -156,16 +160,52 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
         }
     }
 
+    /// Publishes cached workflows for target offerings (current, placements, fallback) in visit order.
+    /// Cache-only: no blob fetch. An uncached target offering is published when it is presented.
+    func publishWebBundleURLs(offerings: Offerings) async {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else { return }
+
+        var workflowsByOfferingId: [String: PublishedWorkflow] = [:]
+        var resolutionsByWorkflowId: [String: Result<WorkflowDataResult, WorkflowResolutionError>] = [:]
+        for offeringId in WebBundleURLBatcher.targetOfferingIds(from: offerings) {
+            guard let workflowId = await self.workflowsConfigProvider.workflowId(forOfferingId: offeringId) else {
+                continue
+            }
+
+            let resolution: Result<WorkflowDataResult, WorkflowResolutionError>
+            if let cachedResolution = resolutionsByWorkflowId[workflowId] {
+                resolution = cachedResolution
+            } else {
+                resolution = await self.workflowsConfigProvider.decodeCachedWorkflowForAssetPrewarming(
+                    workflowId: workflowId
+                )
+                resolutionsByWorkflowId[workflowId] = resolution
+            }
+
+            if case let .success(result) = resolution {
+                workflowsByOfferingId[offeringId] = result.workflow
+            }
+        }
+
+        await webBundleURLBatcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: workflowsByOfferingId
+        )
+    }
+
 }
 
 extension WorkflowManager {
 
-    /// Fire-and-forget pre-download of a resolved workflow's images/videos/fonts. Remote config's own
-    /// blob prefetch only covers the workflow's JSON body, not the assets it references.
+    /// Fire-and-forget web-bundle URL publish, then image/video/font pre-download. URLs go out first so
+    /// present-path cache warming does not wait on downloads when this is the first time the workflow is seen.
+    /// Remote config's own blob prefetch only covers the workflow's JSON body, not the assets it references.
     func scheduleAssetPrewarming(for result: WorkflowDataResult) {
         guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *), let paywallCache else { return }
 
+        let webBundleURLBatcher = self.webBundleURLBatcher
         self.operationDispatcher.dispatchOnWorkerThread {
+            await webBundleURLBatcher.publishPresentedWorkflow(result.workflow)
             await paywallCache.prewarmWorkflowAssets(workflow: result.workflow, uiConfig: result.uiConfig)
         }
     }

@@ -32,6 +32,18 @@ final class WorkflowPreviewTests: TestCase {
         expect(context.workflow.id) == "wf_test"
     }
 
+    func testInitialOfferingCarriesTheScreenZeroDecimalPlaceCountries() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let workflow = try Self.makeWorkflow(
+            screenOfferingIdentifier: "offering_a",
+            zeroDecimalPlaceCountries: ["TWN", "MEX"]
+        )
+
+        let context = try WorkflowPreview.makeContext(workflow: workflow, offerings: [baseOffering])
+
+        expect(context.initialOffering.internalPaywallComponents?.data.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
     func testMakeContextPropagatesPresentedOfferingContext() throws {
         let baseOffering = Self.makeOffering(identifier: "offering_a")
         let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_a")
@@ -91,7 +103,10 @@ private extension WorkflowPreviewTests {
 
     /// Builds a single-screen workflow using the `@_spi(Internal)` initializers (C-1), sourcing the
     /// `componentsConfig` sub-object from JSON since hand-building it is impractical.
-    static func makeWorkflow(screenOfferingIdentifier: String) throws -> PublishedWorkflow {
+    static func makeWorkflow(
+        screenOfferingIdentifier: String,
+        zeroDecimalPlaceCountries: [String] = []
+    ) throws -> PublishedWorkflow {
         let screen = WorkflowScreen(
             name: nil,
             templateName: "tmpl",
@@ -99,7 +114,8 @@ private extension WorkflowPreviewTests {
             componentsConfig: try Self.makeComponentsConfig(),
             componentsLocalizations: [:],
             defaultLocale: "en_US",
-            offeringIdentifier: screenOfferingIdentifier
+            offeringIdentifier: screenOfferingIdentifier,
+            zeroDecimalPlaceCountries: zeroDecimalPlaceCountries
         )
         let step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
 

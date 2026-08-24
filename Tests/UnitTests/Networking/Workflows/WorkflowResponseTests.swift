@@ -253,6 +253,44 @@ class WorkflowResponseTests: TestCase {
         expect(screen.automaticallyScaleFontSize) == false
     }
 
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountries() throws {
+        let screen = try Self.decodeWorkflowScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesDefaultsToEmpty() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesIgnoresMalformedValue() throws {
+        let screen = try Self.decodeWorkflowScreen(zeroDecimalPlaceCountriesJSON: "\"TWN\"")
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testWorkflowScreenInitializerAcceptsZeroDecimalPlaceCountries() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            zeroDecimalPlaceCountries: ["TWN"]
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -463,11 +501,20 @@ class WorkflowResponseTests: TestCase {
 
 private extension WorkflowResponseTests {
 
-    static func decodeWorkflowScreen(automaticallyScaleFontSize: Bool? = nil) throws -> WorkflowScreen {
+    static func decodeWorkflowScreen(
+        automaticallyScaleFontSize: Bool? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil
+    ) throws -> WorkflowScreen {
         var automaticallyScaleFontSizeFragment = ""
         if let automaticallyScaleFontSize {
             automaticallyScaleFontSizeFragment = """
             , "automatically_scale_font_size": \(automaticallyScaleFontSize)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
             """
         }
         let json = """
@@ -487,7 +534,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)
         }
         """.data(using: .utf8)!
 
