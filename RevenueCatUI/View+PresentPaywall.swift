@@ -490,11 +490,6 @@ private struct PresentingPaywallModifier: ViewModifier {
     @Environment(\.scenePhase) var scenePhase
     @Environment(\.customPaywallVariables) private var customPaywallVariables
 
-    private struct Data: Identifiable {
-        var customerInfo: CustomerInfo
-        var id: String { self.customerInfo.originalAppUserId }
-    }
-
     var shouldDisplay: @Sendable (CustomerInfo) -> Bool
     var presentationMode: PaywallPresentationMode
     var purchaseStarted: PurchaseOfPackageStartedHandler?
@@ -571,7 +566,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     private var promoOfferCacheOwner: PromoOfferCacheOwner
 
     @State
-    private var data: Data?
+    private var isPresented = false
 
     /// Owns the exit-offer lifecycle (sourcing + presentation state + transitions).
     @StateObject
@@ -587,7 +582,7 @@ private struct PresentingPaywallModifier: ViewModifier {
             switch presentationMode {
             case .sheet:
                 content
-                    .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { _ in
+                    .sheet(isPresented: self.$isPresented, onDismiss: self.handleMainPaywallDismiss) {
                         self.paywallView()
                         // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
                         // So we need to give it a more reasonable default size. This is the height of an
@@ -602,7 +597,8 @@ private struct PresentingPaywallModifier: ViewModifier {
             #if !os(macOS)
             case .fullScreen:
                 content
-                    .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { _ in
+                    .fullScreenCover(isPresented: self.$isPresented,
+                                     onDismiss: self.handleMainPaywallDismiss) {
                         self.paywallView()
                     }
             #endif
@@ -646,10 +642,10 @@ private struct PresentingPaywallModifier: ViewModifier {
         if self.shouldDisplay(info) {
             Logger.debug(Strings.displaying_paywall)
 
-            self.data = .init(customerInfo: info)
+            self.isPresented = true
         } else {
             Logger.debug(Strings.not_displaying_paywall)
-            self.data = nil
+            self.isPresented = false
         }
     }
 
@@ -706,7 +702,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     private func close() {
         Logger.debug(Strings.dismissing_paywall)
 
-        self.data = nil
+        self.isPresented = false
     }
 
     private func resetWorkflowCompletedInSession() {
