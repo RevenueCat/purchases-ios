@@ -133,6 +133,7 @@ private extension BaseProductionRemoteConfigIntegrationTests {
         let backend = Backend(
             systemInfo: systemInfo,
             eTagManager: ETagManager(),
+            tokenManager: TokenManager(enabled: false, storage: Keychain(access: nil)),
             operationDispatcher: .default,
             attributionFetcher: AttributionFetcher(
                 attributionFactory: AttributionTypeFactory(),

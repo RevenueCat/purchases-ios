@@ -14,11 +14,11 @@
 import Foundation
 
 class IdentityAPI {
-
     typealias LogInResponse = Result<(info: CustomerInfo, created: Bool), BackendError>
     typealias LogInResponseHandler = (LogInResponse) -> Void
 
     private let logInCallbacksCache: CallbackCache<LogInCallback>
+
     private let backendConfig: BackendConfiguration
 
     init(backendConfig: BackendConfiguration) {
@@ -31,6 +31,7 @@ class IdentityAPI {
                completion: @escaping LogInResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: currentAppUserID)
+
         let factory = LogInOperation.createFactory(configuration: config,
                                                    newAppUserID: newAppUserID,
                                                    loginCallbackCache: self.logInCallbacksCache)

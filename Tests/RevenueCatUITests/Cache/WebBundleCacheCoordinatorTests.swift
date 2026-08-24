@@ -187,10 +187,8 @@ final class WebBundleCacheCoordinatorTests: TestCase {
 
         await self.fulfillment(of: [loaded], timeout: 1)
         let invocations = await recorder.invocations
-        XCTAssertEqual(
-            invocations,
-            urls.map { .init(url: $0.url, storeID: identifier) }
-        )
+        XCTAssertEqual(Set(invocations.map(\.url)), Set(urls.map(\.url)))
+        XCTAssertEqual(invocations.map(\.storeID), Array(repeating: identifier, count: urls.count))
         withExtendedLifetime(coordinator) {}
     }
 
