@@ -90,8 +90,8 @@ class ApiDiffHelperTest < Minitest::Test
 
     versions = find_install_public_api_diff_versions(config)
 
-    assert_equal 2, versions.length,
-                 "expected exactly two revenuecat/install-public-api-diff steps in .circleci/default_config.yml, " \
+    assert_equal 1, versions.length,
+                 "expected exactly one revenuecat/install-public-api-diff step in .circleci/default_config.yml, " \
                  "found #{versions.length}"
     versions.each do |version|
       assert_equal ApiDiffHelper::PUBLIC_API_DIFF_REF, version
@@ -108,8 +108,8 @@ class ApiDiffHelperTest < Minitest::Test
     fastfile_path = File.expand_path('Fastfile', __dir__)
     lines = File.readlines(fastfile_path)
 
-    concat_line_no = lines.index { |line| line.include?("all_breaks.concat(ApiDiffHelper.breaking_changes") }
-    refute_nil concat_line_no, "expected to find the loop that accumulates all_breaks"
+    concat_line_no = lines.index { |line| line.include?("scheme_breaks.concat(ApiDiffHelper.breaking_changes") }
+    refute_nil concat_line_no, "expected to find the loop that accumulates the breaks"
 
     # The private_lane definition ("private_lane :pr_labels_for_api_gate do") is a different
     # call shape from the call site; filter it out so we isolate where check_api_changes
@@ -1905,7 +1905,10 @@ class ApiDiffHelperTest < Minitest::Test
       configuration = sdk == "macosx" ? "Release" : "Release-#{sdk}"
       products = File.join(flag("-derivedDataPath"), "Build", "Products", configuration, "Objects-normal", "arm64")
       FileUtils.mkdir_p(products)
-      File.write(File.join(products, "#{flag('-scheme')}.swiftinterface"), "// #{sdk}\n")
+
+      # RevenueCatUI links RevenueCat, so the real build emits an interface for the dependency too.
+      emitted = flag("-scheme") == "RevenueCatUI" ? ["RevenueCat", "RevenueCatUI"] : ["RevenueCat"]
+      emitted.each { |name| File.write(File.join(products, "#{name}.swiftinterface"), "// #{name} #{sdk}\n") }
     end
   RUBY
 
@@ -1934,13 +1937,43 @@ class ApiDiffHelperTest < Minitest::Test
     File.readlines(log).map { |line| JSON.parse(line) }
   end
 
-  def build(platform, project_root, output_dir, scheme: "RevenueCat")
+  def build(platform, project_root, output_dir, scheme: "RevenueCat", modules: nil)
     ApiDiffHelper.build_swiftinterface(
       platform,
       scheme: scheme,
+      modules: modules || [scheme],
       project_root: project_root,
       output_dir: output_dir
     )
+  end
+
+  # The reason the two check-api-changes jobs could collapse into one.
+  def test_one_build_harvests_both_module_interfaces
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCatUI", modules: ApiDiffHelper::MODULES)
+
+      assert result[:success], result[:error]
+      assert_equal ["RevenueCat-ios-simulator.swiftinterface", "RevenueCatUI-ios-simulator.swiftinterface"],
+                   Dir.children(output_dir).sort
+      assert_equal 1, xcodebuild_invocations(log).count, "both interfaces must come from a single build"
+    end
+  end
+
+  # Asking for a module the build does not emit has to fail loudly rather than silently skipping it,
+  # or the diff lane would compare against a stale file.
+  def test_a_module_missing_from_the_build_is_reported
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, _log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCat", modules: ApiDiffHelper::MODULES)
+
+      refute result[:success], "the RevenueCat scheme does not emit RevenueCatUI"
+      assert_match(/Could not find RevenueCatUI swiftinterface for iOS/, result[:error])
+    end
   end
 
   def test_build_swiftinterface_copies_the_generated_interface
@@ -2048,22 +2081,84 @@ class ApiDiffHelperTest < Minitest::Test
       result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
 
       refute result[:success]
-      assert_match(/Could not find RevenueCat.swiftinterface for iOS/, result[:error])
+      assert_match(/Could not find RevenueCat swiftinterface for iOS/, result[:error])
     end
   end
 
   # fastlane's `sh` swaps Encoding.default_external for the duration of the call and Dir.chdir
   # moves the whole process, so either one inside the threaded loop would corrupt sibling builds.
   def test_the_generation_lane_keeps_process_global_calls_out_of_the_threads
-    lane = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+    lane = generation_lane_source
 
-    refute_nil lane, "the generate_swiftinterface lane moved; update this test"
     assert_match(/Thread\.new/, lane, "the platform builds must still run concurrently")
     refute_match(/Dir\.chdir/, lane, "Dir.chdir moves the whole process, so it cannot run per thread")
     refute_match(/(?<!\w)sh\(/, lane, "fastlane's sh mutates the default encoding, so it cannot run per thread")
   end
 
+  # Reintroducing a loop over schemes would rebuild RevenueCat a second time per platform, which is
+  # the duplicate work collapsing the two jobs into one was meant to remove.
+  def test_the_generation_lane_builds_each_platform_once
+    lane = generation_lane_source
+
+    refute_match(/schemes\.each/, lane, "one build per platform must cover every requested module")
+    assert_equal 1, lane.scan(/build_swiftinterface/).count
+  end
+
+  # One lane now checks both modules, so a single list of breaks would be read by both comment
+  # sections: a RevenueCatUI break would be listed under RevenueCat, and because comment_needed?
+  # returns true on breaks.any? alone it would also open a RevenueCat section that has nothing in it.
+  def test_each_comment_section_receives_only_its_own_module_breaks
+    upsert = check_lane_source[/upsert_api_diff_comment\(.*?^\s*\)$/m]
+    refute_nil upsert, "the upsert_api_diff_comment call site moved; update this test"
+
+    assert_match(/breaks:\s*breaks_by_scheme\.fetch\(scheme/, upsert,
+                 "a module's comment section must receive only that module's breaks")
+    refute_match(/breaks:\s*all_breaks/, upsert,
+                 "the whole PR's breaks would be listed under every module")
+  end
+
+  # The counterpart: the gate blocks the PR and Slack announces it once, so both judge every module.
+  def test_the_gate_and_the_announcement_see_every_module_break
+    source = check_lane_source
+
+    assert_match(/print_breaking_summary\(all_breaks/, source,
+                 "the gate must consider breaks from every module")
+
+    slack = source[/notify_api_changes_on_slack\(.*?^\s*\)$/m]
+    refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"
+    assert_match(/breaks:\s*all_breaks/, slack,
+                 "one announcement covers the PR, so it must see every module's breaks")
+  end
+
+  def test_dedupe_breaks_collapses_the_same_break_seen_on_several_platforms
+    change = { reason: :removed, owner: "Purchases", declaration: "public func foo()" }
+    other = { reason: :removed, owner: "Purchases", declaration: "public func bar()" }
+
+    assert_equal [change, other], ApiDiffHelper.dedupe_breaks([change, change.dup, other, change])
+  end
+
+  # Hardcoding RevenueCatUI would make scheme:RevenueCat compile the UI module too, which the
+  # update-error-codes workflow would pay for on every run.
+  def test_the_generation_lane_does_not_hardcode_the_build_scheme
+    assert_match(/build_scheme = schemes\.include\?/, generation_lane_source,
+                 "the build scheme must be derived from the requested modules")
+  end
+
   private
+
+  def check_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :check_api_changes do.*?\n  end\n/m]
+    refute_nil source, "the check_api_changes lane moved; update this test"
+
+    source
+  end
+
+  def generation_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+    refute_nil source, "the generate_swiftinterface lane moved; update this test"
+
+    source
+  end
 
   def capture_stdout
     original = $stdout
