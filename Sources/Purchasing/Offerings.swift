@@ -65,8 +65,8 @@ import Foundation
     /// `false` when loaded from memory cache or fetched from the network.
     internal let loadedFromDiskCache: Bool
 
-    private let currentOfferingID: String?
-    private let placements: Placements?
+    internal let currentOfferingID: String?
+    internal let placements: Placements?
     private let targeting: Targeting?
 
     init(

@@ -2,6 +2,7 @@
 # Run with: ruby fastlane/api_diff_helper_test.rb
 
 require 'minitest/autorun'
+require 'stringio'
 require 'tmpdir'
 require 'yaml'
 
@@ -18,6 +19,8 @@ module Fastlane
     end
 
     def self.success(message); end
+
+    def self.message(message); end
 
     def self.important(message)
       messages << message
@@ -1679,6 +1682,56 @@ class ApiDiffHelperTest < Minitest::Test
     refute_includes body, ":warning: No Slack credentials"
   end
 
+  # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
+  # with the headline claiming new API. See purchases-ios#7439.
+  def test_slack_summary_reports_an_attribute_only_modification
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
+
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
+
+    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
+    assert_includes message, "1 modification"
+    assert_includes message, "~ added @available(*, deprecated…): "
+    assert_includes message, "purchaseDate(forEntitlement"
+    refute_includes message, ":sparkles:"
+  end
+
+  def test_modified_declarations_summarizes_a_removed_attribute
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
+
+    assert_equal 1, modifications.count
+    assert_equal "removed @objc", modifications.first[:summary]
+    assert_includes modifications.first[:declaration], "expirationDate(forProductIdentifier"
+  end
+
+  # Removing @objc is a break, and the gate already lists it; a second `~` line would repeat it.
+  def test_slack_summary_lists_a_breaking_modification_once
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
+    breaks = Dir.mktmpdir do |dir|
+      path = File.join(dir, "revenuecat-api-ios.swiftinterface")
+      File.write(path, "final public class CustomerInfo {}")
+      ApiDiffHelper.breaking_changes(OBJC_REMOVED_FROM_METHOD_REPORT, path)
+    end
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "", modules: ["RevenueCat"], modifications: modifications)
+
+    assert_equal 1, message.scan("expirationDate(forProductIdentifier").count
+    refute_includes message, "modification"
+  end
+
+  def test_slack_summary_still_leads_with_new_api_when_something_was_added
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
+
+    message = ApiDiffHelper.slack_summary(
+      [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
+    )
+
+    assert message.start_with?(":sparkles: *New public API*")
+    assert_includes message, "1 new declaration, 1 modification"
+    assert_includes message, "+ public func a()"
+    assert_includes message, "~ added @available"
+  end
+
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
@@ -1812,7 +1865,228 @@ class ApiDiffHelperTest < Minitest::Test
     refute ApiDiffHelper.modification_attribute_only?(removal)
   end
 
+  # --- build_swiftinterface: the threaded xcodebuild path ---
+
+  FAKE_XCRUN = <<~'RUBY'
+    if ENV["FAKE_XCRUN_EXIT"].to_i != 0
+      warn "xcrun: error: SDK \"#{ARGV[ARGV.index('--sdk') + 1]}\" cannot be located"
+      exit ENV["FAKE_XCRUN_EXIT"].to_i
+    end
+
+    puts "/fake/sdks/#{ARGV[ARGV.index('--sdk') + 1]}.sdk"
+  RUBY
+
+  # Writes the interface where the real Release build puts it, so find_swiftinterface_file's
+  # per-SDK glob is exercised rather than stubbed.
+  FAKE_XCODEBUILD = <<~'RUBY'
+    require 'fileutils'
+    require 'json'
+
+    def flag(name)
+      index = ARGV.index(name)
+      index && ARGV[index + 1]
+    end
+
+    File.open(ENV.fetch("FAKE_XCODEBUILD_LOG"), "a") do |log|
+      log.flock(File::LOCK_EX)
+      log.puts(JSON.generate("argv" => ARGV, "cwd" => Dir.pwd))
+    end
+
+    if ENV["FAKE_XCODEBUILD_STDOUT"]
+      puts ENV["FAKE_XCODEBUILD_STDOUT"]
+      warn ENV["FAKE_XCODEBUILD_STDOUT"].sub("stdout", "stderr")
+    end
+
+    exit_code = ENV["FAKE_XCODEBUILD_EXIT"].to_i
+    exit exit_code unless exit_code.zero?
+
+    unless ENV["FAKE_XCODEBUILD_SKIP_INTERFACE"] == "1"
+      sdk = File.basename(flag("-sdk").to_s, ".sdk")
+      configuration = sdk == "macosx" ? "Release" : "Release-#{sdk}"
+      products = File.join(flag("-derivedDataPath"), "Build", "Products", configuration, "Objects-normal", "arm64")
+      FileUtils.mkdir_p(products)
+      File.write(File.join(products, "#{flag('-scheme')}.swiftinterface"), "// #{sdk}\n")
+    end
+  RUBY
+
+  # build_swiftinterface resolves both binaries off PATH, so a directory of fakes in front of it
+  # exercises the real code path without a toolchain.
+  def with_fake_toolchain(env = {})
+    Dir.mktmpdir do |root|
+      bin = File.join(root, "bin")
+      FileUtils.mkdir_p(bin)
+      write_executable(File.join(bin, "xcrun"), FAKE_XCRUN)
+      write_executable(File.join(bin, "xcodebuild"), FAKE_XCODEBUILD)
+
+      log = File.join(root, "xcodebuild.jsonl")
+      FileUtils.touch(log)
+
+      project_root = File.join(root, "project")
+      output_dir = File.join(root, "out")
+      FileUtils.mkdir_p([project_root, output_dir])
+
+      overrides = env.merge("PATH" => "#{bin}:#{ENV['PATH']}", "FAKE_XCODEBUILD_LOG" => log)
+      with_env(overrides) { yield project_root, output_dir, log }
+    end
+  end
+
+  def xcodebuild_invocations(log)
+    File.readlines(log).map { |line| JSON.parse(line) }
+  end
+
+  def build(platform, project_root, output_dir, scheme: "RevenueCat")
+    ApiDiffHelper.build_swiftinterface(
+      platform,
+      scheme: scheme,
+      project_root: project_root,
+      output_dir: output_dir
+    )
+  end
+
+  def test_build_swiftinterface_copies_the_generated_interface
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      result = build(platform, project_root, output_dir)
+
+      assert result[:success], result[:error]
+      assert_equal ["RevenueCat-ios-simulator.swiftinterface"], Dir.children(output_dir)
+
+      invocation = xcodebuild_invocations(log).first
+      assert_equal File.realpath(project_root), File.realpath(invocation["cwd"]),
+                   "the build must run from the project root without Dir.chdir"
+      assert_equal "/fake/sdks/iphonesimulator.sdk", invocation["argv"][invocation["argv"].index("-sdk") + 1]
+      assert_equal "#{project_root}/.build-RevenueCat-iphonesimulator",
+                   invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+    end
+  end
+
+  # The whole point of the lane's threading: nine builds at once must not collide, and a shared
+  # derived data directory is how they would.
+  def test_concurrent_builds_get_their_own_derived_data
+    with_fake_toolchain do |project_root, output_dir, log|
+      threads = ApiDiffHelper::PLATFORMS.map do |platform|
+        Thread.new(platform) { |config| build(config, project_root, output_dir) }
+      end
+      results = threads.map(&:value)
+
+      assert results.all? { |result| result[:success] }, results.map { |result| result[:error] }.compact.join("\n")
+      assert_equal ApiDiffHelper::PLATFORMS.count, Dir.children(output_dir).count
+
+      derived_data = xcodebuild_invocations(log).map do |invocation|
+        invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+      end
+      assert_equal derived_data.count, derived_data.uniq.count, "concurrent builds shared a derived data directory"
+    end
+  end
+
+  def test_a_scheme_does_not_reuse_another_schemes_derived_data
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      ApiDiffHelper::MODULES.each { |scheme| build(platform, project_root, output_dir, scheme: scheme) }
+
+      derived_data = xcodebuild_invocations(log).map do |invocation|
+        invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+      end
+      assert_equal derived_data.count, derived_data.uniq.count
+    end
+  end
+
+  # Raising inside a thread only surfaces wherever its value is read, so every failure has to come
+  # back as a result the lane can collect.
+  def test_a_failing_sdk_lookup_is_reported_without_building
+    with_fake_toolchain("FAKE_XCRUN_EXIT" => "1") do |project_root, output_dir, log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/xcrun failed for iphonesimulator/, result[:error])
+      assert_match(/cannot be located/, result[:error], "the reason the lookup failed must survive")
+      assert_empty xcodebuild_invocations(log)
+    end
+  end
+
+  def test_a_failing_build_is_reported
+    with_fake_toolchain("FAKE_XCODEBUILD_EXIT" => "65") do |project_root, output_dir, _log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/xcodebuild failed for RevenueCat on iOS/, result[:error])
+      assert_empty Dir.children(output_dir)
+    end
+  end
+
+  # PLATFORMS reuses one platform label for a device and its simulator, so a failure reported by
+  # label alone cannot say which of the two builds died.
+  def test_a_failure_names_the_sdk_and_not_only_the_platform
+    simulator, device = ApiDiffHelper::PLATFORMS.values_at(0, 1)
+    assert_equal simulator[:platform], device[:platform],
+                 "this test only means something while the two share a label"
+
+    with_fake_toolchain("FAKE_XCODEBUILD_EXIT" => "65") do |project_root, output_dir, _log|
+      errors = [simulator, device].map { |platform| build(platform, project_root, output_dir)[:error] }
+
+      assert_match(/iphonesimulator/, errors.first)
+      assert_match(/iphoneos/, errors.last)
+      assert_equal 2, errors.uniq.count, "the two failures must be tellable apart"
+    end
+  end
+
+  # Nine builds write to one stdout at once, so an untagged line cannot be traced to its build.
+  def test_build_output_is_tagged_with_the_sdk_that_produced_it
+    with_fake_toolchain("FAKE_XCODEBUILD_STDOUT" => "note: stdout marker") do |project_root, output_dir, _log|
+      printed = capture_stdout { build(ApiDiffHelper::PLATFORMS[1], project_root, output_dir) }
+
+      assert_includes printed, "[iphoneos] note: stdout marker"
+      assert_includes printed, "[iphoneos] note: stderr marker", "stderr has to be tagged too"
+    end
+  end
+
+  # A build can succeed and still produce nothing when BUILD_LIBRARY_FOR_DISTRIBUTION stops taking.
+  def test_a_build_that_emits_no_interface_is_reported
+    with_fake_toolchain("FAKE_XCODEBUILD_SKIP_INTERFACE" => "1") do |project_root, output_dir, _log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/Could not find RevenueCat.swiftinterface for iOS/, result[:error])
+    end
+  end
+
+  # fastlane's `sh` swaps Encoding.default_external for the duration of the call and Dir.chdir
+  # moves the whole process, so either one inside the threaded loop would corrupt sibling builds.
+  def test_the_generation_lane_keeps_process_global_calls_out_of_the_threads
+    lane = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+
+    refute_nil lane, "the generate_swiftinterface lane moved; update this test"
+    assert_match(/Thread\.new/, lane, "the platform builds must still run concurrently")
+    refute_match(/Dir\.chdir/, lane, "Dir.chdir moves the whole process, so it cannot run per thread")
+    refute_match(/(?<!\w)sh\(/, lane, "fastlane's sh mutates the default encoding, so it cannot run per thread")
+  end
+
   private
+
+  def capture_stdout
+    original = $stdout
+    $stdout = StringIO.new
+    yield
+    $stdout.string
+  ensure
+    $stdout = original
+  end
+
+  def with_env(overrides)
+    original = overrides.keys.to_h { |key| [key, ENV[key]] }
+    ENV.update(overrides)
+    yield
+  ensure
+    original.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
+  end
+
+  def write_executable(path, source)
+    File.write(path, "#!/usr/bin/env ruby\n#{source}")
+    FileUtils.chmod(0o755, path)
+  end
+
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
   # `{"revenuecat/install-public-api-diff" => {"version" => "..."}}` and collects the

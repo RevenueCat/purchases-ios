@@ -63,6 +63,7 @@ class BasePurchasesTests: TestCase {
         self.mockOperationDispatcher = MockOperationDispatcher()
         self.mockReceiptParser = MockReceiptParser()
         self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID, mockDeviceCache: self.deviceCache)
+        self.tokenManager = MockTokenManager()
         self.mockIntroEligibilityCalculator = MockIntroEligibilityCalculator(productsManager: self.mockProductsManager,
                                                                              receiptParser: self.mockReceiptParser)
         let platformInfo = Purchases.PlatformInfo(flavor: "iOS", version: "4.4.0")
@@ -76,6 +77,7 @@ class BasePurchasesTests: TestCase {
 
         let httpClient = MockHTTPClient(systemInfo: self.systemInfo,
                                         eTagManager: MockETagManager(),
+                                        tokenManager: MockTokenManager(),
                                         diagnosticsTracker: self.diagnosticsTracker)
         let config = BackendConfiguration(httpClient: httpClient,
                                           operationDispatcher: self.mockOperationDispatcher,
@@ -130,6 +132,7 @@ class BasePurchasesTests: TestCase {
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
         self.mockVirtualCurrencyManager = MockVirtualCurrencyManager()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: self.systemInfo)
         self.mockRemoteConfigManager = MockRemoteConfigManager()
         self.webPurchaseRedemptionHelper = .init(backend: self.backend,
                                                  identityManager: self.identityManager,
@@ -177,6 +180,7 @@ class BasePurchasesTests: TestCase {
     var subscriberAttributesManager: MockSubscriberAttributesManager!
     var attribution: Attribution!
     var identityManager: MockIdentityManager!
+    var tokenManager: MockTokenManager!
     var clock: TestClock!
     var systemInfo: MockSystemInfo!
     var mockOperationDispatcher: MockOperationDispatcher!
@@ -198,6 +202,7 @@ class BasePurchasesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var diagnosticsTracker: DiagnosticsTrackerType?
     var mockVirtualCurrencyManager: MockVirtualCurrencyManager!
@@ -299,6 +304,7 @@ class BasePurchasesTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             checkpointResolver: checkpointResolver,
             dateProvider: dateProvider
@@ -342,6 +348,7 @@ class BasePurchasesTests: TestCase {
                                    deviceCache: self.deviceCache,
                                    paywallCache: self.paywallCache,
                                    identityManager: self.identityManager,
+                                   tokenManager: self.tokenManager,
                                    subscriberAttributes: self.attribution,
                                    operationDispatcher: self.mockOperationDispatcher,
                                    customerInfoManager: self.customerInfoManager,
@@ -498,6 +505,7 @@ extension BasePurchasesTests {
                          mockAdsAPI: MockAdsAPI) {
             let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
             let identity = IdentityAPI(backendConfig: backendConfig)
+            let token = TokenAPI(backendConfig: backendConfig)
             let offerings = OfferingsAPI(backendConfig: backendConfig)
             let webBilling = WebBillingAPI(backendConfig: backendConfig)
             let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -510,6 +518,7 @@ extension BasePurchasesTests {
             self.init(backendConfig: backendConfig,
                       customerAPI: customer,
                       identityAPI: identity,
+                      tokenAPI: token,
                       offeringsAPI: offerings,
                       webBillingAPI: webBilling,
                       offlineEntitlements: offlineEntitlements,
@@ -893,6 +902,7 @@ private extension BasePurchasesTests {
         self.attribution = nil
         self.customerInfoManager = nil
         self.identityManager = nil
+        self.tokenManager = nil
         self.mockOfferingsManager = nil
         self.mockOfflineEntitlementsManager = nil
         self.mockPurchasedProductsFetcher = nil

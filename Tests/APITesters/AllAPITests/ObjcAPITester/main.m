@@ -9,6 +9,7 @@
 #import "RCAdTrackerAPI.h"
 #import "RCAttributionAPI.h"
 #import "RCAttributionNetworkAPI.h"
+#import "RCAuthenticationAPI.h"
 #import "RCBillingPlanTypeAPI.h"
 #if ENABLE_CHECKPOINTS_OBJC
 #import "RCCheckpointAPI.h"
@@ -76,6 +77,8 @@ int main(int argc, const char * argv[]) {
         [RCPurchasesAPI checkAPI];
         [RCPurchasesAPI checkConstants];
         [RCPurchasesAPI checkEnums];
+
+        [RCAuthenticationAPI checkAPI];
 
         [RCConfigurationAPI checkAPI];
 

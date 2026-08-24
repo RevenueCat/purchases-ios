@@ -27,6 +27,7 @@ import AppKit
 final class PaywallCacheWarmingTests: TestCase {
 
     private var eligibilityChecker: MockTrialOrIntroPriceEligibilityChecker!
+    private var mockWebBundleURLBatcher: MockWebBundleURLBatcher!
     private var cache: PaywallCacheWarmingType!
 
     override func setUpWithError() throws {
@@ -35,7 +36,11 @@ final class PaywallCacheWarmingTests: TestCase {
         try AvailabilityChecks.iOS15APIAvailableOrSkipTest()
 
         self.eligibilityChecker = .init()
-        self.cache = PaywallCacheWarming(introEligibiltyChecker: self.eligibilityChecker)
+        self.mockWebBundleURLBatcher = MockWebBundleURLBatcher()
+        self.cache = PaywallCacheWarming(
+            introEligibiltyChecker: self.eligibilityChecker,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
     }
 
     func testOfferingsWithNoProductsDoesNotCheckEligibility() async throws {
@@ -408,7 +413,8 @@ final class PaywallCacheWarmingTests: TestCase {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fileRepository: fileRepository
+            fileRepository: fileRepository,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let sheet = PaywallComponent.ButtonComponent.Sheet(
             id: "sheet",
@@ -451,11 +457,12 @@ final class PaywallCacheWarmingTests: TestCase {
         ])
     }
 
-    func testOfferingsAssetPrewarmingDownloadsImagesOnlyOnce() async throws {
+    func testOfferingsAssetPrewarmingPublishesEveryTimeButDownloadsImagesOnlyOnce() async throws {
         let fileRepository = MockCacheWarmingFileRepository()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fileRepository: fileRepository
+            fileRepository: fileRepository,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let data = Self.paywallComponentsData(components: [
             .image(.init(source: Self.cacheWarmingImage("offering-image"))),
@@ -474,9 +481,25 @@ final class PaywallCacheWarmingTests: TestCase {
             webCheckoutUrl: nil
         )
         let offerings = try Self.createOfferings([offering])
+        let refreshedData = Self.paywallComponentsData(components: [
+            .image(.init(source: Self.cacheWarmingImage("refreshed-offering-image"))),
+            .webView(.init(
+                id: "refreshed-webview",
+                protocolVersion: 1,
+                url: "https://example.com/refreshed-cache"
+            ))
+        ])
+        let refreshedOffering = Offering(
+            identifier: Self.offeringIdentifier,
+            serverDescription: "Refreshed",
+            paywallComponents: .init(uiConfig: Self.emptyUIConfig, data: refreshedData),
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let refreshedOfferings = try Self.createOfferings([refreshedOffering])
 
         await cache.warmUpPaywallAssetsCache(offerings: offerings)
-        await cache.warmUpPaywallAssetsCache(offerings: offerings)
+        await cache.warmUpPaywallAssetsCache(offerings: refreshedOfferings)
 
         let requests = await fileRepository.requests
         XCTAssertEqual(requests.count, 1)
@@ -487,6 +510,9 @@ final class PaywallCacheWarmingTests: TestCase {
             data.allCacheAssets.webBundles,
             [.init(url: Self.url("https://example.com/cache"), checksum: nil)]
         )
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 2
+        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === refreshedOfferings
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
     func testTriggerFontDownload_DeduplicatesConcurrentDownloads() async throws {
@@ -501,7 +527,8 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: fontsManager
+            fontsManager: fontsManager,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
 
         // Launch two tasks installing the same font concurrently
@@ -741,7 +768,8 @@ final class PaywallCacheWarmingTests: TestCase {
         let session = MockSession()
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: Self.makeFontsManager(session: session)
+            fontsManager: Self.makeFontsManager(session: session),
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
         let fontsConfig = try Self.fontsConfig(fontName: font.name, family: derivedFamily)
 
@@ -763,7 +791,8 @@ final class PaywallCacheWarmingTests: TestCase {
 
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: Self.makeFontsManager(session: session)
+            fontsManager: Self.makeFontsManager(session: session),
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
 
         let fontsConfig = try Self.fontsConfig(fontName: Self.unknownFontName,
@@ -1091,7 +1120,8 @@ private extension PaywallCacheWarmingTests {
         )
         let cache = PaywallCacheWarming(
             introEligibiltyChecker: self.eligibilityChecker,
-            fontsManager: fontsManager
+            fontsManager: fontsManager,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
         )
 
         for (index, fontName) in fontNames.enumerated() {

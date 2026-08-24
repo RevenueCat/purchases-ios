@@ -5,6 +5,7 @@ require 'digest'
 require 'fileutils'
 require 'json'
 require 'net/http'
+require 'open3'
 require 'uri'
 
 module ApiDiffHelper
@@ -116,6 +117,76 @@ module ApiDiffHelper
     pattern = swiftinterface_pattern_for_sdk(sdk, module_name)
     Dir.glob("#{derived_data_dir}/#{pattern}")
        .reject { |path| path.include?("private") }
+  end
+
+  BUILD_LOG_MUTEX = Mutex.new
+
+  # The nine builds share one stdout, so a bare stream would interleave into something unreadable.
+  # Tagging each line with the SDK keeps the log greppable per build, and streaming rather than
+  # buffering keeps output flowing so CircleCI's no-output timeout never fires. The mutex holds a
+  # whole line together: xcodebuild echoes multi-kilobyte compiler invocations, and a write that
+  # large is not atomic.
+  def stream_build_output(sdk, output)
+    output.each_line do |line|
+      BUILD_LOG_MUTEX.synchronize do
+        $stdout.puts("[#{sdk}] #{line.chomp}")
+        $stdout.flush
+      end
+    end
+  end
+
+  # One platform runs per thread, so this avoids fastlane's `sh` and `Dir.chdir`: both mutate
+  # process-global state (the default encoding and the working directory) that the other builds
+  # share. Failures come back as a result rather than an exception for the same reason: raising
+  # inside a thread only surfaces wherever its value happens to be read.
+  def build_swiftinterface(platform_config, scheme:, project_root:, output_dir:)
+    sdk = platform_config[:sdk]
+    # Concurrent builds cannot share a derived data directory.
+    derived_data = "#{project_root}/.build-#{scheme}-#{sdk}"
+
+    sdk_path, status = Open3.capture2e("xcrun", "--sdk", sdk, "--show-sdk-path")
+    return { success: false, error: "xcrun failed for #{sdk}: #{sdk_path.strip}" } unless status.success?
+
+    Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]} (#{sdk})...")
+
+    # Every failure names the SDK: PLATFORMS reuses one platform label for a device and its
+    # simulator, so the label alone cannot say which of the two builds failed.
+    build_status = Open3.popen2e(
+      "xcodebuild", "clean", "build",
+      "-workspace", ".",
+      "-scheme", scheme,
+      "-derivedDataPath", derived_data,
+      "-configuration", "Release",
+      "-sdk", sdk_path.strip,
+      "-destination", platform_config[:destination],
+      "BUILD_LIBRARY_FOR_DISTRIBUTION=YES",
+      chdir: project_root
+    ) do |stdin, output, wait_thread|
+      stdin.close
+      stream_build_output(sdk, output)
+      wait_thread.value
+    end
+
+    unless build_status.success?
+      return {
+        success: false,
+        error: "xcodebuild failed for #{scheme} on #{platform_config[:platform]} (#{sdk})"
+      }
+    end
+
+    swiftinterface_files = find_swiftinterface_file(derived_data, sdk, scheme)
+
+    if swiftinterface_files.empty?
+      return {
+        success: false,
+        error: "Could not find #{scheme}.swiftinterface for #{platform_config[:platform]} (#{sdk})"
+      }
+    end
+
+    FileUtils.cp(swiftinterface_files.first, "#{output_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface")
+    Fastlane::UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
+
+    { success: true }
   end
 
   def copy_generated_swiftinterface_files(destination_dir, schemes = MODULES)
@@ -574,6 +645,38 @@ module ApiDiffHelper
     end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
   end
 
+  ATTRIBUTE_SUMMARY_WIDTH = 40
+
+  # `message:` carries a whole sentence, so the attribute and its first arguments are the news.
+  def summarize_attribute(attribute)
+    short = attribute.to_s.sub(/,\s*message:.*/, "…)")
+
+    short.length > ATTRIBUTE_SUMMARY_WIDTH ? "#{short[0, ATTRIBUTE_SUMMARY_WIDTH - 1]}…" : short
+  end
+
+  def attribute_changes(declaration)
+    declaration.to_s.lines.map(&:strip).filter_map do |line|
+      match = ATTRIBUTE_CHANGE_LINE.match(line)
+      next unless match
+
+      verb, attribute = match.captures
+      "#{verb.downcase} #{summarize_attribute(attribute)}"
+    end
+  end
+
+  # A modification is neither an addition nor necessarily a break: an attribute-only one is waved
+  # through by the gate, and without this it reached the feed as a headline and nothing else.
+  def modified_declarations(reports_by_target)
+    reports_by_target.values.compact.flat_map do |report|
+      next [] unless api_changes_reported?(report)
+
+      parse_report(report).select { |change| change.kind == :modified }.map do |change|
+        { summary: attribute_changes(change.declaration).join(", "),
+          declaration: significant_first_line(change.declaration) }
+      end
+    end.reject { |change| change[:declaration].empty? }.uniq
+  end
+
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
   # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
@@ -604,21 +707,33 @@ module ApiDiffHelper
 
   # Not all breaks are removals, so each carries its reason; additions match the `+` Android uses.
   # An enum case or protocol requirement is both an addition and a break, so it is listed once.
-  def slack_declaration_lines(breaks, new_declarations)
+  def slack_declaration_lines(breaks, new_declarations, modifications = [])
     break_lines = breaks.map do |change|
       owner = change[:owner] ? " in #{change[:owner]}" : ""
       "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: #{change[:declaration]}"
     end
     broken = breaks.map { |change| change[:declaration] }
 
-    break_lines + (new_declarations - broken).map { |declaration| "+ #{declaration}" }
+    break_lines +
+      modifications.map { |change| "~ #{[change[:summary], change[:declaration]].reject(&:empty?).join(': ')}" } +
+      (new_declarations - broken).map { |declaration| "+ #{declaration}" }
   end
 
-  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [])
+  # A modification the gate already reports as a break needs no second line.
+  def unbroken_modifications(modifications, breaks)
+    broken = breaks.map { |change| change[:declaration] }
+
+    modifications.reject { |change| broken.include?(change[:declaration]) }
+  end
+
+  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
+    changed = unbroken_modifications(modifications, breaks)
     headline = if breaks.any?
                  gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
-               else
+               elsif new_declarations.any?
                  ":sparkles: *New public API*"
+               else
+                 ":pencil2: *Public API changed*"
                end
     headline = [headline, announcement_identity(modules)].join(" · ")
 
@@ -628,9 +743,10 @@ module ApiDiffHelper
     counts = []
     counts << "#{breaks.count} potential break#{'s' if breaks.count != 1}" if breaks.any?
     counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
+    counts << "#{changed.count} modification#{'s' if changed.count != 1}" if changed.any?
     lines << counts.join(", ") if counts.any?
 
-    declaration_lines = slack_declaration_lines(breaks, new_declarations)
+    declaration_lines = slack_declaration_lines(breaks, new_declarations, changed)
     lines << slack_declaration_block(declaration_lines) if declaration_lines.any?
 
     lines.join("\n")
