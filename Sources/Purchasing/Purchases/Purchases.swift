@@ -358,9 +358,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
+                     keychainAccessGroup: String? = nil,
                      currentConfiguration: Configuration?,
-                     webBundleEventBus: WebBundleEventBus = .shared,
-                     keychainAccessGroup: String? = nil
+                     webBundleEventBus: WebBundleEventBus = .shared
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
