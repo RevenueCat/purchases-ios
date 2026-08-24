@@ -239,6 +239,26 @@
       "expected": true
     },
     {
+      "id": "lower_case_insensitive_nested_country_code_equality",
+      "description": "Nested variable paths resolve before case conversion",
+      "predicate": {
+        "===": [
+          {
+            "rc.lower": {
+              "var": "country.code"
+            }
+          },
+          "es"
+        ]
+      },
+      "variables": {
+        "country": {
+          "code": "ES"
+        }
+      },
+      "expected": true
+    },
+    {
       "id": "lower_case_insensitive_in_substring_check",
       "description": "Motivating case: case-insensitive substring membership via in on lowercased haystack and needle",
       "predicate": {
