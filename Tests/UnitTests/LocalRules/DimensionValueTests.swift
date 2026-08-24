@@ -67,16 +67,14 @@ struct DimensionValueTests {
             ])
         ])
 
-        let predicate = try RulesEngine.Value.fromJSONString(
-            #"""
+        let predicate = #"""
             {"and":[
                 {"==":[{"var":"device.goal.value"},"lose_weight"]},
                 {">":[{"var":"device.goal.updatedAt"},1699999999999]}
             ]}
             """#
-        )
 
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: predicate, variables: snapshot.values).isTruthy)
+        #expect(try RulesEngine.evaluate(predicate: predicate, variables: snapshot.values).get())
     }
 
     @Test
@@ -85,18 +83,14 @@ struct DimensionValueTests {
             "expiresAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
         ])
 
-        #expect(try RulesEngine.Evaluator.evaluate(
-            predicate: try RulesEngine.Value.fromJSONString(
-                #"{">":[{"var":"device.expiresAt"},1699999999999]}"#
-            ),
+        #expect(try RulesEngine.evaluate(
+            predicate: #"{">":[{"var":"device.expiresAt"},1699999999999]}"#,
             variables: snapshot.values
-        ).isTruthy)
-        #expect(try !RulesEngine.Evaluator.evaluate(
-            predicate: try RulesEngine.Value.fromJSONString(
-                #"{">":[{"var":"device.expiresAt"},1700000000001]}"#
-            ),
+        ).get())
+        #expect(try !RulesEngine.evaluate(
+            predicate: #"{">":[{"var":"device.expiresAt"},1700000000001]}"#,
             variables: snapshot.values
-        ).isTruthy)
+        ).get())
     }
 
     @Test
@@ -114,20 +108,16 @@ struct DimensionValueTests {
             ])
         ])
 
-        let active = try RulesEngine.Value.fromJSONString(
+        let active =
             #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"pro"]},{"var":"isActive"}]}]}"#
-        )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: active, variables: snapshot.values).isTruthy)
+        #expect(try RulesEngine.evaluate(predicate: active, variables: snapshot.values).get())
 
-        let inactive = try RulesEngine.Value.fromJSONString(
+        let inactive =
             #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"plus"]},{"var":"isActive"}]}]}"#
-        )
-        #expect(try !RulesEngine.Evaluator.evaluate(predicate: inactive, variables: snapshot.values).isTruthy)
+        #expect(try !RulesEngine.evaluate(predicate: inactive, variables: snapshot.values).get())
 
-        let byIndex = try RulesEngine.Value.fromJSONString(
-            #"{"==":[{"var":"device.purchases.1.productId"},"pro"]}"#
-        )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: byIndex, variables: snapshot.values).isTruthy)
+        let byIndex = #"{"==":[{"var":"device.purchases.1.productId"},"pro"]}"#
+        #expect(try RulesEngine.evaluate(predicate: byIndex, variables: snapshot.values).get())
     }
 
     @Test
@@ -140,10 +130,8 @@ struct DimensionValueTests {
             "device": .object(["purchases": .array([])])
         ])
 
-        let none = try RulesEngine.Value.fromJSONString(
-            #"{"none":[{"var":"device.purchases"},{"var":"isActive"}]}"#
-        )
-        #expect(try RulesEngine.Evaluator.evaluate(predicate: none, variables: snapshot.values).isTruthy)
+        let none = #"{"none":[{"var":"device.purchases"},{"var":"isActive"}]}"#
+        #expect(try RulesEngine.evaluate(predicate: none, variables: snapshot.values).get())
     }
 
     private static func snapshot(
