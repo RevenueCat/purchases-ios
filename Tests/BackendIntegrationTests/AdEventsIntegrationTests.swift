@@ -15,9 +15,9 @@ import Nimble
 import XCTest
 
 #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat_CustomEntitlementComputation
+@_spi(Internal) @testable import RevenueCat_CustomEntitlementComputation
 #else
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 #endif
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)

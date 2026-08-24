@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 
 #if os(iOS) && canImport(GoogleMobileAds)
-@_spi(Experimental) @testable import RevenueCatAdMob
+@testable import RevenueCatAdMob
 
 @available(iOS 15.0, *)
 final class DelegateContractTests: AdapterTestCase {

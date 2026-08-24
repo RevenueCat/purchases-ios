@@ -50,7 +50,6 @@ This sample app demonstrates how to track Google AdMob ad events with RevenueCat
 ```swift
 import GoogleMobileAds
 import RevenueCat
-@_spi(Experimental) import RevenueCat
 
 // Load
 InterstitialAd.load(withAdUnitID: adUnitID, request: Request()) { [weak self] ad, error in
@@ -117,16 +116,6 @@ This sample uses **Google Mobile Ads SDK v13** Swift API:
 - `Sources/HomeView.swift` — UI for loading/showing each ad format and status
 - `Sources/AdMobManager.swift` — all manual ad tracking code
 - `Sources/Constants.swift` — RevenueCat API key and AdMob ad unit IDs
-
----
-
-## Experimental API notice
-
-This sample uses RevenueCat's ad tracking APIs exposed as experimental Swift SPI (`@_spi(Experimental)`), and behavior may evolve before full stabilization.
-
-- Ad tracking APIs are available on iOS 15.0+.
-- Swift imports must use `@_spi(Experimental) import RevenueCat`.
-- Review release notes when upgrading RevenueCat.
 
 ---
 
@@ -255,7 +244,6 @@ AdMob test ads may not always trigger `paidEventHandler`. Revenue tracking is mo
 
 ### Tracking calls not appearing in console
 
-- Ensure you have `@_spi(Experimental) import RevenueCat` (not just `import RevenueCat`)
 - Confirm you're running on iOS 15+ (ad tracking APIs require `@available(iOS 15.0, *)`)
 - Verify `Purchases.isConfigured` is `true` before tracking calls execute
 
