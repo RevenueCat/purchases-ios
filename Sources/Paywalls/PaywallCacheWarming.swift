@@ -60,6 +60,7 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     private let introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType
     private let fontsManager: PaywallFontManagerType
     private let fileRepository: FileRepositoryType
+    private let webBundleURLBatcher: WebBundleURLBatcherType
 
     private var warmedEligibilityProductIdentifiers: Set<String> = []
     private var hasLoadedPaywallAssets = false
@@ -70,11 +71,13 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
     init(
         introEligibiltyChecker: TrialOrIntroPriceEligibilityCheckerType,
         fontsManager: PaywallFontManagerType = DefaultPaywallFontsManager(session: PaywallCacheWarming.downloadSession),
-        fileRepository: FileRepositoryType = FileRepository.shared
+        fileRepository: FileRepositoryType = FileRepository.shared,
+        webBundleURLBatcher: WebBundleURLBatcherType = WebBundleURLBatcher.shared
     ) {
         self.introEligibiltyChecker = introEligibiltyChecker
         self.fontsManager = fontsManager
         self.fileRepository = fileRepository
+        self.webBundleURLBatcher = webBundleURLBatcher
     }
 
     /// Warms up the intro eligibility cache for products across all offerings.
@@ -126,11 +129,15 @@ actor PaywallCacheWarming: PaywallCacheWarmingType {
 
     /// Walks paywall component trees once, then downloads images.
     ///
-    /// IMPORTANT
-    /// Video and Web Bundle assets will be warmed here in the future
-    /// When done, we should use task groups so we can dispatch things asynchronously
-    /// Will do as part of: FUN-2274
+    /// Inline V2 web-view URLs are published here with an empty workflow map (RC-off). When remote
+    /// config is on, those trees are empty and ``WorkflowManager/publishWebBundleURLs(offerings:)``
+    /// is the real list. Video warming is still future work (FUN-2274).
     func warmUpPaywallAssetsCache(offerings: Offerings) async {
+        await self.webBundleURLBatcher.publish(
+            offerings: offerings,
+            workflowsByOfferingId: [:]
+        )
+
         guard !self.hasLoadedPaywallAssets else { return }
         self.hasLoadedPaywallAssets = true
 

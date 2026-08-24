@@ -323,7 +323,39 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func omittedVariableRetainsRulesEngineNullSemantics() async throws {
+    func omittedVariableSurfacesAsAnErrorRatherThanMatching() async throws {
+        // A dimension this SDK version cannot resolve makes the rule
+        // unanswerable. Reporting that is what lets the caller tell it apart
+        // from a rule that was evaluated and did not match.
+        let evaluator = Self.evaluator(dimensionProviders: [
+            TestDimensionProvider(
+                namespace: .device,
+                snapshots: [["known": .bool(true)]]
+            )
+        ])
+
+        do {
+            _ = try await evaluator.match(in: [
+                TestLocalRule(
+                    id: "reads-unknown-dimension",
+                    predicate: #"{"==":[{"var":"device.unknown"},null]}"#
+                )
+            ])
+            Issue.record("Expected predicate failure to be thrown")
+        } catch let error as LocalRulesEvaluationError {
+            #expect(error == .predicateEvaluation(
+                ruleIndex: 0,
+                error: .unresolvedVariable(path: "device.unknown")
+            ))
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func ruleReadingAnOmittedVariableDoesNotBlockALaterMatch() async throws {
+        // The first rule cannot be answered, but that says nothing about the
+        // second, so evaluation carries on and a later match still wins.
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 namespace: .device,
@@ -333,12 +365,16 @@ struct LocalRulesEvaluatorTests {
 
         let rule = try await evaluator.match(in: [
             TestLocalRule(
-                id: "missing-is-null",
+                id: "reads-unknown-dimension",
                 predicate: #"{"==":[{"var":"device.unknown"},null]}"#
+            ),
+            TestLocalRule(
+                id: "reads-known-dimension",
+                predicate: #"{"==":[{"var":"device.known"},true]}"#
             )
         ])
 
-        #expect(rule?.id == "missing-is-null")
+        #expect(rule?.id == "reads-known-dimension")
     }
 
     @Test

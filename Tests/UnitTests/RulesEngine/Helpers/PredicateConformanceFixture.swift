@@ -38,10 +38,14 @@ struct ExpectedError: Equatable, Decodable {
 
     let kind: String
     let `operator`: String?
+    /// Omit to assert only that the variable failed to resolve, whatever
+    /// path it was written as.
+    let unresolvedPath: String?
 
     enum CodingKeys: String, CodingKey {
         case kind = "error"
         case `operator`
+        case unresolvedPath = "path"
     }
 }
 

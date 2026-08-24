@@ -84,6 +84,7 @@ class MockHTTPClient: HTTPClient {
 
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          networkTimeout: NetworkTimeout = .custom(7),
@@ -92,6 +93,7 @@ class MockHTTPClient: HTTPClient {
 
         super.init(systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   tokenManager: tokenManager,
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
@@ -135,7 +137,7 @@ class MockHTTPClient: HTTPClient {
                                testName: CurrentTestCaseTracker.osVersionAndTestName)
             }
 
-            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
+            let mock = self.mocks[request.path.url(preferIAMPath: false)!] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
                 let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
@@ -168,7 +170,7 @@ class MockHTTPClient: HTTPClient {
     }
 
     private func mock(path: HTTPRequestPath, response: Response) {
-        self.mocks[path.url!] = response
+        self.mocks[path.url(preferIAMPath: false)!] = response
     }
 
     /// Override headers that depend on the environment to make them stable.
@@ -207,7 +209,7 @@ extension RevenueCat.HTTPRequest: Swift.Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encode(self.path.url, forKey: .url)
+        try container.encode(self.path.url(preferIAMPath: false), forKey: .url)
         try container.encode(self.method.httpMethod, forKey: .method)
 
         if let body = self.requestBody {
