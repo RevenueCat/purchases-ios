@@ -52,7 +52,7 @@ import Foundation
  ))
  ```
  */
-@_spi(Experimental) @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 @objc(RCAdTracker)
 public final class AdTracker: NSObject {
 
@@ -82,7 +82,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
+    @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
         self.trackAdFailedToLoad(data, captureMethod: .manual)
     }
 
@@ -113,7 +113,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdLoaded(_ data: AdLoaded) {
+    @objc public func trackAdLoaded(_ data: AdLoaded) {
         self.trackAdLoaded(data, captureMethod: .manual)
     }
 
@@ -144,7 +144,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdDisplayed(_ data: AdDisplayed) {
+    @objc public func trackAdDisplayed(_ data: AdDisplayed) {
         self.trackAdDisplayed(data, captureMethod: .manual)
     }
 
@@ -174,7 +174,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdOpened(_ data: AdOpened) {
+    @objc public func trackAdOpened(_ data: AdOpened) {
         self.trackAdOpened(data, captureMethod: .manual)
     }
 
@@ -208,7 +208,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @_spi(Experimental) @objc public func trackAdRevenue(_ data: AdRevenue) {
+    @objc public func trackAdRevenue(_ data: AdRevenue) {
         self.trackAdRevenue(data, captureMethod: .manual)
     }
 

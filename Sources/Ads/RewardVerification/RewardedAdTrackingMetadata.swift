@@ -16,7 +16,7 @@ import Foundation
 ///
 /// Pass this to ``pollRewardVerification(clientTransactionID:trackingMetadata:)`` to have the
 /// SDK automatically track those events.
-@_spi(Experimental) public struct RewardedAdTrackingMetadata: Sendable {
+public struct RewardedAdTrackingMetadata: Sendable {
 
     // swiftlint:disable missing_docs
     public let networkName: String?

@@ -29,7 +29,7 @@ import Foundation
 ///     // Verification succeeded with a reward shape the SDK does not currently model.
 /// }
 /// ```
-@_spi(Experimental) public struct AdReward: Sendable, Equatable {
+public struct AdReward: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyReward)
