@@ -55,7 +55,7 @@ enum PredicateConformanceRunner {
             let result = try Evaluator.evaluate(
                 predicate: fixture.predicate,
                 variables: scope(for: fixture)
-            )
+            ).isTruthy
             #expect(result == expected, "Fixture \(fixture.id)")
 
         case .error(let expectedError):
