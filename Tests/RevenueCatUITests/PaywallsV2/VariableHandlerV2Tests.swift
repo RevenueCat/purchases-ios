@@ -560,41 +560,9 @@ class VariableHandlerV2Test: TestCase {
     }
 
     func testOfferPriceUsesDisplayedPriceCurrencyTokenWhenFormatterLocaleDoesNotMatch() {
-        // The displayed price uses "$", but the formatter locale (ro_RO) would render
-        // the currency differently. The offer price should match the displayed price
-        // token so it stays consistent with product.price and product.currency_symbol
-        // across the paywall (same divergence fixed for currency_symbol in #6572).
-        let package = Package(
-            identifier: PackageType.monthly.identifier,
-            packageType: .monthly,
-            storeProduct: TestStoreProduct(
-                localizedTitle: "Monthly",
-                price: 6.99,
-                currencyCode: "USD",
-                localizedPriceString: "$6.99",
-                productIdentifier: "com.revenuecat.product.offer_price_regression",
-                productType: .autoRenewableSubscription,
-                localizedDescription: "PRO monthly",
-                subscriptionGroupIdentifier: "group",
-                subscriptionPeriod: .init(value: 1, unit: .month),
-                introductoryDiscount: .init(
-                    identifier: "intro",
-                    price: 6.99,
-                    localizedPriceString: "$6.99",
-                    paymentMode: .payUpFront,
-                    subscriptionPeriod: .init(value: 1, unit: .week),
-                    numberOfPeriods: 1,
-                    type: .introductory
-                ),
-                locale: Locale(identifier: "ro_RO")
-            ).toStoreProduct(),
-            offeringIdentifier: "offering",
-            webCheckoutUrl: nil
-        )
-
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price }}",
-            with: package,
+            with: mismatchedFormatterLocalePackage(price: 6.99, localizedPriceString: "$6.99"),
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
@@ -1405,6 +1373,31 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$2.00"))
     }
 
+    func testOfferPriceKeepsDisplayedPriceWhenFormatterLocaleDoesNotMatch() {
+        // The ro_RO/USD formatter can't parse "$2.00", so the decimals stay in place instead of
+        // being re-rendered as "2 USD". `product.price` behaves the same way, so the paywall
+        // stays internally consistent.
+        let package = mismatchedFormatterLocalePackage(price: 2.00, localizedPriceString: "$2.00")
+
+        let offerPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        let productPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(offerPrice).to(equal("$2.00"))
+        expect(offerPrice).to(equal(productPrice))
+    }
+
     func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
         let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
             in: "{{ product.offer_price_per_month }}",
@@ -2096,6 +2089,38 @@ class CustomVariableValueTests: TestCase {
         expect(stringDict["premium"]).to(equal("true"))
     }
 
+}
+
+/// Product whose displayed price uses "$" but whose formatter locale (ro_RO) renders USD as "2,00 USD".
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func mismatchedFormatterLocalePackage(price: Decimal, localizedPriceString: String) -> Package {
+    return Package(
+        identifier: PackageType.monthly.identifier,
+        packageType: .monthly,
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Monthly",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: localizedPriceString,
+            productIdentifier: "com.revenuecat.product.mismatched_formatter_locale",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: .init(
+                identifier: "intro",
+                price: price,
+                localizedPriceString: localizedPriceString,
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 1, unit: .week),
+                numberOfPeriods: 1,
+                type: .introductory
+            ),
+            locale: Locale(identifier: "ro_RO")
+        ).toStoreProduct(),
+        offeringIdentifier: "offering",
+        webCheckoutUrl: nil
+    )
 }
 
 #endif

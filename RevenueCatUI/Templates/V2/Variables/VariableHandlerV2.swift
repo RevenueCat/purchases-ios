@@ -742,11 +742,8 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
-        // Format the discount's displayed price string rather than reformatting the
-        // decimal price through `NumberFormatter`. The formatter can emit a different
-        // currency token than the displayed price (e.g. "6,99 USD" vs "$6.99") when its
-        // locale metadata doesn't match the product's currency, which would make the
-        // offer price inconsistent with `product.price` and `product.currency_symbol`.
+        // Formatting the displayed string keeps the product's currency token, which
+        // `NumberFormatter` can get wrong when its locale doesn't match the currency.
         return formatDiscountPrice(
             discount.localizedPriceString,
             package: package,
@@ -754,6 +751,8 @@ extension VariablesV2 {
         )
     }
 
+    // TODO: the per-period offer variables below still reformat through `NumberFormatter`, so their
+    // currency token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
     func productOfferPricePerDay(
         package: Package,
         localizations: [String: String],
@@ -1094,9 +1093,7 @@ private extension VariablesV2 {
         ) ?? fallback
     }
 
-    /// Formats an already-displayed discount price string, preserving its currency token.
-    /// Mirrors the base price path (`Package.localizedPrice`) so the currency token stays
-    /// consistent across the paywall instead of being re-derived from `NumberFormatter`.
+    /// Formats an already-displayed discount price string, mirroring `Package.localizedPrice`.
     func formatDiscountPrice(
         _ priceString: String,
         package: Package,
