@@ -65,14 +65,12 @@ struct PaywallPresenter: View {
         case .footer:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                                               customerInfo: nil,
                                                introEligibility: introEligibilityChecker,
                                                purchaseHandler: .default())
 
         case .condensedFooter:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                                               customerInfo: nil,
                                                condensed: true,
                                                introEligibility: introEligibilityChecker,
                                                purchaseHandler: .default())

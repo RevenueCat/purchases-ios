@@ -50,8 +50,6 @@ public struct PaywallView: View {
     private var workflowContext: WorkflowContext?
 
     @State
-    private var customerInfo: CustomerInfo?
-    @State
     private var error: NSError?
 
     private var promoOfferCache: PaywallPromoOfferCache?
@@ -138,10 +136,6 @@ public struct PaywallView: View {
     // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(
         offering: Offering,
-        // Supplying this skips the `Purchases.shared.customerInfo()` fetch, whose failure would
-        // otherwise render the default paywall. Lets a host render a paywall with no configured
-        // project, which is how the fixture app in `Projects/PaywallFixtures` works.
-        customerInfo: CustomerInfo? = nil,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
@@ -154,7 +148,6 @@ public struct PaywallView: View {
         self.init(
             configuration: .init(
                 offering: offering,
-                customerInfo: customerInfo,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
                 introEligibility: introEligibility,
@@ -212,9 +205,6 @@ public struct PaywallView: View {
         self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
         self._offering = .init(
             initialValue: initialPaywallViewData?.offering
-        )
-        self._customerInfo = .init(
-            initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
         )
 
         self.contentToDisplay = configuration.content
@@ -277,10 +267,9 @@ public struct PaywallView: View {
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
-                if let offering = self.offering, let customerInfo = self.customerInfo {
+                if let offering = self.offering {
                     self.paywallView(for: offering,
                                      workflowContext: self.workflowContext,
-                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
@@ -302,15 +291,9 @@ public struct PaywallView: View {
                                     throw PaywallError.purchasesNotConfigured
                                 }
 
-                                if self.offering == nil {
-                                    let paywallData = try await self.loadPaywallData()
-                                    self.offering = paywallData.offering
-                                    self.workflowContext = paywallData.workflowContext
-                                }
-
-                                if self.customerInfo == nil {
-                                    self.customerInfo = try await Purchases.shared.customerInfo()
-                                }
+                                let paywallData = try await self.loadPaywallData()
+                                self.offering = paywallData.offering
+                                self.workflowContext = paywallData.workflowContext
                             } catch let error as NSError {
                                 self.error = error
                             }
@@ -339,11 +322,10 @@ public struct PaywallView: View {
 //    }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length function_parameter_count
+    // swiftlint:disable:next function_body_length
     private func paywallView(
         for offering: Offering,
         workflowContext: WorkflowContext?,
-        activelySubscribedProductIdentifiers: Set<String>,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
@@ -368,7 +350,6 @@ public struct PaywallView: View {
             case .footer, .condensedFooter:
                 LoadedOfferingPaywallView(
                     offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                     paywall: paywall,
                     template: PaywallData.defaultTemplate,
                     mode: self.mode,
@@ -418,7 +399,6 @@ public struct PaywallView: View {
 
             LoadedOfferingPaywallView(
                 offering: offering,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 paywall: paywall,
                 template: template,
                 mode: self.mode,
@@ -442,14 +422,6 @@ public struct PaywallView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @available(tvOS, unavailable)
 private extension PaywallView {
-
-    static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedCustomerInfo
-        } else {
-            return nil
-        }
-    }
 
     func loadPaywallData() async throws -> PurchaseHandler.ResolvedPaywallViewData {
         return try await self.purchaseHandler.resolvePaywallViewData(for: self.contentToDisplay)
@@ -478,7 +450,6 @@ private extension PaywallView {
 struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
-    private let activelySubscribedProductIdentifiers: Set<String>
     private let paywall: PaywallData
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
@@ -511,7 +482,6 @@ struct LoadedOfferingPaywallView: View {
 
     init(
         offering: Offering,
-        activelySubscribedProductIdentifiers: Set<String>,
         paywall: PaywallData,
         template: PaywallTemplate,
         mode: PaywallViewMode,
@@ -524,7 +494,6 @@ struct LoadedOfferingPaywallView: View {
         error: Offering.PaywallValidationError? = nil
     ) {
         self.offering = offering
-        self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
         self.paywall = paywall
         self.template = template
         self.mode = mode
@@ -590,7 +559,6 @@ struct LoadedOfferingPaywallView: View {
     private var content: some View {
         let configuration = self.paywall.configuration(
             for: self.offering,
-            activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
             template: self.template,
             mode: self.mode,
             fonts: self.fonts,
@@ -768,7 +736,6 @@ struct PaywallView_Previews: PreviewProvider {
                 PaywallView(
                     configuration: .init(
                         offering: offering,
-                        customerInfo: TestData.customerInfo,
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
                         purchaseHandler: PreviewHelpers.purchaseHandler
@@ -822,7 +789,6 @@ struct PaywallLocalizationPreviews: PreviewProvider {
         PaywallView(
             configuration: .init(
                 offering: offering,
-                customerInfo: TestData.customerInfo,
                 mode: .fullScreen,
                 introEligibility: PreviewHelpers.introEligibilityChecker,
                 purchaseHandler: .mock(preferredLocaleOverride: locale)
