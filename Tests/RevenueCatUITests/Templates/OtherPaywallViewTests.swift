@@ -6,9 +6,15 @@
 //
 
 import Nimble
-import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
 import SnapshotTesting
+import SwiftUI
+import XCTest
+
+#if canImport(UIKit)
+import UIKit
+#endif
 
 #if !os(watchOS) && !os(macOS)
 
