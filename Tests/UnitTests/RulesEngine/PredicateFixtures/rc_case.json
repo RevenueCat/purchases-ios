@@ -190,14 +190,30 @@
       }
     },
     {
-      "id": "lower_missing_variable_is_type_error",
-      "description": "Motivating case for throwing: a typo'd path resolves to null, and coercion would make {\"===\": [{\"rc.lower\": {\"var\": \"typo\"}}, \"null\"]} quietly true",
+      "id": "lower_missing_variable_fails_at_the_lookup",
+      "description": "A typo'd path is caught by var before rc.lower ever sees it, so the error names the unresolved path rather than blaming the operator for a null argument",
       "predicate": {
         "rc.lower": {
           "var": "missing"
         }
       },
       "variables": {},
+      "expected": {
+        "error": "unresolvedVariable",
+        "path": "missing"
+      }
+    },
+    {
+      "id": "lower_explicit_null_is_still_a_type_error",
+      "description": "A key that is present but null is a known value, not an unresolved one, so it reaches rc.lower and is refused there — coercing it would make it compare equal to the string \"null\"",
+      "predicate": {
+        "rc.lower": {
+          "var": "maybe"
+        }
+      },
+      "variables": {
+        "maybe": null
+      },
       "expected": {
         "error": "typeMismatch",
         "operator": "rc.lower"

@@ -27,8 +27,8 @@
       "expectedWarnings": { "contains": [] }
     },
     {
-      "id": "rc_root_var_var_inside_some_would_miss_expired",
-      "description": "Same predicate with var instead of rc.rootVar: now resolves to null (0), so no subscription appears expired",
+      "id": "rc_root_var_var_inside_some_cannot_reach_now",
+      "description": "Same predicate written with var instead of rc.rootVar: the item scope holds only the subscription, so the outer now is unreachable and the lookup names it instead of quietly comparing every expires against null",
       "predicate": {
         "some": [
           { "var": "subscriptions" },
@@ -42,8 +42,7 @@
           { "expires": 150 }
         ]
       },
-      "expected": false,
-      "expectedWarnings": { "contains": ["missing variable"] }
+      "expected": { "error": "unresolvedVariable", "path": "now" }
     },
     {
       "id": "rc_root_var_survives_nested_some",
@@ -171,11 +170,11 @@
       "expectedWarnings": { "contains": [] }
     },
     {
-      "id": "rc_root_var_missing_without_default_warns",
+      "id": "rc_root_var_missing_without_default_is_unresolved_variable_error",
+      "description": "rc.rootVar shares var's lookup, so an absent root key is unknown for it too",
       "predicate": { "===": [{ "rc.rootVar": "missing_key" }, null] },
       "variables": { "a": 1 },
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing variable: missing_key"] }
+      "expected": { "error": "unresolvedVariable", "path": "missing_key" }
     },
     {
       "id": "rc_root_var_dot_path_with_numeric_array_index",
