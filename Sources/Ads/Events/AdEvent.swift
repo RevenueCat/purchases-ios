@@ -49,7 +49,7 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common mediators, or create custom values
 /// for other mediation networks.
-@_spi(Experimental) @objc(RCMediatorName) public final class MediatorName: NSObject, Codable, @unchecked Sendable {
+@objc(RCMediatorName) public final class MediatorName: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the mediator name
     @objc public let rawValue: String
@@ -83,7 +83,7 @@ internal protocol AdImpressionEventData: AdEventData {
 ///
 /// Use the predefined static properties for common ad formats, or create custom values
 /// for other ad format types.
-@_spi(Experimental) @objc(RCAdFormat) public final class AdFormat: NSObject, Codable, @unchecked Sendable {
+@objc(RCAdFormat) public final class AdFormat: NSObject, Codable, @unchecked Sendable {
 
     /// The raw string value of the ad format
     @objc public let rawValue: String
@@ -129,10 +129,10 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad failed to load events.
-@_spi(Experimental) @objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
-                                                                                AdEventData,
-                                                                                Codable,
-                                                                                @unchecked Sendable {
+@objc(RCAdFailedToLoad) public final class AdFailedToLoad: NSObject,
+                                                           AdEventData,
+                                                           Codable,
+                                                           @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var mediatorName: MediatorName
@@ -226,10 +226,10 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad loaded events.
-@_spi(Experimental) @objc(RCAdLoaded) public final class AdLoaded: NSObject,
-                                                                    AdImpressionEventData,
-                                                                    Codable,
-                                                                    @unchecked Sendable {
+@objc(RCAdLoaded) public final class AdLoaded: NSObject,
+                                               AdImpressionEventData,
+                                               Codable,
+                                               @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String?
@@ -300,10 +300,10 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad displayed events.
-@_spi(Experimental) @objc(RCAdDisplayed) public final class AdDisplayed: NSObject,
-                                                                          AdImpressionEventData,
-                                                                          Codable,
-                                                                          @unchecked Sendable {
+@objc(RCAdDisplayed) public final class AdDisplayed: NSObject,
+                                                     AdImpressionEventData,
+                                                     Codable,
+                                                     @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String?
@@ -374,10 +374,10 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad opened/clicked events.
-@_spi(Experimental) @objc(RCAdOpened) public final class AdOpened: NSObject,
-                                                                    AdImpressionEventData,
-                                                                    Codable,
-                                                                    @unchecked Sendable {
+@objc(RCAdOpened) public final class AdOpened: NSObject,
+                                               AdImpressionEventData,
+                                               Codable,
+                                               @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String?
@@ -448,10 +448,10 @@ internal protocol AdImpressionEventData: AdEventData {
 }
 
 /// Data for ad revenue events.
-@_spi(Experimental) @objc(RCAdRevenue) public final class AdRevenue: NSObject,
-                                                                      AdImpressionEventData,
-                                                                      Codable,
-                                                                      @unchecked Sendable {
+@objc(RCAdRevenue) public final class AdRevenue: NSObject,
+                                                 AdImpressionEventData,
+                                                 Codable,
+                                                 @unchecked Sendable {
 
     // swiftlint:disable missing_docs
     @objc public private(set) var networkName: String?
@@ -545,7 +545,7 @@ internal protocol AdImpressionEventData: AdEventData {
 extension AdRevenue {
 
     /// Type representing the level of accuracy for reported revenue values.
-    @_spi(Experimental) @objc(RCAdRevenuePrecision) public final class Precision: NSObject, Codable {
+    @objc(RCAdRevenuePrecision) public final class Precision: NSObject, Codable {
 
         /// The raw string value of the precision type
         @objc public let rawValue: String

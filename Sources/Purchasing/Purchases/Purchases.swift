@@ -302,7 +302,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    @_spi(Experimental) @objc public var adTracker: AdTracker {
+    @objc public var adTracker: AdTracker {
         if let tracker = _adTracker as? AdTracker {
             return tracker
         }
@@ -1899,7 +1899,7 @@ public extension Purchases {
 
 }
 
-// MARK: - Reward Verification (Experimental SPI)
+// MARK: - Reward Verification
 
 extension Purchases {
 
@@ -1908,7 +1908,7 @@ extension Purchases {
     /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
     /// server-side verification options, then stash `clientTransactionID` for use with
     /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
-    @_spi(Experimental) public func generateRewardVerificationToken(
+    public func generateRewardVerificationToken(
         impressionId: String
     ) -> RewardVerificationToken {
         let clientTransactionID = UUID().uuidString
@@ -1941,7 +1941,7 @@ extension Purchases {
     /// automatically track the reward events as verification progresses
     ///
     /// Refreshes local reward state before returning verified rewards.
-    @_spi(Experimental) public func pollRewardVerification(
+    public func pollRewardVerification(
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {

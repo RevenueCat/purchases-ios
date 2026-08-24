@@ -3,7 +3,7 @@
 import Foundation
 import GoogleMobileAds
 import RevenueCat
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 // MARK: - AdMobManager
 
