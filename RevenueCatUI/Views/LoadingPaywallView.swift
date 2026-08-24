@@ -38,7 +38,6 @@ struct LoadingPaywallView: View {
                 availablePackages: Self.packages,
                 webCheckoutUrl: nil
             ),
-            activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
             template: Self.template,
             mode: self.mode,

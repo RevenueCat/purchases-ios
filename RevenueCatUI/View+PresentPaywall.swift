@@ -587,8 +587,8 @@ private struct PresentingPaywallModifier: ViewModifier {
             switch presentationMode {
             case .sheet:
                 content
-                    .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
-                        self.paywallView(data)
+                    .sheet(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { _ in
+                        self.paywallView()
                         // The default height given to sheets on Mac Catalyst is too small, and looks terrible.
                         // So we need to give it a more reasonable default size. This is the height of an
                         // iPhone 6/7/8 screen. This aligns with our documentation that we will show a paywall
@@ -602,8 +602,8 @@ private struct PresentingPaywallModifier: ViewModifier {
             #if !os(macOS)
             case .fullScreen:
                 content
-                    .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { data in
-                        self.paywallView(data)
+                    .fullScreenCover(item: self.$data, onDismiss: self.handleMainPaywallDismiss) { _ in
+                        self.paywallView()
                     }
             #endif
             }
@@ -653,11 +653,10 @@ private struct PresentingPaywallModifier: ViewModifier {
         }
     }
 
-    private func paywallView(_ data: Data) -> some View {
+    private func paywallView() -> some View {
         PaywallView(
             configuration: .init(
                 content: self.content,
-                customerInfo: data.customerInfo,
                 fonts: self.fontProvider,
                 displayCloseButton: true,
                 introEligibility: self.introEligibility,
