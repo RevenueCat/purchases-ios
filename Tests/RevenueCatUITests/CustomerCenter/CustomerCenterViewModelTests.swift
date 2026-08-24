@@ -382,7 +382,12 @@ final class CustomerCenterViewModelTests: TestCase {
         )
 
         let mockRenewal = MockCustomerCenterStoreKitUtilities()
-        mockRenewal.returnRenewalPriceFromRenewalInfo = (2.99, "USD")
+        mockRenewal.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 2.99,
+            currencyCode: "USD",
+            productIdentifier: productId,
+            autoRenewPreference: productId
+        )
 
         let viewModelWithRenewal = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -1159,7 +1164,12 @@ final class CustomerCenterViewModelTests: TestCase {
     func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
         let mockPurchases = MockCustomerCenterPurchases()
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5.0, "USD")
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 5.0,
+            currencyCode: "USD",
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
+        )
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -1167,8 +1177,6 @@ final class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases,
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
         )
-
-        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(equal((5, "USD")))
 
         await viewModel.loadScreen()
 
@@ -1182,7 +1190,12 @@ final class CustomerCenterViewModelTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 5,
+            currencyCode: "USD",
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
+        )
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
