@@ -5,9 +5,10 @@
 //  Created by Nacho Soto on 7/20/23.
 //
 
-@_spi(Internal) @testable import RevenueCatUI
-import SwiftUI
-import XCTest
+import Nimble
+import RevenueCat
+@testable import RevenueCatUI
+import SnapshotTesting
 
 #if !os(watchOS) && !os(macOS)
 
