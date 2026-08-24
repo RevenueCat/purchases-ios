@@ -559,6 +559,18 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$1.99"))
     }
 
+    func testOfferPriceUsesDisplayedPriceCurrencyTokenWhenFormatterLocaleDoesNotMatch() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: mismatchedFormatterLocalePackage(price: 6.99, localizedPriceString: "$6.99"),
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$6.99"))
+    }
+
     func testProductPayUpFrontOfferPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price_per_day }}",
@@ -1361,6 +1373,31 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$2.00"))
     }
 
+    func testOfferPriceKeepsDisplayedPriceWhenFormatterLocaleDoesNotMatch() {
+        // The ro_RO/USD formatter can't parse "$2.00", so the decimals stay in place instead of
+        // being re-rendered as "2 USD". `product.price` behaves the same way, so the paywall
+        // stays internally consistent.
+        let package = mismatchedFormatterLocalePackage(price: 2.00, localizedPriceString: "$2.00")
+
+        let offerPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        let productPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(offerPrice).to(equal("$2.00"))
+        expect(offerPrice).to(equal(productPrice))
+    }
+
     func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
         let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
             in: "{{ product.offer_price_per_month }}",
@@ -2052,6 +2089,38 @@ class CustomVariableValueTests: TestCase {
         expect(stringDict["premium"]).to(equal("true"))
     }
 
+}
+
+/// Product whose displayed price uses "$" but whose formatter locale (ro_RO) renders USD as "2,00 USD".
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func mismatchedFormatterLocalePackage(price: Decimal, localizedPriceString: String) -> Package {
+    return Package(
+        identifier: PackageType.monthly.identifier,
+        packageType: .monthly,
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Monthly",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: localizedPriceString,
+            productIdentifier: "com.revenuecat.product.mismatched_formatter_locale",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: .init(
+                identifier: "intro",
+                price: price,
+                localizedPriceString: localizedPriceString,
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 1, unit: .week),
+                numberOfPeriods: 1,
+                type: .introductory
+            ),
+            locale: Locale(identifier: "ro_RO")
+        ).toStoreProduct(),
+        offeringIdentifier: "offering",
+        webCheckoutUrl: nil
+    )
 }
 
 #endif
