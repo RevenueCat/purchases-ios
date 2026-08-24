@@ -359,9 +359,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
                      currentConfiguration: Configuration?,
-                     webBundleEventBus: WebBundleEventBus = .shared
-                     keychainAccessGroup: String? = nil,
-                     currentConfiguration: Configuration?
+                     webBundleEventBus: WebBundleEventBus = .shared,
+                     keychainAccessGroup: String? = nil
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
