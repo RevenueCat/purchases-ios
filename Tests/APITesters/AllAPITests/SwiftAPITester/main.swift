@@ -18,6 +18,8 @@ func main() -> Int {
 
     checkAttributionNetworkEnums()
 
+    checkAuthenticationAPI()
+
     checkEntitlementInfoAPI()
     checkEntitlementInfoEnums()
     checkEntitlementInfosAPI()

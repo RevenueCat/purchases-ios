@@ -28,7 +28,6 @@ struct PaywallValidationTesterView: View {
                             PaywallView(
                                 configuration: .init(
                                     offering: offering,
-                                    customerInfo: TestData.customerInfo,
                                     mode: .default,
                                     fonts: DefaultPaywallFontProvider(),
                                     introEligibility: .producing(eligibility: .eligible),

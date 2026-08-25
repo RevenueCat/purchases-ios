@@ -23,9 +23,10 @@ extension RulesEngine {
         /// which puts `"10.0.0"` below `"9.0.0"`.
         ///
         /// Both operands must be strings that parse, otherwise
-        /// `EvaluationError.typeMismatch`. Returning `0` for unparseable input
-        /// would report "equal" for a missing variable or a typo, quietly
-        /// matching every rule built on it. Arity is exact for the same reason.
+        /// `EvaluationError.typeMismatch`. Returning `0` for a malformed version
+        /// or an explicit null would report "equal", which satisfies a `>= 0`
+        /// gate and so matches every rule built on it. Arity is exact for the
+        /// same reason.
         static func opSemverCompare(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
 

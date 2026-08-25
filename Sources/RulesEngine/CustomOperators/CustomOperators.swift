@@ -20,6 +20,11 @@ extension RulesEngine {
             vars: Scope
         ) throws -> Value {
             switch operatorName {
+            case "rc.entries":
+                return try EntriesOperators.opEntries(args: args, vars: vars)
+            case "rc.fromEntries":
+                return try EntriesOperators.opFromEntries(args: args, vars: vars)
+
             case "rc.length":
                 return try LengthOperator.opLength(args: args, vars: vars)
 
@@ -33,6 +38,9 @@ extension RulesEngine {
 
             case "rc.semverCompare":
                 return try SemverOperator.opSemverCompare(args: args, vars: vars)
+
+            case "rc.split":
+                return try SplitOperator.opSplit(args: args, vars: vars)
 
             default:
                 throw EvaluationError.unsupportedOperator(name: operatorName)

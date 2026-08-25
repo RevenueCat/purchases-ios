@@ -487,7 +487,7 @@ private extension OfferingsManager {
             let uiConfigProvider = self.uiConfigProvider ?? UiConfigProvider(manager: remoteConfigManager)
             async let workflowBodyDataReady: Void = self.cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
                 remoteConfigManager: remoteConfigManager,
-                includingOfferingId: offerings.current?.identifier
+                offerings: offerings
             )
             async let uiConfigReady = uiConfigProvider.getUiConfig()
             _ = await (workflowBodyDataReady, uiConfigReady)
@@ -533,12 +533,16 @@ private extension OfferingsManager {
 
     private func cacheWorkflowBodyDataAndScheduleAssetPrewarmingIfNeeded(
         remoteConfigManager: RemoteConfigManagerType,
-        includingOfferingId: String?
+        offerings: Offerings
     ) async {
         if let workflowAssetPrewarmer = self.workflowAssetPrewarmer {
             await workflowAssetPrewarmer.scheduleAssetPrewarmingForPrefetchedWorkflows(
-                includingOfferingId: includingOfferingId
+                includingOfferingId: offerings.current?.identifier
             )
+            // Body cache is ready. URL publish reads that cache and must not delay offerings.
+            self.operationDispatcher.dispatchOnWorkerThread {
+                await workflowAssetPrewarmer.publishWebBundleURLs(offerings: offerings)
+            }
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }

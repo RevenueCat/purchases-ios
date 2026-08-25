@@ -32,6 +32,7 @@ class BaseBackendTests: TestCase {
     private(set) var webBilling: WebBillingAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
+    private(set) var token: TokenAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
@@ -88,6 +89,7 @@ class BaseBackendTests: TestCase {
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
+        self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.webBilling = WebBillingAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -101,6 +103,7 @@ class BaseBackendTests: TestCase {
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
+                               tokenAPI: self.token,
                                offeringsAPI: self.offerings,
                                webBillingAPI: self.webBilling,
                                offlineEntitlements: self.offlineEntitlements,
@@ -140,6 +143,7 @@ extension BaseBackendTests {
 
         return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

@@ -129,6 +129,28 @@ final class WorkflowScreenMapperTests: TestCase {
         expect(declaration.defaultValue) == .string("monthly")
     }
 
+    func testPassesThroughZeroDecimalPlaceCountries() throws {
+        let screen = try Self.makeScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testZeroDecimalPlaceCountriesIsEmptyWhenAbsent() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
     func testStateDeclarationsAreNilWhenScreenDeclaresNone() throws {
         let screen = try Self.makeScreen()
         let uiConfig = try Self.makeUIConfig()
@@ -151,7 +173,8 @@ private extension WorkflowScreenMapperTests {
         defaultLocale: String = "en_US",
         automaticallyScaleFontSize: Bool? = nil,
         exitOfferOfferingId: String? = nil,
-        stateDeclarationsJSON: String? = nil
+        stateDeclarationsJSON: String? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil
     ) throws -> RevenueCat.WorkflowScreen {
         var automaticallyScaleFontSizeFragment = ""
         if let automaticallyScaleFontSize {
@@ -163,6 +186,12 @@ private extension WorkflowScreenMapperTests {
         if let stateDeclarationsJSON {
             stateDeclarationsFragment = """
             , "state_declarations": \(stateDeclarationsJSON)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
             """
         }
         var exitOffersJSON = ""
@@ -204,7 +233,7 @@ private extension WorkflowScreenMapperTests {
                         }
                     }
                 }
-            }\(automaticallyScaleFontSizeFragment)\(exitOffersJSON)\(stateDeclarationsFragment)
+            }\(automaticallyScaleFontSizeFragment)\(exitOffersJSON)\(stateDeclarationsFragment)\(zeroDecimalFragment)
         }
         """
         let data = try XCTUnwrap(json.data(using: .utf8))

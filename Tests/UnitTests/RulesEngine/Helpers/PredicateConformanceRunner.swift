@@ -55,7 +55,7 @@ enum PredicateConformanceRunner {
             let result = try Evaluator.evaluate(
                 predicate: fixture.predicate,
                 variables: scope(for: fixture)
-            )
+            ).isTruthy
             #expect(result == expected, "Fixture \(fixture.id)")
 
         case .error(let expectedError):
@@ -91,6 +91,14 @@ enum PredicateConformanceRunner {
             if case .unsupportedOperator(let name) = error {
                 if let expectedName = expected.operator {
                     return name == expectedName
+                }
+                return true
+            }
+
+        case "unresolvedVariable":
+            if case .unresolvedVariable(let path) = error {
+                if let expectedPath = expected.unresolvedPath {
+                    return path == expectedPath
                 }
                 return true
             }

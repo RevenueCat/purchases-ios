@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 4/7/22.
 
 // swiftlint:disable multiline_parameters
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -28,6 +29,7 @@ enum BackendError: Error, Equatable {
     case invalidAppleSubscriptionKey(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
     case invalidWebRedemptionToken
+    case invalidAuthorizationToken(Source)
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
@@ -94,6 +96,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .unsupportedInUIPreviewMode(.init(file: file, function: function, line: line))
+    }
+
+    static func invalidAuthorizationToken(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .invalidAuthorizationToken(.init(file: file, function: function, line: line))
     }
 
 }
@@ -163,6 +171,10 @@ extension BackendError: PurchasesErrorConvertible {
             let code = BackendErrorCode.invalidWebRedemptionToken
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue)
+        case .invalidAuthorizationToken:
+            let code = BackendErrorCode.invalidAuthToken
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue)
         case .purchaseBelongsToOtherUser:
             let code = BackendErrorCode.purchaseBelongsToOtherUser
             return ErrorUtils.backendError(withBackendCode: code,
@@ -223,6 +235,7 @@ extension BackendError {
              .missingCachedCustomerInfo,
              .unexpectedBackendResponse,
              .invalidWebRedemptionToken,
+             .invalidAuthorizationToken,
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
              .unsupportedInUIPreviewMode,
@@ -248,6 +261,7 @@ extension BackendError {
                 .missingTransactionProductIdentifier,
                 .missingCachedCustomerInfo,
                 .invalidWebRedemptionToken,
+                .invalidAuthorizationToken,
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
                 .unsupportedInUIPreviewMode,

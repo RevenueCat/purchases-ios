@@ -152,10 +152,17 @@
       "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
     },
     {
-      "id": "semver_missing_variable_is_type_error",
-      "description": "Motivating case for throwing: returning 0 would report \"equal\" and match a >= 0 gate",
+      "id": "semver_missing_variable_fails_at_the_lookup",
+      "description": "A typo'd path is caught by var before rc.semverCompare ever sees it, so the error names the unresolved path rather than blaming the operator",
       "predicate": {"rc.semverCompare": [{"var": "missing"}, "1.0.0"]},
       "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "missing"}
+    },
+    {
+      "id": "semver_explicit_null_is_still_a_type_error",
+      "description": "A key that is present but null is a known value, not an unresolved one, so it reaches rc.semverCompare and is refused there rather than reporting \"equal\" to a >= 0 gate",
+      "predicate": {"rc.semverCompare": [{"var": "maybe"}, "1.0.0"]},
+      "variables": {"maybe": null},
       "expected": {"error": "typeMismatch", "operator": "rc.semverCompare"}
     },
     {

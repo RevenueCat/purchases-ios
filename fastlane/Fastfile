@@ -2392,34 +2392,27 @@ platform :ios do
 
     begin
       Dir.mktmpdir("pr-swiftinterface-") do |temp_dir|
-        schemes.each do |scheme|
-          ApiDiffHelper::PLATFORMS.each do |platform_config|
-            UI.message("Building #{scheme} for #{platform_config[:platform]}...")
+        project_root = File.expand_path("..")
+        # One build per platform covers every requested module, because RevenueCatUI links
+        # RevenueCat and so emits both interfaces. Asking for only the core stays on the core
+        # scheme so it does not pay to compile RevenueCatUI as well.
+        build_scheme = schemes.include?("RevenueCatUI") ? "RevenueCatUI" : "RevenueCat"
 
-            sdk_path = sh("xcrun --sdk #{platform_config[:sdk]} --show-sdk-path").strip
-
-            Dir.chdir("..") do
-              sh("xcodebuild", "clean", "build",
-                 "-workspace", ".",
-                 "-scheme", scheme,
-                 "-derivedDataPath", ".build",
-                 "-configuration", "Release",
-                 "-sdk", sdk_path,
-                 "-destination", platform_config[:destination],
-                 "BUILD_LIBRARY_FOR_DISTRIBUTION=YES")
-            end
-
-            swiftinterface_files = ApiDiffHelper.find_swiftinterface_file("../.build", platform_config[:sdk], scheme)
-
-            if swiftinterface_files.empty?
-              UI.user_error!("Could not find #{scheme}.swiftinterface for #{platform_config[:platform]}")
-            end
-
-            output_path = "#{temp_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface"
-            FileUtils.cp(swiftinterface_files.first, output_path)
-            UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
+        threads = ApiDiffHelper::PLATFORMS.map do |platform_config|
+          Thread.new(platform_config) do |config|
+            ApiDiffHelper.build_swiftinterface(
+              config,
+              scheme: build_scheme,
+              modules: schemes,
+              project_root: project_root,
+              output_dir: temp_dir
+            )
           end
         end
+
+        # Every build is awaited before reporting so one failure does not hide the others.
+        errors = threads.map(&:value).reject { |result| result[:success] }.map { |result| result[:error] }
+        UI.user_error!(errors.join("\n")) if errors.any?
 
         # Copy to expected location for CI artifacts
         FileUtils.rm_rf(ApiDiffHelper::PR_SWIFTINTERFACE_DIR)
@@ -2513,13 +2506,14 @@ platform :ios do
     merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
     UI.message("Comparing against the merge base #{merge_base}")
 
-    all_breaks = []
+    breaks_by_scheme = {}
     reports_by_target = {}
 
     schemes.each do |scheme|
       base_dir = File.join(ApiDiffHelper::MERGE_BASE_SWIFTINTERFACE_DIR, scheme)
       ApiDiffHelper.extract_baselines_at(merge_base, base_dir, scheme, runner: runner)
       prefix = ApiDiffHelper.api_file_prefix(scheme)
+      scheme_breaks = []
 
       ApiDiffHelper::PLATFORM_CHECKS.each do |platform|
         old_file = File.join(base_dir, "#{prefix}-api#{platform[:suffix]}.swiftinterface")
@@ -2534,11 +2528,16 @@ platform :ios do
           target_name: target_name
         )
         reports_by_target[target_name] = report
-        all_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
+        scheme_breaks.concat(ApiDiffHelper.breaking_changes(report, new_file))
       end
+
+      breaks_by_scheme[scheme] = ApiDiffHelper.dedupe_breaks(scheme_breaks)
     end
 
-    all_breaks.uniq! { |change| [change[:reason], change[:owner], change[:declaration]] }
+    # The gate and the Slack summary speak for the whole PR, so they see every module's breaks.
+    # Each PR comment section speaks for one module and gets only its own, or a break in one
+    # module would be listed under the other and open a section for a module that never changed.
+    all_breaks = ApiDiffHelper.dedupe_breaks(breaks_by_scheme.values.flatten)
 
     labels = []
     if all_breaks.any?
@@ -2564,7 +2563,7 @@ platform :ios do
         upsert_api_diff_comment(
           scheme: scheme,
           reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
-          breaks: all_breaks,
+          breaks: breaks_by_scheme.fetch(scheme, []),
           labels: labels,
           notice: announcement[:notice],
           announced_fingerprint: announcement[:fingerprint]
@@ -2609,7 +2608,8 @@ platform :ios do
     )
 
     if existing
-      # The other module's job owns its own section of this comment.
+      # The other module owns its own section of this comment; re-reading it each time is what
+      # lets the second write land beside the first rather than on top of it.
       body = ApiDiffHelper.merge_api_diff_comment(existing["body"], options[:scheme], section)
 
       UI.message("Updating API diff comment #{existing['id']}")
@@ -2653,7 +2653,8 @@ platform :ios do
       options[:labels],
       source: source,
       new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
-      modules: modules
+      modules: modules,
+      modifications: ApiDiffHelper.modified_declarations(options[:reports_by_target])
     )
     fingerprint = ApiDiffHelper.announcement_fingerprint(summary)
 

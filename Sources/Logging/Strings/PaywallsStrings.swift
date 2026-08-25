@@ -22,6 +22,7 @@ enum PaywallsStrings {
     case warming_up_fonts(fontsURLS: Set<URL>)
     case warming_up_videos(videoURLs: Set<URLWithValidation>)
     case warming_up_workflow(screenCount: Int)
+    case warming_up_web_bundles(screenCount: Int)
     case workflow_resolution_for_asset_prewarming_failed(workflowId: String, error: WorkflowResolutionError)
     case error_fetching_workflows_list(BackendError)
     case error_refreshing_workflow(workflowId: String, error: BackendError)
@@ -171,6 +172,9 @@ extension PaywallsStrings: LogMessage {
 
         case let .warming_up_workflow(screenCount):
             return "Warming up workflow caches for \(screenCount) screen(s)"
+
+        case let .warming_up_web_bundles(screenCount):
+            return "Publishing web bundle URLs for \(screenCount) screen(s)"
 
         case let .workflow_resolution_for_asset_prewarming_failed(workflowId, error):
             return "Unable to resolve workflow '\(workflowId)' for asset prewarming: \(error)"
