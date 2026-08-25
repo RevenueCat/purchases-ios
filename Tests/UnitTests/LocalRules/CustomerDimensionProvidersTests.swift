@@ -75,6 +75,16 @@ struct ServerSnapshotDimensionProviderTests {
     }
 
     @Test
+    func staysOutOfTheEncodedFormWhenTheBackendSentNone() async throws {
+        // Written as an explicit null it would change the shape of every cached customer info,
+        // and every recorded encoding snapshot with it.
+        let encoded = try JSONEncoder.default.encode(CustomerInfoFixture.make(dimensions: nil))
+        let json = try #require(String(data: encoded, encoding: .utf8))
+
+        #expect(!json.contains("dimensions"))
+    }
+
+    @Test
     func contributesNothingWhenTheBackendSentNoDimensions() async throws {
         let dimensions = try await Self.provider(dimensions: nil).dimensions(in: Self.context)
 
