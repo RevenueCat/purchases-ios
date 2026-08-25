@@ -1328,20 +1328,11 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal 2, body.scan("<details>").count
   end
 
-  def test_slack_summary_leads_with_breaks_when_there_are_any
-    breaks = [{ reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" }]
-
-    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
-
-    assert message.start_with?(":warning: *Breaking public API changes*")
-    assert_includes message, "<url|#42> Some PR"
-    assert_includes message, "1 potential break"
-  end
-
-  def test_slack_summary_leads_with_new_api_when_nothing_breaks
-    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
+  def test_slack_summary_leads_with_new_api
+    message = ApiDiffHelper.slack_summary(["public func a()", "public var b: Swift.Int"], source: "<url|#42> Some PR")
 
     assert message.start_with?(":sparkles: *New public API*")
+    assert_includes message, "<url|#42> Some PR"
     assert_includes message, "2 new declarations"
   end
 
@@ -1430,7 +1421,7 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
   def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
-    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
+    ApiDiffHelper.slack_summary([declaration], source: source, modules: modules)
   end
 
   def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
@@ -1505,9 +1496,9 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
   def test_announcement_fingerprint_moves_with_the_summary
-    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
+    first = ApiDiffHelper.slack_summary(["public func a()"], source: "<url|#1>")
+    same = ApiDiffHelper.slack_summary(["public func a()"], source: "<url|#1>")
+    other = ApiDiffHelper.slack_summary(["public func b()"], source: "<url|#1>")
 
     assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
     refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
@@ -1662,7 +1653,7 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
   def test_slack_summary_names_the_new_api
-    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7355>", new_declarations: ["final public func apiDiffDemoPing() -> Swift.String"])
+    message = ApiDiffHelper.slack_summary(["final public func apiDiffDemoPing() -> Swift.String"], source: "<url|#7355>")
 
     assert_includes message, "1 new declaration"
     assert_includes message, "apiDiffDemoPing"
@@ -1682,58 +1673,8 @@ class ApiDiffHelperTest < Minitest::Test
     refute_includes body, ":warning: No Slack credentials"
   end
 
-  # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
-  # with the headline claiming new API. See purchases-ios#7439.
-  def test_slack_summary_reports_an_attribute_only_modification
-    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
-
-    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
-
-    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
-    assert_includes message, "1 modification"
-    assert_includes message, "~ added @available(*, deprecated…): "
-    assert_includes message, "purchaseDate(forEntitlement"
-    refute_includes message, ":sparkles:"
-  end
-
-  def test_modified_declarations_summarizes_a_removed_attribute
-    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
-
-    assert_equal 1, modifications.count
-    assert_equal "removed @objc", modifications.first[:summary]
-    assert_includes modifications.first[:declaration], "expirationDate(forProductIdentifier"
-  end
-
-  # Removing @objc is a break, and the gate already lists it; a second `~` line would repeat it.
-  def test_slack_summary_lists_a_breaking_modification_once
-    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
-    breaks = Dir.mktmpdir do |dir|
-      path = File.join(dir, "revenuecat-api-ios.swiftinterface")
-      File.write(path, "final public class CustomerInfo {}")
-      ApiDiffHelper.breaking_changes(OBJC_REMOVED_FROM_METHOD_REPORT, path)
-    end
-
-    message = ApiDiffHelper.slack_summary(breaks, [], source: "", modules: ["RevenueCat"], modifications: modifications)
-
-    assert_equal 1, message.scan("expirationDate(forProductIdentifier").count
-    refute_includes message, "modification"
-  end
-
-  def test_slack_summary_still_leads_with_new_api_when_something_was_added
-    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
-
-    message = ApiDiffHelper.slack_summary(
-      [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
-    )
-
-    assert message.start_with?(":sparkles: *New public API*")
-    assert_includes message, "1 new declaration, 1 modification"
-    assert_includes message, "+ public func a()"
-    assert_includes message, "~ added @available"
-  end
-
   def test_slack_summary_labels_the_platform_and_modules
-    message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
+    message = ApiDiffHelper.slack_summary(["public func a()"], source: "<url|#42>", modules: ["RevenueCatUI"])
 
     assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
   end
@@ -1748,32 +1689,20 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal ["RevenueCatUI"], ApiDiffHelper.changed_modules(reports)
   end
 
-  # A removal-only PR used to show a break count and no declarations at all.
-  def test_slack_summary_lists_breaking_declarations
-    breaks = [
-      { reason: :removed, owner: "CustomerInfo", declaration: "public func gone()" },
-      { reason: :modified, owner: nil, declaration: "public func changed() -> Swift.Int" }
-    ]
+  # The feed announces what a PR adds, so an added enum case is new API and nothing else, even
+  # though breaking_changes also reports it and the gate blocks on it.
+  def test_slack_summary_announces_an_added_enum_case_as_new_api
+    message = ApiDiffHelper.slack_summary(["case newCase", "public func added()"], source: "")
 
-    message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42>")
-
-    assert_includes message, "- removed in CustomerInfo: public func gone()"
-    assert_includes message, "- signature changed: public func changed() -> Swift.Int"
-  end
-
-  # An added enum case is reported by both breaking_changes and added_declarations.
-  def test_slack_summary_lists_a_breaking_addition_once
-    breaks = [{ reason: :enum_case, owner: "PaywallEvent", declaration: "case newCase" }]
-
-    message = ApiDiffHelper.slack_summary(breaks, [], source: "", new_declarations: ["case newCase", "public func added()"])
-
-    assert_includes message, "- case added to an existing enum in PaywallEvent: case newCase"
-    refute_includes message, "+ case newCase"
+    assert message.start_with?(":sparkles: *New public API*")
+    assert_includes message, "+ case newCase"
     assert_includes message, "+ public func added()"
+    refute_includes message, ":warning:"
+    refute_includes message, "case added to an existing enum"
   end
 
   def test_slack_summary_marks_additions_with_a_plus
-    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: ["public func added()"])
+    message = ApiDiffHelper.slack_summary(["public func added()"], source: "")
 
     assert_includes message, "+ public func added()"
   end
@@ -1781,17 +1710,17 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_caps_the_declaration_block
     declarations = (1..15).map { |index| "public func f#{index}()" }
 
-    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: declarations)
+    message = ApiDiffHelper.slack_summary(declarations, source: "")
 
-    assert_includes message, "public func f10()"
-    refute_includes message, "public func f11()"
-    assert_includes message, "…and 5 more"
+    assert_includes message, "public func f5()"
+    refute_includes message, "public func f6()"
+    assert_includes message, "…and 10 more"
   end
 
   def test_slack_summary_truncates_long_declarations
     long = "public func f(#{'a' * 400})"
 
-    message = ApiDiffHelper.slack_summary([], [], source: "", new_declarations: [long])
+    message = ApiDiffHelper.slack_summary([long], source: "")
 
     assert_includes message, "…"
     refute_includes message, long
@@ -2117,17 +2046,21 @@ class ApiDiffHelperTest < Minitest::Test
                  "the whole PR's breaks would be listed under every module")
   end
 
-  # The counterpart: the gate blocks the PR and Slack announces it once, so both judge every module.
-  def test_the_gate_and_the_announcement_see_every_module_break
-    source = check_lane_source
-
-    assert_match(/print_breaking_summary\(all_breaks/, source,
+  # The counterpart: the gate blocks the PR on any module's breaks.
+  def test_the_gate_sees_every_module_break
+    assert_match(/print_breaking_summary\(all_breaks/, check_lane_source,
                  "the gate must consider breaks from every module")
+  end
 
-    slack = source[/notify_api_changes_on_slack\(.*?^\s*\)$/m]
+  # One announcement covers the PR, so it reads every module's report at once. Breaks are the
+  # gate's and the comment's business: the feed announces what the PR adds.
+  def test_the_announcement_sees_every_module_and_no_breaks
+    slack = check_lane_source[/notify_api_changes_on_slack\(.*?\)$/m]
     refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"
-    assert_match(/breaks:\s*all_breaks/, slack,
-                 "one announcement covers the PR, so it must see every module's breaks")
+
+    assert_match(/reports_by_target:\s*reports_by_target[,)]/, slack,
+                 "the announcement must see every module's report")
+    refute_match(/breaks:/, slack, "the feed announces new API, not breaks")
   end
 
   def test_dedupe_breaks_collapses_the_same_break_seen_on_several_platforms

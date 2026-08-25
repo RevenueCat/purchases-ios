@@ -2554,11 +2554,7 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
-      announcement = notify_api_changes_on_slack(
-        reports_by_target: reports_by_target,
-        breaks: all_breaks,
-        labels: labels
-      )
+      announcement = notify_api_changes_on_slack(reports_by_target: reports_by_target)
       schemes.each do |scheme|
         upsert_api_diff_comment(
           scheme: scheme,
@@ -2634,11 +2630,10 @@ platform :ios do
 
   # Returns { fingerprint:, notice: }; the notice ends up in the PR comment.
   private_lane :notify_api_changes_on_slack do |options|
-    breaks = options[:breaks]
-    changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
+    new_declarations = ApiDiffHelper.added_declarations(options[:reports_by_target])
 
-    if breaks.empty? && changed_targets.empty?
-      UI.message("No public API changes, nothing to post to Slack")
+    if new_declarations.empty?
+      UI.message("No new public API, nothing to post to Slack")
       next({ fingerprint: nil, notice: nil })
     end
 
@@ -2648,14 +2643,7 @@ platform :ios do
     source = api_gate_pr_link
     modules = ApiDiffHelper.changed_modules(options[:reports_by_target])
 
-    summary = ApiDiffHelper.slack_summary(
-      breaks,
-      options[:labels],
-      source: source,
-      new_declarations: ApiDiffHelper.added_declarations(options[:reports_by_target]),
-      modules: modules,
-      modifications: ApiDiffHelper.modified_declarations(options[:reports_by_target])
-    )
+    summary = ApiDiffHelper.slack_summary(new_declarations, source: source, modules: modules)
     fingerprint = ApiDiffHelper.announcement_fingerprint(summary)
 
     request = ApiDiffHelper.slack_post_request(

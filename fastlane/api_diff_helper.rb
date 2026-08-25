@@ -659,38 +659,6 @@ module ApiDiffHelper
     end.reject { |declaration| declaration.to_s.empty? }.uniq.sort
   end
 
-  ATTRIBUTE_SUMMARY_WIDTH = 40
-
-  # `message:` carries a whole sentence, so the attribute and its first arguments are the news.
-  def summarize_attribute(attribute)
-    short = attribute.to_s.sub(/,\s*message:.*/, "…)")
-
-    short.length > ATTRIBUTE_SUMMARY_WIDTH ? "#{short[0, ATTRIBUTE_SUMMARY_WIDTH - 1]}…" : short
-  end
-
-  def attribute_changes(declaration)
-    declaration.to_s.lines.map(&:strip).filter_map do |line|
-      match = ATTRIBUTE_CHANGE_LINE.match(line)
-      next unless match
-
-      verb, attribute = match.captures
-      "#{verb.downcase} #{summarize_attribute(attribute)}"
-    end
-  end
-
-  # A modification is neither an addition nor necessarily a break: an attribute-only one is waved
-  # through by the gate, and without this it reached the feed as a headline and nothing else.
-  def modified_declarations(reports_by_target)
-    reports_by_target.values.compact.flat_map do |report|
-      next [] unless api_changes_reported?(report)
-
-      parse_report(report).select { |change| change.kind == :modified }.map do |change|
-        { summary: attribute_changes(change.declaration).join(", "),
-          declaration: significant_first_line(change.declaration) }
-      end
-    end.reject { |change| change[:declaration].empty? }.uniq
-  end
-
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
   # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
@@ -698,7 +666,7 @@ module ApiDiffHelper
     [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
   end
 
-  SLACK_DECLARATION_LIMIT = 10
+  SLACK_DECLARATION_LIMIT = 5
 
   # Slack stops wrapping code blocks past this; the full text is in the PR comment.
   SLACK_DECLARATION_WIDTH = 160
@@ -719,49 +687,13 @@ module ApiDiffHelper
                      .keys.map { |target| target.split(" ").first }.uniq.sort
   end
 
-  # Not all breaks are removals, so each carries its reason; additions match the `+` Android uses.
-  # An enum case or protocol requirement is both an addition and a break, so it is listed once.
-  def slack_declaration_lines(breaks, new_declarations, modifications = [])
-    break_lines = breaks.map do |change|
-      owner = change[:owner] ? " in #{change[:owner]}" : ""
-      "- #{BREAK_REASONS.fetch(change[:reason], change[:reason])}#{owner}: #{change[:declaration]}"
-    end
-    broken = breaks.map { |change| change[:declaration] }
-
-    break_lines +
-      modifications.map { |change| "~ #{[change[:summary], change[:declaration]].reject(&:empty?).join(': ')}" } +
-      (new_declarations - broken).map { |declaration| "+ #{declaration}" }
-  end
-
-  # A modification the gate already reports as a break needs no second line.
-  def unbroken_modifications(modifications, breaks)
-    broken = breaks.map { |change| change[:declaration] }
-
-    modifications.reject { |change| broken.include?(change[:declaration]) }
-  end
-
-  def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
-    changed = unbroken_modifications(modifications, breaks)
-    headline = if breaks.any?
-                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
-               elsif new_declarations.any?
-                 ":sparkles: *New public API*"
-               else
-                 ":pencil2: *Public API changed*"
-               end
-    headline = [headline, announcement_identity(modules)].join(" · ")
-
-    lines = [headline]
+  # Removals and modifications are the gate's and the PR comment's to report; the feed announces
+  # what a PR adds. Additions match the `+` Android uses.
+  def slack_summary(new_declarations, source:, modules: [])
+    lines = [[":sparkles: *New public API*", announcement_identity(modules)].join(" · ")]
     lines << source unless source.to_s.empty?
-
-    counts = []
-    counts << "#{breaks.count} potential break#{'s' if breaks.count != 1}" if breaks.any?
-    counts << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}" if new_declarations.any?
-    counts << "#{changed.count} modification#{'s' if changed.count != 1}" if changed.any?
-    lines << counts.join(", ") if counts.any?
-
-    declaration_lines = slack_declaration_lines(breaks, new_declarations, changed)
-    lines << slack_declaration_block(declaration_lines) if declaration_lines.any?
+    lines << "#{new_declarations.count} new declaration#{'s' if new_declarations.count != 1}"
+    lines << slack_declaration_block(new_declarations.map { |declaration| "+ #{declaration}" })
 
     lines.join("\n")
   end
