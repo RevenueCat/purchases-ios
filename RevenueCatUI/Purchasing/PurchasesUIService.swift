@@ -45,7 +45,7 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
             guard !didConfigure else { return }
             self.didConfigure = true
             Logger.debug(Strings.purchases_did_configure)
-            // Next PR: subscribe to publishers
+            WebBundleCacheCoordinator.start()
         }
     }
 
@@ -57,4 +57,10 @@ final class PurchasesUIService: NSObject, PurchasesPostConfigurationStep {
     }
     #endif
 
+}
+
+private extension WebBundleCacheCoordinator {
+    static func start() {
+        _ = Self.shared // begins prewarming
+    }
 }
