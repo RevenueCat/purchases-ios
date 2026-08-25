@@ -54,9 +54,6 @@ final class SpendVirtualCurrenciesOperation: NetworkOperation {
 // Restating inherited @unchecked Sendable from Foundation's Operation
 extension SpendVirtualCurrenciesOperation: @unchecked Sendable {}
 
-
-
-
 extension SpendVirtualCurrenciesOperation {
 
     struct Body: Encodable, HTTPRequestBody {

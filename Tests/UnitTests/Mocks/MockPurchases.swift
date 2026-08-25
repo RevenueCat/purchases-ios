@@ -490,9 +490,9 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
-    func spendVirtualCurrencies(amount: [String: Int],
-                                reference: String?,
-                                completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+    func spendVirtualCurrency(amounts: [String: Int],
+                              reference: String?,
+                              completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
         self.unimplemented()
     }
 

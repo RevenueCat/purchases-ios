@@ -1720,16 +1720,18 @@ public extension Purchases {
     @objc func invalidateVirtualCurrenciesCache() {
         self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
     }
-    
+
     /// Spend virtual currency
     ///
-    /// Spending virtual currency is only allowed when the SDK is configured using ``Configuration.Builder.with(iamEnabled:)``.
-    /// Attempting to spend virtual currency without enabling IAM will result in a thrown error.
+    /// Spending virtual currency is only allowed when the SDK is configured using
+    /// ``Configuration.Builder.with(iamEnabled:)``. Attempting to spend virtual currency
+    /// without enabling IAM will result in a thrown error.
     ///
     /// - Parameters:
-    ///   - amounts: A dictionary containing the amounts of each currency to spend. The key is virtual currency's `code`,
-    ///   and the value is how much of that currency to spend. All values should be greater than zero. Values equal to zero are ignored,
-    ///   and values less than zero will be interpreted as positive.
+    ///   - amounts: A dictionary containing the amounts of each currency to spend.
+    ///   The key is virtual currency's `code`, and the value is how much of that currency to spend.
+    ///   All values should be greater than zero. Values equal to zero are ignored, and values less than zero
+    ///   will be interpreted as positive.
     ///
     ///   In other words, `["VC_CODE": -42]` and `["VC_CODE": 42]` will be interpreted as equivalent.
     ///
@@ -1746,7 +1748,7 @@ public extension Purchases {
             let error = NewErrorUtils.unsupportedError(message: message)
             throw error
         }
-        
+
         do {
             return try await self.virtualCurrencyManager.spendVirtualCurrencies(amounts: amounts,
                                                                                 reference: reference)
@@ -1755,7 +1757,7 @@ public extension Purchases {
             throw publicError
         }
     }
-    
+
     /// Spend virtual currency
     ///
     /// - SeeAlso: ``spendVirtualCurrencies(amounts:reference:)``

@@ -36,7 +36,7 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
     var spendVirtualCurrenciesCallCount = 0
     var spendVirtualCurrenciesCalled = false
     var invokedSpendVirtualCurrenciesParametersList: [(amounts: [String: Int], reference: String?)] = []
-    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> RevenueCat.VirtualCurrencies {
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies {
         self.spendVirtualCurrenciesCallCount += 1
         self.spendVirtualCurrenciesCalled = true
         self.invokedSpendVirtualCurrenciesParametersList.append((amounts, reference))
