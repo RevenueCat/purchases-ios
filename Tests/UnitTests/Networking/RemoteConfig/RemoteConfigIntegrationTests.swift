@@ -215,6 +215,128 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(audience).to(beNil())
     }
 
+    func testTransformationsTopicWireNameMatchesBackend() {
+        expect(RemoteConfigTopic.transformations.wireName) == "transformations"
+    }
+
+    func testTransformationsProviderDecodesInlineMetadata() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.transformations.wireName: [
+                "active_entitlement": .init(content: [
+                    "created_via": "dashboard",
+                    "rule": .object([
+                        "values": .array([.bool(true), .int(1), .double(1.5), .null, .string("value")]),
+                        "missing_some": .array([
+                            .int(1),
+                            .array([.string("customer.custom_value")])
+                        ])
+                    ])
+                ])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let transformation = await TransformationsConfigProvider(manager: self.manager)
+            .getTransformation("active_entitlement")
+
+        expect(transformation) == Transformation(
+            identifier: "active_entitlement",
+            rule: #"{"missing_some":[1,["customer.custom_value"]],"values":[true,1,1.5,null,"value"]}"#
+        )
+    }
+
+    func testTransformationsProviderReturnsNilForMissingEntries() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.transformations.wireName: [
+                "empty": .init(),
+                "missing_rule": .init(content: ["created_via": "dashboard"])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let provider = TransformationsConfigProvider(manager: self.manager)
+        let unknown = await provider.getTransformation("unknown")
+        let empty = await provider.getTransformation("empty")
+        let missingRule = await provider.getTransformation("missing_rule")
+
+        expect(unknown).to(beNil())
+        expect(empty).to(beNil())
+        expect(missingRule).to(beNil())
+    }
+
+    func testTransformationsProviderReturnsNilWhenTopicIsAbsent() async throws {
+        let container = try Self.containerData(topics: .init())
+
+        await self.refresh(with: container)
+
+        let transformation = await TransformationsConfigProvider(manager: self.manager)
+            .getTransformation("active_entitlement")
+
+        expect(transformation).to(beNil())
+    }
+
+    func testTransformationsProviderRejectsNonObjectRules() async throws {
+        let invalidRules: [String: AnyDecodable] = [
+            "array": .array([]),
+            "boolean": .bool(true),
+            "number": .int(1),
+            "null": .null,
+            "string": .string("rule")
+        ]
+        let items = invalidRules.mapValues { RemoteConfiguration.ConfigItem(content: ["rule": $0]) }
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.transformations.wireName: items
+        ]))
+
+        await self.refresh(with: container)
+
+        let provider = TransformationsConfigProvider(manager: self.manager)
+        for identifier in invalidRules.keys {
+            let transformation = await provider.getTransformation(identifier)
+            expect(transformation).to(beNil())
+        }
+    }
+
+    func testTransformationsProviderReturnsNilForBlobOnlyItem() async throws {
+        let payload = #"{ "rule": { "var": "" } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.transformations.wireName: [
+                    "active_entitlement": .init(blobRef: ref, prefetch: true)
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let transformation = await TransformationsConfigProvider(manager: self.manager)
+            .getTransformation("active_entitlement")
+
+        expect(transformation).to(beNil())
+    }
+
+    func testTransformationsProviderIsolatesMalformedItems() async throws {
+        let container = try Self.containerData(topics: .init(entries: [
+            RemoteConfigTopic.transformations.wireName: [
+                "invalid": .init(content: ["rule": []]),
+                "valid": .init(content: ["rule": ["var": "customer"]])
+            ]
+        ]))
+
+        await self.refresh(with: container)
+
+        let provider = TransformationsConfigProvider(manager: self.manager)
+        let invalid = await provider.getTransformation("invalid")
+        let valid = await provider.getTransformation("valid")
+
+        expect(invalid).to(beNil())
+        expect(valid) == Transformation(identifier: "valid", rule: #"{"var":"customer"}"#)
+    }
+
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
         let blob = #"{"workflow":"inline"}"#.asData
         let ref = RCContainerTestData.blobRef(for: blob)
