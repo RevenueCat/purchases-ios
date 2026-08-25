@@ -297,7 +297,28 @@ module ApiDiffHelper
     !output.to_s.include?(NO_CHANGES_MARKER)
   end
 
-  MERGE_BASE_SWIFTINTERFACE_DIR = "/tmp/merge-base-swiftinterface".freeze
+  BASE_SWIFTINTERFACE_DIR = "/tmp/comparison-base-swiftinterface".freeze
+
+  MAIN_BRANCH = "main".freeze
+
+  def main_branch?(branch)
+    branch.to_s.strip == MAIN_BRANCH
+  end
+
+  def current_branch(runner:)
+    branch = ENV["CIRCLE_BRANCH"].to_s.strip
+    return branch unless branch.empty?
+
+    runner.call("git", "rev-parse", "--abbrev-ref", "HEAD").to_s.strip
+  end
+
+  # On main the merge base is HEAD itself, which compares the commit against itself and reports
+  # nothing. main is where merges land, so HEAD^ is the API the merge replaced.
+  def resolve_comparison_base(runner:, branch:)
+    return resolve_previous_commit(runner: runner) if main_branch?(branch)
+
+    resolve_merge_base(runner: runner)
+  end
 
   # The PR's own baselines match the generated files once regenerated, erasing the evidence.
   def resolve_merge_base(runner:)
@@ -305,6 +326,21 @@ module ApiDiffHelper
     raise "Could not resolve the merge base with origin/main" if sha.empty?
 
     sha
+  end
+
+  def resolve_previous_commit(runner:)
+    sha = runner.call("git", "rev-parse", "HEAD^").to_s.strip
+    raise "Could not resolve the commit before HEAD" if sha.empty?
+
+    sha
+  end
+
+  MERGED_PR_SUBJECT = /\(#(\d+)\)\s*\z/.freeze
+
+  # A main run has no PR context, but the squash merge keeps the number in its subject.
+  def pr_number_from_subject(subject)
+    match = MERGED_PR_SUBJECT.match(subject.to_s.strip)
+    match && match[1]
   end
 
   def extract_baselines_at(sha, destination_dir, scheme, runner:)

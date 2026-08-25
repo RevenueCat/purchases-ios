@@ -409,6 +409,58 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/merge base/, error.message)
   end
 
+  def test_current_branch_prefers_the_ci_variable
+    with_circle_branch("main") do
+      assert_equal "main", ApiDiffHelper.current_branch(runner: ->(*_c) { "detached\n" })
+    end
+  end
+
+  def test_current_branch_falls_back_to_git
+    with_circle_branch(nil) do
+      runner = ->(*command) { command == ["git", "rev-parse", "--abbrev-ref", "HEAD"] ? "my-branch\n" : "" }
+
+      assert_equal "my-branch", ApiDiffHelper.current_branch(runner: runner)
+    end
+  end
+
+  # On main the merge base is HEAD, so reusing it would compare the commit against itself.
+  def test_comparison_base_on_main_is_the_previous_commit
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "headsha\n"
+      end
+    end
+
+    assert_equal "prevsha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: "main")
+  end
+
+  def test_comparison_base_off_main_stays_the_merge_base
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "forksha\n"
+      end
+    end
+
+    ["my-branch", "release/5.86.0", "gh-readonly-queue/main/pr-1-abc"].each do |branch|
+      assert_equal "forksha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: branch)
+    end
+  end
+
+  # A root commit would otherwise diff the whole API in as new.
+  def test_previous_commit_raises_when_empty
+    error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_previous_commit(runner: ->(*_c) { "\n" }) }
+
+    assert_match(/before HEAD/, error.message)
+  end
+
+  def test_pr_number_comes_from_the_squash_merge_subject
+    assert_equal "7489", ApiDiffHelper.pr_number_from_subject("Remove unused background.jpg asset (#7489)")
+    assert_nil ApiDiffHelper.pr_number_from_subject("Fix issue #7489 in the parser")
+    assert_nil ApiDiffHelper.pr_number_from_subject("")
+  end
+
   def test_extract_baselines_writes_one_file_per_platform
     Dir.mktmpdir do |dir|
       runner = ->(*command) { "public func fromMergeBase()\n// #{command.last}\n" }
@@ -1835,7 +1887,38 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
+  def test_slack_is_announced_only_on_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    announce = lane[/announcement = if on_main.*?\n                     end\n/m]
+
+    refute_nil announce, "the Slack announcement is no longer gated on main; update this test"
+    assert_match(/notify_api_changes_on_slack/, announce)
+    assert_match(/\{ fingerprint: nil, notice: nil \}/, announce,
+                 "a PR run still needs an announcement shape for the comment")
+  end
+
+  # main carries no PR to hold the label, so the gate there would fail changes the PR approved.
+  def test_the_breaking_change_gate_cannot_redden_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    gate = lane[/if ApiDiffHelper\.gate_blocked\?.*?\n    end\n/m]
+
+    refute_nil gate, "the gate section of check_api_changes moved; update this test"
+    assert_match(/if on_main/, gate, "main must not fail the gate")
+    assert_operator gate.index("if on_main"), :<, gate.index("UI.user_error!"),
+                    "the main branch of the gate must come before the failure"
+  end
+
+
   # --- Attribute additions: allowlist, not denylist ---
+
+  def with_circle_branch(value)
+    previous = ENV["CIRCLE_BRANCH"]
+    ENV["CIRCLE_BRANCH"] = value
+    yield
+  ensure
+    ENV["CIRCLE_BRANCH"] = previous
+  end
 
   def modification_adding(attribute)
     "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Added attribute `#{attribute}`\n*/"
