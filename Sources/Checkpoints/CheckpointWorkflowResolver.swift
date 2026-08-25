@@ -22,7 +22,8 @@ import Foundation
     /// An offering was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
     /// decides whether and how to use it.
     case matchedOffering(Offering)
-    /// A workflow whose initial step is an `ad` step was selected for the checkpoint.
+    /// An ad unit ID was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
+    /// decides whether and how to load and present the ad.
     case ad(adUnitId: String)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
@@ -83,9 +84,9 @@ final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 /// the first rule whose audience the customer matches.
 ///
 /// The matched rule's workflow body is read first, because its shape decides what else the rule needs: a
-/// workflow whose only step is a terminal `offering` step is handed back to the app as an offering, with
-/// nothing presented, while every other workflow keeps resolving its offering through the workflows topic
-/// and is presented as before.
+/// workflow whose only step is a terminal `offering` or `ad` step is handed back to the app as raw data,
+/// with nothing presented, while every other workflow keeps resolving its offering through the workflows
+/// topic and is presented as before.
 ///
 /// The match is final either way. A matched rule that turns out to be unservable resolves to
 /// ``CheckpointResolutionReason/configurationUnavailable`` instead of falling through to a rule this
@@ -236,8 +237,15 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return await self.resolveOffering(rule, step: initialStep)
         }
 
-        if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
-            return Self.unservable(rule, reason: "a UI workflow cannot contain offering steps")
+        if initialStep.type == Self.adStepType {
+            guard workflow.steps.count == 1 else {
+                return Self.unservable(rule, reason: "an ad step cannot be mixed with other steps")
+            }
+            return Self.resolveAd(rule, step: initialStep)
+        }
+
+        if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType || $0.type == Self.adStepType }) {
+            return Self.unservable(rule, reason: "a UI workflow cannot contain offering or ad steps")
         }
 
         return await self.resolveWorkflow(rule, workflowData: workflowData)
@@ -259,14 +267,21 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return .matchedOffering(match.offering)
     }
 
+    /// Serves a workflow whose only step is a terminal `ad` step as an ad unit ID the app owns.
+    ///
+    /// Mirrors ``resolveOffering(_:step:)``: only the ad unit ID is validated, and this never needs
+    /// offerings or UI config since a step of this kind renders nothing through RevenueCatUI.
+    private static func resolveAd(_ rule: CheckpointRule, step: WorkflowStep) -> CheckpointResolution {
+        guard case let .string(adUnitId)? = step.paramValues[Self.adUnitIdParam], adUnitId.isNotEmpty else {
+            return Self.unservable(rule, reason: "the ad step has no valid ad unit id")
+        }
+        return .ad(adUnitId: adUnitId)
+    }
+
     private func resolveWorkflow(
         _ rule: CheckpointRule,
         workflowData: WorkflowDataResult
     ) async -> CheckpointResolution {
-        if let adUnitId = Self.adUnitId(in: workflowData.workflow) {
-            return .ad(adUnitId: adUnitId)
-        }
-
         guard let offeringID = await self.offeringID(for: rule),
               let match = await self.offering(identifier: offeringID, for: rule) else {
             return .noAction(.configurationUnavailable)
@@ -308,23 +323,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return .noAction(.configurationUnavailable)
     }
 
-    /// Extracts an ad unit ID from a workflow whose initial step is an `ad` step.
-    ///
-    /// `ad` steps carry no `screen_id` and no offering/UI content of their own; they're a data-only step
-    /// type (mirroring the `offering` step precedent), so a matching workflow never needs to be routed
-    /// through the paywall executor at all.
-    private static func adUnitId(in workflow: PublishedWorkflow) -> String? {
-        guard let initialStep = workflow.steps[workflow.initialStepId], initialStep.type == "ad" else {
-            return nil
-        }
-        guard case let .string(adUnitId)? = initialStep.paramValues["ad_unit_id"] else {
-            return nil
-        }
-        return adUnitId
-    }
-
     private static let offeringStepType = "offering"
     private static let offeringIdentifierParam = "offering_identifier"
+    private static let adStepType = "ad"
+    private static let adUnitIdParam = "ad_unit_id"
 
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"

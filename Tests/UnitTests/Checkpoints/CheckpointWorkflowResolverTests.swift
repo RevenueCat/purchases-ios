@@ -622,6 +622,118 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedOffering(resolution)?.identifier, self.offeringID)
     }
 
+    // MARK: - Terminal ad workflows
+
+    func testTerminalAdWorkflowResolvesItsAdUnitIdWithoutAWorkflowToPresent() async throws {
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAdUnitId(resolution), "ca-app-pub-test/unit")
+        XCTAssertNil(Self.resolvedWorkflow(resolution))
+    }
+
+    func testAdStepWithoutAnAdUnitIdResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithABlankAdUnitIdResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: "   ")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepMixedWithAnotherStepResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(
+            adUnitId: "ca-app-pub-test/unit",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testUIWorkflowContainingAnAdStepResolvesConfigurationUnavailable() async throws {
+        // Initial step is the screen step, so the ad step is an unreachable extra.
+        self.stubAdWorkflow(
+            adUnitId: "ca-app-pub-test/unit",
+            initialStepID: "step_2",
+            extraSteps: ["step_2": WorkflowStep(id: "step_2", type: "screen", screenId: nil)]
+        )
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    /// The audience gate runs before the workflow body decides between presenting and handing back an
+    /// ad, so a terminal-ad rule nobody matches must not hand back its ad unit ID either.
+    func testAudienceGateAppliesToTerminalAdRulesToo() async throws {
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit")
+        self.audiencesProvider.defaultRules = "false"
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+        XCTAssertNil(Self.resolvedAdUnitId(resolution))
+    }
+
+    /// Prewarming reads its fonts from `uiConfig`, not from the workflow's screens, so a screenless
+    /// ad workflow would still download every app font if it were scheduled here.
+    func testTerminalAdWorkflowDoesNotScheduleAssetPrewarming() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+
+        let cache = MockPaywallCacheWarming()
+        self.workflowManager = WorkflowManager(
+            workflowsConfigProvider: self.workflowsProvider,
+            paywallCache: cache,
+            operationDispatcher: MockOperationDispatcher()
+        )
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedAdUnitId(resolution), "ca-app-pub-test/unit")
+        XCTAssertFalse(cache.invokedPrewarmWorkflowAssets)
+    }
+
+    private func stubAdWorkflow(
+        adUnitId: String?,
+        initialStepID: String? = nil,
+        extraSteps: [String: WorkflowStep] = [:]
+    ) {
+        let stepID = "step_1"
+        var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
+        if let adUnitId {
+            step.paramValues = ["ad_unit_id": .string(adUnitId)]
+        }
+
+        var steps = extraSteps
+        steps[stepID] = step
+
+        self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = WorkflowDataResult(
+            workflow: PublishedWorkflow(
+                id: self.workflowID,
+                displayName: "Test",
+                initialStepId: initialStepID ?? stepID,
+                singleStepFallbackId: nil,
+                steps: steps,
+                screens: [:]
+            ),
+            uiConfig: .empty,
+            enrolledVariants: nil
+        )
+    }
+
     private func stubOfferingWorkflow(
         offeringID: String?,
         initialStepID: String? = nil,
@@ -692,6 +804,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     private static func resolvedOffering(_ resolution: CheckpointResolution) -> Offering? {
         guard case let .matchedOffering(offering) = resolution else { return nil }
         return offering
+    }
+
+    private static func resolvedAdUnitId(_ resolution: CheckpointResolution) -> String? {
+        guard case let .ad(adUnitId) = resolution else { return nil }
+        return adUnitId
     }
 
     private static func rule(workflowID: String, audienceID: String = "audience") -> CheckpointRule {
