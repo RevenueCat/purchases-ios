@@ -1689,8 +1689,7 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal ["RevenueCatUI"], ApiDiffHelper.changed_modules(reports)
   end
 
-  # The feed announces what a PR adds, so an added enum case is new API and nothing else, even
-  # though breaking_changes also reports it and the gate blocks on it.
+  # breaking_changes reports an added enum case too, and the gate blocks on it.
   def test_slack_summary_announces_an_added_enum_case_as_new_api
     message = ApiDiffHelper.slack_summary(["case newCase", "public func added()"], source: "")
 
@@ -2052,8 +2051,7 @@ class ApiDiffHelperTest < Minitest::Test
                  "the gate must consider breaks from every module")
   end
 
-  # One announcement covers the PR, so it reads every module's report at once. Breaks are the
-  # gate's and the comment's business: the feed announces what the PR adds.
+  # One announcement covers the PR, so it reads every module's report at once.
   def test_the_announcement_sees_every_module_and_no_breaks
     slack = check_lane_source[/notify_api_changes_on_slack\(.*?\)$/m]
     refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"

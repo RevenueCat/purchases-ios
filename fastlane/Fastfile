@@ -2534,9 +2534,9 @@ platform :ios do
       breaks_by_scheme[scheme] = ApiDiffHelper.dedupe_breaks(scheme_breaks)
     end
 
-    # The gate and the Slack summary speak for the whole PR, so they see every module's breaks.
-    # Each PR comment section speaks for one module and gets only its own, or a break in one
-    # module would be listed under the other and open a section for a module that never changed.
+    # The gate speaks for the whole PR, so it sees every module's breaks. Each PR comment section
+    # speaks for one module and gets only its own, or a break in one module would be listed under
+    # the other and open a section for a module that never changed.
     all_breaks = ApiDiffHelper.dedupe_breaks(breaks_by_scheme.values.flatten)
 
     labels = []

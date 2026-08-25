@@ -687,8 +687,6 @@ module ApiDiffHelper
                      .keys.map { |target| target.split(" ").first }.uniq.sort
   end
 
-  # Removals and modifications are the gate's and the PR comment's to report; the feed announces
-  # what a PR adds. Additions match the `+` Android uses.
   def slack_summary(new_declarations, source:, modules: [])
     lines = [[":sparkles: *New public API*", announcement_identity(modules)].join(" · ")]
     lines << source unless source.to_s.empty?
@@ -697,7 +695,6 @@ module ApiDiffHelper
 
     lines.join("\n")
   end
-
 
   SLACK_UNREACHABLE_NOTICE = "No Slack credentials were reachable, so this change was not announced in the SDK API feed.".freeze
 
