@@ -17,7 +17,7 @@ import Foundation
 /// Supplies the subscriber attributes stored for the current customer to the local rules engine.
 struct SubscriberAttributesDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.subscriberAttributes
+    let namespace = DimensionNamespace.clientSnapshot
 
     private let attributesProvider: @Sendable (String) throws -> SubscriberAttribute.Dictionary
 
@@ -46,7 +46,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
             return [:]
         }
 
-        return attributes.values.reduce(into: [:]) { dimensions, attribute in
+        let dimensions: [String: DimensionValue] = attributes.values.reduce(into: [:]) { dimensions, attribute in
             // An empty value represents a deleted attribute, whether or not its tombstone has been synced.
             guard !attribute.value.isEmpty else { return }
 
@@ -56,9 +56,12 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
                 Self.evaluatedAtKey: .date(context.date)
             ])
         }
+
+        return [Self.subscriberAttributesKey: .object(dimensions)]
     }
 
     private static let evaluatedAtKey = "evaluatedAt"
+    private static let subscriberAttributesKey = "subscriberAttributes"
     private static let updatedAtKey = "updatedAt"
     private static let valueKey = "value"
 

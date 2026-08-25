@@ -22,7 +22,6 @@ enum DimensionNamespace: String, CaseIterable, Sendable {
     case device
     case serverSnapshot
     case store
-    case subscriberAttributes
     case session
     case client
 }

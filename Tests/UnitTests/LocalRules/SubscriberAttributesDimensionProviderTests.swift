@@ -31,9 +31,9 @@ struct SubscriberAttributesProviderTests {
             Self.attribute("goal", value: "lose_weight")
         )
 
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await Self.attributes(of: provider)
 
-        #expect(provider.namespace == .subscriberAttributes)
+        #expect(provider.namespace == .clientSnapshot)
         #expect(Set(dimensions.keys) == ["$email", "goal"])
     }
 
@@ -41,7 +41,7 @@ struct SubscriberAttributesProviderTests {
     func exposesValueUpdatedAtAndEvaluatedAt() async throws {
         let provider = Self.provider(Self.attribute("goal", value: "lose_weight"))
 
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let dimensions = try await Self.attributes(of: provider)
 
         #expect(dimensions == [
             "goal": .object([
@@ -54,11 +54,11 @@ struct SubscriberAttributesProviderTests {
 
     @Test
     func preservesAttributeValuesAsStrings() async throws {
-        let dimensions = try await Self.provider(
+        let dimensions = try await Self.attributes(of: Self.provider(
             Self.attribute("seats", value: "3"),
             Self.attribute("betaOptIn", value: "true"),
             Self.attribute("sku", value: "0123")
-        ).dimensions(at: Self.evaluationDate)
+        ))
 
         #expect(Self.value(of: "seats", in: dimensions) == .string("3"))
         #expect(Self.value(of: "betaOptIn", in: dimensions) == .string("true"))
@@ -67,11 +67,11 @@ struct SubscriberAttributesProviderTests {
 
     @Test
     func omitsDeletedAttributesRegardlessOfSyncState() async throws {
-        let dimensions = try await Self.provider(
+        let dimensions = try await Self.attributes(of: Self.provider(
             Self.attribute("pending", value: nil, isSynced: false),
             Self.attribute("posted", value: nil, isSynced: true),
             Self.attribute("goal", value: "lose_weight")
-        ).dimensions(at: Self.evaluationDate)
+        ))
 
         #expect(Set(dimensions.keys) == ["goal"])
     }
@@ -88,7 +88,8 @@ struct SubscriberAttributesProviderTests {
             ]
         ).snapshot()
 
-        guard case .object(let attributes) = snapshot.values["subscriberAttributes"] else {
+        guard case .object(let clientSnapshot) = snapshot.values["clientSnapshot"],
+              case .object(let attributes)? = clientSnapshot["subscriberAttributes"] else {
             Issue.record("Expected subscriber attribute dimensions")
             return
         }
@@ -101,7 +102,7 @@ struct SubscriberAttributesProviderTests {
             dimensionProviders: [Self.provider()]
         ).snapshot()
 
-        #expect(snapshot.values[DimensionNamespace.subscriberAttributes.rawValue] == nil)
+        #expect(snapshot.values[DimensionNamespace.clientSnapshot.rawValue] == nil)
     }
 
     @Test
@@ -130,9 +131,9 @@ struct SubscriberAttributesProviderTests {
             attributes.value
         }
 
-        let first = try await provider.dimensions(at: Self.evaluationDate)
+        let first = try await Self.attributes(of: provider)
         attributes.value = ["goal": Self.attribute("goal", value: "gain_muscle")]
-        let second = try await provider.dimensions(at: Self.evaluationDate)
+        let second = try await Self.attributes(of: provider)
 
         #expect(Self.value(of: "goal", in: first) == .string("lose_weight"))
         #expect(Self.value(of: "goal", in: second) == .string("gain_muscle"))
@@ -155,12 +156,8 @@ struct SubscriberAttributesProviderTests {
         )
         let provider = SubscriberAttributesDimensionProvider(deviceCache: deviceCache)
 
-        let first = try await provider.dimensions(
-            in: DimensionContext(date: Self.evaluationDate, appUserID: "first-user")
-        )
-        let second = try await provider.dimensions(
-            in: DimensionContext(date: Self.evaluationDate, appUserID: "second-user")
-        )
+        let first = try await Self.attributes(of: provider, appUserID: "first-user")
+        let second = try await Self.attributes(of: provider, appUserID: "second-user")
 
         #expect(Self.value(of: "goal", in: first) == .string("lose_weight"))
         #expect(Self.value(of: "goal", in: second) == .string("gain_muscle"))
@@ -182,27 +179,27 @@ struct SubscriberAttributesProviderTests {
         )
 
         let matchingPredicates = [
-            #"{"==":[{"var":"subscriberAttributes.$email.value"},"jane@example.com"]}"#,
-            #"{"==":[{"var":"subscriberAttributes.seats.value"},3]}"#,
-            #"{">":[{"var":"subscriberAttributes.seats.value"},2]}"#,
+            #"{"==":[{"var":"clientSnapshot.subscriberAttributes.$email.value"},"jane@example.com"]}"#,
+            #"{"==":[{"var":"clientSnapshot.subscriberAttributes.seats.value"},3]}"#,
+            #"{">":[{"var":"clientSnapshot.subscriberAttributes.seats.value"},2]}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.tier.evaluatedAt"},
-                      {"var":"subscriberAttributes.tier.updatedAt"}]},
+                {"-":[{"var":"clientSnapshot.subscriberAttributes.tier.evaluatedAt"},
+                      {"var":"clientSnapshot.subscriberAttributes.tier.updatedAt"}]},
                 604800000
             ]}
             """#
         ]
         let nonMatchingPredicates = [
-            #"{"==":[{"var":"subscriberAttributes.goal.value"},"gain_muscle"]}"#,
+            #"{"==":[{"var":"clientSnapshot.subscriberAttributes.goal.value"},"gain_muscle"]}"#,
             // An attribute the app never set on this device, and one the SDK does not expose. Both
             // need a default, since reading a name that resolves to nothing is now an error.
             #"{"!!":{"var":["subscriberAttributes.favoriteColor.value",false]}}"#,
             #"{"!!":{"var":["subscriberAttributes.goal.isSynced",false]}}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.goal.evaluatedAt"},
-                      {"var":"subscriberAttributes.goal.updatedAt"}]},
+                {"-":[{"var":"clientSnapshot.subscriberAttributes.goal.evaluatedAt"},
+                      {"var":"clientSnapshot.subscriberAttributes.goal.updatedAt"}]},
                 604800000
             ]}
             """#
@@ -231,6 +228,18 @@ struct SubscriberAttributesProviderTests {
             isSynced: isSynced,
             setTime: setTime
         )
+    }
+
+    /// The provider nests everything under one name, so a test about the attributes reads through it.
+    static func attributes(
+        of provider: SubscriberAttributesDimensionProvider,
+        appUserID: String = "current-user"
+    ) async throws -> [String: DimensionValue] {
+        let dimensions = try await provider.dimensions(
+            in: DimensionContext(date: Self.evaluationDate, appUserID: appUserID)
+        )
+        guard case .object(let attributes)? = dimensions["subscriberAttributes"] else { return [:] }
+        return attributes
     }
 
     private static func provider(

@@ -252,7 +252,7 @@ struct CustomerDimensionsSnapshotTests {
 
         let describesOneCustomer = """
         {"and": [{"==": [{"var": "serverSnapshot.appUserId"}, {"var": "clientSnapshot.appUserId"}]}, \
-        {"==": [{"var": "subscriberAttributes.user_a.value"}, "seen"]}]}
+        {"==": [{"var": "clientSnapshot.subscriberAttributes.user_a.value"}, "seen"]}]}
         """
 
         #expect(currentUser.currentAppUserID == "user_b")
