@@ -22,8 +22,8 @@ extension RulesEngine {
         /// - **Anything else**: throws `EvaluationError.typeMismatch`.
         ///
         /// Non-string/non-array inputs throw rather than defaulting to `0`.
-        /// A silent zero would make `{"==": [{"rc.length": {"var": "missing"}},
-        /// 0]}` quietly true when a key is absent.
+        /// A silent zero would make `{"==": [{"rc.length": {"var": "note"}},
+        /// 0]}` quietly true for a key that is present but holds `null`.
         ///
         /// Uses `Operators.firstArgEvaluated` spread semantics; extra arguments
         /// are silently ignored. Literal array operands must be wrapped
