@@ -138,6 +138,13 @@
       "expected": true
     },
     {
+      "id": "semver_build_metadata_is_dropped_unvalidated",
+      "description": "Everything from the first + on is discarded without being checked, so a malformed tail still compares on its core",
+      "predicate": {"===": [{"rc.semverCompare": ["1.0.0++not a valid identifier", "1.0.0"]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "semver_non_string_left_is_type_error",
       "description": "A bare number is not a version; 1 is not \"1.0.0\"",
       "predicate": {"rc.semverCompare": [1, "1.0.0"]},
