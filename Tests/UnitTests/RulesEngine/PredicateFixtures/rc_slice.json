@@ -1,0 +1,146 @@
+{
+  "fixtures": [
+    {
+      "id": "slice_from_start_drops_the_leading_elements",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 2]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_start_zero_keeps_everything",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b", "c"], 0]}}, 3]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_with_length_takes_a_run",
+      "description": "The third argument is a count, matching substr rather than JS slice's end index",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, 2]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "b"]}, {"===": [{"var": "1"}, "c"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_negative_start_counts_from_the_end",
+      "description": "The top-N case: the last two elements without knowing the length",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], -2]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_negative_length_drops_from_the_right",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, -1]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "b"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_length_beyond_the_end_clamps",
+      "description": "Asking for more than exists is normal for a top-N rule, not an error",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 0, 10]}}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_start_beyond_the_end_is_empty",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 5]}}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_negative_start_beyond_the_length_clamps_to_zero",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], -10]}}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_zero_length_is_empty",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 0, 0]}}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_empty_array_stays_empty",
+      "predicate": {"===": [{"rc.length": {"rc.slice": [[], 0, 3]}}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_computed_index_from_arithmetic",
+      "description": "Arithmetic returns floats, so a whole-valued float must be a usable index",
+      "predicate": {"some": [[{"rc.slice": [{"var": "xs"}, {"-": [{"rc.length": {"var": "xs"}}, 1]}]}], {"===": [{"var": "0"}, "d"]}]},
+      "variables": {"xs": ["a", "b", "c", "d"]},
+      "expected": true
+    },
+    {
+      "id": "slice_preserves_element_types",
+      "description": "Elements come through untouched, unlike rc.split which always yields strings",
+      "predicate": {"some": [[{"rc.slice": [{"var": "xs"}, 1, 1]}], {"===": [{"var": "0"}, 2]}]},
+      "variables": {"xs": [1, 2, 3]},
+      "expected": true
+    },
+    {
+      "id": "slice_composes_with_sort_by_for_top_n",
+      "description": "The pairing this operator exists for: order, then keep the tail",
+      "predicate": {"some": [[{"rc.slice": [{"rc.sortBy": [{"var": "subs"}, {"var": "expires"}]}, -2]}], {"and": [{"===": [{"var": "0.id"}, "monthly"]}, {"===": [{"var": "1.id"}, "annual"]}]}]},
+      "variables": {"subs": [{"id": "monthly", "expires": "2026-03-09"}, {"id": "weekly", "expires": "2026-01-02"}, {"id": "annual", "expires": "2026-11-30"}]},
+      "expected": true
+    },
+    {
+      "id": "slice_result_works_with_in",
+      "predicate": {"in": ["b", {"rc.slice": [["a", "b", "c"], 1, 1]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_non_array_source_is_a_type_error",
+      "description": "Strings keep using substr rather than being sliced here",
+      "predicate": {"rc.slice": ["abcd", 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_missing_start_is_a_type_error",
+      "description": "No implicit zero: an absent index is a lowering bug, not a whole-array copy",
+      "predicate": {"rc.slice": [["a", "b"]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_fourth_argument_is_a_type_error",
+      "predicate": {"rc.slice": [["a", "b"], 0, 1, 2]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_fractional_start_is_a_type_error",
+      "description": "A fractional index means the arithmetic producing it was wrong; truncating would hide that",
+      "predicate": {"rc.slice": [["a", "b", "c"], 1.5]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_fractional_length_is_a_type_error",
+      "predicate": {"rc.slice": [["a", "b", "c"], 0, 1.5]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_string_start_is_a_type_error",
+      "description": "substr coerces a non-numeric start to 0; a custom operator refuses instead",
+      "predicate": {"rc.slice": [["a", "b"], "1"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_null_start_is_a_type_error",
+      "predicate": {"rc.slice": [["a", "b"], null]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_missing_variable_fails_at_the_lookup",
+      "predicate": {"rc.slice": [{"var": "nope"}, 0]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "nope"}
+    }
+  ]
+}
