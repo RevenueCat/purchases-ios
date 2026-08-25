@@ -667,6 +667,18 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 dimensionProviders: [
                     DeviceDimensionProvider(),
                     StoreDimensionProvider(),
+                    ActiveEntitlementsDimensionProvider(
+                        currentUserProvider: identityManager,
+                        customerInfoProvider: customerInfoManager
+                    ),
+                    ServerSnapshotDimensionProvider(
+                        currentUserProvider: identityManager,
+                        customerInfoProvider: customerInfoManager
+                    ),
+                    ActiveEntitlementsDimensionProvider(
+                        currentUserProvider: identityManager,
+                        customerInfoProvider: customerInfoManager
+                    ),
                     SubscriberAttributesDimensionProvider(
                         deviceCache: deviceCache,
                         currentUserProvider: identityManager

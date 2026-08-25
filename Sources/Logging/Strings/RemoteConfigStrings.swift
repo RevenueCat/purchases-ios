@@ -42,6 +42,7 @@ enum RemoteConfigStrings {
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
+    case customerInfoUnavailable(Error)
     case subscriberAttributesUnavailable(Error)
     case invalidDimensionName(String, parentPath: String)
     case uiConfigDecodeFailed(Error)
@@ -129,6 +130,8 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
+        case let .customerInfoUnavailable(error):
+            return "The customer info is unavailable, so the customer's dimensions cannot be evaluated: \(error)."
         case let .subscriberAttributesUnavailable(error):
             return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
         case let .invalidDimensionName(name, parentPath):
