@@ -1,20 +1,44 @@
 ## RevenueCat SDK
 ### ✨ New Features
-* feat(ads): admob adapter support for reward tracking (#7344) via Peter Porfy (@peterporfy)
-### 🐞 Bugfixes
-* fix: order queue receipt post after in-flight purchase post (#7072) via Antonio Pallares (@ajpallares)
+* feat: add confirmInScene & confirmInWindow purchase params (#4779) via Will Taylor (@fire-at-will)
+* feat: Expose displayName and originalPurchaseDate on NonSubscriptionTransaction (#7471) via Facundo Menzella (@facumenzella)
+* Track checkpoint hits through the analytics events pipeline (#7447) via Facundo Menzella (@facumenzella)
 
 ## RevenueCatUI SDK
 ### Paywallsv2
 #### 🐞 Bugfixes
-* Fix font scaling setting on workflow paywalls (#7428) via Cesar de la Vega (@vegaro)
+* Remove already-subscribed logic from paywalls (#7487) via Antonio Pallares (@ajpallares)
+* fix(paywalls): render `product.offer_price` with the same currency format as other prices (#7270) via Cesar de la Vega (@vegaro)
+* Fix workflows ignoring `zero_decimal_place_countries` (#7474) via Cesar de la Vega (@vegaro)
+### Customer Center
+#### 🐞 Bugfixes
+* Fix Customer Center prices for subscriptions from different Apple IDs (#7427) via Cesar de la Vega (@vegaro)
 
 ### 🔄 Other Changes
-* Add rc.rootVar operator for root scope in RulesEngine (#7432) via Antonio Pallares (@ajpallares)
-* feat(checkpoints): Add the app's subscriber attributes as a rules dimension (#7443) via Rick (@rickvdl)
-* feat(checkpoints): Add date and record collection rules dimension values (#7442) via Rick (@rickvdl)
-* feat(Checkpoints): validate checkpoint identifiers (#7441) via Rick (@rickvdl)
-* Read the SDK API feed channel from the CI context (#7446) via Álvaro Brey (@AlvaroBrey)
-* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `7fbbe66` to `7dd9ab9` (#7449) via dependabot[bot] (@dependabot[bot])
-* Add Scope plumbing and custom operator extension point (#7433) via Antonio Pallares (@ajpallares)
-* Announce a public API change in the SDK API feed once per PR (#7431) via Álvaro Brey (@AlvaroBrey)
+* Remove `@objc` from the new `confirmIn` purchase params (#7493) via Antonio Pallares (@ajpallares)
+* Add a transform entry point to the rules engine (#7486) via Antonio Pallares (@ajpallares)
+* Add nested variable rc.lower fixture case (#7484) via Antonio Pallares (@ajpallares)
+* [CI] Collapse the two check-api-changes jobs into one (#7476) via Antonio Pallares (@ajpallares)
+* Add rc.entries and rc.fromEntries custom operators (#7435) via Antonio Pallares (@ajpallares)
+* Raise an error for unresolved variables instead of degrading to null (#7460) via Antonio Pallares (@ajpallares)
+* Adopt shared Renovate config (#7485) via Álvaro Brey (@AlvaroBrey)
+* Add unwrapped rc.length fixture case (#7483) via Antonio Pallares (@ajpallares)
+* Add rc.split custom operator (#7473) via Antonio Pallares (@ajpallares)
+* Inject and refresh IAM tokens (#7440) via Dave DeLong (@davedelong)
+* Implement IAM Login Operations (#7439) via Dave DeLong (@davedelong)
+* HTTP Paths can change their absolute path based on IAM enablement (#7422) via Dave DeLong (@davedelong)
+* IAM Login part 2 (#7410) via Dave DeLong (@davedelong)
+* Fix Test run for watch and tvos (#7479) via Jacob Rakidzich (@JZDesign)
+* Bump sdks-common-config to 4.6.1 to cache the mise toolchain (#7478) via Antonio Pallares (@ajpallares)
+* Properly publish API modifications (no add/delete) in the SDK API feed (#7451) via Álvaro Brey (@AlvaroBrey)
+* Chore: Walk the workflow tree to broadcast prewarming data (#7420) via Jacob Rakidzich (@JZDesign)
+* Chore(Paywalls): Invoke the warmer from the coordinator (#7469) via Jacob Rakidzich (@JZDesign)
+* [CI] Build the nine platform swiftinterfaces in parallel (#6454) via Antonio Pallares (@ajpallares)
+* Fix(CI): Skip tests on unsupported os versions (#7477) via Jacob Rakidzich (@JZDesign)
+* Chore: Create WebBundleCachePrewarmer (#7429) via Jacob Rakidzich (@JZDesign)
+* Add rc.lower and rc.upper custom operators (#7436) via Antonio Pallares (@ajpallares)
+* Fix(CI): Correct type and add compiler check for old xcode version support (#7462) via Jacob Rakidzich (@JZDesign)
+* Chore: Signal purchases-ui on purchases configuration (#7407) via Jacob Rakidzich (@JZDesign)
+* Chore: Set up mechanism for WebView Caching (started with Clearing) (#7409) via Jacob Rakidzich (@JZDesign)
+* Rename the checkpoint event's `session_id` to `app_session_id` (#7459) via Cesar de la Vega (@vegaro)
+* Add rc.length operator for strings and arrays (#7437) via Antonio Pallares (@ajpallares)

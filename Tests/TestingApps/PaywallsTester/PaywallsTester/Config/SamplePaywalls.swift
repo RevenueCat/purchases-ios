@@ -78,8 +78,6 @@ final class SamplePaywallLoader {
         )
     }
 
-    let customerInfo = TestData.customerInfo
-
     private func paywall(for template: PaywallTemplate) -> PaywallData {
         switch template {
         case .template1:

@@ -2007,6 +2007,7 @@ extension RevenueCat.Attribution {
   @objc final public func setSolarEngineDistinctId(_ solarEngineDistinctId: Swift.String?)
   @objc final public func setSolarEngineAccountId(_ solarEngineAccountId: Swift.String?)
   @objc final public func setSolarEngineVisitorId(_ solarEngineVisitorId: Swift.String?)
+  @objc final public func setSingularDeviceID(_ singularDeviceID: Swift.String?)
   @objc final public func setMixpanelDistinctID(_ mixpanelDistinctID: Swift.String?)
   @objc final public func setFirebaseAppInstanceID(_ firebaseAppInstanceID: Swift.String?)
   @objc final public func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: Swift.String?)
@@ -2033,7 +2034,7 @@ extension RevenueCat.Attribution : @unchecked Swift.Sendable {
     @objc public func with(promotionalOffer: RevenueCat.PromotionalOffer) -> Self
     @objc public func with(quantity: Swift.Int) -> Self
     @available(macOS 15.2, *)
-    @objc public func with(confirmInWindow: AppKit.NSWindow) -> Self
+    public func with(confirmInWindow: AppKit.NSWindow) -> Self
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     @objc public func with(winBackOffer: RevenueCat.WinBackOffer) -> Self
     @available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)

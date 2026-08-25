@@ -15,7 +15,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesTests: TestCase {
 
@@ -279,7 +279,8 @@ class BasePurchasesTests: TestCase {
         appUserId: String?,
         withDelegate: Bool = true,
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
-        dateProvider: DateProvider = DateProvider()
+        dateProvider: DateProvider = DateProvider(),
+        webBundleEventBus: WebBundleEventBus = .shared
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -372,7 +373,8 @@ class BasePurchasesTests: TestCase {
                                    virtualCurrencyManager: self.mockVirtualCurrencyManager,
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                                   currentConfiguration: nil)
+                                   currentConfiguration: nil,
+                                   webBundleEventBus: webBundleEventBus)
 
         self.purchasesOrchestrator.delegate = self.purchases
 
