@@ -455,12 +455,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/before HEAD/, error.message)
   end
 
-  def test_pr_number_comes_from_the_squash_merge_subject
-    assert_equal "7489", ApiDiffHelper.pr_number_from_subject("Remove unused background.jpg asset (#7489)")
-    assert_nil ApiDiffHelper.pr_number_from_subject("Fix issue #7489 in the parser")
-    assert_nil ApiDiffHelper.pr_number_from_subject("")
-  end
-
   def test_extract_baselines_writes_one_file_per_platform
     Dir.mktmpdir do |dir|
       runner = ->(*command) { "public func fromMergeBase()\n// #{command.last}\n" }
@@ -1385,7 +1379,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
 
-    assert message.start_with?(":warning: *Breaking public API changes*")
+    assert message.start_with?(":warning: *Breaking public API landed on main*")
     assert_includes message, "<url|#42> Some PR"
     assert_includes message, "1 potential break"
   end
@@ -1393,7 +1387,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_leads_with_new_api_when_nothing_breaks
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "2 new declarations"
   end
 
@@ -1741,7 +1735,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
 
-    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
+    assert message.start_with?(":pencil2: *Public API changed on main* · iOS :ios: · `RevenueCat`")
     assert_includes message, "1 modification"
     assert_includes message, "~ added @available(*, deprecated…): "
     assert_includes message, "purchaseDate(forEntitlement"
@@ -1778,7 +1772,7 @@ class ApiDiffHelperTest < Minitest::Test
       [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
     )
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "1 new declaration, 1 modification"
     assert_includes message, "+ public func a()"
     assert_includes message, "~ added @available"
@@ -1787,7 +1781,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
-    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+    assert message.start_with?(":sparkles: *New public API landed on main* · iOS :ios: · `RevenueCatUI`")
   end
 
   def test_changed_modules_names_only_the_schemes_that_changed
@@ -1886,6 +1880,18 @@ class ApiDiffHelperTest < Minitest::Test
                     "the comment must be written after the announcement it records"
   end
 
+
+  # A rerun of the same main job must not post twice, and last_announcement bails on an empty
+  # source, so the commit link is what keeps the suppression alive.
+  def test_the_announcement_source_is_the_commit
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
+
+    refute_nil link, "the api_gate_commit_link lane moved; update this test"
+    assert_match(%r{/commit/}, link, "the message links the commit, not the PR")
+    assert_match(/next "" if sha\.empty\?/, link)
+    refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
+  end
 
   # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
   def test_slack_is_announced_only_on_main

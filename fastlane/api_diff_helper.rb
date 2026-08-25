@@ -312,8 +312,7 @@ module ApiDiffHelper
     runner.call("git", "rev-parse", "--abbrev-ref", "HEAD").to_s.strip
   end
 
-  # On main the merge base is HEAD itself, which compares the commit against itself and reports
-  # nothing. main is where merges land, so HEAD^ is the API the merge replaced.
+  # On main the merge base is HEAD, so HEAD^ is what the merge replaced.
   def resolve_comparison_base(runner:, branch:)
     return resolve_previous_commit(runner: runner) if main_branch?(branch)
 
@@ -333,14 +332,6 @@ module ApiDiffHelper
     raise "Could not resolve the commit before HEAD" if sha.empty?
 
     sha
-  end
-
-  MERGED_PR_SUBJECT = /\(#(\d+)\)\s*\z/.freeze
-
-  # A main run has no PR context, but the squash merge keeps the number in its subject.
-  def pr_number_from_subject(subject)
-    match = MERGED_PR_SUBJECT.match(subject.to_s.strip)
-    match && match[1]
   end
 
   def extract_baselines_at(sha, destination_dir, scheme, runner:)
@@ -779,11 +770,11 @@ module ApiDiffHelper
   def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
     changed = unbroken_modifications(modifications, breaks)
     headline = if breaks.any?
-                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
+                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API landed on main*" : ":warning: *Breaking public API landed on main* (allowed by label)"
                elsif new_declarations.any?
-                 ":sparkles: *New public API*"
+                 ":sparkles: *New public API landed on main*"
                else
-                 ":pencil2: *Public API changed*"
+                 ":pencil2: *Public API changed on main*"
                end
     headline = [headline, announcement_identity(modules)].join(" · ")
 

@@ -2556,8 +2556,7 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
-      # Every change reaches main exactly once, so announcing only there keeps the feed to one
-      # post per change rather than one per PR run.
+      # Announcing only from main keeps the feed to one post per change.
       announcement = if on_main
                        notify_api_changes_on_slack(
                          reports_by_target: reports_by_target,
@@ -2586,8 +2585,7 @@ platform :ios do
     end
 
     if ApiDiffHelper.gate_blocked?(all_breaks, labels)
-      # main has no PR to carry the label and the PR run already gated the change, so failing here
-      # would only redden main for something that was already approved.
+      # main has no PR to read the label from, and the PR run already gated the change.
       if on_main
         UI.important("Breaking public API changes on main, already gated on the PR run")
       else
@@ -2659,7 +2657,7 @@ platform :ios do
     bot_token = ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"]
     channel = ENV["SLACK_CHANNEL_SDK_NEW_API"]
 
-    source = api_gate_pr_link
+    source = api_gate_commit_link
     modules = ApiDiffHelper.changed_modules(options[:reports_by_target])
 
     summary = ApiDiffHelper.slack_summary(
@@ -2716,12 +2714,12 @@ platform :ios do
     comment ? comment["body"].to_s : ""
   end
 
-  private_lane :api_gate_pr_link do
-    # A main run has no PR context, so the squash merge subject is the only link left.
-    pr_number = detect_pr_number || ApiDiffHelper.pr_number_from_subject(sh("git", "log", "-1", "--format=%s", log: false))
-    next "" if pr_number.nil?
+  # The commit page carries the PR link, and its sha is what tells a rerun it already announced.
+  private_lane :api_gate_commit_link do
+    sha = sh("git", "rev-parse", "HEAD", log: false).strip
+    next "" if sha.empty?
 
-    "<https://github.com/RevenueCat/#{REPO_NAME}/pull/#{pr_number}|##{pr_number}>"
+    "<https://github.com/RevenueCat/#{REPO_NAME}/commit/#{sha}|#{sha[0, 7]}>"
   end
 
 
