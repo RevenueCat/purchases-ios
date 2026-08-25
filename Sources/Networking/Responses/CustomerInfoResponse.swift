@@ -49,7 +49,7 @@ extension CustomerInfoResponse {
         ///
         /// Modeled so it survives the cache, but never read here: the names belong to whatever the
         /// backend decided to send, which is what lets a new one ship without a new SDK.
-        var dimensions: [String: AnyCodableValue]?
+        var dimensions: [String: AnyDecodable]?
     }
 
     struct Subscription {

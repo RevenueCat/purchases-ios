@@ -33,14 +33,8 @@ extension CustomerInfoManager: CustomerInfoDimensionSource {
 
 // MARK: - Server snapshot
 
-/// Forwards the dimensions the backend worked out for this customer, untouched.
-///
-/// Nothing here reads them. The backend can describe a customer in a way this version of the SDK
-/// has never heard of and a rule can still be written against it, which is the point: a new
-/// dimension ships without a new SDK.
-///
-/// They are only as fresh as the last answer received, so anything the device can be sure of right
-/// now is reported by ``ActiveEntitlementsDimensionProvider`` instead and wins.
+/// Forwards the dimensions the backend worked out for this customer, untouched, so a new one
+/// ships without a new SDK. They are only as fresh as the last answer received.
 struct ServerSnapshotDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.serverSnapshot
@@ -72,11 +66,8 @@ struct ServerSnapshotDimensionProvider: DimensionProvider {
 
 // MARK: - Client snapshot
 
-/// Supplies what this device is sure of about the customer right now.
-///
-/// The entitlements a customer holds are the question a rule asks most, and the one the SDK can
-/// answer accurately without the backend, so they are reported from here and take precedence over
-/// the same answer in the server snapshot.
+/// Supplies what this device is sure of right now, which takes precedence over the server
+/// snapshot's older answer to the same question.
 struct ActiveEntitlementsDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.clientSnapshot
@@ -99,13 +90,7 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
         // set, so a rule about them fails to resolve instead of reading as a customer holding none.
         do {
             let customerInfo = try await self.customerInfoProvider.customerInfo(appUserID: appUserID)
-            let active = Self.activeEntitlements(of: customerInfo)
-            // A customer who holds none is not a customer we could not read, and the resolver drops
-            // an object with nothing in it, so the count carries the difference either way.
-            dimensions[Self.activeEntitlementCountKey] = .int(Int64(active.count))
-            if !active.isEmpty {
-                dimensions[Self.activeEntitlementsKey] = .object(active)
-            }
+            dimensions[Self.activeEntitlementsKey] = .object(Self.activeEntitlements(of: customerInfo))
         } catch let error as CancellationError {
             throw error
         } catch {
@@ -115,7 +100,7 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
         return dimensions
     }
 
-    /// Keyed by identifier, so a rule about one entitlement reads it by name and needs no iteration.
+    /// Keyed by identifier, so a rule reads one by name and needs no iteration.
     private static func activeEntitlements(of customerInfo: CustomerInfo) -> [String: DimensionValue] {
         return customerInfo.entitlements.active.reduce(into: [:]) { entitlements, entry in
             var entitlement: [String: DimensionValue] = [
@@ -128,7 +113,6 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
         }
     }
 
-    private static let activeEntitlementCountKey = "activeEntitlementCount"
     private static let activeEntitlementsKey = "activeEntitlements"
     private static let appUserIDKey = "appUserId"
     private static let expiresAtKey = "expiresAt"
@@ -136,19 +120,17 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
 
 }
 
-// MARK: - Carrying the backend's own JSON
-
 extension DimensionValue {
 
     /// A value JSON Logic has no reading for is left out rather than guessed at.
-    init?(json: AnyCodableValue) {
+    init?(json: AnyDecodable) {
         switch json {
         case .string(let value):
             self = .string(value)
         case .bool(let value):
             self = .bool(value)
         case .int(let value):
-            self = .int(value)
+            self = .int(Int64(value))
         case .double(let value):
             self = .double(value)
         case .object(let value):
@@ -156,7 +138,7 @@ extension DimensionValue {
         case .array(let value):
             // A collection is only readable by an iteration operator, which walks records, so a
             // scalar or mixed array has no reading at all.
-            let records = value.compactMap { element -> [String: AnyCodableValue]? in
+            let records = value.compactMap { element -> [String: AnyDecodable]? in
                 guard case .object(let record) = element else { return nil }
                 return record
             }

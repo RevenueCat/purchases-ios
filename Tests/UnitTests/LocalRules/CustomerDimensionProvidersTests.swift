@@ -119,10 +119,7 @@ struct ActiveEntitlementsDimensionProviderTests {
         let dimensions = try await Self.provider(expiresDate: CustomerInfoFixture.lapsedExpiry)
             .dimensions(in: Self.context)
 
-        // Held none, rather than could not be read: the count says so where the empty object
-        // cannot, since the resolver drops an object with nothing in it.
-        #expect(dimensions["activeEntitlements"] == nil)
-        #expect(dimensions["activeEntitlementCount"] == .int(0))
+        #expect(dimensions["activeEntitlements"] == .object([:]))
     }
 
     @Test
@@ -154,7 +151,6 @@ struct ActiveEntitlementsDimensionProviderTests {
         // A customer whose entitlements could not be read is not a customer holding none: the
         // dimension is absent, so a rule about it fails to resolve rather than matching.
         #expect(dimensions["activeEntitlements"] == nil)
-        #expect(dimensions["activeEntitlementCount"] == nil)
         #expect(dimensions["appUserId"] == .string("current_user"))
     }
 
