@@ -232,13 +232,17 @@ struct CustomerDimensionsSnapshotTests {
         let snapshot = try await DimensionResolver(
             dimensionProviders: [
                 ServerSnapshotDimensionProvider(customerInfoProvider: source),
-                ActiveEntitlementsDimensionProvider(customerInfoProvider: source)
+                ActiveEntitlementsDimensionProvider(customerInfoProvider: source),
+                SubscriberAttributesDimensionProvider { appUserID in
+                    [appUserID: SubscriberAttribute(withKey: appUserID, value: "seen")]
+                }
             ],
             currentUserProvider: currentUser
         ).snapshot()
 
         let describesOneCustomer = """
-        {"==": [{"var": "serverSnapshot.appUserId"}, {"var": "clientSnapshot.appUserId"}]}
+        {"and": [{"==": [{"var": "serverSnapshot.appUserId"}, {"var": "clientSnapshot.appUserId"}]}, \
+        {"==": [{"var": "subscriberAttributes.user_a.value"}, "seen"]}]}
         """
 
         #expect(currentUser.currentAppUserID == "user_b")

@@ -52,3 +52,16 @@ extension IgnoreHashable: Encodable where Value: Encodable {
     }
 
 }
+
+extension KeyedDecodingContainer {
+
+    /// A wrapped optional still has to survive its key being absent, which the synthesized
+    /// `decode` does not do once the property's type is the wrapper rather than the optional.
+    func decode<Value: Decodable>(
+        _ type: IgnoreHashable<Value?>.Type,
+        forKey key: Key
+    ) throws -> IgnoreHashable<Value?> {
+        return try self.decodeIfPresent(type, forKey: key) ?? .init(wrappedValue: nil)
+    }
+
+}
