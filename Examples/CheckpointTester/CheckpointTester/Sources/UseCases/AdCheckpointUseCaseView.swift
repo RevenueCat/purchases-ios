@@ -18,12 +18,30 @@ import SwiftUI
 
 struct AdCheckpointUseCaseView: View {
 
+    /// Non-consumable test IAP purchased via khepri's Simulated (Test) Store app config,
+    /// reached via the `test_`-prefixed API key in `Local.xcconfig` — purchasing it goes
+    /// through `SimulatedStorePurchaseHandler`, not real StoreKit, so no Apple ID prompt.
+    private static let lifetimeProductId = "lifetime_test"
+
+    /// Drives the "never purchased" / "has purchased" checkpoint audiences server-side.
+    /// `customerInfo.purchases` isn't wired into the local rules engine's dimension
+    /// providers yet, so the audiences key off this subscriber attribute instead
+    /// ("false"/"true"). It must always hold one of those two values, never be unset: the
+    /// rules engine's `var` accessor throws `unresolvedVariable` for a genuinely-missing
+    /// path instead of degrading to `null`, so an `isEmpty`-style audience can never match.
+    private static let hasPurchasedAttributeKey = "has_bought_lifetime"
+
     @ObservedObject var customVariables: CustomVariables
+
+    @AppStorage("checkpointTester.hasSeededPurchaseAttribute") private var hasSeededPurchaseAttribute = false
 
     @State private var isRunning = false
     @State private var status = "Tap \"Hit checkpoint\" to resolve the ad checkpoint."
     @State private var presenter: InterstitialAdPresenter?
     @State private var didLoad = false
+    @State private var isPurchasing = false
+    @State private var purchaseStatus =
+        "Not purchased yet — the checkpoint should resolve the \"never purchased\" ad."
 
     var body: some View {
         List {
@@ -40,12 +58,63 @@ struct AdCheckpointUseCaseView: View {
                 }
                 .disabled(self.isRunning)
             }
+
+            Section("Purchase status") {
+                Text(self.isPurchasing ? "Purchasing…" : self.purchaseStatus)
+                    .foregroundStyle(.secondary)
+            }
+
+            Section {
+                Button("Buy Lifetime (test)") {
+                    Task { @MainActor in
+                        await self.buyLifetime()
+                    }
+                }
+                .disabled(self.isPurchasing)
+
+                Button("Reset (never purchased)", role: .destructive) {
+                    Purchases.shared.attribution.setAttributes([Self.hasPurchasedAttributeKey: "false"])
+                    self.purchaseStatus =
+                        "Reset — the checkpoint should resolve the \"never purchased\" ad again."
+                }
+                .disabled(self.isPurchasing)
+            }
         }
         .navigationTitle("Ad checkpoint")
         .task {
             guard !self.didLoad else { return }
             self.didLoad = true
+            if !self.hasSeededPurchaseAttribute {
+                Purchases.shared.attribution.setAttributes([Self.hasPurchasedAttributeKey: "false"])
+                self.hasSeededPurchaseAttribute = true
+            }
             await self.runCheckpoint()
+        }
+    }
+
+    @MainActor
+    private func buyLifetime() async {
+        guard !self.isPurchasing else { return }
+        self.isPurchasing = true
+        defer { self.isPurchasing = false }
+
+        let products = await Purchases.shared.products([Self.lifetimeProductId])
+        guard let product = products.first else {
+            self.purchaseStatus = "Product \(Self.lifetimeProductId) not found — check the Simulated Store configuration."
+            return
+        }
+
+        do {
+            let result = try await Purchases.shared.purchase(product: product)
+            if result.userCancelled {
+                self.purchaseStatus = "Purchase cancelled."
+                return
+            }
+            Purchases.shared.attribution.setAttributes([Self.hasPurchasedAttributeKey: "true"])
+            self.purchaseStatus = "Purchased! Re-running the checkpoint…"
+            await self.runCheckpoint()
+        } catch {
+            self.purchaseStatus = "Purchase failed: \(error.localizedDescription)"
         }
     }
 
