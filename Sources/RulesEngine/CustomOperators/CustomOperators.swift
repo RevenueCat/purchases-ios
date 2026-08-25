@@ -31,6 +31,9 @@ extension RulesEngine {
             case "rc.length":
                 return try LengthOperator.opLength(args: args, vars: vars)
 
+            case "rc.let":
+                return try LetOperator.opLet(args: args, vars: vars)
+
             case "rc.lower":
                 return try CaseOperators.opLower(args: args, vars: vars)
             case "rc.upper":
