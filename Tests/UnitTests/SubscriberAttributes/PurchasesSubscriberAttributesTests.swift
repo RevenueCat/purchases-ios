@@ -545,6 +545,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
             .to(equal((nil, purchases.appUserID)))
     }
 
+    func testSetAndClearSingularDeviceID() {
+        setupPurchases()
+        purchases.attribution.setSingularDeviceID("sdid")
+        purchases.attribution.setSingularDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[0])
+            .to(equal(("sdid", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
     func testSetAndClearMixpanelDistinctID() {
         setupPurchases()
         purchases.attribution.setMixpanelDistinctID("mixp")
