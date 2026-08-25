@@ -14,6 +14,9 @@ extension RulesEngine {
     /// future standard JSON Logic operator.
     enum CustomOperators {
 
+        // A flat switch is the point of a dispatcher; it grows one case per
+        // operator, as `Operators.dispatch` does.
+        // swiftlint:disable:next cyclomatic_complexity
         static func dispatch(
             op operatorName: String,
             args: Value,
