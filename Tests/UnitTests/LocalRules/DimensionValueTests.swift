@@ -149,7 +149,7 @@ private struct StaticDimensionProvider: DimensionProvider {
     let namespace: DimensionNamespace = .device
     let values: [String: DimensionValue]
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         return self.values
     }
 

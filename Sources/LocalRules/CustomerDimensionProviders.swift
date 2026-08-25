@@ -45,19 +45,14 @@ struct ServerSnapshotDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.serverSnapshot
 
-    private let currentUserProvider: any CurrentUserProvider
     private let customerInfoProvider: any CustomerInfoDimensionSource
 
-    init(
-        currentUserProvider: any CurrentUserProvider,
-        customerInfoProvider: any CustomerInfoDimensionSource
-    ) {
-        self.currentUserProvider = currentUserProvider
+    init(customerInfoProvider: any CustomerInfoDimensionSource) {
         self.customerInfoProvider = customerInfoProvider
     }
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
-        let appUserID = self.currentUserProvider.currentAppUserID
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
+        let appUserID = context.appUserID
         let customerInfo: CustomerInfo
         do {
             customerInfo = try await self.customerInfoProvider.customerInfo(appUserID: appUserID)
@@ -68,16 +63,10 @@ struct ServerSnapshotDimensionProvider: DimensionProvider {
             return [:]
         }
 
-        let subscriber = customerInfo.rawData[Self.subscriberKey] as? [String: Any]
-        guard let dimensions = subscriber?[Self.dimensionsKey] as? [String: Any] else {
-            return [:]
-        }
+        guard let dimensions = customerInfo.backendDimensions else { return [:] }
 
-        return DimensionValue.dimensions(from: dimensions)
+        return dimensions.compactMapValues(DimensionValue.init(json:))
     }
-
-    private static let dimensionsKey = "dimensions"
-    private static let subscriberKey = "subscriber"
 
 }
 
@@ -92,19 +81,14 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.clientSnapshot
 
-    private let currentUserProvider: any CurrentUserProvider
     private let customerInfoProvider: any CustomerInfoDimensionSource
 
-    init(
-        currentUserProvider: any CurrentUserProvider,
-        customerInfoProvider: any CustomerInfoDimensionSource
-    ) {
-        self.currentUserProvider = currentUserProvider
+    init(customerInfoProvider: any CustomerInfoDimensionSource) {
         self.customerInfoProvider = customerInfoProvider
     }
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
-        let appUserID = self.currentUserProvider.currentAppUserID
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
+        let appUserID = context.appUserID
 
         var dimensions: [String: DimensionValue] = [:]
         if !appUserID.isEmpty {
@@ -115,7 +99,13 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
         // set, so a rule about them fails to resolve instead of reading as a customer holding none.
         do {
             let customerInfo = try await self.customerInfoProvider.customerInfo(appUserID: appUserID)
-            dimensions[Self.activeEntitlementsKey] = .object(Self.activeEntitlements(of: customerInfo))
+            let active = Self.activeEntitlements(of: customerInfo)
+            // A customer who holds none is not a customer we could not read, and the resolver drops
+            // an object with nothing in it, so the count carries the difference either way.
+            dimensions[Self.activeEntitlementCountKey] = .int(Int64(active.count))
+            if !active.isEmpty {
+                dimensions[Self.activeEntitlementsKey] = .object(active)
+            }
         } catch let error as CancellationError {
             throw error
         } catch {
@@ -138,9 +128,43 @@ struct ActiveEntitlementsDimensionProvider: DimensionProvider {
         }
     }
 
+    private static let activeEntitlementCountKey = "activeEntitlementCount"
     private static let activeEntitlementsKey = "activeEntitlements"
     private static let appUserIDKey = "appUserId"
     private static let expiresAtKey = "expiresAt"
     private static let productIdentifierKey = "productIdentifier"
+
+}
+
+// MARK: - Carrying the backend's own JSON
+
+extension DimensionValue {
+
+    /// A value JSON Logic has no reading for is left out rather than guessed at.
+    init?(json: AnyCodableValue) {
+        switch json {
+        case .string(let value):
+            self = .string(value)
+        case .bool(let value):
+            self = .bool(value)
+        case .int(let value):
+            self = .int(value)
+        case .double(let value):
+            self = .double(value)
+        case .object(let value):
+            self = .object(value.compactMapValues(DimensionValue.init(json:)))
+        case .array(let value):
+            // A collection is only readable by an iteration operator, which walks records, so a
+            // scalar or mixed array has no reading at all.
+            let records = value.compactMap { element -> [String: AnyCodableValue]? in
+                guard case .object(let record) = element else { return nil }
+                return record
+            }
+            guard records.count == value.count else { return nil }
+            self = .objectList(records.map { $0.compactMapValues(DimensionValue.init(json:)) })
+        case .null:
+            return nil
+        }
+    }
 
 }

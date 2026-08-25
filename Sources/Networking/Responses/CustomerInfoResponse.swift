@@ -44,6 +44,12 @@ extension CustomerInfoResponse {
         var entitlements: [String: Entitlement]
 
         var subscriberAttributes: SubscriberAttributes?
+
+        /// What the backend worked out about this customer for rule evaluation.
+        ///
+        /// Modeled so it survives the cache, but never read here: the names belong to whatever the
+        /// backend decided to send, which is what lets a new one ship without a new SDK.
+        var dimensions: [String: AnyCodableValue]?
     }
 
     struct Subscription {

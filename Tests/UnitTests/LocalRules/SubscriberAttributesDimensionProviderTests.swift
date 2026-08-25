@@ -261,7 +261,7 @@ private struct SubscriberAttributesTestDeviceProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.device
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         return ["platform": .string("ios")]
     }
 

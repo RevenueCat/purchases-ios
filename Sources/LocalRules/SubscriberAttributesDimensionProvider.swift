@@ -40,7 +40,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
     ///
     /// A failed read contributes no dimensions rather than preventing the other
     /// dimensions from being evaluated.
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         let attributes: SubscriberAttribute.Dictionary
         do {
             attributes = try self.attributesProvider()
@@ -56,7 +56,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
             dimensions[attribute.key] = .object([
                 Self.valueKey: .string(attribute.value),
                 Self.updatedAtKey: .date(attribute.setTime),
-                Self.evaluatedAtKey: .date(date)
+                Self.evaluatedAtKey: .date(context.date)
             ])
         }
     }

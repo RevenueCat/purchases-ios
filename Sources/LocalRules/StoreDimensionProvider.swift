@@ -29,7 +29,7 @@ struct StoreDimensionProvider: DimensionProvider {
         self.storefrontCountryCodeProvider = storefrontCountryCodeProvider
     }
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         guard let storefrontCountryCode = await self.storefrontCountryCodeProvider(),
               !storefrontCountryCode.isEmpty else {
             return [:]

@@ -33,11 +33,13 @@ final class LocalRulesEvaluator: Sendable {
 
     init(
         dimensionProviders: [any DimensionProvider],
-        dateProvider: DateProvider = DateProvider()
+        dateProvider: DateProvider = DateProvider(),
+        currentUserProvider: (any CurrentUserProvider)? = nil
     ) {
         self.dimensionResolver = DimensionResolver(
             dimensionProviders: dimensionProviders,
-            dateProvider: dateProvider
+            dateProvider: dateProvider,
+            currentUserProvider: currentUserProvider
         )
     }
 
