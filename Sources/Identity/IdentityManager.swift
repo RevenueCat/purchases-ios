@@ -13,7 +13,7 @@
 
 import Foundation
 
-protocol CurrentUserProvider: Sendable {
+protocol CurrentUserProvider: AnyObject, Sendable {
 
     var currentAppUserID: String { get }
     var currentUserIsAnonymous: Bool { get }
@@ -50,6 +50,7 @@ class IdentityManager: CurrentUserProvider {
     private let deviceCache: DeviceCache
     private let backend: Backend
     private let customerInfoManager: CustomerInfoManager
+    private let tokenManager: TokenManager
     private let attributeSyncing: AttributeSyncing
     // Weak because RemoteConfigManager keeps IdentityManager as its CurrentUserProvider.
     weak var remoteConfigManager: RemoteConfigManagerType?
@@ -61,12 +62,14 @@ class IdentityManager: CurrentUserProvider {
         systemInfo: SystemInfo,
         backend: Backend,
         customerInfoManager: CustomerInfoManager,
+        tokenManager: TokenManager,
         attributeSyncing: AttributeSyncing,
         appUserID: String?
     ) {
         self.deviceCache = deviceCache
         self.backend = backend
         self.customerInfoManager = customerInfoManager
+        self.tokenManager = tokenManager
         self.attributeSyncing = attributeSyncing
 
         let finalAppUserID: String
@@ -103,8 +106,16 @@ class IdentityManager: CurrentUserProvider {
 
         lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
         lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
+        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID
+        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+    }
+
+    var needsIAMLogin: Bool {
+        guard tokenManager.enabled else { return false }
+        guard currentUserIsAnonymous else { return false }
+        if tokenManager.hasCurrentAccessToken { return false }
+        return true
     }
 
     func logIn(appUserID: String,
@@ -118,6 +129,17 @@ class IdentityManager: CurrentUserProvider {
         self.performLogIn(appUserID: appUserID, attributes: attributes, completion: completion)
     }
 
+    func logIn(identity: Identity, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
+            completion(.failure(.unsupportedInUIPreviewMode()))
+            return
+        }
+
+        self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
+            self.performLogIn(identity: identity, completion: completion)
+        }
+    }
+
     func logOut(completion: @escaping (PurchasesError?) -> Void) {
         guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
             completion(ErrorUtils.unsupportedInUIPreviewModeError())
@@ -125,7 +147,24 @@ class IdentityManager: CurrentUserProvider {
         }
 
         self.attributeSyncing.syncSubscriberAttributes(currentAppUserID: self.currentAppUserID) {
-            self.performLogOut(completion: completion)
+            if self.tokenManager.enabled {
+                self.performTokenRevocation(for: self.currentAppUserID, completion: completion)
+            } else {
+                self.performLogOut(completion: completion)
+            }
+        }
+    }
+
+    func revokeCurrentAccessToken(completion: @escaping (PurchasesError?) -> Void) {
+        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
+            completion(ErrorUtils.unsupportedInUIPreviewModeError())
+            return
+        }
+
+        if self.tokenManager.enabled {
+            self.performAccessTokenRevocation(for: self.currentAppUserID, completion: completion)
+        } else {
+            completion(nil)
         }
     }
 
@@ -226,7 +265,46 @@ private extension IdentityManager {
         )
     }
 
-    func performLogOut(completion: (PurchasesError?) -> Void) {
+    func performLogIn(identity: Identity, completion: @escaping IdentityAPI.LogInResponseHandler) {
+        let oldAppUserID = self.currentAppUserID
+
+        self.backend.token.logIn(currentAppUserID: oldAppUserID, identity: identity) { result in
+            switch result {
+            case .success(let (_, newAppUserID)):
+                self.remoteConfigManager?.clearCache(forAppUserID: newAppUserID)
+                self.deviceCache.clearCaches(oldAppUserID: oldAppUserID, andSaveWithNewUserID: newAppUserID)
+                self.copySubscriberAttributesToNewUserIfOldIsAnonymous(oldAppUserID: oldAppUserID,
+                                                                       newAppUserID: newAppUserID)
+
+                self.customerInfoManager.customerInfo(appUserID: newAppUserID,
+                                                      fetchPolicy: .cachedOrFetched,
+                                                      completion: { result in
+
+                    completion(result.map { (info: $0, created: false, attributesErrorResponse: nil) })
+                })
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func performAccessTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
+        self.backend.token.revokeAccessTokens(for: appUserID) { error in
+            completion(error?.asPurchasesError)
+        }
+    }
+
+    func performTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
+        self.backend.token.revokeTokens(for: appUserID) { error in
+            if let purchasesError = error?.asPurchasesError {
+                completion(purchasesError)
+            } else {
+                self.performLogOut(completion: completion)
+            }
+        }
+    }
+
+    func performLogOut(completion: @escaping (PurchasesError?) -> Void) {
         Logger.info(Strings.identity.log_out_called_for_user)
 
         if self.currentUserIsAnonymous {
@@ -234,9 +312,18 @@ private extension IdentityManager {
             return
         }
 
-        self.resetCacheAndSave(newUserID: Self.generateRandomID())
+        let newUserID = Self.generateRandomID()
+        self.resetCacheAndSave(newUserID: newUserID)
         Logger.info(Strings.identity.log_out_success)
-        completion(nil)
+
+        if self.tokenManager.enabled {
+            // immediately get tokens for the new user id
+            self.performLogIn(identity: .anonymous, completion: { result in
+                completion(result.error?.asPurchasesError)
+            })
+        } else {
+            completion(nil)
+        }
     }
 }
 

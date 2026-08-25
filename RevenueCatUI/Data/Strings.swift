@@ -22,7 +22,6 @@ enum Strings {
     case found_multiple_packages_of_same_identifier(String)
     case unrecognized_variable_name(variableName: String)
 
-    case product_already_subscribed
     case purchase_failed(Error)
 
     case determining_whether_to_display_paywall
@@ -116,6 +115,7 @@ enum Strings {
     case paywall_web_view_invalid_expected_origin(String)
     case paywall_web_view_content_process_terminated
     case paywall_web_view_not_rendered(reason: String)
+    case paywall_web_view_loaded(URL?)
     case paywall_web_view_load_failed(String)
     case paywall_web_view_http_error(statusCode: Int)
     case web_view_data_store_removal_failed(UUID, Error)
@@ -154,9 +154,6 @@ extension Strings: CustomStringConvertible {
         case let .unrecognized_variable_name(variableName):
             return "Found an unrecognized variable '\(variableName)'. It will be replaced with an empty string.\n" +
             "See the docs for more information: https://www.revenuecat.com/docs/paywalls#variables"
-
-        case .product_already_subscribed:
-            return "User is already subscribed to this product. Ignoring."
 
         case .determining_whether_to_display_paywall:
             return "Determining whether to display paywall"
@@ -393,6 +390,8 @@ extension Strings: CustomStringConvertible {
             return "Paywalls V2 web_view will not render: \(reason)"
         case .paywall_web_view_load_failed(let error):
             return "Paywalls V2 web_view failed to load and will be removed. Error: \(error)"
+        case .paywall_web_view_loaded(let url):
+            return "Paywalls V2 web_view successfully loaded: \(url?.absoluteString ?? "no_url")"
         case .paywall_web_view_http_error(let statusCode):
             return "Paywalls V2 web_view failed to load and will be removed. " +
                 "The server responded with HTTP status code \(statusCode)."

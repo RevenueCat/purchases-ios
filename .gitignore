@@ -27,6 +27,8 @@ Carthage
 .ruby-version
 .bundle/
 .build/
+# Per-platform derived data written by the generate_swiftinterface lane.
+.build-*/
 vendor/
 CarthageUploads
 *.bck

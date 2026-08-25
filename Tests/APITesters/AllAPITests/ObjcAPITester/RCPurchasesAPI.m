@@ -10,6 +10,14 @@
 
 #import "RCPurchasesAPI.h"
 
+#if __has_include(<UIKit/UIKit.h>)
+#import <UIKit/UIKit.h>
+#endif
+
+#if __has_include(<AppKit/AppKit.h>)
+#import <AppKit/AppKit.h>
+#endif
+
 @implementation RCPurchasesAPI
 
 bool canI;
