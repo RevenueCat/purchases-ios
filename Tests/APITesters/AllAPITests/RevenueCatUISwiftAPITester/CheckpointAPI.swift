@@ -44,6 +44,7 @@ private final class CheckpointListenerAPITester: CheckpointListener {
             let _: Offering = receivedOffering.offering
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
+            let _: String = noAction.reason.description
         }
     }
 

@@ -131,7 +131,7 @@ struct OnboardingUseCaseView: View {
         case let received as CheckpointReceivedOfferingResult:
             return "Received offering '\(received.offering.identifier)'."
         case let noAction as CheckpointNoActionResult:
-            return "No paywall shown (\(noAction.reason.value))."
+            return "No paywall shown (\(noAction.reason))."
         default:
             return "Unknown checkpoint result."
         }

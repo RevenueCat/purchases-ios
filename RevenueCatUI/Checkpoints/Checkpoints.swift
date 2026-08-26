@@ -105,8 +105,7 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
-    /// The value identifying the reason.
-    public let value: String
+    let value: String
 
     /// No targeting rule matched.
     public static let noMatch = CheckpointNoActionReason(value: "NO_MATCH")
