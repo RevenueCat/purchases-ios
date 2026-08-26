@@ -69,8 +69,12 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
     /// The identifier of the checkpoint that was hit.
     public let identifier: String
 
-    /// The parameters supplied when the checkpoint was hit.
-    public let params: CheckpointParams
+    /// The custom variables supplied when the checkpoint was hit.
+    public var customVariables: [String: CustomVariableValue] {
+        return self.params.customVariables
+    }
+
+    private let params: CheckpointParams
 
     /// Creates checkpoint information for an identifier and its parameters.
     public init(identifier: String, params: CheckpointParams) {
@@ -80,18 +84,18 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 
     /// Returns whether two checkpoint information values are equal.
     public static func == (lhs: CheckpointInfo, rhs: CheckpointInfo) -> Bool {
-        return lhs.identifier == rhs.identifier && lhs.params == rhs.params
+        return lhs.identifier == rhs.identifier && lhs.customVariables == rhs.customVariables
     }
 
     /// Hashes the checkpoint information.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.identifier)
-        hasher.combine(self.params)
+        hasher.combine(self.customVariables)
     }
 
     /// A debug description of the checkpoint information.
     public var description: String {
-        return "CheckpointInfo(identifier='\(self.identifier)', params=\(self.params))"
+        return "CheckpointInfo(identifier='\(self.identifier)', customVariables=\(self.customVariables))"
     }
 
 }

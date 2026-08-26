@@ -128,7 +128,7 @@ final class CheckpointsManagerTests: TestCase {
         }
         XCTAssertEqual(noAction.reason, .unknownCheckpoint)
         XCTAssertEqual(noAction.checkpoint.identifier, "unknown_checkpoint")
-        XCTAssertEqual(noAction.checkpoint.params.customVariables["name"], "Rick")
+        XCTAssertEqual(noAction.checkpoint.customVariables["name"], "Rick")
         XCTAssertEqual(
             listener.events,
             [.hit("unknown_checkpoint"), .completed("unknown_checkpoint")]

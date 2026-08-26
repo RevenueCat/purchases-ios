@@ -34,7 +34,7 @@
                               completion:^(RCCheckpointResult * _Nullable result, NSError * _Nullable error) {
         RCCheckpointInfo *checkpoint = result.checkpoint;
         NSString * __unused identifier = checkpoint.identifier;
-        RCCheckpointParams * __unused resultParams = checkpoint.params;
+        NSDictionary * __unused resultCustomVariables = checkpoint.customVariables;
 
         if ([result isKindOfClass:RCCheckpointPaywallPresentedResult.class]) {
             RCCheckpointPaywallOutcome *outcome = ((RCCheckpointPaywallPresentedResult *)result).paywallOutcome;
