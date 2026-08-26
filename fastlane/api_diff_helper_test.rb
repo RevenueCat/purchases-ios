@@ -1656,20 +1656,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_includes message, "apiDiffDemoPing"
   end
 
-  def test_comment_body_carries_the_slack_notice
-    body = ApiDiffHelper.api_diff_comment_body(
-      { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
-    )
-
-    assert_includes body, ":warning: #{ApiDiffHelper::SLACK_UNREACHABLE_NOTICE}"
-  end
-
-  def test_comment_body_omits_the_notice_when_slack_is_reachable
-    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
-
-    refute_includes body, ":warning: No Slack credentials"
-  end
-
   # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
   # with the headline claiming new API. See purchases-ios#7439.
   def test_slack_summary_reports_an_attribute_only_modification
@@ -1840,6 +1826,19 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(%r{/commit/}, link, "the message links the commit, not the PR")
     assert_match(/next "" if sha\.empty\?/, link)
     refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
+  end
+
+  # A silent feed is the failure nobody notices, and main has no PR comment left to warn in, so
+  # the job log is the only place an unreachable credential or a failed post can surface.
+  def test_every_announcement_failure_reaches_the_job_log
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
+
+    refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
+    assert_match(/UI\.important\("No Slack credential reachable/, slack_lane)
+    assert_match(/UI\.important\("Could not read the SDK API feed/, slack_lane)
+    assert_match(/UI\.important\("The public API changed, but it was not announced/, slack_lane)
+    refute_match(/notice/, slack_lane, "the notice went to a PR comment that main does not have")
   end
 
   # The feed was noisy because every PR run posted. Only main does now, so each change lands once.

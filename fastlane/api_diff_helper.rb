@@ -588,19 +588,14 @@ module ApiDiffHelper
     existing_body.to_s.include?(api_diff_section_open(module_name))
   end
 
-  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil)
-    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels)
+    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}")
 
     [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
   end
 
-  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil, notice: nil)
+  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil)
     lines = heading ? [heading] : [API_DIFF_COMMENT_MARKER, "## Public API changes"]
-
-    unless notice.to_s.empty?
-      lines << ""
-      lines << ":warning: #{notice}"
-    end
 
     if breaks.any?
       lines << ""
@@ -763,8 +758,6 @@ module ApiDiffHelper
     lines.join("\n")
   end
 
-
-  SLACK_UNREACHABLE_NOTICE = "No Slack credentials were reachable, so this change was not announced in the SDK API feed.".freeze
 
   def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
     unless webhook_url.to_s.empty?

@@ -2610,8 +2610,7 @@ platform :ios do
     end
 
     section = ApiDiffHelper.api_diff_comment_section(
-      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
-      notice: options[:notice]
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels]
     )
 
     if existing
@@ -2639,14 +2638,14 @@ platform :ios do
     end
   end
 
-  # Returns { notice: }.
+  # main has no PR comment to carry a warning, so every outcome is reported in the job log.
   private_lane :notify_api_changes_on_slack do |options|
     breaks = options[:breaks]
     changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
 
     if breaks.empty? && changed_targets.empty?
       UI.message("No public API changes, nothing to post to Slack")
-      next({ notice: nil })
+      next
     end
 
     bot_token = ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"]
@@ -2672,7 +2671,7 @@ platform :ios do
 
     if request.nil?
       UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API, or SLACK_URL_SDK_NEW_API. Skipping.")
-      next({ notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE })
+      next
     end
 
     state, history_error = ApiDiffHelper.announcement_state(
@@ -2680,18 +2679,16 @@ platform :ios do
     )
     if state == :same
       UI.message("This API change is already in the SDK API feed, not posting it again")
-      next({ notice: nil })
+      next
     end
 
-    notice = "Could not read the SDK API feed, so this change may be announced twice: #{history_error}." if history_error
+    UI.important("Could not read the SDK API feed, so this change may be announced twice: #{history_error}") if history_error
 
     begin
       ApiDiffHelper.post_slack_message(request)
       UI.success("Posted the API change summary to Slack")
-      { notice: notice }
     rescue StandardError => e
-      UI.important("Could not announce the API change: #{e.message}")
-      { notice: "This change was not announced in the SDK API feed: #{e.message}." }
+      UI.important("The public API changed, but it was not announced in the SDK API feed: #{e.message}")
     end
   end
 
