@@ -1447,98 +1447,7 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
-  # --- Announcing a change once ---
-
-  def history_getter(texts)
-    lambda do |_url, _headers|
-      SlackResponse.new("200", { ok: true, messages: texts.map { |text| { "text" => text } } }.to_json)
-    end
-  end
-
-  def test_slack_history_request_reads_the_channel_with_the_bot_token
-    request = ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1")
-
-    assert_includes request[:url], "https://slack.com/api/conversations.history?channel=C1"
-    assert_equal "Bearer xoxb-1", request[:headers]["Authorization"]
-    assert_equal ["new", "old"], ApiDiffHelper.recent_slack_messages(request, getter: history_getter(["new", "old"]))
-  end
-
-  def test_recent_slack_messages_raises_when_the_token_cannot_read_the_channel
-    getter = ->(_url, _headers) { SlackResponse.new("200", '{"ok":false,"error":"missing_scope"}') }
-
-    error = assert_raises(RuntimeError) do
-      ApiDiffHelper.recent_slack_messages(ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1"), getter: getter)
-    end
-    assert_match(/missing_scope/, error.message)
-  end
-
-  COMMIT_LINK = "<https://github.com/RevenueCat/purchases-ios/commit/abc1234|abc1234>".freeze
-
-  def announcement(declaration, source: COMMIT_LINK, modules: ["RevenueCat"])
-    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
-  end
-
-  def state_for(message, texts, source: COMMIT_LINK)
-    ApiDiffHelper.announcement_state(
-      message, bot_token: "xoxb-1", channel: "C1", source: source, getter: history_getter(texts)
-    )
-  end
-
-  def test_announcement_state_recognises_the_last_word_on_this_commit
-    summary = announcement("public func a()")
-
-    state, unusable = state_for(summary, [summary, announcement("public func older()")])
-
-    assert_equal :same, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_is_different_when_the_same_commit_says_something_else
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func b()")])
-
-    assert_equal :different, state
-  end
-
-  # The commit link is the whole dedup key, so a different commit must never read as a duplicate.
-  def test_announcement_state_ignores_another_commits_announcement
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|deadbee>")])
-
-    assert_equal :unknown, state
-  end
-
-  # chat.postMessage takes a `#name`, conversations.history does not.
-  def test_announcement_state_needs_the_channel_id
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "#feed", source: COMMIT_LINK,
-      getter: ->(*) { raise "must not read" }
-    )
-
-    assert_equal :unknown, state
-    assert_match(/channel ID/, unusable)
-  end
-
-  def test_announcement_state_reports_a_missing_token
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "", channel: "C1", source: COMMIT_LINK
-    )
-
-    assert_equal :unknown, state
-    assert_match(/cannot be read/, unusable)
-  end
-
-  def test_announcement_state_reports_a_failed_read
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "C1", source: COMMIT_LINK,
-      getter: ->(*) { raise "slack is down" }
-    )
-
-    assert_equal :unknown, state
-    assert_equal "slack is down", unusable
-  end
+  # --- The PR comment ---
 
   def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
     refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
@@ -1791,23 +1700,48 @@ class ApiDiffHelperTest < Minitest::Test
 
   # main has no pull request to comment on, and a PR run does not announce, so the two are
   # exclusive. Nothing carries state from the announcement into the comment any more.
+  def check_api_changes_lane
+    fastfile = File.read(File.expand_path("Fastfile", __dir__))
+    lane = fastfile[/lane :check_api_changes do.*?\n  end\n/m]
+
+    refute_nil lane, "the check_api_changes lane moved; update these tests"
+    lane
+  end
+
   def test_main_announces_and_a_pull_request_comments
-    lane = File.read(File.expand_path("Fastfile", __dir__))
-    publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
+    lane = check_api_changes_lane
 
-    refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
-    announcing, commenting = publishing.split("else", 2)
+    assert_match(/unless on_main\n\s*begin\n\s*schemes\.each/, lane,
+                 "the comment is written on a PR only; main has no pull request")
+    assert_match(/if on_main\n\s*begin\n\s*notify_api_changes_on_slack/, lane,
+                 "the feed is announced from main only")
+  end
 
-    assert_match(/if on_main/, announcing)
-    assert_match(/notify_api_changes_on_slack/, announcing)
-    refute_match(/upsert_api_diff_comment/, announcing, "main has no pull request to comment on")
-    assert_match(/upsert_api_diff_comment/, commenting)
-    refute_match(/notify_api_changes_on_slack/, commenting, "a PR run must not reach the feed")
+  # There is no dedup left, so the only thing keeping a rerun from posting twice is that a run
+  # which is going to fail never posts at all. Announcing has to stay last in the lane.
+  def test_nothing_can_fail_the_job_after_the_announcement
+    lane = check_api_changes_lane
+
+    announcement = lane.index("notify_api_changes_on_slack")
+    refute_nil announcement, "the announcement moved; update this test"
+
+    # There are two `failed_platforms.any?` blocks: the build summary and the failure. Anchor on
+    # the one that raises, which is the whole point of the ordering.
+    baseline_failure = lane.index(/if failed_platforms\.any\?\n\s*UI\.user_error!/)
+    refute_nil baseline_failure, "the baseline freshness failure moved; update this test"
+
+    assert_operator announcement, :>, baseline_failure,
+                    "a run whose baselines did not match must not announce"
+    assert_operator announcement, :>, lane.index("ApiDiffHelper.gate_blocked?"),
+                    "the gate must be decided before anything reaches the feed"
+    refute_match(/UI\.user_error!/, lane[announcement..],
+                 "nothing may fail the job after the post, or a rerun would post twice"
+    )
   end
 
 
-  # A rerun of the same main job must not post twice, and last_announcement bails on an empty
-  # source, so the commit link is what keeps the suppression alive.
+  # The feed's only pointer back at the change, so it links the commit rather than a PR that
+  # main runs do not have.
   def test_the_announcement_source_is_the_commit
     lane = File.read(File.expand_path("Fastfile", __dir__))
     link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
@@ -1826,18 +1760,8 @@ class ApiDiffHelperTest < Minitest::Test
 
     refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
     assert_match(/UI\.important\("No Slack credential reachable/, slack_lane)
-    assert_match(/UI\.important\("Could not read the SDK API feed/, slack_lane)
     assert_match(/UI\.important\("The public API changed, but it was not announced/, slack_lane)
     refute_match(/notice/, slack_lane, "the notice went to a PR comment that main does not have")
-  end
-
-  # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
-  def test_slack_is_announced_only_on_main
-    lane = File.read(File.expand_path("Fastfile", __dir__))
-    slack_call = lane[/^\s*(if on_main\n)?\s*notify_api_changes_on_slack\(/]
-
-    refute_nil slack_call, "the notify_api_changes_on_slack call moved; update this test"
-    assert_match(/if on_main/, slack_call, "the announcement is no longer gated on main")
   end
 
   # main carries no PR to hold the label, so the gate there would fail changes the PR approved.

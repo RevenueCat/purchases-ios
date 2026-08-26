@@ -769,56 +769,6 @@ module ApiDiffHelper
     }
   end
 
-  SLACK_HISTORY_LIMIT = 100
-
-  # conversations.history takes a channel ID, never a `#name`.
-  CHANNEL_ID = /\A[CGD][A-Z0-9]+\z/.freeze
-
-  def slack_history_request(channel, bot_token:, limit: SLACK_HISTORY_LIMIT)
-    {
-      url: "https://slack.com/api/conversations.history?channel=#{channel}&limit=#{limit}",
-      headers: { "Authorization" => "Bearer #{bot_token}" }
-    }
-  end
-
-  def recent_slack_messages(request, getter: nil)
-    getter ||= ->(url, headers) { Net::HTTP.get_response(URI.parse(url), headers) }
-
-    response = getter.call(request[:url], request[:headers])
-    raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
-
-    parsed = JSON.parse(response.body.to_s)
-    raise "Slack rejected conversations.history: #{parsed['error']}" unless parsed["ok"]
-
-    parsed["messages"].to_a.map { |message| message["text"].to_s }
-  end
-
-  # conversations.history answers newest first, so the first match is the channel's last word. One
-  # run posts once for every module, and the source is a commit sha, so it identifies the message.
-  def last_announcement(texts, source)
-    return nil if source.to_s.empty?
-
-    texts.find { |text| text.include?(source) }
-  end
-
-  # conversations.history needs an ID rather than a name.
-  # Returns [:same | :different | :unknown, why_unknown].
-  def announcement_state(message, bot_token:, channel:, source:, getter: nil)
-    return [:unknown, "no bot token, so the SDK API feed cannot be read"] if bot_token.to_s.empty?
-
-    unless CHANNEL_ID.match?(channel.to_s)
-      return [:unknown, "#{channel} is a channel name, and conversations.history needs the channel ID"]
-    end
-
-    request = slack_history_request(channel, bot_token: bot_token)
-    last = last_announcement(recent_slack_messages(request, getter: getter), source)
-    return [:unknown, nil] if last.nil?
-
-    [last == message ? :same : :different, nil]
-  rescue StandardError => e
-    [:unknown, e.message]
-  end
-
   # `poster` exists so the tests can exercise the response handling without a network.
   def post_slack_message(request, poster: nil)
     poster ||= ->(url, body, headers) { Net::HTTP.post(URI.parse(url), body, headers) }

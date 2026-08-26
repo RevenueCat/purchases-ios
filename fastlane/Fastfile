@@ -2554,17 +2554,10 @@ platform :ios do
 
     ApiDiffHelper.print_breaking_summary(all_breaks, labels)
 
-    # Informational: a GitHub or Slack outage must not decide whether the gate fails.
-    begin
-      # main carries no pull request to comment on, and announcing only from there keeps the
-      # feed to one post per change.
-      if on_main
-        notify_api_changes_on_slack(
-          reports_by_target: reports_by_target,
-          breaks: all_breaks,
-          labels: labels
-        )
-      else
+    # main carries no pull request to comment on.
+    # Informational: a GitHub outage must not decide whether the gate fails.
+    unless on_main
+      begin
         schemes.each do |scheme|
           upsert_api_diff_comment(
             scheme: scheme,
@@ -2573,9 +2566,9 @@ platform :ios do
             labels: labels
           )
         end
+      rescue StandardError => e
+        UI.important("Could not publish the API diff report: #{e.message}")
       end
-    rescue StandardError => e
-      UI.important("Could not publish the API diff report: #{e.message}")
     end
 
     if failed_platforms.any?
@@ -2588,6 +2581,20 @@ platform :ios do
         UI.important("Breaking public API changes on main, already gated on the PR run")
       else
         UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
+      end
+    end
+
+    # Last, and only from main: nothing below can fail the job, so a rerun cannot post twice, and
+    # a run whose baselines did not match never announces a surface it could not validate.
+    if on_main
+      begin
+        notify_api_changes_on_slack(
+          reports_by_target: reports_by_target,
+          breaks: all_breaks,
+          labels: labels
+        )
+      rescue StandardError => e
+        UI.important("Could not announce the API change: #{e.message}")
       end
     end
   end
@@ -2669,16 +2676,6 @@ platform :ios do
       next
     end
 
-    state, history_error = ApiDiffHelper.announcement_state(
-      summary, bot_token: bot_token, channel: channel, source: source
-    )
-    if state == :same
-      UI.message("This API change is already in the SDK API feed, not posting it again")
-      next
-    end
-
-    UI.important("Could not read the SDK API feed, so this change may be announced twice: #{history_error}") if history_error
-
     begin
       ApiDiffHelper.post_slack_message(request)
       UI.success("Posted the API change summary to Slack")
@@ -2687,7 +2684,7 @@ platform :ios do
     end
   end
 
-  # The commit page carries the PR link, and its sha is what tells a rerun it already announced.
+  # The commit page carries the PR link, so the message needs only the commit.
   private_lane :api_gate_commit_link do
     sha = sh("git", "rev-parse", "HEAD", log: false).strip
     next "" if sha.empty?
