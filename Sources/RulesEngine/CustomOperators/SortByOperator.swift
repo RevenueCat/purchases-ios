@@ -20,11 +20,11 @@ extension RulesEngine {
         /// `keyExpression` is evaluated once per item with the scope rebound to
         /// that item, the same way `map` evaluates its template.
         ///
-        /// Keys must be all strings or all numbers; anything else, including a
-        /// mix, throws `EvaluationError.typeMismatch`. Ordering values of
-        /// different types would need a total order the rule author never asked
-        /// for. Descending is not offered: reversing a sorted array is a
-        /// separate operator, not a mode of this one.
+        /// Keys must be all strings or all finite numbers; anything else,
+        /// including a mix, throws `EvaluationError.typeMismatch`. Ordering
+        /// values of different types would need a total order the rule author
+        /// never asked for. Descending is not offered: reversing a sorted array
+        /// is a separate operator, not a mode of this one.
         static func opSortBy(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
 
@@ -74,7 +74,17 @@ extension RulesEngine {
                 switch key {
                 case .string:
                     sawString = true
-                case .int, .float:
+                case .int:
+                    sawNumber = true
+                case .float(let number):
+                    // A NaN key compares false against everything, so every
+                    // pair would tie and the input would come back unsorted.
+                    guard number.isFinite else {
+                        throw EvaluationError.typeMismatch(
+                            message: "operator '\(operatorName)' expected a finite number key, "
+                                + "got \(key)"
+                        )
+                    }
                     sawNumber = true
                 default:
                     throw EvaluationError.typeMismatch(
