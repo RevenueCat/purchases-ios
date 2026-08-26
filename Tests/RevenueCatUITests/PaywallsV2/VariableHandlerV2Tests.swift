@@ -346,6 +346,40 @@ class VariableHandlerV2Test: TestCase {
         expect(perYear).to(equal("$24.99"))
     }
 
+    /// Right-to-left locales wrap the displayed price in bidirectional marks, so the extracted
+    /// token arrives as `<LRM>RUB` rather than `RUB`. The ISO code has to be recognized through
+    /// them, otherwise the variable renders the code.
+    func testProductCurrencySymbolWhenDisplayedISOCodeHasBidirectionalMark() {
+        let package = Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: "RUB",
+                localizedPriceString: "\u{200E}RUB\u{00A0}\u{06F2}\u{06F4}\u{066B}\u{06F9}\u{06F9}",
+                productIdentifier: "com.revenuecat.product.currency_symbol_iso_code_rtl",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: "fa")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("\u{20BD}"))
+    }
+
     func testProductCurrencySymbolWhenDisplayedPriceUsesISOCode() {
         let result = variableHandler.processVariables(
             in: "{{ product.currency_symbol }}",
