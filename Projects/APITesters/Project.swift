@@ -22,14 +22,6 @@ let allDeploymentTargets: DeploymentTargets = .multiplatform(
     tvOS: "13.0"
 )
 
-let checkpointObjCAPITesterSettings: Settings = .settings(
-    base: Environment.extraSwiftConditions.contains("ENABLE_CHECKPOINTS_OBJC")
-        ? [
-            "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) ENABLE_CHECKPOINTS_OBJC=1"
-        ]
-        : [:]
-)
-
 let project = Project(
     name: "APITesters",
     organizationName: .revenueCatOrgName,
@@ -57,7 +49,6 @@ let project = Project(
                 .revenueCat,
                 .revenueCatUI
             ],
-            settings: checkpointObjCAPITesterSettings,
             metadata: .metadata(tags: ["APITester"])
         ),
 
