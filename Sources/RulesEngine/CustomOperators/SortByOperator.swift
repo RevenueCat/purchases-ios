@@ -102,7 +102,12 @@ extension RulesEngine {
                     guard case .string(let left) = left, case .string(let right) = right else {
                         return false
                     }
-                    return left < right
+                    // Swift orders by Unicode scalar and treats canonically
+                    // equivalent strings as equal; JS and Kotlin both order by
+                    // UTF-16 code unit. The two disagree once a scalar above
+                    // the surrogate range meets an astral one, so follow the
+                    // engines the rules are written against.
+                    return left.utf16.lexicographicallyPrecedes(right.utf16)
                 }
             }
             return { left, right in (left.asNumber ?? 0) < (right.asNumber ?? 0) }
