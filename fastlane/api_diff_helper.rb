@@ -297,12 +297,39 @@ module ApiDiffHelper
     !output.to_s.include?(NO_CHANGES_MARKER)
   end
 
-  MERGE_BASE_SWIFTINTERFACE_DIR = "/tmp/merge-base-swiftinterface".freeze
+  BASE_SWIFTINTERFACE_DIR = "/tmp/comparison-base-swiftinterface".freeze
+
+  MAIN_BRANCH = "main".freeze
+
+  def main_branch?(branch)
+    branch.to_s.strip == MAIN_BRANCH
+  end
+
+  def current_branch(runner:)
+    branch = ENV["CIRCLE_BRANCH"].to_s.strip
+    return branch unless branch.empty?
+
+    runner.call("git", "rev-parse", "--abbrev-ref", "HEAD").to_s.strip
+  end
+
+  # On main the merge base is HEAD, so HEAD^ is what the merge replaced.
+  def resolve_comparison_base(runner:, branch:)
+    return resolve_previous_commit(runner: runner) if main_branch?(branch)
+
+    resolve_merge_base(runner: runner)
+  end
 
   # The PR's own baselines match the generated files once regenerated, erasing the evidence.
   def resolve_merge_base(runner:)
     sha = runner.call("git", "merge-base", "origin/main", "HEAD").to_s.strip
     raise "Could not resolve the merge base with origin/main" if sha.empty?
+
+    sha
+  end
+
+  def resolve_previous_commit(runner:)
+    sha = runner.call("git", "rev-parse", "HEAD^").to_s.strip
+    raise "Could not resolve the commit before HEAD" if sha.empty?
 
     sha
   end
@@ -743,11 +770,11 @@ module ApiDiffHelper
   def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
     changed = unbroken_modifications(modifications, breaks)
     headline = if breaks.any?
-                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
+                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API landed on main*" : ":warning: *Breaking public API landed on main* (allowed by label)"
                elsif new_declarations.any?
-                 ":sparkles: *New public API*"
+                 ":sparkles: *New public API landed on main*"
                else
-                 ":pencil2: *Public API changed*"
+                 ":pencil2: *Public API changed on main*"
                end
     headline = [headline, announcement_identity(modules)].join(" · ")
 

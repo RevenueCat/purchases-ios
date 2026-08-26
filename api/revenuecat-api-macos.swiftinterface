@@ -2007,6 +2007,7 @@ extension RevenueCat.Attribution {
   @objc final public func setSolarEngineDistinctId(_ solarEngineDistinctId: Swift.String?)
   @objc final public func setSolarEngineAccountId(_ solarEngineAccountId: Swift.String?)
   @objc final public func setSolarEngineVisitorId(_ solarEngineVisitorId: Swift.String?)
+  @objc final public func setSingularDeviceID(_ singularDeviceID: Swift.String?)
   @objc final public func setMixpanelDistinctID(_ mixpanelDistinctID: Swift.String?)
   @objc final public func setFirebaseAppInstanceID(_ firebaseAppInstanceID: Swift.String?)
   @objc final public func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: Swift.String?)
