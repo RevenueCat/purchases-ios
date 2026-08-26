@@ -33,6 +33,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     let preferredLocales: [String]
     let preferredLocaleOverride: String?
     var isUIPreviewMode = false
+    var storefrontCountryCode: String?
     var remoteConfigEnabled = false
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
@@ -69,6 +70,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         purchasesAreCompletedBy: PurchasesAreCompletedBy = .revenueCat,
         preferredLocales: [String] = ["en_US"],
         preferredLocaleOverride: String? = nil,
+        storefrontCountryCode: String? = nil,
         purchase: @escaping PurchaseBlock,
         restorePurchases: @escaping RestoreBlock,
         trackEvent: @escaping TrackEventBlock,
@@ -81,6 +83,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
         self._purchasesAreCompletedBy = purchasesAreCompletedBy
         self.preferredLocales = preferredLocales
         self.preferredLocaleOverride = preferredLocaleOverride
+        self.storefrontCountryCode = storefrontCountryCode
     }
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
@@ -163,7 +166,8 @@ extension PaywallPurchasesType {
         let mapped = MockPurchases(
             purchasesAreCompletedBy: self.purchasesAreCompletedBy,
             preferredLocales: self.preferredLocales,
-            preferredLocaleOverride: self.preferredLocaleOverride
+            preferredLocaleOverride: self.preferredLocaleOverride,
+            storefrontCountryCode: self.storefrontCountryCode
         ) { package, promotionalOffer, paywallEvent in
             try await purchase({ pkg, offer, event in
                 try await self.purchase(package: pkg, promotionalOffer: offer, paywallEvent: event)
@@ -196,7 +200,8 @@ extension PaywallPurchasesType {
         let mapped = MockPurchases(
             purchasesAreCompletedBy: self.purchasesAreCompletedBy,
             preferredLocales: self.preferredLocales,
-            preferredLocaleOverride: self.preferredLocaleOverride
+            preferredLocaleOverride: self.preferredLocaleOverride,
+            storefrontCountryCode: self.storefrontCountryCode
         ) { package, promotionalOffer, paywallEvent in
             try await self.purchase(package: package, promotionalOffer: promotionalOffer, paywallEvent: paywallEvent)
         } restorePurchases: {

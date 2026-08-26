@@ -146,6 +146,8 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var isUIPreviewMode: Bool { false }
 
+    var storefrontCountryCode: String? { nil }
+
     var remoteConfigEnabled: Bool { false }
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {

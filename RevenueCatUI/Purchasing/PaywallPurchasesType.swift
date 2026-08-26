@@ -25,6 +25,9 @@ protocol PaywallPurchasesType: Sendable {
     /// Whether the SDK is running in UI preview mode.
     var isUIPreviewMode: Bool { get }
 
+    /// StoreKit's asynchronously resolved storefront country code.
+    var storefrontCountryCode: String? { get }
+
     /// `preferredLocales` will always include the preferred locale override if set, so this
     /// property is only useful for reading the override value.
     var preferredLocaleOverride: String? { get }

@@ -268,6 +268,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         systemInfo.storefront?.countryCode
     }
 
+    /// The country code reported by StoreKit's asynchronously resolved current storefront.
+    @_spi(Internal) public var storefrontCountryCode: String? {
+        self._storefrontCountryCode.value
+    }
+
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     @_spi(Experimental) @objc public var storeFrontLocale: Locale? {
         systemInfo.storefront.map { storefront in
@@ -329,6 +334,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
     private let webBundleEventBus: WebBundleEventBus
+
+    private let _storefrontCountryCode: Atomic<String?> = nil
 
     /// The ``Configuration`` used to configure this instance, if it was created via
     /// ``Purchases/configure(with:)-3wmd0`` (or one of its overloads). Used by
@@ -876,7 +883,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
          currentConfiguration: Configuration?,
-         webBundleEventBus: WebBundleEventBus
+         webBundleEventBus: WebBundleEventBus,
+         storefrontCountryCodeProvider: @escaping @Sendable () async -> String? = {
+             let storefront = await Storefront.currentStorefront
+             return storefront?.countryCode
+         }
     ) {
         self.webBundleEventBus = webBundleEventBus
 
@@ -942,6 +953,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         super.init()
         self._authentication.internalDelegate = self
+
+        Task { [weak self] in
+            let countryCode = await storefrontCountryCodeProvider()
+            self?._storefrontCountryCode.value = countryCode
+        }
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in

@@ -280,7 +280,8 @@ class BasePurchasesTests: TestCase {
         withDelegate: Bool = true,
         checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
         dateProvider: DateProvider = DateProvider(),
-        webBundleEventBus: WebBundleEventBus = .shared
+        webBundleEventBus: WebBundleEventBus = .shared,
+        storefrontCountryCodeProvider: @escaping @Sendable () async -> String? = { nil }
     ) {
         self.purchasesOrchestrator = PurchasesOrchestrator(
             productsManager: self.mockProductsManager,
@@ -374,7 +375,8 @@ class BasePurchasesTests: TestCase {
                                    healthManager: healthManager,
                                    transactionMetadataSyncHelper: transactionMetadataSyncHelper,
                                    currentConfiguration: nil,
-                                   webBundleEventBus: webBundleEventBus)
+                                   webBundleEventBus: webBundleEventBus,
+                                   storefrontCountryCodeProvider: storefrontCountryCodeProvider)
 
         self.purchasesOrchestrator.delegate = self.purchases
 

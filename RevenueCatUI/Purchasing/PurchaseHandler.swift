@@ -60,6 +60,10 @@ final class PurchaseHandler: ObservableObject {
         return purchases.isUIPreviewMode
     }
 
+    var storefrontCountryCode: String? {
+        return purchases.storefrontCountryCode
+    }
+
     var preferredLocaleOverride: Locale? {
         return purchases.preferredLocaleOverride.map(Locale.init)
     }
@@ -1138,6 +1142,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     var preferredLocaleOverride: String? { nil }
 
     var isUIPreviewMode: Bool { false }
+
+    var storefrontCountryCode: String? { nil }
 
     var remoteConfigEnabled: Bool { false }
 

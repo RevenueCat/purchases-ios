@@ -23,6 +23,15 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
+    func testSharedInstanceLoadsStorefrontCountryCodeDuringInitialization() {
+        self.initializePurchasesInstance(
+            appUserId: Self.appUserID,
+            storefrontCountryCodeProvider: { "USA" }
+        )
+
+        expect(Purchases.shared.storefrontCountryCode).toEventually(equal("USA"))
+    }
+
     func testRemoteConfigRefreshesDuringLifecycleCacheUpdatesByDefault() {
         self.setupPurchases()
 
