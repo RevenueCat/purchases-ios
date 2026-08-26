@@ -235,7 +235,7 @@
     },
     {
       "id": "lt_orders_strings_by_utf16_code_unit",
-      "description": "An astral character's leading surrogate sorts below a BMP scalar above the surrogate range, as in JS and Kotlin; Swift's < reverses these",
+      "description": "Strings order as UTF-16 code units: an astral character starts with a leading surrogate, which sorts below any code unit above the surrogate range",
       "predicate": { "<": ["\uff21", "\ud83d\ude00"] },
       "variables": {},
       "expected": false
@@ -253,15 +253,15 @@
       "expected": false
     },
     {
-      "id": "lt_below_the_surrogate_range_matches_scalar_order",
-      "description": "ASCII sorts before an astral character either way",
+      "id": "lt_code_unit_below_the_surrogate_range_sorts_first",
+      "description": "Control case: an ASCII code unit sorts below a leading surrogate",
       "predicate": { "<": ["Z", "\ud83d\ude00"] },
       "variables": {},
       "expected": true
     },
     {
       "id": "le_canonically_equivalent_strings_are_not_equal",
-      "description": "Swift reads these as equal, which would make both <= and >= true",
+      "description": "The two spellings of e-acute are distinct strings, so exactly one of <= and >= can hold",
       "predicate": { "<=": ["\u00e9", "e\u0301"] },
       "variables": {},
       "expected": false

@@ -97,7 +97,7 @@
     },
     {
       "id": "strict_eq_distinguishes_canonically_equivalent_strings",
-      "description": "JS and Kotlin compare code units, so the two spellings of e-acute are different strings; Swift's == reads them as equal",
+      "description": "Strings compare as UTF-16 code units, so the two spellings of e-acute are different strings even though they render the same",
       "predicate": { "===": ["\u00e9", "e\u0301"] },
       "variables": {},
       "expected": false

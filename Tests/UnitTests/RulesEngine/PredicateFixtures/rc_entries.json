@@ -158,7 +158,7 @@
     },
     {
       "id": "entries_keys_sort_by_utf16_code_unit",
-      "description": "An astral key sorts before a BMP one above the surrogate range, the way sorting keys in JS or Kotlin would",
+      "description": "Keys sort as UTF-16 code units: an astral key starts with a leading surrogate, which sorts below any code unit above the surrogate range",
       "predicate": {"some": [[{"rc.entries": [{"var": "o"}]}], {"and": [{"===": [{"var": "0.0"}, "\ud83d\ude00"]}, {"===": [{"var": "1.0"}, "\uff21"]}]}]},
       "variables": {"o": {"\uff21": 1, "\ud83d\ude00": 2}},
       "expected": true

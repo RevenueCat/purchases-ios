@@ -28,7 +28,7 @@
     },
     {
       "id": "length_string_uses_utf16_code_units_not_grapheme_clusters",
-      "description": "Waving-hand emoji is one Swift grapheme cluster (.count == 1) but two UTF-16 code units, matching JS String.length",
+      "description": "Waving-hand emoji is a single grapheme cluster but two UTF-16 code units, and String.length counts code units",
       "predicate": {
         "===": [
           {
