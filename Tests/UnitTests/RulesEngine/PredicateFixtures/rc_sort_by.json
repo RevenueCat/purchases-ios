@@ -120,6 +120,20 @@
       "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
     },
     {
+      "id": "sort_by_nan_key_is_a_type_error",
+      "description": "Negating a string key is the natural way to attempt a descending sort by date; it yields NaN, which would tie with everything and hand back the input unsorted",
+      "predicate": {"rc.sortBy": [{"var": "subs"}, {"-": [0, {"var": "expires"}]}]},
+      "variables": {"subs": [{"expires": "2026-03-09"}, {"expires": "2026-01-02"}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_infinite_key_is_a_type_error",
+      "description": "A non-finite key means the key arithmetic went wrong, so it is refused alongside NaN",
+      "predicate": {"rc.sortBy": [{"var": "xs"}, {"/": [{"var": "k"}, 0]}]},
+      "variables": {"xs": [{"k": 1}, {"k": 2}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
       "id": "sort_by_missing_key_fails_at_the_lookup",
       "description": "An item without the key is caught by var before rc.sortBy compares anything",
       "predicate": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]},
