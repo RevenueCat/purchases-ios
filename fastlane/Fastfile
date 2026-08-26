@@ -2556,25 +2556,23 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
-      # Announcing only from main keeps the feed to one post per change.
-      announcement = if on_main
-                       notify_api_changes_on_slack(
-                         reports_by_target: reports_by_target,
-                         breaks: all_breaks,
-                         labels: labels
-                       )
-                     else
-                       { fingerprint: nil, notice: nil }
-                     end
-      schemes.each do |scheme|
-        upsert_api_diff_comment(
-          scheme: scheme,
-          reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
-          breaks: breaks_by_scheme.fetch(scheme, []),
-          labels: labels,
-          notice: announcement[:notice],
-          announced_fingerprint: announcement[:fingerprint]
+      # main carries no pull request to comment on, and announcing only from there keeps the
+      # feed to one post per change.
+      if on_main
+        notify_api_changes_on_slack(
+          reports_by_target: reports_by_target,
+          breaks: all_breaks,
+          labels: labels
         )
+      else
+        schemes.each do |scheme|
+          upsert_api_diff_comment(
+            scheme: scheme,
+            reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
+            breaks: breaks_by_scheme.fetch(scheme, []),
+            labels: labels
+          )
+        end
       end
     rescue StandardError => e
       UI.important("Could not publish the API diff report: #{e.message}")

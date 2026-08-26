@@ -1871,13 +1871,20 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
   end
 
-  def test_the_announcement_happens_before_the_comment_is_written
+  # main has no pull request to comment on, and a PR run does not announce, so the two are
+  # exclusive. Nothing carries state from the announcement into the comment any more.
+  def test_main_announces_and_a_pull_request_comments
     lane = File.read(File.expand_path("Fastfile", __dir__))
     publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
 
     refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
-    assert_operator publishing.index("upsert_api_diff_comment"), :>, publishing.index("notify_api_changes_on_slack"),
-                    "the comment must be written after the announcement it records"
+    announcing, commenting = publishing.split("else", 2)
+
+    assert_match(/if on_main/, announcing)
+    assert_match(/notify_api_changes_on_slack/, announcing)
+    refute_match(/upsert_api_diff_comment/, announcing, "main has no pull request to comment on")
+    assert_match(/upsert_api_diff_comment/, commenting)
+    refute_match(/notify_api_changes_on_slack/, commenting, "a PR run must not reach the feed")
   end
 
 
@@ -1896,12 +1903,10 @@ class ApiDiffHelperTest < Minitest::Test
   # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
   def test_slack_is_announced_only_on_main
     lane = File.read(File.expand_path("Fastfile", __dir__))
-    announce = lane[/announcement = if on_main.*?\n                     end\n/m]
+    slack_call = lane[/^\s*(if on_main\n)?\s*notify_api_changes_on_slack\(/]
 
-    refute_nil announce, "the Slack announcement is no longer gated on main; update this test"
-    assert_match(/notify_api_changes_on_slack/, announce)
-    assert_match(/\{ fingerprint: nil, notice: nil \}/, announce,
-                 "a PR run still needs an announcement shape for the comment")
+    refute_nil slack_call, "the notify_api_changes_on_slack call moved; update this test"
+    assert_match(/if on_main/, slack_call, "the announcement is no longer gated on main")
   end
 
   # main carries no PR to hold the label, so the gate there would fail changes the PR approved.
