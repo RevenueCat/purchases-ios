@@ -44,7 +44,25 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
 }
 
-/// Base class for the terminal result of a checkpoint-presented paywall.
+/// Base class for the terminal outcome of a checkpoint-presented paywall.
+///
+/// Inspect the concrete outcome type to determine how the paywall finished:
+///
+/// ```swift
+/// switch result.paywallOutcome {
+/// case let outcome as CheckpointPaywallPurchasedOutcome:
+///     handlePurchase(outcome.customerInfo)
+/// case let outcome as CheckpointPaywallRestoredOutcome:
+///     handleRestore(outcome.customerInfo)
+/// case is CheckpointPaywallDismissedOutcome:
+///     handleDismissal()
+/// case let outcome as CheckpointPaywallErrorOutcome:
+///     handleError(outcome.error)
+/// default:
+///     // Handle outcome types added in future SDK versions.
+///     break
+/// }
+/// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {

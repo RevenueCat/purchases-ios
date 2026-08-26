@@ -136,7 +136,25 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
 }
 
-/// Base class for the result of hitting a checkpoint.
+/// Base class for the result of evaluating a checkpoint.
+///
+/// Inspect the concrete result type to determine what happened:
+///
+/// ```swift
+/// let result = try await Purchases.shared.checkpoint("onboarding_complete")
+///
+/// switch result {
+/// case let result as CheckpointPaywallPresentedResult:
+///     handlePaywallOutcome(result.paywallOutcome)
+/// case let result as CheckpointReceivedOfferingResult:
+///     showOffering(result.offering)
+/// case let result as CheckpointNoActionResult:
+///     handleNoAction(result.reason)
+/// default:
+///     // Handle result types added in future SDK versions.
+///     break
+/// }
+/// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
@@ -230,13 +248,21 @@ public final class CheckpointReceivedOfferingResult: CheckpointResult {
 }
 
 /// Global listener for checkpoint activity. All methods are called on the main thread.
+///
+/// ``CheckpointListener/onCheckpointHit(_:)`` is called before evaluation starts. After evaluation and any
+/// presented UI finish, ``CheckpointListener/onCheckpointCompleted(_:result:)`` is called before the per-call
+/// checkpoint API delivers its result.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol CheckpointListener: AnyObject {
 
-    /// A checkpoint was hit, before evaluation.
+    /// A checkpoint was hit and evaluation is about to start.
+    ///
+    /// This does not indicate that a targeting rule matched or that UI will be presented.
     func onCheckpointHit(_ checkpoint: CheckpointInfo)
-    /// The checkpoint completed and its result was returned.
+    /// Checkpoint evaluation and any presented UI finished.
+    ///
+    /// This is called before the per-call checkpoint API delivers its result.
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult)
 
 }
