@@ -582,46 +582,16 @@ module ApiDiffHelper
     end
   end
 
-  def announced_marker(fingerprint)
-    "<!-- api-diff-announced:#{fingerprint} -->"
-  end
-
-  def announcement_fingerprint(message)
-    Digest::SHA256.hexdigest(message.to_s)[0, 12]
-  end
-
-  ANNOUNCED_MARKER_PATTERN = /<!-- api-diff-announced:([0-9a-f]+) -->/.freeze
-
-  # The marker records the last summary that reached the channel, which a run with nothing to
-  # announce, or one whose post failed, did not change.
-  def announced_fingerprint_in(comment_body, module_name)
-    open_tag = Regexp.escape(api_diff_section_open(module_name))
-    close_tag = Regexp.escape(api_diff_section_close(module_name))
-    section = comment_body.to_s[/#{open_tag}.*?#{close_tag}/m]
-
-    section && ANNOUNCED_MARKER_PATTERN.match(section)&.captures&.first
-  end
-
-  # The comment body is only read for :unknown, so the caller passes a block that fetches it.
-  def already_announced?(state, fingerprint)
-    return true if state == :same
-    return false unless state == :unknown
-
-    yield.to_s.include?(announced_marker(fingerprint))
-  end
-
   def comment_needed?(reports_by_target, breaks, existing_body, module_name)
     return true if breaks.any? || changed_modules(reports_by_target).any?
 
     existing_body.to_s.include?(api_diff_section_open(module_name))
   end
 
-  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil, announced_fingerprint: nil)
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil)
     inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
-    parts = [api_diff_section_open(module_name), inner]
-    parts << announced_marker(announced_fingerprint) if announced_fingerprint
 
-    (parts << api_diff_section_close(module_name)).join("\n")
+    [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
   end
 
   def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil, notice: nil)

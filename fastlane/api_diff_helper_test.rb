@@ -1550,15 +1550,6 @@ class ApiDiffHelperTest < Minitest::Test
     assert_equal "slack is down", unusable
   end
 
-  def test_announcement_fingerprint_moves_with_the_summary
-    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
-
-    assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
-    refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
-  end
-
   def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
     refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
     refute ApiDiffHelper.comment_needed?({}, [], "<!-- api-diff-report -->", "RevenueCat")
@@ -1578,62 +1569,13 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
   end
 
-  def test_announced_fingerprint_survives_a_run_with_nothing_to_announce
-    announced = ApiDiffHelper.merge_api_diff_comment(
-      nil, "RevenueCat",
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "abc123abc123")
-    )
-
-    assert_equal "abc123abc123", ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCat")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCatUI")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(nil, "RevenueCat")
-  end
-
-  # Another module's marker must not be mistaken for this module's.
-  def test_announced_fingerprint_is_read_from_this_modules_section
-    body = [
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], []),
-      ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [], announced_fingerprint: "def456def456")
-    ].join("\n")
-
-    assert_nil ApiDiffHelper.announced_fingerprint_in(body, "RevenueCat")
-    assert_equal "def456def456", ApiDiffHelper.announced_fingerprint_in(body, "RevenueCatUI")
-  end
-
-  def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
-    body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
-
-    assert ApiDiffHelper.already_announced?(:same, "def456def456") { raise "must not read" }
-    refute ApiDiffHelper.already_announced?(:different, "abc123abc123") { raise "must not read" }
-    assert ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "def456def456") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { nil }
-  end
-
-  def test_comment_section_carries_the_announced_fingerprint
+  def test_comment_section_is_closed_after_its_body
     section = ApiDiffHelper.api_diff_comment_section(
-      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
+      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], []
     )
 
-    assert_includes section, ApiDiffHelper.announced_marker("abc123abc123")
+    assert section.start_with?(ApiDiffHelper.api_diff_section_open("RevenueCat"))
     assert section.rstrip.end_with?(ApiDiffHelper.api_diff_section_close("RevenueCat"))
-  end
-
-  def test_comment_section_omits_the_marker_when_nothing_was_announced
-    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
-
-    refute_includes section, "api-diff-announced"
-  end
-
-  def test_merging_a_section_replaces_a_stale_fingerprint
-    announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
-    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
-    reannounced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "bbbbbbbbbbbb")
-
-    merged = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", reannounced)
-
-    assert_includes merged, ApiDiffHelper.announced_marker("bbbbbbbbbbbb")
-    refute_includes merged, ApiDiffHelper.announced_marker("aaaaaaaaaaaa")
   end
 
 
