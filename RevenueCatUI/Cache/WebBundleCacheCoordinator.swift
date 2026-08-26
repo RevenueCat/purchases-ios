@@ -56,7 +56,7 @@ final class WebBundleCacheCoordinator {
     #endif
 
     /// Production coordinator that retires identifiers and sweeps on a later main-thread pass.
-    static let shared = WebBundleCacheCoordinator(store: .init(), cacheWarmer: .init(), bus: .shared)
+    static let shared = WebBundleCacheCoordinator(store: .shared, cacheWarmer: .init(), bus: .shared)
 
     @MainActor
     private func scheduleSweep() async {

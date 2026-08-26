@@ -117,13 +117,19 @@ final class WebViewInstanceTests: TestCase {
     func testDroppingTheViewModelReleasesTheInstanceAndItsWebView() throws {
         weak var instance: WebViewInstance?
         weak var webView: WKWebView?
+        let uuid = UUID().uuidString
+        let defaults = UserDefaults(suiteName: uuid).unsafelyUnwrapped
+        let store = WebViewDataStoreIdentifierStore(userDefaults: defaults)
 
+        addTeardownBlock {
+            defaults.removePersistentDomain(forName: uuid)
+        }
         try autoreleasepool {
             let viewModel = Self.makeViewModel()
             let owned = try XCTUnwrap(viewModel.webViewInstance())
             let ownedWebView = owned.webView { WKWebView(frame: .zero) }
             // Built through the real representable so the coordinator's captures are the shipping ones.
-            _ = WebViewRepresentable(url: Self.url, instance: owned).makeCoordinator()
+            _ = WebViewRepresentable(url: Self.url, instance: owned, idStore: store).makeCoordinator()
 
             instance = owned
             webView = ownedWebView

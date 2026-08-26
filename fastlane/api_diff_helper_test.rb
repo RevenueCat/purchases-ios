@@ -409,6 +409,52 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/merge base/, error.message)
   end
 
+  def test_current_branch_prefers_the_ci_variable
+    with_circle_branch("main") do
+      assert_equal "main", ApiDiffHelper.current_branch(runner: ->(*_c) { "detached\n" })
+    end
+  end
+
+  def test_current_branch_falls_back_to_git
+    with_circle_branch(nil) do
+      runner = ->(*command) { command == ["git", "rev-parse", "--abbrev-ref", "HEAD"] ? "my-branch\n" : "" }
+
+      assert_equal "my-branch", ApiDiffHelper.current_branch(runner: runner)
+    end
+  end
+
+  # On main the merge base is HEAD, so reusing it would compare the commit against itself.
+  def test_comparison_base_on_main_is_the_previous_commit
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "headsha\n"
+      end
+    end
+
+    assert_equal "prevsha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: "main")
+  end
+
+  def test_comparison_base_off_main_stays_the_merge_base
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "forksha\n"
+      end
+    end
+
+    ["my-branch", "release/5.86.0", "gh-readonly-queue/main/pr-1-abc"].each do |branch|
+      assert_equal "forksha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: branch)
+    end
+  end
+
+  # A root commit would otherwise diff the whole API in as new.
+  def test_previous_commit_raises_when_empty
+    error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_previous_commit(runner: ->(*_c) { "\n" }) }
+
+    assert_match(/before HEAD/, error.message)
+  end
+
   def test_extract_baselines_writes_one_file_per_platform
     Dir.mktmpdir do |dir|
       runner = ->(*command) { "public func fromMergeBase()\n// #{command.last}\n" }
@@ -1333,7 +1379,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
 
-    assert message.start_with?(":warning: *Breaking public API changes*")
+    assert message.start_with?(":warning: *Breaking public API landed on main*")
     assert_includes message, "<url|#42> Some PR"
     assert_includes message, "1 potential break"
   end
@@ -1341,7 +1387,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_leads_with_new_api_when_nothing_breaks
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "2 new declarations"
   end
 
@@ -1689,7 +1735,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
 
-    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
+    assert message.start_with?(":pencil2: *Public API changed on main* · iOS :ios: · `RevenueCat`")
     assert_includes message, "1 modification"
     assert_includes message, "~ added @available(*, deprecated…): "
     assert_includes message, "purchaseDate(forEntitlement"
@@ -1726,7 +1772,7 @@ class ApiDiffHelperTest < Minitest::Test
       [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
     )
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "1 new declaration, 1 modification"
     assert_includes message, "+ public func a()"
     assert_includes message, "~ added @available"
@@ -1735,7 +1781,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
-    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+    assert message.start_with?(":sparkles: *New public API landed on main* · iOS :ios: · `RevenueCatUI`")
   end
 
   def test_changed_modules_names_only_the_schemes_that_changed
@@ -1835,7 +1881,50 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  # A rerun of the same main job must not post twice, and last_announcement bails on an empty
+  # source, so the commit link is what keeps the suppression alive.
+  def test_the_announcement_source_is_the_commit
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
+
+    refute_nil link, "the api_gate_commit_link lane moved; update this test"
+    assert_match(%r{/commit/}, link, "the message links the commit, not the PR")
+    assert_match(/next "" if sha\.empty\?/, link)
+    refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
+  end
+
+  # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
+  def test_slack_is_announced_only_on_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    announce = lane[/announcement = if on_main.*?\n                     end\n/m]
+
+    refute_nil announce, "the Slack announcement is no longer gated on main; update this test"
+    assert_match(/notify_api_changes_on_slack/, announce)
+    assert_match(/\{ fingerprint: nil, notice: nil \}/, announce,
+                 "a PR run still needs an announcement shape for the comment")
+  end
+
+  # main carries no PR to hold the label, so the gate there would fail changes the PR approved.
+  def test_the_breaking_change_gate_cannot_redden_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    gate = lane[/if ApiDiffHelper\.gate_blocked\?.*?\n    end\n/m]
+
+    refute_nil gate, "the gate section of check_api_changes moved; update this test"
+    assert_match(/if on_main/, gate, "main must not fail the gate")
+    assert_operator gate.index("if on_main"), :<, gate.index("UI.user_error!"),
+                    "the main branch of the gate must come before the failure"
+  end
+
+
   # --- Attribute additions: allowlist, not denylist ---
+
+  def with_circle_branch(value)
+    previous = ENV["CIRCLE_BRANCH"]
+    ENV["CIRCLE_BRANCH"] = value
+    yield
+  ensure
+    ENV["CIRCLE_BRANCH"] = previous
+  end
 
   def modification_adding(attribute)
     "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Added attribute `#{attribute}`\n*/"
