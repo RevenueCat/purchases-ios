@@ -28,12 +28,23 @@ enum PaywallFixture: String, CaseIterable {
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
 
+    /// Every base currency and price variable, one per line, on a product whose displayed price
+    /// spells the currency with its ISO code the way the Ukraine storefront does.
+    case priceVariables = "price_variables"
+
+    /// The offer-price variables, on the same product with a paid introductory offer.
+    case offerPriceVariables = "offer_price_variables"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
             return "Icon-only button"
         case .mixedTabsPageDefault:
             return "Mixed page and tab packages"
+        case .priceVariables:
+            return "Price variables"
+        case .offerPriceVariables:
+            return "Offer price variables"
         }
     }
 
@@ -43,6 +54,16 @@ enum PaywallFixture: String, CaseIterable {
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
             return Self.mixedTabsPageDefaultComponentsData()
+        case .priceVariables:
+            return Self.variableListComponentsData(
+                templateName: "fixture-price-variables",
+                variables: Self.priceVariableNames
+            )
+        case .offerPriceVariables:
+            return Self.variableListComponentsData(
+                templateName: "fixture-offer-price-variables",
+                variables: Self.offerPriceVariableNames
+            )
         }
     }
 
@@ -58,6 +79,10 @@ enum PaywallFixture: String, CaseIterable {
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
             ]
+        case .priceVariables:
+            return [Self.isoCodePricePackage(offeringIdentifier: self.rawValue, withOffer: false)]
+        case .offerPriceVariables:
+            return [Self.isoCodePricePackage(offeringIdentifier: self.rawValue, withOffer: true)]
         }
     }
 
@@ -95,6 +120,114 @@ private extension PaywallFixture {
         ],
         variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
     )
+
+    /// Every base currency and price variable, in the order they render.
+    static let priceVariableNames = [
+        "product.currency_code",
+        "product.currency_symbol",
+        "product.price",
+        "product.price_per_period",
+        "product.price_per_period_abbreviated",
+        "product.price_per_day",
+        "product.price_per_week",
+        "product.price_per_month",
+        "product.price_per_year",
+        "product.periodly"
+    ]
+
+    /// The offer-price variables, which read the discount rather than the product.
+    static let offerPriceVariableNames = [
+        "product.currency_symbol",
+        "product.offer_price",
+        "product.offer_price_per_day",
+        "product.offer_price_per_week",
+        "product.offer_price_per_month",
+        "product.offer_price_per_year",
+        "product.secondary_offer_price"
+    ]
+
+    /// An annual product priced the way the Ukraine storefront presents USD: Apple's displayed
+    /// price spells the currency `USD`, while the product's `NumberFormatter` spells it `US$`.
+    /// Those two spellings are what the price variables disagree over, so every rendered value
+    /// below is pinned against a real divergence rather than a tidy `$4.99`.
+    static func isoCodePricePackage(offeringIdentifier: String, withOffer: Bool) -> Package {
+        let introductoryOffer = TestStoreProductDiscount(
+            identifier: "intro",
+            price: 9.99,
+            localizedPriceString: "9,99 USD",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            numberOfPeriods: 1,
+            type: .introductory
+        )
+
+        let product = TestStoreProduct(
+            localizedTitle: "Annual",
+            price: 79.99,
+            currencyCode: "USD",
+            localizedPriceString: "79,99 USD",
+            productIdentifier: "com.revenuecat.fixtures.iso_code_annual",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Annual plan",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            introductoryDiscount: withOffer ? introductoryOffer : nil,
+            locale: Locale(identifier: "en_UA")
+        )
+
+        return Package(
+            identifier: "$rc_annual",
+            packageType: .annual,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: offeringIdentifier,
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// One text row per variable, each rendered as `name=value` so a UI test reads the resolved
+    /// value straight off the accessibility tree.
+    static func variableListComponentsData(
+        templateName: String,
+        variables: [String]
+    ) -> PaywallComponentsData {
+        // Price variables resolve against the selected package, so a paywall with no package
+        // component renders every one of them empty. The card supplies that context.
+        let rows: [PaywallComponent] = [
+            Self.packageCard(packageID: "$rc_annual", label: "annual", isSelectedByDefault: true)
+        ] + variables.map { name in
+            .text(.init(
+                text: name,
+                color: .init(light: .hex("#000000")),
+                fontSize: 13
+            ))
+        }
+
+        var localizations = variables.reduce(into: PaywallComponent.LocalizationDictionary()) {
+            $0[$1] = .string("\($1)={{ \($1) }}")
+        }
+        localizations["annual"] = .string("Annual")
+        localizations["annual_selected"] = .string("Annual selected")
+
+        return .init(
+            templateName: templateName,
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: rows,
+                    dimension: .vertical(.leading, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 6,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: ["en_US": localizations],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
 
     static func monthlyPackage(offeringIdentifier: String) -> Package {
         let product = TestStoreProduct(
