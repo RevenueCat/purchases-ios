@@ -71,6 +71,25 @@
       "expected": true
     },
     {
+      "id": "slice_integral_float_start_is_accepted",
+      "description": "A literal whole-valued float is an index, not a fractional one",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 2.0]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_negative_integral_float_start_is_accepted",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], -2.0]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "slice_integral_float_length_is_accepted",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 0, 2.0]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "a"]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "slice_preserves_element_types",
       "description": "Elements come through untouched, unlike rc.split which always yields strings",
       "predicate": {"some": [[{"rc.slice": [{"var": "xs"}, 1, 1]}], {"===": [{"var": "0"}, 2]}]},
@@ -101,6 +120,26 @@
       "id": "slice_object_source_is_a_type_error",
       "description": "A keyed object has no positions to slice; rc.entries is the way in",
       "predicate": {"rc.slice": [{"a": 1, "b": 2}, 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_number_source_is_a_type_error",
+      "description": "substr would stringify the number first; nothing here is sliceable",
+      "predicate": {"rc.slice": [12345, 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_bool_source_is_a_type_error",
+      "predicate": {"rc.slice": [true, 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_null_source_is_a_type_error",
+      "description": "A field that resolved to null is a broken rule, not an empty slice",
+      "predicate": {"rc.slice": [null, 1]},
       "variables": {},
       "expected": {"error": "typeMismatch", "operator": "rc.slice"}
     },
@@ -140,6 +179,46 @@
     {
       "id": "slice_null_start_is_a_type_error",
       "predicate": {"rc.slice": [["a", "b"], null]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_non_numeric_string_start_is_a_type_error",
+      "description": "substr sends a string with no number in it to 0; this refuses instead",
+      "predicate": {"rc.slice": [["a", "b"], "abc"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_bool_start_is_a_type_error",
+      "description": "substr reads true as 1; a boolean index is a lowering bug here",
+      "predicate": {"rc.slice": [["a", "b"], true]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_negative_fractional_start_is_a_type_error",
+      "description": "substr truncates toward zero, so -1.5 would silently mean -1",
+      "predicate": {"rc.slice": [["a", "b", "c"], -1.5]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_numeric_string_length_is_a_type_error",
+      "description": "substr would read \"1\" as 1; the length argument is no laxer than the start",
+      "predicate": {"rc.slice": [["a", "b", "c"], 0, "1"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_null_length_is_a_type_error",
+      "predicate": {"rc.slice": [["a", "b", "c"], 0, null]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_bool_length_is_a_type_error",
+      "predicate": {"rc.slice": [["a", "b", "c"], 0, true]},
       "variables": {},
       "expected": {"error": "typeMismatch", "operator": "rc.slice"}
     },
