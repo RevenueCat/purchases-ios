@@ -566,12 +566,8 @@ extension VariablesV2 {
 
         // The displayed token can be the ISO code rather than a symbol (e.g. "24,99 USD"),
         // so fall back to the currency's narrow symbol, which is never a code.
-        //
-        // Right-to-left locales wrap the price in bidirectional marks, so the token can arrive as
-        // `<LRM>RUB`. Compare without them, or the code goes unrecognized and renders as-is.
         if let displayedToken, let currencyCode = product.currencyCode,
-           displayedToken.trimmingCharacters(in: .currencyTokenPadding)
-            .caseInsensitiveCompare(currencyCode) == .orderedSame {
+           displayedToken.caseInsensitiveCompare(currencyCode) == .orderedSame {
             return self.narrowCurrencySymbol(currencyCode: currencyCode,
                                              locale: product.priceFormatter?.locale) ?? displayedToken
         }
@@ -588,8 +584,7 @@ extension VariablesV2 {
                 .presentation(.narrow)
                 .locale(locale ?? .autoupdatingCurrent)
             )
-            .currencySymbolFromPriceString?
-            .trimmingCharacters(in: .currencyTokenPadding)
+            .currencySymbolFromPriceString
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
@@ -1153,7 +1148,7 @@ private extension String {
         }
 
         let symbol = "\(self[..<firstDigit])\(self[self.index(after: lastDigit)...])"
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .currencyTokenPadding)
 
         return symbol.isEmpty ? nil : symbol
     }
