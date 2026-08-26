@@ -250,7 +250,7 @@ final class CheckpointsManagerTests: TestCase {
             guard case let .success(noAction as CheckpointNoActionResult) = result else {
                 return XCTFail("Expected a no-action result")
             }
-            XCTAssertEqual(noAction.reason, .disabled)
+            XCTAssertEqual(noAction.reason, .configurationUnavailable)
             completion.fulfill()
         }
 

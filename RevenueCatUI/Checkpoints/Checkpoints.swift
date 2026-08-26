@@ -114,10 +114,8 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
     public static let holdout = CheckpointNoActionReason(value: "HOLDOUT")
     /// The customer reached the configured frequency cap.
     public static let frequencyCapped = CheckpointNoActionReason(value: "FREQUENCY_CAPPED")
-    /// Checkpoint configuration could not be loaded.
+    /// The checkpoint could not be evaluated because required configuration or resources were unavailable.
     public static let configurationUnavailable = CheckpointNoActionReason(value: "CONFIGURATION_UNAVAILABLE")
-    /// Checkpoints are disabled.
-    public static let disabled = CheckpointNoActionReason(value: "DISABLED")
     /// The checkpoint identifier is not configured.
     public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
     /// The checkpoint identifier is invalid.
