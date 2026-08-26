@@ -73,6 +73,32 @@
       "predicate": { "in": ["only-one"] },
       "variables": {},
       "expected": false
+    },
+    {
+      "id": "in_string_haystack_does_not_match_a_different_spelling",
+      "description": "indexOf searches code units, so a precomposed needle is absent from a decomposed haystack",
+      "predicate": { "in": ["\u00e9", "xe\u0301y"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_array_haystack_does_not_match_a_different_spelling",
+      "predicate": { "in": ["\u00e9", ["e\u0301"]] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "in_empty_needle_matches_a_non_empty_string_haystack",
+      "description": "JS 'abcd'.indexOf('') is 0, so the operator matches",
+      "predicate": { "in": ["", "abcd"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "in_astral_needle_matches_a_string_haystack",
+      "predicate": { "in": ["\ud83d\ude00", "a\ud83d\ude00b"] },
+      "variables": {},
+      "expected": true
     }
   ]
 }

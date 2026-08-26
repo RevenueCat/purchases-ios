@@ -94,6 +94,32 @@
       "predicate": { "===": [null] },
       "variables": {},
       "expected": false
+    },
+    {
+      "id": "strict_eq_distinguishes_canonically_equivalent_strings",
+      "description": "JS and Kotlin compare code units, so the two spellings of e-acute are different strings; Swift's == reads them as equal",
+      "predicate": { "===": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_ne_distinguishes_canonically_equivalent_strings",
+      "predicate": { "!==": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "loose_eq_distinguishes_canonically_equivalent_strings",
+      "predicate": { "==": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_eq_matches_the_same_spelling",
+      "description": "Identical code units still compare equal",
+      "predicate": { "===": ["\u00e9", "\u00e9"] },
+      "variables": {},
+      "expected": true
     }
   ]
 }
