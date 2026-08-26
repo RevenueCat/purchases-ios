@@ -759,15 +759,9 @@ module ApiDiffHelper
   end
 
 
-  def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
-    unless webhook_url.to_s.empty?
-      return {
-        url: webhook_url,
-        headers: { "Content-Type" => "application/json" },
-        body: { text: message }
-      }
-    end
-
+  # A bot token only, no webhook: conversations.history is what suppresses a rerun, and a webhook
+  # cannot read the channel.
+  def slack_post_request(message, bot_token:, channel:)
     return nil if bot_token.to_s.empty? || channel.to_s.empty?
 
     {
@@ -801,19 +795,17 @@ module ApiDiffHelper
     parsed["messages"].to_a.map { |message| message["text"].to_s }
   end
 
-  # conversations.history answers newest first, so the first match is the channel's last word. The
-  # trailing backtick in the identity keeps `RevenueCat` from matching `RevenueCatUI`.
-  def last_announcement(texts, source, modules)
+  # conversations.history answers newest first, so the first match is the channel's last word. One
+  # run posts once for every module, and the source is a commit sha, so it identifies the message.
+  def last_announcement(texts, source)
     return nil if source.to_s.empty?
 
-    identity = announcement_identity(modules)
-
-    texts.find { |text| text.include?(source) && text.include?(identity) }
+    texts.find { |text| text.include?(source) }
   end
 
-  # A webhook cannot read the channel, and conversations.history needs an ID rather than a name.
+  # conversations.history needs an ID rather than a name.
   # Returns [:same | :different | :unknown, why_unknown].
-  def announcement_state(message, bot_token:, channel:, source:, modules:, getter: nil)
+  def announcement_state(message, bot_token:, channel:, source:, getter: nil)
     return [:unknown, "no bot token, so the SDK API feed cannot be read"] if bot_token.to_s.empty?
 
     unless CHANNEL_ID.match?(channel.to_s)
@@ -821,7 +813,7 @@ module ApiDiffHelper
     end
 
     request = slack_history_request(channel, bot_token: bot_token)
-    last = last_announcement(recent_slack_messages(request, getter: getter), source, modules)
+    last = last_announcement(recent_slack_messages(request, getter: getter), source)
     return [:unknown, nil] if last.nil?
 
     [last == message ? :same : :different, nil]
@@ -836,7 +828,7 @@ module ApiDiffHelper
     response = poster.call(request[:url], request[:body].to_json, request[:headers])
     raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
 
-    # chat.postMessage answers 200 with ok:false, and a webhook answers with the bare string "ok".
+    # chat.postMessage answers 200 with ok:false.
     parsed = begin
       JSON.parse(response.body.to_s)
     rescue JSON::ParserError

@@ -1392,17 +1392,14 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
-  def test_slack_request_supports_webhook_or_bot_token
-    webhook = ApiDiffHelper.slack_post_request("hi", webhook_url: "https://hooks.example/abc")
-    assert_equal "https://hooks.example/abc", webhook[:url]
-    assert_equal({ text: "hi" }, webhook[:body])
-
+  # A webhook cannot read conversations.history, so accepting one would silently disable dedup.
+  def test_slack_request_needs_a_bot_token_and_a_channel
     bot = ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: "C1")
     assert_equal "https://slack.com/api/chat.postMessage", bot[:url]
     assert_equal "Bearer xoxb-t", bot[:headers]["Authorization"]
 
-    assert_nil ApiDiffHelper.slack_post_request("hi"), "no credential means no request"
-    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t"), "a bot token with no channel has nowhere to post"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "", channel: "C1"), "no token means no request"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: ""), "a bot token with no channel has nowhere to post"
   end
 
 
@@ -1442,8 +1439,8 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/channel_not_found/, error.message)
   end
 
-  # Incoming webhooks answer with the bare string "ok", which is not JSON.
-  def test_post_slack_message_accepts_a_non_json_webhook_body
+  # A 2xx that does not parse must not read as a rejection: only an explicit ok:false is one.
+  def test_post_slack_message_accepts_a_non_json_body
     poster = ->(_url, _body, _headers) { SlackResponse.new("200", "ok") }
 
     ApiDiffHelper.post_slack_message(slack_request, poster: poster)
@@ -1475,17 +1472,19 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/missing_scope/, error.message)
   end
 
-  def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
+  COMMIT_LINK = "<https://github.com/RevenueCat/purchases-ios/commit/abc1234|abc1234>".freeze
+
+  def announcement(declaration, source: COMMIT_LINK, modules: ["RevenueCat"])
     ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
   end
 
-  def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
+  def state_for(message, texts, source: COMMIT_LINK)
     ApiDiffHelper.announcement_state(
-      message, bot_token: "xoxb-1", channel: "C1", source: source, modules: modules, getter: history_getter(texts)
+      message, bot_token: "xoxb-1", channel: "C1", source: source, getter: history_getter(texts)
     )
   end
 
-  def test_announcement_state_recognises_the_last_word_on_this_pull_request
+  def test_announcement_state_recognises_the_last_word_on_this_commit
     summary = announcement("public func a()")
 
     state, unusable = state_for(summary, [summary, announcement("public func older()")])
@@ -1494,28 +1493,19 @@ class ApiDiffHelperTest < Minitest::Test
     assert_nil unusable
   end
 
-  def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
+  def test_announcement_state_is_different_when_the_same_commit_says_something_else
     summary = announcement("public func a()")
 
-    state, _unusable = state_for(summary, [announcement("public func b()"), summary])
+    state, _unusable = state_for(summary, [announcement("public func b()")])
 
     assert_equal :different, state
   end
 
-  def test_announcement_state_ignores_another_modules_announcement
-    summary = announcement("public func a()")
-    other_module = announcement("public func a()", modules: ["RevenueCatUI"])
-
-    state, unusable = state_for(summary, [other_module])
-
-    assert_equal :unknown, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_ignores_another_pull_requests_announcement
+  # The commit link is the whole dedup key, so a different commit must never read as a duplicate.
+  def test_announcement_state_ignores_another_commits_announcement
     summary = announcement("public func a()")
 
-    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|#7354>")])
+    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|deadbee>")])
 
     assert_equal :unknown, state
   end
@@ -1523,7 +1513,7 @@ class ApiDiffHelperTest < Minitest::Test
   # chat.postMessage takes a `#name`, conversations.history does not.
   def test_announcement_state_needs_the_channel_id
     state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "#feed", source: "<url|#1>", modules: ["RevenueCat"],
+      "summary", bot_token: "xoxb-1", channel: "#feed", source: COMMIT_LINK,
       getter: ->(*) { raise "must not read" }
     )
 
@@ -1533,7 +1523,7 @@ class ApiDiffHelperTest < Minitest::Test
 
   def test_announcement_state_reports_a_missing_token
     state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
+      "summary", bot_token: "", channel: "C1", source: COMMIT_LINK
     )
 
     assert_equal :unknown, state
@@ -1542,7 +1532,7 @@ class ApiDiffHelperTest < Minitest::Test
 
   def test_announcement_state_reports_a_failed_read
     state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"],
+      "summary", bot_token: "xoxb-1", channel: "C1", source: COMMIT_LINK,
       getter: ->(*) { raise "slack is down" }
     )
 
@@ -1789,7 +1779,7 @@ class ApiDiffHelperTest < Minitest::Test
 
 
   # The lane used to hand-roll the post. Keeping it in the helper is what puts the response
-  # handling (non-2xx, ok:false, non-JSON webhook body) under test at all.
+  # handling (non-2xx, ok:false, non-JSON body) under test at all.
   def test_the_slack_post_lives_in_the_helper_not_in_the_lane
     lane = File.read(File.expand_path("Fastfile", __dir__))
     slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
