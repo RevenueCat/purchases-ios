@@ -1,7 +1,6 @@
 # Helper module for API diff functionality
 # Used by generate_swiftinterface and check_api_changes lanes
 
-require 'digest'
 require 'fileutils'
 require 'json'
 require 'net/http'
@@ -685,7 +684,6 @@ module ApiDiffHelper
 
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
-  # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
   def announcement_identity(modules)
     [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
   end
