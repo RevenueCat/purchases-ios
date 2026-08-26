@@ -60,6 +60,7 @@ public extension Purchases {
     ///   - params: Optional per-call parameters.
     /// - Returns: The result for this checkpoint.
     /// - Throws: An error if checkpoint evaluation or presentation fails.
+    @discardableResult
     func checkpoint(
         _ identifier: String,
         params: CheckpointParams = .init()
