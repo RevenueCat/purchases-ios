@@ -27,32 +27,13 @@ extension CustomVariableValue {
 
 }
 
-/// Per-call parameters for a checkpoint.
-@_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
+final class CheckpointCallParams: @unchecked Sendable {
 
-    /// Custom variables usable in checkpoint targeting rules and feature events.
-    public let customVariables: [String: CustomVariableValue]
+    let customVariables: [String: CustomVariableValue]
 
-    /// Creates checkpoint parameters with the supplied custom variables.
-    public init(customVariables: [String: CustomVariableValue] = [:]) {
+    init(customVariables: [String: CustomVariableValue] = [:]) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
-    }
-
-    /// Returns whether two parameter collections contain the same custom variables.
-    public static func == (lhs: CheckpointParams, rhs: CheckpointParams) -> Bool {
-        return lhs.customVariables == rhs.customVariables
-    }
-
-    /// Hashes the checkpoint parameters.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.customVariables)
-    }
-
-    /// A debug description of the checkpoint parameters.
-    public var description: String {
-        return "CheckpointParams(customVariables=\(self.customVariables))"
     }
 
     var coreParams: RevenueCat.CheckpointParams {
@@ -70,16 +51,11 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
     public let identifier: String
 
     /// The custom variables supplied when the checkpoint was hit.
-    public var customVariables: [String: CustomVariableValue] {
-        return self.params.customVariables
-    }
+    public let customVariables: [String: CustomVariableValue]
 
-    private let params: CheckpointParams
-
-    /// Creates checkpoint information for an identifier and its parameters.
-    public init(identifier: String, params: CheckpointParams) {
+    init(identifier: String, params: CheckpointCallParams) {
         self.identifier = identifier
-        self.params = params
+        self.customVariables = params.customVariables
     }
 
     /// Returns whether two checkpoint information values are equal.

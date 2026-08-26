@@ -34,19 +34,12 @@ private enum CheckpointStrings: LogMessage {
 }
 #endif
 
-/// Objective-C-compatible checkpoint parameters.
-@_spi(CheckpointsInternal)
 @available(iOS 15.0, *)
-@objc(RCCheckpointParams)
-public final class ObjCCheckpointParams: NSObject {
+extension CheckpointCallParams {
 
-    let value: CheckpointParams
-
-    /// Creates checkpoint parameters from Objective-C Foundation primitive values. Unsupported values are dropped.
-    @objc(initWithCustomVariables:)
-    public init(customVariables: NSDictionary) {
+    convenience init(objectiveCCustomVariables: NSDictionary?) {
         var values: [String: CustomVariableValue] = [:]
-        for (rawKey, rawValue) in customVariables {
+        for (rawKey, rawValue) in objectiveCCustomVariables ?? [:] {
             guard let key = rawKey as? String,
                   let value = CustomVariableValue(foundationValue: rawValue) else {
                 #if DEBUG
@@ -56,19 +49,7 @@ public final class ObjCCheckpointParams: NSObject {
             }
             values[key] = value
         }
-        self.value = CheckpointParams(customVariables: values)
-        super.init()
-    }
-
-    init(_ value: CheckpointParams) {
-        self.value = value
-        super.init()
-    }
-
-    /// The custom variables as Objective-C Foundation primitive values.
-    @objc(customVariables)
-    public var customVariables: NSDictionary {
-        return self.value.customVariables.mapValues { $0.foundationValue } as NSDictionary
+        self.init(customVariables: values)
     }
 
 }

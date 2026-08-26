@@ -56,30 +56,31 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
-    let literalParams = CheckpointParams(customVariables: [
+    let literalCustomVariables: [String: CustomVariableValue] = [
         "name": "Rick",
         "points": 120,
         "score": 4.5,
         "subscriber": true
-    ])
-    let explicitParams = CheckpointParams(customVariables: [
+    ]
+    let explicitCustomVariables: [String: CustomVariableValue] = [
         "name": .string("Rick"),
         "points": .number(120),
         "score": .number(4.5),
         "subscriber": .bool(true)
-    ])
-    let _: [String: CustomVariableValue] = literalParams.customVariables
-    let _: [String: CustomVariableValue] = explicitParams.customVariables
+    ]
 
     purchases.checkpoint(
         "test_checkpoint",
-        params: literalParams
+        customVariables: literalCustomVariables
     ) { (_: Result<CheckpointResult, PublicError>) in }
 
     purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
 
     Task {
-        let _: CheckpointResult = try await purchases.checkpoint("test_checkpoint")
+        let _: CheckpointResult = try await purchases.checkpoint(
+            "test_checkpoint",
+            customVariables: explicitCustomVariables
+        )
     }
 
     let _: CheckpointNoActionReason = .noMatch

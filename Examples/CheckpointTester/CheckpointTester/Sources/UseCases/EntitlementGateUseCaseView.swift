@@ -90,7 +90,7 @@ struct EntitlementGateUseCaseView: View {
 
             let result = try await Purchases.shared.checkpoint(
                 "entitlement_gate",
-                params: self.entitlementCheckpointParams
+                customVariables: self.entitlementCheckpointCustomVariables
             )
             self.handle(result)
         } catch {
@@ -136,10 +136,10 @@ struct EntitlementGateUseCaseView: View {
             : "\(action), but no active entitlement was found."
     }
 
-    private var entitlementCheckpointParams: CheckpointParams {
-        var customVariables = self.customVariables.checkpointParams.customVariables
+    private var entitlementCheckpointCustomVariables: [String: CustomVariableValue] {
+        var customVariables = self.customVariables.checkpointCustomVariables
         customVariables["gate"] = .string("entitlement")
-        return CheckpointParams(customVariables: customVariables)
+        return customVariables
     }
 
     private static func activeEntitlementIdentifiers(from customerInfo: CustomerInfo) -> [String] {
