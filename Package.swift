@@ -127,7 +127,6 @@ let package = Package(
                 path: "RevenueCatUI",
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
-                    .copy("Resources/background.jpg"),
                     .process("Resources/icons.xcassets"),
                     .process("Resources/Media.xcassets")
                 ],

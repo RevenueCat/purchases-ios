@@ -164,6 +164,7 @@ import Foundation
             case expiresOnDateWithoutChanges = "expires_on_date_without_changes"
             case renewsOnDateForPrice = "renews_on_date_for_price"
             case renewsOnDate = "renews_on_date"
+            case renewsOnDateWithLastPaidPrice = "renews_on_date_with_last_paid_price"
             case priceAfterwards = "price_afterwards"
             case freeTrialUntilDate = "free_trial_until_date"
             case priceExpiresOnDateWithoutChanges = "price_expires_on_date_without_changes"
@@ -403,6 +404,8 @@ import Foundation
                     return "Renews on {{ date }} for {{ price }}."
                 case .renewsOnDate:
                     return "Renews on {{ date }}."
+                case .renewsOnDateWithLastPaidPrice:
+                    return "Renews on {{ date }}. Last paid {{ price }}."
                 case .priceAfterwards:
                     return "{{ price }} afterwards."
                 case .freeTrialUntilDate:

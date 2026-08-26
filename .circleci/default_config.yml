@@ -1,6 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  revenuecat: revenuecat/sdks-common-config@4.5.1
+  revenuecat: revenuecat/sdks-common-config@4.6.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -2054,7 +2054,7 @@ jobs:
           name: Update paywall templates
           command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
-  check-api-changes-revenuecat:
+  check-api-changes:
     executor:
       name: macos-executor
       xcode_version: *swiftinterface-xcode-version
@@ -2068,89 +2068,16 @@ jobs:
           name: Fetch main for the merge base
           command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
-          name: Generate RevenueCat swiftinterface
+          name: Generate swiftinterface
           command: |
-            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
+            bundle exec fastlane ios generate_swiftinterface
       - run:
-          name: Check RevenueCat API changes
+          name: Check API changes
           command: |
-            bundle exec fastlane ios check_api_changes scheme:RevenueCat
+            bundle exec fastlane ios check_api_changes
       - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
-          destination: revenuecat-api-ios-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-ios.swiftinterface
-          destination: revenuecat-api-ios.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-macos.swiftinterface
-          destination: revenuecat-api-macos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-watchos-simulator.swiftinterface
-          destination: revenuecat-api-watchos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-watchos.swiftinterface
-          destination: revenuecat-api-watchos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-tvos-simulator.swiftinterface
-          destination: revenuecat-api-tvos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface
-          destination: revenuecat-api-tvos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-visionos-simulator.swiftinterface
-          destination: revenuecat-api-visionos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-visionos.swiftinterface
-          destination: revenuecat-api-visionos.swiftinterface
-
-  check-api-changes-revenuecatui:
-    executor:
-      name: macos-executor
-      xcode_version: *swiftinterface-xcode-version
-    steps:
-      - checkout
-      - install-dependencies
-      # 0.12.0
-      - revenuecat/install-public-api-diff:
-          version: "06620ffe614773a43102ab8052077ae463908b78"
-      - run:
-          name: Fetch main for the merge base
-          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
-      - run:
-          name: Generate RevenueCatUI swiftinterface
-          command: |
-            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
-      - run:
-          name: Check RevenueCatUI API changes
-          command: |
-            bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-ios-simulator.swiftinterface
-          destination: revenuecatui-api-ios-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-ios.swiftinterface
-          destination: revenuecatui-api-ios.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-macos.swiftinterface
-          destination: revenuecatui-api-macos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos-simulator.swiftinterface
-          destination: revenuecatui-api-watchos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos.swiftinterface
-          destination: revenuecatui-api-watchos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos-simulator.swiftinterface
-          destination: revenuecatui-api-tvos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos.swiftinterface
-          destination: revenuecatui-api-tvos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos-simulator.swiftinterface
-          destination: revenuecatui-api-visionos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos.swiftinterface
-          destination: revenuecatui-api-visionos.swiftinterface
+          path: /tmp/pr-swiftinterface
+          destination: swiftinterface
 
   generate-swiftinterface:
     executor:
@@ -2310,11 +2237,7 @@ workflows:
       - lint:
           context:
             - slack-secrets
-      - check-api-changes-revenuecat:
-          context:
-            - slack-secrets-ios
-            - slack-secrets
-      - check-api-changes-revenuecatui:
+      - check-api-changes:
           context:
             - slack-secrets-ios
             - slack-secrets
@@ -2509,8 +2432,7 @@ workflows:
           requires:
             # Reduced Test Suite
             - lint
-            - check-api-changes-revenuecat
-            - check-api-changes-revenuecatui
+            - check-api-changes
             - run-test-ios-26
             - build-xcode-265
             - build-checkpoint-tester
@@ -2763,11 +2685,7 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
-      - check-api-changes-revenuecat:
-          context:
-            - slack-secrets-ios
-            - slack-secrets
-      - check-api-changes-revenuecatui:
+      - check-api-changes:
           context:
             - slack-secrets-ios
             - slack-secrets
@@ -2875,8 +2793,7 @@ workflows:
       # =============================================================
       - all-tests-succeeded:
           requires:
-            - check-api-changes-revenuecat
-            - check-api-changes-revenuecatui
+            - check-api-changes
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26

@@ -127,10 +127,12 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
     func testConfigCompletesWhileOfferingsHangsOnSeparateLane() throws {
         let systemInfo = MockSystemInfo(finishTransactions: true)
         let eTagManager = MockETagManager()
+        let tokenManager = MockTokenManager()
 
         func makeClient() -> HTTPClient {
             return HTTPClient(systemInfo: systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: tokenManager,
                               signing: MockSigning(),
                               diagnosticsTracker: nil,
                               networkTimeout: .custom(30),
@@ -202,6 +204,7 @@ final class BackendRemoteConfigLaneParallelTests: TestCase {
             systemInfo: systemInfo,
             httpClientTimeout: .default,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             operationDispatcher: OperationDispatcher(),
             attributionFetcher: AttributionFetcher(attributionFactory: MockAttributionTypeFactory(),
                                                    systemInfo: systemInfo),

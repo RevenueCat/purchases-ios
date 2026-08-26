@@ -90,8 +90,8 @@ class ApiDiffHelperTest < Minitest::Test
 
     versions = find_install_public_api_diff_versions(config)
 
-    assert_equal 2, versions.length,
-                 "expected exactly two revenuecat/install-public-api-diff steps in .circleci/default_config.yml, " \
+    assert_equal 1, versions.length,
+                 "expected exactly one revenuecat/install-public-api-diff step in .circleci/default_config.yml, " \
                  "found #{versions.length}"
     versions.each do |version|
       assert_equal ApiDiffHelper::PUBLIC_API_DIFF_REF, version
@@ -108,8 +108,8 @@ class ApiDiffHelperTest < Minitest::Test
     fastfile_path = File.expand_path('Fastfile', __dir__)
     lines = File.readlines(fastfile_path)
 
-    concat_line_no = lines.index { |line| line.include?("all_breaks.concat(ApiDiffHelper.breaking_changes") }
-    refute_nil concat_line_no, "expected to find the loop that accumulates all_breaks"
+    concat_line_no = lines.index { |line| line.include?("scheme_breaks.concat(ApiDiffHelper.breaking_changes") }
+    refute_nil concat_line_no, "expected to find the loop that accumulates the breaks"
 
     # The private_lane definition ("private_lane :pr_labels_for_api_gate do") is a different
     # call shape from the call site; filter it out so we isolate where check_api_changes
@@ -407,6 +407,52 @@ class ApiDiffHelperTest < Minitest::Test
     error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_merge_base(runner: ->(*_c) { "\n" }) }
 
     assert_match(/merge base/, error.message)
+  end
+
+  def test_current_branch_prefers_the_ci_variable
+    with_circle_branch("main") do
+      assert_equal "main", ApiDiffHelper.current_branch(runner: ->(*_c) { "detached\n" })
+    end
+  end
+
+  def test_current_branch_falls_back_to_git
+    with_circle_branch(nil) do
+      runner = ->(*command) { command == ["git", "rev-parse", "--abbrev-ref", "HEAD"] ? "my-branch\n" : "" }
+
+      assert_equal "my-branch", ApiDiffHelper.current_branch(runner: runner)
+    end
+  end
+
+  # On main the merge base is HEAD, so reusing it would compare the commit against itself.
+  def test_comparison_base_on_main_is_the_previous_commit
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "headsha\n"
+      end
+    end
+
+    assert_equal "prevsha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: "main")
+  end
+
+  def test_comparison_base_off_main_stays_the_merge_base
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "forksha\n"
+      end
+    end
+
+    ["my-branch", "release/5.86.0", "gh-readonly-queue/main/pr-1-abc"].each do |branch|
+      assert_equal "forksha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: branch)
+    end
+  end
+
+  # A root commit would otherwise diff the whole API in as new.
+  def test_previous_commit_raises_when_empty
+    error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_previous_commit(runner: ->(*_c) { "\n" }) }
+
+    assert_match(/before HEAD/, error.message)
   end
 
   def test_extract_baselines_writes_one_file_per_platform
@@ -1333,7 +1379,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
 
-    assert message.start_with?(":warning: *Breaking public API changes*")
+    assert message.start_with?(":warning: *Breaking public API landed on main*")
     assert_includes message, "<url|#42> Some PR"
     assert_includes message, "1 potential break"
   end
@@ -1341,7 +1387,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_leads_with_new_api_when_nothing_breaks
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "2 new declarations"
   end
 
@@ -1689,7 +1735,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
 
-    assert message.start_with?(":pencil2: *Public API changed* · iOS :ios: · `RevenueCat`")
+    assert message.start_with?(":pencil2: *Public API changed on main* · iOS :ios: · `RevenueCat`")
     assert_includes message, "1 modification"
     assert_includes message, "~ added @available(*, deprecated…): "
     assert_includes message, "purchaseDate(forEntitlement"
@@ -1726,7 +1772,7 @@ class ApiDiffHelperTest < Minitest::Test
       [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
     )
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "1 new declaration, 1 modification"
     assert_includes message, "+ public func a()"
     assert_includes message, "~ added @available"
@@ -1735,7 +1781,7 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
-    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+    assert message.start_with?(":sparkles: *New public API landed on main* · iOS :ios: · `RevenueCatUI`")
   end
 
   def test_changed_modules_names_only_the_schemes_that_changed
@@ -1835,7 +1881,50 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
+  # A rerun of the same main job must not post twice, and last_announcement bails on an empty
+  # source, so the commit link is what keeps the suppression alive.
+  def test_the_announcement_source_is_the_commit
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
+
+    refute_nil link, "the api_gate_commit_link lane moved; update this test"
+    assert_match(%r{/commit/}, link, "the message links the commit, not the PR")
+    assert_match(/next "" if sha\.empty\?/, link)
+    refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
+  end
+
+  # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
+  def test_slack_is_announced_only_on_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    announce = lane[/announcement = if on_main.*?\n                     end\n/m]
+
+    refute_nil announce, "the Slack announcement is no longer gated on main; update this test"
+    assert_match(/notify_api_changes_on_slack/, announce)
+    assert_match(/\{ fingerprint: nil, notice: nil \}/, announce,
+                 "a PR run still needs an announcement shape for the comment")
+  end
+
+  # main carries no PR to hold the label, so the gate there would fail changes the PR approved.
+  def test_the_breaking_change_gate_cannot_redden_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    gate = lane[/if ApiDiffHelper\.gate_blocked\?.*?\n    end\n/m]
+
+    refute_nil gate, "the gate section of check_api_changes moved; update this test"
+    assert_match(/if on_main/, gate, "main must not fail the gate")
+    assert_operator gate.index("if on_main"), :<, gate.index("UI.user_error!"),
+                    "the main branch of the gate must come before the failure"
+  end
+
+
   # --- Attribute additions: allowlist, not denylist ---
+
+  def with_circle_branch(value)
+    previous = ENV["CIRCLE_BRANCH"]
+    ENV["CIRCLE_BRANCH"] = value
+    yield
+  ensure
+    ENV["CIRCLE_BRANCH"] = previous
+  end
 
   def modification_adding(attribute)
     "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Added attribute `#{attribute}`\n*/"
@@ -1905,7 +1994,10 @@ class ApiDiffHelperTest < Minitest::Test
       configuration = sdk == "macosx" ? "Release" : "Release-#{sdk}"
       products = File.join(flag("-derivedDataPath"), "Build", "Products", configuration, "Objects-normal", "arm64")
       FileUtils.mkdir_p(products)
-      File.write(File.join(products, "#{flag('-scheme')}.swiftinterface"), "// #{sdk}\n")
+
+      # RevenueCatUI links RevenueCat, so the real build emits an interface for the dependency too.
+      emitted = flag("-scheme") == "RevenueCatUI" ? ["RevenueCat", "RevenueCatUI"] : ["RevenueCat"]
+      emitted.each { |name| File.write(File.join(products, "#{name}.swiftinterface"), "// #{name} #{sdk}\n") }
     end
   RUBY
 
@@ -1934,13 +2026,43 @@ class ApiDiffHelperTest < Minitest::Test
     File.readlines(log).map { |line| JSON.parse(line) }
   end
 
-  def build(platform, project_root, output_dir, scheme: "RevenueCat")
+  def build(platform, project_root, output_dir, scheme: "RevenueCat", modules: nil)
     ApiDiffHelper.build_swiftinterface(
       platform,
       scheme: scheme,
+      modules: modules || [scheme],
       project_root: project_root,
       output_dir: output_dir
     )
+  end
+
+  # The reason the two check-api-changes jobs could collapse into one.
+  def test_one_build_harvests_both_module_interfaces
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCatUI", modules: ApiDiffHelper::MODULES)
+
+      assert result[:success], result[:error]
+      assert_equal ["RevenueCat-ios-simulator.swiftinterface", "RevenueCatUI-ios-simulator.swiftinterface"],
+                   Dir.children(output_dir).sort
+      assert_equal 1, xcodebuild_invocations(log).count, "both interfaces must come from a single build"
+    end
+  end
+
+  # Asking for a module the build does not emit has to fail loudly rather than silently skipping it,
+  # or the diff lane would compare against a stale file.
+  def test_a_module_missing_from_the_build_is_reported
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, _log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCat", modules: ApiDiffHelper::MODULES)
+
+      refute result[:success], "the RevenueCat scheme does not emit RevenueCatUI"
+      assert_match(/Could not find RevenueCatUI swiftinterface for iOS/, result[:error])
+    end
   end
 
   def test_build_swiftinterface_copies_the_generated_interface
@@ -2048,22 +2170,84 @@ class ApiDiffHelperTest < Minitest::Test
       result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
 
       refute result[:success]
-      assert_match(/Could not find RevenueCat.swiftinterface for iOS/, result[:error])
+      assert_match(/Could not find RevenueCat swiftinterface for iOS/, result[:error])
     end
   end
 
   # fastlane's `sh` swaps Encoding.default_external for the duration of the call and Dir.chdir
   # moves the whole process, so either one inside the threaded loop would corrupt sibling builds.
   def test_the_generation_lane_keeps_process_global_calls_out_of_the_threads
-    lane = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+    lane = generation_lane_source
 
-    refute_nil lane, "the generate_swiftinterface lane moved; update this test"
     assert_match(/Thread\.new/, lane, "the platform builds must still run concurrently")
     refute_match(/Dir\.chdir/, lane, "Dir.chdir moves the whole process, so it cannot run per thread")
     refute_match(/(?<!\w)sh\(/, lane, "fastlane's sh mutates the default encoding, so it cannot run per thread")
   end
 
+  # Reintroducing a loop over schemes would rebuild RevenueCat a second time per platform, which is
+  # the duplicate work collapsing the two jobs into one was meant to remove.
+  def test_the_generation_lane_builds_each_platform_once
+    lane = generation_lane_source
+
+    refute_match(/schemes\.each/, lane, "one build per platform must cover every requested module")
+    assert_equal 1, lane.scan(/build_swiftinterface/).count
+  end
+
+  # One lane now checks both modules, so a single list of breaks would be read by both comment
+  # sections: a RevenueCatUI break would be listed under RevenueCat, and because comment_needed?
+  # returns true on breaks.any? alone it would also open a RevenueCat section that has nothing in it.
+  def test_each_comment_section_receives_only_its_own_module_breaks
+    upsert = check_lane_source[/upsert_api_diff_comment\(.*?^\s*\)$/m]
+    refute_nil upsert, "the upsert_api_diff_comment call site moved; update this test"
+
+    assert_match(/breaks:\s*breaks_by_scheme\.fetch\(scheme/, upsert,
+                 "a module's comment section must receive only that module's breaks")
+    refute_match(/breaks:\s*all_breaks/, upsert,
+                 "the whole PR's breaks would be listed under every module")
+  end
+
+  # The counterpart: the gate blocks the PR and Slack announces it once, so both judge every module.
+  def test_the_gate_and_the_announcement_see_every_module_break
+    source = check_lane_source
+
+    assert_match(/print_breaking_summary\(all_breaks/, source,
+                 "the gate must consider breaks from every module")
+
+    slack = source[/notify_api_changes_on_slack\(.*?^\s*\)$/m]
+    refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"
+    assert_match(/breaks:\s*all_breaks/, slack,
+                 "one announcement covers the PR, so it must see every module's breaks")
+  end
+
+  def test_dedupe_breaks_collapses_the_same_break_seen_on_several_platforms
+    change = { reason: :removed, owner: "Purchases", declaration: "public func foo()" }
+    other = { reason: :removed, owner: "Purchases", declaration: "public func bar()" }
+
+    assert_equal [change, other], ApiDiffHelper.dedupe_breaks([change, change.dup, other, change])
+  end
+
+  # Hardcoding RevenueCatUI would make scheme:RevenueCat compile the UI module too, which the
+  # update-error-codes workflow would pay for on every run.
+  def test_the_generation_lane_does_not_hardcode_the_build_scheme
+    assert_match(/build_scheme = schemes\.include\?/, generation_lane_source,
+                 "the build scheme must be derived from the requested modules")
+  end
+
   private
+
+  def check_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :check_api_changes do.*?\n  end\n/m]
+    refute_nil source, "the check_api_changes lane moved; update this test"
+
+    source
+  end
+
+  def generation_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+    refute_nil source, "the generate_swiftinterface lane moved; update this test"
+
+    source
+  end
 
   def capture_stdout
     original = $stdout

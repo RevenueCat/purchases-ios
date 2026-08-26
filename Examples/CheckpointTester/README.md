@@ -10,7 +10,12 @@ The app demonstrates how application behavior can respond to checkpoint results:
 - completing an onboarding flow regardless of the checkpoint result;
 - skipping a checkpoint when `CustomerInfo` already contains an active entitlement;
 - exercising deterministic no-action and error results;
+- setting or unsetting subscriber attributes used by checkpoint rules;
 - editing custom checkpoint properties and displaying a live analytics event log.
+
+Use the person button in any tab's navigation bar to set or unset one subscriber attribute. The attributes are
+part of the checkpoint rule evaluation scope, so this can change which rule matches without rebuilding the app.
+Unsetting passes an empty string, which is how the iOS SDK deletes an attribute.
 
 The generated app shares PaywallsTester's bundle identifier and `Products.storekit` configuration so it can use
 the same local in-app purchase products and RevenueCat project.

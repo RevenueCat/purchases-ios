@@ -37,6 +37,7 @@ class PostReceiptDataOperationFactoryTests: TestCase {
         let httpClient = MockHTTPClient(
             systemInfo: systemInfo,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             diagnosticsTracker: nil
         )
         return NetworkOperation.UserSpecificConfiguration(

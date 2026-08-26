@@ -138,8 +138,9 @@ module ApiDiffHelper
   # One platform runs per thread, so this avoids fastlane's `sh` and `Dir.chdir`: both mutate
   # process-global state (the default encoding and the working directory) that the other builds
   # share. Failures come back as a result rather than an exception for the same reason: raising
-  # inside a thread only surfaces wherever its value happens to be read.
-  def build_swiftinterface(platform_config, scheme:, project_root:, output_dir:)
+  # inside a thread only surfaces wherever its value happens to be read. Every message names the
+  # SDK because PLATFORMS reuses one platform label for a device and its simulator.
+  def build_swiftinterface(platform_config, scheme:, modules:, project_root:, output_dir:)
     sdk = platform_config[:sdk]
     # Concurrent builds cannot share a derived data directory.
     derived_data = "#{project_root}/.build-#{scheme}-#{sdk}"
@@ -149,8 +150,6 @@ module ApiDiffHelper
 
     Fastlane::UI.message("Building #{scheme} for #{platform_config[:platform]} (#{sdk})...")
 
-    # Every failure names the SDK: PLATFORMS reuses one platform label for a device and its
-    # simulator, so the label alone cannot say which of the two builds failed.
     build_status = Open3.popen2e(
       "xcodebuild", "clean", "build",
       "-workspace", ".",
@@ -174,17 +173,27 @@ module ApiDiffHelper
       }
     end
 
-    swiftinterface_files = find_swiftinterface_file(derived_data, sdk, scheme)
+    missing = []
+    Array(modules).each do |module_name|
+      found = find_swiftinterface_file(derived_data, sdk, module_name).first
 
-    if swiftinterface_files.empty?
+      if found.nil?
+        missing << module_name
+      else
+        FileUtils.cp(found, "#{output_dir}/#{module_name}#{platform_config[:suffix]}.swiftinterface")
+      end
+    end
+
+    if missing.any?
       return {
         success: false,
-        error: "Could not find #{scheme}.swiftinterface for #{platform_config[:platform]} (#{sdk})"
+        error: "Could not find #{missing.join(', ')} swiftinterface for #{platform_config[:platform]} (#{sdk})"
       }
     end
 
-    FileUtils.cp(swiftinterface_files.first, "#{output_dir}/#{scheme}#{platform_config[:suffix]}.swiftinterface")
-    Fastlane::UI.success("Generated #{scheme} #{platform_config[:platform]} swiftinterface")
+    Fastlane::UI.success(
+      "Generated #{Array(modules).join(', ')} #{platform_config[:platform]} (#{sdk}) swiftinterface"
+    )
 
     { success: true }
   end
@@ -288,12 +297,39 @@ module ApiDiffHelper
     !output.to_s.include?(NO_CHANGES_MARKER)
   end
 
-  MERGE_BASE_SWIFTINTERFACE_DIR = "/tmp/merge-base-swiftinterface".freeze
+  BASE_SWIFTINTERFACE_DIR = "/tmp/comparison-base-swiftinterface".freeze
+
+  MAIN_BRANCH = "main".freeze
+
+  def main_branch?(branch)
+    branch.to_s.strip == MAIN_BRANCH
+  end
+
+  def current_branch(runner:)
+    branch = ENV["CIRCLE_BRANCH"].to_s.strip
+    return branch unless branch.empty?
+
+    runner.call("git", "rev-parse", "--abbrev-ref", "HEAD").to_s.strip
+  end
+
+  # On main the merge base is HEAD, so HEAD^ is what the merge replaced.
+  def resolve_comparison_base(runner:, branch:)
+    return resolve_previous_commit(runner: runner) if main_branch?(branch)
+
+    resolve_merge_base(runner: runner)
+  end
 
   # The PR's own baselines match the generated files once regenerated, erasing the evidence.
   def resolve_merge_base(runner:)
     sha = runner.call("git", "merge-base", "origin/main", "HEAD").to_s.strip
     raise "Could not resolve the merge base with origin/main" if sha.empty?
+
+    sha
+  end
+
+  def resolve_previous_commit(runner:)
+    sha = runner.call("git", "rev-parse", "HEAD^").to_s.strip
+    raise "Could not resolve the commit before HEAD" if sha.empty?
 
     sha
   end
@@ -476,6 +512,11 @@ module ApiDiffHelper
     end
   end
 
+  # The same break surfaces once per platform, so every list of breaks is collapsed on the way out.
+  def dedupe_breaks(breaks)
+    breaks.uniq { |change| [change[:reason], change[:owner], change[:declaration]] }
+  end
+
   BREAKING_CHANGE_LABEL = "pr:breaking-api".freeze
 
   BREAK_REASONS = {
@@ -524,7 +565,7 @@ module ApiDiffHelper
     "<!-- /api-diff:#{module_name} -->"
   end
 
-  # Two jobs write this comment; each owns a section or the last writer wins.
+  # The comment carries one section per module, so writing one must not drop the others.
   def merge_api_diff_comment(existing_body, module_name, section)
     open_tag = api_diff_section_open(module_name)
     close_tag = api_diff_section_close(module_name)
@@ -729,11 +770,11 @@ module ApiDiffHelper
   def slack_summary(breaks, labels, source:, new_declarations: [], modules: [], modifications: [])
     changed = unbroken_modifications(modifications, breaks)
     headline = if breaks.any?
-                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API changes*" : ":warning: *Breaking public API changes* (allowed by label)"
+                 gate_blocked?(breaks, labels) ? ":warning: *Breaking public API landed on main*" : ":warning: *Breaking public API landed on main* (allowed by label)"
                elsif new_declarations.any?
-                 ":sparkles: *New public API*"
+                 ":sparkles: *New public API landed on main*"
                else
-                 ":pencil2: *Public API changed*"
+                 ":pencil2: *Public API changed on main*"
                end
     headline = [headline, announcement_identity(modules)].join(" · ")
 

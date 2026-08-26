@@ -14,7 +14,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesSubscriberAttributesTests: TestCase {
 
@@ -249,6 +249,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               deviceCache: mockDeviceCache,
                               paywallCache: MockPaywallCacheWarming(),
                               identityManager: mockIdentityManager,
+                              tokenManager: MockTokenManager(),
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
@@ -274,7 +275,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                              currentConfiguration: nil)
+                              currentConfiguration: nil,
+                              webBundleEventBus: .init()
+        )
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -539,6 +542,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[0])
             .to(equal(("solarVisitor", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSingularDeviceID() {
+        setupPurchases()
+        purchases.attribution.setSingularDeviceID("sdid")
+        purchases.attribution.setSingularDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[0])
+            .to(equal(("sdid", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

@@ -16,6 +16,7 @@ import Foundation
 class Backend {
 
     let identity: IdentityAPI
+    let token: TokenAPI
     let offerings: OfferingsAPI
     let webBilling: WebBillingAPI
     let offlineEntitlements: OfflineEntitlementsAPI
@@ -33,6 +34,7 @@ class Backend {
         systemInfo: SystemInfo,
         httpClientTimeout: NetworkTimeout = .default,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         operationDispatcher: OperationDispatcher,
         attributionFetcher: AttributionFetcher,
         offlineCustomerInfoCreator: OfflineCustomerInfoCreator?,
@@ -54,6 +56,7 @@ class Backend {
         // same host, and a success on any of them clears it for all.
         let httpClient = HTTPClient(systemInfo: systemInfo,
                                     eTagManager: eTagManager,
+                                    tokenManager: tokenManager,
                                     signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                                     diagnosticsTracker: diagnosticsTracker,
                                     networkTimeout: httpClientTimeout,
@@ -70,6 +73,7 @@ class Backend {
         let remoteConfigConfig = BackendConfiguration(
             httpClient: .dedicatedRemoteConfig(systemInfo: systemInfo,
                                                eTagManager: eTagManager,
+                                               tokenManager: tokenManager,
                                                diagnosticsTracker: diagnosticsTracker,
                                                networkTimeout: httpClientTimeout,
                                                apiSourceFailover: apiSourceFailover,
@@ -90,6 +94,7 @@ class Backend {
                      attributionFetcher: AttributionFetcher) {
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         let identity = IdentityAPI(backendConfig: backendConfig)
+        let token = TokenAPI(backendConfig: backendConfig)
         let offerings = OfferingsAPI(backendConfig: backendConfig)
         let webBilling = WebBillingAPI(backendConfig: backendConfig)
         let offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -103,6 +108,7 @@ class Backend {
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: token,
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
@@ -117,6 +123,7 @@ class Backend {
     required init(backendConfig: BackendConfiguration,
                   customerAPI: CustomerAPI,
                   identityAPI: IdentityAPI,
+                  tokenAPI: TokenAPI,
                   offeringsAPI: OfferingsAPI,
                   webBillingAPI: WebBillingAPI,
                   offlineEntitlements: OfflineEntitlementsAPI,
@@ -130,6 +137,7 @@ class Backend {
 
         self.customer = customerAPI
         self.identity = identityAPI
+        self.token = tokenAPI
         self.offerings = offeringsAPI
         self.webBilling = webBillingAPI
         self.offlineEntitlements = offlineEntitlements
@@ -312,6 +320,7 @@ private extension HTTPClient {
     static func dedicatedRemoteConfig(
         systemInfo: SystemInfo,
         eTagManager: ETagManager,
+        tokenManager: TokenManager,
         diagnosticsTracker: DiagnosticsTrackerType?,
         networkTimeout: NetworkTimeout,
         apiSourceFailover: APISourceFailoverType?,
@@ -319,6 +328,7 @@ private extension HTTPClient {
     ) -> HTTPClient {
         HTTPClient(systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   tokenManager: tokenManager,
                    signing: Signing(apiKey: systemInfo.apiKey, clock: systemInfo.clock),
                    diagnosticsTracker: diagnosticsTracker,
                    networkTimeout: networkTimeout,

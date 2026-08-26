@@ -191,24 +191,6 @@ NSURL *url;
         }];
     }
 
-    #if __has_include(<UIKit/UIKit.h>)
-    if (@available(iOS 17.0, iOSApplicationExtension 17.0, macCatalyst 17.0, tvOS 17.0, *)) {
-        UIScene *scene;
-        RCPurchaseParams *paramsWithUIScene = [[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
-                                                withConfirmInScene:scene]
-                                               build];
-    }
-    #endif
-
-    #if __has_include(<AppKit/AppKit.h>)
-    if (@available(macOS 15.2, *)) {
-        NSWindow *window;
-        RCPurchaseParams *paramsWithNSWindow = [[[[RCPurchaseParamsBuilder alloc] initWithProduct:storeProduct]
-                                                 withConfirmInWindow:window]
-                                               build];
-    }
-    #endif
-
     [p purchaseWithParams:productParams completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     [p purchaseWithParams:packageParams completion:^(RCStoreTransaction *t, RCCustomerInfo *i, NSError *error, BOOL userCancelled) { }];
     #endif
