@@ -91,9 +91,16 @@
       "expected": true
     },
     {
-      "id": "slice_non_array_source_is_a_type_error",
+      "id": "slice_string_source_is_a_type_error",
       "description": "Strings keep using substr rather than being sliced here",
       "predicate": {"rc.slice": ["abcd", 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+    },
+    {
+      "id": "slice_object_source_is_a_type_error",
+      "description": "A keyed object has no positions to slice; rc.entries is the way in",
+      "predicate": {"rc.slice": [{"a": 1, "b": 2}, 1]},
       "variables": {},
       "expected": {"error": "typeMismatch", "operator": "rc.slice"}
     },

@@ -37,9 +37,13 @@ extension RulesEngine {
             }
 
             guard case .array(let items) = evaluated[0] else {
+                var hint = ""
+                if case .string = evaluated[0] {
+                    hint = "; strings use 'substr'"
+                }
                 throw EvaluationError.typeMismatch(
                     message: "operator '\(operatorName)' expected an array to slice, "
-                        + "got \(evaluated[0]); strings use 'substr'"
+                        + "got \(evaluated[0])\(hint)"
                 )
             }
 
