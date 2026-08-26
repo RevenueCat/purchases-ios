@@ -47,8 +47,7 @@ extension RulesEngine {
         }
 
         /// Sorts by `keys`, falling back to the input position so equal keys
-        /// keep their order. Swift does not guarantee `sorted(by:)` is stable,
-        /// and the two engines must agree on the output for every input.
+        /// keep their order. Swift does not guarantee `sorted(by:)` is stable.
         private static func sorted(_ items: [Value], by keys: [Value]) throws -> [Value] {
             let order = try Self.comparator(for: keys)
 
