@@ -21,10 +21,8 @@ extension RulesEngine {
         /// that item, the same way `map` evaluates its template.
         ///
         /// Keys must be all strings or all finite numbers; anything else,
-        /// including a mix, throws `EvaluationError.typeMismatch`. Ordering
-        /// values of different types would need a total order the rule author
-        /// never asked for. There is no direction argument; a descending numeric
-        /// sort negates the key.
+        /// including a mix, throws `EvaluationError.typeMismatch`. There is no
+        /// direction argument.
         static func opSortBy(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
 
