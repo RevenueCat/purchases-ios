@@ -125,6 +125,10 @@ class SubscriberAttributesManager {
         setAttributionID(solarEngineVisitorId, forNetworkID: .solarEngineVisitorId, appUserID: appUserID)
     }
 
+    func setSingularDeviceID(_ singularDeviceID: String?, appUserID: String) {
+        setAttributionID(singularDeviceID, forNetworkID: .singularDeviceID, appUserID: appUserID)
+    }
+
     func setMixpanelDistinctID(_ mixpanelDistinctID: String?, appUserID: String) {
         setReservedAttribute(.mixpanelDistinctID, value: mixpanelDistinctID, appUserID: appUserID)
     }

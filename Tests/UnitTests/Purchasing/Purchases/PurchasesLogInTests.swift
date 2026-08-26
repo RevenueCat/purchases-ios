@@ -11,11 +11,12 @@
 //
 //  Created by Nacho Soto on 8/15/22.
 
+@preconcurrency import Combine
 import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class BasePurchasesLogInTests: BasePurchasesTests {}
 
@@ -123,6 +124,31 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount) == baselineRemoteConfigRefreshCount + 1
         expect(self.mockRemoteConfigManager.invokedRefreshRemoteConfigParametersList.last?.isAppBackgrounded) == true
+    }
+
+    func testLogOutPublishesWebBundleCacheClearEvent() async {
+        let eventBus = WebBundleEventBus()
+        Purchases.clearSingleton()
+        self.initializePurchasesInstance(appUserId: Self.appUserID, webBundleEventBus: eventBus)
+        self.identityManager.mockLogOutError = nil
+        self.backend.overrideCustomerInfoResult = .success(Self.mockLoggedOutInfo)
+        let cacheClearReceived = self.expectation(description: "Web bundle cache clear received")
+        let logoutCompleted = self.expectation(description: "Log out completed")
+        let cancellable = eventBus.publisher
+            .dropFirst()
+            .sink { event in
+                if event == .cacheClearRequested {
+                    cacheClearReceived.fulfill()
+                }
+            }
+
+        self.purchases.logOut { _, error in
+            XCTAssertNil(error)
+            logoutCompleted.fulfill()
+        }
+
+        await self.fulfillment(of: [cacheClearReceived, logoutCompleted], timeout: 1)
+        withExtendedLifetime(cancellable) {}
     }
 
     func testLogOutWithFailure() {
