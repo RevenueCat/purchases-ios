@@ -9,7 +9,7 @@
     },
     {
       "id": "sort_by_string_keys_order_by_utf16_code_unit",
-      "description": "An astral key sorts before a BMP one above the surrogate range, as in JS and Kotlin; Swift's own < would reverse these",
+      "description": "String keys order as UTF-16 code units: an astral key starts with a leading surrogate, which sorts below any code unit above the surrogate range",
       "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"var": "0"}, "\uD83D\uDE00"]}, {"===": [{"var": "1"}, "\uFF21"]}]}]},
       "variables": {"xs": ["\uFF21", "\uD83D\uDE00"]},
       "expected": true
@@ -22,14 +22,14 @@
     },
     {
       "id": "sort_by_ascii_sorts_before_an_astral_key",
-      "description": "Below the surrogate range the two orderings agree, so ASCII stays first",
+      "description": "Control case: an ASCII code unit sorts below a leading surrogate",
       "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"var": "0"}, "Z"]}, {"===": [{"var": "1"}, "\uD83D\uDE00"]}, {"===": [{"var": "2"}, "\uFF21"]}]}]},
       "variables": {"xs": ["\uFF21", "\uD83D\uDE00", "Z"]},
       "expected": true
     },
     {
       "id": "sort_by_orders_canonically_equivalent_keys_by_code_unit",
-      "description": "Swift reads these two spellings of e-acute as equal, which would leave them in input order; === cannot tell them apart either, so assert on UTF-16 length",
+      "description": "The two spellings of e-acute are distinct keys, and the decomposed one starts with 'e' so it sorts first. UTF-16 length is what tells the two spellings apart",
       "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"rc.length": {"var": "0"}}, 2]}, {"===": [{"rc.length": {"var": "1"}}, 1]}]}]},
       "variables": {"xs": ["\u00E9", "e\u0301"]},
       "expected": true
