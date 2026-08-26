@@ -346,6 +346,74 @@ class VariableHandlerV2Test: TestCase {
         expect(perYear).to(equal("$24.99"))
     }
 
+    /// A right-to-left locale wraps the price in bidirectional marks even when the currency has a
+    /// real symbol, so the token comes back padded with a mark and a space rather than as `US$`.
+    /// This is what `ar_SO` actually returns for a USD product.
+    func testProductCurrencySymbolStripsPaddingFromASymbolToken() {
+        let package = Self.package(
+            currencyCode: "USD",
+            localizedPriceString: "\u{200E}\u{0662}\u{0664}\u{066B}\u{0669}\u{0669}\u{00A0}US$",
+            identifier: "com.revenuecat.product.currency_symbol_rtl_symbol",
+            locale: "ar_SO"
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("US$"))
+    }
+
+    /// Hebrew puts a mark on both sides of the symbol.
+    func testProductCurrencySymbolStripsPaddingAroundASymbolToken() {
+        let package = Self.package(
+            currencyCode: "USD",
+            localizedPriceString: "\u{200E}24.99\u{00A0}\u{200E}$",
+            identifier: "com.revenuecat.product.currency_symbol_rtl_wrapped",
+            locale: "he_IL"
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
+    private static func package(
+        currencyCode: String,
+        localizedPriceString: String,
+        identifier: String,
+        locale: String
+    ) -> Package {
+        return Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: currencyCode,
+                localizedPriceString: localizedPriceString,
+                productIdentifier: identifier,
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: locale)
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
     /// Right-to-left locales wrap the displayed price in bidirectional marks, so the extracted
     /// token arrives as `<LRM>RUB` rather than `RUB`. The ISO code has to be recognized through
     /// them, otherwise the variable renders the code.
