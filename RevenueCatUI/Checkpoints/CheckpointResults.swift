@@ -7,13 +7,124 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  CheckpointPaywallResult.swift
+//  CheckpointResults.swift
 //
 //  Created by Rick van der Linden.
 //
 
 import Foundation
 @_spi(Internal) import RevenueCat
+
+/// Base class for the result of evaluating a checkpoint.
+///
+/// Inspect the concrete result type to determine what happened:
+///
+/// ```swift
+/// let result = try await Purchases.shared.checkpoint("onboarding_complete")
+///
+/// switch result {
+/// case let result as CheckpointPaywallPresentedResult:
+///     handlePaywallOutcome(result.paywallOutcome)
+/// case let result as CheckpointReceivedOfferingResult:
+///     showOffering(result.offering)
+/// case let result as CheckpointNoActionResult:
+///     handleNoAction(result.reason)
+/// default:
+///     // Handle result types added in future SDK versions.
+///     break
+/// }
+/// ```
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
+
+    /// Information about the checkpoint that produced this result.
+    public let checkpoint: CheckpointInfo
+
+    init(checkpoint: CheckpointInfo) {
+        self.checkpoint = checkpoint
+    }
+
+    /// A debug description of the checkpoint result.
+    public var description: String {
+        return "CheckpointResult(checkpoint=\(self.checkpoint))"
+    }
+
+    /// Returns whether two checkpoint results are equal.
+    public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
+        return lhs.isEqual(to: rhs)
+    }
+
+    func isEqual(to other: CheckpointResult) -> Bool {
+        return type(of: self) == type(of: other) && self.checkpoint == other.checkpoint
+    }
+
+    /// Hashes the checkpoint result.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(type(of: self)))
+        hasher.combine(self.checkpoint)
+    }
+
+}
+
+/// Nothing was served for a checkpoint.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointNoActionResult: CheckpointResult {
+
+    /// The reason no experience was served.
+    public let reason: CheckpointNoActionReason
+
+    init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
+        self.reason = reason
+        super.init(checkpoint: checkpoint)
+    }
+
+    public override var description: String {
+        return "NoAction(checkpoint=\(self.checkpoint), reason=\(self.reason))"
+    }
+
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointNoActionResult else { return false }
+        return self.checkpoint == other.checkpoint && self.reason == other.reason
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.checkpoint)
+        hasher.combine(self.reason)
+    }
+
+}
+
+/// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
+/// whether and how to use it.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointReceivedOfferingResult: CheckpointResult {
+
+    /// The offering the checkpoint selected.
+    public let offering: Offering
+
+    init(checkpoint: CheckpointInfo, offering: Offering) {
+        self.offering = offering
+        super.init(checkpoint: checkpoint)
+    }
+
+    public override var description: String {
+        return "ReceivedOffering(checkpoint=\(self.checkpoint), offering=\(self.offering.identifier))"
+    }
+
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointReceivedOfferingResult else { return false }
+        return self.checkpoint == other.checkpoint && self.offering == other.offering
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.checkpoint)
+        hasher.combine(self.offering)
+    }
+
+}
 
 /// A checkpoint-triggered paywall was presented and finished.
 @_spi(CheckpointsInternal)
