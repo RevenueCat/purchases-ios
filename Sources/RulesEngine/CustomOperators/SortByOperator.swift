@@ -11,7 +11,7 @@ private let operatorName = "rc.sortBy"
 
 extension RulesEngine {
 
-    /// `rc.sortBy` — orders an array by a key computed per item.
+    /// `rc.sortBy` — orders an array in ascending order by a key computed per item.
     enum SortByOperator {
 
         /// `{"rc.sortBy": [array, keyExpression]}` — the original items in
@@ -23,8 +23,8 @@ extension RulesEngine {
         /// Keys must be all strings or all finite numbers; anything else,
         /// including a mix, throws `EvaluationError.typeMismatch`. Ordering
         /// values of different types would need a total order the rule author
-        /// never asked for. Descending is not offered: reversing a sorted array
-        /// is a separate operator, not a mode of this one.
+        /// never asked for. There is no direction argument; a descending numeric
+        /// sort negates the key.
         static func opSortBy(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
 
