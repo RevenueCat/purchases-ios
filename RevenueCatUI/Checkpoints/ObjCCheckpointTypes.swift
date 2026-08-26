@@ -222,9 +222,13 @@ public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallO
 public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
     init(_ value: CheckpointPaywallPurchasedOutcome) {
+        self.transaction = value.transaction
         self.customerInfo = value.customerInfo
         super.init()
     }
+
+    /// The transaction completed by the purchase, if available.
+    @objc public let transaction: StoreTransaction?
 
     /// Customer information after the completed purchase.
     @objc public let customerInfo: CustomerInfo
