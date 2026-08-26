@@ -801,6 +801,17 @@ SWIFT_AVAILABILITY(watchos,unavailable) SWIFT_AVAILABILITY(tvos,unavailable) SWI
 /// \param solarEngineVisitorId Empty String or <code>nil</code> will delete the subscriber attribute.
 ///
 - (void)setSolarEngineVisitorId:(NSString * _Nullable)solarEngineVisitorId;
+/// Subscriber attribute associated with the Singular Device ID (SDID) for the user.
+/// Required for the RevenueCat Singular integration when using Singular’s Event Endpoint V2.
+/// <h4>Related Articles</h4>
+/// <ul>
+///   <li>
+///     <a href="https://docs.revenuecat.com/docs/singular">Singular RevenueCat Integration</a>
+///   </li>
+/// </ul>
+/// \param singularDeviceID Empty String or <code>nil</code> will delete the subscriber attribute.
+///
+- (void)setSingularDeviceID:(NSString * _Nullable)singularDeviceID;
 /// Subscriber attribute associated with the Mixpanel Distinct ID for the user.
 /// Optional for the RevenueCat Mixpanel integration.
 /// <h4>Related Articles</h4>
