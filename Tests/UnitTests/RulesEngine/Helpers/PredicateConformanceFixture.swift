@@ -41,11 +41,19 @@ struct ExpectedError: Equatable, Decodable {
     /// Omit to assert only that the variable failed to resolve, whatever
     /// path it was written as.
     let unresolvedPath: String?
+    /// Substrings that must each appear in the error message. Keep these to
+    /// wording a rule author is meant to act on: how an engine renders the
+    /// offending value is not part of the contract.
+    let messageContains: [String]?
+    /// Substrings that must not appear in the error message.
+    let messageOmits: [String]?
 
     enum CodingKeys: String, CodingKey {
         case kind = "error"
         case `operator`
         case unresolvedPath = "path"
+        case messageContains
+        case messageOmits
     }
 }
 

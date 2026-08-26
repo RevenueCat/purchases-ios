@@ -105,37 +105,57 @@
     },
     {
       "id": "slice_string_source_is_a_type_error",
-      "description": "Strings keep using substr rather than being sliced here",
+      "description": "Strings keep using substr rather than being sliced here, and the message says so",
       "predicate": {"rc.slice": ["abcd", 1]},
       "variables": {},
-      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.slice",
+        "messageContains": ["strings use 'substr'"]
+      }
     },
     {
       "id": "slice_object_source_is_a_type_error",
       "description": "A keyed object has no positions to slice; rc.entries is the way in",
       "predicate": {"rc.slice": [{"a": 1, "b": 2}, 1]},
       "variables": {},
-      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.slice",
+        "messageOmits": ["substr"]
+      }
     },
     {
       "id": "slice_number_source_is_a_type_error",
       "description": "substr would stringify the number first; nothing here is sliceable",
       "predicate": {"rc.slice": [12345, 1]},
       "variables": {},
-      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.slice",
+        "messageOmits": ["substr"]
+      }
     },
     {
       "id": "slice_bool_source_is_a_type_error",
       "predicate": {"rc.slice": [true, 1]},
       "variables": {},
-      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.slice",
+        "messageOmits": ["substr"]
+      }
     },
     {
       "id": "slice_null_source_is_a_type_error",
       "description": "A field that resolved to null is a broken rule, not an empty slice",
       "predicate": {"rc.slice": [null, 1]},
       "variables": {},
-      "expected": {"error": "typeMismatch", "operator": "rc.slice"}
+      "expected": {
+        "error": "typeMismatch",
+        "operator": "rc.slice",
+        "messageOmits": ["substr"]
+      }
     },
     {
       "id": "slice_missing_start_is_a_type_error",

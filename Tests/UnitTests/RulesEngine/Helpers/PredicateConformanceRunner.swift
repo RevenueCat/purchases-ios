@@ -74,6 +74,7 @@ enum PredicateConformanceRunner {
                     )
                     return
                 }
+                assertMessage(error: error, expected: expectedError, fixtureID: fixture.id)
             } catch {
                 Issue.record(
                     "Fixture \(fixture.id) threw \(error), expected \(expectedError.kind)"
@@ -107,6 +108,29 @@ enum PredicateConformanceRunner {
             break
         }
         return false
+    }
+
+    private static func assertMessage(
+        error: RulesEngine.EvaluationError,
+        expected: ExpectedError,
+        fixtureID: String
+    ) {
+        let message = error.description
+
+        for substring in expected.messageContains ?? [] {
+            #expect(
+                message.contains(substring),
+                "Fixture \(fixtureID) expected a message containing \"\(substring)\", "
+                    + "got \"\(message)\""
+            )
+        }
+        for substring in expected.messageOmits ?? [] {
+            #expect(
+                !message.contains(substring),
+                "Fixture \(fixtureID) expected a message without \"\(substring)\", "
+                    + "got \"\(message)\""
+            )
+        }
     }
 
     private static func assertWarnings(
