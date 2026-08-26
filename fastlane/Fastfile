@@ -2501,17 +2501,19 @@ platform :ios do
     end
 
 
-    # Regenerated baselines make the freshness diff empty, so the gate needs the merge base.
+    # Regenerated baselines make the freshness diff empty, so the gate needs an earlier base.
     runner = ->(*command) { sh(*command, log: false) }
-    merge_base = ApiDiffHelper.resolve_merge_base(runner: runner)
-    UI.message("Comparing against the merge base #{merge_base}")
+    branch = ApiDiffHelper.current_branch(runner: runner)
+    on_main = ApiDiffHelper.main_branch?(branch)
+    comparison_base = ApiDiffHelper.resolve_comparison_base(runner: runner, branch: branch)
+    UI.message("Comparing #{branch} against #{comparison_base}")
 
     breaks_by_scheme = {}
     reports_by_target = {}
 
     schemes.each do |scheme|
-      base_dir = File.join(ApiDiffHelper::MERGE_BASE_SWIFTINTERFACE_DIR, scheme)
-      ApiDiffHelper.extract_baselines_at(merge_base, base_dir, scheme, runner: runner)
+      base_dir = File.join(ApiDiffHelper::BASE_SWIFTINTERFACE_DIR, scheme)
+      ApiDiffHelper.extract_baselines_at(comparison_base, base_dir, scheme, runner: runner)
       prefix = ApiDiffHelper.api_file_prefix(scheme)
       scheme_breaks = []
 
@@ -2554,11 +2556,16 @@ platform :ios do
 
     # Informational: a GitHub or Slack outage must not decide whether the gate fails.
     begin
-      announcement = notify_api_changes_on_slack(
-        reports_by_target: reports_by_target,
-        breaks: all_breaks,
-        labels: labels
-      )
+      # Announcing only from main keeps the feed to one post per change.
+      announcement = if on_main
+                       notify_api_changes_on_slack(
+                         reports_by_target: reports_by_target,
+                         breaks: all_breaks,
+                         labels: labels
+                       )
+                     else
+                       { fingerprint: nil, notice: nil }
+                     end
       schemes.each do |scheme|
         upsert_api_diff_comment(
           scheme: scheme,
@@ -2578,7 +2585,12 @@ platform :ios do
     end
 
     if ApiDiffHelper.gate_blocked?(all_breaks, labels)
-      UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
+      # main has no PR to read the label from, and the PR run already gated the change.
+      if on_main
+        UI.important("Breaking public API changes on main, already gated on the PR run")
+      else
+        UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
+      end
     end
   end
 
@@ -2645,7 +2657,7 @@ platform :ios do
     bot_token = ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"]
     channel = ENV["SLACK_CHANNEL_SDK_NEW_API"]
 
-    source = api_gate_pr_link
+    source = api_gate_commit_link
     modules = ApiDiffHelper.changed_modules(options[:reports_by_target])
 
     summary = ApiDiffHelper.slack_summary(
@@ -2702,11 +2714,12 @@ platform :ios do
     comment ? comment["body"].to_s : ""
   end
 
-  private_lane :api_gate_pr_link do
-    pr_number = detect_pr_number
-    next "" if pr_number.nil?
+  # The commit page carries the PR link, and its sha is what tells a rerun it already announced.
+  private_lane :api_gate_commit_link do
+    sha = sh("git", "rev-parse", "HEAD", log: false).strip
+    next "" if sha.empty?
 
-    "<https://github.com/RevenueCat/#{REPO_NAME}/pull/#{pr_number}|##{pr_number}>"
+    "<https://github.com/RevenueCat/#{REPO_NAME}/commit/#{sha}|#{sha[0, 7]}>"
   end
 
 

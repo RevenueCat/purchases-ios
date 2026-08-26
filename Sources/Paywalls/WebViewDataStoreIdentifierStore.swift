@@ -17,6 +17,9 @@ import Foundation
 /// Persists the identifiers for RevenueCat's isolated website data store.
 @_spi(Internal) public final class WebViewDataStoreIdentifierStore {
 
+    /// Process-wide store shared by web-bundle prewarming, rendering, and cleanup.
+    @_spi(Internal) public static let shared = WebViewDataStoreIdentifierStore()
+
     private let userDefaults: SynchronizedUserDefaults
 
     /// Creates a store that reads and writes identifiers in the default suite.
