@@ -71,21 +71,15 @@
       "expected": true
     },
     {
-      "id": "slice_integral_float_start_is_accepted",
-      "description": "A literal whole-valued float is an index, not a fractional one",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 2.0]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
+      "id": "slice_negative_whole_float_start_is_accepted",
+      "description": "Arithmetic is what produces a float index; a literal -2.0 decodes as an int",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], {"-": [0, 2]}]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
       "variables": {},
       "expected": true
     },
     {
-      "id": "slice_negative_integral_float_start_is_accepted",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], -2.0]}], {"and": [{"===": [{"var": "0"}, "c"]}, {"===": [{"var": "1"}, "d"]}]}]},
-      "variables": {},
-      "expected": true
-    },
-    {
-      "id": "slice_integral_float_length_is_accepted",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 0, 2.0]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "a"]}]}]},
+      "id": "slice_whole_float_length_is_accepted",
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 0, {"+": [1, 1]}]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "a"]}]}]},
       "variables": {},
       "expected": true
     },
