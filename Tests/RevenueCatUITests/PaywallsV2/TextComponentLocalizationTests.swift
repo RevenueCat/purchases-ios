@@ -351,7 +351,7 @@ class TextComponentLocalizationTests: TestCase {
         let viewModel = StackComponentViewModel(
             component: stackComponent,
             viewModels: [],
-            badgeViewModels: [:],
+            badgeViewModels: [],
             uiConfigProvider: try Self.createUIConfigProvider()
         )
 
@@ -518,7 +518,7 @@ class TextComponentLocalizationTests: TestCase {
                 ]
             ),
             viewModels: [],
-            badgeViewModels: [:],
+            badgeViewModels: [],
             uiConfigProvider: try Self.createUIConfigProvider()
         )
         let promo = StackComponentViewModel(
@@ -531,7 +531,7 @@ class TextComponentLocalizationTests: TestCase {
                 ]
             ),
             viewModels: [],
-            badgeViewModels: [:],
+            badgeViewModels: [],
             uiConfigProvider: try Self.createUIConfigProvider()
         )
         return (intro, promo)

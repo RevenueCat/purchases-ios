@@ -152,7 +152,7 @@ final class ButtonComponentViewModelMappingTests: TestCase {
         let stackViewModel = StackComponentViewModel(
             component: component.stack,
             viewModels: [],
-            badgeViewModels: [:],
+            badgeViewModels: [],
             uiConfigProvider: uiConfigProvider
         )
         return try ButtonComponentViewModel(

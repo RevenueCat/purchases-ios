@@ -164,7 +164,7 @@ class ViewModelFactoryBadgeTests: TestCase {
 
         // Then: both badges have their own contents ready, 1 component and 2 components
         expect(viewModel.badgeViewModels.count).to(equal(2))
-        expect(viewModel.badgeViewModels.values.map(\.count).sorted()).to(equal([1, 2]))
+        expect(viewModel.badgeViewModels.map(\.viewModels.count).sorted()).to(equal([1, 2]))
     }
 
     /// When base badge is nil but override has badge, and override also has other properties,

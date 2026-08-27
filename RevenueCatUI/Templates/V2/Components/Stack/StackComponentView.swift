@@ -848,15 +848,15 @@ extension StackComponentViewModel {
             )
         }
 
-        var badgeViewModelsByBadge: [PaywallComponent.Badge: [PaywallComponentViewModel]] = [:]
+        var badgeViewModelPairs: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])] = []
         if let badge = component.badge, let badgeViewModels {
-            badgeViewModelsByBadge[badge] = badgeViewModels
+            badgeViewModelPairs.append((badge: badge, viewModels: badgeViewModels))
         }
 
         self.init(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: badgeViewModelsByBadge,
+            badgeViewModels: badgeViewModelPairs,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }

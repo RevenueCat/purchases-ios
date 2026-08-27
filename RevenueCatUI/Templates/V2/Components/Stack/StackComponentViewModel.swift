@@ -27,7 +27,7 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
 
-    let badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]]
+    let badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])]
 
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
@@ -57,7 +57,7 @@ class StackComponentViewModel {
         }
 
         return self.viewModels.contains(where: Self.announces)
-            || self.badgeViewModels.values.contains { $0.contains(where: Self.announces) }
+            || self.badgeViewModels.contains { $0.viewModels.contains(where: Self.announces) }
     }
 
     private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
@@ -85,7 +85,7 @@ class StackComponentViewModel {
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]],
+        badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
@@ -136,7 +136,8 @@ class StackComponentViewModel {
         )
 
         let presentedBadge = partial?.badge ?? self.component.badge
-        let presentedBadgeViewModels = presentedBadge.flatMap { self.badgeViewModels[$0] } ?? []
+        let presentedBadgeViewModels = presentedBadge
+            .flatMap { badge in self.badgeViewModels.first { $0.badge === badge }?.viewModels } ?? []
 
         return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,

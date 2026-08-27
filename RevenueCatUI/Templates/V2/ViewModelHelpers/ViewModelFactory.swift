@@ -557,12 +557,11 @@ struct ViewModelFactory {
             )
         }
 
-        // Keyed by value, so two rules authoring an identical badge share one entry.
-        let badgeSources = ([component.badge] + (component.overrides ?? []).map(\.properties.badge))
-            .compactMap { $0 }
-        var badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]] = [:]
-        for badgeSource in badgeSources where badgeViewModels[badgeSource] == nil {
-            badgeViewModels[badgeSource] = try badgeSource.stack.components.map { component in
+        var badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])] = []
+        for badgeSource in [component.badge].compactMap({ $0 })
+            + (component.overrides ?? []).compactMap(\.properties.badge)
+        where !badgeViewModels.contains(where: { $0.badge === badgeSource }) {
+            let viewModels = try badgeSource.stack.components.map { component in
                 try self.toViewModel(
                     component: component,
                     packageValidator: packageValidator,
@@ -574,6 +573,7 @@ struct ViewModelFactory {
                     colorScheme: colorScheme
                 )
             }
+            badgeViewModels.append((badge: badgeSource, viewModels: viewModels))
         }
 
         return StackComponentViewModel(
