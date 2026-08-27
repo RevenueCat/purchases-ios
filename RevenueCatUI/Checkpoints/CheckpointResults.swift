@@ -38,16 +38,11 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
 
-    /// Information about the checkpoint that produced this result.
-    public let checkpoint: CheckpointInfo
-
-    init(checkpoint: CheckpointInfo) {
-        self.checkpoint = checkpoint
-    }
+    init() {}
 
     /// A debug description of the checkpoint result.
     public var description: String {
-        return "CheckpointResult(checkpoint=\(self.checkpoint))"
+        return "CheckpointResult"
     }
 
     /// Returns whether two checkpoint results are equal.
@@ -56,13 +51,12 @@ public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
     }
 
     func isEqual(to other: CheckpointResult) -> Bool {
-        return type(of: self) == type(of: other) && self.checkpoint == other.checkpoint
+        return type(of: self) == type(of: other)
     }
 
     /// Hashes the checkpoint result.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(ObjectIdentifier(type(of: self)))
-        hasher.combine(self.checkpoint)
     }
 
 }
@@ -75,22 +69,21 @@ public final class CheckpointNoActionResult: CheckpointResult {
     /// The reason no experience was served.
     public let reason: CheckpointNoActionReason
 
-    init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
+    init(reason: CheckpointNoActionReason) {
         self.reason = reason
-        super.init(checkpoint: checkpoint)
+        super.init()
     }
 
     public override var description: String {
-        return "NoAction(checkpoint=\(self.checkpoint), reason=\(self.reason))"
+        return "NoAction(reason=\(self.reason))"
     }
 
     override func isEqual(to other: CheckpointResult) -> Bool {
         guard let other = other as? CheckpointNoActionResult else { return false }
-        return self.checkpoint == other.checkpoint && self.reason == other.reason
+        return self.reason == other.reason
     }
 
     public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.checkpoint)
         hasher.combine(self.reason)
     }
 
@@ -105,22 +98,21 @@ public final class CheckpointReceivedOfferingResult: CheckpointResult {
     /// The offering the checkpoint selected.
     public let offering: Offering
 
-    init(checkpoint: CheckpointInfo, offering: Offering) {
+    init(offering: Offering) {
         self.offering = offering
-        super.init(checkpoint: checkpoint)
+        super.init()
     }
 
     public override var description: String {
-        return "ReceivedOffering(checkpoint=\(self.checkpoint), offering=\(self.offering.identifier))"
+        return "ReceivedOffering(offering=\(self.offering.identifier))"
     }
 
     override func isEqual(to other: CheckpointResult) -> Bool {
         guard let other = other as? CheckpointReceivedOfferingResult else { return false }
-        return self.checkpoint == other.checkpoint && self.offering == other.offering
+        return self.offering == other.offering
     }
 
     public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.checkpoint)
         hasher.combine(self.offering)
     }
 
@@ -134,22 +126,21 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
     /// The terminal outcome of the presented paywall.
     public let paywallOutcome: CheckpointPaywallOutcome
 
-    init(checkpoint: CheckpointInfo, paywallOutcome: CheckpointPaywallOutcome) {
+    init(paywallOutcome: CheckpointPaywallOutcome) {
         self.paywallOutcome = paywallOutcome
-        super.init(checkpoint: checkpoint)
+        super.init()
     }
 
     public override var description: String {
-        return "PaywallPresented(checkpoint=\(self.checkpoint), paywallOutcome=\(self.paywallOutcome))"
+        return "PaywallPresented(paywallOutcome=\(self.paywallOutcome))"
     }
 
     override func isEqual(to other: CheckpointResult) -> Bool {
         guard let other = other as? CheckpointPaywallPresentedResult else { return false }
-        return self.checkpoint == other.checkpoint && self.paywallOutcome == other.paywallOutcome
+        return self.paywallOutcome == other.paywallOutcome
     }
 
     public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.checkpoint)
         hasher.combine(self.paywallOutcome)
     }
 

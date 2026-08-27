@@ -73,12 +73,13 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a no-action result")
         }
         XCTAssertEqual(noAction.reason, .unknownCheckpoint)
-        XCTAssertEqual(noAction.checkpoint.identifier, "unknown_checkpoint")
-        XCTAssertEqual(noAction.checkpoint.customVariables["name"], "Rick")
         XCTAssertEqual(
             listener.events,
             [.hit("unknown_checkpoint"), .completed("unknown_checkpoint")]
         )
+        XCTAssertEqual(listener.hitContexts.first?.customVariables["name"], "Rick")
+        XCTAssertEqual(listener.completedContexts.first?.customVariables["name"], "Rick")
+        XCTAssertEqual(listener.completedContexts.first?.result, noAction)
     }
 
     func testInvalidCustomVariableKeysDoNotReachResolution() async throws {
@@ -145,7 +146,6 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a received-offering result")
         }
         XCTAssertEqual(received.offering.identifier, "offering-id")
-        XCTAssertEqual(received.checkpoint.identifier, "onboarding")
         // Data-only, so it never claims the executor's one-presentation-at-a-time slot.
         XCTAssertTrue(executor.presentations.isEmpty)
         XCTAssertEqual(listener.events, [.hit("onboarding"), .completed("onboarding")])
@@ -235,7 +235,6 @@ final class CheckpointsManagerTests: TestCase {
         }
 
         XCTAssertEqual(noActionResult.reason, .invalidCheckpointIdentifier)
-        XCTAssertEqual(noActionResult.checkpoint.identifier, invalidIdentifier)
         XCTAssertEqual(resolutionCount, 0)
         XCTAssertEqual(listener.events, [.hit(invalidIdentifier), .completed(invalidIdentifier)])
         self.logger.verifyMessageWasLogged(
@@ -266,20 +265,33 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testUIOwnedReferenceModelsPreserveValueEqualityAndHashing() {
-        let firstInfo = CheckpointInfo(
+        let firstHitContext = CheckpointHitContext(
             identifier: "test",
             params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
-        let secondInfo = CheckpointInfo(
+        let secondHitContext = CheckpointHitContext(
             identifier: "test",
             params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
-        let firstResult = CheckpointNoActionResult(checkpoint: firstInfo, reason: .noMatch)
-        let secondResult = CheckpointNoActionResult(checkpoint: secondInfo, reason: .noMatch)
+        let firstResult = CheckpointNoActionResult(reason: .noMatch)
+        let secondResult = CheckpointNoActionResult(reason: .noMatch)
+        let firstCompletedContext = CheckpointCompletedContext(
+            identifier: "test",
+            params: CheckpointCallParams(customVariables: ["name": "Rick"]),
+            result: firstResult
+        )
+        let secondCompletedContext = CheckpointCompletedContext(
+            identifier: "test",
+            params: CheckpointCallParams(customVariables: ["name": "Rick"]),
+            result: secondResult
+        )
 
-        XCTAssertEqual(firstInfo, secondInfo)
+        XCTAssertEqual(firstHitContext, secondHitContext)
+        XCTAssertEqual(firstCompletedContext, secondCompletedContext)
+        XCTAssertNotEqual(firstHitContext, firstCompletedContext)
         XCTAssertEqual(firstResult, secondResult)
-        XCTAssertEqual(Set([firstInfo, secondInfo]).count, 1)
+        XCTAssertEqual(Set([firstHitContext, secondHitContext]).count, 1)
+        XCTAssertEqual(Set([firstCompletedContext, secondCompletedContext]).count, 1)
         XCTAssertEqual(Set([firstResult, secondResult]).count, 1)
     }
 
@@ -600,13 +612,17 @@ private final class ListenerRecorder: CheckpointListener {
     }
 
     private(set) var events: [Event] = []
+    private(set) var hitContexts: [CheckpointHitContext] = []
+    private(set) var completedContexts: [CheckpointCompletedContext] = []
 
-    func onCheckpointHit(_ checkpoint: CheckpointInfo) {
-        self.events.append(.hit(checkpoint.identifier))
+    func onCheckpointHit(_ context: CheckpointHitContext) {
+        self.hitContexts.append(context)
+        self.events.append(.hit(context.identifier))
     }
 
-    func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
-        self.events.append(.completed(checkpoint.identifier))
+    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+        self.completedContexts.append(context)
+        self.events.append(.completed(context.identifier))
     }
 
 }
