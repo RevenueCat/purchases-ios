@@ -64,7 +64,11 @@ class PurchaseButtonComponentViewModel {
 
     typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
 
-    func urlForWebCheckout(packageContext: PackageContext?) -> LaunchWebCheckout? {
+    func urlForWebCheckout(
+        packageContext: PackageContext?,
+        appUserID: String,
+        isSandbox: Bool
+    ) -> LaunchWebCheckout? {
         guard let method = self.method else {
             return nil
         }
@@ -85,37 +89,90 @@ class PurchaseButtonComponentViewModel {
                 return nil
             }
         case .customWebCheckout(let customWebCheckout):
-            if let customUrl = self.customWebCheckoutUrl {
-                if let package = packageContext?.package,
-                   let packageParam = customWebCheckout.customUrl.packageParam {
-                    let url = customUrl.appending(name: packageParam, value: package.identifier)
-                    return (url,
-                            customWebCheckout.openMethod ?? .externalBrowser,
-                            customWebCheckout.autoDismiss ?? true)
-                } else {
-                    return (customUrl,
-                            customWebCheckout.openMethod ?? .externalBrowser,
-                            customWebCheckout.autoDismiss ?? true)
-                }
-            } else {
+            guard let customUrl = self.customWebCheckoutUrl else {
                 return nil
             }
+
+            let url = Self.resolvedCustomWebCheckoutUrl(
+                customUrl,
+                configuration: customWebCheckout.customUrl,
+                package: packageContext?.package,
+                appUserID: appUserID,
+                isSandbox: isSandbox
+            )
+
+            return (url,
+                    customWebCheckout.openMethod ?? .externalBrowser,
+                    customWebCheckout.autoDismiss ?? true)
         }
     }
+
+    private static func resolvedCustomWebCheckoutUrl(
+        _ url: URL,
+        configuration: PaywallComponent.PurchaseButtonComponent.CustomWebCheckout.CustomURL,
+        package: Package?,
+        appUserID: String,
+        isSandbox: Bool
+    ) -> URL {
+        var queryItems: [(name: String, value: String)] = [(Self.sourceParam, Self.sourceValue)]
+
+        if let appUserIDParam = configuration.appUserIDParam {
+            queryItems.append((appUserIDParam, appUserID))
+        }
+
+        if let envParam = configuration.envParam {
+            queryItems.append((envParam, isSandbox ? Self.sandboxEnvValue : Self.productionEnvValue))
+        }
+
+        if let packageParam = configuration.packageParam, let package {
+            queryItems.append((packageParam, package.identifier))
+        }
+
+        return url.upserting(queryItems: queryItems)
+    }
+
+    private static let sourceParam = "rc_source"
+    private static let sourceValue = "app"
+    private static let sandboxEnvValue = "sandbox"
+    private static let productionEnvValue = "production"
 
 }
 
 private extension URL {
 
-    func appending(name: String, value: String?) -> URL {
-        var components = URLComponents(url: self, resolvingAgainstBaseURL: false)
+    /// Adds each item, replacing any same-named item already in the URL and leaving everything else —
+    /// unrelated query parameters and the fragment — byte-for-byte intact.
+    func upserting(queryItems newItems: [(name: String, value: String)]) -> URL {
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: false) else {
+            return self
+        }
 
-        var queryItems = components?.queryItems ?? []
-        queryItems.append(URLQueryItem(name: name, value: value))
-        components?.queryItems = queryItems
+        let replacedNames = Set(newItems.map(\.name))
+        var items = components.percentEncodedQueryItems ?? []
+        items.removeAll { replacedNames.contains($0.name.removingPercentEncoding ?? $0.name) }
+        items.append(contentsOf: newItems.map {
+            URLQueryItem(name: $0.name.percentEncodedForQuery, value: $0.value.percentEncodedForQuery)
+        })
+        components.percentEncodedQueryItems = items
 
-        return components?.url ?? self
+        return components.url ?? self
     }
+
+}
+
+private extension String {
+
+    /// `urlQueryAllowed` permits characters that are legal in a query string but ambiguous inside a
+    /// single parameter — most notably `+`, which many servers read as a space.
+    var percentEncodedForQuery: String {
+        return self.addingPercentEncoding(withAllowedCharacters: Self.queryParameterAllowed) ?? self
+    }
+
+    private static let queryParameterAllowed: CharacterSet = {
+        var allowed = CharacterSet.urlQueryAllowed
+        allowed.remove(charactersIn: "+&=?#")
+        return allowed
+    }()
 
 }
 

@@ -117,15 +117,28 @@ import Foundation
 
                 public let url: LocalizationKey
                 public let packageParam: String?
+                public let appUserIDParam: String?
+                public let envParam: String?
 
-                public init(url: PaywallComponent.LocalizationKey, packageParam: String? = nil) {
+                public init(
+                    url: PaywallComponent.LocalizationKey,
+                    packageParam: String? = nil,
+                    appUserIDParam: String? = nil,
+                    envParam: String? = nil
+                ) {
                     self.url = url
                     self.packageParam = packageParam
+                    self.appUserIDParam = appUserIDParam
+                    self.envParam = envParam
                 }
 
+                // `JSONDecoder.default` converts snake case before matching these keys, so they hold the
+                // already-converted form of `url_lid` and `app_user_id_param`.
                 private enum CodingKeys: String, CodingKey {
                     case url = "urlLid"
                     case packageParam
+                    case appUserIDParam = "appUserIdParam"
+                    case envParam
                 }
 
             }

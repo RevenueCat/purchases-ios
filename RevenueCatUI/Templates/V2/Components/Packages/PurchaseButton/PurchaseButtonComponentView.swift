@@ -135,7 +135,12 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(packageContext: packageContext) else {
+        // Resolved at tap time so a login or logout since the paywall loaded is reflected in the URL.
+        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
+            packageContext: self.packageContext,
+            appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
+            isSandbox: Purchases.isConfigured ? Purchases.shared.isSandbox : false
+        ) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }
