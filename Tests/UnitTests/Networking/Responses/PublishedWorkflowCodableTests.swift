@@ -114,4 +114,43 @@ class PublishedWorkflowCodableTests: TestCase {
         expect(decoded.metadata?["source"]) == .string("cdn")
     }
 
+    func testDecodingScreenWithNullDefaultLocaleDoesNotFailWholeWorkflow() throws {
+        let json = """
+        {
+          "id": "wf-1",
+          "display_name": "Test",
+          "initial_step_id": "step-1",
+          "steps": {},
+          "screens": {
+            "pwa-1": {
+              "template_name": "tmpl",
+              "asset_base_url": "https://assets.revenuecat.com",
+              "default_locale": null,
+              "components_localizations": {},
+              "components_config": {
+                "base": {
+                  "stack": {
+                    "type": "stack", "components": [],
+                    "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                    "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                    "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                    "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+                  },
+                  "background": {
+                    "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+        """
+        let decoded = try JSONDecoder.default.decode(
+            PublishedWorkflow.self,
+            jsonData: try XCTUnwrap(json.data(using: .utf8))
+        )
+
+        expect(decoded.screens["pwa-1"]?.defaultLocale) == "en"
+    }
+
 }
