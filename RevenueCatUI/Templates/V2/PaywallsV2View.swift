@@ -843,8 +843,23 @@ extension PaywallsV2View {
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
         var seen = Set<Package>()
+        var indexByPackage: [Package: Int] = [:]
         var result: [(package: Package, promotionalOfferProductCode: String?)] = []
-        for info in paywallPackageInfos where seen.insert(info.package).inserted {
+        for info in paywallPackageInfos {
+            guard seen.insert(info.package).inserted else {
+                // The same package can be placed in several package components (a default row, a
+                // promo row, a "show all plans" sheet) and only one of them is authored with a promo
+                // offer code, not necessarily the first in document order. The cache is keyed by
+                // product id, so a package can only carry one code: keep the first authored one and
+                // let a later duplicate fill it in when the earlier placements had none. Dropping it
+                // here made `promo_offer` overrides silently never resolve for the product.
+                if let index = indexByPackage[info.package],
+                   result[index].promotionalOfferProductCode == nil {
+                    result[index].promotionalOfferProductCode = info.promotionalOfferProductCode
+                }
+                continue
+            }
+            indexByPackage[info.package] = result.count
             result.append(info)
         }
         for package in workflowPackages ?? [] where seen.insert(package).inserted {
