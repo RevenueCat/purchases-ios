@@ -134,7 +134,8 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-    public let defaultLocale: PaywallComponent.LocaleID
+    var _defaultLocale: PaywallComponent.LocaleID
+    public var defaultLocale: PaywallComponent.LocaleID { _defaultLocale }
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
     public let offeringIdentifier: String?
@@ -178,7 +179,7 @@ import Foundation
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
-        self.defaultLocale = defaultLocale
+        self._defaultLocale = defaultLocale
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
         self.exitOffers = exitOffers
@@ -309,7 +310,8 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
-        case defaultLocale
+        // swiftlint:disable:next identifier_name
+        case _defaultLocale = "defaultLocale"
         case config
         case offeringIdentifier
         case exitOffers

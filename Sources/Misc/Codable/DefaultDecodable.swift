@@ -198,6 +198,10 @@ enum DefaultDecodable {
         enum EmptyString: DefaultValueProvider {
             static var defaultValue: String { "" }
         }
+        
+        enum EnglishLocale: DefaultValueProvider {
+            static var defaultValue: String { "en" }
+        }
 
         enum Zero: DefaultValueProvider {
             static var defaultValue: Int { 0 }
@@ -244,6 +248,7 @@ extension DefaultDecodable {
     typealias True = DefaultValue<Sources.True>
     typealias False = DefaultValue<Sources.False>
     typealias EmptyString = DefaultValue<Sources.EmptyString>
+    typealias EnglishLocale = DefaultValue<Sources.EnglishLocale>
     typealias EmptyArray<T: List> = DefaultValue<Sources.EmptyArray<T>>
     typealias EmptyDictionary<T: Map> = DefaultValue<Sources.EmptyDictionary<T>>
     typealias Now = DefaultValue<Sources.Now>
