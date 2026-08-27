@@ -233,9 +233,9 @@ NSURL *url;
 
     RCVirtualCurrencies * _Nullable __unused virtualCurrencies = p.cachedVirtualCurrencies;
 
-    [p spendVirtualCurrencyWithAmounts:@{ @"GLD": @42 }
-                             reference:@"test-123"
-                            completion:^(RCVirtualCurrencies * _Nullable vc, NSError * _Nullable err) {
+    [p spendVirtualCurrenciesWithAmounts:@{ @"GLD": @42 }
+                               reference:@"test-123"
+                              completion:^(RCVirtualCurrencies * _Nullable vc, NSError * _Nullable err) {
 
     }];
 
