@@ -19,7 +19,7 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 
     func onCheckpointHit(_ checkpoint: CheckpointInfo) {
         let _: String = checkpoint.identifier
-        let _: CheckpointParams = checkpoint.params
+        let _: [String: CustomVariableValue] = checkpoint.customVariables
     }
 
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
@@ -29,6 +29,7 @@ private final class CheckpointListenerAPITester: CheckpointListener {
             let outcome: CheckpointPaywallOutcome = presented.paywallOutcome
 
             if let purchased = outcome as? CheckpointPaywallPurchasedOutcome {
+                let _: StoreTransaction? = purchased.transaction
                 let _: CustomerInfo = purchased.customerInfo
             } else if let restored = outcome as? CheckpointPaywallRestoredOutcome {
                 let _: CustomerInfo = restored.customerInfo
@@ -43,6 +44,7 @@ private final class CheckpointListenerAPITester: CheckpointListener {
             let _: Offering = receivedOffering.offering
         } else if let noAction = result as? CheckpointNoActionResult {
             let _: CheckpointNoActionReason = noAction.reason
+            let _: String = noAction.reason.description
         }
     }
 
@@ -54,37 +56,37 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
-    let literalParams = CheckpointParams(customVariables: [
+    let literalCustomVariables: [String: CustomVariableValue] = [
         "name": "Rick",
         "points": 120,
         "score": 4.5,
         "subscriber": true
-    ])
-    let explicitParams = CheckpointParams(customVariables: [
+    ]
+    let explicitCustomVariables: [String: CustomVariableValue] = [
         "name": .string("Rick"),
         "points": .number(120),
         "score": .number(4.5),
         "subscriber": .bool(true)
-    ])
-    let _: [String: CustomVariableValue] = literalParams.customVariables
-    let _: [String: CustomVariableValue] = explicitParams.customVariables
+    ]
 
     purchases.checkpoint(
         "test_checkpoint",
-        params: literalParams
+        customVariables: literalCustomVariables
     ) { (_: Result<CheckpointResult, PublicError>) in }
 
     purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
 
     Task {
-        let _: CheckpointResult = try await purchases.checkpoint("test_checkpoint")
+        let _: CheckpointResult = try await purchases.checkpoint(
+            "test_checkpoint",
+            customVariables: explicitCustomVariables
+        )
     }
 
     let _: CheckpointNoActionReason = .noMatch
     let _: CheckpointNoActionReason = .holdout
     let _: CheckpointNoActionReason = .frequencyCapped
     let _: CheckpointNoActionReason = .configurationUnavailable
-    let _: CheckpointNoActionReason = .disabled
     let _: CheckpointNoActionReason = .unknownCheckpoint
     let _: CheckpointNoActionReason = .invalidCheckpointIdentifier
 }

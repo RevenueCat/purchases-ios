@@ -834,21 +834,39 @@ extension PaywallsV2View {
         return (paywallPackages + (workflowPackages ?? [])).filter { seen.insert($0).inserted }
     }
 
-    /// On-screen package infos plus any inherited workflow packages (with their authored promo offer
-    /// code), so `promo_offer_condition` overrides resolve on a workflow step that has no package
-    /// component of its own.
+    /// Every package the screen can show, each paired with the promo offer code it was given.
+    ///
+    /// When the screen is a step inside a workflow, the packages that workflow is carrying are added
+    /// as well: a step's own components do not always list packages, and its promo offer rules would
+    /// then have nothing to check against. Rendered on its own, a paywall has none to add.
+    ///
+    /// The same subscription is often placed in more than one spot (a default row, a promo row, a
+    /// list behind "show all plans"), but promo eligibility is looked up per product, so one
+    /// subscription can only carry one code. If two spots set different codes for it, the first one
+    /// set wins; there is no way to honour both from here.
     static func promoEligibilityPackageInfos(
         paywallPackageInfos: [(package: Package, promotionalOfferProductCode: String?)],
         workflowPackages: [Package]?,
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
-        var seen = Set<Package>()
         var result: [(package: Package, promotionalOfferProductCode: String?)] = []
-        for info in paywallPackageInfos where seen.insert(info.package).inserted {
-            result.append(info)
+
+        func merge(_ package: Package, _ promotionalOfferProductCode: String?) {
+            guard let index = result.firstIndex(where: { $0.package == package }) else {
+                result.append((package: package, promotionalOfferProductCode: promotionalOfferProductCode))
+                return
+            }
+            // A later placement only fills in a code the earlier ones lacked.
+            if result[index].promotionalOfferProductCode == nil {
+                result[index].promotionalOfferProductCode = promotionalOfferProductCode
+            }
         }
-        for package in workflowPackages ?? [] where seen.insert(package).inserted {
-            result.append((package, workflowPromoOfferProductCodes?[package.identifier]))
+
+        for info in paywallPackageInfos {
+            merge(info.package, info.promotionalOfferProductCode)
+        }
+        for package in workflowPackages ?? [] {
+            merge(package, workflowPromoOfferProductCodes?[package.identifier])
         }
         return result
     }
