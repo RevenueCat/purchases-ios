@@ -70,6 +70,16 @@ import Foundation
     typealias ColorHex = String
 }
 
+extension PaywallComponent {
+    
+    enum DefaultLocaleFallback: DefaultValueProvider {
+
+        static let defaultValue: PaywallComponent.LocaleID = "en"
+
+    }
+
+}
+
 @_spi(Internal) extension PaywallComponent {
 
     enum CodingKeys: String, CodingKey {
