@@ -130,7 +130,7 @@ private extension CheckpointResolutionReason {
         case .configurationUnavailable:
             return .configurationUnavailable
         case .disabled:
-            return .disabled
+            return .configurationUnavailable
         case .unknownCheckpoint:
             return .unknownCheckpoint
         }

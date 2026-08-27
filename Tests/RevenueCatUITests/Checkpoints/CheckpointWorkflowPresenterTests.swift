@@ -46,6 +46,35 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertNil(store.call)
     }
 
+    func testPurchaseCallbackPreservesTransaction() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let transaction = StoreTransaction(MockStoreTransaction())
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewController(
+            PaywallViewController(offering: presentation.workflow.offering),
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: transaction
+        )
+
+        guard let stagedOutcome = store.call?.stagedOutcome as? CheckpointPaywallPurchasedOutcome else {
+            return XCTFail("Expected a purchased outcome")
+        }
+        XCTAssertEqual(stagedOutcome.transaction, transaction)
+        XCTAssertEqual(stagedOutcome.customerInfo, TestData.customerInfo)
+
+        presenter.presentationDidDismiss()
+
+        guard let reportedOutcome = delegate.outcome as? CheckpointPaywallPurchasedOutcome else {
+            return XCTFail("Expected a purchased outcome")
+        }
+        XCTAssertEqual(reportedOutcome.transaction, transaction)
+        XCTAssertEqual(reportedOutcome.customerInfo, TestData.customerInfo)
+    }
+
     func testCallStoreDefaultsToDismissedAndRemovesCall() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()

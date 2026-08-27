@@ -81,15 +81,15 @@ public final class ObjCCheckpointInfo: NSObject {
 
     init(_ value: CheckpointInfo) {
         self.identifier = value.identifier
-        self.params = ObjCCheckpointParams(value.params)
+        self.customVariables = value.customVariables.mapValues { $0.foundationValue } as NSDictionary
         super.init()
     }
 
     /// The identifier of the checkpoint that was hit.
     @objc public let identifier: String
 
-    /// The parameters supplied when the checkpoint was hit.
-    @objc public let params: ObjCCheckpointParams
+    /// The custom variables supplied when the checkpoint was hit.
+    @objc public let customVariables: NSDictionary
 
 }
 
@@ -222,9 +222,13 @@ public final class ObjCCheckpointPaywallDismissedOutcome: ObjCCheckpointPaywallO
 public final class ObjCCheckpointPaywallPurchasedOutcome: ObjCCheckpointPaywallOutcome {
 
     init(_ value: CheckpointPaywallPurchasedOutcome) {
+        self.transaction = value.transaction
         self.customerInfo = value.customerInfo
         super.init()
     }
+
+    /// The transaction completed by the purchase, if available.
+    @objc public let transaction: StoreTransaction?
 
     /// Customer information after the completed purchase.
     @objc public let customerInfo: CustomerInfo

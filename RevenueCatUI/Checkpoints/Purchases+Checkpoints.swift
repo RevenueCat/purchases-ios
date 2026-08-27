@@ -27,15 +27,16 @@ public extension Purchases {
         set { self.checkpointsManager.listener = newValue }
     }
 
-    /// Registers that a checkpoint was hit.
+    /// Evaluates a checkpoint and calls `completion` with its result.
     ///
-    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
-    /// The call resolves when the experience finishes.
+    /// Depending on the configured targeting rules, this may automatically present an experience or return a
+    /// ``CheckpointNoActionResult`` without presenting UI. If an experience is presented, `completion` is called
+    /// after the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - params: Optional per-call parameters.
-    ///   - completion: Called with the result, or an error if the checkpoint could not be handled.
+    ///   - completion: Called with the checkpoint result, or with an error if evaluation or presentation fails.
     func checkpoint(
         _ identifier: String,
         params: CheckpointParams = .init(),
@@ -48,16 +49,18 @@ public extension Purchases {
         )
     }
 
-    /// Registers that a checkpoint was hit.
+    /// Evaluates a checkpoint and returns its result.
     ///
-    /// Depending on the configured targeting rules, this may auto-present an experience or do nothing.
-    /// The call resolves when the experience finishes.
+    /// Depending on the configured targeting rules, this may automatically present an experience or return a
+    /// ``CheckpointNoActionResult`` without presenting UI. If an experience is presented, this method returns
+    /// after the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - params: Optional per-call parameters.
     /// - Returns: The result for this checkpoint.
-    /// - Throws: An error if the checkpoint could not be handled.
+    /// - Throws: An error if checkpoint evaluation or presentation fails.
+    @discardableResult
     func checkpoint(
         _ identifier: String,
         params: CheckpointParams = .init()

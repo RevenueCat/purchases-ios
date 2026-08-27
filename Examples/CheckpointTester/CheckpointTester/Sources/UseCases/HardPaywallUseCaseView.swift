@@ -97,7 +97,7 @@ struct HardPaywallUseCaseView: View {
         case let received as CheckpointReceivedOfferingResult:
             self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
         case let noAction as CheckpointNoActionResult:
-            self.status = "No paywall shown (\(noAction.reason.value)). Content remains locked."
+            self.status = "No paywall shown (\(noAction.reason)). Content remains locked."
         default:
             self.status = "Unknown checkpoint result. Content remains locked."
         }
