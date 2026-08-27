@@ -23,14 +23,12 @@ struct PaywallWebViewStaticContext {
     let offeringDisplayName: String
     let packages: [Package]
     let workflow: Workflow?
-    let isPreview: Bool
     let storefrontCountryCode: String?
 
     init(
         offering: Offering,
         packages: [Package],
         workflow: Workflow?,
-        isPreview: Bool,
         storefrontCountryCode: String?
     ) {
         var identifiers = Set<String>()
@@ -38,8 +36,7 @@ struct PaywallWebViewStaticContext {
         self.offeringIdentifier = offering.identifier
         self.offeringDisplayName = offering.serverDescription
         self.packages = packages.filter { identifiers.insert($0.identifier).inserted }
-        self.workflow = workflow
-        self.isPreview = isPreview
+        self.workflow = workflowreview
         self.storefrontCountryCode = storefrontCountryCode
     }
 
@@ -64,7 +61,7 @@ struct PaywallWebViewStaticContext {
             package: package.map(self.packageValue) ?? .null,
             selectedPackage: selectedPackage.map(self.packageValue) ?? .null,
             workflow: self.workflow.map(Self.workflowValue) ?? .null,
-            isPreview: self.isPreview,
+            isPreview: false,
             localeIdentifier: locale.identifier,
             isDarkMode: isDarkMode
         )
@@ -148,7 +145,6 @@ struct PaywallWebViewContext: Equatable {
     let package: PaywallWebViewValue
     let selectedPackage: PaywallWebViewValue
     let workflow: PaywallWebViewValue
-    let isPreview: Bool
     let localeIdentifier: String
     let isDarkMode: Bool
 
@@ -163,7 +159,7 @@ struct PaywallWebViewContext: Equatable {
             "selected_package": self.selectedPackage,
             "workflow": self.workflow,
             "device_meta": .object([
-                "is_preview": .bool(self.isPreview),
+                "is_preview": .bool(false),
                 "locale": .string(self.localeIdentifier),
                 "dark_mode": .bool(self.isDarkMode),
                 "updated_at": .number(updatedAtMilliseconds)

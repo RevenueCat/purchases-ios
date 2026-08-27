@@ -29,7 +29,6 @@ final class PaywallWebViewContextTests: TestCase {
                 stepType: "screen",
                 screenType: ["paywall"]
             ),
-            isPreview: false,
             storefrontCountryCode: "USA"
         )
 
