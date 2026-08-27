@@ -377,7 +377,6 @@ private extension PaywallFixture {
                                         color: .init(light: .hex("#000000"))
                                     ))
                                 ],
-                                badge: nil,
                                 size: .init(width: .fill, height: .fit(nil)),
                                 backgroundColor: .init(light: .hex("#eeeeee")),
                                 padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16),
