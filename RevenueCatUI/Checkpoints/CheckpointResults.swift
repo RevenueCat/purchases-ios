@@ -167,6 +167,8 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 ///     handleRestore(outcome.customerInfo)
 /// case is CheckpointPaywallDismissedOutcome:
 ///     handleDismissal()
+/// case is CheckpointPaywallWebCheckoutOpenedOutcome:
+///     handleWebCheckoutOpened()
 /// case let outcome as CheckpointPaywallErrorOutcome:
 ///     handleError(outcome.error)
 /// default:
@@ -209,6 +211,20 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
     private override init() { super.init() }
 
     public override var description: String { return "Dismissed" }
+
+}
+
+/// The customer opened a web checkout from the paywall.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+// swiftlint:disable:next type_name
+public final class CheckpointPaywallWebCheckoutOpenedOutcome: CheckpointPaywallOutcome {
+
+    static let shared = CheckpointPaywallWebCheckoutOpenedOutcome()
+
+    private override init() { super.init() }
+
+    public override var description: String { return "WebCheckoutOpened" }
 
 }
 

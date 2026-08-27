@@ -114,6 +114,8 @@ struct HardPaywallUseCaseView: View {
             self.status = "Restore completed. Access granted."
         case is CheckpointPaywallDismissedOutcome:
             self.status = "Paywall dismissed. Content remains locked."
+        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+            self.status = "Web checkout opened. Complete the purchase to unlock content."
         case let failed as CheckpointPaywallErrorOutcome:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:

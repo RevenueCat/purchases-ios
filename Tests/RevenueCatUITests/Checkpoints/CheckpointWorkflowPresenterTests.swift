@@ -75,6 +75,26 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertEqual(reportedOutcome.customerInfo, TestData.customerInfo)
     }
 
+    func testWebCheckoutCallbackStagesOutcomeUntilPresentationFinishesDismissing() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewControllerDidOpenWebCheckout(
+            PaywallViewController(offering: presentation.workflow.offering)
+        )
+
+        XCTAssertTrue(store.call?.stagedOutcome is CheckpointPaywallWebCheckoutOpenedOutcome)
+        XCTAssertNil(delegate.outcome)
+
+        presenter.presentationDidDismiss()
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallWebCheckoutOpenedOutcome)
+        XCTAssertNil(store.call)
+    }
+
     func testCallStoreDefaultsToDismissedAndRemovesCall() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()

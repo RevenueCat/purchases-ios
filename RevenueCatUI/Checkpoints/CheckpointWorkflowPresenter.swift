@@ -189,6 +189,12 @@ extension CheckpointWorkflowPresenter {
         }
     }
 
+    nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
+        MainActor.assumeIsolated {
+            self.stage(outcome: CheckpointPaywallWebCheckoutOpenedOutcome.shared)
+        }
+    }
+
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
             self.presentationDidDismiss()
@@ -236,6 +242,10 @@ extension CheckpointWorkflowPresenter {
         didFailRestoringWith error: NSError
     ) {
         self.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+    }
+
+    func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
+        self.stage(outcome: CheckpointPaywallWebCheckoutOpenedOutcome.shared)
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {

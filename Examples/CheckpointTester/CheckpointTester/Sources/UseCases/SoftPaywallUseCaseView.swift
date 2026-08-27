@@ -103,6 +103,8 @@ struct SoftPaywallUseCaseView: View {
             self.updateSubscriptionStatus(with: restored.customerInfo, action: "Restored")
         case is CheckpointPaywallDismissedOutcome:
             self.status = "Paywall dismissed. Content remains available."
+        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+            self.status = "Web checkout opened. Content remains available."
         case let failed as CheckpointPaywallErrorOutcome:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:

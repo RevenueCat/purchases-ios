@@ -73,6 +73,8 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
         switch result {
         case is CheckpointPaywallDismissedOutcome:
             return "Dismissed"
+        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+            return "Web checkout opened"
         case is CheckpointPaywallPurchasedOutcome:
             return "Purchased"
         case is CheckpointPaywallRestoredOutcome:

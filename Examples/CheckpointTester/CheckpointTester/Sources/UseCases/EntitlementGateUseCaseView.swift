@@ -121,6 +121,8 @@ struct EntitlementGateUseCaseView: View {
             self.updateAccess(with: restored.customerInfo, action: "Restore completed")
         case is CheckpointPaywallDismissedOutcome:
             self.status = "Paywall dismissed. Content remains locked."
+        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+            self.status = "Web checkout opened. Refresh access after completing the purchase."
         case let failed as CheckpointPaywallErrorOutcome:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:

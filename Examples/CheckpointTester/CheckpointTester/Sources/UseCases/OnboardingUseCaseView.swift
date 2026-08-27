@@ -145,6 +145,8 @@ struct OnboardingUseCaseView: View {
             return "Restored during onboarding."
         case is CheckpointPaywallDismissedOutcome:
             return "Paywall dismissed."
+        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+            return "Web checkout opened."
         case let failed as CheckpointPaywallErrorOutcome:
             return "Paywall failed: \(failed.error.localizedDescription)"
         default:
