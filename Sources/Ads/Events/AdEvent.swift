@@ -134,19 +134,31 @@ internal protocol AdImpressionEventData: AdEventData {
                                                            Codable,
                                                            @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The mediation network that reported the load failure.
     @objc public private(set) var mediatorName: MediatorName
+
+    /// The format of the ad that failed to load.
     @objc public private(set) var adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was requested, if provided.
     @objc public private(set) var placement: String?
+
+    /// The ad unit identifier of the ad that failed to load.
     @objc public private(set) var adUnitId: String
+
     private let mediatorErrorCodeRawValue: Int?
+
+    /// The error code reported by the mediation SDK for the failure, if it provided one.
     @objc public var mediatorErrorCode: NSNumber? {
         return self.mediatorErrorCodeRawValue.map(NSNumber.init(value:))
     }
+
+    /// The error code reported by the mediation SDK for the failure, as an `Int?`, if it provided one.
     public var mediatorErrorCodeValue: Int? {
         return self.mediatorErrorCodeRawValue
     }
 
+    // swiftlint:disable missing_docs
     @objc public init(
         mediatorName: MediatorName,
         adFormat: AdFormat,
@@ -231,14 +243,25 @@ internal protocol AdImpressionEventData: AdEventData {
                                                Codable,
                                                @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The ad network that served the ad, as reported by the mediator, if available.
     @objc public private(set) var networkName: String?
+
+    /// The mediation network that brokered the ad.
     @objc public private(set) var mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
     @objc public private(set) var adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
     @objc public private(set) var placement: String?
+
+    /// The ad unit identifier for the ad.
     @objc public private(set) var adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
     @objc public private(set) var impressionId: String
 
+    // swiftlint:disable missing_docs
     @objc public init(
         networkName: String?,
         mediatorName: MediatorName,
@@ -305,14 +328,25 @@ internal protocol AdImpressionEventData: AdEventData {
                                                      Codable,
                                                      @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The ad network that served the ad, as reported by the mediator, if available.
     @objc public private(set) var networkName: String?
+
+    /// The mediation network that brokered the ad.
     @objc public private(set) var mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
     @objc public private(set) var adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
     @objc public private(set) var placement: String?
+
+    /// The ad unit identifier for the ad.
     @objc public private(set) var adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
     @objc public private(set) var impressionId: String
 
+    // swiftlint:disable missing_docs
     @objc public init(
         networkName: String?,
         mediatorName: MediatorName,
@@ -379,14 +413,25 @@ internal protocol AdImpressionEventData: AdEventData {
                                                Codable,
                                                @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The ad network that served the ad, as reported by the mediator, if available.
     @objc public private(set) var networkName: String?
+
+    /// The mediation network that brokered the ad.
     @objc public private(set) var mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
     @objc public private(set) var adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
     @objc public private(set) var placement: String?
+
+    /// The ad unit identifier for the ad.
     @objc public private(set) var adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
     @objc public private(set) var impressionId: String
 
+    // swiftlint:disable missing_docs
     @objc public init(
         networkName: String?,
         mediatorName: MediatorName,
@@ -453,17 +498,34 @@ internal protocol AdImpressionEventData: AdEventData {
                                                  Codable,
                                                  @unchecked Sendable {
 
-    // swiftlint:disable missing_docs
+    /// The ad network that served the ad, as reported by the mediator, if available.
     @objc public private(set) var networkName: String?
+
+    /// The mediation network that brokered the ad.
     @objc public private(set) var mediatorName: MediatorName
+
+    /// The format of the ad (for example, banner, interstitial, or rewarded).
     @objc public private(set) var adFormat: AdFormat
+
+    /// The developer-defined placement where the ad was shown, if provided.
     @objc public private(set) var placement: String?
+
+    /// The ad unit identifier for the ad.
     @objc public private(set) var adUnitId: String
+
+    /// Identifier that correlates this event with other events for the same ad impression.
     @objc public private(set) var impressionId: String
+
+    /// The estimated ad revenue, expressed in micros (millionths) of ``currency``.
     @objc public private(set) var revenueMicros: Int
+
+    /// The ISO 4217 currency code for ``revenueMicros``.
     @objc public private(set) var currency: String
+
+    /// The accuracy level of the reported ``revenueMicros``.
     @objc public private(set) var precision: Precision
 
+    // swiftlint:disable missing_docs
     @objc public init(
         networkName: String?,
         mediatorName: MediatorName,
