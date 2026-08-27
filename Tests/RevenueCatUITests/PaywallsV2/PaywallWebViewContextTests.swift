@@ -11,7 +11,7 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class PaywallWebViewContextTests: TestCase {
 
-    func testSnapshotContainsCompletePaywallContext() throws {
+    func testSnapshotJSONMatchesExpectedPayload() throws {
         let monthly = Self.package(from: TestData.monthlyPackage, displayName: "Monthly")
         let annual = Self.package(from: TestData.annualPackage, displayName: "Annual")
         let offering = Offering(
@@ -29,7 +29,6 @@ final class PaywallWebViewContextTests: TestCase {
                 stepType: "screen",
                 screenType: ["paywall"]
             ),
-            isPreview: false,
             storefrontCountryCode: "USA"
         )
 
@@ -46,53 +45,131 @@ final class PaywallWebViewContextTests: TestCase {
         )
         let payload = context.payload(updatedAt: Date(timeIntervalSince1970: 1_787_000_000))
 
-        let custom = try XCTUnwrap(payload["custom"]?.objectValue)
-        XCTAssertEqual(custom["first_name"]?.stringValue, "Alex")
-        XCTAssertEqual(custom["streak_days"]?.numberValue, 12)
-        XCTAssertEqual(custom["is_premium"]?.boolValue, true)
+        let actualData = try JSONEncoder().encode(payload)
+        let actualJSON = try JSONDecoder().decode(PaywallWebViewValue.self, from: actualData)
+        let expectedJSON = try JSONDecoder().decode(
+            PaywallWebViewValue.self,
+            from: Data(Self.expectedPayload.utf8)
+        )
 
-        let offeringValue = try XCTUnwrap(payload["offering"]?.objectValue)
-        XCTAssertEqual(offeringValue["identifier"]?.stringValue, "default")
-        XCTAssertEqual(offeringValue["display_name"]?.stringValue, "Default")
-
-        let packages = try XCTUnwrap(payload["packages"]?.arrayValue)
-        XCTAssertEqual(packages.count, 2)
-
-        let package = try XCTUnwrap(payload["package"]?.objectValue)
-        XCTAssertEqual(package["identifier"]?.stringValue, annual.identifier)
-        XCTAssertEqual(package["display_name"]?.stringValue, "Annual")
-
-        let selectedPackage = try XCTUnwrap(payload["selected_package"]?.objectValue)
-        XCTAssertEqual(selectedPackage["identifier"]?.stringValue, monthly.identifier)
-
-        let products = try XCTUnwrap(package["products"]?.arrayValue)
-        let product = try XCTUnwrap(products.first?.objectValue)
-        XCTAssertEqual(product["identifier"]?.stringValue, annual.storeProduct.productIdentifier)
-        XCTAssertEqual(product["display_name"]?.stringValue, "Annual")
-        XCTAssertEqual(product["is_subscription"]?.boolValue, true)
-        XCTAssertEqual(product["period"]?.stringValue, "P1Y")
-        XCTAssertEqual(product["is_auto_renewing"]?.boolValue, true)
-
-        let store = try XCTUnwrap(product["store"]?.objectValue)
-        XCTAssertEqual(store["store_type"]?.stringValue, "app_store")
-        XCTAssertEqual(store["country"]?.stringValue, "USA")
-
-        let price = try XCTUnwrap(product["price"]?.objectValue)
-        XCTAssertEqual(try XCTUnwrap(price["amount"]?.numberValue), 53.99, accuracy: 0.001)
-        XCTAssertEqual(price["currency"]?.stringValue, "USD")
-
-        let workflow = try XCTUnwrap(payload["workflow"]?.objectValue)
-        XCTAssertEqual(workflow["workflow_id"]?.stringValue, "wf_123")
-        XCTAssertEqual(workflow["step_id"]?.stringValue, "step_paywall")
-        XCTAssertEqual(workflow["step_type"]?.stringValue, "screen")
-        XCTAssertEqual(workflow["screen_type"]?.arrayValue?.first?.stringValue, "paywall")
-
-        let deviceMeta = try XCTUnwrap(payload["device_meta"]?.objectValue)
-        XCTAssertEqual(deviceMeta["is_preview"]?.boolValue, false)
-        XCTAssertEqual(deviceMeta["locale"]?.stringValue, "en_US")
-        XCTAssertEqual(deviceMeta["dark_mode"]?.boolValue, true)
-        XCTAssertEqual(deviceMeta["updated_at"]?.numberValue, 1_787_000_000_000)
+        XCTAssertEqual(actualJSON, expectedJSON)
     }
+
+    private static let expectedPayload = """
+    {
+      "custom": {
+        "first_name": "Alex",
+        "streak_days": 12,
+        "is_premium": true
+      },
+      "offering": {
+        "identifier": "default",
+        "display_name": "Default"
+      },
+      "packages": [
+        {
+          "identifier": "$rc_monthly",
+          "display_name": "Monthly",
+          "products": [
+            {
+              "identifier": "com.revenuecat.product_2",
+              "store": {
+                "store_type": "app_store",
+                "country": "USA"
+              },
+              "display_name": "Monthly",
+              "is_subscription": true,
+              "period": "P1M",
+              "is_family_shareable": false,
+              "is_auto_renewing": true,
+              "price": {
+                "amount": 6.99,
+                "currency": "USD"
+              }
+            }
+          ]
+        },
+        {
+          "identifier": "$rc_annual",
+          "display_name": "Annual",
+          "products": [
+            {
+              "identifier": "com.revenuecat.product_3",
+              "store": {
+                "store_type": "app_store",
+                "country": "USA"
+              },
+              "display_name": "Annual",
+              "is_subscription": true,
+              "period": "P1Y",
+              "is_family_shareable": false,
+              "is_auto_renewing": true,
+              "price": {
+                "amount": 53.99,
+                "currency": "USD"
+              }
+            }
+          ]
+        }
+      ],
+      "package": {
+        "identifier": "$rc_annual",
+        "display_name": "Annual",
+        "products": [
+          {
+            "identifier": "com.revenuecat.product_3",
+            "store": {
+              "store_type": "app_store",
+              "country": "USA"
+            },
+            "display_name": "Annual",
+            "is_subscription": true,
+            "period": "P1Y",
+            "is_family_shareable": false,
+            "is_auto_renewing": true,
+            "price": {
+              "amount": 53.99,
+              "currency": "USD"
+            }
+          }
+        ]
+      },
+      "selected_package": {
+        "identifier": "$rc_monthly",
+        "display_name": "Monthly",
+        "products": [
+          {
+            "identifier": "com.revenuecat.product_2",
+            "store": {
+              "store_type": "app_store",
+              "country": "USA"
+            },
+            "display_name": "Monthly",
+            "is_subscription": true,
+            "period": "P1M",
+            "is_family_shareable": false,
+            "is_auto_renewing": true,
+            "price": {
+              "amount": 6.99,
+              "currency": "USD"
+            }
+          }
+        ]
+      },
+      "workflow": {
+        "workflow_id": "wf_123",
+        "step_id": "step_paywall",
+        "step_type": "screen",
+        "screen_type": ["paywall"]
+      },
+      "device_meta": {
+        "is_preview": false,
+        "locale": "en_US",
+        "dark_mode": true,
+        "updated_at": 1787000000000
+      }
+    }
+    """
 
     private static func package(from package: Package, displayName: String) -> Package {
         return .init(
@@ -100,7 +177,7 @@ final class PaywallWebViewContextTests: TestCase {
             displayName: displayName,
             packageType: package.packageType,
             storeProduct: package.storeProduct,
-            presentedOfferingContext: package.presentedOfferingContext,
+            offeringIdentifier: package.offeringIdentifier,
             webCheckoutUrl: package.webCheckoutUrl
         )
     }
