@@ -836,8 +836,9 @@ extension PaywallsV2View {
 
     /// Every package the screen can show, each paired with the promo offer code it was given.
     ///
-    /// Packages inherited from the workflow are included too, because a workflow step can have no
-    /// packages of its own, and its promo offer rules would then have nothing to check against.
+    /// When the screen is a step inside a workflow, the packages that workflow is carrying are added
+    /// as well: a step's own components do not always list packages, and its promo offer rules would
+    /// then have nothing to check against. Rendered on its own, a paywall has none to add.
     ///
     /// The same subscription is often placed in more than one spot (a default row, a promo row, a
     /// list behind "show all plans"), but promo eligibility is looked up per product, so one
