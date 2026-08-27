@@ -5,6 +5,7 @@
 
 #if os(macOS) && DEBUG
 
+import AppKit
 import SwiftUI
 @_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
@@ -24,6 +25,7 @@ struct MacOSPurchaseFocusRegressionView: View {
     private static let purchaseStarted = Notification.Name(
         "com.revenuecat.PaywallsTester.purchaseFocusRegression.purchaseStarted"
     )
+    private static let hostAccountFieldAccessibilityID = "focus-account-field"
 
     private enum FocusedField {
         case account
@@ -52,16 +54,17 @@ struct MacOSPurchaseFocusRegressionView: View {
     @State
     private var pendingPurchaseRunID: String?
 
+    @State
+    private var didConfirmHostFieldFocus = false
+
     @FocusState
     private var focusedField: FocusedField?
 
     private let offering: Offering
-    private let customerInfo: CustomerInfo
 
     init() {
         let loader = SamplePaywallLoader()
         self.offering = loader.offering(with: Self.paywallComponents)
-        self.customerInfo = loader.customerInfo
         self._purchaseHandler = .init(wrappedValue: PurchaseHandler.mock().with(delay: 60))
     }
 
@@ -71,7 +74,7 @@ struct MacOSPurchaseFocusRegressionView: View {
                 Section("Focus-heavy host controls") {
                     TextField("Account name", text: self.$accountName)
                         .focused(self.$focusedField, equals: .account)
-                        .accessibilityIdentifier("focus-account-field")
+                        .accessibilityIdentifier(Self.hostAccountFieldAccessibilityID)
                     TextField("Email", text: self.$email)
                         .focused(self.$focusedField, equals: .email)
                     TextEditor(text: self.$notes)
@@ -97,7 +100,6 @@ struct MacOSPurchaseFocusRegressionView: View {
 
             PaywallView(configuration: .init(
                 offering: self.offering,
-                customerInfo: self.customerInfo,
                 displayCloseButton: false,
                 introEligibility: .producing(eligibility: .ineligible),
                 purchaseHandler: self.purchaseHandler
@@ -114,6 +116,13 @@ struct MacOSPurchaseFocusRegressionView: View {
         .onReceive(
             DistributedNotificationCenter.default().publisher(for: Self.responsivenessPing)
         ) { notification in
+            // The first ping is readiness: only ack once an AppKit text field is first responder.
+            // Later pings are liveness checks after purchase starts (focus will already be resigned).
+            if !self.didConfirmHostFieldFocus {
+                guard self.ensureHostTextFieldIsFirstResponder() else { return }
+                self.didConfirmHostFieldFocus = true
+            }
+
             self.responsivenessCount += 1
             DistributedNotificationCenter.default().postNotificationName(
                 Self.responsivenessAcknowledgement,
@@ -128,6 +137,10 @@ struct MacOSPurchaseFocusRegressionView: View {
             guard let package = self.offering.availablePackages.first(where: { $0.packageType == .annual }) else {
                 return
             }
+
+            // Re-check AppKit first responder here — the earlier ping only proves focus at
+            // launch, and `didConfirmHostFieldFocus` would otherwise let this proceed stale.
+            guard self.ensureHostTextFieldIsFirstResponder() else { return }
 
             self.pendingPurchaseRunID = notification.object as? String
             Task {
@@ -149,6 +162,74 @@ struct MacOSPurchaseFocusRegressionView: View {
     private func confirmResponsiveness() {
         self.responsivenessCount += 1
         self.showResponsivenessAlert = true
+    }
+
+    @discardableResult
+    private func ensureHostTextFieldIsFirstResponder() -> Bool {
+        self.focusedField = .account
+
+        guard let window = Self.keyWindow() else {
+            return false
+        }
+
+        if Self.isTextInput(window.firstResponder) {
+            return true
+        }
+
+        let field = Self.hostAccountField(in: window.contentView) ?? Self.firstTextInput(in: window.contentView)
+        guard let field, window.makeFirstResponder(field) else {
+            return false
+        }
+
+        return Self.isTextInput(window.firstResponder)
+    }
+
+    private static func keyWindow() -> NSWindow? {
+        NSApplication.shared.keyWindow
+            ?? NSApplication.shared.mainWindow
+            ?? NSApplication.shared.windows.first(where: \.isVisible)
+    }
+
+    private static func isTextInput(_ responder: NSResponder?) -> Bool {
+        responder is NSTextField || responder is NSTextView || responder is NSText
+    }
+
+    private static func hostAccountField(in view: NSView?) -> NSView? {
+        guard let view else { return nil }
+
+        if Self.matchesHostAccountField(view) {
+            if Self.isTextInput(view) {
+                return view
+            }
+            return Self.firstTextInput(in: view)
+        }
+
+        for subview in view.subviews {
+            if let found = Self.hostAccountField(in: subview) {
+                return found
+            }
+        }
+        return nil
+    }
+
+    private static func matchesHostAccountField(_ view: NSView) -> Bool {
+        view.identifier?.rawValue == Self.hostAccountFieldAccessibilityID
+            || view.accessibilityIdentifier() == Self.hostAccountFieldAccessibilityID
+    }
+
+    private static func firstTextInput(in view: NSView?) -> NSView? {
+        guard let view else { return nil }
+
+        if Self.isTextInput(view) {
+            return view
+        }
+
+        for subview in view.subviews {
+            if let found = Self.firstTextInput(in: subview) {
+                return found
+            }
+        }
+        return nil
     }
 
     private static let paywallComponents: PaywallComponentsData = .init(

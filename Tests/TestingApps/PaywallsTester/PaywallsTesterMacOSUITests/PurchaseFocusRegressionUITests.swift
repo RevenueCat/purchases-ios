@@ -37,7 +37,7 @@ final class PurchaseFocusRegressionUITests: XCTestCase {
             response: Self.responsivenessAcknowledgement,
             runID: initialProbe,
             retryRequest: true,
-            failureMessage: "The regression scenario did not become ready."
+            failureMessage: "The host account field was never AppKit first responder."
         )
 
         let purchaseRunID = UUID().uuidString
@@ -46,7 +46,7 @@ final class PurchaseFocusRegressionUITests: XCTestCase {
             response: Self.purchaseStarted,
             runID: purchaseRunID,
             retryRequest: false,
-            failureMessage: "The suspended mock purchase never entered its disabled state."
+            failureMessage: "Purchase did not start with an AppKit text field as first responder."
         )
 
         let responsivenessRunID = UUID().uuidString
