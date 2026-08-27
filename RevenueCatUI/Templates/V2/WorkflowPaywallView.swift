@@ -785,7 +785,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.stepType,
+            stepType: step.type,
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
