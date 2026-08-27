@@ -132,8 +132,7 @@ import Foundation
                     self.envParam = envParam
                 }
 
-                // `JSONDecoder.default` converts snake case before matching these keys, so they hold the
-                // already-converted form of `url_lid` and `app_user_id_param`.
+                // Keys are matched after `JSONDecoder.default` has already converted from snake case.
                 private enum CodingKeys: String, CodingKey {
                     case url = "urlLid"
                     case packageParam

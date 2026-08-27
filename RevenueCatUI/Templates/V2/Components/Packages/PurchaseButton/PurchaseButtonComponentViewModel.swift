@@ -114,21 +114,21 @@ class PurchaseButtonComponentViewModel {
         appUserID: String,
         isSandbox: Bool
     ) -> URL {
-        var queryItems: [(name: String, value: String)] = [(Self.sourceParam, Self.sourceValue)]
+        var queryItems = [URLQueryItem(name: Self.sourceParam, value: Self.sourceValue)]
 
         if let appUserIDParam = configuration.appUserIDParam {
-            queryItems.append((appUserIDParam, appUserID))
+            queryItems.append(.init(name: appUserIDParam, value: appUserID))
         }
 
         if let envParam = configuration.envParam {
-            queryItems.append((envParam, isSandbox ? Self.sandboxEnvValue : Self.productionEnvValue))
+            queryItems.append(.init(name: envParam, value: isSandbox ? Self.sandboxEnvValue : Self.productionEnvValue))
         }
 
         if let packageParam = configuration.packageParam, let package {
-            queryItems.append((packageParam, package.identifier))
+            queryItems.append(.init(name: packageParam, value: package.identifier))
         }
 
-        return url.upserting(queryItems: queryItems)
+        return url.upserting(queryItems)
     }
 
     private static let sourceParam = "rc_source"
@@ -140,31 +140,36 @@ class PurchaseButtonComponentViewModel {
 
 private extension URL {
 
-    /// Adds each item, replacing any same-named item already in the URL and leaving everything else —
-    /// unrelated query parameters and the fragment — byte-for-byte intact.
-    func upserting(queryItems newItems: [(name: String, value: String)]) -> URL {
+    /// Replaces any same-named item, leaving other query items and the fragment byte-for-byte intact.
+    func upserting(_ newItems: [URLQueryItem]) -> URL {
         guard var components = URLComponents(url: self, resolvingAgainstBaseURL: false) else {
             return self
         }
 
         let replacedNames = Set(newItems.map(\.name))
-        var items = components.percentEncodedQueryItems ?? []
-        items.removeAll { replacedNames.contains($0.name.removingPercentEncoding ?? $0.name) }
-        items.append(contentsOf: newItems.map {
-            URLQueryItem(name: $0.name.percentEncodedForQuery, value: $0.value.percentEncodedForQuery)
-        })
-        components.percentEncodedQueryItems = items
+        let kept = (components.percentEncodedQueryItems ?? []).filter {
+            !replacedNames.contains($0.name.removingPercentEncoding ?? $0.name)
+        }
+
+        components.percentEncodedQueryItems = kept + newItems.map(\.percentEncoded)
 
         return components.url ?? self
     }
 
 }
 
+private extension URLQueryItem {
+
+    /// Stricter than `urlQueryAllowed`, which leaves `+` intact for servers to read as a space.
+    var percentEncoded: URLQueryItem {
+        return .init(name: self.name.encodedForQuery, value: self.value?.encodedForQuery)
+    }
+
+}
+
 private extension String {
 
-    /// `urlQueryAllowed` permits characters that are legal in a query string but ambiguous inside a
-    /// single parameter — most notably `+`, which many servers read as a space.
-    var percentEncodedForQuery: String {
+    var encodedForQuery: String {
         return self.addingPercentEncoding(withAllowedCharacters: Self.queryParameterAllowed) ?? self
     }
 
