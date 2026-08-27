@@ -1021,9 +1021,9 @@ public protocol PurchasesType: AnyObject {
          */
         @objc
         @_spi(Internal)
-        func spendVirtualCurrency(amounts: [String: Int],
-                                  reference: String?,
-                                  completion: @escaping (VirtualCurrencies?, PublicError?) -> Void)
+        func spendVirtualCurrencies(amounts: [String: Int],
+                                    reference: String?,
+                                    completion: @escaping (VirtualCurrencies?, PublicError?) -> Void)
 
         /**
          * The currently cached ``VirtualCurrencies`` if one is available.

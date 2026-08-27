@@ -1730,13 +1730,10 @@ public extension Purchases {
     /// - Parameters:
     ///   - amounts: A dictionary containing the amounts of each currency to spend.
     ///   The key is virtual currency's `code`, and the value is how much of that currency to spend.
-    ///   All values should be greater than zero. Values equal to zero are ignored, and values less than zero
-    ///   will be interpreted as positive.
+    ///   All values should be greater than zero. Values less than or equal to zero are ignored.
     ///
-    ///   In other words, `["VC_CODE": -42]` and `["VC_CODE": 42]` will be interpreted as equivalent.
-    ///
-    ///   If the dictionary is empty or all values are zero, then no currencies will be spent,
-    ///   and this will return the result of invoking ``virtualCurrencies()``.
+    ///   If the dictionary is empty or all values are less thn or equal to zero, then no currencies
+    ///   will be spent, and this will return the result of invoking ``virtualCurrencies()``.
     ///
     ///   You may specify multiple currencies to spend in a single transaction.
     ///   - reference: An optional app-specific reference string that refers to this transaction.
@@ -1744,7 +1741,7 @@ public extension Purchases {
     @_spi(Internal)
     func spendVirtualCurrencies(amounts: [String: Int], reference: String? = nil) async throws -> VirtualCurrencies {
         guard self.tokenManager.enabled else {
-            let message = "Spending virtual currencies requires .with(iamEnabled: true)"
+            let message = "Spending virtual currencies requires configuring the SDK .with(iamEnabled: true)"
             let error = NewErrorUtils.unsupportedError(message: message)
             throw error
         }
@@ -1768,9 +1765,9 @@ public extension Purchases {
 
     @_spi(Internal)
     @objc
-    func spendVirtualCurrency(amounts: [String: Int],
-                              reference: String?,
-                              completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
         Task {
             do {
                 let virtualCurrencies = try await self.spendVirtualCurrencies(amounts: amounts, reference: reference)

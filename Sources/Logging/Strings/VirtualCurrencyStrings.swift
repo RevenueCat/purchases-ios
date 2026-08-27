@@ -50,12 +50,12 @@ extension VirtualCurrencyStrings: LogMessage {
         case .empty_spend_amount:
             return "No amount specified to spend. This will be ignored."
         case .invalid_code:
-            return "Invalid code"
+            return "Invalid Virtual Currency code"
         case let .invalid_spend_amount(code, amount):
             return "Attempt to spend zero/negative currency amount \(amount) for \(code). " +
             "This is not allowed and will be ignored."
         case .too_many_codes:
-            return "You may not specify this many codes in a single spend transaction"
+            return "You may not specify this many codes in a single spend transaction."
         case .virtual_currencies_spent_on_network:
             return "VirtualCurrencies spent on the network."
         case let .virtual_currencies_spent_on_network_error(error):
