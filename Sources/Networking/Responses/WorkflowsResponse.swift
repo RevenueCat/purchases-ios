@@ -134,6 +134,7 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    // swiftlint:disable:next identifier_name
     var _defaultLocale: PaywallComponent.LocaleID
     public var defaultLocale: PaywallComponent.LocaleID { _defaultLocale }
     @DefaultDecodable.EmptyDictionary

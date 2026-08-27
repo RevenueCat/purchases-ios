@@ -198,7 +198,7 @@ enum DefaultDecodable {
         enum EmptyString: DefaultValueProvider {
             static var defaultValue: String { "" }
         }
-        
+
         enum EnglishLocale: DefaultValueProvider {
             static var defaultValue: String { "en" }
         }
