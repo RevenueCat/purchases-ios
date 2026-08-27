@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <style>
+      html,
+      body,
+      #checkout {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="checkout"></div>
+    <script>
+      window.__RC_EMBEDDED_CHECKOUT__ = __RC_EMBEDDED_CHECKOUT_JSON__;
+    </script>
+    <script>
+      __PURCHASES_JS_UMD__
+    </script>
+    <script>
+      (function () {
+        function notifyNative(message) {
+          var handlers =
+            window.webkit &&
+            window.webkit.messageHandlers &&
+            window.webkit.messageHandlers.rcCheckout;
+          if (handlers && typeof handlers.postMessage === "function") {
+            handlers.postMessage(message);
+          }
+        }
+
+        function start() {
+          var config = window.__RC_EMBEDDED_CHECKOUT__;
+          var mount = document.getElementById("checkout");
+          var ns = window.Purchases;
+          var Purchases = ns && ns.Purchases;
+          var ErrorCode = ns && ns.ErrorCode;
+          var PurchasesError = ns && ns.PurchasesError;
+
+          if (!mount) {
+            notifyNative({ type: "error", message: "Checkout mount is missing." });
+            return;
+          }
+          if (!config || !config.apiKey || !config.appUserId || !config.offeringId) {
+            notifyNative({
+              type: "error",
+              message: "Embedded checkout config is missing.",
+            });
+            return;
+          }
+          if (!Purchases || typeof Purchases.configure !== "function") {
+            notifyNative({
+              type: "error",
+              message: "purchases-js failed to load.",
+            });
+            return;
+          }
+
+          var purchases = Purchases.configure({
+            apiKey: config.apiKey,
+            appUserId: config.appUserId,
+            flags: {
+              hideBackButton: true,
+              autoCollectUTMAsMetadata: false,
+              rcSource: "embedded",
+            },
+          });
+
+          purchases
+            .getOfferings({ offeringIdentifier: config.offeringId })
+            .then(function (offerings) {
+              var offering =
+                (offerings.all && offerings.all[config.offeringId]) ||
+                offerings.current ||
+                null;
+              if (!offering) {
+                notifyNative({
+                  type: "error",
+                  message:
+                    "No offering found. Pass offeringId that exists on Web Billing.",
+                });
+                return;
+              }
+
+              var rcPackage;
+              if (config.packageId) {
+                rcPackage = offering.availablePackages.find(function (pkg) {
+                  return pkg.identifier === config.packageId;
+                });
+              } else {
+                rcPackage = offering.availablePackages[0];
+              }
+
+              if (!rcPackage) {
+                notifyNative({
+                  type: "error",
+                  message: config.packageId
+                    ? "Package '" +
+                      config.packageId +
+                      "' was not found in offering '" +
+                      offering.identifier +
+                      "'."
+                    : "Offering '" + offering.identifier + "' has no packages.",
+                });
+                return;
+              }
+
+              notifyNative({ type: "ready" });
+
+              return purchases.purchase({
+                rcPackage: rcPackage,
+                htmlTarget: mount,
+                skipSuccessPage: true,
+              });
+            })
+            .then(function (result) {
+              if (!result) {
+                return;
+              }
+              notifyNative({
+                type: "complete",
+                redeemUrl:
+                  result.redemptionInfo && result.redemptionInfo.redeemUrl
+                    ? result.redemptionInfo.redeemUrl
+                    : null,
+              });
+            })
+            .catch(function (error) {
+              var cancelled =
+                PurchasesError &&
+                error instanceof PurchasesError &&
+                ErrorCode &&
+                error.errorCode === ErrorCode.UserCancelledError;
+              if (cancelled) {
+                notifyNative({ type: "cancelled" });
+                return;
+              }
+              var message =
+                error && error.message ? error.message : String(error);
+              notifyNative({ type: "error", message: message });
+            });
+        }
+
+        start();
+      })();
+    </script>
+  </body>
+</html>

@@ -43,6 +43,11 @@
 // If set, the app will automatically open to the Sandbox Paywalls tab with this search term pre-filled.
 // SANDBOX_PAYWALL_SEARCH = your-search-term
 
+// Web Billing public API key (`rcb_` / `rcb_sb_`) for the in-app checkout drawer PoC.
+// When set, web purchase buttons load bundled purchases-js instead of webCheckoutUrl.
+// This is not the Apple `appl_` key.
+// WEB_BILLING_API_KEY = rcb_sb_your_key_without_quotes
+
 // The following configuration options can be used when running the E2E tests through the Tuist generated Maestro project
 // REVENUECAT_FORCE_SERVER_ERROR_STRATEGY = primary_backend_down / never
 // REVENUECAT_API_HOST = custom-api-host.revenuecat.com

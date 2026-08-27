@@ -55,9 +55,9 @@ class PurchaseButtonComponentViewModel {
             case .inAppCheckout:
                 return .inAppCheckout
             case .webCheckout:
-                return .webCheckout(.init(autoDismiss: true, openMethod: .externalBrowser))
+                return .webCheckout(.init(autoDismiss: true, openMethod: .inAppBrowser))
             case .webProductSelection:
-                return .webProductSelection(.init(autoDismiss: true, openMethod: .externalBrowser))
+                return .webProductSelection(.init(autoDismiss: true, openMethod: .inAppBrowser))
             }
         })
     }
@@ -76,18 +76,16 @@ class PurchaseButtonComponentViewModel {
         switch method {
         case .inAppCheckout, .unknown:
             return nil
-        case .webCheckout(let webCheckout):
-            if let checkoutUrl = packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
-            } else {
-                return nil
-            }
-        case .webProductSelection(let webCheckout):
-            if let checkoutUrl = offering.webCheckoutUrl {
-                return (checkoutUrl, webCheckout.openMethod ?? .externalBrowser, webCheckout.autoDismiss ?? true)
-            } else {
-                return nil
-            }
+        case .webCheckout:
+            return self.widgetOrOfferingURL(
+                packageId: packageContext?.package?.identifier,
+                fallback: packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl
+            )
+        case .webProductSelection:
+            return self.widgetOrOfferingURL(
+                packageId: packageContext?.package?.identifier,
+                fallback: offering.webCheckoutUrl
+            )
         case .customWebCheckout(let customWebCheckout):
             guard let customUrl = self.customWebCheckoutUrl else {
                 return nil
@@ -135,6 +133,19 @@ class PurchaseButtonComponentViewModel {
     private static let sourceValue = "app"
     private static let sandboxEnvValue = "sandbox"
     private static let productionEnvValue = "production"
+
+    private func widgetOrOfferingURL(packageId: String?, fallback: URL?) -> LaunchWebCheckout? {
+        if let config = EmbeddedCheckoutConfig.make(
+            offeringId: self.offering.identifier,
+            packageId: packageId
+        ) {
+            return (config.checkoutURL, .inAppBrowser, false)
+        }
+        if let fallback {
+            return (fallback, .inAppBrowser, false)
+        }
+        return nil
+    }
 
 }
 

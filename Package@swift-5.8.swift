@@ -75,7 +75,8 @@ let package = Package(
                 dependencies: ["RevenueCat"],
                 path: "RevenueCatUI",
                 resources: [
-                    .process("Resources/icons.xcassets")
+                    .process("Resources/icons.xcassets"),
+                    .copy("Resources/EmbeddedCheckout")
                 ]),
         .testTarget(name: "RevenueCatUITests",
                     dependencies: [

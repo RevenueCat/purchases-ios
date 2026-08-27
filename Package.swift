@@ -128,7 +128,8 @@ let package = Package(
                 resources: [
                     // Note: these have to match the values in RevenueCatUI.podspec
                     .process("Resources/icons.xcassets"),
-                    .process("Resources/Media.xcassets")
+                    .process("Resources/Media.xcassets"),
+                    .copy("Resources/EmbeddedCheckout")
                 ],
                 swiftSettings: ciCompilerFlags + additionalCompilerFlags),
         .testTarget(name: "RevenueCatUITests",

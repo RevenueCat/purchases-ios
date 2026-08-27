@@ -72,6 +72,8 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case embedded_checkout_using_bundle
+    case embedded_checkout_skipped(String)
     case variable_requires_package(variableName: String)
 
     // Customer Center
@@ -343,6 +345,12 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
+
+        case .embedded_checkout_using_bundle:
+            return "Using bundled purchases-js checkout (not WPL)."
+
+        case let .embedded_checkout_skipped(reason):
+            return "Skipping bundled checkout, falling back to webCheckoutUrl: \(reason)"
 
         case let .variable_requires_package(variableName):
             return "Paywall variable '\(variableName)' requires a package but none was provided."

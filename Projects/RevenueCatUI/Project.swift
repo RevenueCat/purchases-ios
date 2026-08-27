@@ -17,6 +17,9 @@ let project = Project(
             sources: [
                 "../../RevenueCatUI/**/*.swift"
             ],
+            resources: [
+                "../../RevenueCatUI/Resources/EmbeddedCheckout"
+            ],
             dependencies: [
                 .revenueCat
             ],
