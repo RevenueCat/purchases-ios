@@ -266,7 +266,8 @@ private extension CustomerCenterViewModel {
 
     func loadNonSubscriptionsSection(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
         var activeNonSubscriptionPurchases: [PurchaseInformation] = []
-        for subscription in customerInfo.nonSubscriptions {
+        // customerInfo returns these oldest first, and the management screen only shows the first few
+        for subscription in customerInfo.nonSubscriptions.sorted(by: { $0.purchaseDate > $1.purchaseDate }) {
 
             let purchaseInfo: PurchaseInformation = await .from(
                 transaction: subscription,
@@ -278,9 +279,7 @@ private extension CustomerCenterViewModel {
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
-        // customerInfo returns these oldest first, and the management screen only shows the first few
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
-            .sorted { $0.latestPurchaseDate > $1.latestPurchaseDate }
     }
 
     func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
