@@ -65,14 +65,24 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
 
     func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies {
         let resolvedAmounts = amounts.compactMap { (code, amount) -> (String, Int)? in
-            if amount == 0 {
+            if code.count > 100 {
+                // the server limits currency codes to 10 characters or fewer
+                // if this changes in the future, this is still very permissive
+                Logger.warn(Strings.virtualCurrencies.invalid_code)
                 return nil
             }
-            if amount < 0 {
-                Logger.warn(Strings.virtualCurrencies.negative_spend_amount(code, amount))
-                return (code, Int(amount.magnitude))
+            if amount <= 0 {
+                Logger.warn(Strings.virtualCurrencies.invalid_spend_amount(code, amount))
+                return nil
             }
             return (code, amount)
+        }
+
+        guard resolvedAmounts.count < 1000 else {
+            // the server limits projects to 100 specified codes
+            // if this changes in the future, this is still very permissive
+            Logger.warn(Strings.virtualCurrencies.too_many_codes)
+            return try await virtualCurrencies()
         }
 
         guard resolvedAmounts.count > 0 else {

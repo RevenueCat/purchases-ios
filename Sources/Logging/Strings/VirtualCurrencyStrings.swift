@@ -23,7 +23,9 @@ enum VirtualCurrencyStrings {
     case virtual_currencies_updated_from_network
     case virtual_currencies_updated_from_network_error(Error)
     case empty_spend_amount
-    case negative_spend_amount(String, Int)
+    case invalid_code
+    case invalid_spend_amount(String, Int)
+    case too_many_codes
     case virtual_currencies_spent_on_network
     case virtual_currencies_spent_on_network_error(Error)
     case error_decoding_cached_virtual_currencies(Error)
@@ -47,9 +49,13 @@ extension VirtualCurrencyStrings: LogMessage {
             return "Attempt to update VirtualCurrencies from network failed.\n\(error.localizedDescription)"
         case .empty_spend_amount:
             return "No amount specified to spend. This will be ignored."
-        case let .negative_spend_amount(code, amount):
-            return "Attempt to spend negative currency amount \(amount) for \(code). " +
-            "This is not allowed and will be assumed to be a positive amount."
+        case .invalid_code:
+            return "Invalid code"
+        case let .invalid_spend_amount(code, amount):
+            return "Attempt to spend zero/negative currency amount \(amount) for \(code). " +
+            "This is not allowed and will be ignored."
+        case .too_many_codes:
+            return "You may not specify this many codes in a single spend transaction"
         case .virtual_currencies_spent_on_network:
             return "VirtualCurrencies spent on the network."
         case let .virtual_currencies_spent_on_network_error(error):

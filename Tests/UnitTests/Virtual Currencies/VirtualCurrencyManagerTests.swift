@@ -538,6 +538,10 @@ class VirtualCurrencyManagerTests: TestCase {
         XCTAssertEqual(virtualCurrencies, self.mockVirtualCurrencies)
 
         self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_spend_amount("GLD", 0),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
             Strings.virtualCurrencies.empty_spend_amount,
             level: .warn
         )
@@ -561,23 +565,46 @@ class VirtualCurrencyManagerTests: TestCase {
         )
     }
 
-    func testSpendVirtualCurrenciesConvertsNegativeAmountsToPositiveMagnitude() async throws {
+    func testSpendVirtualCurrenciesFiltersOutNegativeAmountsAndLogsWarning() async throws {
         self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
 
         _ = try await virtualCurrencyManager.spendVirtualCurrencies(
-            amounts: ["GLD": -50],
+            amounts: ["GLD": -50, "SLV": 20],
             reference: nil
         )
 
-        XCTAssertEqual(self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts, ["GLD": 50])
+        // The negative amount should be dropped entirely rather than being sent as a positive amount.
+        XCTAssertEqual(self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts, ["SLV": 20])
 
         self.logger.verifyMessageWasLogged(
-            Strings.virtualCurrencies.negative_spend_amount("GLD", -50),
+            Strings.virtualCurrencies.invalid_spend_amount("GLD", -50),
             level: .warn
         )
     }
 
-    func testSpendVirtualCurrenciesFiltersZerosAndKeepsPositiveAndConvertedNegativeAmounts() async throws {
+    func testSpendVirtualCurrenciesWithOnlyNegativeAmountFallsBackToFetchingVirtualCurrencies() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
+
+        let virtualCurrencies = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: ["GLD": -50],
+            reference: nil
+        )
+
+        XCTAssertFalse(self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrencies)
+        XCTAssertEqual(virtualCurrencies, self.mockVirtualCurrencies)
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_spend_amount("GLD", -50),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.empty_spend_amount,
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesFiltersOutZeroAndNegativeAmountsKeepingOnlyPositiveAmounts() async throws {
         self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
 
         _ = try await virtualCurrencyManager.spendVirtualCurrencies(
@@ -587,7 +614,128 @@ class VirtualCurrencyManagerTests: TestCase {
 
         XCTAssertEqual(
             self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts,
-            ["GLD": 100, "PLT": 30]
+            ["GLD": 100]
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_spend_amount("SLV", 0),
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_spend_amount("PLT", -30),
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesFiltersOutCodesLongerThanTheLengthLimitAndLogsWarning() async throws {
+        self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let tooLongCode = String(repeating: "A", count: 101)
+
+        _ = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: [tooLongCode: 10, "GLD": 25],
+            reference: nil
+        )
+
+        XCTAssertEqual(
+            self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts,
+            ["GLD": 25]
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_code,
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesAllowsCodesExactlyAtTheLengthLimit() async throws {
+        self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let maxLengthCode = String(repeating: "A", count: 100)
+
+        _ = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: [maxLengthCode: 10],
+            reference: nil
+        )
+
+        XCTAssertEqual(
+            self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts,
+            [maxLengthCode: 10]
+        )
+
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.invalid_code,
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesFiltersOutInvalidCodesAndInvalidAmountsIndependently() async throws {
+        self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let tooLongCode = String(repeating: "A", count: 101)
+
+        _ = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: [tooLongCode: 10, "GLD": -5, "SLV": 100],
+            reference: nil
+        )
+
+        XCTAssertEqual(
+            self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts,
+            ["SLV": 100]
+        )
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_code,
+            level: .warn
+        )
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.invalid_spend_amount("GLD", -5),
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesFallsBackToFetchingWhenTooManyCodesAreResolved() async throws {
+        self.mockDeviceCache.stubbedCachedVirtualCurrenciesDataForAppUserID = self.mockVirtualCurrenciesData
+        self.mockDeviceCache.stubbedIsVirtualCurrenciesCacheStale = false
+
+        let manyAmounts = Dictionary(uniqueKeysWithValues: (0..<1000).map { ("CODE\($0)", 1) })
+
+        let virtualCurrencies = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: manyAmounts,
+            reference: nil
+        )
+
+        XCTAssertFalse(
+            self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrencies,
+            "spendVirtualCurrencies should not call the backend when too many codes are resolved"
+        )
+        XCTAssertEqual(virtualCurrencies, self.mockVirtualCurrencies)
+
+        self.logger.verifyMessageWasLogged(
+            Strings.virtualCurrencies.too_many_codes,
+            level: .warn
+        )
+    }
+
+    func testSpendVirtualCurrenciesSpendsWhenResolvedCountIsJustUnderTheCodeLimit() async throws {
+        self.mockVirtualCurrenciesAPI.stubbedSpendVirtualCurrenciesResult = .success(self.mockVirtualCurrenciesResponse)
+
+        let manyAmounts = Dictionary(uniqueKeysWithValues: (0..<999).map { ("CODE\($0)", 1) })
+
+        _ = try await virtualCurrencyManager.spendVirtualCurrencies(
+            amounts: manyAmounts,
+            reference: nil
+        )
+
+        XCTAssertTrue(self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrencies)
+        XCTAssertEqual(
+            self.mockVirtualCurrenciesAPI.invokedSpendVirtualCurrenciesParameters?.amounts.count,
+            999
+        )
+
+        self.logger.verifyMessageWasNotLogged(
+            Strings.virtualCurrencies.too_many_codes,
+            level: .warn
         )
     }
 
