@@ -20,62 +20,8 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManagerTests: TestCase {
 
-    #if ENABLE_CHECKPOINTS_OBJC
-
-    func testObjectiveCParamsConvertAndRoundTripSupportedFoundationValues() throws {
-        let params = ObjCCheckpointParams(customVariables: [
-            "string": "value",
-            "integer": NSNumber(value: Int64(42)),
-            "double": NSNumber(value: 4.5),
-            "true": NSNumber(value: true),
-            "false": NSNumber(value: false)
-        ])
-
-        XCTAssertEqual(params.value.customVariables, [
-            "string": .string("value"),
-            "integer": .number(42),
-            "double": .number(4.5),
-            "true": .bool(true),
-            "false": .bool(false)
-        ])
-
-        let roundTrip = ObjCCheckpointParams(customVariables: params.customVariables)
-        XCTAssertEqual(roundTrip.value, params.value)
-    }
-
-    func testObjectiveCParamsDropUnsupportedValuesAndNonStringKeys() {
-        let params = ObjCCheckpointParams(customVariables: [
-            "valid": "value",
-            "invalid-key": "value",
-            "null": NSNull(),
-            "date": Date(),
-            "array": ["nested"],
-            NSNumber(value: 1): "invalid key"
-        ])
-
-        XCTAssertEqual(params.value.customVariables, ["valid": .string("value")])
-    }
-
-    func testObjectiveCResultWrapsInvalidIdentifierNoActionResult() throws {
-        let identifier = "invalid checkpoint"
-        let checkpoint = CheckpointInfo(identifier: identifier, params: .init())
-        let result = CheckpointNoActionResult(
-            checkpoint: checkpoint,
-            reason: .invalidCheckpointIdentifier
-        )
-
-        let objcResult = try XCTUnwrap(
-            ObjCCheckpointResult.wrapping(result) as? ObjCCheckpointNoActionResult
-        )
-
-        XCTAssertEqual(objcResult.checkpoint.identifier, identifier)
-        XCTAssertEqual(objcResult.reason.value, "INVALID_CHECKPOINT_IDENTIFIER")
-    }
-
-    #endif
-
-    func testCheckpointParamsConvertCustomVariableValuesForCoreResolution() {
-        let params = RevenueCatUI.CheckpointParams(customVariables: [
+    func testCheckpointCallParamsConvertCustomVariableValuesForCoreResolution() {
+        let params = CheckpointCallParams(customVariables: [
             "string": "value",
             "integer": 42,
             "double": 4.5,
@@ -92,8 +38,8 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(params.coreParams.customVariables, expected)
     }
 
-    func testCheckpointParamsDropInvalidCustomVariableKeys() {
-        let params = RevenueCatUI.CheckpointParams(customVariables: [
+    func testCheckpointCallParamsDropInvalidCustomVariableKeys() {
+        let params = CheckpointCallParams(customVariables: [
             "valid_key": "value",
             "invalid-key": "value",
             "1valid": "value",
@@ -120,7 +66,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = try await manager.checkpoint(
             identifier: "unknown_checkpoint",
-            params: CheckpointParams(customVariables: ["name": "Rick"])
+            params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
 
         guard let noAction = result as? CheckpointNoActionResult else {
@@ -136,7 +82,7 @@ final class CheckpointsManagerTests: TestCase {
     }
 
     func testInvalidCustomVariableKeysDoNotReachResolution() async throws {
-        var resolvedParams: RevenueCatUI.CheckpointParams?
+        var resolvedParams: CheckpointCallParams?
         let manager = CheckpointsManager { _, params in
             resolvedParams = params
             return .noAction(.noMatch)
@@ -144,7 +90,7 @@ final class CheckpointsManagerTests: TestCase {
 
         _ = try await manager.checkpoint(
             identifier: "test",
-            params: CheckpointParams(customVariables: [
+            params: CheckpointCallParams(customVariables: [
                 "valid_key": "value",
                 "invalid-key": "value"
             ])
@@ -322,11 +268,11 @@ final class CheckpointsManagerTests: TestCase {
     func testUIOwnedReferenceModelsPreserveValueEqualityAndHashing() {
         let firstInfo = CheckpointInfo(
             identifier: "test",
-            params: CheckpointParams(customVariables: ["name": "Rick"])
+            params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
         let secondInfo = CheckpointInfo(
             identifier: "test",
-            params: CheckpointParams(customVariables: ["name": "Rick"])
+            params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
         let firstResult = CheckpointNoActionResult(checkpoint: firstInfo, reason: .noMatch)
         let secondResult = CheckpointNoActionResult(checkpoint: secondInfo, reason: .noMatch)

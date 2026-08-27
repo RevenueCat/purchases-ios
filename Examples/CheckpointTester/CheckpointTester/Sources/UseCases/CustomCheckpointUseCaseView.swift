@@ -42,7 +42,7 @@ struct CustomCheckpointUseCaseView: View {
                 }
                 .disabled(self.trimmedIdentifier.isEmpty || self.isRunning)
             } footer: {
-                Text("The current custom variables are passed as checkpoint parameters.")
+                Text("The current custom variables are passed to the checkpoint.")
             }
         }
         .navigationTitle("Custom checkpoint")
@@ -58,7 +58,7 @@ struct CustomCheckpointUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 self.trimmedIdentifier,
-                params: self.customVariables.checkpointParams
+                customVariables: self.customVariables.checkpointCustomVariables
             )
             self.model.showOutcome(result)
         } catch {

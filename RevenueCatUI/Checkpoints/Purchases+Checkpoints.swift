@@ -35,16 +35,16 @@ public extension Purchases {
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
-    ///   - params: Optional per-call parameters.
+    ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
     ///   - completion: Called with the checkpoint result, or with an error if evaluation or presentation fails.
     func checkpoint(
         _ identifier: String,
-        params: CheckpointParams = .init(),
+        customVariables: [String: CustomVariableValue] = [:],
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
         self.checkpointsManager.checkpoint(
             identifier: identifier,
-            params: params,
+            params: .init(customVariables: customVariables),
             completion: completion
         )
     }
@@ -57,50 +57,21 @@ public extension Purchases {
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
-    ///   - params: Optional per-call parameters.
+    ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
     /// - Returns: The result for this checkpoint.
     /// - Throws: An error if checkpoint evaluation or presentation fails.
     @discardableResult
     func checkpoint(
         _ identifier: String,
-        params: CheckpointParams = .init()
+        customVariables: [String: CustomVariableValue] = [:]
     ) async throws -> CheckpointResult {
         return try await self.checkpointsManager.checkpoint(
             identifier: identifier,
-            params: params
+            params: .init(customVariables: customVariables)
         )
     }
 
 }
-
-#if ENABLE_CHECKPOINTS_OBJC
-
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, *)
-public extension Purchases {
-
-    /// Objective-C-compatible checkpoint API. The identifier must start with a letter and contain only ASCII letters,
-    /// numbers, underscores, and hyphens, and be no more than 255 characters.
-    @_disfavoredOverload
-    @objc(checkpointWithIdentifier:params:completion:)
-    func checkpoint(
-        _ identifier: String,
-        objcParams: ObjCCheckpointParams?,
-        completion: @escaping (ObjCCheckpointResult?, PublicError?) -> Void
-    ) {
-        self.checkpoint(identifier, params: objcParams?.value ?? .init()) { result in
-            switch result {
-            case let .success(result):
-                completion(ObjCCheckpointResult.wrapping(result), nil)
-            case let .failure(error):
-                completion(nil, error)
-            }
-        }
-    }
-
-}
-
-#endif
 
 @available(iOS 15.0, *)
 private extension Purchases {
