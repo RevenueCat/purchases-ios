@@ -71,7 +71,7 @@ import Foundation
 }
 
 extension PaywallComponent {
-    
+
     enum DefaultLocaleFallback: DefaultValueProvider {
 
         static let defaultValue: PaywallComponent.LocaleID = "en"
