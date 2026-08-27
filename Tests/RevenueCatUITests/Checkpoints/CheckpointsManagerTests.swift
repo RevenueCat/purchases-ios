@@ -190,7 +190,7 @@ final class CheckpointsManagerTests: TestCase {
 
     func testCompletionAPIForwardsResult() {
         let completion = self.expectation(description: "Checkpoint completes")
-        let manager = CheckpointsManager { _, _ in .noAction(.disabled) }
+        let manager = CheckpointsManager { _, _ in .noAction(.configurationUnavailable) }
 
         manager.checkpoint(identifier: "disabled", params: .init()) { result in
             guard case let .success(noAction as CheckpointNoActionResult) = result else {

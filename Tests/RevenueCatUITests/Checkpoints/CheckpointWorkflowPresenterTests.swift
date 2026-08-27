@@ -95,6 +95,30 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertNil(store.call)
     }
 
+    func testPurchaseOutcomeReplacesEarlierWebCheckoutOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = PaywallViewController(offering: presentation.workflow.offering)
+        let transaction = StoreTransaction(MockStoreTransaction())
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewControllerDidOpenWebCheckout(controller)
+        presenter.paywallViewController(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: transaction
+        )
+        presenter.presentationDidDismiss()
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallPurchasedOutcome else {
+            return XCTFail("Expected the later purchase outcome")
+        }
+        XCTAssertEqual(outcome.transaction, transaction)
+        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+    }
+
     func testCallStoreDefaultsToDismissedAndRemovesCall() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
