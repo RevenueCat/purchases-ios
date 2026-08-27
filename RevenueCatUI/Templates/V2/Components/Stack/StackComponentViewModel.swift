@@ -27,14 +27,7 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
 
-    /// Contents of every badge this stack could present, keyed by the badge that owns them.
     let badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]]
-
-    /// Every badge's contents, for checks about what this stack is capable of rather than what it
-    /// is currently showing.
-    var allBadgeViewModels: [PaywallComponentViewModel] {
-        return self.badgeViewModels.values.flatMap { $0 }
-    }
 
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
@@ -64,7 +57,7 @@ class StackComponentViewModel {
         }
 
         return self.viewModels.contains(where: Self.announces)
-            || self.allBadgeViewModels.contains(where: Self.announces)
+            || self.badgeViewModels.values.contains { $0.contains(where: Self.announces) }
     }
 
     private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
@@ -142,11 +135,8 @@ class StackComponentViewModel {
             with: self.presentedOverrides
         )
 
-        // Resolve the presented badge first so its contents travel with it. Falling back to any
-        // badge we do have beats rendering an empty one if a lookup ever misses.
         let presentedBadge = partial?.badge ?? self.component.badge
-        let presentedBadgeViewModels = presentedBadge
-            .flatMap { self.badgeViewModels[$0] } ?? self.allBadgeViewModels
+        let presentedBadgeViewModels = presentedBadge.flatMap { self.badgeViewModels[$0] } ?? []
 
         return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,

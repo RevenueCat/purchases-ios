@@ -557,11 +557,7 @@ struct ViewModelFactory {
             )
         }
 
-        // A stack can present a different badge per rule, so build the contents of every badge it
-        // could show. Building only the first meant any other rule presented its own badge with the
-        // first badge's contents, which then resolved its own rules against the wrong component.
-        // Keyed by value: two rules authoring an identical badge share one entry, which is harmless
-        // because identical badges have identical contents.
+        // Keyed by value, so two rules authoring an identical badge share one entry.
         let badgeSources = ([component.badge] + (component.overrides ?? []).map(\.properties.badge))
             .compactMap { $0 }
         var badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]] = [:]
