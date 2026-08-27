@@ -1907,7 +1907,7 @@ extension Purchases {
     ///
     /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
     /// server-side verification options, then stash `clientTransactionID` for use with
-    /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
+    /// ``pollRewardVerification(clientTransactionID:trackingMetadata:)`` when the reward callback fires.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
     public func generateRewardVerificationToken(
         impressionId: String
