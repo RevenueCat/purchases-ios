@@ -2554,30 +2554,21 @@ platform :ios do
 
     ApiDiffHelper.print_breaking_summary(all_breaks, labels)
 
-    # Informational: a GitHub or Slack outage must not decide whether the gate fails.
-    begin
-      # Announcing only from main keeps the feed to one post per change.
-      announcement = if on_main
-                       notify_api_changes_on_slack(
-                         reports_by_target: reports_by_target,
-                         breaks: all_breaks,
-                         labels: labels
-                       )
-                     else
-                       { fingerprint: nil, notice: nil }
-                     end
-      schemes.each do |scheme|
-        upsert_api_diff_comment(
-          scheme: scheme,
-          reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
-          breaks: breaks_by_scheme.fetch(scheme, []),
-          labels: labels,
-          notice: announcement[:notice],
-          announced_fingerprint: announcement[:fingerprint]
-        )
+    # main carries no pull request to comment on.
+    # Informational: a GitHub outage must not decide whether the gate fails.
+    unless on_main
+      begin
+        schemes.each do |scheme|
+          upsert_api_diff_comment(
+            scheme: scheme,
+            reports_by_target: reports_by_target.select { |target, _r| target.start_with?("#{scheme} ") },
+            breaks: breaks_by_scheme.fetch(scheme, []),
+            labels: labels
+          )
+        end
+      rescue StandardError => e
+        UI.important("Could not publish the API diff report: #{e.message}")
       end
-    rescue StandardError => e
-      UI.important("Could not publish the API diff report: #{e.message}")
     end
 
     if failed_platforms.any?
@@ -2590,6 +2581,20 @@ platform :ios do
         UI.important("Breaking public API changes on main, already gated on the PR run")
       else
         UI.user_error!("Breaking public API changes detected. Add #{ApiDiffHelper::BREAKING_CHANGE_LABEL} if intentional.")
+      end
+    end
+
+    # Last, and only from main: nothing below can fail the job, so a rerun cannot post twice, and
+    # a run whose baselines did not match never announces a surface it could not validate.
+    if on_main
+      begin
+        notify_api_changes_on_slack(
+          reports_by_target: reports_by_target,
+          breaks: all_breaks,
+          labels: labels
+        )
+      rescue StandardError => e
+        UI.important("Could not announce the API change: #{e.message}")
       end
     end
   end
@@ -2611,12 +2616,8 @@ platform :ios do
       next
     end
 
-    announced_fingerprint = options[:announced_fingerprint] ||
-                            ApiDiffHelper.announced_fingerprint_in(existing&.dig("body"), options[:scheme])
-
     section = ApiDiffHelper.api_diff_comment_section(
-      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels],
-      notice: options[:notice], announced_fingerprint: announced_fingerprint
+      options[:scheme], options[:reports_by_target], options[:breaks], options[:labels]
     )
 
     if existing
@@ -2644,14 +2645,14 @@ platform :ios do
     end
   end
 
-  # Returns { fingerprint:, notice: }; the notice ends up in the PR comment.
+  # main has no PR comment to carry a warning, so every outcome is reported in the job log.
   private_lane :notify_api_changes_on_slack do |options|
     breaks = options[:breaks]
     changed_targets = options[:reports_by_target].select { |_t, r| ApiDiffHelper.api_changes_reported?(r) }
 
     if breaks.empty? && changed_targets.empty?
       UI.message("No public API changes, nothing to post to Slack")
-      next({ fingerprint: nil, notice: nil })
+      next
     end
 
     bot_token = ENV["SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS"]
@@ -2668,53 +2669,22 @@ platform :ios do
       modules: modules,
       modifications: ApiDiffHelper.modified_declarations(options[:reports_by_target])
     )
-    fingerprint = ApiDiffHelper.announcement_fingerprint(summary)
-
-    request = ApiDiffHelper.slack_post_request(
-      summary,
-      webhook_url: ENV["SLACK_URL_SDK_NEW_API"],
-      bot_token: bot_token,
-      channel: channel
-    )
+    request = ApiDiffHelper.slack_post_request(summary, bot_token: bot_token, channel: channel)
 
     if request.nil?
-      UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API, or SLACK_URL_SDK_NEW_API. Skipping.")
-      next({ fingerprint: nil, notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE })
+      UI.important("No Slack credential reachable. Expected SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS from the slack-secrets context plus SLACK_CHANNEL_SDK_NEW_API. Skipping.")
+      next
     end
-
-    state, history_error = ApiDiffHelper.announcement_state(
-      summary, bot_token: bot_token, channel: channel, source: source, modules: modules
-    )
-    if ApiDiffHelper.already_announced?(state, fingerprint) { api_diff_comment_body_on_pr }
-      UI.message("This API change is already in the SDK API feed, not posting it again")
-      next({ fingerprint: fingerprint, notice: nil })
-    end
-
-    notice = "Could not read the SDK API feed, so this change may be announced twice: #{history_error}." if history_error
 
     begin
       ApiDiffHelper.post_slack_message(request)
       UI.success("Posted the API change summary to Slack")
-      { fingerprint: fingerprint, notice: notice }
     rescue StandardError => e
-      UI.important("Could not announce the API change: #{e.message}")
-      { fingerprint: nil, notice: "This change was not announced in the SDK API feed: #{e.message}." }
+      UI.important("The public API changed, but it was not announced in the SDK API feed: #{e.message}")
     end
   end
 
-  private_lane :api_diff_comment_body_on_pr do
-    pr_number = detect_pr_number
-    token = ENV["DANGER_GITHUB_API_TOKEN"]
-    next "" if pr_number.nil? || token.nil? || token.empty?
-
-    comment = find_pr_comment(
-      "RevenueCat/#{REPO_NAME}", pr_number, token, ApiDiffHelper::API_DIFF_COMMENT_MARKER
-    )
-
-    comment ? comment["body"].to_s : ""
-  end
-
-  # The commit page carries the PR link, and its sha is what tells a rerun it already announced.
+  # The commit page carries the PR link, so the message needs only the commit.
   private_lane :api_gate_commit_link do
     sha = sh("git", "rev-parse", "HEAD", log: false).strip
     next "" if sha.empty?
