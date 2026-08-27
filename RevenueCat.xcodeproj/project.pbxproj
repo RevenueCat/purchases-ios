@@ -1445,7 +1445,7 @@
 		FA360650C0B87331F2EFF527 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 346145E8EF291B0E8BB68D12 /* Checkpoints.swift */; };
 		73A610000000000000000002 /* Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000012 /* Checkpoints.swift */; };
 		73A610000000000000000003 /* Purchases+Checkpoints.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000013 /* Purchases+Checkpoints.swift */; };
-		73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointPaywallResult.swift */; };
+		73A610000000000000000004 /* CheckpointResults.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A610000000000000000014 /* CheckpointResults.swift */; };
 		73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A690000000000000000011 /* ObjCCheckpointTypes.swift */; };
 		73A640000000000000000001 /* CheckpointCallStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A640000000000000000011 /* CheckpointCallStore.swift */; };
 		73A660000000000000000001 /* CheckpointError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 73A660000000000000000011 /* CheckpointError.swift */; };
@@ -2076,7 +2076,7 @@
 		346145E8EF291B0E8BB68D12 /* Checkpoints.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000012 /* Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Checkpoints.swift; sourceTree = "<group>"; };
 		73A610000000000000000013 /* Purchases+Checkpoints.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Purchases+Checkpoints.swift"; sourceTree = "<group>"; };
-		73A610000000000000000014 /* CheckpointPaywallResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointPaywallResult.swift; sourceTree = "<group>"; };
+		73A610000000000000000014 /* CheckpointResults.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointResults.swift; sourceTree = "<group>"; };
 		73A690000000000000000011 /* ObjCCheckpointTypes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ObjCCheckpointTypes.swift; sourceTree = "<group>"; };
 		73A640000000000000000011 /* CheckpointCallStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointCallStore.swift; sourceTree = "<group>"; };
 		73A660000000000000000011 /* CheckpointError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckpointError.swift; sourceTree = "<group>"; };
@@ -3683,7 +3683,7 @@
 			isa = PBXGroup;
 			children = (
 				73A610000000000000000012 /* Checkpoints.swift */,
-				73A610000000000000000014 /* CheckpointPaywallResult.swift */,
+				73A610000000000000000014 /* CheckpointResults.swift */,
 				73A690000000000000000011 /* ObjCCheckpointTypes.swift */,
 				73A640000000000000000011 /* CheckpointCallStore.swift */,
 				73A660000000000000000011 /* CheckpointError.swift */,
@@ -8652,7 +8652,7 @@
 				16B7EE02302F210200E04386 /* WebBundlePrewarmer.swift in Sources */,
 				16A5DD14302E611700E04386 /* WebViewWebsiteDataStoreSweeper.swift in Sources */,
 				73A610000000000000000002 /* Checkpoints.swift in Sources */,
-				73A610000000000000000004 /* CheckpointPaywallResult.swift in Sources */,
+				73A610000000000000000004 /* CheckpointResults.swift in Sources */,
 				73A690000000000000000001 /* ObjCCheckpointTypes.swift in Sources */,
 				73A640000000000000000001 /* CheckpointCallStore.swift in Sources */,
 				73A660000000000000000001 /* CheckpointError.swift in Sources */,
