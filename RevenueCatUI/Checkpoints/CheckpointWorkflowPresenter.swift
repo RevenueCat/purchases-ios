@@ -149,10 +149,16 @@ extension CheckpointWorkflowPresenter {
     #if compiler(>=5.9)
     nonisolated func paywallViewController(
         _ controller: PaywallViewController,
-        didFinishPurchasingWith customerInfo: CustomerInfo
+        didFinishPurchasingWith customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
     ) {
         MainActor.assumeIsolated {
-            self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+            self.stage(
+                outcome: CheckpointPaywallPurchasedOutcome(
+                    transaction: transaction,
+                    customerInfo: customerInfo
+                )
+            )
         }
     }
 
@@ -200,9 +206,15 @@ extension CheckpointWorkflowPresenter {
     #else
     func paywallViewController(
         _ controller: PaywallViewController,
-        didFinishPurchasingWith customerInfo: CustomerInfo
+        didFinishPurchasingWith customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
     ) {
-        self.stage(outcome: CheckpointPaywallPurchasedOutcome(customerInfo: customerInfo))
+        self.stage(
+            outcome: CheckpointPaywallPurchasedOutcome(
+                transaction: transaction,
+                customerInfo: customerInfo
+            )
+        )
     }
 
     func paywallViewController(

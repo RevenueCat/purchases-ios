@@ -34,11 +34,13 @@
                               completion:^(RCCheckpointResult * _Nullable result, NSError * _Nullable error) {
         RCCheckpointInfo *checkpoint = result.checkpoint;
         NSString * __unused identifier = checkpoint.identifier;
-        RCCheckpointParams * __unused resultParams = checkpoint.params;
+        NSDictionary * __unused resultCustomVariables = checkpoint.customVariables;
 
         if ([result isKindOfClass:RCCheckpointPaywallPresentedResult.class]) {
             RCCheckpointPaywallOutcome *outcome = ((RCCheckpointPaywallPresentedResult *)result).paywallOutcome;
             if ([outcome isKindOfClass:RCCheckpointPaywallPurchasedOutcome.class]) {
+                RCStoreTransaction * __unused transaction =
+                    ((RCCheckpointPaywallPurchasedOutcome *)outcome).transaction;
                 RCCustomerInfo * __unused customerInfo =
                     ((RCCheckpointPaywallPurchasedOutcome *)outcome).customerInfo;
             } else if ([outcome isKindOfClass:RCCheckpointPaywallRestoredOutcome.class]) {

@@ -44,7 +44,25 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
 }
 
-/// Base class for the terminal result of a checkpoint-presented paywall.
+/// Base class for the terminal outcome of a checkpoint-presented paywall.
+///
+/// Inspect the concrete outcome type to determine how the paywall finished:
+///
+/// ```swift
+/// switch result.paywallOutcome {
+/// case let outcome as CheckpointPaywallPurchasedOutcome:
+///     handlePurchase(outcome.transaction, outcome.customerInfo)
+/// case let outcome as CheckpointPaywallRestoredOutcome:
+///     handleRestore(outcome.customerInfo)
+/// case is CheckpointPaywallDismissedOutcome:
+///     handleDismissal()
+/// case let outcome as CheckpointPaywallErrorOutcome:
+///     handleError(outcome.error)
+/// default:
+///     // Handle outcome types added in future SDK versions.
+///     break
+/// }
+/// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {
@@ -88,10 +106,14 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
 
+    /// The transaction completed by the purchase, if available.
+    public let transaction: StoreTransaction?
+
     /// Customer information after the completed purchase.
     public let customerInfo: CustomerInfo
 
-    init(customerInfo: CustomerInfo) {
+    init(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+        self.transaction = transaction
         self.customerInfo = customerInfo
         super.init()
     }
@@ -99,10 +121,14 @@ public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
     public override var description: String { return "Purchased" }
 
     override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-        return (other as? CheckpointPaywallPurchasedOutcome)?.customerInfo.isEqual(self.customerInfo) == true
+        guard let other = other as? CheckpointPaywallPurchasedOutcome else { return false }
+        return self.transaction == other.transaction && self.customerInfo.isEqual(other.customerInfo)
     }
 
-    public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.transaction)
+        hasher.combine(self.customerInfo.hash)
+    }
 
 }
 
