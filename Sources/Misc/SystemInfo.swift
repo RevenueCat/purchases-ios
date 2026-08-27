@@ -97,8 +97,7 @@ class SystemInfo {
     /// remote config, so this is also the gate for workflows: there's no separate workflows switch,
     /// since the two ship together.
     ///
-    /// Enabled for everyone except under custom entitlement computation. Once enabled here, remote
-    /// config can still be turned off at runtime by the backend kill switch
+    /// Enabled for everyone except under custom entitlement computation.
     /// (see `Purchases.remoteConfigEnabled`).
     var remoteConfigEnabled: Bool {
         return !self.dangerousSettings.customEntitlementComputation

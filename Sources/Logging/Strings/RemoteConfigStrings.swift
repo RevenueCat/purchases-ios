@@ -26,7 +26,6 @@ enum RemoteConfigStrings {
     case duplicateSourceURL(String)
     case failedToParseResponse(Error)
     case malformedBlobRef(String)
-    case mergeItemsBlobDataDisabled(topic: RemoteConfigTopic, itemKeys: [String])
     case mergeItemsBlobDataEmpty(topic: RemoteConfigTopic)
     case mergeItemsBlobDataUnavailableItems(topic: RemoteConfigTopic, itemKeys: [String])
     case notModified
@@ -34,9 +33,7 @@ enum RemoteConfigStrings {
     case prefetchingBlobCount(Int)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
-    case disablingRefresh(BackendError)
     case refreshFailed(BackendError)
-    case refreshSkippedDisabled
     case skippingInvalidBlob(String)
     case persistedConfiguration(domain: String, activeTopicCount: Int, referencedBlobCount: Int)
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
@@ -90,9 +87,6 @@ extension RemoteConfigStrings: LogMessage {
             "\(error.localizedDescription)"
         case let .malformedBlobRef(ref):
             return "Refusing remote config blob operation with malformed ref '\(ref)'."
-        case let .mergeItemsBlobDataDisabled(topic, itemKeys):
-            return "Unable to merge remote config blob data for topic '\(topic.wireName)': " +
-                "remote config is disabled. Requested item keys: \(itemKeys.sorted().joined(separator: ", "))."
         case let .mergeItemsBlobDataEmpty(topic):
             return "Unable to merge remote config blob data for topic '\(topic.wireName)': no item keys requested."
         case let .mergeItemsBlobDataUnavailableItems(topic, itemKeys):
@@ -111,12 +105,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .refreshing(domain, manifestPresent, isAppBackgrounded):
             return "Refreshing remote config for domain '\(domain)' " +
                 "(manifestPresent: \(manifestPresent), isAppBackgrounded: \(isAppBackgrounded))."
-        case let .disablingRefresh(error):
-            return "Disabling remote config for this session after receiving a 4xx response. Error: \(error)"
         case let .refreshFailed(error):
             return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
-        case .refreshSkippedDisabled:
-            return "Remote config is disabled for this session (4xx). Skipping refresh."
         case let .skippingInvalidBlob(ref):
             return "Skipping remote config blob '\(ref)': checksum verification failed."
         case let .persistedConfiguration(domain, activeTopicCount, referencedBlobCount):

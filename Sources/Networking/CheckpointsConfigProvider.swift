@@ -23,7 +23,6 @@ struct CheckpointRulesSnapshot {
 
 enum CheckpointRulesProviderError: Error, Equatable {
 
-    case remoteConfigDisabled
     case payloadUnavailable
 
 }
@@ -76,17 +75,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
             Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
         }
 
-        // The blob read above self-primes remote config on a cold cache. Classifying afterwards prevents an
-        // existing checkpoint from briefly looking unconfigured while that initial refresh is still in flight.
-        if self.manager.isDisabled {
-            throw CheckpointRulesProviderError.remoteConfigDisabled
-        }
-
         let topic = await self.manager.topic(.checkpointRules)
-        if self.manager.isDisabled {
-            throw CheckpointRulesProviderError.remoteConfigDisabled
-        }
-
         guard let topic else {
             guard await self.manager.hasCommittedConfig() else {
                 throw CheckpointRulesProviderError.payloadUnavailable
