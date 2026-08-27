@@ -81,7 +81,7 @@ struct HardPaywallUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "hard_paywall",
-                params: self.paramsForNextAttempt()
+                customVariables: self.customVariablesForNextAttempt()
             )
             self.handle(result)
         } catch {
@@ -122,12 +122,12 @@ struct HardPaywallUseCaseView: View {
     }
 
     @MainActor
-    private func paramsForNextAttempt() -> CheckpointParams {
+    private func customVariablesForNextAttempt() -> [String: CustomVariableValue] {
         self.attempts += 1
-        var customVariables = self.customVariables.checkpointParams.customVariables
+        var customVariables = self.customVariables.checkpointCustomVariables
         customVariables["gate"] = .string("hard")
         customVariables["attempt"] = .number(Double(self.attempts))
-        return CheckpointParams(customVariables: customVariables)
+        return customVariables
     }
 
 }

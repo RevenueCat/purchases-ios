@@ -34,16 +34,16 @@ final class CheckpointsManager {
 
     private let listenerLock = NSLock()
     private var storedListener: CheckpointListener?
-    private let resolveCheckpoint: (String, CheckpointParams) async throws -> CheckpointResolution
+    private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
-    init(resolveCheckpoint: @escaping (String, CheckpointParams) async throws -> CheckpointResolution) {
+    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
         self.resolveCheckpoint = resolveCheckpoint
     }
 
     @MainActor
     init(
-        resolveCheckpoint: @escaping (String, CheckpointParams) async throws -> CheckpointResolution,
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor
     ) {
         self.resolveCheckpoint = resolveCheckpoint
@@ -52,7 +52,7 @@ final class CheckpointsManager {
 
     func checkpoint(
         identifier: String,
-        params: CheckpointParams,
+        params: CheckpointCallParams,
         completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
     ) {
         Task { @MainActor in
@@ -74,7 +74,7 @@ final class CheckpointsManager {
     @MainActor
     func checkpoint(
         identifier: String,
-        params: CheckpointParams
+        params: CheckpointCallParams
     ) async throws -> CheckpointResult {
         let checkpoint = CheckpointInfo(identifier: identifier, params: params)
         self.listener?.onCheckpointHit(checkpoint)

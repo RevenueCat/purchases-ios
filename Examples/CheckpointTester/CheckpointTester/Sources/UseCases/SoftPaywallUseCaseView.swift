@@ -72,7 +72,7 @@ struct SoftPaywallUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "soft_paywall",
-                params: self.customVariables.checkpointParams
+                customVariables: self.customVariables.checkpointCustomVariables
             )
             self.handle(result)
         } catch {

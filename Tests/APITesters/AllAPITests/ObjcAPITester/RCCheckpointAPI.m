@@ -23,14 +23,11 @@
 
 + (void)checkAPI {
     RCPurchases *purchases = RCPurchases.sharedPurchases;
-    RCCheckpointParams *params = [[RCCheckpointParams alloc] initWithCustomVariables:@{
-        @"name": @"Rick",
-        @"subscriber": @YES,
-    }];
-    NSDictionary * __unused customVariables = params.customVariables;
-
     [purchases checkpointWithIdentifier:@"test_checkpoint"
-                                  params:params
+                         customVariables:@{
+                             @"name": @"Rick",
+                             @"subscriber": @YES,
+                         }
                               completion:^(RCCheckpointResult * _Nullable result, NSError * _Nullable error) {
         RCCheckpointInfo *checkpoint = result.checkpoint;
         NSString * __unused identifier = checkpoint.identifier;
@@ -61,7 +58,7 @@
     }];
 
     [purchases checkpointWithIdentifier:@"test_checkpoint"
-                                  params:nil
+                         customVariables:nil
                               completion:^(RCCheckpointResult * _Nullable result, NSError * _Nullable error) {}];
 }
 
