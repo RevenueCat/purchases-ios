@@ -757,8 +757,6 @@ module ApiDiffHelper
   end
 
 
-  # A bot token only, no webhook: conversations.history is what suppresses a rerun, and a webhook
-  # cannot read the channel.
   def slack_post_request(message, bot_token:, channel:)
     return nil if bot_token.to_s.empty? || channel.to_s.empty?
 

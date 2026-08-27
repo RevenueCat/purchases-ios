@@ -1392,7 +1392,6 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
-  # A webhook cannot read conversations.history, so accepting one would silently disable dedup.
   def test_slack_request_needs_a_bot_token_and_a_channel
     bot = ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: "C1")
     assert_equal "https://slack.com/api/chat.postMessage", bot[:url]
