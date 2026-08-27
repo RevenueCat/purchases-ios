@@ -846,9 +846,6 @@ extension PaywallsV2View {
         workflowPackages: [Package]?,
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
-        // A package can be placed in several package components (a default row, a promo row, a
-        // "show all plans" sheet) and only one of them is authored with a promo offer code, not
-        // necessarily the first in document order. Inherited workflow codes merge by the same rule.
         var indexByPackage: [Package: Int] = [:]
         var result: [(package: Package, promotionalOfferProductCode: String?)] = []
 
@@ -858,8 +855,7 @@ extension PaywallsV2View {
                 result.append((package: package, promotionalOfferProductCode: promotionalOfferProductCode))
                 return
             }
-            // The first authored code wins; a later placement only fills in one the earlier
-            // placements lacked. Dropping it made `promo_offer` overrides never resolve.
+            // A later placement only fills in a code the earlier ones lacked.
             if result[index].promotionalOfferProductCode == nil {
                 result[index].promotionalOfferProductCode = promotionalOfferProductCode
             }
