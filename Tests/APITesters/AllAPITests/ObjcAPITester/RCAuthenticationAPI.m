@@ -37,4 +37,6 @@
 
 - (void)authenticatorDidEncounterError:(NSError *)error { }
 
+- (void)authenticatorDidUpdateAccessToken:(NSString *)newAccessToken { }
+
 @end

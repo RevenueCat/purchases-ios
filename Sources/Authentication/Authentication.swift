@@ -32,7 +32,7 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
     ///
     /// - Parameter error: The ``PublicError`` indicating why authentication has failed
     func authenticatorDidEncounterError(_ error: PublicError)
-    
+
     /// The SDK has updated the current user's access token
     ///
     /// This token can be used to communicate directly with the RevenueCat backend on behalf of the current user.

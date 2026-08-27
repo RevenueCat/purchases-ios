@@ -44,4 +44,5 @@ func checkAuthenticationAPI() {
 
 class AuthDelegate: NSObject, AuthenticationDelegate {
     func authenticatorDidEncounterError(_ error: PublicError) { }
+    func authenticatorDidUpdateAccessToken(_ newAccessToken: String?) { }
 }
