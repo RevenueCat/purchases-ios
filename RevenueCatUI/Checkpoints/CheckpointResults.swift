@@ -126,6 +126,37 @@ public final class CheckpointReceivedOfferingResult: CheckpointResult {
 
 }
 
+/// A checkpoint resolved to an ad. The caller is responsible for loading and presenting it (e.g. via
+/// `purchases-ios-admob`'s `InterstitialAd.loadAndTrack(withAdUnitID:...)`) — RevenueCatUI has no
+/// dependency on any ad SDK and never presents this itself.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointAdResult: CheckpointResult {
+
+    /// The ad unit ID to load and show.
+    public let adUnitId: String
+
+    init(checkpoint: CheckpointInfo, adUnitId: String) {
+        self.adUnitId = adUnitId
+        super.init(checkpoint: checkpoint)
+    }
+
+    public override var description: String {
+        return "Ad(checkpoint=\(self.checkpoint), adUnitId=\(self.adUnitId))"
+    }
+
+    override func isEqual(to other: CheckpointResult) -> Bool {
+        guard let other = other as? CheckpointAdResult else { return false }
+        return self.checkpoint == other.checkpoint && self.adUnitId == other.adUnitId
+    }
+
+    public override func hash(into hasher: inout Hasher) {
+        hasher.combine(self.checkpoint)
+        hasher.combine(self.adUnitId)
+    }
+
+}
+
 /// A checkpoint-triggered paywall was presented and finished.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

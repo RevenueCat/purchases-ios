@@ -108,6 +108,16 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
+                        AdCheckpointUseCaseView(customVariables: self.customVariables)
+                    } label: {
+                        DemoLabel(
+                            title: "Ad checkpoint",
+                            subtitle: "Resolves to an ad unit and shows a real AdMob interstitial.",
+                            systemImage: "play.rectangle.fill"
+                        )
+                    }
+
+                    NavigationLink {
                         CustomCheckpointUseCaseView(
                             model: self.model,
                             customVariables: self.customVariables

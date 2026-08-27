@@ -21,7 +21,7 @@ let storeKitConfigurationPath: Path =
 let project = Project(
     name: "CheckpointTester",
     organizationName: .revenueCatOrgName,
-    packages: .projectPackages,
+    packages: .projectPackages + .adMobPackage,
     settings: .appProject,
     targets: [
         .target(
@@ -40,12 +40,15 @@ let project = Project(
                     "REVENUECAT_API_KEY": .string(
                         Environment.rcApiKey ?? "$(REVENUECAT_API_KEY)"
                     ),
+                    // Google's public test AdMob App ID, used by all of Google's own sample apps.
+                    "GADApplicationIdentifier": "ca-app-pub-3940256099942544~1458002511",
                 ]
             ),
             sources: ["CheckpointTester/Sources/**/*.swift"],
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
+                .googleMobileAds,
             ],
             settings: .appTarget(
                 including: ([

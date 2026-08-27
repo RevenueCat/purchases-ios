@@ -107,6 +107,11 @@ final class CheckpointsManager {
                 checkpoint: checkpoint,
                 offering: offering
             )
+        case let .ad(adUnitId):
+            result = CheckpointAdResult(
+                checkpoint: checkpoint,
+                adUnitId: adUnitId
+            )
         case let .noAction(reason):
             result = CheckpointNoActionResult(
                 checkpoint: checkpoint,
