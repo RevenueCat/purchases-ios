@@ -1720,6 +1720,68 @@ public extension Purchases {
     @objc func invalidateVirtualCurrenciesCache() {
         self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
     }
+
+    /// Spend virtual currency
+    ///
+    /// Spending virtual currency is only allowed when the SDK is configured using
+    /// ``Configuration.Builder.with(iamEnabled:)``. Attempting to spend virtual currency
+    /// without enabling IAM will result in a thrown error.
+    ///
+    /// - Parameters:
+    ///   - amounts: A dictionary containing the amounts of each currency to spend.
+    ///   The key is virtual currency's `code`, and the value is how much of that currency to spend.
+    ///   All values should be greater than zero. Values less than or equal to zero are ignored.
+    ///
+    ///   If the dictionary is empty or all values are less thn or equal to zero, then no currencies
+    ///   will be spent, and this will return the result of invoking ``virtualCurrencies()``.
+    ///
+    ///   You may specify multiple currencies to spend in a single transaction.
+    ///   - reference: An optional app-specific reference string that refers to this transaction.
+    /// - Returns: The latest ``VirtualCurrencies`` for the user after the transaction has processed
+    @_spi(Internal)
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String? = nil) async throws -> VirtualCurrencies {
+        guard self.tokenManager.enabled else {
+            let message = "Spending virtual currencies requires configuring the SDK .with(iamEnabled: true)"
+            let error = NewErrorUtils.unsupportedError(message: message)
+            throw error
+        }
+
+        do {
+            return try await self.virtualCurrencyManager.spendVirtualCurrencies(amounts: amounts,
+                                                                                reference: reference)
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    /// Spend virtual currency
+    ///
+    /// - SeeAlso: ``spendVirtualCurrencies(amounts:reference:)``
+    @_spi(Internal)
+    func spendVirtualCurrency(code: String, amount: Int, reference: String? = nil) async throws -> VirtualCurrencies {
+        return try await spendVirtualCurrencies(amounts: [code: amount], reference: reference)
+    }
+
+    @_spi(Internal)
+    @objc
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
+        Task {
+            do {
+                let virtualCurrencies = try await self.spendVirtualCurrencies(amounts: amounts, reference: reference)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(virtualCurrencies, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
+        }
+    }
 }
 #endif
 
