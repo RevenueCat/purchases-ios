@@ -834,13 +834,15 @@ extension PaywallsV2View {
         return (paywallPackages + (workflowPackages ?? [])).filter { seen.insert($0).inserted }
     }
 
-    /// On-screen package infos plus any inherited workflow packages (with their authored promo offer
-    /// code), so `promo_offer_condition` overrides resolve on a workflow step that has no package
-    /// component of its own.
+    /// Every package the screen can show, each paired with the promo offer code it was given.
     ///
-    /// Codes are authored per package component but eligibility is cached per StoreKit product id,
-    /// so a product can only carry one code. Two components authoring different codes for the same
-    /// product is therefore unresolvable here: the first authored code wins.
+    /// Packages inherited from the workflow are included too, because a workflow step can have no
+    /// packages of its own, and its promo offer rules would then have nothing to check against.
+    ///
+    /// The same subscription is often placed in more than one spot (a default row, a promo row, a
+    /// list behind "show all plans"), but promo eligibility is looked up per product, so one
+    /// subscription can only carry one code. If two spots set different codes for it, the first one
+    /// set wins; there is no way to honour both from here.
     static func promoEligibilityPackageInfos(
         paywallPackageInfos: [(package: Package, promotionalOfferProductCode: String?)],
         workflowPackages: [Package]?,
