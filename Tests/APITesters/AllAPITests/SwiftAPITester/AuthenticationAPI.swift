@@ -24,6 +24,8 @@ func checkAuthenticationAPI() {
 
     }
 
+    let _: String? = auth.currentAccessToken
+
     let siwa: Identity = Identity.signInWithApple(Data())
     let _: IdentitySource = siwa.identitySource
 
