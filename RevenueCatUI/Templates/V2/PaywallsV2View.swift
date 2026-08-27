@@ -102,6 +102,7 @@ struct PaywallsV2View: View {
     /// `workflowScreenType`, which gates whether events fire.
     private let workflowId: String?
     private let stepId: String?
+    private let workflowStepType: String?
     private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
@@ -145,6 +146,7 @@ struct PaywallsV2View: View {
         workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil,
+        workflowStepType: String? = nil,
         traceId: String? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
@@ -169,6 +171,7 @@ struct PaywallsV2View: View {
         self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
+        self.workflowStepType = workflowStepType
         self.traceId = traceId
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
@@ -266,6 +269,24 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        let workflow: PaywallWebViewStaticContext.Workflow? = {
+            guard let workflowId = self.workflowId, let stepId = self.stepId else {
+                return nil
+            }
+            return .init(
+                id: workflowId,
+                stepID: stepId,
+                stepType: self.workflowStepType,
+                screenType: self.workflowScreenType
+            )
+        }()
+        let webViewContext = PaywallWebViewStaticContext(
+            offering: self.offering,
+            packages: self.workflowPackages ?? paywallState.packages,
+            workflow: workflow,
+            isPreview: self.purchaseHandler.isUIPreviewMode,
+            storefrontCountryCode: self.purchaseHandler.storefrontCountryCode
+        )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
@@ -287,6 +308,7 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .environment(\.paywallWebViewStaticContext, webViewContext)
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
         })

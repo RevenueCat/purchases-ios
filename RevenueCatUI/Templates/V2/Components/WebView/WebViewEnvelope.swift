@@ -18,6 +18,7 @@ enum WebViewEnvelope {
 
     static let messageTypeResize = "resize"
     static let messageTypeFit = "fit"
+    static let messageTypeContextUpdate = "context_update"
 
     static let maxResizePoints: CGFloat = 10_000
     static let resizeThreshold: CGFloat = 1
