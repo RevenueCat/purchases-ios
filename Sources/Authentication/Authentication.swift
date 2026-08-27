@@ -293,11 +293,11 @@ public final class Authentication: NSObject {
     }
 
     internal func reportAuthenticationResult(_ result: Result<String?, PublicError>) {
-        guard tokenManager.enabled else { return }
         guard let delegate else { return }
 
         switch result {
         case .success(let newAccessToken):
+            guard tokenManager.enabled else { return }
             if let impl = delegate.authenticatorDidUpdateAccessToken {
                 self.operationDispatcher.dispatchOnMainThread {
                     impl(newAccessToken)

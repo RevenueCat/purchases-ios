@@ -411,7 +411,7 @@ class AuthenticationTests: TestCase {
     }
 
     func testReportAuthenticationResultNotifiesTheDelegateOfANewAccessTokenOnTheMainThread() {
-        let authentication = self.makeAuthentication()
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
 
         authentication.reportAuthenticationResult(.success("new-access-token"))
 
@@ -426,7 +426,7 @@ class AuthenticationTests: TestCase {
         // `authenticatorDidUpdateAccessToken` is an `@objc optional` requirement, so delegates written
         // before it existed (or that simply don't care about it) won't implement it. Reporting a new
         // access token to one of those delegates should be a silent no-op rather than a crash.
-        let authentication = self.makeAuthentication()
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
         let minimalDelegate = MinimalAuthenticationDelegate()
         authentication.delegate = minimalDelegate
 
