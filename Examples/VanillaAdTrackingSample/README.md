@@ -132,6 +132,7 @@ This sample uses `.adMob` as the `MediatorName` in all tracking calls since it u
 
 - Xcode 16+ recommended
 - iOS Simulator or device (iOS 15+)
+- Ad tracking APIs are available on iOS 15.0+.
 - A valid RevenueCat API key
 - AdMob test ad unit IDs (included in this sample)
 - **Google Mobile Ads SDK v13** (Swift API; this sample uses v13 naming)
