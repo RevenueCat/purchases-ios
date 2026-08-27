@@ -20,58 +20,6 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManagerTests: TestCase {
 
-    #if ENABLE_CHECKPOINTS_OBJC
-
-    func testObjectiveCCustomVariablesConvertSupportedFoundationValues() throws {
-        let params = CheckpointCallParams(objectiveCCustomVariables: [
-            "string": "value",
-            "integer": NSNumber(value: Int64(42)),
-            "double": NSNumber(value: 4.5),
-            "true": NSNumber(value: true),
-            "false": NSNumber(value: false)
-        ])
-
-        XCTAssertEqual(params.customVariables, [
-            "string": .string("value"),
-            "integer": .number(42),
-            "double": .number(4.5),
-            "true": .bool(true),
-            "false": .bool(false)
-        ])
-
-    }
-
-    func testObjectiveCCustomVariablesDropUnsupportedValuesAndNonStringKeys() {
-        let params = CheckpointCallParams(objectiveCCustomVariables: [
-            "valid": "value",
-            "invalid-key": "value",
-            "null": NSNull(),
-            "date": Date(),
-            "array": ["nested"],
-            NSNumber(value: 1): "invalid key"
-        ])
-
-        XCTAssertEqual(params.customVariables, ["valid": .string("value")])
-    }
-
-    func testObjectiveCResultWrapsInvalidIdentifierNoActionResult() throws {
-        let identifier = "invalid checkpoint"
-        let checkpoint = CheckpointInfo(identifier: identifier, params: .init())
-        let result = CheckpointNoActionResult(
-            checkpoint: checkpoint,
-            reason: .invalidCheckpointIdentifier
-        )
-
-        let objcResult = try XCTUnwrap(
-            ObjCCheckpointResult.wrapping(result) as? ObjCCheckpointNoActionResult
-        )
-
-        XCTAssertEqual(objcResult.checkpoint.identifier, identifier)
-        XCTAssertEqual(objcResult.reason.value, "INVALID_CHECKPOINT_IDENTIFIER")
-    }
-
-    #endif
-
     func testCheckpointCallParamsConvertCustomVariableValuesForCoreResolution() {
         let params = CheckpointCallParams(customVariables: [
             "string": "value",

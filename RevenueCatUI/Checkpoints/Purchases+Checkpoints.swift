@@ -73,37 +73,6 @@ public extension Purchases {
 
 }
 
-#if ENABLE_CHECKPOINTS_OBJC
-
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, *)
-public extension Purchases {
-
-    /// Objective-C-compatible checkpoint API. The identifier must start with a letter and contain only ASCII letters,
-    /// numbers, underscores, and hyphens, and be no more than 255 characters. Custom variables may contain Foundation
-    /// string, number, and Boolean values; unsupported entries are dropped.
-    @_disfavoredOverload
-    @objc(checkpointWithIdentifier:customVariables:completion:)
-    func checkpoint(
-        _ identifier: String,
-        objcCustomVariables: NSDictionary?,
-        completion: @escaping (ObjCCheckpointResult?, PublicError?) -> Void
-    ) {
-        let params = CheckpointCallParams(objectiveCCustomVariables: objcCustomVariables)
-        self.checkpointsManager.checkpoint(identifier: identifier, params: params) { result in
-            switch result {
-            case let .success(result):
-                completion(ObjCCheckpointResult.wrapping(result), nil)
-            case let .failure(error):
-                completion(nil, error)
-            }
-        }
-    }
-
-}
-
-#endif
-
 @available(iOS 15.0, *)
 private extension Purchases {
 
