@@ -98,6 +98,8 @@ import Foundation
     @objc public let identifier: String
     /// The display name configured for this package.
     @_spi(Internal) public let displayName: String?
+    /// The display name configured for this package's product in RevenueCat.
+    @_spi(Internal) public let productDisplayName: String?
     /// The type configured for this package.
     @objc public let packageType: PackageType
     /// The underlying ``storeProduct``
@@ -149,6 +151,7 @@ import Foundation
     ) {
         self.identifier = identifier
         self.displayName = nil
+        self.productDisplayName = nil
         self.packageType = packageType
         self.storeProduct = storeProduct
         self.presentedOfferingContext = presentedOfferingContext
@@ -162,6 +165,7 @@ import Foundation
     public init(
         identifier: String,
         displayName: String? = nil,
+        productDisplayName: String? = nil,
         packageType: PackageType,
         storeProduct: StoreProduct,
         offeringIdentifier: String,
@@ -169,6 +173,7 @@ import Foundation
     ) {
         self.identifier = identifier
         self.displayName = displayName
+        self.productDisplayName = productDisplayName
         self.packageType = packageType
         self.storeProduct = storeProduct
         self.presentedOfferingContext = .init(offeringIdentifier: offeringIdentifier)

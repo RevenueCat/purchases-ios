@@ -17,7 +17,7 @@ class OfferingsTests: TestCase {
 
     private let offeringsFactory = OfferingsFactory(systemInfo: MockSystemInfo(finishTransactions: true))
 
-    func testPackageDisplayNameDecodesFromOfferingResponse() throws {
+    func testPackageAndProductDisplayNamesDecodeFromOfferingResponse() throws {
         let response = try OfferingsResponse.create(
             with: Data("""
             {
@@ -28,6 +28,13 @@ class OfferingsTests: TestCase {
                 "packages": [{
                   "identifier": "$rc_monthly",
                   "display_name": "Monthly",
+                  "products": [{
+                    "identifier": "monthly",
+                    "display_name": "Test Store Monthly"
+                  }, {
+                    "identifier": "com.myproduct.monthly",
+                    "display_name": "Pro Monthly"
+                  }],
                   "platform_product_identifier": "com.myproduct.monthly"
                 }]
               }]
@@ -37,6 +44,8 @@ class OfferingsTests: TestCase {
         )
 
         expect(response.offerings.first?.packages.first?.displayName) == "Monthly"
+        expect(response.offerings.first?.packages.first?.products?.last?.displayName) == "Pro Monthly"
+        expect(response.offerings.first?.packages.first?.productDisplayName) == "Pro Monthly"
     }
 
     func testPackageIsNotCreatedIfNoValidProducts() {
@@ -59,10 +68,14 @@ class OfferingsTests: TestCase {
         let product = MockSK1Product(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
         let displayName = "Monthly"
+        let productDisplayName = "Pro Monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
                 with: .init(identifier: packageIdentifier,
                             displayName: displayName,
+                            products: [
+                                .init(identifier: productIdentifier, displayName: productDisplayName)
+                            ],
                             platformProductIdentifier: productIdentifier,
                             platformProductPlanIdentifier: nil,
                             webCheckoutUrl: nil),
@@ -78,6 +91,7 @@ class OfferingsTests: TestCase {
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
         expect(package.identifier) == packageIdentifier
         expect(package.displayName) == displayName
+        expect(package.productDisplayName) == productDisplayName
         expect(package.packageType) == PackageType.monthly
     }
 

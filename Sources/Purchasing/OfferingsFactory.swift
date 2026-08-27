@@ -141,8 +141,13 @@ private extension Package {
         offeringIdentifier: String,
         webCheckoutUrl: URL?
     ) {
+        let displayName = package.products?.first(where: {
+            $0.identifier == product.productIdentifier
+        })?.displayName
+
         self.init(identifier: package.identifier,
                   displayName: package.displayName,
+                  productDisplayName: displayName,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
                   offeringIdentifier: offeringIdentifier,

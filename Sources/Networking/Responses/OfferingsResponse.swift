@@ -32,8 +32,15 @@ struct OfferingsResponse {
         // swiftlint:disable:next nesting
         struct Package {
 
+            // swiftlint:disable:next nesting
+            struct Product {
+                let identifier: String
+                let displayName: String?
+            }
+
             let identifier: String
             let displayName: String?
+            let products: [Product]?
             let platformProductIdentifier: String
             let platformProductPlanIdentifier: String?
             let webCheckoutUrl: URL?
@@ -41,17 +48,18 @@ struct OfferingsResponse {
             init(
                 identifier: String,
                 displayName: String? = nil,
+                products: [Product]? = nil,
                 platformProductIdentifier: String,
                 platformProductPlanIdentifier: String?,
                 webCheckoutUrl: URL?
             ) {
                 self.identifier = identifier
                 self.displayName = displayName
+                self.products = products
                 self.platformProductIdentifier = platformProductIdentifier
                 self.platformProductPlanIdentifier = platformProductPlanIdentifier
                 self.webCheckoutUrl = webCheckoutUrl
             }
-
         }
 
         let identifier: String
@@ -130,6 +138,7 @@ extension OfferingsResponse.Offering.Package {
     }
 }
 
+extension OfferingsResponse.Offering.Package.Product: Codable, Equatable {}
 extension OfferingsResponse.Offering.Package: Codable, Equatable {}
 extension OfferingsResponse.Offering: Codable, Equatable {
 
