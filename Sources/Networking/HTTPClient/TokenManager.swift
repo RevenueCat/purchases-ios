@@ -107,7 +107,6 @@ class TokenManager {
     }
 
     func saveTokens(refreshToken: String?, accessToken: String, idToken: String?, for userID: String) {
-        guard enabled == true else { return }
         storage.setString(refreshToken, for: .refresh(userID))
         storage.setString(accessToken, for: .access(userID))
         storage.setString(idToken, for: .id(userID))
@@ -115,7 +114,6 @@ class TokenManager {
     }
 
     func deleteTokens(for userID: String) {
-        guard enabled == true else { return }
         storage.setString(nil, for: .refresh(userID))
         storage.setString(nil, for: .access(userID))
         storage.setString(nil, for: .id(userID))

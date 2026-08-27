@@ -269,7 +269,7 @@ class TokenManagerTests: TestCase {
     func testReportTokenUpdateCanBeSetAndIsInvokedWithAFailure() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         let expectedError = NSError(domain: "TokenManagerTests", code: 1)
-        var receivedResult: Result<String, PublicError>?
+        var receivedResult: Result<String?, PublicError>?
 
         manager.reportTokenUpdate = { result in
             receivedResult = result
@@ -285,7 +285,7 @@ class TokenManagerTests: TestCase {
 
     func testReportTokenUpdateCanBeSetAndIsInvokedWithANewAccessToken() {
         let manager = TokenManager(enabled: true, storage: self.storage)
-        var receivedResult: Result<String, PublicError>?
+        var receivedResult: Result<String?, PublicError>?
 
         manager.reportTokenUpdate = { result in
             receivedResult = result
@@ -575,7 +575,7 @@ class TokenManagerTests: TestCase {
     func testHandleTokenRefreshResponseReturnsFalseAndDoesNothingWhenDisabled() {
         let manager = TokenManager(enabled: false, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedResult: Result<String, PublicError>?
+        var reportedResult: Result<String?, PublicError>?
         manager.reportTokenUpdate = { reportedResult = $0 }
 
         let didHandle = manager.handleTokenRefreshResponse(.failure(Self.makeNetworkError()))
@@ -587,7 +587,7 @@ class TokenManagerTests: TestCase {
     func testHandleTokenRefreshResponseSavesTokensAndReturnsTrueOnSuccess() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedResult: Result<String, PublicError>?
+        var reportedResult: Result<String?, PublicError>?
         manager.reportTokenUpdate = { reportedResult = $0 }
 
         let didHandle = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse(
@@ -613,7 +613,7 @@ class TokenManagerTests: TestCase {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
         manager.currentAccessToken = "old-access"
-        var reportedResult: Result<String, PublicError>?
+        var reportedResult: Result<String?, PublicError>?
         manager.reportTokenUpdate = { reportedResult = $0 }
         let networkError = Self.makeNetworkError()
 
@@ -633,7 +633,7 @@ class TokenManagerTests: TestCase {
     func testHandleTokenRefreshResponseReportsAnErrorWhenTheResponseIsNotSuccessful() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedResult: Result<String, PublicError>?
+        var reportedResult: Result<String?, PublicError>?
         manager.reportTokenUpdate = { reportedResult = $0 }
         let response = VerifiedHTTPResponse<TokenResponse>(
             httpStatusCode: .unauthorized,

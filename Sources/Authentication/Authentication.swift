@@ -70,7 +70,7 @@ public final class Authentication: NSObject {
     /// - Warning: The delegate is not retained, so your app must retain a reference
     /// to the delegate to prevent it from being unintentionally deallocated.
     @objc public weak var delegate: AuthenticationDelegate?
-    
+
     /// The access token for the currently authenticated user, if one exists.
     @objc public var currentAccessToken: String? { tokenManager.currentAccessToken }
 
@@ -293,6 +293,7 @@ public final class Authentication: NSObject {
     }
 
     internal func reportAuthenticationResult(_ result: Result<String?, PublicError>) {
+        guard tokenManager.enabled else { return }
         guard let delegate else { return }
 
         switch result {
