@@ -52,9 +52,7 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
-    // Not private so tests can assert that `simulatePromoEligible` actually reaches the renderer;
-    // both initializers wire this and a silent break would otherwise leave the suite green.
-    var promoOfferCache: PaywallPromoOfferCache?
+    private var promoOfferCache: PaywallPromoOfferCache?
 
     private var initializationError: NSError?
 
