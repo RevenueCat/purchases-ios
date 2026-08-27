@@ -236,7 +236,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
     func testSpendVirtualCurrencyCallbackThrowsUnsupportedErrorWhenIAMIsNotEnabled() async throws {
         self.setupPurchases()
         await waitUntil { completed in
-            self.purchases.spendVirtualCurrency(amounts: ["GLD": 10], reference: nil) { vcs, error in
+            self.purchases.spendVirtualCurrencies(amounts: ["GLD": 10], reference: nil) { vcs, error in
                 expect(vcs).to(beNil())
                 expect(error).to(matchError(ErrorCode.unsupportedError))
                 completed()
@@ -252,7 +252,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedSpendVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         await waitUntil { completed in
-            self.purchases.spendVirtualCurrency(amounts: ["GLD": 10], reference: "ref-3") { vcs, error in
+            self.purchases.spendVirtualCurrencies(amounts: ["GLD": 10], reference: "ref-3") { vcs, error in
                 expect(vcs).to(equal(Self.mockVirtualCurrencies))
                 expect(error).to(beNil())
                 completed()
@@ -273,7 +273,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedSpendVirtualCurrenciesResult = .failure(backendError)
 
         await waitUntil { completed in
-            self.purchases.spendVirtualCurrency(amounts: ["GLD": 10], reference: nil) { vcs, error in
+            self.purchases.spendVirtualCurrencies(amounts: ["GLD": 10], reference: nil) { vcs, error in
                 expect(vcs).to(beNil())
                 expect(error).to(matchError(backendError.asPurchasesError))
                 completed()
@@ -287,7 +287,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.mockVirtualCurrencyManager.stubbedSpendVirtualCurrenciesResult = .success(Self.mockVirtualCurrencies)
 
         await waitUntil { completed in
-            self.purchases.spendVirtualCurrency(amounts: ["GLD": 10], reference: nil) { _, _ in
+            self.purchases.spendVirtualCurrencies(amounts: ["GLD": 10], reference: nil) { _, _ in
                 expect(Thread.isMainThread).to(beTrue())
                 completed()
             }
@@ -298,7 +298,7 @@ class PurchasesVirtualCurrenciesTests: BasePurchasesTests {
         self.setupPurchases()
         // `self.tokenManager` defaults to disabled, so this exercises the error path via the guard.
         await waitUntil { completed in
-            self.purchases.spendVirtualCurrency(amounts: ["GLD": 10], reference: nil) { _, _ in
+            self.purchases.spendVirtualCurrencies(amounts: ["GLD": 10], reference: nil) { _, _ in
                 expect(Thread.isMainThread).to(beTrue())
                 completed()
             }
