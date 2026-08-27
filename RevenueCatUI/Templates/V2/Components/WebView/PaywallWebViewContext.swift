@@ -90,7 +90,7 @@ struct PaywallWebViewStaticContext {
                     "is_family_shareable": .bool(product.isFamilyShareable),
                     "is_auto_renewing": .bool(product.productType == .autoRenewableSubscription),
                     "price": .object([
-                        "amount": .number(NSDecimalNumber(decimal: product.price).doubleValue),
+                        "amount": .number(Self.doubleValue(product.price)),
                         "currency": product.currencyCode.map(PaywallWebViewValue.string) ?? .null
                     ])
                 ])
@@ -115,6 +115,13 @@ struct PaywallWebViewStaticContext {
             number: PaywallWebViewValue.number,
             boolean: PaywallWebViewValue.bool
         )
+    }
+
+    private static func doubleValue(_ value: Decimal) -> Double {
+        // Converting through the decimal string avoids visible JSON artifacts such as
+        // `53.989999999999995`. The result remains a `Double` because JavaScript uses `Number`.
+        let decimalNumber = NSDecimalNumber(decimal: value)
+        return Double(decimalNumber.stringValue) ?? decimalNumber.doubleValue
     }
 
     private static func isoPeriod(_ period: SubscriptionPeriod) -> String {
