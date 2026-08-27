@@ -85,6 +85,7 @@ import Foundation
 
     public var stepTriggers: [WorkflowTrigger] { triggers }
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
+    public var stepType: String { type }
     let metadata: [String: AnyDecodable]?
 
     /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older

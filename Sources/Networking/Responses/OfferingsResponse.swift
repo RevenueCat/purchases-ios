@@ -33,9 +33,24 @@ struct OfferingsResponse {
         struct Package {
 
             let identifier: String
+            let displayName: String?
             let platformProductIdentifier: String
             let platformProductPlanIdentifier: String?
             let webCheckoutUrl: URL?
+
+            init(
+                identifier: String,
+                displayName: String? = nil,
+                platformProductIdentifier: String,
+                platformProductPlanIdentifier: String?,
+                webCheckoutUrl: URL?
+            ) {
+                self.identifier = identifier
+                self.displayName = displayName
+                self.platformProductIdentifier = platformProductIdentifier
+                self.platformProductPlanIdentifier = platformProductPlanIdentifier
+                self.webCheckoutUrl = webCheckoutUrl
+            }
 
         }
 

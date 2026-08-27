@@ -17,6 +17,28 @@ class OfferingsTests: TestCase {
 
     private let offeringsFactory = OfferingsFactory(systemInfo: MockSystemInfo(finishTransactions: true))
 
+    func testPackageDisplayNameDecodesFromOfferingResponse() throws {
+        let response = try OfferingsResponse.create(
+            with: Data("""
+            {
+              "current_offering_id": "default",
+              "offerings": [{
+                "identifier": "default",
+                "description": "Default",
+                "packages": [{
+                  "identifier": "$rc_monthly",
+                  "display_name": "Monthly",
+                  "platform_product_identifier": "com.myproduct.monthly"
+                }]
+              }]
+            }
+            """.utf8),
+            decodingMode: .withPaywallComponents
+        )
+
+        expect(response.offerings.first?.packages.first?.displayName) == "Monthly"
+    }
+
     func testPackageIsNotCreatedIfNoValidProducts() {
         let package = self.offeringsFactory.createPackage(
             with: .init(identifier: "$rc_monthly",
@@ -36,9 +58,11 @@ class OfferingsTests: TestCase {
         let productIdentifier = "com.myproduct.monthly"
         let product = MockSK1Product(mockProductIdentifier: productIdentifier)
         let packageIdentifier = "$rc_monthly"
+        let displayName = "Monthly"
         let package = try XCTUnwrap(
             self.offeringsFactory.createPackage(
                 with: .init(identifier: packageIdentifier,
+                            displayName: displayName,
                             platformProductIdentifier: productIdentifier,
                             platformProductPlanIdentifier: nil,
                             webCheckoutUrl: nil),
@@ -53,6 +77,7 @@ class OfferingsTests: TestCase {
         let sk1StoreProduct = try XCTUnwrap(package.storeProduct.product as? SK1StoreProduct)
         expect(sk1StoreProduct.underlyingSK1Product).to(equal(product))
         expect(package.identifier) == packageIdentifier
+        expect(package.displayName) == displayName
         expect(package.packageType) == PackageType.monthly
     }
 

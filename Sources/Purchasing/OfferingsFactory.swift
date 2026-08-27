@@ -142,6 +142,7 @@ private extension Package {
         webCheckoutUrl: URL?
     ) {
         self.init(identifier: package.identifier,
+                  displayName: package.displayName,
                   packageType: Package.packageType(from: package.identifier),
                   storeProduct: product,
                   offeringIdentifier: offeringIdentifier,

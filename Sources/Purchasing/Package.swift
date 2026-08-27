@@ -96,6 +96,8 @@ import Foundation
 
     /// The identifier for this Package.
     @objc public let identifier: String
+    /// The display name configured for this package.
+    @_spi(Internal) public let displayName: String?
     /// The type configured for this package.
     @objc public let packageType: PackageType
     /// The underlying ``storeProduct``
@@ -146,9 +148,30 @@ import Foundation
         webCheckoutUrl: URL?
     ) {
         self.identifier = identifier
+        self.displayName = nil
         self.packageType = packageType
         self.storeProduct = storeProduct
         self.presentedOfferingContext = presentedOfferingContext
+        self.webCheckoutUrl = webCheckoutUrl
+
+        super.init()
+    }
+
+    /// Initializes a package with its dashboard-configured display name.
+    @_spi(Internal)
+    public init(
+        identifier: String,
+        displayName: String? = nil,
+        packageType: PackageType,
+        storeProduct: StoreProduct,
+        offeringIdentifier: String,
+        webCheckoutUrl: URL?
+    ) {
+        self.identifier = identifier
+        self.displayName = displayName
+        self.packageType = packageType
+        self.storeProduct = storeProduct
+        self.presentedOfferingContext = .init(offeringIdentifier: offeringIdentifier)
         self.webCheckoutUrl = webCheckoutUrl
 
         super.init()
