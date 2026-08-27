@@ -32,6 +32,8 @@ Import the adapter:
 import RevenueCatAdMob
 ```
 
+- APIs are available on iOS 15.0+ (`@available(iOS 15.0, *)`).
+
 **Placement:** All load-and-track APIs take a `placement` parameter — a string that identifies where the ad is shown in your app (e.g. `"home_banner"`, `"level_complete"`, `"app_launch"`). RevenueCat uses it for reporting and segmentation. Use consistent values across your app.
 
 > **Important:** Do not reassign AdMob delegates/handlers after calling `loadAndTrack`.
