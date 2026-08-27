@@ -258,25 +258,45 @@ class TokenManagerTests: TestCase {
         expect(manager.currentIDToken) == "id"
     }
 
-    // MARK: - reportError
+    // MARK: - reportTokenUpdate
 
-    func testReportErrorIsNilByDefault() {
+    func testReportTokenUpdateIsNilByDefault() {
         let manager = TokenManager(enabled: true, storage: self.storage)
 
-        expect(manager.reportError).to(beNil())
+        expect(manager.reportTokenUpdate).to(beNil())
     }
 
-    func testReportErrorCanBeSetAndIsInvokedWhenCalled() {
+    func testReportTokenUpdateCanBeSetAndIsInvokedWithAFailure() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         let expectedError = NSError(domain: "TokenManagerTests", code: 1)
-        var receivedError: PublicError?
+        var receivedResult: Result<String, PublicError>?
 
-        manager.reportError = { error in
-            receivedError = error
+        manager.reportTokenUpdate = { result in
+            receivedResult = result
         }
-        manager.reportError?(expectedError)
+        manager.reportTokenUpdate?(.failure(expectedError))
 
-        expect(receivedError) == expectedError
+        guard case let .failure(error) = receivedResult else {
+            fail("Expected .failure, got \(String(describing: receivedResult))")
+            return
+        }
+        expect(error) == expectedError
+    }
+
+    func testReportTokenUpdateCanBeSetAndIsInvokedWithANewAccessToken() {
+        let manager = TokenManager(enabled: true, storage: self.storage)
+        var receivedResult: Result<String, PublicError>?
+
+        manager.reportTokenUpdate = { result in
+            receivedResult = result
+        }
+        manager.reportTokenUpdate?(.success("new-access-token"))
+
+        guard case let .success(accessToken) = receivedResult else {
+            fail("Expected .success, got \(String(describing: receivedResult))")
+            return
+        }
+        expect(accessToken) == "new-access-token"
     }
 
     // MARK: - currentIdentitySources
@@ -555,20 +575,20 @@ class TokenManagerTests: TestCase {
     func testHandleTokenRefreshResponseReturnsFalseAndDoesNothingWhenDisabled() {
         let manager = TokenManager(enabled: false, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedError: PublicError?
-        manager.reportError = { reportedError = $0 }
+        var reportedResult: Result<String, PublicError>?
+        manager.reportTokenUpdate = { reportedResult = $0 }
 
         let didHandle = manager.handleTokenRefreshResponse(.failure(Self.makeNetworkError()))
 
         expect(didHandle) == false
-        expect(reportedError).to(beNil())
+        expect(reportedResult).to(beNil())
     }
 
     func testHandleTokenRefreshResponseSavesTokensAndReturnsTrueOnSuccess() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedError: PublicError?
-        manager.reportError = { reportedError = $0 }
+        var reportedResult: Result<String, PublicError>?
+        manager.reportTokenUpdate = { reportedResult = $0 }
 
         let didHandle = manager.handleTokenRefreshResponse(.success(Self.makeTokenResponse(
             accessToken: "new-access",
@@ -577,33 +597,44 @@ class TokenManagerTests: TestCase {
         )))
 
         expect(didHandle) == true
-        expect(reportedError).to(beNil())
         expect(manager.currentAccessToken) == "new-access"
         expect(manager.currentIDToken) == "new-id"
         expect(manager.currentRefreshToken) == "new-refresh"
+
+        // a successful refresh reports the new access token via `reportTokenUpdate`
+        guard case let .success(reportedAccessToken) = reportedResult else {
+            fail("Expected .success, got \(String(describing: reportedResult))")
+            return
+        }
+        expect(reportedAccessToken) == "new-access"
     }
 
     func testHandleTokenRefreshResponseReportsTheErrorAndReturnsFalseOnFailure() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
         manager.currentAccessToken = "old-access"
-        var reportedError: PublicError?
-        manager.reportError = { reportedError = $0 }
+        var reportedResult: Result<String, PublicError>?
+        manager.reportTokenUpdate = { reportedResult = $0 }
         let networkError = Self.makeNetworkError()
 
         let didHandle = manager.handleTokenRefreshResponse(.failure(networkError))
 
         expect(didHandle) == false
-        expect(reportedError).to(matchError(networkError.asPublicError))
         // a failed refresh should not clear out whatever access token was already stored
         expect(manager.currentAccessToken) == "old-access"
+
+        guard case let .failure(reportedError) = reportedResult else {
+            fail("Expected .failure, got \(String(describing: reportedResult))")
+            return
+        }
+        expect(reportedError).to(matchError(networkError.asPublicError))
     }
 
     func testHandleTokenRefreshResponseReportsAnErrorWhenTheResponseIsNotSuccessful() {
         let manager = TokenManager(enabled: true, storage: self.storage)
         manager.currentUserProvider = self.userProvider
-        var reportedError: PublicError?
-        manager.reportError = { reportedError = $0 }
+        var reportedResult: Result<String, PublicError>?
+        manager.reportTokenUpdate = { reportedResult = $0 }
         let response = VerifiedHTTPResponse<TokenResponse>(
             httpStatusCode: .unauthorized,
             responseHeaders: [:],
@@ -620,7 +651,10 @@ class TokenManagerTests: TestCase {
         let didHandle = manager.handleTokenRefreshResponse(.success(response))
 
         expect(didHandle) == false
-        expect(reportedError).toNot(beNil())
+        guard case .failure = reportedResult else {
+            fail("Expected .failure, got \(String(describing: reportedResult))")
+            return
+        }
     }
 
     func testHandleTokenRefreshResponseNotifiesDuplicateRequestHandlersOnFailure() {

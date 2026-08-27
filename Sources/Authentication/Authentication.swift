@@ -27,8 +27,18 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
     /// This method is *not* invoked when ``Authentication.logIn(using:)`` or
     /// ``Authentication.logOut()`` fail, as both of those methods report any failures directly.
     ///
+    /// When this method is implemented, all access tokens conveyed via ``authenticatorDidUpdateAccessToken(_:)``
+    /// should be assumed to be invalid.
+    ///
     /// - Parameter error: The ``PublicError`` indicating why authentication has failed
     func authenticatorDidEncounterError(_ error: PublicError)
+    
+    /// The SDK has updated the current user's access token
+    ///
+    /// This token can be used to communicate directly with the RevenueCat backend on behalf of the current user.
+    ///
+    /// - Parameter newAccessToken: The new access token, or `nil` if authentication failed.
+    @objc optional func authenticatorDidUpdateAccessToken(_ newAccessToken: String?)
 }
 
 internal protocol InternalAuthenticatorDelegate: AnyObject {
@@ -77,8 +87,8 @@ public final class Authentication: NSObject {
         self.internalDelegate = internalDelegate
         super.init()
 
-        tokenManager.reportError = { [weak self] in
-            self?.reportAuthenticationError($0)
+        tokenManager.reportTokenUpdate = { [weak self] in
+            self?.reportAuthenticationResult($0)
         }
     }
 
@@ -211,7 +221,7 @@ public final class Authentication: NSObject {
             self.operationDispatcher.dispatchOnMainThread {
                 completion?(nil, error.asPublicError)
             }
-            if userInitiated == false { self.reportAuthenticationError(error.asPublicError) }
+            if userInitiated == false { self.reportAuthenticationResult(.failure(error.asPublicError)) }
             return
         }
 
@@ -230,7 +240,7 @@ public final class Authentication: NSObject {
                 self.internalDelegate?.authenticatorDidLogIn(info: result.info)
             case .failure(let error):
                 if userInitiated == false {
-                    self.reportAuthenticationError(error.asPublicError)
+                    self.reportAuthenticationResult(.failure(error.asPublicError))
                 }
             }
 
@@ -244,7 +254,7 @@ public final class Authentication: NSObject {
             self.operationDispatcher.dispatchOnMainThread {
                 completion?(nil, error)
             }
-            if userInitiated == false { self.reportAuthenticationError(error) }
+            if userInitiated == false { self.reportAuthenticationResult(.failure(error)) }
             return
         }
 
@@ -259,7 +269,7 @@ public final class Authentication: NSObject {
                     }
                 }
                 if userInitiated == false {
-                    self.reportAuthenticationError(error.asPublicError)
+                    self.reportAuthenticationResult(.failure(error.asPublicError))
                 }
             } else {
                 self.operationDispatcher.dispatchOnMainThread {
@@ -279,14 +289,24 @@ public final class Authentication: NSObject {
         }
     }
 
-    internal func reportAuthenticationError(_ error: PublicError) {
+    internal func reportAuthenticationResult(_ result: Result<String, PublicError>) {
         guard let delegate else { return }
 
-        // if we currently have user initiated requests going, then skip reporting this error via the delegate
-        if self.ongoingUserInitiatedRequestCount.value > 0 { return }
+        switch result {
+        case .success(let newAccessToken):
+            if let impl = delegate.authenticatorDidUpdateAccessToken {
+                self.operationDispatcher.dispatchOnMainThread {
+                    impl(newAccessToken)
+                }
+            }
 
-        self.operationDispatcher.dispatchOnMainThread {
-            delegate.authenticatorDidEncounterError(error)
+        case .failure(let error):
+            // if we currently have user initiated requests going, then skip reporting this error via the delegate
+            if self.ongoingUserInitiatedRequestCount.value > 0 { return }
+
+            self.operationDispatcher.dispatchOnMainThread {
+                delegate.authenticatorDidEncounterError(error)
+            }
         }
     }
 
