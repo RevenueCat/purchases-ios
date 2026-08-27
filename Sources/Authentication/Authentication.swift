@@ -27,7 +27,7 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
     /// This method is *not* invoked when ``Authentication.logIn(using:)`` or
     /// ``Authentication.logOut()`` fail, as both of those methods report any failures directly.
     ///
-    /// When this method is implemented, all access tokens conveyed via ``authenticatorDidUpdateAccessToken(_:)``
+    /// When this method is invoked, all access tokens previously sent to ``authenticatorDidUpdateAccessToken(_:)``
     /// should be assumed to be invalid.
     ///
     /// - Parameter error: The ``PublicError`` indicating why authentication has failed
