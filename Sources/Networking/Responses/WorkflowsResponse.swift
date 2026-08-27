@@ -72,7 +72,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowStep {
 
     public let id: String
-    let type: String
+    @_spi(Internal) let type: String
     public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
