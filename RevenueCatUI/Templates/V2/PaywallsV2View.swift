@@ -849,12 +849,10 @@ extension PaywallsV2View {
         workflowPackages: [Package]?,
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
-        var indexByPackage: [Package: Int] = [:]
         var result: [(package: Package, promotionalOfferProductCode: String?)] = []
 
         func merge(_ package: Package, _ promotionalOfferProductCode: String?) {
-            guard let index = indexByPackage[package] else {
-                indexByPackage[package] = result.count
+            guard let index = result.firstIndex(where: { $0.package == package }) else {
                 result.append((package: package, promotionalOfferProductCode: promotionalOfferProductCode))
                 return
             }
