@@ -136,7 +136,6 @@ enum Strings {
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
     case workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier: String, error: Error)
-    case restored_paywall_components_for_disabled_remote_config(offeringIdentifier: String)
     case purchases_did_configure
 
 }
@@ -438,9 +437,6 @@ extension Strings: CustomStringConvertible {
         case let .workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier, error):
             return "Failed to fetch workflow for offering '\(offeringIdentifier)' (\(error)). " +
             "Falling back to the offerings-provided paywall."
-        case let .restored_paywall_components_for_disabled_remote_config(offeringIdentifier):
-            return "Remote config is disabled, so offering '\(offeringIdentifier)' was re-resolved to restore " +
-            "its offerings-provided paywall."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
         case .web_view_context_encoding_failed(let error):
