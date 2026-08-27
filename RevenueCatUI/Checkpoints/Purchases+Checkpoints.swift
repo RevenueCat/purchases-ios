@@ -22,6 +22,8 @@ import Foundation
 public extension Purchases {
 
     /// Global listener for checkpoint activity.
+    ///
+    /// The listener is held by this ``Purchases`` instance and is cleared when the SDK is reconfigured.
     var checkpointListener: CheckpointListener? {
         get { return self.checkpointsManager.listener }
         set { self.checkpointsManager.listener = newValue }

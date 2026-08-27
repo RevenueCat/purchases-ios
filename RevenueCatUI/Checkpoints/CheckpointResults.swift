@@ -201,7 +201,7 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
 
 }
 
-/// The customer dismissed the paywall.
+/// The customer dismissed the paywall without a purchase, restore, or error.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
@@ -214,7 +214,9 @@ public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
 
 }
 
-/// The customer opened a web checkout from the paywall.
+/// The customer opened a web checkout from the paywall to pay externally.
+///
+/// There is no in-app completion signal for the external payment.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 // swiftlint:disable:next type_name
@@ -282,7 +284,8 @@ public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
 
 }
 
-/// The paywall ended with an error.
+/// A purchase or restore failed with an error. Cancellations are reported as
+/// ``CheckpointPaywallDismissedOutcome`` instead.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {

@@ -83,7 +83,7 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
     let value: String
 
-    /// No targeting rule matched.
+    /// The checkpoint is configured, but no targeting rule matched.
     public static let noMatch = CheckpointNoActionReason(value: "NO_MATCH")
     /// The customer was assigned to a holdout.
     public static let holdout = CheckpointNoActionReason(value: "HOLDOUT")
@@ -91,7 +91,7 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
     public static let frequencyCapped = CheckpointNoActionReason(value: "FREQUENCY_CAPPED")
     /// The checkpoint could not be evaluated because required configuration or resources were unavailable.
     public static let configurationUnavailable = CheckpointNoActionReason(value: "CONFIGURATION_UNAVAILABLE")
-    /// The checkpoint identifier is not configured.
+    /// The checkpoint identifier is not configured in the RevenueCat dashboard.
     public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
     /// The checkpoint identifier is invalid.
     public static let invalidCheckpointIdentifier = CheckpointNoActionReason(value: "INVALID_CHECKPOINT_IDENTIFIER")
