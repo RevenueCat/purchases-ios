@@ -32,6 +32,22 @@ final class WorkflowPreviewTests: TestCase {
         expect(context.workflow.id) == "wf_test"
     }
 
+    // The `workflowContext:` initializer did not forward `simulatePromoEligible`; without this
+    // wiring the parameter is accepted and ignored, which no other test would catch.
+    @MainActor
+    func testSimulatePromoEligibleSeedsAPromoOfferCacheForWorkflowPreviews() throws {
+        let view = PaywallView(workflowContext: try Self.makePreviewContext(), simulatePromoEligible: true)
+
+        expect(view.promoOfferCache).toNot(beNil())
+    }
+
+    @MainActor
+    func testWorkflowPreviewsDoNotSimulatePromoEligibilityByDefault() throws {
+        let view = PaywallView(workflowContext: try Self.makePreviewContext())
+
+        expect(view.promoOfferCache).to(beNil())
+    }
+
     func testInitialOfferingCarriesTheScreenZeroDecimalPlaceCountries() throws {
         let baseOffering = Self.makeOffering(identifier: "offering_a")
         let workflow = try Self.makeWorkflow(
@@ -90,6 +106,13 @@ final class WorkflowPreviewTests: TestCase {
 private extension WorkflowPreviewTests {
 
     /// A packages-only offering (no paywall components), as the preview seam expects.
+    static func makePreviewContext(offeringIdentifier: String = "offering_a") throws -> WorkflowContext {
+        return try WorkflowPreview.makeContext(
+            workflow: try Self.makeWorkflow(screenOfferingIdentifier: offeringIdentifier),
+            offerings: [Self.makeOffering(identifier: offeringIdentifier)]
+        )
+    }
+
     static func makeOffering(identifier: String) -> Offering {
         return Offering(
             identifier: identifier,

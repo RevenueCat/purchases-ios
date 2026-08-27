@@ -837,33 +837,39 @@ extension PaywallsV2View {
     /// On-screen package infos plus any inherited workflow packages (with their authored promo offer
     /// code), so `promo_offer_condition` overrides resolve on a workflow step that has no package
     /// component of its own.
+    ///
+    /// Codes are authored per package component but eligibility is cached per StoreKit product id,
+    /// so a product can only carry one code. Two components authoring different codes for the same
+    /// product is therefore unresolvable here: the first authored code wins.
     static func promoEligibilityPackageInfos(
         paywallPackageInfos: [(package: Package, promotionalOfferProductCode: String?)],
         workflowPackages: [Package]?,
         workflowPromoOfferProductCodes: [String: String]?
     ) -> [(package: Package, promotionalOfferProductCode: String?)] {
-        var seen = Set<Package>()
+        // A package can be placed in several package components (a default row, a promo row, a
+        // "show all plans" sheet) and only one of them is authored with a promo offer code, not
+        // necessarily the first in document order. Inherited workflow codes merge by the same rule.
         var indexByPackage: [Package: Int] = [:]
         var result: [(package: Package, promotionalOfferProductCode: String?)] = []
-        for info in paywallPackageInfos {
-            guard seen.insert(info.package).inserted else {
-                // The same package can be placed in several package components (a default row, a
-                // promo row, a "show all plans" sheet) and only one of them is authored with a promo
-                // offer code, not necessarily the first in document order. The cache is keyed by
-                // product id, so a package can only carry one code: keep the first authored one and
-                // let a later duplicate fill it in when the earlier placements had none. Dropping it
-                // here made `promo_offer` overrides silently never resolve for the product.
-                if let index = indexByPackage[info.package],
-                   result[index].promotionalOfferProductCode == nil {
-                    result[index].promotionalOfferProductCode = info.promotionalOfferProductCode
-                }
-                continue
+
+        func merge(_ package: Package, _ promotionalOfferProductCode: String?) {
+            guard let index = indexByPackage[package] else {
+                indexByPackage[package] = result.count
+                result.append((package: package, promotionalOfferProductCode: promotionalOfferProductCode))
+                return
             }
-            indexByPackage[info.package] = result.count
-            result.append(info)
+            // The first authored code wins; a later placement only fills in one the earlier
+            // placements lacked. Dropping it made `promo_offer` overrides never resolve.
+            if result[index].promotionalOfferProductCode == nil {
+                result[index].promotionalOfferProductCode = promotionalOfferProductCode
+            }
         }
-        for package in workflowPackages ?? [] where seen.insert(package).inserted {
-            result.append((package, workflowPromoOfferProductCodes?[package.identifier]))
+
+        for info in paywallPackageInfos {
+            merge(info.package, info.promotionalOfferProductCode)
+        }
+        for package in workflowPackages ?? [] {
+            merge(package, workflowPromoOfferProductCodes?[package.identifier])
         }
         return result
     }

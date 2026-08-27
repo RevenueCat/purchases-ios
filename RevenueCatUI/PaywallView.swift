@@ -52,7 +52,9 @@ public struct PaywallView: View {
     @State
     private var error: NSError?
 
-    private var promoOfferCache: PaywallPromoOfferCache?
+    // Not private so tests can assert that `simulatePromoEligible` actually reaches the renderer;
+    // both initializers wire this and a silent break would otherwise leave the suite green.
+    var promoOfferCache: PaywallPromoOfferCache?
 
     private var initializationError: NSError?
 
@@ -152,7 +154,7 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler,
-                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
+                promoOfferCache: .simulated(if: simulatePromoEligible)
             )
         )
     }
@@ -179,7 +181,7 @@ public struct PaywallView: View {
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
             purchaseHandler: purchaseHandler,
-            promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
+            promoOfferCache: .simulated(if: simulatePromoEligible)
         )
         configuration.injectedWorkflowContext = workflowContext
 
