@@ -278,7 +278,9 @@ private extension CustomerCenterViewModel {
             )
             activeNonSubscriptionPurchases.append(purchaseInfo)
         }
+        // customerInfo returns these oldest first, and the management screen only shows the first few
         self.nonSubscriptionsSection = activeNonSubscriptionPurchases
+            .sorted { $0.latestPurchaseDate > $1.latestPurchaseDate }
     }
 
     func loadMostRecentExpiredTransaction(customerInfo: CustomerInfo, configuration: CustomerCenterConfigData) async {
