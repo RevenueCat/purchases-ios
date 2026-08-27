@@ -557,20 +557,28 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeSource = component.badge
-            ?? component.overrides?.lazy.compactMap(\.properties.badge).first
-        let badgeViewModels = try badgeSource?.stack.components.map { component in
-            try self.toViewModel(
-                component: component,
-                packageValidator: packageValidator,
-                // Explicitly not looking for purchase button in badge
-                purchaseButtonCollector: nil,
-                offering: offering,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
-            )
-        } ?? []
+        // A stack can present a different badge per rule, so build the contents of every badge it
+        // could show. Building only the first meant any other rule presented its own badge with the
+        // first badge's contents, which then resolved its own rules against the wrong component.
+        // Keyed by value: two rules authoring an identical badge share one entry, which is harmless
+        // because identical badges have identical contents.
+        let badgeSources = ([component.badge] + (component.overrides ?? []).map(\.properties.badge))
+            .compactMap { $0 }
+        var badgeViewModels: [PaywallComponent.Badge: [PaywallComponentViewModel]] = [:]
+        for badgeSource in badgeSources where badgeViewModels[badgeSource] == nil {
+            badgeViewModels[badgeSource] = try badgeSource.stack.components.map { component in
+                try self.toViewModel(
+                    component: component,
+                    packageValidator: packageValidator,
+                    // Explicitly not looking for purchase button in badge
+                    purchaseButtonCollector: nil,
+                    offering: offering,
+                    localizationProvider: localizationProvider,
+                    uiConfigProvider: uiConfigProvider,
+                    colorScheme: colorScheme
+                )
+            }
+        }
 
         return StackComponentViewModel(
             component: component,
