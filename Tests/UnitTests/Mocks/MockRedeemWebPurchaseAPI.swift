@@ -25,6 +25,7 @@ class MockRedeemWebPurchaseAPI: RedeemWebPurchaseAPI {
     var invokedPostRedeemWebPurchaseParameters: (appUserId: String, redemptionToken: String)?
 
     var stubbedPostRedeemWebPurchaseResult: Result<CustomerInfo, BackendError>?
+    var postRedeemWebPurchaseCallback: (() -> Void)?
 
     override func postRedeemWebPurchase(appUserID: String,
                                         redemptionToken: String,
@@ -33,6 +34,7 @@ class MockRedeemWebPurchaseAPI: RedeemWebPurchaseAPI {
         self.invokedPostRedeemWebPurchaseCount += 1
         self.invokedPostRedeemWebPurchaseParameters = (appUserID, redemptionToken)
 
+        self.postRedeemWebPurchaseCallback?()
         completion(self.stubbedPostRedeemWebPurchaseResult ?? .failure(.missingAppUserID()))
     }
 
