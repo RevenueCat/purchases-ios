@@ -31,12 +31,17 @@ class PackageComponentViewModel {
 
     let visibilityResolver: PackageVisibilityResolver
 
+    /// Resolved once like ButtonComponentViewModel does: looking up the localized bundle
+    /// repeatedly would repeat a path search on every render.
+    private let localizedBundle: Bundle
+
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
         hasPurchaseButton: Bool,
         uiConfigProvider: UIConfigProvider,
+        locale: Locale = .current,
         discardRules: Bool = false
     ) {
         self.visibilityResolver = PackageVisibilityResolver(
@@ -56,6 +61,50 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
+        self.localizedBundle = Localization.localizedBundle(locale)
+    }
+
+    /// Whether a text inside this package announces the selection state itself. When it does,
+    /// the row must not also expose the state as an accessibility value, or it is said twice.
+    private(set) var announcesSelectionInText = false
+
+    /// Marks the package's first text so it speaks the selection state right after the offer's
+    /// name. Descends stacks only: a nested button or purchase button carries its own label
+    /// ("Continue"), which is not this offer's name.
+    func markFirstTextForSelectionAnnouncement() {
+        guard let text = Self.firstText(in: self.stackViewModel) else {
+            return
+        }
+
+        text.announcesPackageSelection = true
+        self.announcesSelectionInText = true
+    }
+
+    private static func firstText(in stack: StackComponentViewModel) -> TextComponentViewModel? {
+        for viewModel in stack.viewModels {
+            switch viewModel {
+            case .text(let text):
+                return text
+            case .stack(let nested):
+                if let found = Self.firstText(in: nested) {
+                    return found
+                }
+            default:
+                continue
+            }
+        }
+
+        return nil
+    }
+
+    /// Spoken selection state for the package row, so a screen reader user can tell which
+    /// offer is active ("Yearly, Selected" vs "Monthly, Not selected").
+    func accessibilitySelectionValue(isSelected: Bool) -> String {
+        return self.localizedBundle.localizedString(
+            forKey: isSelected ? "Selected" : "Not selected",
+            value: nil,
+            table: nil
+        )
     }
 
     // swiftlint:disable:next function_parameter_count

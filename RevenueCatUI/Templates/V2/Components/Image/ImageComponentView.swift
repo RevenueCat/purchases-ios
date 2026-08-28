@@ -55,6 +55,9 @@ struct ImageComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.paywallImagesAccessibilityHidden)
+    private var imagesAccessibilityHidden
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -193,6 +196,9 @@ struct ImageComponentView: View {
                         self.size = newSize
                     }
                 }
+                // Applied to the decorated result rather than to the image itself, so it
+                // covers the whole subtree including the sizing and shaping wrappers.
+                .paywallDecorativeMedia(hidden: self.imagesAccessibilityHidden ?? true)
             }
         }
     }
@@ -300,8 +306,6 @@ struct ImageComponentView: View {
                 containerContentMode: style.contentMode
             )
             .frame(maxWidth: maxWidth)
-            // WIP: Fix this later when accessibility info is available
-            .accessibilityHidden(true)
     }
 
 }

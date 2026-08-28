@@ -339,6 +339,42 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$4.99/3mo"))
     }
 
+    func testProductPricePerPeriodAbbreviatedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            forAccessibility: true
+        )
+        expect(result).to(equal("$6.99 monthly"))
+    }
+
+    func testProductPricePerPeriodAbbreviatedForAccessibilityMultipleMonths() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period_abbreviated }}",
+            with: TestData.threeMonthPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            forAccessibility: true
+        )
+        expect(result).to(equal("$4.99 3 months"))
+    }
+
+    func testProductPricePerPeriodForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_period }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            forAccessibility: true
+        )
+        expect(result).to(equal("$6.99 monthly"))
+    }
+
     func testProductPricePerDay() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_day }}",
@@ -425,6 +461,68 @@ class VariableHandlerV2Test: TestCase {
             isEligibleForIntroOffer: true
         )
         expect(result).to(equal("3mo"))
+    }
+
+    /// Paywall copy often types the separator and abbreviation literally, e.g. a yearly plan
+    /// showing its monthly-equivalent price as "{{ product.price_per_month }}/mo". No variable
+    /// substitution reaches that, and a screen reader reads it as "slash mo".
+    func testLiteralPeriodAbbreviationIsExpandedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}/mo",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            forAccessibility: true
+        )
+
+        expect(result).to(equal("$4.49 monthly"))
+    }
+
+    func testLiteralPeriodAbbreviationIsLeftAloneForDisplay() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}/mo",
+            with: TestData.annualPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$4.49/mo"))
+    }
+
+    func testSpelledOutPeriodIsNotTreatedAsAnAbbreviation() {
+        let result = VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$4.16/month",
+            localizations: localizations["en_US"]!
+        )
+
+        expect(result).to(equal("$4.16/month"))
+    }
+
+    func testPeriodAbbreviationExpansionUsesPaywallLocalizations() {
+        var german = localizations["en_US"]!
+        german["month_short"] = "Mon."
+        german["monthly"] = "monatlich"
+
+        let result = VariableHandlerV2.expandPeriodAbbreviations(
+            in: "9,99 €/Mon.",
+            localizations: german
+        )
+
+        expect(result).to(equal("9,99 € monatlich"))
+    }
+
+    func testProductPeriodAbbreviatedForAccessibility() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.period_abbreviated }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true,
+            forAccessibility: true
+        )
+        expect(result).to(equal("month"))
     }
 
     func testProductPeriodInDays() {

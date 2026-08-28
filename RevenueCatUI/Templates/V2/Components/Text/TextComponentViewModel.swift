@@ -30,6 +30,11 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    /// Set on the first text inside a package card, so the offer's selection state is spoken
+    /// straight after its name instead of trailing every pricing detail. Assigned by
+    /// `ViewModelFactory` once the package's subtree is known.
+    var announcesPackageSelection = false
+
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
     ///
@@ -110,11 +115,15 @@ class TextComponentViewModel {
             defaultCustomVariables: uiConfigProvider.defaultCustomVariables
         )
 
+        let processedText = Self.processText(text, config: config)
+        let spokenText = Self.processText(text, config: config, forAccessibility: true)
+
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             visible: partial?.visible ?? self.component.visible ?? true,
             name: partial?.name ?? self.component.name,
-            text: Self.processText(text, config: config),
+            text: processedText,
+            accessibilityText: spokenText == processedText ? nil : spokenText,
             fontName: partial?.fontName ?? self.component.fontName,
             fontWeight: partial?.fontWeightResolved ?? self.component.fontWeightResolved,
             color: partial?.color ?? self.component.color,
@@ -141,8 +150,12 @@ class TextComponentViewModel {
         let defaultCustomVariables: [String: CustomVariableValue]
     }
 
-    private static func processText(_ text: String, config: TextProcessingConfig) -> String {
-        let processedWithV2 = Self.processTextV2(text, config: config)
+    private static func processText(
+        _ text: String,
+        config: TextProcessingConfig,
+        forAccessibility: Bool = false
+    ) -> String {
+        let processedWithV2 = Self.processTextV2(text, config: config, forAccessibility: forAccessibility)
 
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -153,7 +166,11 @@ class TextComponentViewModel {
         return processedWithV2AndV1
     }
 
-    private static func processTextV2(_ text: String, config: TextProcessingConfig) -> String {
+    private static func processTextV2(
+        _ text: String,
+        config: TextProcessingConfig,
+        forAccessibility: Bool = false
+    ) -> String {
         let pkg = config.packageContext.package
 
         let discount = pkg.flatMap { package in
@@ -179,7 +196,8 @@ class TextComponentViewModel {
             localizations: config.localizations,
             isEligibleForIntroOffer: config.isEligibleForIntroOffer,
             promoOffer: config.promoOffer,
-            countdownTime: config.countdownTime
+            countdownTime: config.countdownTime,
+            forAccessibility: forAccessibility
         )
     }
 
@@ -271,6 +289,9 @@ struct TextComponentStyle {
     let visible: Bool
     let name: String?
     let text: String
+    /// Spoken replacement for `text`, present only when it differs: abbreviated period units
+    /// expanded so a screen reader says "$1.24 monthly" instead of "$1.24 slash mo".
+    let accessibilityText: String?
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
     let font: Font
@@ -286,6 +307,7 @@ struct TextComponentStyle {
         visible: Bool,
         name: String?,
         text: String,
+        accessibilityText: String? = nil,
         fontName: String?,
         fontWeight: PaywallComponent.FontWeight,
         color: PaywallComponent.ColorScheme,
@@ -299,6 +321,7 @@ struct TextComponentStyle {
         self.visible = visible
         self.name = name
         self.text = text
+        self.accessibilityText = accessibilityText
         self.fontWeight = fontWeight.fontWeight
         self.color = color.asDisplayable(uiConfigProvider: uiConfigProvider)
 

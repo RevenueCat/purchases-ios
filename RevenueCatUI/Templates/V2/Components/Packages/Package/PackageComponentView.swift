@@ -70,6 +70,12 @@ struct PackageComponentView: View {
                 onDismiss: self.onDismiss
             )
             .environment(\.componentViewState, packageViewState)
+            // Carried into the subtree so the package's first text says the state right after
+            // the offer's name, instead of it trailing every pricing detail.
+            .environment(
+                \.packageSelectionAnnouncement,
+                self.viewModel.accessibilitySelectionValue(isSelected: packageViewState == .selected)
+            )
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(
                 // This is needed so text component children use this
@@ -83,7 +89,9 @@ struct PackageComponentView: View {
                 package: package,
                 componentName: self.viewModel.componentName,
                 hasPurchaseButton: self.viewModel.hasPurchaseButton,
-                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled,
+                accessibilitySelectionValue: self.viewModel.accessibilitySelectionValue(isSelected:),
+                announcesSelectionInText: self.viewModel.announcesSelectionInText
             )
         }
     }
@@ -93,19 +101,24 @@ struct PackageComponentView: View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
+    // swiftlint:disable:next function_parameter_count
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
         componentName: String?,
         hasPurchaseButton: Bool,
-        hapticFeedbackEnabled: Bool
+        hapticFeedbackEnabled: Bool,
+        accessibilitySelectionValue: @escaping (Bool) -> String,
+        announcesSelectionInText: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
             componentName: componentName,
             hasPurchaseButton: hasPurchaseButton,
-            hapticFeedbackEnabled: hapticFeedbackEnabled
+            hapticFeedbackEnabled: hapticFeedbackEnabled,
+            accessibilitySelectionValue: accessibilitySelectionValue,
+            announcesSelectionInText: announcesSelectionInText
         ))
     }
 
@@ -126,6 +139,12 @@ struct PackageSelectorIfNeeded: ViewModifier {
     let componentName: String?
     let hasPurchaseButton: Bool
     let hapticFeedbackEnabled: Bool
+    let accessibilitySelectionValue: (Bool) -> String
+    let announcesSelectionInText: Bool
+
+    private var isSelected: Bool {
+        return self.packageContext.package?.identifier == self.package.identifier
+    }
 
     func body(content: Content) -> some View {
         if hasPurchaseButton {
@@ -159,6 +178,12 @@ struct PackageSelectorIfNeeded: ViewModifier {
                 )
             } label: {
                 content
+            }
+            // Fallback only. Normally the package's first text speaks the state right after
+            // the offer's name; a card with no text at all has nothing to carry it, so the
+            // state is exposed as the row's value instead of being lost.
+            .applyIf(!self.announcesSelectionInText) { view in
+                view.accessibilityValue(self.accessibilitySelectionValue(self.isSelected))
             }
             .onAppear {
                 if hapticFeedbackEnabled {
