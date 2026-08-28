@@ -1,7 +1,6 @@
 # Helper module for API diff functionality
 # Used by generate_swiftinterface and check_api_changes lanes
 
-require 'digest'
 require 'fileutils'
 require 'json'
 require 'net/http'
@@ -582,55 +581,20 @@ module ApiDiffHelper
     end
   end
 
-  def announced_marker(fingerprint)
-    "<!-- api-diff-announced:#{fingerprint} -->"
-  end
-
-  def announcement_fingerprint(message)
-    Digest::SHA256.hexdigest(message.to_s)[0, 12]
-  end
-
-  ANNOUNCED_MARKER_PATTERN = /<!-- api-diff-announced:([0-9a-f]+) -->/.freeze
-
-  # The marker records the last summary that reached the channel, which a run with nothing to
-  # announce, or one whose post failed, did not change.
-  def announced_fingerprint_in(comment_body, module_name)
-    open_tag = Regexp.escape(api_diff_section_open(module_name))
-    close_tag = Regexp.escape(api_diff_section_close(module_name))
-    section = comment_body.to_s[/#{open_tag}.*?#{close_tag}/m]
-
-    section && ANNOUNCED_MARKER_PATTERN.match(section)&.captures&.first
-  end
-
-  # The comment body is only read for :unknown, so the caller passes a block that fetches it.
-  def already_announced?(state, fingerprint)
-    return true if state == :same
-    return false unless state == :unknown
-
-    yield.to_s.include?(announced_marker(fingerprint))
-  end
-
   def comment_needed?(reports_by_target, breaks, existing_body, module_name)
     return true if breaks.any? || changed_modules(reports_by_target).any?
 
     existing_body.to_s.include?(api_diff_section_open(module_name))
   end
 
-  def api_diff_comment_section(module_name, reports_by_target, breaks, labels, notice: nil, announced_fingerprint: nil)
-    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}", notice: notice)
-    parts = [api_diff_section_open(module_name), inner]
-    parts << announced_marker(announced_fingerprint) if announced_fingerprint
+  def api_diff_comment_section(module_name, reports_by_target, breaks, labels)
+    inner = api_diff_comment_body(reports_by_target, breaks, labels, heading: "### #{module_name}")
 
-    (parts << api_diff_section_close(module_name)).join("\n")
+    [api_diff_section_open(module_name), inner, api_diff_section_close(module_name)].join("\n")
   end
 
-  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil, notice: nil)
+  def api_diff_comment_body(reports_by_target, breaks, labels, heading: nil)
     lines = heading ? [heading] : [API_DIFF_COMMENT_MARKER, "## Public API changes"]
-
-    unless notice.to_s.empty?
-      lines << ""
-      lines << ":warning: #{notice}"
-    end
 
     if breaks.any?
       lines << ""
@@ -720,7 +684,6 @@ module ApiDiffHelper
 
   SDK_PLATFORM_LABEL = "iOS :ios:".freeze
 
-  # last_announcement matches on this, so the headline and the dedup key cannot drift apart.
   def announcement_identity(modules)
     [SDK_PLATFORM_LABEL, *modules.map { |name| "`#{name}`" }].join(" · ")
   end
@@ -794,17 +757,7 @@ module ApiDiffHelper
   end
 
 
-  SLACK_UNREACHABLE_NOTICE = "No Slack credentials were reachable, so this change was not announced in the SDK API feed.".freeze
-
-  def slack_post_request(message, webhook_url: nil, bot_token: nil, channel: nil)
-    unless webhook_url.to_s.empty?
-      return {
-        url: webhook_url,
-        headers: { "Content-Type" => "application/json" },
-        body: { text: message }
-      }
-    end
-
+  def slack_post_request(message, bot_token:, channel:)
     return nil if bot_token.to_s.empty? || channel.to_s.empty?
 
     {
@@ -814,58 +767,6 @@ module ApiDiffHelper
     }
   end
 
-  SLACK_HISTORY_LIMIT = 100
-
-  # conversations.history takes a channel ID, never a `#name`.
-  CHANNEL_ID = /\A[CGD][A-Z0-9]+\z/.freeze
-
-  def slack_history_request(channel, bot_token:, limit: SLACK_HISTORY_LIMIT)
-    {
-      url: "https://slack.com/api/conversations.history?channel=#{channel}&limit=#{limit}",
-      headers: { "Authorization" => "Bearer #{bot_token}" }
-    }
-  end
-
-  def recent_slack_messages(request, getter: nil)
-    getter ||= ->(url, headers) { Net::HTTP.get_response(URI.parse(url), headers) }
-
-    response = getter.call(request[:url], request[:headers])
-    raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
-
-    parsed = JSON.parse(response.body.to_s)
-    raise "Slack rejected conversations.history: #{parsed['error']}" unless parsed["ok"]
-
-    parsed["messages"].to_a.map { |message| message["text"].to_s }
-  end
-
-  # conversations.history answers newest first, so the first match is the channel's last word. The
-  # trailing backtick in the identity keeps `RevenueCat` from matching `RevenueCatUI`.
-  def last_announcement(texts, source, modules)
-    return nil if source.to_s.empty?
-
-    identity = announcement_identity(modules)
-
-    texts.find { |text| text.include?(source) && text.include?(identity) }
-  end
-
-  # A webhook cannot read the channel, and conversations.history needs an ID rather than a name.
-  # Returns [:same | :different | :unknown, why_unknown].
-  def announcement_state(message, bot_token:, channel:, source:, modules:, getter: nil)
-    return [:unknown, "no bot token, so the SDK API feed cannot be read"] if bot_token.to_s.empty?
-
-    unless CHANNEL_ID.match?(channel.to_s)
-      return [:unknown, "#{channel} is a channel name, and conversations.history needs the channel ID"]
-    end
-
-    request = slack_history_request(channel, bot_token: bot_token)
-    last = last_announcement(recent_slack_messages(request, getter: getter), source, modules)
-    return [:unknown, nil] if last.nil?
-
-    [last == message ? :same : :different, nil]
-  rescue StandardError => e
-    [:unknown, e.message]
-  end
-
   # `poster` exists so the tests can exercise the response handling without a network.
   def post_slack_message(request, poster: nil)
     poster ||= ->(url, body, headers) { Net::HTTP.post(URI.parse(url), body, headers) }
@@ -873,7 +774,7 @@ module ApiDiffHelper
     response = poster.call(request[:url], request[:body].to_json, request[:headers])
     raise "Slack returned #{response.code}: #{response.body}" unless (200..299).cover?(response.code.to_i)
 
-    # chat.postMessage answers 200 with ok:false, and a webhook answers with the bare string "ok".
+    # chat.postMessage answers 200 with ok:false.
     parsed = begin
       JSON.parse(response.body.to_s)
     rescue JSON::ParserError

@@ -72,7 +72,7 @@ struct SoftPaywallUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "soft_paywall",
-                params: self.customVariables.checkpointParams
+                customVariables: self.customVariables.checkpointCustomVariables
             )
             self.handle(result)
         } catch {
@@ -88,7 +88,7 @@ struct SoftPaywallUseCaseView: View {
         case let received as CheckpointReceivedOfferingResult:
             self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
         case let noAction as CheckpointNoActionResult:
-            self.status = "No paywall shown (\(noAction.reason.value)). Content remains available."
+            self.status = "No paywall shown (\(noAction.reason)). Content remains available."
         default:
             self.status = "Unknown checkpoint result. Content remains available."
         }

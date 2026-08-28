@@ -1392,17 +1392,13 @@ class ApiDiffHelperTest < Minitest::Test
   end
 
 
-  def test_slack_request_supports_webhook_or_bot_token
-    webhook = ApiDiffHelper.slack_post_request("hi", webhook_url: "https://hooks.example/abc")
-    assert_equal "https://hooks.example/abc", webhook[:url]
-    assert_equal({ text: "hi" }, webhook[:body])
-
+  def test_slack_request_needs_a_bot_token_and_a_channel
     bot = ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: "C1")
     assert_equal "https://slack.com/api/chat.postMessage", bot[:url]
     assert_equal "Bearer xoxb-t", bot[:headers]["Authorization"]
 
-    assert_nil ApiDiffHelper.slack_post_request("hi"), "no credential means no request"
-    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t"), "a bot token with no channel has nowhere to post"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "", channel: "C1"), "no token means no request"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: ""), "a bot token with no channel has nowhere to post"
   end
 
 
@@ -1442,122 +1438,15 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/channel_not_found/, error.message)
   end
 
-  # Incoming webhooks answer with the bare string "ok", which is not JSON.
-  def test_post_slack_message_accepts_a_non_json_webhook_body
+  # A 2xx that does not parse must not read as a rejection: only an explicit ok:false is one.
+  def test_post_slack_message_accepts_a_non_json_body
     poster = ->(_url, _body, _headers) { SlackResponse.new("200", "ok") }
 
     ApiDiffHelper.post_slack_message(slack_request, poster: poster)
   end
 
 
-  # --- Announcing a change once ---
-
-  def history_getter(texts)
-    lambda do |_url, _headers|
-      SlackResponse.new("200", { ok: true, messages: texts.map { |text| { "text" => text } } }.to_json)
-    end
-  end
-
-  def test_slack_history_request_reads_the_channel_with_the_bot_token
-    request = ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1")
-
-    assert_includes request[:url], "https://slack.com/api/conversations.history?channel=C1"
-    assert_equal "Bearer xoxb-1", request[:headers]["Authorization"]
-    assert_equal ["new", "old"], ApiDiffHelper.recent_slack_messages(request, getter: history_getter(["new", "old"]))
-  end
-
-  def test_recent_slack_messages_raises_when_the_token_cannot_read_the_channel
-    getter = ->(_url, _headers) { SlackResponse.new("200", '{"ok":false,"error":"missing_scope"}') }
-
-    error = assert_raises(RuntimeError) do
-      ApiDiffHelper.recent_slack_messages(ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1"), getter: getter)
-    end
-    assert_match(/missing_scope/, error.message)
-  end
-
-  def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
-    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
-  end
-
-  def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
-    ApiDiffHelper.announcement_state(
-      message, bot_token: "xoxb-1", channel: "C1", source: source, modules: modules, getter: history_getter(texts)
-    )
-  end
-
-  def test_announcement_state_recognises_the_last_word_on_this_pull_request
-    summary = announcement("public func a()")
-
-    state, unusable = state_for(summary, [summary, announcement("public func older()")])
-
-    assert_equal :same, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func b()"), summary])
-
-    assert_equal :different, state
-  end
-
-  def test_announcement_state_ignores_another_modules_announcement
-    summary = announcement("public func a()")
-    other_module = announcement("public func a()", modules: ["RevenueCatUI"])
-
-    state, unusable = state_for(summary, [other_module])
-
-    assert_equal :unknown, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_ignores_another_pull_requests_announcement
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|#7354>")])
-
-    assert_equal :unknown, state
-  end
-
-  # chat.postMessage takes a `#name`, conversations.history does not.
-  def test_announcement_state_needs_the_channel_id
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "#feed", source: "<url|#1>", modules: ["RevenueCat"],
-      getter: ->(*) { raise "must not read" }
-    )
-
-    assert_equal :unknown, state
-    assert_match(/channel ID/, unusable)
-  end
-
-  def test_announcement_state_reports_a_missing_token
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
-    )
-
-    assert_equal :unknown, state
-    assert_match(/cannot be read/, unusable)
-  end
-
-  def test_announcement_state_reports_a_failed_read
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"],
-      getter: ->(*) { raise "slack is down" }
-    )
-
-    assert_equal :unknown, state
-    assert_equal "slack is down", unusable
-  end
-
-  def test_announcement_fingerprint_moves_with_the_summary
-    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
-
-    assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
-    refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
-  end
+  # --- The PR comment ---
 
   def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
     refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
@@ -1578,62 +1467,13 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
   end
 
-  def test_announced_fingerprint_survives_a_run_with_nothing_to_announce
-    announced = ApiDiffHelper.merge_api_diff_comment(
-      nil, "RevenueCat",
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "abc123abc123")
-    )
-
-    assert_equal "abc123abc123", ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCat")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCatUI")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(nil, "RevenueCat")
-  end
-
-  # Another module's marker must not be mistaken for this module's.
-  def test_announced_fingerprint_is_read_from_this_modules_section
-    body = [
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], []),
-      ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [], announced_fingerprint: "def456def456")
-    ].join("\n")
-
-    assert_nil ApiDiffHelper.announced_fingerprint_in(body, "RevenueCat")
-    assert_equal "def456def456", ApiDiffHelper.announced_fingerprint_in(body, "RevenueCatUI")
-  end
-
-  def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
-    body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
-
-    assert ApiDiffHelper.already_announced?(:same, "def456def456") { raise "must not read" }
-    refute ApiDiffHelper.already_announced?(:different, "abc123abc123") { raise "must not read" }
-    assert ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "def456def456") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { nil }
-  end
-
-  def test_comment_section_carries_the_announced_fingerprint
+  def test_comment_section_is_closed_after_its_body
     section = ApiDiffHelper.api_diff_comment_section(
-      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
+      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], []
     )
 
-    assert_includes section, ApiDiffHelper.announced_marker("abc123abc123")
+    assert section.start_with?(ApiDiffHelper.api_diff_section_open("RevenueCat"))
     assert section.rstrip.end_with?(ApiDiffHelper.api_diff_section_close("RevenueCat"))
-  end
-
-  def test_comment_section_omits_the_marker_when_nothing_was_announced
-    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
-
-    refute_includes section, "api-diff-announced"
-  end
-
-  def test_merging_a_section_replaces_a_stale_fingerprint
-    announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
-    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
-    reannounced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "bbbbbbbbbbbb")
-
-    merged = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", reannounced)
-
-    assert_includes merged, ApiDiffHelper.announced_marker("bbbbbbbbbbbb")
-    refute_includes merged, ApiDiffHelper.announced_marker("aaaaaaaaaaaa")
   end
 
 
@@ -1712,20 +1552,6 @@ class ApiDiffHelperTest < Minitest::Test
 
     assert_includes message, "1 new declaration"
     assert_includes message, "apiDiffDemoPing"
-  end
-
-  def test_comment_body_carries_the_slack_notice
-    body = ApiDiffHelper.api_diff_comment_body(
-      { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
-    )
-
-    assert_includes body, ":warning: #{ApiDiffHelper::SLACK_UNREACHABLE_NOTICE}"
-  end
-
-  def test_comment_body_omits_the_notice_when_slack_is_reachable
-    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
-
-    refute_includes body, ":warning: No Slack credentials"
   end
 
   # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
@@ -1861,7 +1687,7 @@ class ApiDiffHelperTest < Minitest::Test
 
 
   # The lane used to hand-roll the post. Keeping it in the helper is what puts the response
-  # handling (non-2xx, ok:false, non-JSON webhook body) under test at all.
+  # handling (non-2xx, ok:false, non-JSON body) under test at all.
   def test_the_slack_post_lives_in_the_helper_not_in_the_lane
     lane = File.read(File.expand_path("Fastfile", __dir__))
     slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
@@ -1871,18 +1697,50 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
   end
 
-  def test_the_announcement_happens_before_the_comment_is_written
-    lane = File.read(File.expand_path("Fastfile", __dir__))
-    publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
+  # main has no pull request to comment on, and a PR run does not announce, so the two are
+  # exclusive. Nothing carries state from the announcement into the comment any more.
+  def check_api_changes_lane
+    fastfile = File.read(File.expand_path("Fastfile", __dir__))
+    lane = fastfile[/lane :check_api_changes do.*?\n  end\n/m]
 
-    refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
-    assert_operator publishing.index("upsert_api_diff_comment"), :>, publishing.index("notify_api_changes_on_slack"),
-                    "the comment must be written after the announcement it records"
+    refute_nil lane, "the check_api_changes lane moved; update these tests"
+    lane
+  end
+
+  def test_main_announces_and_a_pull_request_comments
+    lane = check_api_changes_lane
+
+    assert_match(/unless on_main\n\s*begin\n\s*schemes\.each/, lane,
+                 "the comment is written on a PR only; main has no pull request")
+    assert_match(/if on_main\n\s*begin\n\s*notify_api_changes_on_slack/, lane,
+                 "the feed is announced from main only")
+  end
+
+  # There is no dedup left, so the only thing keeping a rerun from posting twice is that a run
+  # which is going to fail never posts at all. Announcing has to stay last in the lane.
+  def test_nothing_can_fail_the_job_after_the_announcement
+    lane = check_api_changes_lane
+
+    announcement = lane.index("notify_api_changes_on_slack")
+    refute_nil announcement, "the announcement moved; update this test"
+
+    # There are two `failed_platforms.any?` blocks: the build summary and the failure. Anchor on
+    # the one that raises, which is the whole point of the ordering.
+    baseline_failure = lane.index(/if failed_platforms\.any\?\n\s*UI\.user_error!/)
+    refute_nil baseline_failure, "the baseline freshness failure moved; update this test"
+
+    assert_operator announcement, :>, baseline_failure,
+                    "a run whose baselines did not match must not announce"
+    assert_operator announcement, :>, lane.index("ApiDiffHelper.gate_blocked?"),
+                    "the gate must be decided before anything reaches the feed"
+    refute_match(/UI\.user_error!/, lane[announcement..],
+                 "nothing may fail the job after the post, or a rerun would post twice"
+    )
   end
 
 
-  # A rerun of the same main job must not post twice, and last_announcement bails on an empty
-  # source, so the commit link is what keeps the suppression alive.
+  # The feed's only pointer back at the change, so it links the commit rather than a PR that
+  # main runs do not have.
   def test_the_announcement_source_is_the_commit
     lane = File.read(File.expand_path("Fastfile", __dir__))
     link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
@@ -1893,15 +1751,16 @@ class ApiDiffHelperTest < Minitest::Test
     refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
   end
 
-  # The feed was noisy because every PR run posted. Only main does now, so each change lands once.
-  def test_slack_is_announced_only_on_main
+  # A silent feed is the failure nobody notices, and main has no PR comment left to warn in, so
+  # the job log is the only place an unreachable credential or a failed post can surface.
+  def test_every_announcement_failure_reaches_the_job_log
     lane = File.read(File.expand_path("Fastfile", __dir__))
-    announce = lane[/announcement = if on_main.*?\n                     end\n/m]
+    slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
 
-    refute_nil announce, "the Slack announcement is no longer gated on main; update this test"
-    assert_match(/notify_api_changes_on_slack/, announce)
-    assert_match(/\{ fingerprint: nil, notice: nil \}/, announce,
-                 "a PR run still needs an announcement shape for the comment")
+    refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
+    assert_match(/UI\.important\("No Slack credential reachable/, slack_lane)
+    assert_match(/UI\.important\("The public API changed, but it was not announced/, slack_lane)
+    refute_match(/notice/, slack_lane, "the notice went to a PR comment that main does not have")
   end
 
   # main carries no PR to hold the label, so the gate there would fail changes the PR approved.

@@ -703,6 +703,88 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.productIdentifier) == productIdLifetime
     }
 
+    func testNonSubscriptionsSection_ordersMostRecentPurchaseFirst() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [],
+            entitlements: [],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.oldest",
+                    id: "1",
+                    store: "app_store",
+                    purchaseDate: "2024-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.middle",
+                    id: "2",
+                    store: "app_store",
+                    purchaseDate: "2025-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.newest",
+                    id: "3",
+                    store: "app_store",
+                    purchaseDate: "2026-01-01T00:00:00Z"
+                )
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: MockCustomerCenterPurchases(customerInfo: customerInfo)
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+        expect(viewModel.nonSubscriptionsSection.map(\.productIdentifier)) == [
+            "com.revenuecat.newest",
+            "com.revenuecat.middle",
+            "com.revenuecat.oldest"
+        ]
+    }
+
+    func testNonSubscriptionsSection_ordersByPurchaseDate_whenAnEntitlementWasGrantedLater() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [],
+            entitlements: [
+                // Granted after the purchase, so the entitlement date is newer than the transaction's
+                CustomerInfoFixtures.Entitlement(
+                    entitlementId: "day_pass",
+                    productId: "com.revenuecat.older",
+                    purchaseDate: "2026-06-01T00:00:00Z"
+                )
+            ],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.older",
+                    id: "1",
+                    store: "app_store",
+                    purchaseDate: "2024-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.newer",
+                    id: "2",
+                    store: "app_store",
+                    purchaseDate: "2025-01-01T00:00:00Z"
+                )
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: MockCustomerCenterPurchases(customerInfo: customerInfo)
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+        expect(viewModel.nonSubscriptionsSection.map(\.productIdentifier)) == [
+            "com.revenuecat.newer",
+            "com.revenuecat.older"
+        ]
+    }
+
     func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async throws {
         // Arrange
         let yearlyProduct = (

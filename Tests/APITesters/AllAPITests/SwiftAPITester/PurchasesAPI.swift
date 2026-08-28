@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -519,6 +519,14 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Cached virtual currencies
     let _: VirtualCurrencies? = purchases.cachedVirtualCurrencies
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrencies(amounts: [
+        "GLD": 42
+    ], reference: String?.none)
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrency(code: "GLD",
+                                                                        amount: 42,
+                                                                        reference: "test-123")
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
