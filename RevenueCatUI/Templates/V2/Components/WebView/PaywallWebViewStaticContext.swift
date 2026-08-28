@@ -90,7 +90,7 @@ struct PaywallWebViewStaticContext {
                     "is_subscription": .bool(product.productCategory == .subscription),
                     "period": period.map(PaywallWebViewValue.string) ?? .null,
                     "is_family_shareable": .bool(product.isFamilyShareable),
-                    "is_auto_renewing": .bool(product.subscriptionPeriod != nil),
+                    "is_auto_renewing": .bool(product.subscriptionPeriod != nil), // accounts for both sk1 and sk2
                     "price": .object([
                         "amount": .number(Self.doubleValue(product.price)),
                         "currency": product.currencyCode.map(PaywallWebViewValue.string) ?? .null
