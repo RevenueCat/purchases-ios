@@ -3028,6 +3028,7 @@
 		A1B2C3D42FE200000000000E /* RemoteConfigBlobStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobStoreTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE3000000000001 /* RemoteConfigFetchContext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigFetchContext.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProductionRemoteConfigIntegrationTests.swift; sourceTree = "<group>"; };
+		A1B2C3D42FE300000000002 /* WorkflowComponentsIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowComponentsIntegrationTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE4000000000001 /* RCContainerCompressionFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RCContainerCompressionFixtureTests.swift; sourceTree = "<group>"; };
 		A1B2C3D42FE5000000000001 /* RCContainer+Compression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "RCContainer+Compression.swift"; sourceTree = "<group>"; };
 		A1B2C3D42FE6000000000001 /* RemoteConfigBlobRefHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteConfigBlobRefHelpers.swift; sourceTree = "<group>"; };
@@ -6628,6 +6629,7 @@
 			isa = PBXGroup;
 			children = (
 				A1B2C3D42FE300000000001 /* ProductionRemoteConfigIntegrationTests.swift */,
+				A1B2C3D42FE300000000002 /* WorkflowComponentsIntegrationTests.swift */,
 			);
 			path = BackendIntegrationTests;
 			sourceTree = "<group>";

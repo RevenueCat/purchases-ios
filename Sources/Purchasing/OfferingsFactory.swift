@@ -26,8 +26,35 @@ class OfferingsFactory {
     func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
+    ) -> Offerings? {
+        return self.createOfferings(
+            from: storeProductsByID,
+            contents: contents,
+            loadedFromDiskCache: loadedFromDiskCache,
+            includePaywallComponents: false
+        )
+    }
+
+    /// Preview-only path for rendering local offerings fixtures that contain paywall components.
+    func createOfferingsForPreview(
+        from storeProductsByID: [String: StoreProduct],
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
+    ) -> Offerings? {
+        return self.createOfferings(
+            from: storeProductsByID,
+            contents: contents,
+            loadedFromDiskCache: loadedFromDiskCache,
+            includePaywallComponents: true
+        )
+    }
+
+    private func createOfferings(
+        from storeProductsByID: [String: StoreProduct],
+        contents: Offerings.Contents,
         loadedFromDiskCache: Bool,
-        shouldCreatePaywallComponents: Bool = true
+        includePaywallComponents: Bool
     ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
@@ -36,7 +63,7 @@ class OfferingsFactory {
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
                                uiConfig: data.uiConfig,
-                               shouldCreatePaywallComponents: shouldCreatePaywallComponents)
+                               includePaywallComponents: includePaywallComponents)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -44,7 +71,7 @@ class OfferingsFactory {
             return nil
         }
 
-        let storedContents = shouldCreatePaywallComponents
+        let storedContents = includePaywallComponents
             ? contents
             : contents.removingPaywallComponents()
 
@@ -59,8 +86,35 @@ class OfferingsFactory {
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
+        uiConfig: UIConfig?
+    ) -> Offering? {
+        return self.createOffering(
+            from: storeProductsByID,
+            offering: offering,
+            uiConfig: uiConfig,
+            includePaywallComponents: false
+        )
+    }
+
+    /// Preview-only path for rendering a local offering fixture that contains paywall components.
+    func createOfferingForPreview(
+        from storeProductsByID: [String: StoreProduct],
+        offering: OfferingsResponse.Offering,
+        uiConfig: UIConfig?
+    ) -> Offering? {
+        return self.createOffering(
+            from: storeProductsByID,
+            offering: offering,
+            uiConfig: uiConfig,
+            includePaywallComponents: true
+        )
+    }
+
+    private func createOffering(
+        from storeProductsByID: [String: StoreProduct],
+        offering: OfferingsResponse.Offering,
         uiConfig: UIConfig?,
-        shouldCreatePaywallComponents: Bool = true
+        includePaywallComponents: Bool
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
@@ -81,7 +135,7 @@ class OfferingsFactory {
         let hasPaywallComponents = offering.hasPaywallComponents == true
             || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
-            if shouldCreatePaywallComponents, let uiConfig, let paywallComponents = offering.paywallComponents {
+            if includePaywallComponents, let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
                     uiConfig: uiConfig,
                     data: paywallComponents
@@ -153,8 +207,8 @@ private extension Package {
 private extension Offerings.Contents {
 
     /// Drops offerings-provided paywall component bodies from the retained/cacheable response.
-    /// When workflows are active, those component bodies are served by remote config instead, so
-    /// retaining them here duplicates memory.
+    /// Production component paywalls are served by workflows, so retaining the offerings copy
+    /// duplicates memory. Custom entitlement computation does not support component paywalls.
     func removingPaywallComponents() -> Self {
         let prunedOfferings = self.response.offerings.map { offering in
             var offering = offering

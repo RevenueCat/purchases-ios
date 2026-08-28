@@ -216,7 +216,7 @@ class DeviceCache {
 
     func cachedOfferingsContents(
         appUserID: String,
-        decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents
+        decodingMode: OfferingsResponse.DecodingMode = .withoutPaywallComponents
     ) -> Offerings.Contents? {
         let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
         return self.value(for: CacheKey.offerings(appUserID), decoder: decoder)
