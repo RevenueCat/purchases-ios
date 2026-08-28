@@ -44,7 +44,7 @@
 // SANDBOX_PAYWALL_SEARCH = your-search-term
 
 // Web Billing public API key (`rcb_` / `rcb_sb_`) for the in-app checkout drawer PoC.
-// When set, web purchase buttons load bundled purchases-js instead of webCheckoutUrl.
+// Required for `.webCheckout` / `.webProductSelection` buttons. There is no WPL fallback.
 // This is not the Apple `appl_` key.
 // WEB_BILLING_API_KEY = rcb_sb_your_key_without_quotes
 

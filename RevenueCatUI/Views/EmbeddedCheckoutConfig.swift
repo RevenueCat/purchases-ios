@@ -8,7 +8,7 @@ import Foundation
 #if !os(tvOS)
 
 /// Host-app Web Billing (`rcb_`) key + identity for the bundled purchases-js checkout page.
-/// Unset key → callers keep using `webCheckoutUrl`.
+/// Missing key, bundle files, or Purchases config → no web checkout.
 struct EmbeddedCheckoutConfig: Equatable {
 
     let apiKey: String
@@ -18,10 +18,6 @@ struct EmbeddedCheckoutConfig: Equatable {
 
     private static let infoDictionaryKey = "WEB_BILLING_API_KEY"
     private static let unresolvedPlaceholder = "$(WEB_BILLING_API_KEY)"
-    private static let htmlResourceName = "index"
-    private static let htmlResourceExtension = "html"
-    private static let umdResourceName = "Purchases.umd"
-    private static let umdResourceExtension = "js"
     private static let resourceSubdirectory = "EmbeddedCheckout"
 
     static let pageBaseURL = URL(string: "http://localhost") ?? URL(fileURLWithPath: "/")
@@ -48,81 +44,28 @@ struct EmbeddedCheckoutConfig: Equatable {
             let raw = Bundle.main.object(forInfoDictionaryKey: infoDictionaryKey) as? String
             Logger.error(Strings.embedded_checkout_skipped(
                 "WEB_BILLING_API_KEY missing in Info.plist (saw \(raw ?? "nil")). " +
-                "Rebuild after setting it in Local.xcconfig."
-            ).description)
+                "Set it in Local.xcconfig and rebuild."
+            ))
             return nil
         }
         guard resourcesAreBundled else {
             Logger.error(Strings.embedded_checkout_skipped(
                 "index.html / Purchases.umd.js not found in \(Bundle.revenueCatUI.bundleURL.path). " +
                 "Clean build RevenueCatUI."
-            ).description)
+            ))
             return nil
         }
         guard Purchases.isConfigured else {
-            Logger.error(Strings.embedded_checkout_skipped("Purchases is not configured.").description)
+            Logger.error(Strings.embedded_checkout_skipped("Purchases is not configured."))
             return nil
         }
 
-        Logger.error(Strings.embedded_checkout_using_bundle.description)
+        Logger.debug(Strings.embedded_checkout_using_bundle)
         return EmbeddedCheckoutConfig(
             apiKey: apiKey,
             appUserID: Purchases.shared.appUserID,
             offeringId: offeringId,
             packageId: packageId
-        )
-    }
-
-    /// Sentinel URL used to present the in-app browser sheet. The web view loads assembled HTML, not this URL.
-    var checkoutURL: URL {
-        var components = URLComponents()
-        components.scheme = "http"
-        components.host = "localhost"
-        components.path = "/embedded-checkout/\(self.appUserID)"
-
-        var queryItems = [
-            URLQueryItem(name: "offeringId", value: self.offeringId)
-        ]
-        if let packageId = self.packageId {
-            queryItems.append(URLQueryItem(name: "packageId", value: packageId))
-        }
-        components.queryItems = queryItems
-
-        return components.url ?? Self.pageBaseURL
-    }
-
-    static func isBundledCheckoutURL(_ url: URL) -> Bool {
-        return url.scheme == "http"
-            && url.host == "localhost"
-            && url.path.contains("embedded-checkout")
-    }
-
-    static func make(from url: URL) -> EmbeddedCheckoutConfig? {
-        guard isBundledCheckoutURL(url),
-              let apiKey = resolvedWebBillingAPIKey() else {
-            return nil
-        }
-
-        let pathParts = url.path.split(separator: "/").map(String.init)
-        guard pathParts.count >= 2 else {
-            return nil
-        }
-        let appUserID = pathParts[1]
-
-        let items = URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []
-        func query(_ name: String) -> String? {
-            items.first(where: { $0.name == name })?.value
-        }
-
-        guard let offeringId = query("offeringId"), !offeringId.isEmpty else {
-            return nil
-        }
-
-        return EmbeddedCheckoutConfig(
-            apiKey: apiKey,
-            appUserID: appUserID,
-            offeringId: offeringId,
-            packageId: query("packageId")
         )
     }
 
@@ -162,34 +105,19 @@ struct EmbeddedCheckoutConfig: Equatable {
     }
 
     private static var htmlResourceURL: URL? {
-        Self.resourceURL(name: htmlResourceName, ext: htmlResourceExtension)
+        Bundle.revenueCatUI.url(
+            forResource: "index",
+            withExtension: "html",
+            subdirectory: resourceSubdirectory
+        )
     }
 
     private static var umdResourceURL: URL? {
-        Self.resourceURL(name: umdResourceName, ext: umdResourceExtension)
-    }
-
-    private static func resourceURL(name: String, ext: String) -> URL? {
-        let filename = "\(name).\(ext)"
-        for bundle in [Bundle.revenueCatUI, Bundle.main] {
-            if let url = bundle.url(
-                forResource: name,
-                withExtension: ext,
-                subdirectory: resourceSubdirectory
-            ) {
-                return url
-            }
-            if let url = bundle.url(forResource: name, withExtension: ext) {
-                return url
-            }
-            let nested = bundle.bundleURL
-                .appendingPathComponent(resourceSubdirectory)
-                .appendingPathComponent(filename)
-            if FileManager.default.fileExists(atPath: nested.path) {
-                return nested
-            }
-        }
-        return nil
+        Bundle.revenueCatUI.url(
+            forResource: "Purchases.umd",
+            withExtension: "js",
+            subdirectory: resourceSubdirectory
+        )
     }
 
 }

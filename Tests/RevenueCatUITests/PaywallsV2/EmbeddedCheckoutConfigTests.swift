@@ -20,49 +20,6 @@ final class EmbeddedCheckoutConfigTests: TestCase {
         )
     }
 
-    func testCheckoutURLIncludesOfferingAndPackage() {
-        let config = EmbeddedCheckoutConfig(
-            apiKey: "rcb_sb_test",
-            appUserID: "user_1",
-            offeringId: "default",
-            packageId: "$rc_monthly"
-        )
-        let url = config.checkoutURL
-
-        XCTAssertEqual(url.scheme, "http")
-        XCTAssertEqual(url.host, "localhost")
-        XCTAssertEqual(url.path, "/embedded-checkout/user_1")
-        XCTAssertEqual(
-            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
-            [
-                URLQueryItem(name: "offeringId", value: "default"),
-                URLQueryItem(name: "packageId", value: "$rc_monthly")
-            ]
-        )
-        XCTAssertTrue(EmbeddedCheckoutConfig.isBundledCheckoutURL(url))
-    }
-
-    func testCheckoutURLOmitsPackageWhenNil() {
-        let config = EmbeddedCheckoutConfig(
-            apiKey: "rcb_sb_test",
-            appUserID: "user_1",
-            offeringId: "default",
-            packageId: nil
-        )
-        let url = config.checkoutURL
-
-        XCTAssertEqual(url.path, "/embedded-checkout/user_1")
-        XCTAssertEqual(
-            URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems,
-            [URLQueryItem(name: "offeringId", value: "default")]
-        )
-    }
-
-    func testIsBundledCheckoutURLRejectsWPL() throws {
-        let wpl = try XCTUnwrap(URL(string: "https://pay.revenuecat.com/abc/user_1"))
-        XCTAssertFalse(EmbeddedCheckoutConfig.isBundledCheckoutURL(wpl))
-    }
-
     func testJSONIncludesConfigFields() throws {
         let config = EmbeddedCheckoutConfig(
             apiKey: "rcb_sb_test",
@@ -98,6 +55,7 @@ final class EmbeddedCheckoutConfigTests: TestCase {
         XCTAssertFalse(html.contains("__RC_EMBEDDED_CHECKOUT_JSON__"))
         XCTAssertFalse(html.contains("__PURCHASES_JS_UMD__"))
         XCTAssertTrue(html.contains("Purchases"))
+        XCTAssertTrue(html.contains("showDiscountCodeField: true"))
     }
 
 }

@@ -74,18 +74,8 @@ class PurchaseButtonComponentViewModel {
         }
 
         switch method {
-        case .inAppCheckout, .unknown:
+        case .inAppCheckout, .unknown, .webCheckout, .webProductSelection:
             return nil
-        case .webCheckout:
-            return self.widgetOrOfferingURL(
-                packageId: packageContext?.package?.identifier,
-                fallback: packageContext?.package?.webCheckoutUrl ?? offering.webCheckoutUrl
-            )
-        case .webProductSelection:
-            return self.widgetOrOfferingURL(
-                packageId: packageContext?.package?.identifier,
-                fallback: offering.webCheckoutUrl
-            )
         case .customWebCheckout(let customWebCheckout):
             guard let customUrl = self.customWebCheckoutUrl else {
                 return nil
@@ -134,17 +124,11 @@ class PurchaseButtonComponentViewModel {
     private static let sandboxEnvValue = "sandbox"
     private static let productionEnvValue = "production"
 
-    private func widgetOrOfferingURL(packageId: String?, fallback: URL?) -> LaunchWebCheckout? {
-        if let config = EmbeddedCheckoutConfig.make(
+    func embeddedCheckout(packageId: String?) -> EmbeddedCheckoutConfig? {
+        return EmbeddedCheckoutConfig.make(
             offeringId: self.offering.identifier,
             packageId: packageId
-        ) {
-            return (config.checkoutURL, .inAppBrowser, false)
-        }
-        if let fallback {
-            return (fallback, .inAppBrowser, false)
-        }
-        return nil
+        )
     }
 
 }

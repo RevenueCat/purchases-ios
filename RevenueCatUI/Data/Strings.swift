@@ -347,10 +347,10 @@ extension Strings: CustomStringConvertible {
             return "No web checkout url found."
 
         case .embedded_checkout_using_bundle:
-            return "Using bundled purchases-js checkout (not WPL)."
+            return "Using bundled purchases-js checkout."
 
         case let .embedded_checkout_skipped(reason):
-            return "Skipping bundled checkout, falling back to webCheckoutUrl: \(reason)"
+            return "Embedded checkout unavailable: \(reason)"
 
         case let .variable_requires_package(variableName):
             return "Paywall variable '\(variableName)' requires a package but none was provided."

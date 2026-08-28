@@ -20,7 +20,7 @@ import WebKit
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 struct WebCheckoutView: View {
 
-    let url: URL
+    let config: EmbeddedCheckoutConfig
     var onPurchaseCompleted: (() -> Void)?
 
     @Environment(\.dismiss) private var dismiss
@@ -29,7 +29,7 @@ struct WebCheckoutView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                WebCheckoutWebView(url: url, viewModel: viewModel)
+                WebCheckoutWebView(config: config, viewModel: viewModel)
                     .ignoresSafeArea(edges: .bottom)
 
                 if viewModel.isLoading {
@@ -100,11 +100,11 @@ private struct WebCheckoutWebView: UIViewRepresentable {
 
     static let messageHandlerName = "rcCheckout"
 
-    let url: URL
+    let config: EmbeddedCheckoutConfig
     let viewModel: WebCheckoutViewModel
 
     func makeCoordinator() -> Coordinator {
-        Coordinator(viewModel: viewModel, usesBundledPage: EmbeddedCheckoutConfig.isBundledCheckoutURL(url))
+        Coordinator(viewModel: viewModel)
     }
 
     func makeUIView(context: Context) -> WKWebView {
@@ -120,16 +120,17 @@ private struct WebCheckoutWebView: UIViewRepresentable {
         webView.scrollView.bounces = false
         webView.scrollView.maximumZoomScale = 1.0
         webView.scrollView.minimumZoomScale = 1.0
-        // Required on iOS 16.4+: WKWebView is not inspectable unless we opt in.
         if #available(iOS 16.4, *) {
             webView.isInspectable = true
         }
 
-        if let config = EmbeddedCheckoutConfig.make(from: url),
-           let html = config.assembledHTML() {
+        if let html = config.assembledHTML() {
             webView.loadHTMLString(html, baseURL: EmbeddedCheckoutConfig.pageBaseURL)
         } else {
-            webView.load(URLRequest(url: url))
+            Logger.error(Strings.embedded_checkout_skipped(
+                "Could not assemble bundled checkout HTML."
+            ))
+            context.coordinator.failLoading("Could not assemble bundled checkout HTML.")
         }
 
         return webView
@@ -145,33 +146,21 @@ private struct WebCheckoutWebView: UIViewRepresentable {
     final class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
 
         let viewModel: WebCheckoutViewModel
-        let usesBundledPage: Bool
         var userContentController: WKUserContentController?
 
-        init(viewModel: WebCheckoutViewModel, usesBundledPage: Bool) {
+        init(viewModel: WebCheckoutViewModel) {
             self.viewModel = viewModel
-            self.usesBundledPage = usesBundledPage
         }
 
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Bundled HTML finishes immediately; wait for the `ready` message instead.
-            // WPL still uses didFinish as the fallback.
-            guard !self.usesBundledPage else { return }
+        func failLoading(_ message: String) {
             DispatchQueue.main.async {
                 self.viewModel.isLoading = false
-            }
-        }
-
-        func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-            DispatchQueue.main.async {
-                self.viewModel.isLoading = true
+                self.viewModel.checkoutOutcome = .error(message)
             }
         }
 
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            DispatchQueue.main.async {
-                self.viewModel.isLoading = false
-            }
+            self.failLoading(error.localizedDescription)
         }
 
         func webView(
@@ -179,9 +168,7 @@ private struct WebCheckoutWebView: UIViewRepresentable {
             didFailProvisionalNavigation navigation: WKNavigation!,
             withError error: Error
         ) {
-            DispatchQueue.main.async {
-                self.viewModel.isLoading = false
-            }
+            self.failLoading(error.localizedDescription)
         }
 
         func userContentController(
