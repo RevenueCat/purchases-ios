@@ -22,6 +22,8 @@ typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 struct BadgeContents {
 
     let badge: PaywallComponent.Badge
+
+    /// One per component in `badge.stack`.
     let viewModels: [PaywallComponentViewModel]
 
 }
