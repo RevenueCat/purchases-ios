@@ -23,8 +23,9 @@ import Foundation
     /// decides whether and how to use it.
     case matchedOffering(Offering)
     /// An ad unit ID was selected for the checkpoint, with no RevenueCat-managed UI to present. The app
-    /// decides whether and how to load and present the ad.
-    case ad(adUnitId: String)
+    /// decides whether and how to load and present the ad. `mediator` identifies which ad network the ad
+    /// unit ID belongs to (e.g. `"admob"`), so a registered per-network handler can be selected.
+    case ad(adUnitId: String, mediator: String)
     /// No workflow should run for the checkpoint.
     case noAction(CheckpointResolutionReason)
 
@@ -269,13 +270,16 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     /// Serves a workflow whose only step is a terminal `ad` step as an ad unit ID the app owns.
     ///
-    /// Mirrors ``resolveOffering(_:step:)``: only the ad unit ID is validated, and this never needs
-    /// offerings or UI config since a step of this kind renders nothing through RevenueCatUI.
+    /// Mirrors ``resolveOffering(_:step:)``: only the ad unit ID and mediator are validated, and this
+    /// never needs offerings or UI config since a step of this kind renders nothing through RevenueCatUI.
     private static func resolveAd(_ rule: CheckpointRule, step: WorkflowStep) -> CheckpointResolution {
         guard case let .string(adUnitId)? = step.paramValues[Self.adUnitIdParam], adUnitId.isNotEmpty else {
             return Self.unservable(rule, reason: "the ad step has no valid ad unit id")
         }
-        return .ad(adUnitId: adUnitId)
+        guard case let .string(mediator)? = step.paramValues[Self.mediatorParam], mediator.isNotEmpty else {
+            return Self.unservable(rule, reason: "the ad step has no valid mediator")
+        }
+        return .ad(adUnitId: adUnitId, mediator: mediator)
     }
 
     private func resolveWorkflow(
@@ -327,6 +331,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private static let offeringIdentifierParam = "offering_identifier"
     private static let adStepType = "ad"
     private static let adUnitIdParam = "ad_unit_id"
+    private static let mediatorParam = "mediator"
 
     #if DEBUG
     private static let simulatedErrorCheckpointIdentifier = "error_checkpoint"

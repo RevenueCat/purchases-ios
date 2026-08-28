@@ -32,8 +32,40 @@ final class CheckpointsManager {
         }
     }
 
+    /// Installed by an ad adapter (e.g. `purchases-ios-admob`) so `checkpoint(_:)` auto-presents an `.ad`
+    /// resolution for that specific ad network — see ``CheckpointAdHandler``. Keyed by mediator (matching
+    /// the `mediator` value backend `ad` steps carry, e.g. `"admob"`) rather than a single slot, since more
+    /// than one ad-network adapter may be linked at once. Without a handler for the resolved mediator, an
+    /// `.ad` resolution stays data-only.
+    func registerAdHandler(_ handler: CheckpointAdHandler, for mediator: String) {
+        self.adHandlersLock.lock()
+        self.adHandlers[Self.normalize(mediator)] = handler
+        self.adHandlersLock.unlock()
+    }
+
+    func unregisterAdHandler(for mediator: String) {
+        self.adHandlersLock.lock()
+        self.adHandlers.removeValue(forKey: Self.normalize(mediator))
+        self.adHandlersLock.unlock()
+    }
+
+    private func adHandler(for mediator: String) -> CheckpointAdHandler? {
+        self.adHandlersLock.lock()
+        defer { self.adHandlersLock.unlock() }
+        return self.adHandlers[Self.normalize(mediator)]
+    }
+
+    private static func normalize(_ mediator: String) -> String {
+        return mediator.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+    }
+
     private let listenerLock = NSLock()
     private var storedListener: CheckpointListener?
+    private let adHandlersLock = NSLock()
+    private var adHandlers: [String: CheckpointAdHandler] = [:]
+    /// Guards against a paywall and an ad (or two of either) presenting concurrently — both claim the
+    /// same on-screen slot, so only one checkpoint-driven experience may be in flight at a time.
+    @MainActor private var isPresentingCheckpointExperience = false
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
@@ -92,6 +124,9 @@ final class CheckpointsManager {
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
+            try self.claimPresentationSlot()
+            defer { self.isPresentingCheckpointExperience = false }
+
             let presentation = CheckpointPresentation(
                 workflow: workflow,
                 customVariables: params.customVariables
@@ -107,11 +142,8 @@ final class CheckpointsManager {
                 checkpoint: checkpoint,
                 offering: offering
             )
-        case let .ad(adUnitId):
-            result = CheckpointAdResult(
-                checkpoint: checkpoint,
-                adUnitId: adUnitId
-            )
+        case let .ad(adUnitId, mediator):
+            result = try await self.resolveAd(checkpoint: checkpoint, adUnitId: adUnitId, mediator: mediator)
         case let .noAction(reason):
             result = CheckpointNoActionResult(
                 checkpoint: checkpoint,
@@ -121,6 +153,38 @@ final class CheckpointsManager {
 
         self.listener?.onCheckpointCompleted(checkpoint, result: result)
         return result
+    }
+
+    @MainActor
+    private func resolveAd(
+        checkpoint: CheckpointInfo,
+        adUnitId: String,
+        mediator: String
+    ) async throws -> CheckpointResult {
+        guard let adHandler = self.adHandler(for: mediator) else {
+            // Data-only, so this never claims the presentation slot the paywall executor owns.
+            return CheckpointAdResult(checkpoint: checkpoint, adUnitId: adUnitId, mediator: mediator)
+        }
+
+        try self.claimPresentationSlot()
+        defer { self.isPresentingCheckpointExperience = false }
+
+        let outcome: CheckpointAdOutcome
+        do {
+            try await adHandler.present(checkpoint: checkpoint, adUnitId: adUnitId)
+            outcome = CheckpointAdShownOutcome.shared
+        } catch {
+            outcome = CheckpointAdFailedOutcome(error: error as NSError)
+        }
+        return CheckpointAdPresentedResult(checkpoint: checkpoint, outcome: outcome)
+    }
+
+    @MainActor
+    private func claimPresentationSlot() throws {
+        guard !self.isPresentingCheckpointExperience else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+        self.isPresentingCheckpointExperience = true
     }
 
 }

@@ -135,24 +135,30 @@ public final class CheckpointAdResult: CheckpointResult {
 
     /// The ad unit ID to load and show.
     public let adUnitId: String
+    /// The ad network the ad unit ID belongs to (e.g. `"admob"`).
+    public let mediator: String
 
-    init(checkpoint: CheckpointInfo, adUnitId: String) {
+    init(checkpoint: CheckpointInfo, adUnitId: String, mediator: String) {
         self.adUnitId = adUnitId
+        self.mediator = mediator
         super.init(checkpoint: checkpoint)
     }
 
     public override var description: String {
-        return "Ad(checkpoint=\(self.checkpoint), adUnitId=\(self.adUnitId))"
+        return "Ad(checkpoint=\(self.checkpoint), adUnitId=\(self.adUnitId), mediator=\(self.mediator))"
     }
 
     override func isEqual(to other: CheckpointResult) -> Bool {
         guard let other = other as? CheckpointAdResult else { return false }
-        return self.checkpoint == other.checkpoint && self.adUnitId == other.adUnitId
+        return self.checkpoint == other.checkpoint
+            && self.adUnitId == other.adUnitId
+            && self.mediator == other.mediator
     }
 
     public override func hash(into hasher: inout Hasher) {
         hasher.combine(self.checkpoint)
         hasher.combine(self.adUnitId)
+        hasher.combine(self.mediator)
     }
 
 }

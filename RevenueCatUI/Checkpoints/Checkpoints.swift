@@ -143,3 +143,21 @@ public extension CheckpointListener {
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {}
 
 }
+
+/// Presents an ad resolved by a checkpoint, registered via `Purchases.checkpointAdHandler`.
+///
+/// RevenueCatUI has no dependency on any ad SDK, so it can't present an ad itself — this is the
+/// extension point an ad adapter (e.g. `purchases-ios-admob`) installs to make `Purchases.checkpoint(_:)`
+/// auto-present ads the same way it already auto-presents paywalls. Without a registered handler, a
+/// resolved ad checkpoint comes back as a data-only ``CheckpointAdResult`` instead, as it does today.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@MainActor
+public protocol CheckpointAdHandler: AnyObject {
+
+    /// Loads and presents an ad for `adUnitId`, returning only once it has been fully shown and
+    /// dismissed, or throwing if it failed to load or present. Must always return or throw — never
+    /// hang indefinitely — since the caller's `checkpoint(_:)` call awaits this directly.
+    func present(checkpoint: CheckpointInfo, adUnitId: String) async throws
+
+}

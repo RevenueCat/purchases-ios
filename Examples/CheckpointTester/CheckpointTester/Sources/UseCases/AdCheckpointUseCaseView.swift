@@ -11,7 +11,6 @@
 //
 
 import Foundation
-import GoogleMobileAds
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 import SwiftUI
@@ -37,7 +36,6 @@ struct AdCheckpointUseCaseView: View {
 
     @State private var isRunning = false
     @State private var status = "Tap \"Hit checkpoint\" to resolve the ad checkpoint."
-    @State private var presenter: InterstitialAdPresenter?
     @State private var didLoad = false
     @State private var isPurchasing = false
     @State private var purchaseStatus =
@@ -127,7 +125,7 @@ struct AdCheckpointUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "ad_checkpoint",
-                params: self.customVariables.checkpointParams
+                customVariables: self.customVariables.checkpointCustomVariables
             )
             self.handle(result)
         } catch {
@@ -135,81 +133,35 @@ struct AdCheckpointUseCaseView: View {
         }
     }
 
+    /// `RCAdmobAdapter.enableCheckpointAds()` (called once at app launch, in
+    /// `CheckpointTesterApp.configurePurchases`) registered the AdMob handler for the `"admob"`
+    /// mediator, so `checkpoint(_:)` already loaded, tracked, and presented the ad — and awaited its
+    /// dismissal — before this ever runs. There's nothing left to do here but react to the outcome.
     @MainActor
     private func handle(_ result: CheckpointResult) {
         switch result {
+        case let presented as CheckpointAdPresentedResult:
+            self.handle(presented.outcome)
         case let adResult as CheckpointAdResult:
-            self.status = "Resolved ad unit \(adResult.adUnitId). Loading…"
-            self.loadAndShowAd(adUnitId: adResult.adUnitId)
+            self.status = "Resolved \(adResult.adUnitId) for mediator '\(adResult.mediator)', "
+                + "but no handler is registered for it."
         case let noAction as CheckpointNoActionResult:
-            self.status = "No ad shown (\(noAction.reason.value))."
+            self.status = "No ad shown (\(noAction.reason.description))."
         default:
             self.status = "Unknown checkpoint result."
         }
     }
 
     @MainActor
-    private func loadAndShowAd(adUnitId: String) {
-        let presenter = InterstitialAdPresenter { status in
-            self.status = status
+    private func handle(_ outcome: CheckpointAdOutcome) {
+        switch outcome {
+        case is CheckpointAdShownOutcome:
+            self.status = "Ad shown and dismissed."
+        case let failed as CheckpointAdFailedOutcome:
+            self.status = "Ad failed: \(failed.error.localizedDescription)"
+        default:
+            self.status = "Unknown ad outcome."
         }
-        self.presenter = presenter
-        presenter.load(adUnitId: adUnitId)
-    }
-
-}
-
-/// Loads and shows a plain GoogleMobileAds interstitial, reporting a terminal status string back to the view.
-///
-/// This calls Google's ad SDK directly (not `purchases-ios-admob`'s `loadAndTrack`) — this use case validates
-/// that a checkpoint resolves to a real, backend-configured ad unit ID and that a real interstitial renders
-/// from it; RevenueCat ad-event tracking via `purchases-ios-admob` is a separate, already-proven integration.
-@MainActor
-private final class InterstitialAdPresenter: NSObject, FullScreenContentDelegate {
-
-    private var interstitialAd: InterstitialAd?
-    private let onStatusChange: (String) -> Void
-
-    init(onStatusChange: @escaping (String) -> Void) {
-        self.onStatusChange = onStatusChange
-    }
-
-    func load(adUnitId: String) {
-        InterstitialAd.load(with: adUnitId, request: Request()) { [weak self] ad, error in
-            guard let self else { return }
-            if let error {
-                self.onStatusChange("Ad failed to load: \(error.localizedDescription)")
-                return
-            }
-            self.interstitialAd = ad
-            self.interstitialAd?.fullScreenContentDelegate = self
-            self.onStatusChange("Ad loaded. Presenting…")
-            guard let rootViewController = Self.rootViewController() else {
-                self.onStatusChange("Ad loaded, but no root view controller to present from.")
-                return
-            }
-            self.interstitialAd?.present(from: rootViewController)
-        }
-    }
-
-    func adDidRecordImpression(_ ad: any FullScreenPresentingAd) {
-        self.onStatusChange("Ad impression recorded.")
-    }
-
-    func ad(_ ad: any FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        self.onStatusChange("Ad failed to present: \(error.localizedDescription)")
-    }
-
-    func adDidDismissFullScreenContent(_ ad: any FullScreenPresentingAd) {
-        self.onStatusChange("Ad dismissed.")
-    }
-
-    private static func rootViewController() -> UIViewController? {
-        return UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap(\.windows)
-            .first(where: \.isKeyWindow)?
-            .rootViewController
     }
 
 }

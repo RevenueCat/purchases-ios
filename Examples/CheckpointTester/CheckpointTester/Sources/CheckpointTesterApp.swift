@@ -15,6 +15,7 @@
 import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
+import RevenueCatAdMob
 import SwiftUI
 
 @main
@@ -57,6 +58,11 @@ struct CheckpointTesterApp: App {
             ? Purchases.shared
             : Purchases.configure(withAPIKey: apiKey)
         purchases.checkpointListener = analyticsTracker
+
+        // Registers the AdMob handler for the "admob" mediator, so `checkpoint(_:)` auto-presents a
+        // resolved ad checkpoint the same way it already auto-presents a paywall checkpoint — no
+        // separate call, no need to know upfront which kind of experience the backend will resolve to.
+        RCAdmobAdapter.enableCheckpointAds()
     }
 
 }

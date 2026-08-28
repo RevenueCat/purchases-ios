@@ -48,6 +48,7 @@ let project = Project(
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
+                .revenueCatAdMob,
                 .googleMobileAds,
             ],
             settings: .appTarget(

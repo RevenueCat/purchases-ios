@@ -29,6 +29,7 @@ let package = Package(
             name: "RevenueCatAdMob",
             dependencies: [
                 .product(name: "RevenueCat", package: "purchases-ios"),
+                .product(name: "RevenueCatUI", package: "purchases-ios"),
                 .product(name: "GoogleMobileAds",
                          package: "swift-package-manager-google-mobile-ads",
                          condition: .when(platforms: [.iOS]))

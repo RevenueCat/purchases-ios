@@ -633,6 +633,14 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertNil(Self.resolvedWorkflow(resolution))
     }
 
+    func testTerminalAdWorkflowResolvesItsMediator() async throws {
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit", mediator: "admob")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedMediator(resolution), "admob")
+    }
+
     func testAdStepWithoutAnAdUnitIdResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(adUnitId: nil)
 
@@ -643,6 +651,22 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testAdStepWithABlankAdUnitIdResolvesConfigurationUnavailable() async throws {
         self.stubAdWorkflow(adUnitId: "   ")
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithoutAMediatorResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit", mediator: nil)
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testAdStepWithABlankMediatorResolvesConfigurationUnavailable() async throws {
+        self.stubAdWorkflow(adUnitId: "ca-app-pub-test/unit", mediator: "   ")
 
         let resolution = try await self.resolve()
 
@@ -708,14 +732,20 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     private func stubAdWorkflow(
         adUnitId: String?,
+        mediator: String? = "admob",
         initialStepID: String? = nil,
         extraSteps: [String: WorkflowStep] = [:]
     ) {
         let stepID = "step_1"
         var step = WorkflowStep(id: stepID, type: "ad", screenId: nil)
+        var paramValues: [String: AnyDecodable] = [:]
         if let adUnitId {
-            step.paramValues = ["ad_unit_id": .string(adUnitId)]
+            paramValues["ad_unit_id"] = .string(adUnitId)
         }
+        if let mediator {
+            paramValues["mediator"] = .string(mediator)
+        }
+        step.paramValues = paramValues
 
         var steps = extraSteps
         steps[stepID] = step
@@ -807,8 +837,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private static func resolvedAdUnitId(_ resolution: CheckpointResolution) -> String? {
-        guard case let .ad(adUnitId) = resolution else { return nil }
+        guard case let .ad(adUnitId, _) = resolution else { return nil }
         return adUnitId
+    }
+
+    private static func resolvedMediator(_ resolution: CheckpointResolution) -> String? {
+        guard case let .ad(_, mediator) = resolution else { return nil }
+        return mediator
     }
 
     private static func rule(workflowID: String, audienceID: String = "audience") -> CheckpointRule {

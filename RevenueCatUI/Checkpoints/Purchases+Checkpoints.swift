@@ -27,6 +27,20 @@ public extension Purchases {
         set { self.checkpointsManager.listener = newValue }
     }
 
+    /// Installs an ad adapter's (e.g. `purchases-ios-admob`) handler for a specific ad network, so
+    /// `checkpoint(_:)` auto-presents a resolved ad checkpoint for that `mediator` (e.g. `"admob"`) the
+    /// same way it already auto-presents a paywall checkpoint. More than one mediator may have a handler
+    /// registered at once, if more than one ad-network adapter is linked. Without a handler registered
+    /// for the resolved mediator, an ad checkpoint stays data-only (``CheckpointAdResult``).
+    func registerCheckpointAdHandler(_ handler: CheckpointAdHandler, for mediator: String) {
+        self.checkpointsManager.registerAdHandler(handler, for: mediator)
+    }
+
+    /// Removes a previously registered checkpoint ad handler for `mediator`.
+    func unregisterCheckpointAdHandler(for mediator: String) {
+        self.checkpointsManager.unregisterAdHandler(for: mediator)
+    }
+
     /// Evaluates a checkpoint and calls `completion` with its result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
