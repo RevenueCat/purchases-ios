@@ -15,31 +15,24 @@
 
 final class MockInternalAuthenticatorDelegate: InternalAuthenticatorDelegate {
 
-    private(set) var invokedAuthenticatorDidLogIn = false
-    private(set) var invokedAuthenticatorDidLogInCount = 0
-    private(set) var invokedAuthenticatorDidLogInParametersList: [CustomerInfo] = []
-
-    func authenticatorDidLogIn(info: CustomerInfo) {
-        self.invokedAuthenticatorDidLogIn = true
-        self.invokedAuthenticatorDidLogInCount += 1
-        self.invokedAuthenticatorDidLogInParametersList.append(info)
-    }
-
     private(set) var invokedAuthenticatorDidChangeIdentity = false
     private(set) var invokedAuthenticatorDidChangeIdentityCount = 0
+    private(set) var invokedAuthenticatorDidChangeIdentityParametersList: [IdentityChangeReason] = []
 
-    /// The result that will be handed to the completion passed to ``authenticatorDidChangeIdentity(completion:)``.
-    /// If left `nil`, the completion is never invoked, to make it easy to test that a caller correctly
-    /// waits for this delegate callback.
+    /// The result that will be handed to the `didHandle` closure passed to
+    /// ``authenticatorDidChangeIdentity(reason:didHandle:)``.
+    /// If left `nil`, `didHandle` is invoked with `nil`, mirroring the real delegate's behavior when there
+    /// isn't a more specific `CustomerInfo` to hand back (e.g. after a `.logIn`, where the SDK falls back
+    /// to the `CustomerInfo` it already has).
     var stubbedAuthenticatorDidChangeIdentityResult: Result<CustomerInfo, PublicError>?
 
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
         self.invokedAuthenticatorDidChangeIdentity = true
         self.invokedAuthenticatorDidChangeIdentityCount += 1
+        self.invokedAuthenticatorDidChangeIdentityParametersList.append(reason)
 
-        if let result = self.stubbedAuthenticatorDidChangeIdentityResult {
-            completion(result)
-        }
+        didHandle(self.stubbedAuthenticatorDidChangeIdentityResult)
     }
 
 }

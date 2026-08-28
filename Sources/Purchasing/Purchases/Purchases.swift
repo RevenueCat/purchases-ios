@@ -1286,7 +1286,7 @@ public extension Purchases {
 extension Purchases: InternalAuthenticatorDelegate {
 
     func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
-                                        didHandle: ((Result<CustomerInfo, PublicError>?) -> Void)?) {
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
         switch reason {
         case .logIn:
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
@@ -1295,7 +1295,7 @@ extension Purchases: InternalAuthenticatorDelegate {
                     fetchContext: .identityChange,
                     isAppBackgrounded: isAppBackgrounded
                 )
-                didHandle?(nil)
+                didHandle(nil)
             }
 
         case .logOut:

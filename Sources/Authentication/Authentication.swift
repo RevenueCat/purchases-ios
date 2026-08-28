@@ -31,7 +31,7 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
     func authenticatorDidEncounterError(_ error: PublicError)
 }
 
-internal enum IdentityChangeReason {
+internal enum IdentityChangeReason: Equatable {
     case logIn
     case logOut
     case identified
@@ -39,7 +39,7 @@ internal enum IdentityChangeReason {
 
 internal protocol InternalAuthenticatorDelegate: AnyObject {
     func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
-                                        didHandle: ((Result<CustomerInfo, PublicError>?) -> Void)?)
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void)
 }
 
 /// A namespace for providing authentication-related functionality to the ``Purchases`` instance
