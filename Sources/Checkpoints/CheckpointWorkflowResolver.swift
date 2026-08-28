@@ -237,7 +237,10 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return try await self.localRulesEvaluator.match(
             in: rules,
             // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
-            customVariables: params.customVariables.mapValues(\.dimensionValue)
+            customVariables: params.customVariables.mapValues(\.dimensionValue),
+            // Supplied by the same generation-bound snapshot as the audience predicates, rather than retained
+            // by a provider that could outlive this evaluation.
+            backendValues: audienceConfiguration.backendPredicateResults
         ) { rule in
             guard let audience = audienceConfiguration.audiences[rule.audienceId] else {
                 throw AudienceUnavailableError(audienceID: rule.audienceId)

@@ -45,7 +45,10 @@ struct DimensionResolver: Sendable {
     ///
     /// For example, device `appVersion: "1.2.3"` becomes
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
-    func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
+    func snapshot(
+        customVariables: [String: DimensionValue] = [:],
+        backendValues: [String: DimensionValue] = [:]
+    ) async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
         var values: [String: RulesEngine.Value] = [:]
 
@@ -88,18 +91,31 @@ struct DimensionResolver: Sendable {
             }
         }
 
-        let validCustomVariables = CustomVariableKeyValidator.validateAndFilter(customVariables)
-        let customVariables = DimensionValueConverter.convert(
-            validCustomVariables,
-            parentPath: DimensionNamespace.custom.rawValue
+        Self.addPerEvaluationValues(
+            CustomVariableKeyValidator.validateAndFilter(customVariables),
+            namespace: .custom,
+            to: &values
         )
-        if !customVariables.isEmpty {
-            values[DimensionNamespace.custom.rawValue] = .object(customVariables)
-        }
+        Self.addPerEvaluationValues(
+            backendValues,
+            namespace: .backend,
+            to: &values
+        )
 
         try Task.checkCancellation()
 
         return DimensionSnapshot(values: values, evaluationDate: date)
+    }
+
+    private static func addPerEvaluationValues(
+        _ dimensions: [String: DimensionValue],
+        namespace: DimensionNamespace,
+        to values: inout [String: RulesEngine.Value]
+    ) {
+        let converted = DimensionValueConverter.convert(dimensions, parentPath: namespace.rawValue)
+        if !converted.isEmpty {
+            values[namespace.rawValue] = .object(converted)
+        }
     }
 }
 
