@@ -80,6 +80,21 @@ class PurchasesSyncAttributesAndOfferingsTests: BasePurchasesTests {
         expect(self.mockOfferingsManager.invokedOfferingsCount) == 0
     }
 
+    func testAttributeSyncErrorCompletionIsCalledOnMainThread() {
+        self.setupPurchases()
+        self.subscriberAttributesManager.stubbedSyncAttributesForAllUsersError = ErrorUtils.networkError()
+
+        let completionCalled = self.expectation(description: "Completion called")
+        DispatchQueue.global().async {
+            self.purchases.syncAttributesAndOfferingsIfNeeded { _, _ in
+                expect(Thread.isMainThread).to(beTrue())
+                completionCalled.fulfill()
+            }
+        }
+
+        self.wait(for: [completionCalled], timeout: 1)
+    }
+
     func testAttributeSyncErrorIsThrownWithoutFetchingOfferingsAsync() async {
         self.setupPurchases()
 

@@ -1219,7 +1219,7 @@ public extension Purchases {
         }
 
         let firstBlockingError: Atomic<PublicError?> = nil
-        /// Whether an attribute sync error should prevent offerings from being fetched.
+        /// Returns whether an attribute sync error should prevent offerings from being fetched.
         let shouldBlockOfferingsFetch: @Sendable (PublicError) -> Bool = { error in
             guard
                 error.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
@@ -1230,11 +1230,13 @@ public extension Purchases {
                 return true
             }
 
+            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes, some of which cannot be
+            // overwritten. Non-`$` keys are custom attributes, so a failure means their intended values were not synced.
             return attributeErrors.keys.contains { !$0.hasPrefix("$") }
         }
 
         self.syncSubscriberAttributes(syncedAttribute: { error in
-            // Reserved-only 7263 errors are non-blocking because those attributes cannot always be updated.
+            // Reserved-only errors are non-blocking because those attributes cannot always be updated.
             if let error, shouldBlockOfferingsFetch(error) {
                 firstBlockingError.modify {
                     $0 = $0 ?? error
@@ -1242,7 +1244,9 @@ public extension Purchases {
             }
         }, completion: {
             if let error = firstBlockingError.value {
-                completion(nil, error)
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, error)
+                }
                 return
             }
 
