@@ -90,8 +90,8 @@ class AuthenticationTests: TestCase {
         expect(receivedCreated) == true
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
-        expect(self.internalDelegate.invokedAuthenticatorDidLogInParametersList.last) == expectedInfo
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .identified
     }
 
     func testIdentifyCurrentUserWithStringFailureDoesNotNotifyInternalDelegate() {
@@ -112,7 +112,7 @@ class AuthenticationTests: TestCase {
         expect(receivedInfo).to(beNil())
         expect(receivedCreated) == false
         expect(receivedError).to(matchError(backendError.asPurchasesError))
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     func testIdentifyCurrentUserWithStringTrimsWhitespaceBeforeLoggingIn() throws {
@@ -136,7 +136,7 @@ class AuthenticationTests: TestCase {
 
         expect(receivedError).to(matchError(ErrorCode.unsupportedError))
         expect(self.identityManager.invokedLogIn) == false
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     // MARK: - identifyCurrentUser(as: StaticString, completion:) [deprecated]
@@ -228,7 +228,8 @@ class AuthenticationTests: TestCase {
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogInWithIdentityCount) == 1
         expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logIn
     }
 
     func testLogInUsingIdentityFailureDoesNotNotifyInternalDelegate() {
@@ -246,7 +247,7 @@ class AuthenticationTests: TestCase {
 
         expect(receivedInfo).to(beNil())
         expect(receivedError).to(matchError(backendError.asPurchasesError))
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     func testLogInUsingIdentityPassesTheProvidedIdentityToTheIdentityManager() {
@@ -279,6 +280,7 @@ class AuthenticationTests: TestCase {
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logOut
     }
 
     func testLogOutForwardsIdentityManagerErrorToCompletionAndDoesNotChangeIdentity() {

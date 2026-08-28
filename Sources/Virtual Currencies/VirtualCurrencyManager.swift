@@ -15,6 +15,7 @@ import Foundation
 
 protocol VirtualCurrencyManagerType {
     func virtualCurrencies() async throws -> VirtualCurrencies
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies
 
     func cachedVirtualCurrencies() -> VirtualCurrencies?
 
@@ -56,6 +57,42 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
             appUserID: appUserID,
             isAppBackgrounded: isAppBackgrounded
         )
+
+        cacheVirtualCurrencies(virtualCurrencies, appUserID: appUserID)
+
+        return virtualCurrencies
+    }
+
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies {
+        let resolvedAmounts = amounts.compactMap { (code, amount) -> (String, Int)? in
+            if code.count > 100 {
+                // the server limits currency codes to 10 characters or fewer
+                // if this changes in the future, this is still very permissive
+                Logger.warn(Strings.virtualCurrencies.invalid_code)
+                return nil
+            }
+            if amount <= 0 {
+                Logger.warn(Strings.virtualCurrencies.invalid_spend_amount(code, amount))
+                return nil
+            }
+            return (code, amount)
+        }
+
+        guard resolvedAmounts.count < 1000 else {
+            // the server limits projects to 100 specified codes
+            // if this changes in the future, this is still very permissive
+            Logger.warn(Strings.virtualCurrencies.too_many_codes)
+            return try await virtualCurrencies()
+        }
+
+        guard resolvedAmounts.count > 0 else {
+            Logger.warn(Strings.virtualCurrencies.empty_spend_amount)
+            return try await virtualCurrencies()
+        }
+
+        let appUserID = identityManager.currentAppUserID
+        let resolved = Dictionary(uniqueKeysWithValues: resolvedAmounts)
+        let virtualCurrencies = try await spendVirtualCurrenciesOnBackend(amounts: resolved, reference: reference)
 
         cacheVirtualCurrencies(virtualCurrencies, appUserID: appUserID)
 
@@ -149,6 +186,26 @@ class VirtualCurrencyManager: VirtualCurrencyManagerType {
         } catch {
             Logger.error(Strings.virtualCurrencies.virtual_currencies_updated_from_network_error(error))
 
+            throw error
+        }
+    }
+
+    private func spendVirtualCurrenciesOnBackend(amounts: [String: Int],
+                                                 reference: String?) async throws -> VirtualCurrencies {
+        do {
+
+            let response = try await Async.call { completion in
+                backend.virtualCurrenciesAPI.spendVirtualCurrencies(amounts: amounts,
+                                                                    reference: reference,
+                                                                    completion: { result in
+                    completion(result.mapError(\.asPurchasesError))
+                })
+            }
+
+            Logger.debug(Strings.virtualCurrencies.virtual_currencies_spent_on_network)
+            return VirtualCurrencies(from: response)
+        } catch {
+            Logger.error(Strings.virtualCurrencies.virtual_currencies_spent_on_network_error(error))
             throw error
         }
     }
