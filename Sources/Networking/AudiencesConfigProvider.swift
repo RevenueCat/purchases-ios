@@ -14,12 +14,14 @@ protocol AudiencesConfigProviderType {
 
 }
 
-/// One immutable view of the audience rules and subscriber-specific protected results served together by
+/// One immutable view of the audience rules and subscriber-specific protected values served together by
 /// the `audiences` topic.
 struct AudienceConfigurationSnapshot: Equatable, Sendable {
 
     let audiences: [String: Audience]
-    let backendPredicateResults: [String: Bool]
+
+    /// Opaque values keyed by the hashes used as placeholders in the canonical audience rules.
+    let backendPredicateResults: [String: DimensionValue]
     let configGeneration: Int
 
 }
@@ -27,14 +29,13 @@ struct AudienceConfigurationSnapshot: Equatable, Sendable {
 enum AudiencesConfigProviderError: Error, Equatable, Sendable {
 
     case audienceIdentifierMismatch(mapKey: String, identifier: String)
-    case malformedBackendPredicateResult(String)
 
 }
 
 /// The topic-specific front door for canonical audience configuration.
 ///
-/// All published audience rules live in the immutable `default` blob. Subscriber-specific protected predicate
-/// results remain inline under `backend_predicate_results`. Both values are loaded from one committed topic
+/// All published audience rules live in the immutable `default` blob. Subscriber-specific protected values
+/// remain inline under `backend_predicate_results`. Both values are loaded from one committed topic
 /// generation so callers can never evaluate rules with results belonging to a different configuration.
 final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
@@ -76,7 +77,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
                 }
 
                 let audiences = try Self.decodeAudiences(from: blob)
-                let backendPredicateResults = try Self.decodeBackendPredicateResults(from: topic)
+                let backendPredicateResults = Self.decodeBackendPredicateResults(from: topic)
 
                 guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { continue }
 
@@ -114,15 +115,12 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
     private static func decodeBackendPredicateResults(
         from topic: RemoteConfiguration.ConfigTopic
-    ) throws -> [String: Bool] {
+    ) -> [String: DimensionValue] {
         guard let item = topic[Self.backendPredicateResultsItemKey] else { return [:] }
 
-        return try item.content.reduce(into: [:]) { results, entry in
+        return item.content.reduce(into: [:]) { results, entry in
             let (conditionHash, value) = entry
-            guard case let .bool(result) = value else {
-                throw AudiencesConfigProviderError.malformedBackendPredicateResult(conditionHash)
-            }
-            results[conditionHash] = result
+            results[conditionHash] = value.dimensionValue
         }
     }
 
@@ -132,3 +130,25 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 }
 
 extension AudiencesConfigProvider: @unchecked Sendable {}
+
+private extension AnyDecodable {
+
+    var dimensionValue: DimensionValue? {
+        switch self {
+        case let .string(value): return .string(value)
+        case let .int(value): return .int(Int64(value))
+        case let .double(value): return .double(value)
+        case let .bool(value): return .bool(value)
+        case let .object(value):
+            return .object(value.compactMapValues(\AnyDecodable.dimensionValue))
+        case let .array(value):
+            let objects = value.compactMap { element -> [String: DimensionValue]? in
+                guard case let .object(object) = element else { return nil }
+                return object.compactMapValues(\AnyDecodable.dimensionValue)
+            }
+            return objects.count == value.count ? .objectList(objects) : nil
+        case .null: return nil
+        }
+    }
+
+}

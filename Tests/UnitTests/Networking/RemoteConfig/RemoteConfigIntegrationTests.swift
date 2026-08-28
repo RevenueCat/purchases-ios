@@ -159,8 +159,8 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(configuration?.audiences["audf98ea481c76049a3"]?.rules)
             == expectedRules
         expect(configuration?.backendPredicateResults).to(haveCount(11))
-        expect(configuration?.backendPredicateResults["5Ycn7VItkR0DTZfStFMgDwp-TaW6Iz_v"]) == false
-        expect(configuration?.backendPredicateResults["PROg2cJoAVWa3sWx-6djaRxQQbDPpWwW"]) == false
+        expect(configuration?.backendPredicateResults["5Ycn7VItkR0DTZfStFMgDwp-TaW6Iz_v"]) == .bool(false)
+        expect(configuration?.backendPredicateResults["PROg2cJoAVWa3sWx-6djaRxQQbDPpWwW"]) == .bool(false)
     }
 
     func testAudiencesProviderReturnsNilWithoutDefaultBlob() async throws {
@@ -239,14 +239,27 @@ final class RemoteConfigIntegrationTests: TestCase {
         }.to(throwError())
     }
 
-    func testAudiencesProviderRejectsNonBooleanBackendPredicateResult() async throws {
+    func testAudiencesProviderAcceptsRuleDimensionBackendValues() async throws {
         let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
         let ref = RCContainerTestData.blobRef(for: payload)
         let container = try Self.containerData(
             topics: .init(entries: [
                 RemoteConfigTopic.audiences.wireName: [
                     "default": .init(blobRef: ref, prefetch: true),
-                    "backend_predicate_results": .init(content: ["condition_hash": "true"])
+                    "backend_predicate_results": .init(content: [
+                        "bool": true,
+                        "string": "value",
+                        "int": 42,
+                        "double": 4.2,
+                        "object": [
+                            "nested": "value",
+                            "ignored": nil
+                        ],
+                        "object_list": [
+                            ["id": "first", "enabled": true],
+                            ["id": "second", "enabled": false]
+                        ]
+                    ])
                 ]
             ]),
             contentElements: [(payload, .none)]
@@ -254,9 +267,110 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container)
 
-        await expect {
-            try await AudiencesConfigProvider(manager: self.manager).configuration()
-        }.to(throwError())
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.backendPredicateResults) == [
+            "bool": .bool(true),
+            "string": .string("value"),
+            "int": .int(42),
+            "double": .double(4.2),
+            "object": .object(["nested": .string("value")]),
+            "object_list": .objectList([
+                ["id": .string("first"), "enabled": .bool(true)],
+                ["id": .string("second"), "enabled": .bool(false)]
+            ])
+        ]
+    }
+
+    func testAudiencesProviderOmitsUnsupportedBackendValuesIndividually() async throws {
+        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "default": .init(blobRef: ref, prefetch: true),
+                    "backend_predicate_results": .init(content: [
+                        "valid": true,
+                        "null": nil,
+                        "scalar_array": [1, 2],
+                        "mixed_array": [["id": "first"], "second"]
+                    ])
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.backendPredicateResults) == ["valid": .bool(true)]
+    }
+
+    func testAudiencesProviderRecursivelyOmitsUnsupportedNestedBackendValues() async throws {
+        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "default": .init(blobRef: ref, prefetch: true),
+                    "backend_predicate_results": .init(content: [
+                        "nested": [
+                            "level_one": [
+                                "level_two": [
+                                    "valid": "value",
+                                    "null": nil,
+                                    "unsupported_array": [1, 2]
+                                ]
+                            ]
+                        ]
+                    ])
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.backendPredicateResults) == [
+            "nested": .object([
+                "level_one": .object([
+                    "level_two": .object([
+                        "valid": .string("value")
+                    ])
+                ])
+            ])
+        ]
+    }
+
+    func testAudiencesProviderPreservesEmptyBackendObjectsAndObjectLists() async throws {
+        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        let ref = RCContainerTestData.blobRef(for: payload)
+        let container = try Self.containerData(
+            topics: .init(entries: [
+                RemoteConfigTopic.audiences.wireName: [
+                    "default": .init(blobRef: ref, prefetch: true),
+                    "backend_predicate_results": .init(content: [
+                        "empty_object": [:],
+                        "empty_object_list": [],
+                        "list_with_empty_object": [[:]]
+                    ])
+                ]
+            ]),
+            contentElements: [(payload, .none)]
+        )
+
+        await self.refresh(with: container)
+
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.backendPredicateResults) == [
+            "empty_object": .object([:]),
+            "empty_object_list": .objectList([]),
+            "list_with_empty_object": .objectList([[:]])
+        ]
     }
 
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {
