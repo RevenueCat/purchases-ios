@@ -35,14 +35,12 @@ protocol PaywallPurchasesType: Sendable {
     /// Returns a tracker of user's subscription history
     var subscriptionHistoryTracker: SubscriptionHistoryTracker { get }
 
-    var configuredStoreEnvironment: String { get }
-
     @Sendable
     func offerings() async throws -> Offerings
 
     var cachedOfferings: Offerings? { get }
 
-    var storeFrontCountryCode: String? { get }
+    var configuredStoreEnvironment: ConfiguredStoreEnvironment { get }
 
 #if !os(tvOS)
     @Sendable

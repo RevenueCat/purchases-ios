@@ -84,11 +84,7 @@ final class PurchaseHandler: ObservableObject {
         return actionTypeInProgress != nil
     }
 
-    var storeFrontCountryCode: String? {
-        return purchases.storeFrontCountryCode
-    }
-
-    var configuredStoreEnvironment: String {
+    var configuredStoreEnvironment: ConfiguredStoreEnvironment {
         return purchases.configuredStoreEnvironment
     }
 

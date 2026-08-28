@@ -341,10 +341,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
-    private let configuredStoreType: ConfiguredStoreEnvironment
-    @_spi(Internal) public var configuredStoreEnvironment: String {
-        configuredStoreType.entitlementProviderName()
-    }
+    @_spi(Internal) public let configuredStoreEnvironment: ConfiguredStoreEnvironment
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -885,7 +882,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     ) {
         self.webBundleEventBus = webBundleEventBus
 
-        self.configuredStoreType = .from(apiKey: systemInfo.apiKey)
+        self.configuredStoreEnvironment = .init(systemInfo: systemInfo)
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
