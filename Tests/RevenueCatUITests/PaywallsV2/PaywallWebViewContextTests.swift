@@ -54,7 +54,23 @@ final class PaywallWebViewContextTests: TestCase {
             )
         )
 
-        XCTAssertEqual(actualPayload, Self.expectedPayload)
+
+    func testSubscriptionPeriodDeterminesAutoRenewalWhenProductTypeIsUnavailable() throws {
+        let isAutoRenewing = try self.autoRenewingValue(
+            productType: .nonConsumable,
+            subscriptionPeriod: .init(value: 1, unit: .month)
+        )
+
+        XCTAssertTrue(isAutoRenewing)
+    }
+
+    func testNonRenewingSubscriptionIsNotAutoRenewing() throws {
+        let isAutoRenewing = try self.autoRenewingValue(
+            productType: .nonRenewableSubscription,
+            subscriptionPeriod: nil
+        )
+
+        XCTAssertFalse(isAutoRenewing)
     }
 
     private static let expectedPayload = """
@@ -182,6 +198,55 @@ final class PaywallWebViewContextTests: TestCase {
             offeringIdentifier: package.offeringIdentifier,
             webCheckoutUrl: package.webCheckoutUrl
         )
+    }
+
+    private func autoRenewingValue(
+        productType: StoreProduct.ProductType,
+        subscriptionPeriod: SubscriptionPeriod?
+    ) throws -> Bool {
+        let product = TestStoreProduct(
+            localizedTitle: "Test",
+            price: 1.99,
+            currencyCode: "USD",
+            localizedPriceString: "$1.99",
+            productIdentifier: "com.revenuecat.test",
+            productType: productType,
+            localizedDescription: "Test product",
+            subscriptionPeriod: subscriptionPeriod,
+            locale: Locale(identifier: "en_US")
+        )
+        let package = Package(
+            identifier: "$rc_custom",
+            packageType: .custom,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: "default",
+            webCheckoutUrl: nil
+        )
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "Default",
+            availablePackages: [package],
+            webCheckoutUrl: nil
+        )
+        let context = PaywallWebViewStaticContext(
+            offering: offering,
+            packages: [package],
+            workflow: nil,
+            storefrontCountryCode: "USA"
+        ).snapshot(
+            package: package,
+            selectedPackageID: nil,
+            customVariables: [:],
+            locale: Locale(identifier: "en_US"),
+            isDarkMode: false
+        )
+        let productValue = try XCTUnwrap(
+            context.packages.arrayValue?.first?
+                .objectValue?["products"]?.arrayValue?.first?
+                .objectValue
+        )
+
+        return try XCTUnwrap(productValue["is_auto_renewing"]?.boolValue)
     }
 
 }
