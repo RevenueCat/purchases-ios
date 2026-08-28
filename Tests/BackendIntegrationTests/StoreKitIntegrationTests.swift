@@ -17,12 +17,15 @@ import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
 
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
+
 // swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRecordingPurchaseThrowsIfPurchasesAreNotCompletedByMyApp() async throws {
         let manager = ObserverModeManager()
@@ -1054,6 +1057,25 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(stubbedRequestCount).to(equal(1)) // 1 original request + 0 retries
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+    func testPurchasePackageWithConfirmInScene() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        let scene = try XCTUnwrap(UIApplication.shared.currentWindowScene)
+        let package = try await self.monthlyPackage
+        let params = PurchaseParams.Builder(package: package)
+            .with(confirmInScene: scene)
+            .build()
+
+        let result = try await self.purchase(params: params, file: #file, line: #line)
+
+        expect(result.transaction).toNot(beNil())
+        try await self.verifyEntitlementWentThrough(result.customerInfo)
+        self.verifyAnyTransactionWasFinished()
+    }
+    #endif
 }
 
 private extension BaseStoreKitIntegrationTests {

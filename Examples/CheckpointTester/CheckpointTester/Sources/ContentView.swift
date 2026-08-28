@@ -22,6 +22,7 @@ struct ContentView: View {
     @ObservedObject var model: CheckpointDemoModel
     @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
     @StateObject private var customVariables = CustomVariables()
+    @State private var isSubscriberAttributeEditorPresented = false
 
     var body: some View {
         TabView {
@@ -39,6 +40,10 @@ struct ContentView: View {
                 .tabItem {
                     Label("Listener", systemImage: "waveform.path.ecg")
                 }
+        }
+        .sheet(isPresented: self.$isSubscriberAttributeEditorPresented) {
+            SubscriberAttributeEditor()
+                .presentationDetents([.medium])
         }
         .alert(
             isPresented: Binding(
@@ -126,7 +131,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "this-checkpoint-does-not-exist",
-                                    params: self.customVariables.checkpointParams
+                                    customVariables: self.customVariables.checkpointCustomVariables
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -144,7 +149,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "error_checkpoint",
-                                    params: self.customVariables.checkpointParams
+                                    customVariables: self.customVariables.checkpointCustomVariables
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -156,6 +161,7 @@ struct ContentView: View {
 
             }
             .navigationTitle("Checkpoint Tester")
+            .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
         }
     }
 
@@ -187,6 +193,7 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Custom variables")
+            .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
         }
     }
 
@@ -219,6 +226,23 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Global Listener")
+            .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
+        }
+    }
+
+}
+
+private extension View {
+
+    func subscriberAttributeToolbar(isPresented: Binding<Bool>) -> some View {
+        self.toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isPresented.wrappedValue = true
+                } label: {
+                    Label("Set subscriber attribute", systemImage: "person.crop.circle.badge.plus")
+                }
+            }
         }
     }
 

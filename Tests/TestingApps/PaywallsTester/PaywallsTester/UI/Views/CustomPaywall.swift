@@ -19,7 +19,6 @@ import SwiftUI
 struct CustomPaywall: View {
 
     var offering: Offering?
-    var customerInfo: CustomerInfo?
     var condensed: Bool
     var introEligibility: TrialOrIntroEligibilityChecker?
     var purchaseHandler: PurchaseHandler?
@@ -35,7 +34,6 @@ struct CustomPaywall: View {
         CustomPaywallContent(selectedTierName: self.currentTierName)
             .originalTemplatePaywallFooter(
                 offering: self.offering,
-                customerInfo: self.customerInfo,
                 condensed: self.condensed,
                 fonts: DefaultPaywallFontProvider(),
                 introEligibility: self.introEligibility ?? .default(),
@@ -55,7 +53,6 @@ struct CustomPaywall_Previews: PreviewProvider {
         ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackagePaywall,
-                customerInfo: TestData.customerInfo,
                 condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
@@ -66,7 +63,6 @@ struct CustomPaywall_Previews: PreviewProvider {
         ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithMultiPackageHorizontalPaywall,
-                customerInfo: TestData.customerInfo,
                 condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()
@@ -77,7 +73,6 @@ struct CustomPaywall_Previews: PreviewProvider {
         ForEach(Self.condensedOptions, id: \.self) { mode in
             CustomPaywall(
                 offering: TestData.offeringWithTemplate5Paywall,
-                customerInfo: TestData.customerInfo,
                 condensed: mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: .mock()

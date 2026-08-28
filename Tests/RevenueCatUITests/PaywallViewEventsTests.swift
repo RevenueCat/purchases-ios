@@ -220,7 +220,6 @@ private extension BasePaywallViewEventsTests {
         PaywallView(
             configuration: .init(
                 offering: Self.offering.withLocalImages,
-                customerInfo: TestData.customerInfo,
                 mode: self.mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: self.handler

@@ -56,6 +56,7 @@ let allDestinations: Destinations = [
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "15.0",
+    macOS: "12.0",
     watchOS: "10.0",
     visionOS: "1.3"
 )
@@ -99,6 +100,24 @@ let schemes: [Scheme] = [
             options: .options(
                 storeKitConfigurationPath:
                     "../../Tests/TestingApps/PaywallsTester/PaywallsTester/LocalKhepri.storekit"
+            )
+        )
+    ),
+    .scheme(
+        name: "PaywallsTester - macOS Focus Regression",
+        shared: true,
+        buildAction: .buildAction(targets: ["PaywallsTesterMacOSUITests"]),
+        testAction: .targets(["PaywallsTesterMacOSUITests"]),
+        runAction: .runAction(
+            configuration: "Debug",
+            executable: "PaywallsTester",
+            arguments: .arguments(
+                launchArguments: [
+                    .launchArgument(
+                        name: "-MacOSPurchaseFocusRegression",
+                        isEnabled: true
+                    )
+                ]
             )
         )
     ),
@@ -149,6 +168,20 @@ let project = Project(
                 .storeKit
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        .target(
+            name: "PaywallsTesterMacOSUITests",
+            destinations: [.mac],
+            product: .uiTests,
+            bundleId: "com.revenuecat.PaywallsTesterMacOSUITests",
+            deploymentTargets: .multiplatform(macOS: "12.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterMacOSUITests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallsTester")
+            ]
         )
     ],
     schemes: schemes,

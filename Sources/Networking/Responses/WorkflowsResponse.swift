@@ -134,7 +134,10 @@ import Foundation
     public let assetBaseURL: URL
     public let componentsConfig: PaywallComponentsData.ComponentsConfig
     public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
-    public let defaultLocale: PaywallComponent.LocaleID
+    @DefaultValue<PaywallComponent.DefaultLocaleFallback>
+    // swiftlint:disable:next identifier_name
+    var _defaultLocale: PaywallComponent.LocaleID
+    public var defaultLocale: PaywallComponent.LocaleID { _defaultLocale }
     @DefaultDecodable.EmptyDictionary
     var config: [String: AnyDecodable]
     public let offeringIdentifier: String?
@@ -149,6 +152,12 @@ import Foundation
     // swiftlint:disable:next identifier_name
     var _stateDeclarations: [String: PaywallComponent.StateDeclaration]?
     public var stateDeclarations: [String: PaywallComponent.StateDeclaration]? { _stateDeclarations }
+    /// Keyed by store in the payload (`{ "apple": [...] }`), like the offering paywall's own field.
+    @IgnoreDecodeErrors<PaywallData.ZeroDecimalPlaceCountries?>
+    // swiftlint:disable:next identifier_name
+    var _zeroDecimalPlaceCountries: PaywallData.ZeroDecimalPlaceCountries?
+    /// The storefront country codes that should display whole number prices without decimal places.
+    public var zeroDecimalPlaceCountries: [String] { _zeroDecimalPlaceCountries?.apple ?? [] }
 
     // `config` carries backend screen config the renderer doesn't read and is typed with the
     // internal `AnyDecodable`, so it's defaulted rather than exposed.
@@ -163,7 +172,8 @@ import Foundation
         offeringIdentifier: String?,
         exitOffers: ExitOffers? = nil,
         automaticallyScaleFontSize: Bool = true,
-        stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil
+        stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
+        zeroDecimalPlaceCountries: [String] = []
     ) {
         self.name = name
         self.templateName = templateName
@@ -171,12 +181,16 @@ import Foundation
         self.assetBaseURL = assetBaseURL
         self.componentsConfig = componentsConfig
         self.componentsLocalizations = componentsLocalizations
-        self.defaultLocale = defaultLocale
+        self._defaultLocale = defaultLocale
         self.config = [:]
         self.offeringIdentifier = offeringIdentifier
         self.exitOffers = exitOffers
         self._automaticallyScaleFontSize = automaticallyScaleFontSize
         self._stateDeclarations = stateDeclarations
+        // Kept `nil` when empty so a screen built here matches one decoded without the key.
+        self._zeroDecimalPlaceCountries = zeroDecimalPlaceCountries.isEmpty
+            ? nil
+            : .init(apple: zeroDecimalPlaceCountries)
     }
 
 }
@@ -298,7 +312,8 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case assetBaseURL = "assetBaseUrl"
         case componentsConfig
         case componentsLocalizations
-        case defaultLocale
+        // swiftlint:disable:next identifier_name
+        case _defaultLocale = "defaultLocale"
         case config
         case offeringIdentifier
         case exitOffers
@@ -306,6 +321,8 @@ extension WorkflowScreen: Codable, Equatable, Sendable {
         case _automaticallyScaleFontSize = "automaticallyScaleFontSize"
         // swiftlint:disable:next identifier_name
         case _stateDeclarations = "stateDeclarations"
+        // swiftlint:disable:next identifier_name
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
     }
 
 }

@@ -244,7 +244,7 @@
     },
     {
       "id": "reduce_predicate_cannot_reach_parent_scope",
-      "description": "a var lookup against a nonexistent key in the reduce scope resolves to null, not the parent's value; multiplier resolves to null so the accumulator becomes current each step, ending at 3",
+      "description": "the reduce scope holds only current and accumulator, so the outer multiplier is unreachable; the lookup now names it instead of quietly resolving to null and folding a wrong total",
       "predicate": {
         "===": [
           {
@@ -255,31 +255,35 @@
                 3
               ],
               {
-                "if": [
+                "+": [
                   {
-                    "==": [
+                    "var": "accumulator"
+                  },
+                  {
+                    "*": [
+                      {
+                        "var": "current"
+                      },
                       {
                         "var": "multiplier"
-                      },
-                      null
+                      }
                     ]
-                  },
-                  {
-                    "var": "current"
-                  },
-                  -999
+                  }
                 ]
               },
               0
             ]
           },
-          3
+          60
         ]
       },
       "variables": {
         "multiplier": 10
       },
-      "expected": true
+      "expected": {
+        "error": "unresolvedVariable",
+        "path": "multiplier"
+      }
     },
     {
       "id": "reduce_missing_initial_empty_source_is_null",

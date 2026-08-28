@@ -14,7 +14,6 @@ import Foundation
 struct PaywallViewConfiguration {
 
     var content: Content
-    var customerInfo: CustomerInfo?
     var mode: PaywallViewMode
     var fonts: PaywallFontProvider
 
@@ -34,7 +33,6 @@ struct PaywallViewConfiguration {
 
     init(
         content: Content,
-        customerInfo: CustomerInfo? = nil,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -43,13 +41,14 @@ struct PaywallViewConfiguration {
         promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.content = content
-        self.customerInfo = customerInfo
         self.mode = mode
         self.fonts = fonts
         self.displayCloseButton = displayCloseButton
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+
+        PurchasesUIService.activateIfNeeded()
     }
 
 }
@@ -75,7 +74,6 @@ extension PaywallViewConfiguration {
 
     init(
         offering: Offering? = nil,
-        customerInfo: CustomerInfo? = nil,
         mode: PaywallViewMode = .default,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
@@ -87,7 +85,6 @@ extension PaywallViewConfiguration {
 
         self.init(
             content: .optionalOffering(offering),
-            customerInfo: customerInfo,
             mode: mode,
             fonts: fonts,
             displayCloseButton: displayCloseButton,

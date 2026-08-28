@@ -2,6 +2,7 @@
 # Run with: ruby fastlane/api_diff_helper_test.rb
 
 require 'minitest/autorun'
+require 'stringio'
 require 'tmpdir'
 require 'yaml'
 
@@ -18,6 +19,8 @@ module Fastlane
     end
 
     def self.success(message); end
+
+    def self.message(message); end
 
     def self.important(message)
       messages << message
@@ -87,8 +90,8 @@ class ApiDiffHelperTest < Minitest::Test
 
     versions = find_install_public_api_diff_versions(config)
 
-    assert_equal 2, versions.length,
-                 "expected exactly two revenuecat/install-public-api-diff steps in .circleci/default_config.yml, " \
+    assert_equal 1, versions.length,
+                 "expected exactly one revenuecat/install-public-api-diff step in .circleci/default_config.yml, " \
                  "found #{versions.length}"
     versions.each do |version|
       assert_equal ApiDiffHelper::PUBLIC_API_DIFF_REF, version
@@ -105,8 +108,8 @@ class ApiDiffHelperTest < Minitest::Test
     fastfile_path = File.expand_path('Fastfile', __dir__)
     lines = File.readlines(fastfile_path)
 
-    concat_line_no = lines.index { |line| line.include?("all_breaks.concat(ApiDiffHelper.breaking_changes") }
-    refute_nil concat_line_no, "expected to find the loop that accumulates all_breaks"
+    concat_line_no = lines.index { |line| line.include?("scheme_breaks.concat(ApiDiffHelper.breaking_changes") }
+    refute_nil concat_line_no, "expected to find the loop that accumulates the breaks"
 
     # The private_lane definition ("private_lane :pr_labels_for_api_gate do") is a different
     # call shape from the call site; filter it out so we isolate where check_api_changes
@@ -404,6 +407,52 @@ class ApiDiffHelperTest < Minitest::Test
     error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_merge_base(runner: ->(*_c) { "\n" }) }
 
     assert_match(/merge base/, error.message)
+  end
+
+  def test_current_branch_prefers_the_ci_variable
+    with_circle_branch("main") do
+      assert_equal "main", ApiDiffHelper.current_branch(runner: ->(*_c) { "detached\n" })
+    end
+  end
+
+  def test_current_branch_falls_back_to_git
+    with_circle_branch(nil) do
+      runner = ->(*command) { command == ["git", "rev-parse", "--abbrev-ref", "HEAD"] ? "my-branch\n" : "" }
+
+      assert_equal "my-branch", ApiDiffHelper.current_branch(runner: runner)
+    end
+  end
+
+  # On main the merge base is HEAD, so reusing it would compare the commit against itself.
+  def test_comparison_base_on_main_is_the_previous_commit
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "headsha\n"
+      end
+    end
+
+    assert_equal "prevsha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: "main")
+  end
+
+  def test_comparison_base_off_main_stays_the_merge_base
+    runner = lambda do |*command|
+      case command
+      when ["git", "rev-parse", "HEAD^"] then "prevsha\n"
+      when ["git", "merge-base", "origin/main", "HEAD"] then "forksha\n"
+      end
+    end
+
+    ["my-branch", "release/5.86.0", "gh-readonly-queue/main/pr-1-abc"].each do |branch|
+      assert_equal "forksha", ApiDiffHelper.resolve_comparison_base(runner: runner, branch: branch)
+    end
+  end
+
+  # A root commit would otherwise diff the whole API in as new.
+  def test_previous_commit_raises_when_empty
+    error = assert_raises(RuntimeError) { ApiDiffHelper.resolve_previous_commit(runner: ->(*_c) { "\n" }) }
+
+    assert_match(/before HEAD/, error.message)
   end
 
   def test_extract_baselines_writes_one_file_per_platform
@@ -1330,7 +1379,7 @@ class ApiDiffHelperTest < Minitest::Test
 
     message = ApiDiffHelper.slack_summary(breaks, [], source: "<url|#42> Some PR", new_declarations: ["public func a()"])
 
-    assert message.start_with?(":warning: *Breaking public API changes*")
+    assert message.start_with?(":warning: *Breaking public API landed on main*")
     assert_includes message, "<url|#42> Some PR"
     assert_includes message, "1 potential break"
   end
@@ -1338,22 +1387,18 @@ class ApiDiffHelperTest < Minitest::Test
   def test_slack_summary_leads_with_new_api_when_nothing_breaks
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42> Some PR", new_declarations: ["public func a()", "public var b: Swift.Int"])
 
-    assert message.start_with?(":sparkles: *New public API*")
+    assert message.start_with?(":sparkles: *New public API landed on main*")
     assert_includes message, "2 new declarations"
   end
 
 
-  def test_slack_request_supports_webhook_or_bot_token
-    webhook = ApiDiffHelper.slack_post_request("hi", webhook_url: "https://hooks.example/abc")
-    assert_equal "https://hooks.example/abc", webhook[:url]
-    assert_equal({ text: "hi" }, webhook[:body])
-
+  def test_slack_request_needs_a_bot_token_and_a_channel
     bot = ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: "C1")
     assert_equal "https://slack.com/api/chat.postMessage", bot[:url]
     assert_equal "Bearer xoxb-t", bot[:headers]["Authorization"]
 
-    assert_nil ApiDiffHelper.slack_post_request("hi"), "no credential means no request"
-    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t"), "a bot token with no channel has nowhere to post"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "", channel: "C1"), "no token means no request"
+    assert_nil ApiDiffHelper.slack_post_request("hi", bot_token: "xoxb-t", channel: ""), "a bot token with no channel has nowhere to post"
   end
 
 
@@ -1393,122 +1438,15 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/channel_not_found/, error.message)
   end
 
-  # Incoming webhooks answer with the bare string "ok", which is not JSON.
-  def test_post_slack_message_accepts_a_non_json_webhook_body
+  # A 2xx that does not parse must not read as a rejection: only an explicit ok:false is one.
+  def test_post_slack_message_accepts_a_non_json_body
     poster = ->(_url, _body, _headers) { SlackResponse.new("200", "ok") }
 
     ApiDiffHelper.post_slack_message(slack_request, poster: poster)
   end
 
 
-  # --- Announcing a change once ---
-
-  def history_getter(texts)
-    lambda do |_url, _headers|
-      SlackResponse.new("200", { ok: true, messages: texts.map { |text| { "text" => text } } }.to_json)
-    end
-  end
-
-  def test_slack_history_request_reads_the_channel_with_the_bot_token
-    request = ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1")
-
-    assert_includes request[:url], "https://slack.com/api/conversations.history?channel=C1"
-    assert_equal "Bearer xoxb-1", request[:headers]["Authorization"]
-    assert_equal ["new", "old"], ApiDiffHelper.recent_slack_messages(request, getter: history_getter(["new", "old"]))
-  end
-
-  def test_recent_slack_messages_raises_when_the_token_cannot_read_the_channel
-    getter = ->(_url, _headers) { SlackResponse.new("200", '{"ok":false,"error":"missing_scope"}') }
-
-    error = assert_raises(RuntimeError) do
-      ApiDiffHelper.recent_slack_messages(ApiDiffHelper.slack_history_request("C1", bot_token: "xoxb-1"), getter: getter)
-    end
-    assert_match(/missing_scope/, error.message)
-  end
-
-  def announcement(declaration, source: "<url|#7355>", modules: ["RevenueCat"])
-    ApiDiffHelper.slack_summary([], [], source: source, new_declarations: [declaration], modules: modules)
-  end
-
-  def state_for(message, texts, source: "<url|#7355>", modules: ["RevenueCat"])
-    ApiDiffHelper.announcement_state(
-      message, bot_token: "xoxb-1", channel: "C1", source: source, modules: modules, getter: history_getter(texts)
-    )
-  end
-
-  def test_announcement_state_recognises_the_last_word_on_this_pull_request
-    summary = announcement("public func a()")
-
-    state, unusable = state_for(summary, [summary, announcement("public func older()")])
-
-    assert_equal :same, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_is_different_when_the_pull_request_moved_on_and_back
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func b()"), summary])
-
-    assert_equal :different, state
-  end
-
-  def test_announcement_state_ignores_another_modules_announcement
-    summary = announcement("public func a()")
-    other_module = announcement("public func a()", modules: ["RevenueCatUI"])
-
-    state, unusable = state_for(summary, [other_module])
-
-    assert_equal :unknown, state
-    assert_nil unusable
-  end
-
-  def test_announcement_state_ignores_another_pull_requests_announcement
-    summary = announcement("public func a()")
-
-    state, _unusable = state_for(summary, [announcement("public func a()", source: "<url|#7354>")])
-
-    assert_equal :unknown, state
-  end
-
-  # chat.postMessage takes a `#name`, conversations.history does not.
-  def test_announcement_state_needs_the_channel_id
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "#feed", source: "<url|#1>", modules: ["RevenueCat"],
-      getter: ->(*) { raise "must not read" }
-    )
-
-    assert_equal :unknown, state
-    assert_match(/channel ID/, unusable)
-  end
-
-  def test_announcement_state_reports_a_missing_token
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"]
-    )
-
-    assert_equal :unknown, state
-    assert_match(/cannot be read/, unusable)
-  end
-
-  def test_announcement_state_reports_a_failed_read
-    state, unusable = ApiDiffHelper.announcement_state(
-      "summary", bot_token: "xoxb-1", channel: "C1", source: "<url|#1>", modules: ["RevenueCat"],
-      getter: ->(*) { raise "slack is down" }
-    )
-
-    assert_equal :unknown, state
-    assert_equal "slack is down", unusable
-  end
-
-  def test_announcement_fingerprint_moves_with_the_summary
-    first = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    same = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func a()"])
-    other = ApiDiffHelper.slack_summary([], [], source: "<url|#1>", new_declarations: ["public func b()"])
-
-    assert_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(same)
-    refute_equal ApiDiffHelper.announcement_fingerprint(first), ApiDiffHelper.announcement_fingerprint(other)
-  end
+  # --- The PR comment ---
 
   def test_no_comment_for_a_pull_request_that_never_touched_the_public_api
     refute ApiDiffHelper.comment_needed?({ "RevenueCat iOS" => NO_CHANGES_OUTPUT }, [], nil, "RevenueCat")
@@ -1529,62 +1467,13 @@ class ApiDiffHelperTest < Minitest::Test
     assert ApiDiffHelper.comment_needed?({}, [{ reason: :removed, owner: nil, declaration: "public func a()" }], nil, "RevenueCat")
   end
 
-  def test_announced_fingerprint_survives_a_run_with_nothing_to_announce
-    announced = ApiDiffHelper.merge_api_diff_comment(
-      nil, "RevenueCat",
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "abc123abc123")
-    )
-
-    assert_equal "abc123abc123", ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCat")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(announced, "RevenueCatUI")
-    assert_nil ApiDiffHelper.announced_fingerprint_in(nil, "RevenueCat")
-  end
-
-  # Another module's marker must not be mistaken for this module's.
-  def test_announced_fingerprint_is_read_from_this_modules_section
-    body = [
-      ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], []),
-      ApiDiffHelper.api_diff_comment_section("RevenueCatUI", {}, [], [], announced_fingerprint: "def456def456")
-    ].join("\n")
-
-    assert_nil ApiDiffHelper.announced_fingerprint_in(body, "RevenueCat")
-    assert_equal "def456def456", ApiDiffHelper.announced_fingerprint_in(body, "RevenueCatUI")
-  end
-
-  def test_already_announced_reads_the_comment_only_when_the_channel_said_nothing
-    body = "## Public API changes\n#{ApiDiffHelper.announced_marker('abc123abc123')}\n"
-
-    assert ApiDiffHelper.already_announced?(:same, "def456def456") { raise "must not read" }
-    refute ApiDiffHelper.already_announced?(:different, "abc123abc123") { raise "must not read" }
-    assert ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "def456def456") { body }
-    refute ApiDiffHelper.already_announced?(:unknown, "abc123abc123") { nil }
-  end
-
-  def test_comment_section_carries_the_announced_fingerprint
+  def test_comment_section_is_closed_after_its_body
     section = ApiDiffHelper.api_diff_comment_section(
-      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], announced_fingerprint: "abc123abc123"
+      "RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], []
     )
 
-    assert_includes section, ApiDiffHelper.announced_marker("abc123abc123")
+    assert section.start_with?(ApiDiffHelper.api_diff_section_open("RevenueCat"))
     assert section.rstrip.end_with?(ApiDiffHelper.api_diff_section_close("RevenueCat"))
-  end
-
-  def test_comment_section_omits_the_marker_when_nothing_was_announced
-    section = ApiDiffHelper.api_diff_comment_section("RevenueCat", { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
-
-    refute_includes section, "api-diff-announced"
-  end
-
-  def test_merging_a_section_replaces_a_stale_fingerprint
-    announced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "aaaaaaaaaaaa")
-    body = ApiDiffHelper.merge_api_diff_comment(nil, "RevenueCat", announced)
-    reannounced = ApiDiffHelper.api_diff_comment_section("RevenueCat", {}, [], [], announced_fingerprint: "bbbbbbbbbbbb")
-
-    merged = ApiDiffHelper.merge_api_diff_comment(body, "RevenueCat", reannounced)
-
-    assert_includes merged, ApiDiffHelper.announced_marker("bbbbbbbbbbbb")
-    refute_includes merged, ApiDiffHelper.announced_marker("aaaaaaaaaaaa")
   end
 
 
@@ -1665,24 +1554,60 @@ class ApiDiffHelperTest < Minitest::Test
     assert_includes message, "apiDiffDemoPing"
   end
 
-  def test_comment_body_carries_the_slack_notice
-    body = ApiDiffHelper.api_diff_comment_body(
-      { "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [], notice: ApiDiffHelper::SLACK_UNREACHABLE_NOTICE
-    )
+  # A PR whose only interface delta is an added attribute reached the feed as a headline and a link,
+  # with the headline claiming new API. See purchases-ios#7439.
+  def test_slack_summary_reports_an_attribute_only_modification
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
 
-    assert_includes body, ":warning: #{ApiDiffHelper::SLACK_UNREACHABLE_NOTICE}"
+    message = ApiDiffHelper.slack_summary([], [], source: "<url|#7439>", modules: ["RevenueCat"], modifications: modifications)
+
+    assert message.start_with?(":pencil2: *Public API changed on main* · iOS :ios: · `RevenueCat`")
+    assert_includes message, "1 modification"
+    assert_includes message, "~ added @available(*, deprecated…): "
+    assert_includes message, "purchaseDate(forEntitlement"
+    refute_includes message, ":sparkles:"
   end
 
-  def test_comment_body_omits_the_notice_when_slack_is_reachable
-    body = ApiDiffHelper.api_diff_comment_body({ "RevenueCat iOS" => SINGLE_ADDITION_OUTPUT }, [], [])
+  def test_modified_declarations_summarizes_a_removed_attribute
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
 
-    refute_includes body, ":warning: No Slack credentials"
+    assert_equal 1, modifications.count
+    assert_equal "removed @objc", modifications.first[:summary]
+    assert_includes modifications.first[:declaration], "expirationDate(forProductIdentifier"
+  end
+
+  # Removing @objc is a break, and the gate already lists it; a second `~` line would repeat it.
+  def test_slack_summary_lists_a_breaking_modification_once
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => OBJC_REMOVED_FROM_METHOD_REPORT })
+    breaks = Dir.mktmpdir do |dir|
+      path = File.join(dir, "revenuecat-api-ios.swiftinterface")
+      File.write(path, "final public class CustomerInfo {}")
+      ApiDiffHelper.breaking_changes(OBJC_REMOVED_FROM_METHOD_REPORT, path)
+    end
+
+    message = ApiDiffHelper.slack_summary(breaks, [], source: "", modules: ["RevenueCat"], modifications: modifications)
+
+    assert_equal 1, message.scan("expirationDate(forProductIdentifier").count
+    refute_includes message, "modification"
+  end
+
+  def test_slack_summary_still_leads_with_new_api_when_something_was_added
+    modifications = ApiDiffHelper.modified_declarations({ "RevenueCat iOS" => DEPRECATED_ATTRIBUTE_ADDED_REPORT })
+
+    message = ApiDiffHelper.slack_summary(
+      [], [], source: "", new_declarations: ["public func a()"], modules: ["RevenueCat"], modifications: modifications
+    )
+
+    assert message.start_with?(":sparkles: *New public API landed on main*")
+    assert_includes message, "1 new declaration, 1 modification"
+    assert_includes message, "+ public func a()"
+    assert_includes message, "~ added @available"
   end
 
   def test_slack_summary_labels_the_platform_and_modules
     message = ApiDiffHelper.slack_summary([], [], source: "<url|#42>", new_declarations: ["public func a()"], modules: ["RevenueCatUI"])
 
-    assert message.start_with?(":sparkles: *New public API* · iOS :ios: · `RevenueCatUI`")
+    assert message.start_with?(":sparkles: *New public API landed on main* · iOS :ios: · `RevenueCatUI`")
   end
 
   def test_changed_modules_names_only_the_schemes_that_changed
@@ -1762,7 +1687,7 @@ class ApiDiffHelperTest < Minitest::Test
 
 
   # The lane used to hand-roll the post. Keeping it in the helper is what puts the response
-  # handling (non-2xx, ok:false, non-JSON webhook body) under test at all.
+  # handling (non-2xx, ok:false, non-JSON body) under test at all.
   def test_the_slack_post_lives_in_the_helper_not_in_the_lane
     lane = File.read(File.expand_path("Fastfile", __dir__))
     slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
@@ -1772,17 +1697,93 @@ class ApiDiffHelperTest < Minitest::Test
     assert_match(/ApiDiffHelper\.post_slack_message/, slack_lane)
   end
 
-  def test_the_announcement_happens_before_the_comment_is_written
-    lane = File.read(File.expand_path("Fastfile", __dir__))
-    publishing = lane[/# Informational: a GitHub or Slack outage.*?rescue StandardError/m]
+  # main has no pull request to comment on, and a PR run does not announce, so the two are
+  # exclusive. Nothing carries state from the announcement into the comment any more.
+  def check_api_changes_lane
+    fastfile = File.read(File.expand_path("Fastfile", __dir__))
+    lane = fastfile[/lane :check_api_changes do.*?\n  end\n/m]
 
-    refute_nil publishing, "the publishing section of check_api_changes moved; update this test"
-    assert_operator publishing.index("upsert_api_diff_comment"), :>, publishing.index("notify_api_changes_on_slack"),
-                    "the comment must be written after the announcement it records"
+    refute_nil lane, "the check_api_changes lane moved; update these tests"
+    lane
+  end
+
+  def test_main_announces_and_a_pull_request_comments
+    lane = check_api_changes_lane
+
+    assert_match(/unless on_main\n\s*begin\n\s*schemes\.each/, lane,
+                 "the comment is written on a PR only; main has no pull request")
+    assert_match(/if on_main\n\s*begin\n\s*notify_api_changes_on_slack/, lane,
+                 "the feed is announced from main only")
+  end
+
+  # There is no dedup left, so the only thing keeping a rerun from posting twice is that a run
+  # which is going to fail never posts at all. Announcing has to stay last in the lane.
+  def test_nothing_can_fail_the_job_after_the_announcement
+    lane = check_api_changes_lane
+
+    announcement = lane.index("notify_api_changes_on_slack")
+    refute_nil announcement, "the announcement moved; update this test"
+
+    # There are two `failed_platforms.any?` blocks: the build summary and the failure. Anchor on
+    # the one that raises, which is the whole point of the ordering.
+    baseline_failure = lane.index(/if failed_platforms\.any\?\n\s*UI\.user_error!/)
+    refute_nil baseline_failure, "the baseline freshness failure moved; update this test"
+
+    assert_operator announcement, :>, baseline_failure,
+                    "a run whose baselines did not match must not announce"
+    assert_operator announcement, :>, lane.index("ApiDiffHelper.gate_blocked?"),
+                    "the gate must be decided before anything reaches the feed"
+    refute_match(/UI\.user_error!/, lane[announcement..],
+                 "nothing may fail the job after the post, or a rerun would post twice"
+    )
+  end
+
+
+  # The feed's only pointer back at the change, so it links the commit rather than a PR that
+  # main runs do not have.
+  def test_the_announcement_source_is_the_commit
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    link = lane[/private_lane :api_gate_commit_link do.*?\n  end\n/m]
+
+    refute_nil link, "the api_gate_commit_link lane moved; update this test"
+    assert_match(%r{/commit/}, link, "the message links the commit, not the PR")
+    assert_match(/next "" if sha\.empty\?/, link)
+    refute_match(/detect_pr_number/, lane[/source = api_gate_commit_link/] || "x")
+  end
+
+  # A silent feed is the failure nobody notices, and main has no PR comment left to warn in, so
+  # the job log is the only place an unreachable credential or a failed post can surface.
+  def test_every_announcement_failure_reaches_the_job_log
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    slack_lane = lane[/private_lane :notify_api_changes_on_slack do.*?\n  end\n/m]
+
+    refute_nil slack_lane, "the notify_api_changes_on_slack lane moved; update this test"
+    assert_match(/UI\.important\("No Slack credential reachable/, slack_lane)
+    assert_match(/UI\.important\("The public API changed, but it was not announced/, slack_lane)
+    refute_match(/notice/, slack_lane, "the notice went to a PR comment that main does not have")
+  end
+
+  # main carries no PR to hold the label, so the gate there would fail changes the PR approved.
+  def test_the_breaking_change_gate_cannot_redden_main
+    lane = File.read(File.expand_path("Fastfile", __dir__))
+    gate = lane[/if ApiDiffHelper\.gate_blocked\?.*?\n    end\n/m]
+
+    refute_nil gate, "the gate section of check_api_changes moved; update this test"
+    assert_match(/if on_main/, gate, "main must not fail the gate")
+    assert_operator gate.index("if on_main"), :<, gate.index("UI.user_error!"),
+                    "the main branch of the gate must come before the failure"
   end
 
 
   # --- Attribute additions: allowlist, not denylist ---
+
+  def with_circle_branch(value)
+    previous = ENV["CIRCLE_BRANCH"]
+    ENV["CIRCLE_BRANCH"] = value
+    yield
+  ensure
+    ENV["CIRCLE_BRANCH"] = previous
+  end
 
   def modification_adding(attribute)
     "// From\npublic func f()\n\n// To\npublic func f()\n\n/**\nChanges:\n- Added attribute `#{attribute}`\n*/"
@@ -1812,7 +1813,323 @@ class ApiDiffHelperTest < Minitest::Test
     refute ApiDiffHelper.modification_attribute_only?(removal)
   end
 
+  # --- build_swiftinterface: the threaded xcodebuild path ---
+
+  FAKE_XCRUN = <<~'RUBY'
+    if ENV["FAKE_XCRUN_EXIT"].to_i != 0
+      warn "xcrun: error: SDK \"#{ARGV[ARGV.index('--sdk') + 1]}\" cannot be located"
+      exit ENV["FAKE_XCRUN_EXIT"].to_i
+    end
+
+    puts "/fake/sdks/#{ARGV[ARGV.index('--sdk') + 1]}.sdk"
+  RUBY
+
+  # Writes the interface where the real Release build puts it, so find_swiftinterface_file's
+  # per-SDK glob is exercised rather than stubbed.
+  FAKE_XCODEBUILD = <<~'RUBY'
+    require 'fileutils'
+    require 'json'
+
+    def flag(name)
+      index = ARGV.index(name)
+      index && ARGV[index + 1]
+    end
+
+    File.open(ENV.fetch("FAKE_XCODEBUILD_LOG"), "a") do |log|
+      log.flock(File::LOCK_EX)
+      log.puts(JSON.generate("argv" => ARGV, "cwd" => Dir.pwd))
+    end
+
+    if ENV["FAKE_XCODEBUILD_STDOUT"]
+      puts ENV["FAKE_XCODEBUILD_STDOUT"]
+      warn ENV["FAKE_XCODEBUILD_STDOUT"].sub("stdout", "stderr")
+    end
+
+    exit_code = ENV["FAKE_XCODEBUILD_EXIT"].to_i
+    exit exit_code unless exit_code.zero?
+
+    unless ENV["FAKE_XCODEBUILD_SKIP_INTERFACE"] == "1"
+      sdk = File.basename(flag("-sdk").to_s, ".sdk")
+      configuration = sdk == "macosx" ? "Release" : "Release-#{sdk}"
+      products = File.join(flag("-derivedDataPath"), "Build", "Products", configuration, "Objects-normal", "arm64")
+      FileUtils.mkdir_p(products)
+
+      # RevenueCatUI links RevenueCat, so the real build emits an interface for the dependency too.
+      emitted = flag("-scheme") == "RevenueCatUI" ? ["RevenueCat", "RevenueCatUI"] : ["RevenueCat"]
+      emitted.each { |name| File.write(File.join(products, "#{name}.swiftinterface"), "// #{name} #{sdk}\n") }
+    end
+  RUBY
+
+  # build_swiftinterface resolves both binaries off PATH, so a directory of fakes in front of it
+  # exercises the real code path without a toolchain.
+  def with_fake_toolchain(env = {})
+    Dir.mktmpdir do |root|
+      bin = File.join(root, "bin")
+      FileUtils.mkdir_p(bin)
+      write_executable(File.join(bin, "xcrun"), FAKE_XCRUN)
+      write_executable(File.join(bin, "xcodebuild"), FAKE_XCODEBUILD)
+
+      log = File.join(root, "xcodebuild.jsonl")
+      FileUtils.touch(log)
+
+      project_root = File.join(root, "project")
+      output_dir = File.join(root, "out")
+      FileUtils.mkdir_p([project_root, output_dir])
+
+      overrides = env.merge("PATH" => "#{bin}:#{ENV['PATH']}", "FAKE_XCODEBUILD_LOG" => log)
+      with_env(overrides) { yield project_root, output_dir, log }
+    end
+  end
+
+  def xcodebuild_invocations(log)
+    File.readlines(log).map { |line| JSON.parse(line) }
+  end
+
+  def build(platform, project_root, output_dir, scheme: "RevenueCat", modules: nil)
+    ApiDiffHelper.build_swiftinterface(
+      platform,
+      scheme: scheme,
+      modules: modules || [scheme],
+      project_root: project_root,
+      output_dir: output_dir
+    )
+  end
+
+  # The reason the two check-api-changes jobs could collapse into one.
+  def test_one_build_harvests_both_module_interfaces
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCatUI", modules: ApiDiffHelper::MODULES)
+
+      assert result[:success], result[:error]
+      assert_equal ["RevenueCat-ios-simulator.swiftinterface", "RevenueCatUI-ios-simulator.swiftinterface"],
+                   Dir.children(output_dir).sort
+      assert_equal 1, xcodebuild_invocations(log).count, "both interfaces must come from a single build"
+    end
+  end
+
+  # Asking for a module the build does not emit has to fail loudly rather than silently skipping it,
+  # or the diff lane would compare against a stale file.
+  def test_a_module_missing_from_the_build_is_reported
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, _log|
+      result = build(platform, project_root, output_dir,
+                     scheme: "RevenueCat", modules: ApiDiffHelper::MODULES)
+
+      refute result[:success], "the RevenueCat scheme does not emit RevenueCatUI"
+      assert_match(/Could not find RevenueCatUI swiftinterface for iOS/, result[:error])
+    end
+  end
+
+  def test_build_swiftinterface_copies_the_generated_interface
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      result = build(platform, project_root, output_dir)
+
+      assert result[:success], result[:error]
+      assert_equal ["RevenueCat-ios-simulator.swiftinterface"], Dir.children(output_dir)
+
+      invocation = xcodebuild_invocations(log).first
+      assert_equal File.realpath(project_root), File.realpath(invocation["cwd"]),
+                   "the build must run from the project root without Dir.chdir"
+      assert_equal "/fake/sdks/iphonesimulator.sdk", invocation["argv"][invocation["argv"].index("-sdk") + 1]
+      assert_equal "#{project_root}/.build-RevenueCat-iphonesimulator",
+                   invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+    end
+  end
+
+  # The whole point of the lane's threading: nine builds at once must not collide, and a shared
+  # derived data directory is how they would.
+  def test_concurrent_builds_get_their_own_derived_data
+    with_fake_toolchain do |project_root, output_dir, log|
+      threads = ApiDiffHelper::PLATFORMS.map do |platform|
+        Thread.new(platform) { |config| build(config, project_root, output_dir) }
+      end
+      results = threads.map(&:value)
+
+      assert results.all? { |result| result[:success] }, results.map { |result| result[:error] }.compact.join("\n")
+      assert_equal ApiDiffHelper::PLATFORMS.count, Dir.children(output_dir).count
+
+      derived_data = xcodebuild_invocations(log).map do |invocation|
+        invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+      end
+      assert_equal derived_data.count, derived_data.uniq.count, "concurrent builds shared a derived data directory"
+    end
+  end
+
+  def test_a_scheme_does_not_reuse_another_schemes_derived_data
+    platform = ApiDiffHelper::PLATFORMS.first
+
+    with_fake_toolchain do |project_root, output_dir, log|
+      ApiDiffHelper::MODULES.each { |scheme| build(platform, project_root, output_dir, scheme: scheme) }
+
+      derived_data = xcodebuild_invocations(log).map do |invocation|
+        invocation["argv"][invocation["argv"].index("-derivedDataPath") + 1]
+      end
+      assert_equal derived_data.count, derived_data.uniq.count
+    end
+  end
+
+  # Raising inside a thread only surfaces wherever its value is read, so every failure has to come
+  # back as a result the lane can collect.
+  def test_a_failing_sdk_lookup_is_reported_without_building
+    with_fake_toolchain("FAKE_XCRUN_EXIT" => "1") do |project_root, output_dir, log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/xcrun failed for iphonesimulator/, result[:error])
+      assert_match(/cannot be located/, result[:error], "the reason the lookup failed must survive")
+      assert_empty xcodebuild_invocations(log)
+    end
+  end
+
+  def test_a_failing_build_is_reported
+    with_fake_toolchain("FAKE_XCODEBUILD_EXIT" => "65") do |project_root, output_dir, _log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/xcodebuild failed for RevenueCat on iOS/, result[:error])
+      assert_empty Dir.children(output_dir)
+    end
+  end
+
+  # PLATFORMS reuses one platform label for a device and its simulator, so a failure reported by
+  # label alone cannot say which of the two builds died.
+  def test_a_failure_names_the_sdk_and_not_only_the_platform
+    simulator, device = ApiDiffHelper::PLATFORMS.values_at(0, 1)
+    assert_equal simulator[:platform], device[:platform],
+                 "this test only means something while the two share a label"
+
+    with_fake_toolchain("FAKE_XCODEBUILD_EXIT" => "65") do |project_root, output_dir, _log|
+      errors = [simulator, device].map { |platform| build(platform, project_root, output_dir)[:error] }
+
+      assert_match(/iphonesimulator/, errors.first)
+      assert_match(/iphoneos/, errors.last)
+      assert_equal 2, errors.uniq.count, "the two failures must be tellable apart"
+    end
+  end
+
+  # Nine builds write to one stdout at once, so an untagged line cannot be traced to its build.
+  def test_build_output_is_tagged_with_the_sdk_that_produced_it
+    with_fake_toolchain("FAKE_XCODEBUILD_STDOUT" => "note: stdout marker") do |project_root, output_dir, _log|
+      printed = capture_stdout { build(ApiDiffHelper::PLATFORMS[1], project_root, output_dir) }
+
+      assert_includes printed, "[iphoneos] note: stdout marker"
+      assert_includes printed, "[iphoneos] note: stderr marker", "stderr has to be tagged too"
+    end
+  end
+
+  # A build can succeed and still produce nothing when BUILD_LIBRARY_FOR_DISTRIBUTION stops taking.
+  def test_a_build_that_emits_no_interface_is_reported
+    with_fake_toolchain("FAKE_XCODEBUILD_SKIP_INTERFACE" => "1") do |project_root, output_dir, _log|
+      result = build(ApiDiffHelper::PLATFORMS.first, project_root, output_dir)
+
+      refute result[:success]
+      assert_match(/Could not find RevenueCat swiftinterface for iOS/, result[:error])
+    end
+  end
+
+  # fastlane's `sh` swaps Encoding.default_external for the duration of the call and Dir.chdir
+  # moves the whole process, so either one inside the threaded loop would corrupt sibling builds.
+  def test_the_generation_lane_keeps_process_global_calls_out_of_the_threads
+    lane = generation_lane_source
+
+    assert_match(/Thread\.new/, lane, "the platform builds must still run concurrently")
+    refute_match(/Dir\.chdir/, lane, "Dir.chdir moves the whole process, so it cannot run per thread")
+    refute_match(/(?<!\w)sh\(/, lane, "fastlane's sh mutates the default encoding, so it cannot run per thread")
+  end
+
+  # Reintroducing a loop over schemes would rebuild RevenueCat a second time per platform, which is
+  # the duplicate work collapsing the two jobs into one was meant to remove.
+  def test_the_generation_lane_builds_each_platform_once
+    lane = generation_lane_source
+
+    refute_match(/schemes\.each/, lane, "one build per platform must cover every requested module")
+    assert_equal 1, lane.scan(/build_swiftinterface/).count
+  end
+
+  # One lane now checks both modules, so a single list of breaks would be read by both comment
+  # sections: a RevenueCatUI break would be listed under RevenueCat, and because comment_needed?
+  # returns true on breaks.any? alone it would also open a RevenueCat section that has nothing in it.
+  def test_each_comment_section_receives_only_its_own_module_breaks
+    upsert = check_lane_source[/upsert_api_diff_comment\(.*?^\s*\)$/m]
+    refute_nil upsert, "the upsert_api_diff_comment call site moved; update this test"
+
+    assert_match(/breaks:\s*breaks_by_scheme\.fetch\(scheme/, upsert,
+                 "a module's comment section must receive only that module's breaks")
+    refute_match(/breaks:\s*all_breaks/, upsert,
+                 "the whole PR's breaks would be listed under every module")
+  end
+
+  # The counterpart: the gate blocks the PR and Slack announces it once, so both judge every module.
+  def test_the_gate_and_the_announcement_see_every_module_break
+    source = check_lane_source
+
+    assert_match(/print_breaking_summary\(all_breaks/, source,
+                 "the gate must consider breaks from every module")
+
+    slack = source[/notify_api_changes_on_slack\(.*?^\s*\)$/m]
+    refute_nil slack, "the notify_api_changes_on_slack call site moved; update this test"
+    assert_match(/breaks:\s*all_breaks/, slack,
+                 "one announcement covers the PR, so it must see every module's breaks")
+  end
+
+  def test_dedupe_breaks_collapses_the_same_break_seen_on_several_platforms
+    change = { reason: :removed, owner: "Purchases", declaration: "public func foo()" }
+    other = { reason: :removed, owner: "Purchases", declaration: "public func bar()" }
+
+    assert_equal [change, other], ApiDiffHelper.dedupe_breaks([change, change.dup, other, change])
+  end
+
+  # Hardcoding RevenueCatUI would make scheme:RevenueCat compile the UI module too, which the
+  # update-error-codes workflow would pay for on every run.
+  def test_the_generation_lane_does_not_hardcode_the_build_scheme
+    assert_match(/build_scheme = schemes\.include\?/, generation_lane_source,
+                 "the build scheme must be derived from the requested modules")
+  end
+
   private
+
+  def check_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :check_api_changes do.*?\n  end\n/m]
+    refute_nil source, "the check_api_changes lane moved; update this test"
+
+    source
+  end
+
+  def generation_lane_source
+    source = File.read(File.expand_path("Fastfile", __dir__))[/lane :generate_swiftinterface do.*?\n  end\n/m]
+    refute_nil source, "the generate_swiftinterface lane moved; update this test"
+
+    source
+  end
+
+  def capture_stdout
+    original = $stdout
+    $stdout = StringIO.new
+    yield
+    $stdout.string
+  ensure
+    $stdout = original
+  end
+
+  def with_env(overrides)
+    original = overrides.keys.to_h { |key| [key, ENV[key]] }
+    ENV.update(overrides)
+    yield
+  ensure
+    original.each { |key, value| value.nil? ? ENV.delete(key) : ENV[key] = value }
+  end
+
+  def write_executable(path, source)
+    File.write(path, "#!/usr/bin/env ruby\n#{source}")
+    FileUtils.chmod(0o755, path)
+  end
+
 
   # Walks the parsed CircleCI config looking for CircleCI step hashes of the form
   # `{"revenuecat/install-public-api-diff" => {"version" => "..."}}` and collects the

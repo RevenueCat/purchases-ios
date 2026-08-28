@@ -18,6 +18,11 @@ extension RulesEngine {
         /// `not_found = (b === undefined) ? null : b`. `{"var": ""}` returns
         /// the entire data scope.
         ///
+        /// A path that does not resolve and carries no default throws
+        /// `EvaluationError.unresolvedVariable` rather than degrading to
+        /// `null`. A key that *is* present but holds an explicit `null` is a
+        /// known value, not a missing one, and resolves normally.
+        ///
         /// Per the JSON Logic spec, the path and default arguments are
         /// recursively evaluated before lookup (e.g.
         /// `{"var": {"var": "active_path_key"}}` resolves `active_path_key`
@@ -27,9 +32,20 @@ extension RulesEngine {
         ///   the data `var` reads from; path/default args evaluate against
         ///   `current` as well.
         static func opVar(args: Value, vars: Scope) throws -> Value {
-            let (path, defaultValue) = try resolveVarArgs(args, vars: vars)
+            try resolveVar(args: args, target: vars.current, vars: vars, operatorName: "var")
+        }
 
-            if let found = lookupVar(in: vars.current, path: path) {
+        /// Shared lookup for `var` and `rc.rootVar`. Path and default args
+        /// evaluate against `vars.current`; the final lookup walks `target`.
+        static func resolveVar(
+            args: Value,
+            target: Value,
+            vars: Scope,
+            operatorName: String
+        ) throws -> Value {
+            let (path, defaultValue) = try resolveVarArgs(args, vars: vars, operatorName: operatorName)
+
+            if let found = lookupVar(in: target, path: path) {
                 return found
             }
             if let defaultValue = defaultValue {
@@ -37,8 +53,7 @@ extension RulesEngine {
                 if case .undefined = defaultValue { return .null }
                 return defaultValue
             }
-            RulesEngine.logger.warn("missing variable: \(path)")
-            return .null
+            throw RulesEngine.EvaluationError.unresolvedVariable(path: path)
         }
 
         /// `{"missing": ["a", "b.c"]}` returns the array of keys whose `var`
@@ -146,25 +161,29 @@ extension RulesEngine {
 
         /// Recursively evaluate `var`'s arg(s) per the JSON Logic spec, then
         /// normalize the result into a `(path, default)` tuple.
-        private static func resolveVarArgs(_ args: Value, vars: Scope) throws -> (String, Value?) {
+        private static func resolveVarArgs(
+            _ args: Value,
+            vars: Scope,
+            operatorName: String
+        ) throws -> (String, Value?) {
             if case .array(let items) = args {
                 var evaluated: [Value] = []
                 evaluated.reserveCapacity(items.count)
                 for item in items {
                     evaluated.append(try Evaluator.evaluateValue(item, vars: vars))
                 }
-                return parseVarArrayArgs(evaluated)
+                return parseVarArrayArgs(evaluated, operatorName: operatorName)
             }
             let evaluated = try Evaluator.evaluateValue(args, vars: vars)
             return (pathSegment(from: evaluated), nil)
         }
 
-        private static func parseVarArrayArgs(_ items: [Value]) -> (String, Value?) {
+        private static func parseVarArrayArgs(_ items: [Value], operatorName: String) -> (String, Value?) {
             let path = pathSegment(from: items.first)
             let defaultValue: Value? = items.count >= 2 ? items[1] : nil
             if items.count > 2 {
                 RulesEngine.logger.warn(
-                    "var: ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
+                    "\(operatorName): ignoring \(items.count - 2) extra arg(s); expected [path] or [path, default]"
                 )
             }
             return (path, defaultValue)

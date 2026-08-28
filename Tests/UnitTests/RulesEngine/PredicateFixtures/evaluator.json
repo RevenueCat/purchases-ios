@@ -159,12 +159,11 @@
       "expected": false
     },
     {
-      "id": "evaluator_missing_variable_resolves_to_null_and_warns",
-      "description": "a missing var resolves to null, so {\"==\": [{\"var\": \"missing\"}, null]} is true and a warning is logged",
+      "id": "evaluator_missing_variable_surfaces_error_to_the_caller",
+      "description": "a missing var aborts the whole evaluation rather than resolving to null, so the caller gets to decide what an unanswerable rule means",
       "predicate": { "==": [{ "var": "missing" }, null] },
       "variables": {},
-      "expected": true,
-      "expectedWarnings": { "contains": ["missing"] }
+      "expected": { "error": "unresolvedVariable", "path": "missing" }
     },
     {
       "id": "evaluator_unsupported_operator_surfaces_error",

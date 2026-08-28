@@ -22,7 +22,7 @@ final class CustomVariables: ObservableObject {
         CustomVariable(name: "source", value: "CheckpointTester"),
     ]
 
-    var checkpointParams: CheckpointParams {
+    var checkpointCustomVariables: [String: CustomVariableValue] {
         var customVariables: [String: CustomVariableValue] = [:]
 
         for variable in self.variables {
@@ -32,7 +32,7 @@ final class CustomVariables: ObservableObject {
             }
         }
 
-        return CheckpointParams(customVariables: customVariables)
+        return customVariables
     }
 
 }

@@ -61,6 +61,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         self.httpClient = MockHTTPClient(
             systemInfo: self.systemInfo,
             eTagManager: MockETagManager(),
+            tokenManager: MockTokenManager(),
             diagnosticsTracker: nil,
             sourceTestFile: #file
         )
@@ -908,15 +909,17 @@ private extension RemoteConfigIntegrationTests {
     }
 
     var remoteConfigCalls: [MockHTTPClient.Call] {
+        let url = HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url(preferIAMPath: false)
         return self.httpClient.calls.filter {
-            $0.request.path.url == HTTPRequest.Path.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
+            $0.request.path.url(preferIAMPath: false) == url
         }
     }
 
     var remoteConfigFallbackRequestCount: Int {
+        let fallbackURL = HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain)
+                                                  .url(preferIAMPath: false)
         return self.httpClient.calls.filter {
-            $0.request.path.url
-                == HTTPRequest.FallbackPath.remoteConfig(domain: RemoteConfiguration.defaultDomain).url
+            $0.request.path.url(preferIAMPath: false) == fallbackURL
         }.count
     }
 

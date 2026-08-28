@@ -40,6 +40,7 @@ enum NetworkStrings {
     case parsing_json_error(error: Error)
     case serial_request_done(httpMethod: String?, path: String?, queuedRequestsCount: Int)
     case serial_request_queued(httpMethod: String, path: String, queuedRequestsCount: Int)
+    case serial_request_paused(httpMethod: String, path: String)
     case starting_next_request(request: String)
     case starting_request(httpMethod: String, path: String)
     case retrying_request(httpMethod: String, path: String)
@@ -118,6 +119,9 @@ extension NetworkStrings: LogMessage {
         case let .serial_request_queued(httpMethod, path, queuedRequestsCount):
             return "There's a request currently running and \(queuedRequestsCount) requests left in the queue, " +
                 "queueing \(httpMethod) \(path)"
+
+        case let .serial_request_paused(httpMethod, path):
+            return "Requests are currently paused, queueing \(httpMethod) \(path)"
 
         case .starting_next_request(let request):
             return "Starting the next request in the queue, \(request)"

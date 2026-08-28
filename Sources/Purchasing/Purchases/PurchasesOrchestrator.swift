@@ -80,6 +80,7 @@ final class PurchasesOrchestrator {
     private let dateProvider: DateProvider
     private let checkpointsManager = Atomic<AnyObject?>(nil)
     private let checkpointResolver: CheckpointWorkflowResolver
+    private let storeKit2ProductPurchaser: StoreKit2ProductPurchaserType
 
     let notificationCenter: NotificationCenter
 
@@ -130,6 +131,7 @@ final class PurchasesOrchestrator {
     }
 
     @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    // swiftlint:disable:next function_body_length
     convenience init(productsManager: ProductsManagerType,
                      paymentQueueWrapper: EitherPaymentQueueWrapper,
                      simulatedStorePurchaseHandler: SimulatedStorePurchaseHandlerType,
@@ -151,6 +153,7 @@ final class PurchasesOrchestrator {
                      storeKit2TransactionListener: StoreKit2TransactionListenerType,
                      storeKit2StorefrontListener: StoreKit2StorefrontListener,
                      storeKit2ObserverModePurchaseDetector: StoreKit2ObserverModePurchaseDetectorType,
+                     storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
                      storeMessagesHelper: StoreMessagesHelperType?,
                      diagnosticsSynchronizer: DiagnosticsSynchronizerType?,
                      diagnosticsTracker: DiagnosticsTrackerType?,
@@ -184,6 +187,7 @@ final class PurchasesOrchestrator {
             diagnosticsTracker: diagnosticsTracker,
             winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
             eventsManager: eventsManager,
+            storeKit2ProductPurchaser: storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: webPurchaseRedemptionHelper,
             checkpointResolver: checkpointResolver,
             dateProvider: dateProvider,
@@ -244,6 +248,7 @@ final class PurchasesOrchestrator {
          diagnosticsTracker: DiagnosticsTrackerType?,
          winBackOfferEligibilityCalculator: WinBackOfferEligibilityCalculatorType?,
          eventsManager: EventsManagerType?,
+         storeKit2ProductPurchaser: StoreKit2ProductPurchaserType,
          webPurchaseRedemptionHelper: WebPurchaseRedemptionHelperType,
          checkpointResolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver(),
          dateProvider: DateProvider = DateProvider(),
@@ -271,6 +276,7 @@ final class PurchasesOrchestrator {
         self._diagnosticsTracker = diagnosticsTracker
         self.winBackOfferEligibilityCalculator = winBackOfferEligibilityCalculator
         self.eventsManager = eventsManager
+        self.storeKit2ProductPurchaser = storeKit2ProductPurchaser
         self.webPurchaseRedemptionHelper = webPurchaseRedemptionHelper
         self.checkpointResolver = checkpointResolver
         self.dateProvider = dateProvider
@@ -297,9 +303,22 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
+        // Tracked before resolving, and regardless of the outcome: the hit is also how the backend learns the
+        // checkpoint exists, so it has to be reported even when nothing is configured for it yet.
+        await self.trackCheckpointHit(identifier: identifier)
+
         return try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params
+        )
+    }
+
+    private func trackCheckpointHit(identifier: String) async {
+        guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
+              let manager = self.eventsManager else { return }
+
+        await manager.track(
+            featureEvent: CheckpointEvent.hit(.init(identifier: identifier, date: self.dateProvider.now()))
         )
     }
 
@@ -504,18 +523,21 @@ final class PurchasesOrchestrator {
                  winBackOffer: winBackOffer,
                  introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                  promotionalOfferOptions: promotionalOfferOptions,
+                 storeKit2ConfirmInOptions: params.storeKit2ConfirmInOptions,
                  metadata: metadata,
                  quantity: params.quantity,
                  trackDiagnostics: trackDiagnostics,
                  completion: completion)
     }
 
+    // swiftlint:disable:next function_body_length
     func purchase(product: StoreProduct,
                   package: Package?,
                   promotionalOffer: PromotionalOffer.SignedData? = nil,
                   winBackOffer: WinBackOffer? = nil,
                   introductoryOfferEligibilityJWS: String? = nil,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions? = nil,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -566,6 +588,7 @@ final class PurchasesOrchestrator {
                           introductoryOfferEligibilityJWS: introductoryOfferEligibilityJWS,
                           billingPlanType: billingPlanType,
                           promotionalOfferOptions: promotionalOfferOptions,
+                          storeKit2ConfirmInOptions: storeKit2ConfirmInOptions,
                           metadata: metadata,
                           paywallEvent: paywallEvent,
                           quantity: quantity,
@@ -595,6 +618,7 @@ final class PurchasesOrchestrator {
                       completion: completion)
     }
 
+    // swiftlint:disable function_body_length
     func purchase(sk1Product: SK1Product,
                   payment: SKMutablePayment,
                   package: Package?,
@@ -692,6 +716,7 @@ final class PurchasesOrchestrator {
                   introductoryOfferEligibilityJWS: String?,
                   billingPlanType: BillingPlanType?,
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
                   quantity: Int? = nil,
@@ -708,7 +733,8 @@ final class PurchasesOrchestrator {
                     promotionalOfferOptions: promotionalOfferOptions,
                     metadata: metadata,
                     paywallEvent: paywallEvent,
-                    quantity: quantity
+                    quantity: quantity,
+                    storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
                 )
 
                 if !result.userCancelled {
@@ -749,7 +775,8 @@ final class PurchasesOrchestrator {
                   promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
                   metadata: [String: String]? = nil,
                   paywallEvent: PaywallEvent? = nil,
-                  quantity: Int? = nil) async throws -> PurchaseResultData {
+                  quantity: Int? = nil,
+                  storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil) async throws -> PurchaseResultData {
         // Run the purchase + receipt post as a task that a concurrent queue-initiated receipt post for
         // the same product can await, so the attributed purchase post reaches the backend first. The
         // task only starts once registered, so a transaction reaching `Transaction.updates`
@@ -765,7 +792,8 @@ final class PurchasesOrchestrator {
                 promotionalOfferOptions: promotionalOfferOptions,
                 metadata: metadata,
                 paywallEvent: paywallEvent,
-                quantity: quantity
+                quantity: quantity,
+                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
             )
         }
 
@@ -791,16 +819,19 @@ final class PurchasesOrchestrator {
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     // swiftlint:disable:next function_body_length cyclomatic_complexity
-    private func performSK2Purchase(sk2Product: SK2Product,
-                                    package: Package?,
-                                    promotionalOffer: PromotionalOffer.SignedData? = nil,
-                                    winBackOffer: Product.SubscriptionOffer? = nil,
-                                    introductoryOfferEligibilityJWS: String?,
-                                    billingPlanType: BillingPlanType?,
-                                    promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
-                                    metadata: [String: String]? = nil,
-                                    paywallEvent: PaywallEvent? = nil,
-                                    quantity: Int? = nil) async throws -> PurchaseResultData {
+    private func performSK2Purchase(
+        sk2Product: SK2Product,
+        package: Package?,
+        promotionalOffer: PromotionalOffer.SignedData? = nil,
+        winBackOffer: Product.SubscriptionOffer? = nil,
+        introductoryOfferEligibilityJWS: String?,
+        billingPlanType: BillingPlanType?,
+        promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?,
+        metadata: [String: String]? = nil,
+        paywallEvent: PaywallEvent? = nil,
+        quantity: Int? = nil,
+        storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions? = nil
+    ) async throws -> PurchaseResultData {
         let result: Product.PurchaseResult
         var options: Set<Product.PurchaseOption> = [.simulatesAskToBuyInSandbox(Purchases.simulatesAskToBuyInSandbox)]
 
@@ -896,7 +927,11 @@ final class PurchasesOrchestrator {
 
             let presentedOfferingContext = package?.presentedOfferingContext
 
-            result = try await self.purchase(sk2Product, options)
+            result = try await self.storeKit2ProductPurchaser.purchase(
+                product: sk2Product,
+                options: options,
+                storeKit2ConfirmInOptions: storeKit2ConfirmInOptions
+            )
 
             // The `purchase(sk2Product)` call can throw a `StoreKitError.userCancelled` error.
             // This detects if `Product.PurchaseResult.userCancelled` is true.
@@ -1018,19 +1053,6 @@ final class PurchasesOrchestrator {
 
             throw purchasesError
         }
-    }
-
-    @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
-    private func purchase(
-        _ product: SK2Product,
-        _ options: Set<Product.PurchaseOption>
-    ) async throws -> Product.PurchaseResult {
-        #if VISION_OS
-        return try await product.purchase(confirmIn: try self.systemInfo.currentWindowScene,
-                                          options: options)
-        #else
-        return try await product.purchase(options: options)
-        #endif
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

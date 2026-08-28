@@ -135,7 +135,11 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(packageContext: packageContext) else {
+        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
+            packageContext: self.packageContext,
+            appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
+            isSandbox: Purchases.isConfigured ? Purchases.shared.isSandbox : false
+        ) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }

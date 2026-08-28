@@ -50,7 +50,8 @@ enum DimensionValue: Equatable, Sendable {
     ///
     /// Records are only expressible inside a collection. Collection operators
     /// evaluate each record in its own scope, so a record must contain every
-    /// value needed to evaluate it.
+    /// value needed to evaluate it, unless the predicate reaches the snapshot
+    /// with `rc.rootVar`.
     case objectList([[String: DimensionValue]])
 }
 

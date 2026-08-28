@@ -281,10 +281,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
+    private let _authentication: Authentication
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
     private let identityManager: IdentityManager
+    private let tokenManager: TokenManager
     private let userDefaults: UserDefaults
     private let notificationCenter: NotificationCenter
     private let offeringsFactory: OfferingsFactory
@@ -326,6 +328,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let diagnosticsTracker: DiagnosticsTrackerType?
     private let virtualCurrencyManager: VirtualCurrencyManagerType
 
+    private let webBundleEventBus: WebBundleEventBus
+
     /// The ``Configuration`` used to configure this instance, if it was created via
     /// ``Purchases/configure(with:)-3wmd0`` (or one of its overloads). Used by
     /// ``Purchases/setDefaultInstance(_:dedupingAgainst:)`` to deduplicate subsequent
@@ -354,7 +358,9 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                      preferredLocale: String?,
                      automaticDeviceIdentifierCollectionEnabled: Bool = true,
                      iamEnabled: Bool = false,
-                     currentConfiguration: Configuration?
+                     keychainAccessGroup: String? = nil,
+                     currentConfiguration: Configuration?,
+                     webBundleEventBus: WebBundleEventBus = .shared
     ) {
         if userDefaults != nil {
             Logger.debug(Strings.configure.using_custom_user_defaults)
@@ -383,6 +389,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
         let receiptFetcher = ReceiptFetcher(requestFetcher: fetcher, systemInfo: systemInfo)
         let eTagManager = ETagManager()
+        let accessGroup = keychainAccessGroup.map { Keychain.AccessGroup(accessGroup: $0, appIdentifier: apiKey) }
+        let tokenManager = TokenManager(enabled: iamEnabled, storage: Keychain(access: accessGroup))
         let attributionTypeFactory = AttributionTypeFactory()
         let attributionFetcher = AttributionFetcher(attributionFactory: attributionTypeFactory, systemInfo: systemInfo)
         let userDefaults = userDefaults ?? UserDefaults.computeDefault()
@@ -424,6 +432,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             systemInfo: systemInfo,
             httpClientTimeout: networkTimeout,
             eTagManager: eTagManager,
+            tokenManager: tokenManager,
             operationDispatcher: operationDispatcher,
             attributionFetcher: attributionFetcher,
             offlineCustomerInfoCreator: .createIfAvailable(
@@ -514,6 +523,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               systemInfo: systemInfo,
                                               backend: backend,
                                               customerInfoManager: customerInfoManager,
+                                              tokenManager: tokenManager,
                                               attributeSyncing: subscriberAttributesManager,
                                               appUserID: appUserID
         )
@@ -539,6 +549,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             )
         }()
         identityManager.remoteConfigManager = remoteConfigManager
+        tokenManager.currentUserProvider = identityManager
 
         let eventsManager: EventsManagerType?
         if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
@@ -649,6 +660,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             winBackOfferEligibilityCalculator = nil
         }
 
+        let storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
+
         let notificationCenter: NotificationCenter = .default
         let checkpointResolver: CheckpointWorkflowResolver
         if systemInfo.remoteConfigEnabled {
@@ -732,6 +745,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         userDefaults: userDefaults
                     ),
                     storeKit2ObserverModePurchaseDetector: storeKit2ObserverModePurchaseDetector,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     storeMessagesHelper: storeMessagesHelper,
                     diagnosticsSynchronizer: diagnosticsSynchronizer,
                     diagnosticsTracker: diagnosticsTracker,
@@ -766,6 +780,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     diagnosticsTracker: diagnosticsTracker,
                     winBackOfferEligibilityCalculator: winBackOfferEligibilityCalculator,
                     eventsManager: eventsManager,
+                    storeKit2ProductPurchaser: storeKit2ProductPurchaser,
                     webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper(backend: backend,
                                                                              identityManager: identityManager,
                                                                              customerInfoManager: customerInfoManager),
@@ -804,6 +819,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   deviceCache: deviceCache,
                   paywallCache: paywallCache,
                   identityManager: identityManager,
+                  tokenManager: tokenManager,
                   subscriberAttributes: subscriberAttributes,
                   operationDispatcher: operationDispatcher,
                   customerInfoManager: customerInfoManager,
@@ -821,7 +837,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                   virtualCurrencyManager: virtualCurrencyManager,
                   healthManager: healthManager,
                   transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                  currentConfiguration: currentConfiguration
+                  currentConfiguration: currentConfiguration,
+                  webBundleEventBus: webBundleEventBus
         )
     }
 
@@ -840,6 +857,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          deviceCache: DeviceCache,
          paywallCache: PaywallCacheWarmingType?,
          identityManager: IdentityManager,
+         tokenManager: TokenManager,
          subscriberAttributes: Attribution,
          operationDispatcher: OperationDispatcher,
          customerInfoManager: CustomerInfoManager,
@@ -857,8 +875,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          virtualCurrencyManager: VirtualCurrencyManagerType,
          healthManager: SDKHealthManager,
          transactionMetadataSyncHelper: TransactionMetadataSyncHelper,
-         currentConfiguration: Configuration?
+         currentConfiguration: Configuration?,
+         webBundleEventBus: WebBundleEventBus
     ) {
+        self.webBundleEventBus = webBundleEventBus
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
@@ -892,6 +912,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.deviceCache = deviceCache
         self.paywallCache = paywallCache
         self.identityManager = identityManager
+        self.tokenManager = tokenManager
         self.userDefaults = userDefaults
         self.notificationCenter = notificationCenter
         self.systemInfo = systemInfo
@@ -913,8 +934,14 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.healthManager = healthManager
         self.transactionMetadataSyncHelper = transactionMetadataSyncHelper
         self.currentConfiguration = currentConfiguration
+        self._authentication = Authentication(backend: backend,
+                                              identityManager: identityManager,
+                                              tokenManager: tokenManager,
+                                              operationDispatcher: operationDispatcher,
+                                              systemInfo: systemInfo)
 
         super.init()
+        self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
         self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
@@ -1003,12 +1030,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         _ purchases: @autoclosure () -> Purchases,
         dedupingAgainst configuration: Configuration? = nil
     ) -> Purchases {
-        return self.purchases.modify { currentInstance in
+        let (newInstance, didConfigure): (Purchases, Bool) = self.purchases.modify { currentInstance in
             if let configuration,
                let existingInstance = currentInstance,
                existingInstance.currentConfiguration == configuration {
                 Logger.info(Strings.configure.instance_already_exists_with_same_config)
-                return existingInstance
+                return (existingInstance, false)
             }
 
             if currentInstance != nil {
@@ -1025,8 +1052,15 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
             let newInstance = purchases()
             currentInstance = newInstance
-            return newInstance
+            return (newInstance, true)
         }
+
+        // Outside the singleton lock so RevenueCatUI can safely use ``Purchases/shared``.
+        if didConfigure {
+            PurchasesConfiguredNotifier.notify()
+        }
+
+        return newInstance
     }
 
 }
@@ -1113,11 +1147,21 @@ public extension Purchases {
         return try await self.offeringsAsync(fetchPolicy: fetchPolicy)
     }
 
+    fileprivate func logInIfNeeded() {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        self.authentication.logInIfNeeded()
+        #endif
+    }
+
 }
 
 #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
 public extension Purchases {
+
+    @_spi(Internal)
+    @objc
+    var authentication: Authentication { _authentication }
 
     @available(*, deprecated, message: """
     The appUserID passed to logIn is a constant string known at compile time.
@@ -1125,9 +1169,7 @@ public extension Purchases {
     See https://docs.revenuecat.com/docs/user-ids for more information.
     """)
     func logIn(_ appUserID: StaticString, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        Logger.warn(Strings.identity.logging_in_with_static_string)
-
-        self.logIn("\(appUserID)", completion: completion)
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1136,31 +1178,16 @@ public extension Purchases {
     @_disfavoredOverload
     @objc(logIn:completion:)
     func logIn(_ appUserID: String, completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
-        let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
-
-        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
-            self.operationDispatcher.dispatchOnMainThread {
-                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
-            }
-
-            guard case .success = result else {
-                return
-            }
-
-            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-                self.remoteConfigManager.refreshRemoteConfig(
-                    fetchContext: .identityChange,
-                    isAppBackgrounded: isAppBackgrounded
-                )
-            }
-        }
+        _authentication.identifyCurrentUser(as: appUserID, completion: completion)
     }
 
+    @available(*, deprecated, message: """
+    The appUserID passed to logIn is a constant string known at compile time.
+    This is likely a programmer error. This ID is used to identify the current user.
+    See https://docs.revenuecat.com/docs/user-ids for more information.
+    """)
     func logIn(_ appUserID: StaticString) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        Logger.warn(Strings.identity.logging_in_with_static_string)
-
-        return try await self.logIn("\(appUserID)")
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     // Favor `StaticString` overload (`String` is not convertible to `StaticString`).
@@ -1168,33 +1195,15 @@ public extension Purchases {
     // call logIn with hardcoded user ids in their app
     @_disfavoredOverload
     func logIn(_ appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
-        return try await self.logInAsync(appUserID)
+        try await _authentication.identifyCurrentUser(as: appUserID)
     }
 
     @objc func logOut(completion: ((CustomerInfo?, PublicError?) -> Void)?) {
-        guard !self.systemInfo.dangerousSettings.customEntitlementComputation else {
-            completion?(nil, NewErrorUtils.featureNotAvailableInCustomEntitlementsComputationModeError().asPublicError)
-            return
-       }
-
-        self.identityManager.logOut { error in
-            guard error == nil else {
-                if let completion = completion {
-                    self.operationDispatcher.dispatchOnMainThread {
-                        completion(nil, error?.asPublicError)
-                    }
-                }
-                return
-            }
-
-            self.updateAllCaches(fetchContext: .identityChange) {
-                completion?($0.value, $0.error)
-            }
-        }
+        _authentication.logOut(completion: completion)
     }
 
     func logOut() async throws -> CustomerInfo {
-        return try await logOutAsync()
+        return try await _authentication.logOut()
     }
 
     @objc func syncAttributesAndOfferingsIfNeeded(completion: @escaping (Offerings?, PublicError?) -> Void) {
@@ -1241,6 +1250,29 @@ public extension Purchases {
 }
 
 #endif
+
+extension Purchases: InternalAuthenticatorDelegate {
+
+    func authenticatorDidLogIn(info: CustomerInfo) {
+        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+            self.remoteConfigManager.refreshRemoteConfig(
+                fetchContext: .identityChange,
+                isAppBackgrounded: isAppBackgrounded
+            )
+        }
+    }
+
+    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
+        // The web view cache must retain the cache on login to support multipage paywalls and workflows
+        // making `.identityChange` an insufficient signal.
+        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
+        // we would have an issue. 
+        Task { await self.webBundleEventBus.clearCache() }
+        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
+    }
+
+}
 
 // - MARK: - Custom entitlement computation API
 
@@ -1301,6 +1333,7 @@ extension Purchases {
         }
 
         self.identityManager.switchUser(to: newAppUserID)
+        Task { await self.webBundleEventBus.clearCache() }
 
         self.systemInfo.isApplicationBackgrounded { isBackgrounded in
             self.updateOfferingsCache(isAppBackgrounded: isBackgrounded)
@@ -1686,6 +1719,68 @@ public extension Purchases {
 
     @objc func invalidateVirtualCurrenciesCache() {
         self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+    }
+
+    /// Spend virtual currency
+    ///
+    /// Spending virtual currency is only allowed when the SDK is configured using
+    /// ``Configuration.Builder.with(iamEnabled:)``. Attempting to spend virtual currency
+    /// without enabling IAM will result in a thrown error.
+    ///
+    /// - Parameters:
+    ///   - amounts: A dictionary containing the amounts of each currency to spend.
+    ///   The key is virtual currency's `code`, and the value is how much of that currency to spend.
+    ///   All values should be greater than zero. Values less than or equal to zero are ignored.
+    ///
+    ///   If the dictionary is empty or all values are less thn or equal to zero, then no currencies
+    ///   will be spent, and this will return the result of invoking ``virtualCurrencies()``.
+    ///
+    ///   You may specify multiple currencies to spend in a single transaction.
+    ///   - reference: An optional app-specific reference string that refers to this transaction.
+    /// - Returns: The latest ``VirtualCurrencies`` for the user after the transaction has processed
+    @_spi(Internal)
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String? = nil) async throws -> VirtualCurrencies {
+        guard self.tokenManager.enabled else {
+            let message = "Spending virtual currencies requires configuring the SDK .with(iamEnabled: true)"
+            let error = NewErrorUtils.unsupportedError(message: message)
+            throw error
+        }
+
+        do {
+            return try await self.virtualCurrencyManager.spendVirtualCurrencies(amounts: amounts,
+                                                                                reference: reference)
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    /// Spend virtual currency
+    ///
+    /// - SeeAlso: ``spendVirtualCurrencies(amounts:reference:)``
+    @_spi(Internal)
+    func spendVirtualCurrency(code: String, amount: Int, reference: String? = nil) async throws -> VirtualCurrencies {
+        return try await spendVirtualCurrencies(amounts: [code: amount], reference: reference)
+    }
+
+    @_spi(Internal)
+    @objc
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
+        Task {
+            do {
+                let virtualCurrencies = try await self.spendVirtualCurrencies(amounts: amounts, reference: reference)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(virtualCurrencies, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
+        }
     }
 }
 #endif
@@ -2094,6 +2189,7 @@ public extension Purchases {
                 preferredLocale: configuration.preferredLocale,
                 automaticDeviceIdentifierCollectionEnabled: configuration.automaticDeviceIdentifierCollectionEnabled,
                 iamEnabled: configuration.iamEnabled,
+                keychainAccessGroup: configuration.keychainAccessGroup,
                 currentConfiguration: configuration
             ),
             dedupingAgainst: configuration
@@ -2365,7 +2461,8 @@ public extension Purchases {
         diagnosticsEnabled: Bool,
         preferredLocale: String?,
         automaticDeviceIdentifierCollectionEnabled: Bool = true,
-        iamEnabled: Bool = false
+        iamEnabled: Bool = false,
+        keychainAccessGroup: String? = nil
     ) -> Purchases {
         return self.setDefaultInstance(
             .init(apiKey: apiKey,
@@ -2384,6 +2481,7 @@ public extension Purchases {
                   preferredLocale: preferredLocale,
                   automaticDeviceIdentifierCollectionEnabled: automaticDeviceIdentifierCollectionEnabled,
                   iamEnabled: iamEnabled,
+                  keychainAccessGroup: keychainAccessGroup,
                   currentConfiguration: nil)
         )
     }
@@ -2645,7 +2743,7 @@ extension Purchases: InternalPurchasesType {
 }
 
 /// Necessary because `ErrorUtils` inside of `Purchases` finds the obsoleted type.
-private typealias NewErrorUtils = ErrorUtils
+internal typealias NewErrorUtils = ErrorUtils
 
 // MARK: - Custom Paywall Impressions
 
@@ -2832,6 +2930,11 @@ private extension Purchases {
 
         self.systemInfo.isAppBackgroundedState = false
 
+        // if IAM is enabled and we don't have tokens for the current (anonymous) user,
+        // then attempt to get them. If this fails, this will invoke the authentication delegate's
+        // callback about failure, because it was not explicitly user-initiated
+        self.logInIfNeeded()
+
         // Note: it's important that we observe "will enter foreground" instead of
         // "did become active" so that we don't trigger cache updates in the middle
         // of purchases due to pop-ups stealing focus from the app.
@@ -2898,6 +3001,8 @@ private extension Purchases {
     private func performInitialForegroundSetup() {
         self.systemInfo.isApplicationBackgrounded { [weak self] isBackgrounded in
             guard !isBackgrounded, let self = self else { return }
+
+            self.logInIfNeeded()
 
             self.operationDispatcher.dispatchOnWorkerThread { [weak self] in
                 self?.updateAllCaches(

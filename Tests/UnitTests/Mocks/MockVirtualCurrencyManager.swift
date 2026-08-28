@@ -29,6 +29,21 @@ class MockVirtualCurrencyManager: VirtualCurrencyManagerType {
         return try stubbedVirtualCurrenciesResult.get()
     }
 
+    var stubbedSpendVirtualCurrenciesResult: Result<RevenueCat.VirtualCurrencies, Error> = .success(VirtualCurrencies(
+        virtualCurrencies: [:]
+    ))
+
+    var spendVirtualCurrenciesCallCount = 0
+    var spendVirtualCurrenciesCalled = false
+    var invokedSpendVirtualCurrenciesParametersList: [(amounts: [String: Int], reference: String?)] = []
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String?) async throws -> VirtualCurrencies {
+        self.spendVirtualCurrenciesCallCount += 1
+        self.spendVirtualCurrenciesCalled = true
+        self.invokedSpendVirtualCurrenciesParametersList.append((amounts, reference))
+
+        return try stubbedSpendVirtualCurrenciesResult.get()
+    }
+
     var invalidateVirtualCurrenciesCacheCallCount = 0
     var invalidateVirtualCurrenciesCacheCalled = false
     func invalidateVirtualCurrenciesCache() {

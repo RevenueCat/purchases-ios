@@ -113,7 +113,7 @@ struct OnboardingUseCaseView: View {
         do {
             let result = try await Purchases.shared.checkpoint(
                 "onboarding_complete",
-                params: self.personalizationCheckpointParams
+                customVariables: self.personalizationCheckpointCustomVariables
             )
             self.checkpointResult = Self.describe(result)
         } catch {
@@ -131,7 +131,7 @@ struct OnboardingUseCaseView: View {
         case let received as CheckpointReceivedOfferingResult:
             return "Received offering '\(received.offering.identifier)'."
         case let noAction as CheckpointNoActionResult:
-            return "No paywall shown (\(noAction.reason.value))."
+            return "No paywall shown (\(noAction.reason))."
         default:
             return "Unknown checkpoint result."
         }
@@ -152,10 +152,10 @@ struct OnboardingUseCaseView: View {
         }
     }
 
-    private var personalizationCheckpointParams: CheckpointParams {
-        var customVariables = self.customVariables.checkpointParams.customVariables
+    private var personalizationCheckpointCustomVariables: [String: CustomVariableValue] {
+        var customVariables = self.customVariables.checkpointCustomVariables
         customVariables["step"] = .string("personalize")
-        return CheckpointParams(customVariables: customVariables)
+        return customVariables
     }
 
 }
