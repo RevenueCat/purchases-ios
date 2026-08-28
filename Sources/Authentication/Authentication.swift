@@ -31,9 +31,15 @@ public protocol AuthenticationDelegate: NSObjectProtocol {
     func authenticatorDidEncounterError(_ error: PublicError)
 }
 
+internal enum IdentityChangeReason {
+    case logIn
+    case logOut
+    case identified
+}
+
 internal protocol InternalAuthenticatorDelegate: AnyObject {
-    func authenticatorDidLogIn(info: CustomerInfo)
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void)
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: ((Result<CustomerInfo, PublicError>?) -> Void)?)
 }
 
 /// A namespace for providing authentication-related functionality to the ``Purchases`` instance
@@ -125,9 +131,16 @@ public final class Authentication: NSObject {
 
             self.operationDispatcher.dispatchOnMainThread {
                 if case let .success(values) = result {
-                    self.internalDelegate?.authenticatorDidLogIn(info: values.info)
+                    self.internalDelegate?.authenticatorDidChangeIdentity(reason: .identified) { newResult in
+                        let customerInfo = newResult?.value ?? values.info
+                        let didCreate = values.created
+                        let error = newResult?.error ?? nil
+
+                        completion(customerInfo, didCreate, error)
+                    }
+                } else {
+                    completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
                 }
-                completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
             }
         }
 
@@ -219,19 +232,18 @@ public final class Authentication: NSObject {
         self.identityManager.logIn(identity: identity) { result in
             if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
 
-            if let completion {
-                self.operationDispatcher.dispatchOnMainThread {
-                    completion(result.value?.info, result.error?.asPublicError)
-                }
-            }
-
             switch result {
-            case .success(let result):
-                self.internalDelegate?.authenticatorDidLogIn(info: result.info)
+            case .success:
+                self.internalDelegate?.authenticatorDidChangeIdentity(reason: .logIn, didHandle: { newResult in
+                    let info = newResult?.value ?? result.value?.info
+                    let error = newResult?.error ?? result.error?.asPublicError
+                    completion?(info, error)
+                })
             case .failure(let error):
                 if userInitiated == false {
                     self.reportAuthenticationError(error.asPublicError)
                 }
+                completion?(nil, error.asPublicError)
             }
 
         }
@@ -271,8 +283,8 @@ public final class Authentication: NSObject {
                         completion?(nil, error.asPublicError)
                         return
                     }
-                    delegate.authenticatorDidChangeIdentity { result in
-                        completion?(result.value, result.error)
+                    delegate.authenticatorDidChangeIdentity(reason: .logOut) { result in
+                        completion?(result?.value, result?.error)
                     }
                 }
             }
