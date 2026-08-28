@@ -139,24 +139,29 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        let rule: CheckpointRule?
-        do {
-            rule = try await self.matchingRule(in: rulesSnapshot.ruleSet.rules, params: params)
-        } catch let error as CancellationError {
-            throw error
-        } catch {
-            // An audience the SDK failed to evaluate is not the same answer as an audience the customer is
-            // outside of, so this can't report `noMatch`.
-            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
-                checkpointID: identifier,
-                reason: "\(error)"
-            ))
+        guard !rulesSnapshot.ruleSet.rules.isEmpty else {
+            return .noAction(.noMatch)
+        }
+
+        guard let audienceConfiguration = try await self.audienceConfiguration(
+            checkpointIdentifier: identifier,
+            rulesSnapshot: rulesSnapshot
+        ) else {
             return .noAction(.configurationUnavailable)
         }
 
-        // Audiences are read live rather than pinned to this snapshot, so a refresh landing mid-walk leaves
-        // the match built from config that is already gone.
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+        let ruleEvaluation = try await self.evaluateRules(
+            in: rulesSnapshot.ruleSet.rules,
+            params: params,
+            audienceConfiguration: audienceConfiguration,
+            checkpointIdentifier: identifier
+        )
+        guard case let .completed(rule) = ruleEvaluation else {
+            return .noAction(.configurationUnavailable)
+        }
+
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
+              self.audiencesConfigProvider.isCurrent(audienceConfiguration) else {
             return .noAction(.configurationUnavailable)
         }
 
@@ -164,24 +169,74 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         guard let rule else { return .noAction(.noMatch) }
 
         let resolution = await self.resolve(rule)
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
+              self.audiencesConfigProvider.isCurrent(audienceConfiguration) else {
             return .noAction(.configurationUnavailable)
         }
 
         return resolution
     }
 
+    private func audienceConfiguration(
+        checkpointIdentifier: String,
+        rulesSnapshot: CheckpointRulesSnapshot
+    ) async throws -> AudienceConfigurationSnapshot? {
+        do {
+            guard let configuration = try await self.audiencesConfigProvider.configuration(),
+                  rulesSnapshot.configGeneration == configuration.configGeneration,
+                  self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
+                  self.audiencesConfigProvider.isCurrent(configuration) else {
+                return nil
+            }
+            return configuration
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+                checkpointID: checkpointIdentifier,
+                reason: "\(error)"
+            ))
+            return nil
+        }
+    }
+
+    private func evaluateRules(
+        in rules: [CheckpointRule],
+        params: CheckpointParams,
+        audienceConfiguration: AudienceConfigurationSnapshot,
+        checkpointIdentifier: String
+    ) async throws -> AudienceRuleEvaluation {
+        do {
+            return .completed(try await self.matchingRule(
+                in: rules,
+                params: params,
+                audienceConfiguration: audienceConfiguration
+            ))
+        } catch let error as CancellationError {
+            throw error
+        } catch {
+            // An audience the SDK failed to evaluate is not the same answer as an audience the customer is
+            // outside of, so this can't report `noMatch`.
+            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+                checkpointID: checkpointIdentifier,
+                reason: "\(error)"
+            ))
+            return .unavailable
+        }
+    }
+
     /// Walks the served rules in priority order and returns the first one whose audience matches.
     private func matchingRule(
         in rules: [CheckpointRule],
-        params: CheckpointParams
+        params: CheckpointParams,
+        audienceConfiguration: AudienceConfigurationSnapshot
     ) async throws -> CheckpointRule? {
         return try await self.localRulesEvaluator.match(
             in: rules,
             // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
             customVariables: params.customVariables.mapValues(\.dimensionValue)
         ) { rule in
-            guard let audience = await self.audiencesConfigProvider.getAudience(rule.audienceId) else {
+            guard let audience = audienceConfiguration.audiences[rule.audienceId] else {
                 throw AudienceUnavailableError(audienceID: rule.audienceId)
             }
 
@@ -317,5 +372,12 @@ private struct AudienceUnavailableError: Error, CustomStringConvertible {
     var description: String {
         return "audience '\(self.audienceID)' could not be read"
     }
+
+}
+
+private enum AudienceRuleEvaluation {
+
+    case completed(CheckpointRule?)
+    case unavailable
 
 }

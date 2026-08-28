@@ -76,7 +76,8 @@ extension RemoteConfiguration {
         let blobRef: String?
         /// When true, the SDK should proactively cache this item's blob.
         let prefetch: Bool
-        /// Topic-specific item content, excluding the reserved `blob_ref` and `prefetch` keys.
+        /// Topic-specific item content with wire keys preserved exactly, excluding the reserved
+        /// `blob_ref` and `prefetch` keys.
         let content: [String: AnyDecodable]
 
         init(
@@ -90,33 +91,44 @@ extension RemoteConfiguration {
         }
 
         init(from decoder: Decoder) throws {
-            let container = try decoder.container(keyedBy: DynamicCodingKey.self)
+            // String-keyed dictionaries bypass the decoder's key strategy. Topic metadata is a dynamic wire
+            // contract, so snake_case keys and opaque identifiers must not be converted to Swift-style names.
+            let item = try decoder.singleValueContainer().decode([String: AnyDecodable].self)
 
-            self.blobRef = try? container.decode(String.self, forKey: Self.blobRefKey)
-            self.prefetch = (try? container.decode(Bool.self, forKey: Self.prefetchKey)) ?? false
+            if case let .string(blobRef)? = item[Self.blobRefKey] {
+                self.blobRef = blobRef
+            } else {
+                self.blobRef = nil
+            }
 
-            self.content = try container.allKeys.reduce(into: [String: AnyDecodable]()) { content, key in
-                guard key != Self.blobRefKey, key != Self.prefetchKey else { return }
-                content[key.stringValue] = try container.decode(AnyDecodable.self, forKey: key)
+            if case let .bool(prefetch)? = item[Self.prefetchKey] {
+                self.prefetch = prefetch
+            } else {
+                self.prefetch = false
+            }
+
+            self.content = item.filter { key, _ in
+                key != Self.blobRefKey && key != Self.prefetchKey
             }
         }
 
         func encode(to encoder: Encoder) throws {
-            var container = encoder.container(keyedBy: DynamicCodingKey.self)
-            for (key, value) in self.content {
-                try container.encode(value, forKey: DynamicCodingKey(key))
-            }
+            // Encode through a string-keyed dictionary so opaque topic keys bypass the encoder's key strategy.
+            // This is required for audience predicate hashes, whose exact spelling is part of their identity.
+            var item = self.content
             if let blobRef = self.blobRef {
-                try container.encode(blobRef, forKey: Self.blobRefKey)
+                item[Self.blobRefKey] = .string(blobRef)
             }
             if self.prefetch {
-                try container.encode(self.prefetch, forKey: Self.prefetchKey)
+                item[Self.prefetchKey] = .bool(self.prefetch)
             }
+
+            var container = encoder.singleValueContainer()
+            try container.encode(item)
         }
 
-        // JSONDecoder.default converts `blob_ref` to `blobRef` before matching dynamic keys.
-        private static let blobRefKey = DynamicCodingKey("blobRef")
-        private static let prefetchKey = DynamicCodingKey("prefetch")
+        private static let blobRefKey = "blob_ref"
+        private static let prefetchKey = "prefetch"
 
     }
 

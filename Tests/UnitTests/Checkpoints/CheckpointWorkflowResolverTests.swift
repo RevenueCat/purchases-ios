@@ -279,9 +279,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             fetchCount.modify { $0 += 1 }
             return self.offerings
         }
-        // Audiences are read live, outside the rule snapshot's generation guard, so a refresh landing mid-walk
-        // leaves the match itself built from config that is already gone.
-        self.audiencesProvider.onLookup = { _ in
+        self.audiencesProvider.onConfiguration = {
             self.checkpointsProvider.configGeneration += 1
         }
 
@@ -327,13 +325,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
-    func testAudiencesAfterTheFirstMatchAreNotLoaded() async throws {
+    func testAudienceConfigurationLoadsOnceForAllRules() async throws {
         let secondWorkflowID = "wf5678"
         self.stubTwoRules(secondWorkflowID: secondWorkflowID)
 
         _ = try await self.resolve()
 
-        XCTAssertEqual(self.audiencesProvider.requestedIdentifiers, ["audience_\(self.workflowID)"])
+        XCTAssertEqual(self.audiencesProvider.configurationRequestCount, 1)
     }
 
     func testCheckpointWhoseAudiencesAllMissMatchesResolvesNoMatch() async throws {
@@ -497,10 +495,12 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func stubTwoRules(secondWorkflowID: String) {
+        let audienceIDs = ["audience_\(self.workflowID)", "audience_\(secondWorkflowID)"]
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: self.workflowID, audienceID: "audience_\(self.workflowID)"),
-            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_\(secondWorkflowID)")
+            Self.rule(workflowID: self.workflowID, audienceID: audienceIDs[0]),
+            Self.rule(workflowID: secondWorkflowID, audienceID: audienceIDs[1])
         ]))
+        self.audiencesProvider.registerDefaultAudienceIdentifiers(audienceIDs)
         self.workflowsProvider.stubbedOfferingIdByWorkflowId[secondWorkflowID] = self.offeringID
         self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
             id: secondWorkflowID
@@ -747,17 +747,44 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     /// Every audience matches unless a test says otherwise, so rule ordering stays the subject of the
     /// tests that predate audience evaluation.
     var rulesByAudienceID: [String: String] = [:]
-    var defaultRules: String? = "true"
-    var onLookup: ((String) -> Void)?
-    private(set) var requestedIdentifiers: [String] = []
+    var defaultRules: String? = "true" {
+        didSet {
+            for identifier in self.defaultAudienceIdentifiers {
+                self.rulesByAudienceID[identifier] = self.defaultRules
+            }
+        }
+    }
+    var configGeneration = 0
+    var onConfiguration: (() -> Void)?
+    private(set) var configurationRequestCount = 0
+    private var defaultAudienceIdentifiers: Set<String> = ["audience"]
 
-    func getAudience(_ identifier: String) async -> Audience? {
-        self.requestedIdentifiers.append(identifier)
-        self.onLookup?(identifier)
+    init() {
+        self.rulesByAudienceID["audience"] = "true"
+    }
 
-        guard let rules = self.rulesByAudienceID[identifier] ?? self.defaultRules else { return nil }
+    func registerDefaultAudienceIdentifiers(_ identifiers: [String]) {
+        self.defaultAudienceIdentifiers.formUnion(identifiers)
+        for identifier in identifiers {
+            self.rulesByAudienceID[identifier] = self.defaultRules
+        }
+    }
 
-        return Audience(id: identifier, rules: rules)
+    func configuration() async throws -> AudienceConfigurationSnapshot? {
+        self.configurationRequestCount += 1
+        self.onConfiguration?()
+
+        return AudienceConfigurationSnapshot(
+            audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
+                (identifier, Audience(id: identifier, rules: rules))
+            }),
+            backendPredicateResults: [:],
+            configGeneration: self.configGeneration
+        )
+    }
+
+    func isCurrent(_ snapshot: AudienceConfigurationSnapshot) -> Bool {
+        return snapshot.configGeneration == self.configGeneration
     }
 
 }
