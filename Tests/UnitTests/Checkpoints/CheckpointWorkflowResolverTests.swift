@@ -939,7 +939,7 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
 
 private struct FailingDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "failing"
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         throw FailingDimensionProviderError()
@@ -951,7 +951,7 @@ private struct FailingDimensionProviderError: Error {}
 
 private struct CancellingDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "cancelling"
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         throw CancellationError()
