@@ -1,7 +1,6 @@
 orbs:
   macos: circleci/macos@2.5.1
-  slack: circleci/slack@5.0.0
-  revenuecat: revenuecat/sdks-common-config@4.5.1
+  revenuecat: revenuecat/sdks-common-config@4.6.1
   # Disabled until compatible with M1: codecov: codecov/codecov@3.3.0
   # codecov: codecov/codecov@3.3.0
 
@@ -135,24 +134,6 @@ commands:
           name: Delete GitHub PR failure comment on success
           when: on_success
           command: bundle exec fastlane clear_pr_ci_failure
-
-  slack-notify-on-fail:
-    steps:
-      # Map custom variable names to the Slack orb variables, since the default variable names are already used by the Fastlane Slack integration
-      # we will probably remove these at some point when we move all jobs to use the Fastlane Slack integration
-      # Note: It's safe to modify SLACK_ACCESS_TOKEN and SLACK_DEFAULT_CHANNEL here because this command is always
-      # called as the last step in jobs, so it won't interfere with Fastlane commands that run before it
-      - run:
-          name: Set Slack environment variables
-          when: always
-          command: |
-            echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
-            echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
-      - slack/notify:
-          branch_pattern: main
-          channel: "feed-circleci-ios-failures"
-          event: fail
-          template: basic_fail_1
 
   install-bundle-dependencies:
     description: "Runs bundle install. Assumes ruby is already on PATH (see install-mise-tools: tools: ruby in callers)."
@@ -630,12 +611,14 @@ jobs:
       - run:
           name: Check pods and deployment targets
           command: bundle exec fastlane check_pods
-      - slack-notify-on-fail
 
   api-tests:
     executor:
       name: macos-executor
       xcode_version: "16.4"
+    environment:
+      TUIST_SWIFT_CONDITIONS: ENABLE_CHECKPOINTS_OBJC
+      TUIST_RC_XCODE_PROJECT: "true"
     steps:
       - checkout
       - install-dependencies
@@ -643,7 +626,6 @@ jobs:
       - run:
           name: API Tests
           command: bundle exec fastlane run_api_tests
-      - slack-notify-on-fail
 
   revenuecat-admob-tests:
     executor:
@@ -672,7 +654,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   spm-receipt-parser:
     executor:
@@ -683,7 +664,6 @@ jobs:
           name: SPM Receipt Parser
           command: swift build -c release --target ReceiptParser
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   spm-revenuecat-ui-ios-15:
     executor:
@@ -715,7 +695,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   spm-revenuecat-ui-ios-16:
     executor:
@@ -756,7 +735,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-18-and-17:
     executor:
@@ -777,6 +755,14 @@ jobs:
                 name: SPM RevenueCatUI Release Build (Xcode 16)
                 command: swift build -c release --target RevenueCatUI
                 no_output_timeout: 5m
+            - run:
+                name: PurchasesUIService stripped-symbol integration tests
+                command: bundle exec fastlane test_purchases_ui_service_stripped
+                no_output_timeout: 15m
+                environment:
+                  DEVICE: iPhone 16,OS=18.5
+            - store_test_results:
+                path: fastlane/test_output/purchases_ui_service_stripped/tests.xml
 
       # === RevenueCatUI iOS 18 tests ===
       - run:
@@ -836,7 +822,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output-revenuecatui-17
-      - slack-notify-on-fail
 
   record-and-upload-paywalls-v1-snapshots:
     executor:
@@ -859,7 +844,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: v1-snapshots
-      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-26:
     executor:
@@ -898,7 +882,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   run-revenuecat-ui-ios-27:
     executor:
@@ -969,7 +952,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   run-test-tvos-and-macos:
     executor:
@@ -1015,7 +997,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-macos
-      - slack-notify-on-fail
 
   run-test-ios-26:
     executor:
@@ -1058,7 +1039,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-26
-      - slack-notify-on-fail
       - github-notify-pr-on-fail
 
   run-test-ios-27:
@@ -1132,7 +1112,24 @@ jobs:
           name: Build RevenueCatUI with Xcode 26.5
           command: xcodebuild -workspace RevenueCat.xcworkspace -scheme RevenueCatUI -destination "generic/platform=iOS" -sdk iphoneos -configuration Release CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ONLY_ACTIVE_ARCH=YES build
           no_output_timeout: 30m
-      - slack-notify-on-fail
+
+  build-checkpoint-tester:
+    executor:
+      name: macos-executor
+    steps:
+      - checkout
+      - tuist-generate-workspace:
+          query: "CheckpointTester"
+      - run:
+          name: Build CheckpointTester
+          command: >-
+            xcodebuild
+            -workspace RevenueCat-Tuist.xcworkspace
+            -scheme CheckpointTester
+            -destination "generic/platform=iOS Simulator"
+            CODE_SIGNING_ALLOWED=NO
+            build
+          no_output_timeout: 30m
 
   check-app-extension-safe-api-usage:
     executor:
@@ -1157,7 +1154,6 @@ jobs:
           name: Build RevenueCatUI with app extension safe APIs
           command: bundle exec fastlane build_with_app_extension_safe_apis scheme:RevenueCatUI
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   run-test-ios-18-and-17:
     executor:
@@ -1238,7 +1234,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-17
-      - slack-notify-on-fail
 
   run-test-ios-16:
     executor:
@@ -1284,7 +1279,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-16
-      - slack-notify-on-fail
 
   run-test-ios-15-and-14:
     executor:
@@ -1398,7 +1392,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-14
-      - slack-notify-on-fail
 
   run-test-watchos:
     executor:
@@ -1426,7 +1419,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-      - slack-notify-on-fail
 
   build-tv-watch-mac-and-visionos:
     executor:
@@ -1438,7 +1430,6 @@ jobs:
           name: Build tvOS, watchOS, macOS and visionOS
           command: bundle exec fastlane build_tv_watch_mac_visionos
           no_output_timeout: 30m
-      - slack-notify-on-fail
 
   remote-config-production-tests:
     executor:
@@ -1465,7 +1456,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output
-      - slack-notify-on-fail
 
   backend-integration-tests-SK1:
     executor:
@@ -1473,7 +1463,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK1"
-      - slack-notify-on-fail
 
   backend-integration-tests-SK2:
     executor:
@@ -1481,7 +1470,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-SK2"
-      - slack-notify-on-fail
 
   backend-integration-tests-other:
     executor:
@@ -1489,7 +1477,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Other"
-      - slack-notify-on-fail
 
   backend-integration-tests-offline:
     executor:
@@ -1497,7 +1484,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-Offline"
-      - slack-notify-on-fail
 
   backend-integration-tests-custom-entitlements:
     executor:
@@ -1505,7 +1491,6 @@ jobs:
     steps:
       - run-backend-tests:
           test_plan: "BackendIntegrationTests-CustomEntitlements"
-      - slack-notify-on-fail
 
   run-all-maestro-e2e-tests:
     executor:
@@ -1608,6 +1593,28 @@ jobs:
             echo "All test suites passed!"
           when: always
 
+  run-paywall-accessibility-ui-tests:
+    description: "Assert paywall accessibility labels against the real accessibility tree"
+    executor:
+      name: macos-executor
+      xcode_version: "26.5"
+    steps:
+      - macos/preboot-simulator:
+          version: "18.6"
+          platform: "iOS"
+          device: "iPhone 16 Pro"
+      - checkout
+      - install-dependencies
+      - tuist-generate-workspace:
+          query: "PaywallFixturesUITests"
+      - run:
+          name: Run paywall accessibility UI tests
+          command: |
+            bundle exec fastlane paywall_accessibility_ui_tests
+          no_output_timeout: 15m
+      - store_test_results:
+          path: fastlane/test_output
+
   run-workflow-maestro-tests:
     executor:
       name: macos-executor
@@ -1672,7 +1679,6 @@ jobs:
       - store_artifacts:
           path: RevenueCatUI.xcframework.zip
           destination: RevenueCatUI.xcframework.zip
-      - slack-notify-on-fail
 
   docs-build:
     executor:
@@ -1691,7 +1697,6 @@ jobs:
           command: bundle exec fastlane build_docs
           environment:
             DOCS_IOS_VERSION: "17.4"
-      - slack-notify-on-fail
 
   docs-deploy:
     executor:
@@ -1877,46 +1882,6 @@ jobs:
           test-name: xcode-direct-integration
           display-name: Xcode Direct Integration
 
-      # Slack notification with failed test details
-      - run:
-          name: Collect failed test names for Slack
-          when: always
-          command: |
-            echo 'export SLACK_ACCESS_TOKEN="${SLACK_ACCESS_TOKEN_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
-            echo 'export SLACK_DEFAULT_CHANNEL="${SLACK_DEFAULT_CHANNEL_CIRCLE_CI_NOTIFY_ORB_IOS}"' >> $BASH_ENV
-            FAILED_TESTS=""
-            for test in cocoapods spm spm-custom-entitlement-computation receipt-parser xcode-direct-integration; do
-              STATUS_FILE="/tmp/test_status/$test"
-              if [ ! -f "$STATUS_FILE" ]; then
-                FAILED_TESTS="${FAILED_TESTS:+$FAILED_TESTS, }$test (did not run)"
-              else
-                STATUS=$(cat "$STATUS_FILE")
-                if [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "STARTED" ]; then
-                  FAILED_TESTS="${FAILED_TESTS:+$FAILED_TESTS, }$test"
-                fi
-              fi
-            done
-            if [ -z "$FAILED_TESTS" ]; then
-              FAILED_TESTS="(none detected)"
-            fi
-            echo "export FAILED_INSTALLATION_TESTS=\"$FAILED_TESTS\"" >> $BASH_ENV
-      - slack/notify:
-          branch_pattern: main
-          channel: "feed-circleci-ios-failures"
-          event: fail
-          custom: |
-            {
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": ":red_circle: *${CIRCLE_JOB}* failed on branch `${CIRCLE_BRANCH}`\n\nFailed installation tests: ${FAILED_INSTALLATION_TESTS}\n\n<${CIRCLE_BUILD_URL}|View Job>"
-                  }
-                }
-              ]
-            }
-
   installation-tests-carthage:
     parameters:
       xcode_version:
@@ -1942,7 +1907,6 @@ jobs:
       - set-signing-repo-deploy-key-for-git
       - install-dependencies-scan-and-archive:
           directory: Tests/InstallationTests/CarthageInstallation/
-      - slack-notify-on-fail
 
   lint:
     executor:
@@ -1962,6 +1926,9 @@ jobs:
             bundle exec fastlane run swiftlint raise_if_swiftlint_error:true strict:true \
             reporter:junit output_file:fastlane/test_output/swiftlint/junit.xml
           no_output_timeout: 5m
+      - run:
+          name: Run api diff helper unit tests
+          command: ruby fastlane/api_diff_helper_test.rb
       - store_test_results:
           path: fastlane/test_output
       - store_artifacts:
@@ -2035,7 +2002,6 @@ jobs:
       - run:
           name: Submit Purchase Tester
           command: bundle exec fastlane deploy_purchase_tester dry_run:<< parameters.dry_run >>
-      - slack-notify-on-fail
 
   deploy-rct-tester:
     executor:
@@ -2055,7 +2021,6 @@ jobs:
       - run:
           name: Submit RCT Tester
           command: bundle exec fastlane deploy_rct_tester dry_run:<< parameters.dry_run >>
-      - slack-notify-on-fail
 
   emerge_purchases_ui_snapshot_tests:
     executor:
@@ -2069,7 +2034,6 @@ jobs:
       - run:
           name: Build Paywalls Tester
           command: bundle exec fastlane build_paywalls_tester_for_emerge
-      - slack-notify-on-fail
 
   emerge_binary_size_analysis:
     executor:
@@ -2159,7 +2123,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: paywall-template-screenshots
-      - slack-notify-on-fail
 
   update-paywall-preview-resources-commit:
     docker:
@@ -2173,93 +2136,30 @@ jobs:
           name: Update paywall templates
           command: bundle exec fastlane ios update_paywall_preview_resources_commit
 
-  check-api-changes-revenuecat:
+  check-api-changes:
     executor:
       name: macos-executor
       xcode_version: *swiftinterface-xcode-version
     steps:
       - checkout
       - install-dependencies
+      # 0.12.0
+      - revenuecat/install-public-api-diff:
+          version: "06620ffe614773a43102ab8052077ae463908b78"
       - run:
-          name: Generate RevenueCat swiftinterface
-          command: |
-            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCat
+          name: Fetch main for the merge base
+          command: git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
       - run:
-          name: Check RevenueCat API changes
+          name: Generate swiftinterface
           command: |
-            bundle exec fastlane ios check_api_changes scheme:RevenueCat
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-ios-simulator.swiftinterface
-          destination: revenuecat-api-ios-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-ios.swiftinterface
-          destination: revenuecat-api-ios.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-macos.swiftinterface
-          destination: revenuecat-api-macos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-watchos-simulator.swiftinterface
-          destination: revenuecat-api-watchos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-watchos.swiftinterface
-          destination: revenuecat-api-watchos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-tvos-simulator.swiftinterface
-          destination: revenuecat-api-tvos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-tvos.swiftinterface
-          destination: revenuecat-api-tvos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-visionos-simulator.swiftinterface
-          destination: revenuecat-api-visionos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCat-visionos.swiftinterface
-          destination: revenuecat-api-visionos.swiftinterface
-      - slack-notify-on-fail
-
-  check-api-changes-revenuecatui:
-    executor:
-      name: macos-executor
-      xcode_version: *swiftinterface-xcode-version
-    steps:
-      - checkout
-      - install-dependencies
+            bundle exec fastlane ios generate_swiftinterface
       - run:
-          name: Generate RevenueCatUI swiftinterface
+          name: Check API changes
           command: |
-            bundle exec fastlane ios generate_swiftinterface scheme:RevenueCatUI
-      - run:
-          name: Check RevenueCatUI API changes
-          command: |
-            bundle exec fastlane ios check_api_changes scheme:RevenueCatUI
+            bundle exec fastlane ios check_api_changes
       - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-ios-simulator.swiftinterface
-          destination: revenuecatui-api-ios-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-ios.swiftinterface
-          destination: revenuecatui-api-ios.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-macos.swiftinterface
-          destination: revenuecatui-api-macos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos-simulator.swiftinterface
-          destination: revenuecatui-api-watchos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-watchos.swiftinterface
-          destination: revenuecatui-api-watchos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos-simulator.swiftinterface
-          destination: revenuecatui-api-tvos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-tvos.swiftinterface
-          destination: revenuecatui-api-tvos.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos-simulator.swiftinterface
-          destination: revenuecatui-api-visionos-simulator.swiftinterface
-      - store_artifacts:
-          path: /tmp/pr-swiftinterface/RevenueCatUI-visionos.swiftinterface
-          destination: revenuecatui-api-visionos.swiftinterface
-      - slack-notify-on-fail
+          path: /tmp/pr-swiftinterface
+          destination: swiftinterface
 
   generate-swiftinterface:
     executor:
@@ -2277,7 +2177,6 @@ jobs:
           name: Update baseline swiftinterface files
           command: |
             bundle exec fastlane ios create_swiftinterface_pr
-      - slack-notify-on-fail
 
   deploy-to-spm:
     docker:
@@ -2422,12 +2321,10 @@ workflows:
       - lint:
           context:
             - slack-secrets
-      - check-api-changes-revenuecat:
+      - check-api-changes:
           context:
             - slack-secrets-ios
-      - check-api-changes-revenuecatui:
-          context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-test-ios-26:
           context:
             - slack-secrets
@@ -2435,6 +2332,9 @@ workflows:
           context:
             - slack-secrets
       - build-xcode-265:
+          context:
+            - slack-secrets
+      - build-checkpoint-tester:
           context:
             - slack-secrets
       - pod-lib-lint:
@@ -2457,10 +2357,6 @@ workflows:
             - slack-secrets
       - revenuecat-admob-tests:
           context:
-            - slack-secrets
-      - run-workflow-maestro-tests:
-          context:
-            - e2e-tests
             - slack-secrets
 
       # =============================================================
@@ -2550,6 +2446,10 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      # Needs no context: the paywall under test is a local sample, so no API key is involved.
+      - run-paywall-accessibility-ui-tests:
+          requires:
+            - approve-full-tests
       - record-and-upload-paywalls-v1-snapshots:
           requires:
             - approve-full-tests
@@ -2597,6 +2497,12 @@ workflows:
             - approve-full-tests
           context:
             - slack-secrets
+      - run-workflow-maestro-tests:
+          requires:
+            - approve-full-tests
+          context:
+            - e2e-tests
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           requires:
             - approve-full-tests
@@ -2616,12 +2522,12 @@ workflows:
           requires:
             # Reduced Test Suite
             - lint
-            - check-api-changes-revenuecat
-            - check-api-changes-revenuecatui
+            - check-api-changes
             - run-test-ios-26
             # Xcode 27 beta: runs on every commit (invoked above) but doesn't block this gate yet.
             # - run-test-ios-27
             - build-xcode-265
+            - build-checkpoint-tester
             - pod-lib-lint
             - run-revenuecat-ui-ios-26
             # Xcode 27 beta: runs on every commit (invoked above) but doesn't block this gate yet.
@@ -2629,7 +2535,6 @@ workflows:
             - emerge_purchases_ui_snapshot_tests
             - emerge_binary_size_analysis
             - build-tv-watch-mac-and-visionos
-            - run-workflow-maestro-tests
             # Full Test Suite
             - backend-integration-tests-SK1
             - backend-integration-tests-SK2
@@ -2645,6 +2550,7 @@ workflows:
             - spm-revenuecat-ui-ios-16
             - run-revenuecat-ui-ios-18-and-17
             - spm-revenuecat-ui-watchos
+            - run-paywall-accessibility-ui-tests
             - record-and-upload-paywalls-v1-snapshots
             - record-and-upload-paywalls-v2-snapshots
             - installation-tests-all-but-carthage
@@ -2654,6 +2560,7 @@ workflows:
             - check-app-extension-safe-api-usage
             - revenuecat-admob-tests
             - deploy-purchase-tester
+            - run-workflow-maestro-tests
             - run-all-maestro-e2e-tests
             - docs-build
 
@@ -2733,7 +2640,10 @@ workflows:
             pattern: "^generated_(snapshots|swiftinterface)/main-.*"
             value: << pipeline.git.branch >>
     jobs:
-      - danger
+      - danger:
+          filters:
+            branches:
+              ignore: main
 
   weekly-run-workflow:
     when:
@@ -2872,12 +2782,10 @@ workflows:
             pattern: "^(release/.*|main)$"
             value: << pipeline.git.branch >>
     jobs:
-      - check-api-changes-revenuecat:
+      - check-api-changes:
           context:
             - slack-secrets-ios
-      - check-api-changes-revenuecatui:
-          context:
-            - slack-secrets-ios
+            - slack-secrets
       - run-all-maestro-e2e-tests:
           context:
             - e2e-tests
@@ -2988,8 +2896,7 @@ workflows:
       # =============================================================
       - all-tests-succeeded:
           requires:
-            - check-api-changes-revenuecat
-            - check-api-changes-revenuecatui
+            - check-api-changes
             - run-all-maestro-e2e-tests
             - lint
             - run-test-ios-26

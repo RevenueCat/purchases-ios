@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -326,7 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])
@@ -397,6 +396,17 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
 
         let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(
+            clientTransactionID: "",
+            trackingMetadata: RewardedAdTrackingMetadata(
+                networkName: nil,
+                mediatorName: .adMob,
+                adFormat: .rewarded,
+                placement: nil,
+                adUnitId: "",
+                impressionId: ""
+            )
+        )
     } catch {}
 }
 
@@ -417,6 +427,28 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
         return true
     }
 }
+
+#if canImport(UIKit)
+func checkPurchaseParamBuilderUIKitAPIs(
+    builder: PurchaseParams.Builder,
+    uiScene: UIScene
+) {
+    if #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInScene: uiScene)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+func checkPurchaseParamBuilderAppKitAPIs(
+    builder: PurchaseParams.Builder,
+    nsWindow: NSWindow
+) {
+    if #available(macOS 15.2, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInWindow: nsWindow)
+    }
+}
+#endif
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
     let webPurchaseRedemption: WebPurchaseRedemption! = nil
@@ -487,6 +519,14 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Cached virtual currencies
     let _: VirtualCurrencies? = purchases.cachedVirtualCurrencies
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrencies(amounts: [
+        "GLD": 42
+    ], reference: String?.none)
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrency(code: "GLD",
+                                                                        amount: 42,
+                                                                        reference: "test-123")
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

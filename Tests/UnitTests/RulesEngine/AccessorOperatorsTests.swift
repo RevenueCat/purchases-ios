@@ -9,6 +9,7 @@ import XCTest
 @testable import RevenueCat
 
 private typealias Value = RulesEngine.Value
+private typealias Scope = RulesEngine.Scope
 private typealias AccessorOperators = RulesEngine.AccessorOperators
 
 final class AccessorOperatorsTests: XCTestCase {
@@ -35,44 +36,47 @@ final class AccessorOperatorsTests: XCTestCase {
     //    assert the result.
 
     func testVarEmptyPathReturnsEntireData() throws {
-        let vars = Value.object(["x": .int(1)])
-        let out = try AccessorOperators.opVar(args: .string(""), vars: vars)
-        XCTAssertEqual(out, vars)
+        let data = Value.object(["x": .int(1)])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .string(""), vars: scope)
+        XCTAssertEqual(out, data)
     }
 
     func testVarNullPathReturnsEntireData() throws {
         // json-logic-js treats `undefined`, null, and "" as "return the
         // whole data object".
-        let vars = Value.object(["x": .int(1)])
-        let out = try AccessorOperators.opVar(args: .null, vars: vars)
-        XCTAssertEqual(out, vars)
+        let data = Value.object(["x": .int(1)])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .null, vars: scope)
+        XCTAssertEqual(out, data)
     }
 
     func testVarWithNumericPathArgIsCoercedToString() throws {
         // {"var": 0} on array data
-        let vars = Value.array([.string("zero"), .string("one")])
-        let out = try AccessorOperators.opVar(args: .int(0), vars: vars)
+        let data = Value.array([.string("zero"), .string("one")])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .int(0), vars: scope)
         XCTAssertEqual(out, .string("zero"))
     }
 
     func testVarWithIntegerValuedFloatPathLooksUpIntegerIndex() throws {
         // {"var": 1.0} on array data must render as "1" (not "1.0") so the
         // path resolves to array index 1 — same lookup as `{"var": 1}`.
-        let vars = Value.array([.string("zero"), .string("one"), .string("two")])
-        let out = try AccessorOperators.opVar(args: .float(1.0), vars: vars)
+        let data = Value.array([.string("zero"), .string("one"), .string("two")])
+        let scope = Scope(root: data)
+        let out = try AccessorOperators.opVar(args: .float(1.0), vars: scope)
         XCTAssertEqual(out, .string("one"))
         XCTAssertTrue(logger.warnings.isEmpty)
     }
 
     func testVarWithFractionalFloatPathDoesNotMatchAdjacentIndices() throws {
         // {"var": 1.5} must not silently collapse to "1" or "2" — its
-        // rendered path is "1.5", which doesn't resolve, so the lookup
-        // misses and warns. Guards against an over-eager rounding fix to
-        // `formatNumber`.
-        let vars = Value.array([.string("zero"), .string("one"), .string("two")])
-        let out = try AccessorOperators.opVar(args: .float(1.5), vars: vars)
-        XCTAssertEqual(out, .null)
-        XCTAssertEqual(logger.warnings.count, 1)
-        XCTAssertTrue(logger.warnings[0].contains("1.5"))
+        // rendered path is "1.5", which doesn't resolve. Guards against an
+        // over-eager rounding fix to `formatNumber`.
+        let data = Value.array([.string("zero"), .string("one"), .string("two")])
+        let scope = Scope(root: data)
+        XCTAssertThrowsError(try AccessorOperators.opVar(args: .float(1.5), vars: scope)) { error in
+            XCTAssertEqual(error as? RulesEngine.EvaluationError, .unresolvedVariable(path: "1.5"))
+        }
     }
 }

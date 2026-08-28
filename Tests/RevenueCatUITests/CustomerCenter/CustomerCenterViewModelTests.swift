@@ -382,7 +382,12 @@ final class CustomerCenterViewModelTests: TestCase {
         )
 
         let mockRenewal = MockCustomerCenterStoreKitUtilities()
-        mockRenewal.returnRenewalPriceFromRenewalInfo = (2.99, "USD")
+        mockRenewal.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 2.99,
+            currencyCode: "USD",
+            productIdentifier: productId,
+            autoRenewPreference: productId
+        )
 
         let viewModelWithRenewal = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -696,6 +701,88 @@ final class CustomerCenterViewModelTests: TestCase {
         expect(purchaseInformation.title) == "One-time Purchase"
         expect(purchaseInformation.pricePaid) == .unknown
         expect(purchaseInformation.productIdentifier) == productIdLifetime
+    }
+
+    func testNonSubscriptionsSection_ordersMostRecentPurchaseFirst() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [],
+            entitlements: [],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.oldest",
+                    id: "1",
+                    store: "app_store",
+                    purchaseDate: "2024-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.middle",
+                    id: "2",
+                    store: "app_store",
+                    purchaseDate: "2025-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.newest",
+                    id: "3",
+                    store: "app_store",
+                    purchaseDate: "2026-01-01T00:00:00Z"
+                )
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: MockCustomerCenterPurchases(customerInfo: customerInfo)
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+        expect(viewModel.nonSubscriptionsSection.map(\.productIdentifier)) == [
+            "com.revenuecat.newest",
+            "com.revenuecat.middle",
+            "com.revenuecat.oldest"
+        ]
+    }
+
+    func testNonSubscriptionsSection_ordersByPurchaseDate_whenAnEntitlementWasGrantedLater() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfo(
+            subscriptions: [],
+            entitlements: [
+                // Granted after the purchase, so the entitlement date is newer than the transaction's
+                CustomerInfoFixtures.Entitlement(
+                    entitlementId: "day_pass",
+                    productId: "com.revenuecat.older",
+                    purchaseDate: "2026-06-01T00:00:00Z"
+                )
+            ],
+            nonSubscriptions: [
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.older",
+                    id: "1",
+                    store: "app_store",
+                    purchaseDate: "2024-01-01T00:00:00Z"
+                ),
+                CustomerInfoFixtures.NonSubscriptionTransaction(
+                    productId: "com.revenuecat.newer",
+                    id: "2",
+                    store: "app_store",
+                    purchaseDate: "2025-01-01T00:00:00Z"
+                )
+            ]
+        )
+
+        let viewModel = CustomerCenterViewModel(
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchasesProvider: MockCustomerCenterPurchases(customerInfo: customerInfo)
+        )
+
+        await viewModel.loadScreen()
+
+        expect(viewModel.state) == .success
+        expect(viewModel.nonSubscriptionsSection.map(\.productIdentifier)) == [
+            "com.revenuecat.newer",
+            "com.revenuecat.older"
+        ]
     }
 
     func testShouldShowEarliestExpiration_whenUserHasTwoActiveSubscriptionsTwoEntitlements() async throws {
@@ -1159,7 +1246,12 @@ final class CustomerCenterViewModelTests: TestCase {
     func testPurchaseInformationUsesInfoFromRenewalInfoWhenAvailable() async {
         let mockPurchases = MockCustomerCenterPurchases()
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5.0, "USD")
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 5.0,
+            currencyCode: "USD",
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
+        )
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),
@@ -1167,8 +1259,6 @@ final class CustomerCenterViewModelTests: TestCase {
             purchasesProvider: mockPurchases,
             customerCenterStoreKitUtilities: mockStoreKitUtilities as CustomerCenterStoreKitUtilitiesType
         )
-
-        expect(mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo).to(equal((5, "USD")))
 
         await viewModel.loadScreen()
 
@@ -1182,7 +1272,12 @@ final class CustomerCenterViewModelTests: TestCase {
         let customerInfo = CustomerInfoFixtures.customerInfoWithExpiredAppleSubscriptions
         let mockPurchases = MockCustomerCenterPurchases(customerInfo: customerInfo)
         let mockStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
-        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = (5, "USD")
+        mockStoreKitUtilities.returnRenewalPriceFromRenewalInfo = RenewalPriceData(
+            price: 5,
+            currencyCode: "USD",
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
+        )
 
         let viewModel = CustomerCenterViewModel(
             actionWrapper: CustomerCenterActionWrapper(),

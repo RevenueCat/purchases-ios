@@ -326,6 +326,12 @@ class DeviceCache {
         }
     }
 
+    func subscriberAttributes(appUserID: String) -> SubscriberAttribute.Dictionary {
+        return self.userDefaults.read {
+            Self.storedSubscriberAttributes($0, appUserID: appUserID)
+        }
+    }
+
     func unsyncedAttributesByKey(appUserID: String) -> [String: SubscriberAttribute] {
         return self.userDefaults.read {
             Self.unsyncedAttributesByKey($0, appUserID: appUserID)

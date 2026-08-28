@@ -24,6 +24,7 @@ class HTTPClient {
     let systemInfo: SystemInfo
     let timeout: TimeInterval
     let authHeaders: RequestHeaders
+    let tokenManager: TokenManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -49,6 +50,7 @@ class HTTPClient {
 
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
@@ -69,6 +71,7 @@ class HTTPClient {
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.tokenManager = tokenManager
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
@@ -87,10 +90,13 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        // NOTE: these authHeaders will not include any token-based Authorization headers
+        // Those are applied immediately before the request begins executing
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
+                                    preferIAMPath: self.tokenManager.enabled,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: completionHandler))
     }
@@ -257,10 +263,11 @@ internal extension HTTPClient {
 internal extension HTTPClient {
 
     struct State {
+        var paused: Bool
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
 
-        static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
+        static let initial: Self = .init(paused: false, queuedRequests: [], currentSerialRequest: nil)
     }
 
     /// The API-source resolution state of a request, modeled as one value so an inconsistent
@@ -290,6 +297,7 @@ internal extension HTTPClient {
         var httpRequest: HTTPRequest
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
+        var preferIAMPath: Bool
         var completionHandler: HTTPClient.Completion<Data>?
         private(set) var fallbackUrlIndex: Int?
 
@@ -321,6 +329,7 @@ internal extension HTTPClient {
                                       authHeaders: HTTPClient.RequestHeaders,
                                       defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
+                                      preferIAMPath: Bool,
                                       internalSettings: InternalDangerousSettingsType,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
@@ -331,6 +340,7 @@ internal extension HTTPClient {
                 internalSettings: internalSettings
             )
             self.verificationMode = verificationMode
+            self.preferIAMPath = preferIAMPath
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -342,13 +352,20 @@ internal extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { self.httpRequest.path.relativePath }
+        var path: String {
+            if self.preferIAMPath {
+                return self.httpRequest.path.relativeIAMPath
+            } else {
+                return self.httpRequest.path.relativePath
+            }
+        }
 
         func getCurrentRequestURL(proxyURL: URL?, apiSourceURL: URL?) -> URL? {
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
                 apiSourceURL: apiSourceURL,
-                fallbackUrlIndex: self.fallbackUrlIndex
+                fallbackUrlIndex: self.fallbackUrlIndex,
+                preferIAMPath: self.preferIAMPath
             )
         }
 
@@ -427,6 +444,12 @@ private extension HTTPClient {
 
                     $0.queuedRequests.append(request)
                     return true
+                } else if $0.paused == true {
+                    Logger.debug(Strings.network.serial_request_paused(httpMethod: request.method.httpMethod,
+                                                                       path: request.path))
+
+                    $0.queuedRequests.append(request)
+                    return true
                 } else {
                     Logger.debug(Strings.network.starting_request(httpMethod: request.method.httpMethod,
                                                                   path: request.path))
@@ -486,10 +509,10 @@ private extension HTTPClient {
             ))
             requestHeaders = [:]
         } else {
-            requestHeaders = request.headers
+            requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         }
         #else
-        let requestHeaders = request.headers
+        let requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         #endif
 
         let result = Result
@@ -512,7 +535,8 @@ private extension HTTPClient {
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
-                    isFallbackUrlResponse: isFallbackUrlResponse
+                    isFallbackUrlResponse: isFallbackUrlResponse,
+                    iamEnabled: request.preferIAMPath
                 )
             }
             // Fetch from ETagManager if available
@@ -648,8 +672,16 @@ private extension HTTPClient {
                     return
                 }
 
-                var retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                // if we got back a 401 Unauthorized and we are running with access token support,
+                // then get a new access token and try again
+                var retryScheduled = self.reauthorizeRequestIfNeeded(request: request,
+                                                                     basedOn: response,
+                                                                     response: httpURLResponse)
+
+                if !retryScheduled {
+                    retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
                                                                                    error: error)
+                }
 
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
@@ -734,6 +766,8 @@ private extension HTTPClient {
 
     func beginNextRequest() {
         let nextRequest: Request? = self.state.modify {
+            if $0.paused == true { return nil }
+
             Logger.debug(Strings.network.serial_request_done(httpMethod: $0.currentSerialRequest?.method.httpMethod,
                                                              path: $0.currentSerialRequest?.path,
                                                              queuedRequestsCount: $0.queuedRequests.count))
@@ -866,16 +900,26 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
+        var headers = request.headers
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
                 withSignatureVerification: request.verificationMode.isEnabled,
                 refreshETag: request.retried
             )
-            return request.headers.merging(eTagHeader)
-        } else {
-            return request.headers
+            headers = headers.merging(eTagHeader)
         }
+
+        if request.httpRequest.path.authenticated {
+            // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
+            // because it's how the API key is sent up
+            // if the TokenManager produces a new authorization header, it will override
+            // any existing authorization header present
+            let authorization = self.tokenManager.authorizationHeaders(for: request)
+            headers = headers.merging(authorization)
+        }
+
+        return headers
     }
 
     private func signing(for request: HTTPRequest) -> SigningType {
@@ -931,6 +975,87 @@ private extension HTTPClient {
             }
         }
     }
+}
+
+// MARK: - Request Reauthorize Logic
+extension HTTPClient {
+
+    internal func reauthorizeRequestIfNeeded(request: HTTPClient.Request,
+                                             basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
+                                             response: HTTPURLResponse?) -> Bool {
+
+        let reauthAction = self.tokenManager.tokenRefreshRequest(for: request,
+                                                                 response: response,
+                                                                 duplicateRequestHandler: { wasSuccessful in
+            self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                            originalRequest: request,
+                                            originalResult: originalResult)
+        })
+
+        switch reauthAction {
+        case .noAction:
+            return false
+        case .refresh(let reauthRequest):
+            let clientRequest = Request(httpRequest: reauthRequest,
+                                        authHeaders: self.authHeaders,
+                                        defaultHeaders: self.defaultHeaders,
+                                        verificationMode: self.systemInfo.responseVerificationMode,
+                                        preferIAMPath: self.tokenManager.enabled,
+                                        internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                        completionHandler: { (result: VerifiedHTTPResponse<TokenResponse>.Result) in
+                let wasSuccessful = self.tokenManager.handleTokenRefreshResponse(result)
+                self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                                originalRequest: request,
+                                                originalResult: originalResult)
+            })
+
+            self.state.modify {
+                $0.queuedRequests.insert(clientRequest, at: 0)
+            }
+            return true
+        case .waitingForOtherRequest:
+            self.state.modify {
+                $0.paused = true
+            }
+            // return true to indicate that the request *will* be retried
+            return true
+        }
+    }
+
+    private func reauthorizationDidComplete(wasSuccessful: Bool,
+                                            originalRequest: HTTPClient.Request,
+                                            originalResult: VerifiedHTTPResponse<Data>.Result) {
+        let needsToRestart: Bool
+
+        if wasSuccessful {
+            let retried = originalRequest.retriedRequest()
+
+            needsToRestart = self.state.modify {
+                let shouldRestart = ($0.paused == true)
+                $0.paused = false
+                $0.queuedRequests.insert(retried, at: 0)
+                return shouldRestart
+            }
+        } else {
+            // the token manager did not get new tokens
+            // therefore, the original request should be failed
+
+            needsToRestart = self.state.modify {
+                let shouldRestart = ($0.paused == true)
+                $0.paused = false
+                return shouldRestart
+            }
+            // the original request needs to be failed
+            // re-use the original 401 Unauthorized
+            originalRequest.completionHandler?(originalResult)
+        }
+
+        if needsToRestart {
+            self.beginNextRequest()
+        }
+
+    }
+
 }
 
 // MARK: - Request Retry Logic

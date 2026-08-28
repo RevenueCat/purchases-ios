@@ -1826,11 +1826,13 @@ extension RevenueCat.IntroEligibility : Swift.Sendable {
 @_hasMissingDesignatedInitializers @objc(RCNonSubscriptionTransaction) final public class NonSubscriptionTransaction : ObjectiveC.NSObject {
   @objc final public let productIdentifier: Swift.String
   @objc final public let purchaseDate: Foundation.Date
+  @objc final public let originalPurchaseDate: Foundation.Date?
   @objc final public let transactionIdentifier: Swift.String
   @objc final public let storeTransactionIdentifier: Swift.String
   @objc final public let store: RevenueCat.Store
   @objc final public let price: RevenueCat.ProductPaidPrice?
   @objc final public let isSandbox: Swift.Bool
+  @objc final public let displayName: Swift.String?
   @objc override final public var description: Swift.String {
     @objc get
   }
@@ -2038,6 +2040,7 @@ extension RevenueCat.Attribution {
   @objc final public func setSolarEngineDistinctId(_ solarEngineDistinctId: Swift.String?)
   @objc final public func setSolarEngineAccountId(_ solarEngineAccountId: Swift.String?)
   @objc final public func setSolarEngineVisitorId(_ solarEngineVisitorId: Swift.String?)
+  @objc final public func setSingularDeviceID(_ singularDeviceID: Swift.String?)
   @objc final public func setMixpanelDistinctID(_ mixpanelDistinctID: Swift.String?)
   @objc final public func setFirebaseAppInstanceID(_ firebaseAppInstanceID: Swift.String?)
   @objc final public func setTenjinAnalyticsInstallationID(_ tenjinAnalyticsInstallationID: Swift.String?)
@@ -2063,6 +2066,8 @@ extension RevenueCat.Attribution : @unchecked Swift.Sendable {
     @objc public init(product: RevenueCat.StoreProduct)
     @objc public func with(promotionalOffer: RevenueCat.PromotionalOffer) -> Self
     @objc public func with(quantity: Swift.Int) -> Self
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+    public func with(confirmInScene: UIKit.UIScene) -> Self
     @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
     @objc public func with(winBackOffer: RevenueCat.WinBackOffer) -> Self
     @available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *)
@@ -2151,6 +2156,7 @@ extension RevenueCat.Purchases {
   @available(*, deprecated, message: "The appUserID passed to logIn is a constant string known at compile time.\nThis is likely a programmer error. This ID is used to identify the current user.\nSee https://docs.revenuecat.com/docs/user-ids for more information.")
   final public func logIn(_ appUserID: Swift.StaticString, completion: @escaping (RevenueCat.CustomerInfo?, Swift.Bool, RevenueCat.PublicError?) -> Swift.Void)
   @_disfavoredOverload @objc(logIn:completion:) final public func logIn(_ appUserID: Swift.String, completion: @escaping (RevenueCat.CustomerInfo?, Swift.Bool, RevenueCat.PublicError?) -> Swift.Void)
+  @available(*, deprecated, message: "The appUserID passed to logIn is a constant string known at compile time.\nThis is likely a programmer error. This ID is used to identify the current user.\nSee https://docs.revenuecat.com/docs/user-ids for more information.")
   final public func logIn(_ appUserID: Swift.StaticString) async throws -> (customerInfo: RevenueCat.CustomerInfo, created: Swift.Bool)
   @_disfavoredOverload @objc final public func logIn(_ appUserID: Swift.String) async throws -> (customerInfo: RevenueCat.CustomerInfo, created: Swift.Bool)
   @objc final public func logOut(completion: ((RevenueCat.CustomerInfo?, RevenueCat.PublicError?) -> Swift.Void)?)

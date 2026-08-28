@@ -23,7 +23,7 @@ final class UiConfigProvider {
     /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when any part is unavailable
     /// or fails to decode, so callers never render with a partially assembled configuration.
     func getUiConfig() async -> UIConfig? {
-        guard let snapshot = await self.manager.topicCacheSnapshot(.uiConfig) else {
+        guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
             return nil
         }
 
@@ -79,7 +79,7 @@ final class UiConfigProvider {
 #else
     // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
     func getUiConfig() async -> UIConfig? {
-        guard let snapshot = await self.manager.topicCacheSnapshot(.uiConfig) else {
+        guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
             return nil
         }
 
@@ -113,6 +113,17 @@ final class UiConfigProvider {
         return self.cache.value(currentGeneration: currentGeneration)
     }
 #endif
+
+    private func topicSnapshotWithUiConfigParts() async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard var snapshot = await self.manager.topicCacheSnapshot(.uiConfig) else { return nil }
+        guard !Self.itemKeys.contains(where: snapshot.key.keys.contains) else { return snapshot }
+
+        guard let refreshedSnapshot = await self.manager
+            .committedTopicCacheSnapshotAfterInFlightRefresh(.uiConfig) else { return nil }
+        snapshot = refreshedSnapshot
+        return Self.itemKeys.contains(where: snapshot.key.keys.contains) ? snapshot : nil
+    }
 
     private static let appKey = "app"
     private static let localizationsKey = "localizations"

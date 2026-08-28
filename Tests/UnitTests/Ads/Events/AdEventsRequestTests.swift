@@ -86,26 +86,31 @@ class AdFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
-    func testRewardVerifiedNoRewardEvent() throws {
-        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedNoRewardData)
-        let storedEvent = try Self.createStoredAdEvent(from: event)
-        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(of: requestEvent, as: .formattedJson)
-    }
-
-    func testRewardVerifiedUnsupportedRewardEvent() throws {
-        let event = AdEvent.rewardVerified(Self.eventCreationData, Self.rewardVerifiedUnsupportedRewardData)
-        let storedEvent = try Self.createStoredAdEvent(from: event)
-        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
-
-        assertSnapshot(of: requestEvent, as: .formattedJson)
-    }
-
     func testRewardFailedToVerifyEvent() throws {
         let event = AdEvent.rewardFailedToVerify(Self.eventCreationData, Self.rewardFailedToVerifyData)
         let storedEvent = try Self.createStoredAdEvent(from: event)
         let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardGrantedEvent() throws {
+        let event = AdEvent.rewardGranted(Self.eventCreationData, Self.rewardGrantedData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    func testRewardGrantedEntitlementEvent() throws {
+        let event = AdEvent.rewardGranted(Self.eventCreationData, Self.rewardGrantedEntitlementData)
+        let storedEvent = try Self.createStoredAdEvent(from: event)
+        let requestEvent: AdEventsRequest.AdEventRequest = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.rewardType) == "entitlement"
+        expect(requestEvent.rewardEntitlementId) == "pro"
+        expect(requestEvent.rewardVirtualCurrencyCode).to(beNil())
+        expect(requestEvent.rewardVirtualCurrencyAmount).to(beNil())
 
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
@@ -404,9 +409,7 @@ private extension AdFeatureEventsRequestTests {
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
-        rewardVerificationEnabled: true,
-        rewardItem: "coins",
-        rewardAmount: 10
+        rewardVerificationEnabled: true
     )
 
     static let rewardVerifiedData: AdRewardVerified = .init(
@@ -415,28 +418,7 @@ private extension AdFeatureEventsRequestTests {
         adFormat: .rewarded,
         placement: "home_screen",
         adUnitId: "ca-app-pub-123456789",
-        impressionId: "impression-123",
-        reward: .virtualCurrency(code: "GOLD", amount: 100)
-    )
-
-    static let rewardVerifiedNoRewardData: AdRewardVerified = .init(
-        networkName: "AdMob",
-        mediatorName: .adMob,
-        adFormat: .rewarded,
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        impressionId: "impression-123",
-        reward: .noReward
-    )
-
-    static let rewardVerifiedUnsupportedRewardData: AdRewardVerified = .init(
-        networkName: "AdMob",
-        mediatorName: .adMob,
-        adFormat: .rewarded,
-        placement: "home_screen",
-        adUnitId: "ca-app-pub-123456789",
-        impressionId: "impression-123",
-        reward: .unsupportedReward
+        impressionId: "impression-123"
     )
 
     static let rewardFailedToVerifyData: AdRewardFailedToVerify = .init(
@@ -447,6 +429,26 @@ private extension AdFeatureEventsRequestTests {
         adUnitId: "ca-app-pub-123456789",
         impressionId: "impression-123",
         failureReason: .timeout
+    )
+
+    static let rewardGrantedData: AdRewardGranted = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .virtualCurrency(code: "GOLD", amount: 100)
+    )
+
+    static let rewardGrantedEntitlementData: AdRewardGranted = .init(
+        networkName: "AdMob",
+        mediatorName: .adMob,
+        adFormat: .rewarded,
+        placement: "home_screen",
+        adUnitId: "ca-app-pub-123456789",
+        impressionId: "impression-123",
+        reward: .entitlement(identifier: "pro", expiresAt: Date(timeIntervalSince1970: 1_700_000_000))
     )
 
     static let userID = "test-user-id"

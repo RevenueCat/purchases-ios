@@ -35,6 +35,7 @@ final class PurchaseHandler: ObservableObject {
 
     private let purchases: PaywallPurchasesType
     private let paywallEventTracker: PaywallEventTracker
+    private let keyWindowFocusResigner: KeyWindowFocusResigning
 
     /// Side-by-side paywalls should use separate `PurchaseHandler` instances so each keeps its own session.
     private var activePaywallSessionID: PaywallEvent.SessionID?
@@ -165,14 +166,16 @@ final class PurchaseHandler: ObservableObject {
                      purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
                          .default
                          .purchaseCompletedPublisher(),
-                     eventTracker: PaywallEventTracker = .shared
+                     eventTracker: PaywallEventTracker = .shared,
+                     keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
         self.init(isConfigured: true,
                   purchases: purchases,
                   performPurchase: performPurchase,
                   performRestore: performRestore,
                   purchaseResultPublisher: purchaseResultPublisher,
-                  eventTracker: eventTracker
+                  eventTracker: eventTracker,
+                  keyWindowFocusResigner: keyWindowFocusResigner
         )
     }
 
@@ -184,11 +187,13 @@ final class PurchaseHandler: ObservableObject {
         purchaseResultPublisher: AnyPublisher<PurchaseResultData, Never> = NotificationCenter
             .default
             .purchaseCompletedPublisher(),
-        eventTracker: PaywallEventTracker
+        eventTracker: PaywallEventTracker,
+        keyWindowFocusResigner: KeyWindowFocusResigning = KeyWindowFocusResigner()
     ) {
         self.isConfigured = isConfigured
         self.purchases = purchases
         self.paywallEventTracker = eventTracker
+        self.keyWindowFocusResigner = keyWindowFocusResigner
         self.performPurchase = performPurchase
         self.performRestore = performRestore
 
@@ -1065,7 +1070,10 @@ extension PurchaseHandler {
         )
     }
 
+    @MainActor
     private func startAction(_ type: PurchaseHandler.ActionType) {
+        self.keyWindowFocusResigner.resignFirstResponder()
+
         withAnimation(Constants.fastAnimation) {
             self.actionTypeInProgress = type
         }

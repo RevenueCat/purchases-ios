@@ -37,4 +37,22 @@ class MockVirtualCurrenciesAPI: VirtualCurrenciesAPI {
 
         completion(stubbedGetVirtualCurrenciesResult ?? .failure(.missingAppUserID()))
     }
+
+    var invokedSpendVirtualCurrencies = false
+    var invokedSpendVirtualCurrenciesCount = 0
+    var invokedSpendVirtualCurrenciesParameters: (amounts: [String: Int], reference: String?)?
+
+    var stubbedSpendVirtualCurrenciesResult: Result<VirtualCurrenciesResponse, BackendError>?
+
+    override func spendVirtualCurrencies(
+        amounts: [String: Int],
+        reference: String?,
+        completion: @escaping VirtualCurrenciesResponseHandler
+    ) {
+        invokedSpendVirtualCurrencies = true
+        invokedSpendVirtualCurrenciesCount += 1
+        invokedSpendVirtualCurrenciesParameters = (amounts, reference)
+
+        completion(stubbedSpendVirtualCurrenciesResult ?? .failure(.missingAppUserID()))
+    }
 }

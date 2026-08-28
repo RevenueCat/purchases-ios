@@ -49,7 +49,7 @@ class CachedOfferingsUsageIntegrationTest: BaseStoreKitIntegrationTests {
                 return .defaultServerError
             }
             return .fakeResponse(
-                HTTPURLResponse(url: request.httpRequest.path.url!,
+                HTTPURLResponse(url: request.httpRequest.path.url(preferIAMPath: false)!,
                                 statusCode: 401,
                                 httpVersion: nil,
                                 headerFields: nil)!,

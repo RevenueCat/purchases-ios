@@ -95,36 +95,55 @@ extension AdReward {
 
     /// Encodes flat into the parent's container so the backend wire schema is unchanged
     /// while the kind→wire mapping stays local to ``AdReward``.
+    ///
+    /// `entitlementExpiresAtKey` is local round-trip only — never forward it to the backend request.
+    // swiftlint:disable:next function_parameter_count
     internal func encode<K: CodingKey>(
         into container: inout KeyedEncodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K,
+        entitlementExpiresAtKey: K
     ) throws {
         try container.encode(self.kindRawValue, forKey: typeKey)
         try container.encodeIfPresent(self.virtualCurrency?.code, forKey: codeKey)
         try container.encodeIfPresent(self.virtualCurrency?.amount, forKey: amountKey)
+        try container.encodeIfPresent(self.entitlement?.identifier, forKey: entitlementIdKey)
+        try container.encodeIfPresent(self.entitlement?.expiresAt, forKey: entitlementExpiresAtKey)
     }
 
     /// Unknown kinds and malformed payloads log a warning and fall back to ``unsupportedReward``
     /// — backend wire data not matching the schema is not a programming bug.
+    // swiftlint:disable:next function_parameter_count
     internal static func decode<K: CodingKey>(
         from container: KeyedDecodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K,
+        entitlementExpiresAtKey: K
     ) throws -> AdReward {
         let kindRawValue = try container.decode(String.self, forKey: typeKey)
-        let code = try container.decodeIfPresent(String.self, forKey: codeKey)
-        let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
         switch kindRawValue {
         case Kind.virtualCurrency:
+            let code = try container.decodeIfPresent(String.self, forKey: codeKey)
+            let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
             guard let code, let amount,
                   let payload = VirtualCurrencyReward(code: code, amount: amount) else {
                 Logger.warn(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
                 return .unsupportedReward
             }
             return .virtualCurrency(payload)
+        case Kind.entitlement:
+            let identifier = try container.decodeIfPresent(String.self, forKey: entitlementIdKey)
+            let expiresAt = try container.decodeIfPresent(Date.self, forKey: entitlementExpiresAtKey)
+            guard let identifier, let expiresAt,
+                  let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
+                Logger.warn(AdsStrings.invalid_entitlement_payload(identifier: identifier))
+                return .unsupportedReward
+            }
+            return .entitlement(payload)
         case Kind.noReward:
             return .noReward
         case Kind.unsupportedReward:

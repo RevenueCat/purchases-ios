@@ -27,22 +27,22 @@ extension RulesEngine {
     enum ComparisonOperators {
 
         /// `{"<": [a, b]}` — `a < b`. `{"<": [a, b, c]}` — `a < b AND b < c`.
-        static func opLt(args: Value, vars: Value) throws -> Value {
+        static func opLt(args: Value, vars: Scope) throws -> Value {
             try evalChain(args, vars: vars, using: .less)
         }
 
         /// `{"<=": [a, b]}` — `a <= b`. `{"<=": [a, b, c]}` — `a <= b AND b <= c`.
-        static func opLe(args: Value, vars: Value) throws -> Value {
+        static func opLe(args: Value, vars: Scope) throws -> Value {
             try evalChain(args, vars: vars, using: .lessOrEqual)
         }
 
         /// `{">": [a, b]}` — `a > b`. Strictly binary.
-        static func opGt(args: Value, vars: Value) throws -> Value {
+        static func opGt(args: Value, vars: Scope) throws -> Value {
             try evalBinary(args, vars: vars, using: .greater)
         }
 
         /// `{">=": [a, b]}` — `a >= b`. Strictly binary.
-        static func opGe(args: Value, vars: Value) throws -> Value {
+        static func opGe(args: Value, vars: Scope) throws -> Value {
             try evalBinary(args, vars: vars, using: .greaterOrEqual)
         }
 
@@ -93,7 +93,7 @@ extension RulesEngine {
         /// (`a < b AND b < c`); arguments past the third are dropped.
         private static func evalChain(
             _ args: Value,
-            vars: Value,
+            vars: Scope,
             using cmp: Comparator
         ) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
@@ -112,7 +112,7 @@ extension RulesEngine {
         /// `false`).
         private static func evalBinary(
             _ args: Value,
-            vars: Value,
+            vars: Scope,
             using cmp: Comparator
         ) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)

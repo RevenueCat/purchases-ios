@@ -34,6 +34,6 @@ env:
 # Close the last page -> the exit offer paywall is presented.
 - tapOn: { text: "Close Paywall" }
 - extendedWaitUntil:
-    visible: "Paywall V2"
+    visible: "Unlock full access"
     timeout: 15000
 - takeScreenshot: "workflow_exit_offer_on_last_page"

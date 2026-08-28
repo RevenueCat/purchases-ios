@@ -43,6 +43,9 @@ protocol HTTPRequestPath {
     /// The full relative path for this endpoint.
     var relativePath: String { get }
 
+    /// The full relative path for this endpoint when using IAM tokens.
+    var relativeIAMPath: String { get }
+
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
 
@@ -62,6 +65,9 @@ protocol HTTPRequestPath {
 
     /// Provides endpoint-specific inputs for response signature verification.
     var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+
+    /// Whether this path corresponds to an IAM request
+    var isIAMPath: Bool { get }
 }
 
 /// Provides endpoint-specific inputs for backend response signature verification.
@@ -106,6 +112,10 @@ extension HTTPRequestPath {
         return nil
     }
 
+    var relativeIAMPath: String {
+        return self.relativePath
+    }
+
     var usesAPISources: Bool {
         return false
     }
@@ -122,9 +132,14 @@ extension HTTPRequestPath {
         return DefaultResponseSignatureContextProvider()
     }
 
-    var url: URL? { return self.url(proxyURL: nil) }
+    var isIAMPath: Bool {
+        return false
+    }
 
-    func url(proxyURL: URL? = nil, apiSourceURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
+    func url(proxyURL: URL? = nil,
+             apiSourceURL: URL? = nil,
+             fallbackUrlIndex: Int? = nil,
+             preferIAMPath: Bool) -> URL? {
         let baseURL: URL
         if let proxyURL {
             // When a Proxy URL is set, we don't support API sources or fallback URLs
@@ -141,7 +156,9 @@ extension HTTPRequestPath {
         } else {
             baseURL = Self.serverHostURL
         }
-        return URL(string: self.relativePath, relativeTo: baseURL)
+
+        let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
+        return URL(string: path, relativeTo: baseURL)
     }
 }
 
@@ -166,12 +183,16 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case spendVirtualCurrencies
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
         case remoteConfig(domain: String)
 
+        case tokenLogin
+        case tokenRefresh
+        case tokenLogOut
     }
 
     enum FallbackPath: Hashable {
@@ -264,11 +285,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
                 .rewardVerificationStatus,
-                .remoteConfig:
+                .remoteConfig,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
 
         case .health,
@@ -292,10 +317,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .remoteConfig,
              .health,
@@ -313,6 +342,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -326,7 +356,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return false
         }
     }
@@ -337,11 +370,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .logIn,
                 .postReceiptData,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
                 .remoteConfig,
-                .rewardVerificationStatus:
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -368,7 +405,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
     }
 
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        let component = self.pathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
+    }
+
+    var relativeIAMPath: String {
+        let component = self.iamPathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
     }
 
     var pathComponent: String {
@@ -421,6 +466,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case .spendVirtualCurrencies:
+            assertionFailure("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            Logger.error("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            return "customer/virtual_currencies/spend"
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
@@ -431,6 +481,73 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case let .remoteConfig(domain):
             return "config/\(Self.escape(domain))"
+
+        case .tokenLogin:
+            return "/auth/login"
+
+        case .tokenRefresh:
+            return "/auth/token"
+
+        case .tokenLogOut:
+            return "/auth/revoke"
+        }
+    }
+
+    var iamPathComponent: String {
+        // NOTE: cases below that "return self.pathComponent" are indicating
+        // that the corresponding server paths have not yet been migrated to
+        // support access token authorization
+        switch self {
+        case .getCustomerInfo:
+            return "customer"
+        case .getOfferings:
+            return "customer/offerings"
+        case .getIntroEligibility:
+            return "customer/intro_eligibility"
+        case .logIn:
+            assertionFailure("The .login endpoint is not allowed when IAM is enabled")
+            Logger.error("The .login endpoint is not allowed when IAM is enabled")
+            return self.pathComponent
+        case .postAttributionData:
+            return "customer/attribution"
+        case .postOfferForSigning:
+            return "offers"
+        case .postReceiptData:
+            return "receipts"
+        case .postSubscriberAttributes:
+            return "customer/attributes"
+        case .postAdServicesToken:
+            return "customer/adservices_attribution"
+        case .health:
+            return self.pathComponent
+        case .appHealthReport:
+            return "customer/health_report"
+        case .appHealthReportAvailability:
+            return self.pathComponent
+        case .getProductEntitlementMapping:
+            return "product_entitlement_mapping"
+        case .getCustomerCenterConfig:
+            return "customer/customercenter"
+        case .getVirtualCurrencies:
+            return "customer/virtual_currencies"
+        case .spendVirtualCurrencies:
+            return "customer/virtual_currencies/spend"
+        case .postRedeemWebPurchase:
+            return self.pathComponent
+        case .postCreateTicket:
+            return self.pathComponent
+        case .isPurchaseAllowedByRestoreBehavior:
+            return "customer/restore/eligibility"
+        case .rewardVerificationStatus:
+            return self.pathComponent
+        case .remoteConfig:
+            return self.pathComponent
+        case .tokenLogin:
+            return "/auth/login"
+        case .tokenRefresh:
+            return "/auth/token"
+        case .tokenLogOut:
+            return "/auth/revoke"
         }
     }
 
@@ -481,6 +598,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
 
+        case .spendVirtualCurrencies:
+            return "spend_virtual_currencies"
+
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"
 
@@ -494,6 +614,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .remoteConfig:
             return "remote_config"
+
+        case .tokenLogin:
+            return "token_login"
+
+        case .tokenRefresh:
+            return "token_refresh"
+
+        case .tokenLogOut:
+            return "token_logout"
         }
     }
 
@@ -507,6 +636,14 @@ extension HTTPRequest.Path: HTTPRequestPath {
             ]
         default:
             return [:]
+        }
+    }
+
+    var isIAMPath: Bool {
+        switch self {
+        case .tokenLogin, .tokenRefresh, .tokenLogOut:
+            return true
+        default: return false
         }
     }
 

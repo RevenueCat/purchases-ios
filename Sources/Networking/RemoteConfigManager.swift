@@ -17,6 +17,9 @@ protocol RemoteConfigManagerType: AnyObject {
     /// Monotonically increases whenever committed remote config state is replaced or invalidated.
     var configGeneration: Int { get }
 
+    /// Whether a remote configuration has been committed and is available to read.
+    func hasCommittedConfig() async -> Bool
+
     var onRemoteConfigDisabled: (() -> Void)? { get set }
 
     func refreshRemoteConfig(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool)
@@ -27,6 +30,11 @@ protocol RemoteConfigManagerType: AnyObject {
     /// If the topic is not cached, this waits for an in-flight refresh or triggers one foreground refresh before
     /// reading again. Returns `nil` when the endpoint is disabled or the topic is still unavailable after refresh.
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+
+    /// Waits for the refresh currently in flight, if any, then returns the latest committed topic.
+    /// Unlike `topic(_:)`, this never starts a refresh.
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic?
 
     /// Returns the blob payload bytes for an item referenced by `blob_ref`.
     ///
@@ -90,6 +98,12 @@ extension RemoteConfigManagerType {
     func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
     -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.topic(topic) else { return nil }
+        return .init(generation: self.configGeneration, key: configTopic)
+    }
+
+    func committedTopicCacheSnapshotAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+        guard let configTopic = await self.committedTopicAfterInFlightRefresh(topic) else { return nil }
         return .init(generation: self.configGeneration, key: configTopic)
     }
 
@@ -208,7 +222,16 @@ final class NoOpRemoteConfigManager: RemoteConfigManagerType {
 
     func refreshRemoteConfigIfStale(fetchContext: RemoteConfigFetchContext, isAppBackgrounded: Bool) {}
 
+    func hasCommittedConfig() async -> Bool {
+        return false
+    }
+
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+        return nil
+    }
+
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
         return nil
     }
 
@@ -345,6 +368,12 @@ final class RemoteConfigManager: RemoteConfigManagerType {
         }
     }
 
+    func hasCommittedConfig() async -> Bool {
+        return await self.performRead {
+            self.diskCache.read() != nil
+        }
+    }
+
     private var canReadCommittedState: Bool {
         return self.lock.perform {
             !self.isDisabledInternal && !self.isClosed
@@ -384,6 +413,14 @@ final class RemoteConfigManager: RemoteConfigManagerType {
 
     func topic(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
         return await self.readCommittedState(refreshIfMissing: true) {
+            await self.committedTopic(topic)
+        }
+    }
+
+    func committedTopicAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
+    -> RemoteConfiguration.ConfigTopic? {
+        _ = await self.awaitInFlightRefresh()
+        return await self.readCommittedState {
             await self.committedTopic(topic)
         }
     }

@@ -485,7 +485,8 @@ struct WorkflowPaywallView: View {
                         // pair should see the transition flag so they don't react to it off-screen.
                         isTransitioning: isHidden ? false : self.transitionState.isTransitioning
                     ),
-                    pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay
+                    pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay,
+                    canNavigateBack: self.navigator.canNavigateBack
                 )
             )
             .frame(width: geometry.size.width, height: geometry.size.height)
@@ -553,7 +554,8 @@ struct WorkflowPaywallView: View {
                             headerOpacity: self.transitionState.headerButtonOpacity(
                                 for: displayedPage.role,
                                 headerTransition: self.headerTransition
-                            )
+                            ),
+                            canNavigateBack: self.navigator.canNavigateBack
                         )
                         .zIndex(displayedPage.role == .current ? 1 : 0)
                     }
@@ -929,6 +931,9 @@ private struct WorkflowHeaderOverlayPageView: View {
 
     @StateObject private var stateManager: WorkflowHeaderOverlayStateManager
 
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
     private let page: RenderedPage
     private let purchaseHandler: PurchaseHandler
     private let introOfferEligibilityContext: IntroOfferEligibilityContext
@@ -938,6 +943,7 @@ private struct WorkflowHeaderOverlayPageView: View {
     private let closeWorkflowAction: () -> Void
     private let horizontalSizeClass: UserInterfaceSizeClass?
     private let headerOpacity: CGFloat
+    private let canNavigateBack: Bool
 
     init(
         page: RenderedPage,
@@ -951,7 +957,8 @@ private struct WorkflowHeaderOverlayPageView: View {
         failedToLoadFont: @escaping UIConfigProvider.FailedToLoadFont,
         colorScheme: ColorScheme,
         horizontalSizeClass: UserInterfaceSizeClass?,
-        headerOpacity: CGFloat
+        headerOpacity: CGFloat,
+        canNavigateBack: Bool
     ) {
         let paywallComponents = page.content.paywallComponents
         let uiConfigProvider = UIConfigProvider(
@@ -969,6 +976,7 @@ private struct WorkflowHeaderOverlayPageView: View {
         self.closeWorkflowAction = closeWorkflowAction
         self.horizontalSizeClass = horizontalSizeClass
         self.headerOpacity = headerOpacity
+        self.canNavigateBack = canNavigateBack
         self._stateManager = .init(
             wrappedValue: .init(
                 state: PaywallsV2View.createPaywallState(
@@ -1000,7 +1008,18 @@ private struct WorkflowHeaderOverlayPageView: View {
         if let headerViewModel = paywallState.rootViewModel.headerViewModel {
             let contentLocale = paywallState.rootViewModel.localizationProvider.locale
             let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
-                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage,
+                pageDefaultPackage: paywallState.viewModelFactory.packageValidator.defaultSelectedPackage(
+                    in: PackageSelectionContext(
+                        condition: ScreenCondition.from(self.horizontalSizeClass),
+                        customVariables: self.customVariables,
+                        isEligibleForIntroOffer: { [introOfferEligibilityContext] in
+                            introOfferEligibilityContext.isEligible(package: $0)
+                        },
+                        isEligibleForPromoOffer: { [paywallPromoOfferCache] in
+                            paywallPromoOfferCache.isMostLikelyEligible(for: $0)
+                        }
+                    )
+                ),
                 workflowDefaultPackage: self.page.effectiveWorkflowPackageContext?.selectedPackage
             )
 
@@ -1022,7 +1041,8 @@ private struct WorkflowHeaderOverlayPageView: View {
             .environment(
                 \.workflowRenderingContext,
                 WorkflowRenderingContext(
-                    pageTransition: .init(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: true)
+                    pageTransition: .init(pageOffset: 0, headerButtonOpacity: 1, isTransitioning: true),
+                    canNavigateBack: self.canNavigateBack
                 )
             )
             .environmentObject(self.purchaseHandler)

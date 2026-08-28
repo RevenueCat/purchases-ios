@@ -18,7 +18,7 @@ extension RulesEngine {
         /// debug aid that never affects a rule's outcome. A missing argument is
         /// `undefined` (logged as `"undefined"`); operands beyond the first are
         /// ignored.
-        static func opLog(args: Value, vars: Value) throws -> Value {
+        static func opLog(args: Value, vars: Scope) throws -> Value {
             let value = try Operators.evalArgs(args, vars: vars).first ?? .undefined
             RulesEngine.logger.log(jsString(value))
             return value

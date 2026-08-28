@@ -139,6 +139,32 @@ final class PromoEligibilityPackageInfosTests: TestCase {
         expect(self.pairs(result)).to(equal([("$rc_annual", "promo_a")]))
     }
 
+    // A package can appear in several package components (a default row, a promo row, a
+    // "show all plans" sheet). Only one of them carries `apple_promo_offer_product_code`, and it is
+    // not necessarily the first in document order. Deduplicating by package must not throw that code
+    // away, or `promo_offer` overrides silently never resolve for the product.
+    // Same code loss as the duplicate case, but across the on-screen/inherited boundary: an
+    // on-screen placement with no code used to shadow the inherited workflow code entirely.
+    func testInheritedPromoCodeFillsInWhenOnScreenPlacementHasNone() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(annual, nil)],
+            workflowPackages: [annual],
+            workflowPromoOfferProductCodes: ["$rc_annual": "wf_a"]
+        )
+
+        expect(self.pairs(result)).to(equal([("$rc_annual", "wf_a")]))
+    }
+
+    func testKeepsPromoCodeFromLaterDuplicateWhenFirstOccurrenceHasNone() {
+        let result = PaywallsV2View.promoEligibilityPackageInfos(
+            paywallPackageInfos: [(annual, nil), (annual, "promo_a"), (annual, nil)],
+            workflowPackages: nil,
+            workflowPromoOfferProductCodes: nil
+        )
+
+        expect(self.pairs(result)).to(equal([("$rc_annual", "promo_a")]))
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

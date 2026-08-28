@@ -29,5 +29,5 @@ env:
 
 # The workflow is dismissed back to the launcher and the exit offer is NOT presented.
 - assertVisible: "Present Paywall"
-- assertNotVisible: "Paywall V2"
+- assertNotVisible: "Unlock full access"
 - takeScreenshot: "workflow_exit_offer_not_on_first_page"
