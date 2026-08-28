@@ -8,24 +8,29 @@
 import Foundation
 
 @objc(RCConfiguredStoreEnvironment)
-@_spi(Internal) public final class ConfiguredStoreEnvironment: NSObject {
-    private let systemInfo: SystemInfo
+@_spi(Internal) public final class ConfiguredStoreEnvironment: NSObject, @unchecked Sendable {
+    private let apiKey: String
+    private let fixedStoreFrontCountryCode: () -> String?
 
-    init(systemInfo: SystemInfo) {
-        self.systemInfo = systemInfo
+    convenience init(systemInfo: SystemInfo) {
+        self.init(apiKey: systemInfo.apiKey, storeFrontCountryCode: systemInfo.storefront?.countryCode)
+    }
+
+    @_spi(Internal) public init(apiKey: String, storeFrontCountryCode: @autoclosure @escaping () -> String?) {
+        self.apiKey = apiKey
+        self.fixedStoreFrontCountryCode = storeFrontCountryCode
     }
 
     @_spi(Internal) public var storeFrontCountryCode: String? {
-        return systemInfo.storefront?.countryCode
+        return self.fixedStoreFrontCountryCode()
     }
 
     @_spi(Internal) public func entitlementProviderName() -> String {
-        let apiKey = systemInfo.apiKey
-        if apiKey.starts(with: "mac_") {
+        if self.apiKey.starts(with: "mac_") {
             return "mac_app_store"
-        } else if apiKey.starts(with: "appl_") {
+        } else if self.apiKey.starts(with: "appl_") {
             return "app_store"
-        } else if apiKey.starts(with: "test_") {
+        } else if self.apiKey.starts(with: "test_") {
             return "test_store"
         }
         return "unknown"

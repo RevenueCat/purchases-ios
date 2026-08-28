@@ -1166,9 +1166,10 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var cachedOfferings: Offerings? { nil }
 
-    var storeFrontCountryCode: String? { nil }
-
-    var configuredStoreEnvironment: String { "test_store" }
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
