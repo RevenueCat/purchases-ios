@@ -101,16 +101,23 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
     }
 
     private static func decodeAudiences(from data: Data) throws -> [String: Audience] {
-        let audiences = try JSONDecoder.default.decode([String: Audience].self, from: data)
+        let entries = try JSONDecoder.default.decode([String: FailableAudience].self, from: data)
 
-        for (mapKey, audience) in audiences where mapKey != audience.id {
-            throw AudiencesConfigProviderError.audienceIdentifierMismatch(
-                mapKey: mapKey,
-                identifier: audience.id
-            )
+        return try entries.reduce(into: [:]) { audiences, entry in
+            let (mapKey, decoded) = entry
+            switch decoded.result {
+            case .success(let audience):
+                guard mapKey == audience.id else {
+                    throw AudiencesConfigProviderError.audienceIdentifierMismatch(
+                        mapKey: mapKey,
+                        identifier: audience.id
+                    )
+                }
+                audiences[mapKey] = audience
+            case .failure(let error):
+                Logger.error(Strings.remoteConfig.audienceDecodeFailed(identifier: mapKey, error: error))
+            }
         }
-
-        return audiences
     }
 
     private static func decodeBackendPredicateResults(
@@ -148,6 +155,20 @@ private extension AnyDecodable {
             }
             return objects.count == value.count ? .objectList(objects) : nil
         case .null: return nil
+        }
+    }
+
+}
+
+private struct FailableAudience: Decodable {
+
+    let result: Result<Audience, Error>
+
+    init(from decoder: Decoder) throws {
+        do {
+            self.result = .success(try Audience(from: decoder))
+        } catch {
+            self.result = .failure(error)
         }
     }
 

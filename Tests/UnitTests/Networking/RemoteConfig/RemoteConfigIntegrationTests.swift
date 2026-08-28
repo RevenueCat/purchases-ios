@@ -196,7 +196,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(configuration?.backendPredicateResults).to(beEmpty())
     }
 
-    func testAudiencesProviderRejectsMalformedAudienceInCanonicalBlob() async throws {
+    func testAudiencesProviderDropsMalformedAudienceWithoutDroppingValidSiblings() async throws {
         let payload = #"""
         {
             "aud_valid": { "id": "aud_valid", "rules": { "==": [1, 1] } },
@@ -215,9 +215,11 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container)
 
-        await expect {
-            try await AudiencesConfigProvider(manager: self.manager).configuration()
-        }.to(throwError())
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.audiences) == [
+            "aud_valid": Audience(id: "aud_valid", rules: #"{"==":[1,1]}"#)
+        ]
     }
 
     func testAudiencesProviderRejectsMismatchedMapKeyAndAudienceIdentifier() async throws {

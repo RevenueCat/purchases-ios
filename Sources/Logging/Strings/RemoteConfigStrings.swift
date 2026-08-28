@@ -10,6 +10,7 @@ import Foundation
 enum RemoteConfigStrings {
 
     case audienceConfigurationDecodeFailed(Error)
+    case audienceDecodeFailed(identifier: String, error: Error)
     case cacheURLNotAvailable
     case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointResolutionRepeatedlyStale(identifier: String)
@@ -57,6 +58,9 @@ extension RemoteConfigStrings: LogMessage {
         switch self {
         case let .audienceConfigurationDecodeFailed(error):
             return "Failed to decode canonical audience configuration: \(error.localizedDescription)"
+        case let .audienceDecodeFailed(identifier, error):
+            return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
+                "\(error.localizedDescription)"
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
