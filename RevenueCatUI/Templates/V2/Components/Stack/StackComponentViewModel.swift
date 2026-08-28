@@ -18,6 +18,16 @@ import SwiftUI
 
 typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
+/// A badge and the view models for what goes inside it, kept together so the badge a rule
+/// presents brings its own contents.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeContents {
+
+    let badge: PaywallComponent.Badge
+    let viewModels: [PaywallComponentViewModel]
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
@@ -27,7 +37,7 @@ class StackComponentViewModel {
 
     let viewModels: [PaywallComponentViewModel]
 
-    let badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])]
+    let badgeViewModels: [BadgeContents]
 
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
@@ -85,7 +95,7 @@ class StackComponentViewModel {
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])],
+        badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {

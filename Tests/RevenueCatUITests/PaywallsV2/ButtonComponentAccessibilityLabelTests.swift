@@ -293,7 +293,7 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
         return StackComponentViewModel(
             component: .init(visible: visible, components: []),
             viewModels: children,
-            badgeViewModels: badges.isEmpty ? [] : [(badge: badge, viewModels: badges)],
+            badgeViewModels: badges.isEmpty ? [] : [BadgeContents(badge: badge, viewModels: badges)],
             uiConfigProvider: self.uiConfigProvider
         )
     }

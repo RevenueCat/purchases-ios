@@ -557,7 +557,7 @@ struct ViewModelFactory {
             )
         }
 
-        var badgeViewModels: [(badge: PaywallComponent.Badge, viewModels: [PaywallComponentViewModel])] = []
+        var badgeViewModels: [BadgeContents] = []
         for badgeSource in [component.badge].compactMap({ $0 })
             + (component.overrides ?? []).compactMap(\.properties.badge)
         where !badgeViewModels.contains(where: { $0.badge === badgeSource }) {
@@ -573,7 +573,7 @@ struct ViewModelFactory {
                     colorScheme: colorScheme
                 )
             }
-            badgeViewModels.append((badge: badgeSource, viewModels: viewModels))
+            badgeViewModels.append(BadgeContents(badge: badgeSource, viewModels: viewModels))
         }
 
         return StackComponentViewModel(
