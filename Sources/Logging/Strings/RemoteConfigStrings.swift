@@ -11,6 +11,7 @@ enum RemoteConfigStrings {
 
     case audienceConfigurationDecodeFailed(Error)
     case audienceDecodeFailed(identifier: String, error: Error)
+    case backendPredicateResultUnsupported(String)
     case cacheURLNotAvailable
     case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
     case checkpointResolutionRepeatedlyStale(identifier: String)
@@ -61,6 +62,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .audienceDecodeFailed(identifier, error):
             return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
                 "\(error.localizedDescription)"
+        case let .backendPredicateResultUnsupported(identifier):
+            return "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule."
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .checkpointAudiencesNotEvaluated(checkpointID, reason):

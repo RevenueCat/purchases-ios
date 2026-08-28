@@ -303,10 +303,19 @@ final class RemoteConfigIntegrationTests: TestCase {
         )
 
         await self.refresh(with: container)
+        self.logger.clearMessages()
 
         let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
 
         expect(configuration?.backendPredicateResults) == ["valid": .bool(true)]
+        for identifier in ["null", "scalar_array", "mixed_array"] {
+            self.logger.verifyMessageWasLogged(
+                "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule.",
+                level: .warn,
+                expectedCount: 1
+            )
+        }
+        expect(self.logger.messages.filter { $0.level == .warn }).to(haveCount(3))
     }
 
     func testAudiencesProviderRecursivelyOmitsUnsupportedNestedBackendValues() async throws {

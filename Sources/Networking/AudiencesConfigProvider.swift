@@ -115,7 +115,11 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
         return item.content.reduce(into: [:]) { results, entry in
             let (conditionHash, value) = entry
-            results[conditionHash] = value.dimensionValue
+            guard let dimensionValue = value.dimensionValue else {
+                Logger.warn(Strings.remoteConfig.backendPredicateResultUnsupported(conditionHash))
+                return
+            }
+            results[conditionHash] = dimensionValue
         }
     }
 
