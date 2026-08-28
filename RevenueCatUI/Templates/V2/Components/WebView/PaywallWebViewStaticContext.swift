@@ -26,7 +26,7 @@ struct PaywallWebViewStaticContext {
     let offeringDisplayName: String
     let packages: [Package]
     let workflow: Workflow?
-    let store: Store
+    let store: String
     let storefrontCountryCode: String?
 
     // inputs are not yet supported. However the contract requires this data.
@@ -36,7 +36,7 @@ struct PaywallWebViewStaticContext {
         offering: Offering,
         packages: [Package],
         workflow: Workflow?,
-        store: Store,
+        store: String,
         storefrontCountryCode: String?
     ) {
         var identifiers = Set<String>()
@@ -86,7 +86,7 @@ struct PaywallWebViewStaticContext {
                 .object([
                     "identifier": .string(product.productIdentifier),
                     "store": .object([
-                        "store_type": .string(Self.storeType(self.store)),
+                        "store_type": .string(self.store),
                         "country": self.storefrontCountryCode.map(PaywallWebViewValue.string) ?? .null
                     ]),
                     "display_name": .string(product.localizedTitle),
@@ -128,16 +128,6 @@ struct PaywallWebViewStaticContext {
         let decimalNumber = NSDecimalNumber(decimal: value)
         return Double(decimalNumber.stringValue) ?? decimalNumber.doubleValue
     }
-
-    private static func storeType(_ store: Store) -> String {
-        return self.storeTypes[store] ?? "unknown"
-    }
-
-    private static let storeTypes: [Store: String] = [
-        .appStore: "app_store",
-        .macAppStore: "mac_app_store",
-        .testStore: "test_store"
-    ]
 
     private static func isoPeriod(_ period: SubscriptionPeriod) -> String {
         let unit: String

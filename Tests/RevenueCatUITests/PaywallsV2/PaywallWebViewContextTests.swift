@@ -29,7 +29,7 @@ final class PaywallWebViewContextTests: TestCase {
                 stepType: "screen",
                 screenType: ["paywall"]
             ),
-            store: .appStore,
+            store: "app_store",
             storefrontCountryCode: "USA"
         )
 
@@ -98,7 +98,7 @@ final class PaywallWebViewContextTests: TestCase {
         let productValue = try self.productValue(
             productType: .nonConsumable,
             subscriptionPeriod: nil,
-            store: .testStore
+            store: "test_store"
         )
 
         XCTAssertEqual(productValue["store"]?.objectValue?["store_type"]?.stringValue, "test_store")
@@ -246,7 +246,7 @@ final class PaywallWebViewContextTests: TestCase {
     private func productValue(
         productType: StoreProduct.ProductType,
         subscriptionPeriod: SubscriptionPeriod?,
-        store: Store = .appStore
+        store: String = "app_store"
     ) throws -> [String: PaywallWebViewValue] {
         let product = TestStoreProduct(
             localizedTitle: "Test",
