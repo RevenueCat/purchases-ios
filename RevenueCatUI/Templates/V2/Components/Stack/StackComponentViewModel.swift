@@ -18,8 +18,6 @@ import SwiftUI
 
 typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
-/// A badge and the view models for what goes inside it, kept together so the badge a rule
-/// presents brings its own contents.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct BadgeContents {
 
