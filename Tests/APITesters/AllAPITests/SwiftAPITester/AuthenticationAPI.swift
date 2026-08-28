@@ -27,6 +27,9 @@ func checkAuthenticationAPI() {
     let siwa: Identity = Identity.signInWithApple(Data())
     let _: IdentitySource = siwa.identitySource
 
+    let _: Identity = Identity.oidc(Data())
+    let _: Identity = Identity.firebase(Data())
+
     let _: IdentitySource = IdentitySource.anonymous
     let _: IdentitySource = IdentitySource.signInWithApple
     let _: IdentitySource = IdentitySource.google
