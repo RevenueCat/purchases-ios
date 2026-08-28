@@ -40,6 +40,8 @@ protocol PaywallPurchasesType: Sendable {
 
     var cachedOfferings: Offerings? { get }
 
+    var storeFrontCountryCode: String? { get }
+
 #if !os(tvOS)
     @Sendable
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult
