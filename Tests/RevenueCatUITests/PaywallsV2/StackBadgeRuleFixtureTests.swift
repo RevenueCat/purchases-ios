@@ -18,9 +18,8 @@ import XCTest
 
 #if !os(tvOS)
 
-/// Badge rules, driven from the wire format the dashboard actually sends rather than from
-/// hand-built Swift, so the decoder is part of what is under test. Every case here has more than
-/// one rule touching the badge, which is the shape that regressed.
+/// Badge rules built from real dashboard JSON, so decoding is covered too. Every case has two
+/// badge rules, which is the shape that broke.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class StackBadgeRuleFixtureTests: TestCase {
 
