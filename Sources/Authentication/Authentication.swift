@@ -130,16 +130,17 @@ public final class Authentication: NSObject {
             self.ongoingUserInitiatedRequestCount.decrement()
 
             self.operationDispatcher.dispatchOnMainThread {
-                if case let .success(values) = result {
-                    self.internalDelegate?.authenticatorDidChangeIdentity(reason: .identified) { newResult in
-                        let customerInfo = newResult?.value ?? values.info
-                        let didCreate = values.created
-                        let error = newResult?.error ?? nil
-
-                        completion(customerInfo, didCreate, error)
+                switch result {
+                case .success(let values):
+                    if let delegate = self.internalDelegate {
+                        delegate.authenticatorDidChangeIdentity(reason: .identified) { _ in
+                            completion(values.info, values.created, nil)
+                        }
+                    } else {
+                        completion(values.info, values.created, nil)
                     }
-                } else {
-                    completion(result.value?.info, result.value?.created ?? false, result.error?.asPublicError)
+                case .failure(let error):
+                    completion(nil, false, error.asPublicError)
                 }
             }
         }
@@ -233,17 +234,19 @@ public final class Authentication: NSObject {
             if userInitiated { self.ongoingUserInitiatedRequestCount.decrement() }
 
             switch result {
-            case .success:
-                self.internalDelegate?.authenticatorDidChangeIdentity(reason: .logIn, didHandle: { newResult in
-                    let info = newResult?.value ?? result.value?.info
-                    let error = newResult?.error ?? result.error?.asPublicError
-                    completion?(info, error)
+            case .success(let value):
+                self.internalDelegate?.authenticatorDidChangeIdentity(reason: .logIn, didHandle: { _ in
+                    completion?(value.info, nil)
                 })
             case .failure(let error):
                 if userInitiated == false {
                     self.reportAuthenticationError(error.asPublicError)
                 }
-                completion?(nil, error.asPublicError)
+                if let completion {
+                    self.operationDispatcher.dispatchOnMainThread {
+                        completion(nil, error.asPublicError)
+                    }
+                }
             }
 
         }
