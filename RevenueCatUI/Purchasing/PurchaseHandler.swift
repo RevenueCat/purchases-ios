@@ -1172,6 +1172,8 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
 
     var storeFrontCountryCode: String? { nil }
 
+    var configuredStoreEnvironment: String { "test_store" }
+
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError

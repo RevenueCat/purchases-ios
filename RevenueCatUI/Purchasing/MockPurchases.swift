@@ -36,6 +36,7 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     var remoteConfigEnabled = false
 
     var storeFrontCountryCode: String? { nil }
+    var configuredStoreEnvironment: String { "test_store" }
 
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
