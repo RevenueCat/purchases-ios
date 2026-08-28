@@ -1218,7 +1218,34 @@ public extension Purchases {
             return
         }
 
-        self.syncSubscriberAttributes(completion: {
+        let firstBlockingError: Atomic<PublicError?> = nil
+        /// Whether an attribute sync error should prevent offerings from being fetched.
+        let shouldBlockOfferingsFetch: @Sendable (PublicError) -> Bool = { error in
+            guard
+                error.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+                    == BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                let attributeErrors = error.subscriberAttributesErrors,
+                !attributeErrors.isEmpty
+            else {
+                return true
+            }
+
+            return attributeErrors.keys.contains { !$0.hasPrefix("$") }
+        }
+
+        self.syncSubscriberAttributes(syncedAttribute: { error in
+            // Reserved-only 7263 errors are non-blocking because those attributes cannot always be updated.
+            if let error, shouldBlockOfferingsFetch(error) {
+                firstBlockingError.modify {
+                    $0 = $0 ?? error
+                }
+            }
+        }, completion: {
+            if let error = firstBlockingError.value {
+                completion(nil, error)
+                return
+            }
+
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.remoteConfigManager.refreshRemoteConfig(
                     fetchContext: .read,
