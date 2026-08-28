@@ -1041,7 +1041,7 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsKeepsPaywallComponentsWhenRemoteConfigManagerIsNil() {
+    func testGetOfferingsSkipsPaywallComponentsWhenRemoteConfigManagerIsNil() {
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1049,7 +1049,8 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(self.mockOfferingsFactory.invokedCreateOfferingsShouldCreatePaywallComponents) == true
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
+            == .withoutPaywallComponents
     }
 
     func testGetOfferingsSkipsPaywallComponentsWhenRemoteConfigManagerIsEnabled() {
@@ -1062,7 +1063,8 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(self.mockOfferingsFactory.invokedCreateOfferingsShouldCreatePaywallComponents) == false
+        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
+            == .withoutPaywallComponents
     }
 
     func testGetOfferingsUsesPrunedMemoryCacheWhenRemoteConfigManagerIsEnabled() {

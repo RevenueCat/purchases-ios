@@ -837,7 +837,7 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingWithPaywallComponents() throws {
+    func testCreateOfferingForPreviewWithPaywallComponents() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
@@ -852,9 +852,9 @@ class OfferingsTests: TestCase {
         let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
 
         let offering = try XCTUnwrap(
-            self.offeringsFactory.createOffering(from: products,
-                                                 offering: offeringResponse0,
-                                                 uiConfig: uiConfig)
+            self.offeringsFactory.createOfferingForPreview(from: products,
+                                                           offering: offeringResponse0,
+                                                           uiConfig: uiConfig)
             )
 
         expect(offering.paywall).to(beNil())
@@ -862,7 +862,7 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingWithPaywallComponentsSkipsPayloadWhenPaywallComponentsDisabled() throws {
+    func testCreateOfferingWithPaywallComponentsSkipsPayloadInProduction() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
@@ -879,8 +879,7 @@ class OfferingsTests: TestCase {
         let offering = try XCTUnwrap(
             self.offeringsFactory.createOffering(from: products,
                                                  offering: offeringResponse0,
-                                                 uiConfig: uiConfig,
-                                                 shouldCreatePaywallComponents: false)
+                                                 uiConfig: uiConfig)
             )
 
         expect(offering.paywall).to(beNil())
@@ -888,7 +887,7 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingsWithPaywallComponentsSkipsPayloadInRetainedContentsWhenPaywallComponentsDisabled() throws {
+    func testCreateOfferingsWithPaywallComponentsSkipsPayloadInRetainedProductionContents() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
@@ -900,8 +899,7 @@ class OfferingsTests: TestCase {
         let offerings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: products,
                                                   contents: contents,
-                                                  loadedFromDiskCache: false,
-                                                  shouldCreatePaywallComponents: false)
+                                                  loadedFromDiskCache: false)
         )
         let offering = try XCTUnwrap(offerings.offering(identifier: "paywall_components"))
 
@@ -925,15 +923,13 @@ class OfferingsTests: TestCase {
         let prunedOfferings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: products,
                                                   contents: contents,
-                                                  loadedFromDiskCache: false,
-                                                  shouldCreatePaywallComponents: false)
+                                                  loadedFromDiskCache: false)
         )
 
         let rebuiltOfferings = try XCTUnwrap(
             self.offeringsFactory.createOfferings(from: products,
                                                   contents: prunedOfferings.contents,
-                                                  loadedFromDiskCache: true,
-                                                  shouldCreatePaywallComponents: false)
+                                                  loadedFromDiskCache: true)
         )
         let offering = try XCTUnwrap(rebuiltOfferings.offering(identifier: "paywall_components"))
 

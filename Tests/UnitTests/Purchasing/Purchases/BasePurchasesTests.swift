@@ -449,7 +449,7 @@ extension BasePurchasesTests {
 
         override func getOfferings(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
+                                   decodingMode: OfferingsResponse.DecodingMode = .withoutPaywallComponents,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {

@@ -315,8 +315,7 @@ private extension OfferingsManager {
             if let createdOfferings = self.offeringsFactory.createOfferings(
                 from: productsByID,
                 contents: contents,
-                loadedFromDiskCache: loadedFromDiskCache,
-                shouldCreatePaywallComponents: self.shouldCreatePaywallComponents
+                loadedFromDiskCache: loadedFromDiskCache
             ) {
                 completion(.success(OfferingsResultData(offerings: createdOfferings,
                                                         requestedProductIds: productIdentifiers,
@@ -471,14 +470,8 @@ private extension OfferingsManager {
         }
     }
 
-    /// Keep the offerings-provided components path when remote config is not active. When it is active,
-    /// workflows resolve paywall components from `/v1/config`, so retaining the offerings copy duplicates memory.
-    var shouldCreatePaywallComponents: Bool {
-        return self.remoteConfigManager == nil
-    }
-
     var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
-        return self.shouldCreatePaywallComponents ? .withPaywallComponents : .withoutPaywallComponents
+        return .withoutPaywallComponents
     }
 
     private func fetchProducts(
