@@ -54,10 +54,25 @@ final class PaywallWebViewContextTests: TestCase {
             )
         )
 
-        XCTAssertEqual(
-            actualPayload.trimmingWhitespacesAndNewLines,
-            Self.expectedPayload.trimmingWhitespacesAndNewLines
+        if #available(iOS 17, macOS 14, watchOS 10, *) {
+            // compare actual JSON strings -> more stable floating point from these os versions
+            // and onward. In practice this isn't truly necessary because of how we send the data
+            // over the bridge and how it handles the javascript Number type. But, this assertion
+            // is more explicit and easier for a human to reason about
+            XCTAssertEqual(actualPayload, Self.expectedPayload)
+        }
+
+        let decoder = JSONDecoder()
+        let subjectResult = try decoder.decode(
+            PaywallWebViewValue.self,
+            from: Data(actualPayload.utf8)
         )
+        let expectedResult = try decoder.decode(
+            PaywallWebViewValue.self,
+            from: Data(Self.expectedPayload.utf8)
+        )
+
+        XCTAssertEqual(actualResult, expectedResult)
     }
 
     func testSubscriptionPeriodDeterminesAutoRenewalWhenProductTypeIsUnavailable() throws {
