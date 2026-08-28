@@ -54,6 +54,11 @@ final class PaywallWebViewContextTests: TestCase {
             )
         )
 
+        XCTAssertEqual(
+            actualPayload.trimmingWhitespacesAndNewLines,
+            Self.expectedPayload.trimmingWhitespacesAndNewLines
+        )
+    }
 
     func testSubscriptionPeriodDeterminesAutoRenewalWhenProductTypeIsUnavailable() throws {
         let isAutoRenewing = try self.autoRenewingValue(
