@@ -63,7 +63,7 @@ final class PaywallWebViewContextTests: TestCase {
         }
 
         let decoder = JSONDecoder()
-        let subjectResult = try decoder.decode(
+        let actualResult = try decoder.decode(
             PaywallWebViewValue.self,
             from: Data(actualPayload.utf8)
         )
