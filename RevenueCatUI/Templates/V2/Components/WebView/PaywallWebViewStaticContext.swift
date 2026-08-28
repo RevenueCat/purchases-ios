@@ -136,10 +136,6 @@ struct PaywallWebViewStaticContext {
     private static let storeTypes: [Store: String] = [
         .appStore: "app_store",
         .macAppStore: "mac_app_store",
-        .stripe: "stripe",
-        .rcBilling: "rc_billing",
-        .external: "external",
-        .paddle: "paddle",
         .testStore: "test_store"
     ]
 
