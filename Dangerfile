@@ -10,7 +10,8 @@ EXCLUDED_SWIFT_PATH_PREFIXES = [
   'Tests/TestingApps/PaywallFixtures/',
   'Tests/TestingApps/PaywallFixturesUITests/',
   # SPM / Tuist-only: Release-stripped integration tests are not in RevenueCat.xcodeproj.
-  'Tests/PurchasesUIServiceIntegrationTests/'
+  'Tests/PurchasesUIServiceIntegrationTests/',
+  'Tests/TestingApps/PaywallsTester/'
 ].freeze
 
 COMMENT_MARKER = "<!-- purchases-ios-danger -->"
