@@ -920,7 +920,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output
           destination: scan-test-output
-      - slack-notify-on-fail
 
   spm-revenuecat-ui-watchos:
     executor:
@@ -1081,7 +1080,6 @@ jobs:
       - store_artifacts:
           path: fastlane/test_output/xctest
           destination: scan-test-output-ios-27
-      - slack-notify-on-fail
       - github-notify-pr-on-fail
 
   # As of May 12, 2026, there is a StoreKit bug that is preventing us from running unit tests
