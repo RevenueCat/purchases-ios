@@ -88,6 +88,10 @@ final class PurchaseHandler: ObservableObject {
         return purchases.storeFrontCountryCode
     }
 
+    var configuredStoreEnvironment: String {
+        return purchases.configuredStoreEnvironment
+    }
+
     /// The result of a purchase completed in the current session.
     /// This is reset when a new paywall session starts, allowing us to track
     /// whether a purchase happened during this specific paywall presentation.

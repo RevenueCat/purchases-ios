@@ -61,6 +61,9 @@ public protocol PurchasesType: AnyObject {
      */
     var delegate: PurchasesDelegate? { get set }
 
+    /// A description of the configured store environment
+    @_spi(Internal) var configuredStoreEnvironment: String { get }
+
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         /**

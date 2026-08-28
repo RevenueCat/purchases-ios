@@ -341,6 +341,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
+    private let configuredStoreType: ConfiguredStoreEnvironment
+    @_spi(Internal) public var configuredStoreEnvironment: String {
+        configuredStoreType.entitlementProviderName()
+    }
+
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
                      appUserID: String?,
@@ -879,6 +884,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
          webBundleEventBus: WebBundleEventBus
     ) {
         self.webBundleEventBus = webBundleEventBus
+
+        self.configuredStoreType = .from(apiKey: systemInfo.apiKey)
 
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
@@ -3243,3 +3250,36 @@ extension Purchases {
     }
 }
 #endif
+
+@_spi(Internal) public class ConfiguredStoreEnvironment {
+    init() { }
+
+    func entitlementProviderName() -> String {
+        if self is TestStore {
+            return "test_store"
+        }
+        if self is AppleAppStore {
+            return "app_store"
+        }
+        if self is AppleMacAppStore {
+            return "mac_app_store"
+        }
+        return "unknown"
+    }
+
+    static func from(apiKey: String) -> ConfiguredStoreEnvironment {
+        if apiKey.starts(with: "mac_") {
+            return AppleMacAppStore()
+        } else if apiKey.starts(with: "appl_") {
+            return AppleAppStore()
+        } else if apiKey.starts(with: "test_") {
+            return TestStore()
+        } else {
+            return ConfiguredStoreEnvironment()
+        }
+    }
+}
+
+@_spi(Internal) public final class TestStore: ConfiguredStoreEnvironment {}
+@_spi(Internal) public final class AppleAppStore: ConfiguredStoreEnvironment {}
+@_spi(Internal) public final class AppleMacAppStore: ConfiguredStoreEnvironment {}
