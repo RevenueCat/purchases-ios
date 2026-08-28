@@ -284,7 +284,7 @@ struct PaywallsV2View: View {
             offering: self.offering,
             packages: self.workflowPackages ?? paywallState.packages,
             workflow: workflow,
-            storefrontCountryCode: self.purchaseHandler.storefrontCountryCode
+            storefrontCountryCode: self.purchaseHandler.storeFrontCountryCode
         )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
