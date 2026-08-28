@@ -36,20 +36,6 @@ class OfferingsFactory {
         )
     }
 
-    /// Preview-only path for rendering local offerings fixtures that contain paywall components.
-    func createOfferingsForPreview(
-        from storeProductsByID: [String: StoreProduct],
-        contents: Offerings.Contents,
-        loadedFromDiskCache: Bool
-    ) -> Offerings? {
-        return self.createOfferings(
-            from: storeProductsByID,
-            contents: contents,
-            loadedFromDiskCache: loadedFromDiskCache,
-            includePaywallComponents: true
-        )
-    }
-
     private func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
@@ -93,20 +79,6 @@ class OfferingsFactory {
             offering: offering,
             uiConfig: uiConfig,
             includePaywallComponents: false
-        )
-    }
-
-    /// Preview-only path for rendering a local offering fixture that contains paywall components.
-    func createOfferingForPreview(
-        from storeProductsByID: [String: StoreProduct],
-        offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?
-    ) -> Offering? {
-        return self.createOffering(
-            from: storeProductsByID,
-            offering: offering,
-            uiConfig: uiConfig,
-            includePaywallComponents: true
         )
     }
 
@@ -180,6 +152,40 @@ class OfferingsFactory {
                      offeringIdsByPlacement: data.offeringIdsByPlacement)
     }
 }
+
+#if DEBUG
+extension OfferingsFactory {
+
+    /// Preview-only path for rendering local offerings fixtures that contain paywall components.
+    func createOfferingsForPreview(
+        from storeProductsByID: [String: StoreProduct],
+        contents: Offerings.Contents,
+        loadedFromDiskCache: Bool
+    ) -> Offerings? {
+        return self.createOfferings(
+            from: storeProductsByID,
+            contents: contents,
+            loadedFromDiskCache: loadedFromDiskCache,
+            includePaywallComponents: true
+        )
+    }
+
+    /// Preview-only path for rendering a local offering fixture that contains paywall components.
+    func createOfferingForPreview(
+        from storeProductsByID: [String: StoreProduct],
+        offering: OfferingsResponse.Offering,
+        uiConfig: UIConfig?
+    ) -> Offering? {
+        return self.createOffering(
+            from: storeProductsByID,
+            offering: offering,
+            uiConfig: uiConfig,
+            includePaywallComponents: true
+        )
+    }
+
+}
+#endif
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
