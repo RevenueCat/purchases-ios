@@ -262,31 +262,58 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Set(resolved.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
     }
 
-    func testConfigGenerationChangeDuringResolutionReturnsConfigurationUnavailable() async throws {
+    func testConfigGenerationChangeDuringResolutionRetriesOnce() async throws {
+        let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            if fetchCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return self.offerings
+        }
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(fetchCount.value, 2)
+    }
+
+    func testConfigChangingDuringBothResolutionAttemptsReturnsConfigurationUnavailable() async throws {
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
             self.checkpointsProvider.configGeneration += 1
+            self.audiencesProvider.configGeneration += 1
             return self.offerings
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 2)
     }
 
-    func testConfigGenerationChangeDuringAudienceEvaluationSkipsResolution() async throws {
+    func testConfigGenerationChangeDuringAudienceEvaluationRetriesBeforeResolving() async throws {
+        let configurationCount = Atomic<Int>(0)
         let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
             fetchCount.modify { $0 += 1 }
             return self.offerings
         }
         self.audiencesProvider.onConfiguration = {
-            self.checkpointsProvider.configGeneration += 1
+            configurationCount.modify { $0 += 1 }
+            if configurationCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertEqual(fetchCount.value, 0, "A rule matched against stale config should not be resolved")
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+        XCTAssertEqual(fetchCount.value, 1, "The stale attempt should not resolve its matched rule")
     }
 
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
