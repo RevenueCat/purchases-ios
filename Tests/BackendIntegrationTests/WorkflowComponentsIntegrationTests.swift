@@ -38,7 +38,7 @@ final class WorkflowComponentsIntegrationTests: BaseStoreKitIntegrationTests {
         try await super.setUp()
     }
 
-    func testOfferingsSkipPaywallComponentsWhenRemoteConfigIsUnavailable() async throws {
+    func testOfferingsSkipPaywallComponentsWhenRemoteConfigIsEnabled() async throws {
         let current = try await self.currentOffering
 
         expect(current.identifier) == "default"
