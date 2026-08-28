@@ -787,6 +787,248 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("30%"))
     }
 
+    // MARK: - Discount variables
+
+    private func packageWithPricedIntroOffer(
+        price: Decimal,
+        localizedPriceString: String,
+        introPrice: Decimal,
+        introLocalizedPriceString: String,
+        introPeriod: SubscriptionPeriod,
+        period: SubscriptionPeriod = .init(value: 1, unit: .month)
+    ) -> Package {
+        return Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: price,
+                currencyCode: "USD",
+                localizedPriceString: localizedPriceString,
+                productIdentifier: "com.revenuecat.product.offer_discount",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: period,
+                introductoryDiscount: .init(
+                    identifier: "intro",
+                    price: introPrice,
+                    localizedPriceString: introLocalizedPriceString,
+                    paymentMode: .payAsYouGo,
+                    subscriptionPeriod: introPeriod,
+                    numberOfPeriods: 3,
+                    type: .introductory
+                ),
+                locale: Locale(identifier: "en_US")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    func testProductAbsoluteDiscountIsExpressedOverThePackagePeriod() {
+        // $10.00/mo anchor vs. a $60.00 annual package: the annual buyer saves
+        // ($10.00 x 12) - $60.00 = $60.00 over the year they're actually buying,
+        // not the $5.00 the per-month gap would suggest.
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            mostExpensivePricePerMonth: 10.00,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$60.00"))
+    }
+
+    func testProductAbsoluteDiscountIsEmptyForTheAnchorPackageItself() {
+        // monthlyPackage is $6.99/mo, so an anchor of $6.99 leaves nothing to save.
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            mostExpensivePricePerMonth: 6.99,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.monthlyPackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductAbsoluteDiscountIsEmptyWithoutAnAnchor() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductAbsoluteDiscountIsEmptyForNonSubscriptions() {
+        // Lifetime has no period to normalize the anchor to.
+        let variableHandler = VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            mostExpensivePricePerMonth: 10.00,
+            showZeroDecimalPlacePrices: false
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.absolute_discount }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    func testProductOfferDiscountsCompareOfferToStandardPrice() {
+        // $9.99/mo with a $5.99/mo intro: saves $4.00, 40% off.
+        let package = self.packageWithPricedIntroOffer(
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            introPrice: 5.99,
+            introLocalizedPriceString: "$5.99",
+            introPeriod: .init(value: 1, unit: .month)
+        )
+
+        let relative = variableHandler.processVariables(
+            in: "{{ product.offer_relative_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(relative).to(equal("40%"))
+
+        let absolute = variableHandler.processVariables(
+            in: "{{ product.offer_absolute_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(absolute).to(equal("$4.00"))
+    }
+
+    func testProductOfferDiscountsWorkOnANonMonthlyBasePeriod() {
+        // Guards against over-rejecting: a 3-month offer on a 3-month base plan is
+        // comparable. The equivalent case is what regressed in purchases-js.
+        let package = self.packageWithPricedIntroOffer(
+            price: 27.00,
+            localizedPriceString: "$27.00",
+            introPrice: 15.00,
+            introLocalizedPriceString: "$15.00",
+            introPeriod: .init(value: 3, unit: .month),
+            period: .init(value: 3, unit: .month)
+        )
+
+        let relative = variableHandler.processVariables(
+            in: "{{ product.offer_relative_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(relative).to(equal("44%"))
+
+        let absolute = variableHandler.processVariables(
+            in: "{{ product.offer_absolute_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(absolute).to(equal("$12.00"))
+    }
+
+    func testProductOfferDiscountsAreEmptyWhenOfferPeriodDiffersFromBasePeriod() {
+        // $15.00 for the first 3 months isn't comparable to a $9.99 monthly price.
+        let package = self.packageWithPricedIntroOffer(
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            introPrice: 15.00,
+            introLocalizedPriceString: "$15.00",
+            introPeriod: .init(value: 3, unit: .month)
+        )
+
+        let relative = variableHandler.processVariables(
+            in: "{{ product.offer_relative_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(relative).to(equal(""))
+
+        let absolute = variableHandler.processVariables(
+            in: "{{ product.offer_absolute_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(absolute).to(equal(""))
+    }
+
+    func testProductOfferDiscountsAreEmptyForAFreeTrial() {
+        // packageWithIntroOffer is a free 1-week trial: it would otherwise read as
+        // "100%" off, and its period doesn't match the monthly base either.
+        let relative = variableHandler.processVariables(
+            in: "{{ product.offer_relative_discount }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(relative).to(equal(""))
+
+        let absolute = variableHandler.processVariables(
+            in: "{{ product.offer_absolute_discount }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(absolute).to(equal(""))
+    }
+
+    func testProductOfferDiscountsAreEmptyWhenNotEligibleForTheOffer() {
+        let package = self.packageWithPricedIntroOffer(
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            introPrice: 5.99,
+            introLocalizedPriceString: "$5.99",
+            introPeriod: .init(value: 1, unit: .month)
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_absolute_discount }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
     func testFunctionUppercase() {
         let result = variableHandler.processVariables(
             in: "{{ product.period | uppercase }}",
