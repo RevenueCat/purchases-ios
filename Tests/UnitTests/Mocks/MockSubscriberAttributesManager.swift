@@ -425,6 +425,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
     var invokedSyncAttributesForAllUsersCount = 0
     var invokedSyncAttributesForAllUsersParameters: (currentAppUserID: String?, Void)?
     var invokedSyncAttributesForAllUsersParametersList = [(currentAppUserID: String?, Void)]()
+    var stubbedSyncAttributesForAllUsersError: PurchasesError?
 
     override func syncAttributesForAllUsers(
         currentAppUserID: String,
@@ -435,6 +436,7 @@ class MockSubscriberAttributesManager: SubscriberAttributesManager {
         invokedSyncAttributesForAllUsersCount += 1
         invokedSyncAttributesForAllUsersParameters = (currentAppUserID, ())
         invokedSyncAttributesForAllUsersParametersList.append((currentAppUserID, ()))
+        syncedAttribute?(stubbedSyncAttributesForAllUsersError)
         completion?()
 
         return -1
