@@ -45,124 +45,124 @@ final class PaywallWebViewContextTests: TestCase {
         )
         let payload = context.payload(updatedAt: Date(timeIntervalSince1970: 1_787_000_000))
 
-        let actualData = try JSONEncoder().encode(payload)
-        let actualJSON = try JSONDecoder().decode(PaywallWebViewValue.self, from: actualData)
-        let expectedJSON = try JSONDecoder().decode(
-            PaywallWebViewValue.self,
-            from: Data(Self.expectedPayload.utf8)
-        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
-        XCTAssertEqual(actualJSON, expectedJSON)
+        let actualPayload = try XCTUnwrap(String(data: encoder.encode(payload), encoding: .utf8))
+
+        XCTAssertEqual(actualPayload, Self.expectedPayload)
     }
 
     private static let expectedPayload = """
     {
-      "custom": {
-        "first_name": "Alex",
-        "streak_days": 12,
-        "is_premium": true
+      "custom" : {
+        "first_name" : "Alex",
+        "is_premium" : true,
+        "streak_days" : 12
       },
-      "offering": {
-        "identifier": "default",
-        "display_name": "Default"
+      "device_meta" : {
+        "dark_mode" : true,
+        "is_preview" : false,
+        "locale" : "en_US",
+        "updated_at" : 1787000000000
       },
-      "packages": [
+      "offering" : {
+        "display_name" : "Default",
+        "identifier" : "default"
+      },
+      "package" : {
+        "identifier" : "$rc_annual",
+        "products" : [
+          {
+            "display_name" : "Annual",
+            "identifier" : "com.revenuecat.product_3",
+            "is_auto_renewing" : true,
+            "is_family_shareable" : false,
+            "is_subscription" : true,
+            "period" : "P1Y",
+            "price" : {
+              "amount" : 53.99,
+              "currency" : "USD"
+            },
+            "store" : {
+              "country" : "USA",
+              "store_type" : "app_store"
+            }
+          }
+        ]
+      },
+      "packages" : [
         {
-          "identifier": "$rc_monthly",
-          "products": [
+          "identifier" : "$rc_monthly",
+          "products" : [
             {
-              "identifier": "com.revenuecat.product_2",
-              "store": {
-                "store_type": "app_store",
-                "country": "USA"
+              "display_name" : "Monthly",
+              "identifier" : "com.revenuecat.product_2",
+              "is_auto_renewing" : true,
+              "is_family_shareable" : false,
+              "is_subscription" : true,
+              "period" : "P1M",
+              "price" : {
+                "amount" : 6.99,
+                "currency" : "USD"
               },
-              "display_name": "Monthly",
-              "is_subscription": true,
-              "period": "P1M",
-              "is_family_shareable": false,
-              "is_auto_renewing": true,
-              "price": {
-                "amount": 6.99,
-                "currency": "USD"
+              "store" : {
+                "country" : "USA",
+                "store_type" : "app_store"
               }
             }
           ]
         },
         {
-          "identifier": "$rc_annual",
-          "products": [
+          "identifier" : "$rc_annual",
+          "products" : [
             {
-              "identifier": "com.revenuecat.product_3",
-              "store": {
-                "store_type": "app_store",
-                "country": "USA"
+              "display_name" : "Annual",
+              "identifier" : "com.revenuecat.product_3",
+              "is_auto_renewing" : true,
+              "is_family_shareable" : false,
+              "is_subscription" : true,
+              "period" : "P1Y",
+              "price" : {
+                "amount" : 53.99,
+                "currency" : "USD"
               },
-              "display_name": "Annual",
-              "is_subscription": true,
-              "period": "P1Y",
-              "is_family_shareable": false,
-              "is_auto_renewing": true,
-              "price": {
-                "amount": 53.99,
-                "currency": "USD"
+              "store" : {
+                "country" : "USA",
+                "store_type" : "app_store"
               }
             }
           ]
         }
       ],
-      "package": {
-        "identifier": "$rc_annual",
-        "products": [
+      "selected_package" : {
+        "identifier" : "$rc_monthly",
+        "products" : [
           {
-            "identifier": "com.revenuecat.product_3",
-            "store": {
-              "store_type": "app_store",
-              "country": "USA"
+            "display_name" : "Monthly",
+            "identifier" : "com.revenuecat.product_2",
+            "is_auto_renewing" : true,
+            "is_family_shareable" : false,
+            "is_subscription" : true,
+            "period" : "P1M",
+            "price" : {
+              "amount" : 6.99,
+              "currency" : "USD"
             },
-            "display_name": "Annual",
-            "is_subscription": true,
-            "period": "P1Y",
-            "is_family_shareable": false,
-            "is_auto_renewing": true,
-            "price": {
-              "amount": 53.99,
-              "currency": "USD"
+            "store" : {
+              "country" : "USA",
+              "store_type" : "app_store"
             }
           }
         ]
       },
-      "selected_package": {
-        "identifier": "$rc_monthly",
-        "products": [
-          {
-            "identifier": "com.revenuecat.product_2",
-            "store": {
-              "store_type": "app_store",
-              "country": "USA"
-            },
-            "display_name": "Monthly",
-            "is_subscription": true,
-            "period": "P1M",
-            "is_family_shareable": false,
-            "is_auto_renewing": true,
-            "price": {
-              "amount": 6.99,
-              "currency": "USD"
-            }
-          }
-        ]
-      },
-      "workflow": {
-        "workflow_id": "wf_123",
-        "step_id": "step_paywall",
-        "step_type": "screen",
-        "screen_type": ["paywall"]
-      },
-      "device_meta": {
-        "is_preview": false,
-        "locale": "en_US",
-        "dark_mode": true,
-        "updated_at": 1787000000000
+      "workflow" : {
+        "screen_type" : [
+          "paywall"
+        ],
+        "step_id" : "step_paywall",
+        "step_type" : "screen",
+        "workflow_id" : "wf_123"
       }
     }
     """
