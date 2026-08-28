@@ -18,9 +18,7 @@ import XCTest
 
 #if !os(tvOS)
 
-/// A stack can have no badge of its own and gain one from a rule, and the dashboard commonly
-/// authors one badge per offer type. Each badge carries its own rules, so the badge that renders
-/// has to be the one whose condition matched, contents included.
+/// A stack can gain a badge from a rule, and each badge carries its own rules for its copy.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class StackBadgeOverrideTests: TestCase {
 
@@ -49,8 +47,7 @@ final class StackBadgeOverrideTests: TestCase {
 
     // MARK: - Fixtures
 
-    /// A badge whose inner text swaps itself when `condition` matches, the way the dashboard
-    /// authors it: placeholder copy in the base, real copy behind the rule.
+    /// Placeholder copy in the base, real copy behind the rule, as the dashboard authors it.
     private static func badge(
         baseLid: String,
         resolvedLid: String,
@@ -97,7 +94,6 @@ final class StackBadgeOverrideTests: TestCase {
             ))
         )
 
-        // No badge of its own; one badge per offer type, added by rules.
         let stack = PaywallComponent.StackComponent(
             components: [],
             badge: nil,
@@ -157,7 +153,7 @@ final class StackBadgeOverrideTests: TestCase {
 
     // MARK: - Resolution
 
-    /// What the badge that the stack actually presents renders as text.
+    /// The text inside the badge the stack presents.
     @MainActor
     private static func presentedBadgeText(
         of stackViewModel: StackComponentViewModel,
@@ -195,9 +191,7 @@ final class StackBadgeOverrideTests: TestCase {
 
     // MARK: - Tests
 
-    /// A promo-only customer presents the promo badge, so its own promo rule has to resolve too.
-    /// It used to render the first rule's badge contents instead, leaving placeholder copy on
-    /// screen for an eligible customer.
+    /// Used to render the first rule's badge contents, so an eligible customer saw placeholder copy.
     @MainActor
     func testPromoOnlyCustomerSeesThePromoBadgeCopy() async throws {
         let stackViewModel = try Self.makeStackViewModel()
@@ -213,8 +207,7 @@ final class StackBadgeOverrideTests: TestCase {
         expect(rendered).to(equal("PROMO RESOLVED"))
     }
 
-    /// The mirror case: put the promo rule first and the intro customer breaks instead. The defect
-    /// tracked rule order, not offer type.
+    /// The defect tracked rule order, not offer type.
     @MainActor
     func testReversingTheRuleOrderKeepsIntroCustomersCorrect() throws {
         let stackViewModel = try Self.makeStackViewModel(promoRuleFirst: true)
@@ -228,7 +221,7 @@ final class StackBadgeOverrideTests: TestCase {
         expect(rendered).to(equal("INTRO RESOLVED"))
     }
 
-    /// The first rule's own badge keeps working, which is the case that always did.
+    /// Control: the first rule's badge always worked.
     @MainActor
     func testIntroCustomerSeesTheIntroBadgeCopy() throws {
         let stackViewModel = try Self.makeStackViewModel()

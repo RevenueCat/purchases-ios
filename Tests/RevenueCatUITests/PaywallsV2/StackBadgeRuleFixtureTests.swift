@@ -25,8 +25,7 @@ final class StackBadgeRuleFixtureTests: TestCase {
 
     // MARK: - Fixtures
 
-    /// A badge whose inner text swaps on `innerCondition`, the way the dashboard authors it:
-    /// placeholder copy in the base, real copy behind a rule.
+    /// Placeholder copy in the base, real copy behind `innerCondition`.
     private static func badgeJSON(
         baseLid: String,
         resolvedLid: String,
@@ -110,7 +109,7 @@ final class StackBadgeRuleFixtureTests: TestCase {
     }
 
     private static func stackViewModel(from json: String) throws -> StackComponentViewModel {
-        // The production decoder, so the wire keys under test are the real ones.
+        // Production decoder, so the real wire keys are tested.
         let component = try JSONDecoder.default.decode(
             PaywallComponent.StackComponent.self,
             from: Data(json.utf8)
@@ -173,7 +172,7 @@ final class StackBadgeRuleFixtureTests: TestCase {
         return cache.get(for: package)
     }
 
-    /// The text inside the badge the stack actually presents.
+    /// The text inside the badge the stack presents.
     @MainActor
     private static func presentedBadgeText(
         json: String,
@@ -255,10 +254,10 @@ final class StackBadgeRuleFixtureTests: TestCase {
         )).to(equal("PROMO RESOLVED"))
     }
 
-    // MARK: - Inner rule on a different condition than the rule that supplied the badge
+    // MARK: - Inner rule on another condition
 
-    /// The badge arrives from the promo rule, but its text swaps on selection instead. The two are
-    /// independent, so the inner rule has to be evaluated on its own terms.
+    /// The badge comes from the promo rule but its text swaps on selection, so the two resolve
+    /// independently.
     private static var promoBadgeWithSelectionInnerRule: String {
         return stackJSON(rules: [
             (condition: "intro_offer",

@@ -19,10 +19,8 @@ final class BadgeRuleUITests: XCTestCase {
         self.continueAfterFailure = false
     }
 
-    /// The row has one badge rule per offer type, and rules are last-match-wins. A customer
-    /// matching both gets the promo rule's badge, so the promo badge's own copy has to render.
-    /// Showing "Badge" means the badge came from one rule and its copy from another, which leaves
-    /// the placeholder nobody fills in because it is never meant to be seen.
+    /// Rules are last-match-wins, so a customer matching both gets the promo rule's badge and its
+    /// own copy. "Badge" means the copy came from the other rule.
     func testBadgeShowsTheCopyOfTheRuleThatSuppliedIt() throws {
         let app = self.launch(fixture: "badge_rules_per_offer")
 

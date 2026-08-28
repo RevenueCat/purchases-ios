@@ -28,8 +28,7 @@ enum PaywallFixture: String, CaseIterable {
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
 
-    /// One badge rule per offer type, each badge carrying its own rule for its copy. A customer
-    /// matching both gets the later rule's badge, so it must show that badge's own copy.
+    /// One badge rule per offer type, each with its own rule for its copy.
     case badgeRulesPerOffer = "badge_rules_per_offer"
 
     var title: String {
@@ -106,8 +105,7 @@ private extension PaywallFixture {
         variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
     )
 
-    /// Carries a `.promotional` discount matching the badge rule's offer code, which is what the
-    /// simulated promo cache looks for.
+    /// Carries the `.promotional` discount the simulated promo cache looks for.
     static func annualPackageWithPromoOffer(offeringIdentifier: String) -> Package {
         let promo = TestStoreProductDiscount(
             identifier: Self.promoOfferCode,
@@ -334,9 +332,7 @@ private extension PaywallFixture {
 
     static let promoOfferCode = "fixture_promo_offer"
 
-    /// A package row with no badge of its own, gaining one from each offer rule. Both badges carry
-    /// the same placeholder copy in their base and their real copy behind their own rule, which is
-    /// how the dashboard authors them.
+    /// A row with no badge of its own, gaining one from each offer rule.
     static func badgeRulesPerOfferComponentsData() -> PaywallComponentsData {
         func badge(baseLid: String, resolvedLid: String, condition: PaywallComponent.Condition)
         -> PaywallComponent.Badge {
