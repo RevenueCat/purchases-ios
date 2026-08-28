@@ -557,23 +557,32 @@ struct ViewModelFactory {
             )
         }
 
+        // Every badge the stack could present, so the one a rule presents has its own contents.
         var badgeViewModels: [BadgeContents] = []
-        for badgeSource in [component.badge].compactMap({ $0 })
-            + (component.overrides ?? []).compactMap(\.properties.badge)
-        where !badgeViewModels.contains(where: { $0.badge === badgeSource }) {
-            let viewModels = try badgeSource.stack.components.map { component in
-                try self.toViewModel(
-                    component: component,
-                    packageValidator: packageValidator,
-                    // Explicitly not looking for purchase button in badge
-                    purchaseButtonCollector: nil,
-                    offering: offering,
-                    localizationProvider: localizationProvider,
-                    uiConfigProvider: uiConfigProvider,
-                    colorScheme: colorScheme
-                )
-            }
-            badgeViewModels.append(BadgeContents(badge: badgeSource, viewModels: viewModels))
+
+        func appendBadge(_ badge: PaywallComponent.Badge?) throws {
+            guard let badge, !badgeViewModels.contains(where: { $0.badge === badge }) else { return }
+
+            badgeViewModels.append(BadgeContents(
+                badge: badge,
+                viewModels: try badge.stack.components.map { component in
+                    try self.toViewModel(
+                        component: component,
+                        packageValidator: packageValidator,
+                        // Explicitly not looking for purchase button in badge
+                        purchaseButtonCollector: nil,
+                        offering: offering,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        colorScheme: colorScheme
+                    )
+                }
+            ))
+        }
+
+        try appendBadge(component.badge)
+        for override in component.overrides ?? [] {
+            try appendBadge(override.properties.badge)
         }
 
         return StackComponentViewModel(
