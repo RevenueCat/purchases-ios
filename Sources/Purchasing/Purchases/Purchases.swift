@@ -1230,8 +1230,9 @@ public extension Purchases {
                 return true
             }
 
-            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes, some of which cannot be
-            // overwritten. Non-`$` keys are custom attributes, so a failure means their intended values were not synced.
+            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes,
+            // some of which cannot be overwritten. Non-`$` keys are custom attributes,
+            // so a failure means their intended values were not synced.
             return attributeErrors.keys.contains { !$0.hasPrefix("$") }
         }
 
