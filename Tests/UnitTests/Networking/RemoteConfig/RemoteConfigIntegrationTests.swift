@@ -222,7 +222,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         ]
     }
 
-    func testAudiencesProviderRejectsMismatchedMapKeyAndAudienceIdentifier() async throws {
+    func testAudiencesProviderAcceptsMismatchedMapKeyAndAudienceIdentifier() async throws {
         let payload = #"{ "map_key": { "id": "different_id", "rules": {} } }"#.asData
         let ref = RCContainerTestData.blobRef(for: payload)
         let container = try Self.containerData(
@@ -236,9 +236,9 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         await self.refresh(with: container)
 
-        await expect {
-            try await AudiencesConfigProvider(manager: self.manager).configuration()
-        }.to(throwError())
+        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
+
+        expect(configuration?.audiences["map_key"]) == Audience(id: "different_id", rules: "{}")
     }
 
     func testAudiencesProviderAcceptsRuleDimensionBackendValues() async throws {

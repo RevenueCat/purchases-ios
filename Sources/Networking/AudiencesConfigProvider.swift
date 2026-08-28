@@ -26,12 +26,6 @@ struct AudienceConfigurationSnapshot: Equatable, Sendable {
 
 }
 
-enum AudiencesConfigProviderError: Error, Equatable, Sendable {
-
-    case audienceIdentifierMismatch(mapKey: String, identifier: String)
-
-}
-
 /// The topic-specific front door for canonical audience configuration.
 ///
 /// All published audience rules live in the immutable `default` blob. Subscriber-specific protected values
@@ -103,16 +97,10 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
     private static func decodeAudiences(from data: Data) throws -> [String: Audience] {
         let entries = try JSONDecoder.default.decode([String: FailableAudience].self, from: data)
 
-        return try entries.reduce(into: [:]) { audiences, entry in
+        return entries.reduce(into: [:]) { audiences, entry in
             let (mapKey, decoded) = entry
             switch decoded.result {
             case .success(let audience):
-                guard mapKey == audience.id else {
-                    throw AudiencesConfigProviderError.audienceIdentifierMismatch(
-                        mapKey: mapKey,
-                        identifier: audience.id
-                    )
-                }
                 audiences[mapKey] = audience
             case .failure(let error):
                 Logger.error(Strings.remoteConfig.audienceDecodeFailed(identifier: mapKey, error: error))
