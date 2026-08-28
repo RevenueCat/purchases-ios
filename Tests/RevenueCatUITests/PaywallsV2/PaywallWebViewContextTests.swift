@@ -66,6 +66,9 @@ final class PaywallWebViewContextTests: TestCase {
         "locale" : "en_US",
         "updated_at" : 1787000000000
       },
+      "inputs" : {
+
+      },
       "offering" : {
         "display_name" : "Default",
         "identifier" : "default"

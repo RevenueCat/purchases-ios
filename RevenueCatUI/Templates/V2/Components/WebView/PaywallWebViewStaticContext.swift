@@ -28,6 +28,9 @@ struct PaywallWebViewStaticContext {
     let workflow: Workflow?
     let storefrontCountryCode: String?
 
+    // inputs are not yet supported. However the contract requires this data.
+    let inputs: [String: String] = [:]
+
     init(
         offering: Offering,
         packages: [Package],
@@ -56,6 +59,7 @@ struct PaywallWebViewStaticContext {
 
         return .init(
             custom: .object(customVariables.mapValues(Self.webValue)),
+            inputs: .object(self.inputs.mapValues(PaywallWebViewValue.string)),
             offering: .object([
                 "identifier": .string(self.offeringIdentifier),
                 "display_name": .string(self.offeringDisplayName)
@@ -141,6 +145,7 @@ struct PaywallWebViewStaticContext {
 struct PaywallWebViewContext: Equatable {
 
     let custom: PaywallWebViewValue
+    let inputs: PaywallWebViewValue
     let offering: PaywallWebViewValue
     let packages: PaywallWebViewValue
     let package: PaywallWebViewValue
@@ -154,6 +159,7 @@ struct PaywallWebViewContext: Equatable {
 
         return [
             "custom": self.custom,
+            "inputs": self.inputs,
             "offering": self.offering,
             "packages": self.packages,
             "package": self.package,
