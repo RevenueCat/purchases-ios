@@ -65,6 +65,26 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    /// A card whose first text is hidden must not hand the state to it: that text renders
+    /// nothing, so the state would be announced nowhere at all.
+    func testSelectionStateSurvivesAHiddenFirstText() throws {
+        let app = self.launchDecorativeMedia()
+
+        let card = app.buttons.matching(NSPredicate(format: "label CONTAINS %@", "Weekly")).firstMatch
+        XCTAssertTrue(card.waitForExistence(timeout: 30), app.debugDescription)
+
+        let announcesInLabel = card.label.contains("Not selected")
+        let announcesInValue = (card.value as? String) == "Not selected"
+        XCTAssertTrue(
+            announcesInLabel || announcesInValue,
+            "Selection state was announced nowhere. label: \(card.label), value: \(String(describing: card.value))"
+        )
+        XCTAssertFalse(
+            card.label.hasPrefix("Hidden badge"),
+            "The hidden text must not be the one carrying the state: \(card.label)"
+        )
+    }
+
     /// The state belongs to the label now, so it must not also be exposed as the row's value,
     /// or VoiceOver says it twice.
     func testSelectionStateIsNotAlsoAnnouncedAsAValue() throws {

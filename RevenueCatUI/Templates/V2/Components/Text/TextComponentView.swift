@@ -180,6 +180,13 @@ private struct NonLocalizedMarkdownText: View {
                         self.openLink(url)
                         return .handled
                     })
+                    // Label and link actions are applied to the same view on purpose. Applied to
+                    // the enclosing Group instead, the label makes the wrapper the focused
+                    // element while the actions stay on the Text inside it, and a paragraph that
+                    // both holds a link and needs a spoken label loses its links.
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
                     .markdownLinkAccessibilityActions(
                         Self.markdownLinks(in: markdownText),
                         openLink: self.openLink
@@ -189,10 +196,10 @@ private struct NonLocalizedMarkdownText: View {
                 Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
             }
-        }
-        .applyIfLet(self.spokenAccessibilityLabel) { view, label in
-            view.accessibilityLabel(label)
         }
     }
 

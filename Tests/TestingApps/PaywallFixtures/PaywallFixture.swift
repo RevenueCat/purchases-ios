@@ -70,7 +70,8 @@ enum PaywallFixture: String, CaseIterable {
         case .decorativeMedia:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
-                Self.monthlyPackage(offeringIdentifier: self.rawValue)
+                Self.monthlyPackage(offeringIdentifier: self.rawValue),
+                Self.weeklyPackage(offeringIdentifier: self.rawValue)
             ]
         }
     }
@@ -392,10 +393,15 @@ private extension PaywallFixture {
 
     /// A package card shaped like a real offer button: name, price (via variables), and a
     /// decorative checkmark icon inside the selector.
+    ///
+    /// `hiddenLeadingText` puts an invisible text ahead of the name, standing in for a badge or
+    /// promo line that resolved hidden. It renders nothing, so it must not be the one asked to
+    /// speak the selection state.
     static func decoratedPackageCard(
         packageID: String,
         label: String,
-        isSelectedByDefault: Bool
+        isSelectedByDefault: Bool,
+        hiddenLeadingText: Bool = false
     ) -> PaywallComponent {
         return .package(.init(
             packageID: packageID,
@@ -404,7 +410,13 @@ private extension PaywallFixture {
             stack: .init(
                 components: [
                     .text(.init(
-                        text: label,
+                        visible: !hiddenLeadingText,
+                        text: hiddenLeadingText ? "hidden_badge_lid" : label,
+                        color: .init(light: .hex("#000000"))
+                    )),
+                    .text(.init(
+                        visible: hiddenLeadingText ? true : nil,
+                        text: hiddenLeadingText ? label : "price_lid",
                         color: .init(light: .hex("#000000"))
                     )),
                     .text(.init(
@@ -475,6 +487,12 @@ private extension PaywallFixture {
                             packageID: "$rc_monthly",
                             label: "monthly",
                             isSelectedByDefault: false
+                        ),
+                        Self.decoratedPackageCard(
+                            packageID: "$rc_weekly",
+                            label: "weekly",
+                            isSelectedByDefault: false,
+                            hiddenLeadingText: true
                         )
                     ],
                     dimension: .vertical(.center, .start),
@@ -494,7 +512,9 @@ private extension PaywallFixture {
                     "feature2_lid": .string("Full featured watch app"),
                     "annual": .string("Yearly"),
                     "monthly": .string("Monthly"),
-                    "price_lid": .string("{{ product.price_per_period_abbreviated }}")
+                    "price_lid": .string("{{ product.price_per_period_abbreviated }}"),
+                    "weekly": .string("Weekly"),
+                    "hidden_badge_lid": .string("Hidden badge")
                 ]
             ],
             revision: 1,

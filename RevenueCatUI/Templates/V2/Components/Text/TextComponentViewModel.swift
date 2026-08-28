@@ -163,7 +163,17 @@ class TextComponentViewModel {
             locale: config.locale
         )
 
-        return processedWithV2AndV1
+        guard forAccessibility else {
+            return processedWithV2AndV1
+        }
+
+        // Run again after V1 substitution. V1 placeholders resolve to forms like "$6.99/mo"
+        // only at this point, after the V2 pass has already expanded what it could see. The
+        // expansion is idempotent, so the text V2 already handled is left alone.
+        return VariableHandlerV2.expandPeriodAbbreviations(
+            in: processedWithV2AndV1,
+            localizations: config.localizations
+        )
     }
 
     private static func processTextV2(

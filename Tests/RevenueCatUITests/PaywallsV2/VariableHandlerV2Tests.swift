@@ -491,6 +491,23 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$4.49/mo"))
     }
 
+    /// The expansion runs once inside V2 substitution and again after V1 substitution, because
+    /// V1 placeholders only resolve to "$6.99/mo" at that later point. Running it twice must
+    /// leave the already-expanded text alone.
+    func testPeriodAbbreviationExpansionIsIdempotent() {
+        let once = VariableHandlerV2.expandPeriodAbbreviations(
+            in: "$6.99/mo and $69.99/yr",
+            localizations: localizations["en_US"]!
+        )
+        let twice = VariableHandlerV2.expandPeriodAbbreviations(
+            in: once,
+            localizations: localizations["en_US"]!
+        )
+
+        expect(once).to(equal("$6.99 monthly and $69.99 yearly"))
+        expect(twice).to(equal(once))
+    }
+
     func testSpelledOutPeriodIsNotTreatedAsAnAbbreviation() {
         let result = VariableHandlerV2.expandPeriodAbbreviations(
             in: "$4.16/month",

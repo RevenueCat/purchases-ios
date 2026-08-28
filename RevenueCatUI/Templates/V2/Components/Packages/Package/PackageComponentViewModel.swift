@@ -84,6 +84,13 @@ class PackageComponentViewModel {
         for viewModel in stack.viewModels {
             switch viewModel {
             case .text(let text):
+                // A hidden or empty text renders nothing, so it cannot speak the state. Passing
+                // over it keeps looking, and leaves the row-level value fallback in play when
+                // the card turns out to have no announceable text at all.
+                guard text.announcesText else {
+                    continue
+                }
+
                 return text
             case .stack(let nested):
                 if let found = Self.firstText(in: nested) {
