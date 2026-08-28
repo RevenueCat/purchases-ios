@@ -174,6 +174,16 @@ struct PaywallWebViewContext: Equatable {
         ]
     }
 
+    func payloadJSON(updatedAt date: Date = .now, encoder: JSONEncoder = .init()) -> String? {
+        do {
+            let data = try encoder.encode(payload(updatedAt: date))
+            return String(data: data, encoding: .utf8)
+        } catch {
+            Logger.debug(Strings.web_view_context_encoding_failed(error))
+            return nil
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

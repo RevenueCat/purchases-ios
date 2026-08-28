@@ -43,12 +43,16 @@ final class PaywallWebViewContextTests: TestCase {
             locale: Locale(identifier: "en_US"),
             isDarkMode: true
         )
-        let payload = context.payload(updatedAt: Date(timeIntervalSince1970: 1_787_000_000))
 
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
 
-        let actualPayload = try XCTUnwrap(String(data: encoder.encode(payload), encoding: .utf8))
+        let actualPayload = try XCTUnwrap(
+            context.payloadJSON(
+                updatedAt: Date(timeIntervalSince1970: 1_787_000_000),
+                encoder: encoder
+            )
+        )
 
         XCTAssertEqual(actualPayload, Self.expectedPayload)
     }
