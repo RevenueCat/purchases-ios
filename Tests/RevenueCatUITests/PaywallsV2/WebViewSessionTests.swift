@@ -30,6 +30,39 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(envelopes[1].payload?["height"]?.boolValue, true)
     }
 
+    func testConnectIncludesLatestContextInInit() throws {
+        let harness = Harness()
+        harness.session.updateContext(Self.context(localeIdentifier: "en_US"))
+
+        harness.handle(.init(kind: .connect, componentID: "", protocolVersion: 1))
+
+        let envelope = try XCTUnwrap(harness.outboundEnvelopes().first)
+        XCTAssertEqual(envelope.kind, .`init`)
+        XCTAssertEqual(envelope.payload?["custom"]?.objectValue?["name"]?.stringValue, "Alex")
+        let deviceMeta = try XCTUnwrap(envelope.payload?["device_meta"]?.objectValue)
+        XCTAssertEqual(deviceMeta["locale"]?.stringValue, "en_US")
+        XCTAssertEqual(deviceMeta["updated_at"]?.numberValue, 1_787_000_000_000)
+    }
+
+    func testContextChangeSendsCompleteUpdateAndDeduplicatesUnchangedContext() throws {
+        let harness = Harness()
+        let initial = Self.context(localeIdentifier: "en_US")
+        let updated = Self.context(localeIdentifier: "es_ES")
+        harness.session.updateContext(initial)
+        harness.connect()
+
+        harness.session.updateContext(updated)
+        harness.session.updateContext(updated)
+
+        let envelopes = try harness.outboundEnvelopes()
+        XCTAssertEqual(envelopes.count, 1)
+        XCTAssertEqual(envelopes[0].kind, .message)
+        XCTAssertEqual(envelopes[0].type, WebViewEnvelope.messageTypeContextUpdate)
+        XCTAssertEqual(envelopes[0].payload?["device_meta"]?.objectValue?["locale"]?.stringValue, "es_ES")
+        XCTAssertNotNil(envelopes[0].payload?["packages"])
+        XCTAssertNotNil(envelopes[0].payload?["selected_package"])
+    }
+
     func testConnectV2Rejects() throws {
         let harness = Harness()
 
@@ -533,6 +566,20 @@ final class WebViewSessionTests: TestCase {
         return try JSONDecoder().decode(WebViewEnvelope.Envelope.self, from: Data(json.utf8))
     }
 
+    private static func context(localeIdentifier: String) -> PaywallWebViewContext {
+        return .init(
+            custom: .object(["name": .string("Alex")]),
+            offering: .object(["identifier": .string("default")]),
+            packages: .array([]),
+            package: .null,
+            selectedPackage: .null,
+            workflow: .null,
+            isPreview: false,
+            localeIdentifier: localeIdentifier,
+            isDarkMode: false
+        )
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -587,7 +634,8 @@ private final class Harness {
             expectedOrigin: expectedOrigin,
             fitAxes: size,
             evaluateJavaScript: { _ in false },
-            currentURL: { nil }
+            currentURL: { nil },
+            dateProvider: { Date(timeIntervalSince1970: 1_787_000_000) }
         )
         self.session.evaluateJavaScript = { [weak self] script in
             guard let self, self.deliverOutbound else {
