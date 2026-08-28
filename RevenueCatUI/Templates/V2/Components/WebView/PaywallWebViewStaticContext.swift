@@ -26,6 +26,7 @@ struct PaywallWebViewStaticContext {
     let offeringDisplayName: String
     let packages: [Package]
     let workflow: Workflow?
+    let store: Store
     let storefrontCountryCode: String?
 
     // inputs are not yet supported. However the contract requires this data.
@@ -35,6 +36,7 @@ struct PaywallWebViewStaticContext {
         offering: Offering,
         packages: [Package],
         workflow: Workflow?,
+        store: Store,
         storefrontCountryCode: String?
     ) {
         var identifiers = Set<String>()
@@ -43,6 +45,7 @@ struct PaywallWebViewStaticContext {
         self.offeringDisplayName = offering.serverDescription
         self.packages = packages.filter { identifiers.insert($0.identifier).inserted }
         self.workflow = workflow
+        self.store = store
         self.storefrontCountryCode = storefrontCountryCode
     }
 
@@ -83,7 +86,7 @@ struct PaywallWebViewStaticContext {
                 .object([
                     "identifier": .string(product.productIdentifier),
                     "store": .object([
-                        "store_type": .string("app_store"),
+                        "store_type": .string(Self.storeType(self.store)),
                         "country": self.storefrontCountryCode.map(PaywallWebViewValue.string) ?? .null
                     ]),
                     "display_name": .string(product.localizedTitle),
@@ -125,6 +128,20 @@ struct PaywallWebViewStaticContext {
         let decimalNumber = NSDecimalNumber(decimal: value)
         return Double(decimalNumber.stringValue) ?? decimalNumber.doubleValue
     }
+
+    private static func storeType(_ store: Store) -> String {
+        return self.storeTypes[store] ?? "unknown"
+    }
+
+    private static let storeTypes: [Store: String] = [
+        .appStore: "app_store",
+        .macAppStore: "mac_app_store",
+        .stripe: "stripe",
+        .rcBilling: "rc_billing",
+        .external: "external",
+        .paddle: "paddle",
+        .testStore: "test_store"
+    ]
 
     private static func isoPeriod(_ period: SubscriptionPeriod) -> String {
         let unit: String

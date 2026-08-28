@@ -29,6 +29,7 @@ final class PaywallWebViewContextTests: TestCase {
                 stepType: "screen",
                 screenType: ["paywall"]
             ),
+            store: .appStore,
             storefrontCountryCode: "USA"
         )
 
@@ -91,6 +92,16 @@ final class PaywallWebViewContextTests: TestCase {
         )
 
         XCTAssertFalse(isAutoRenewing)
+    }
+
+    func testSnapshotUsesConfiguredTestStore() throws {
+        let productValue = try self.productValue(
+            productType: .nonConsumable,
+            subscriptionPeriod: nil,
+            store: .testStore
+        )
+
+        XCTAssertEqual(productValue["store"]?.objectValue?["store_type"]?.stringValue, "test_store")
     }
 
     private static let expectedPayload = """
@@ -224,6 +235,19 @@ final class PaywallWebViewContextTests: TestCase {
         productType: StoreProduct.ProductType,
         subscriptionPeriod: SubscriptionPeriod?
     ) throws -> Bool {
+        let productValue = try self.productValue(
+            productType: productType,
+            subscriptionPeriod: subscriptionPeriod
+        )
+
+        return try XCTUnwrap(productValue["is_auto_renewing"]?.boolValue)
+    }
+
+    private func productValue(
+        productType: StoreProduct.ProductType,
+        subscriptionPeriod: SubscriptionPeriod?,
+        store: Store = .appStore
+    ) throws -> [String: PaywallWebViewValue] {
         let product = TestStoreProduct(
             localizedTitle: "Test",
             price: 1.99,
@@ -252,6 +276,7 @@ final class PaywallWebViewContextTests: TestCase {
             offering: offering,
             packages: [package],
             workflow: nil,
+            store: store,
             storefrontCountryCode: "USA"
         ).snapshot(
             package: package,
@@ -260,13 +285,11 @@ final class PaywallWebViewContextTests: TestCase {
             locale: Locale(identifier: "en_US"),
             isDarkMode: false
         )
-        let productValue = try XCTUnwrap(
+        return try XCTUnwrap(
             context.packages.arrayValue?.first?
                 .objectValue?["products"]?.arrayValue?.first?
                 .objectValue
         )
-
-        return try XCTUnwrap(productValue["is_auto_renewing"]?.boolValue)
     }
 
 }
