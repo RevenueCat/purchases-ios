@@ -20,7 +20,9 @@ struct EmbeddedCheckoutConfig: Equatable {
     private static let unresolvedPlaceholder = "$(WEB_BILLING_API_KEY)"
     private static let resourceSubdirectory = "EmbeddedCheckout"
 
-    static let pageBaseURL = URL(string: "http://localhost") ?? URL(fileURLWithPath: "/")
+    /// Origin label only (`loadHTMLString` does not fetch this). `localhost` blocks Apple Pay;
+    /// `pay.rev.cat` is the WPL host already registered with Apple/Stripe.
+    static let pageBaseURL = URL(string: "https://pay.rev.cat") ?? URL(fileURLWithPath: "/")
 
     static func resolvedWebBillingAPIKey(
         from raw: String? = Bundle.main.object(forInfoDictionaryKey: infoDictionaryKey) as? String
