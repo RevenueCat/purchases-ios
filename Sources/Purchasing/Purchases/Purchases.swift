@@ -1285,23 +1285,31 @@ public extension Purchases {
 
 extension Purchases: InternalAuthenticatorDelegate {
 
-    func authenticatorDidLogIn(info: CustomerInfo) {
-        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(
-                fetchContext: .identityChange,
-                isAppBackgrounded: isAppBackgrounded
-            )
-        }
-    }
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
+        switch reason {
+        case .logIn:
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                didHandle(nil)
+            }
 
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
-        // The web view cache must retain the cache on login to support multipage paywalls and workflows
-        // making `.identityChange` an insufficient signal.
-        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
-        // we would have an issue. 
-        Task { await self.webBundleEventBus.clearCache() }
-        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
+        case .logOut:
+            // The web view cache retains the cache on login to support multipage paywalls and workflows,
+            // and clears the cache when the current user "logs out"
+            Task { await self.webBundleEventBus.clearCache() }
+
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+
+        case .identified:
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+        }
     }
 
 }
