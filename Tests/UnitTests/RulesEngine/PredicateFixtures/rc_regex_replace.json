@@ -1,0 +1,117 @@
+{
+  "fixtures": [
+    {
+      "id": "regex_replace_replaces_every_match",
+      "description": "All matches, not just the first, so the operator needs no global flag",
+      "predicate": {"===": [{"rc.regexReplace": ["abab", "ab", "X"]}, "XX"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_no_match_returns_the_input",
+      "predicate": {"===": [{"rc.regexReplace": ["abc", "[0-9]+", "X"]}, "abc"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_with_empty_string_deletes",
+      "description": "Motivating case: strip the digits out of an identifier",
+      "predicate": {"===": [{"rc.regexReplace": ["pro_2024_monthly", "[0-9]+", ""]}, "pro__monthly"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_anchored_pattern_hits_once",
+      "predicate": {"===": [{"rc.regexReplace": ["aaa", "^a", "X"]}, "Xaa"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_empty_matches_land_between_characters",
+      "description": "A pattern that can match nothing also matches at each position, which all three engines agree on",
+      "predicate": {"===": [{"rc.regexReplace": ["bab", "a*", "-"]}, "-b--b-"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_replacement_is_literal_text",
+      "description": "$1 is not a backreference, because the three engines disagree on template syntax",
+      "predicate": {"===": [{"rc.regexReplace": ["ab", "b", "[$1]"]}, "a[$1]"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_dollar_ampersand_is_literal_too",
+      "predicate": {"===": [{"rc.regexReplace": ["ab", "b", "$&"]}, "a$&"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_backslash_is_literal",
+      "predicate": {"===": [{"rc.regexReplace": ["ab", "b", "\\n"]}, "a\\n"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_reads_operands_from_variables",
+      "predicate": {
+        "===": [
+          {"rc.regexReplace": [{"var": "id"}, {"var": "pattern"}, {"var": "with"}]},
+          "pro_monthly"
+        ]
+      },
+      "variables": {"id": "pro_monthly_v2", "pattern": "_v[0-9]+$", "with": ""},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_feeds_another_operator",
+      "predicate": {
+        "===": [
+          {"rc.length": {"rc.regexReplace": ["a1b2c3", "[0-9]", ""]}},
+          3
+        ]
+      },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_uncompilable_pattern_is_type_error",
+      "predicate": {"rc.regexReplace": ["abc", "(", "X"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexReplace"}
+    },
+    {
+      "id": "regex_replace_non_string_input_is_type_error",
+      "predicate": {"rc.regexReplace": [419, "[0-9]", "X"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexReplace"}
+    },
+    {
+      "id": "regex_replace_non_string_replacement_is_type_error",
+      "description": "No stringification: substituting a number is a lowering bug",
+      "predicate": {"rc.regexReplace": ["abc", "b", 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexReplace"}
+    },
+    {
+      "id": "regex_replace_missing_variable_fails_at_the_lookup",
+      "predicate": {"rc.regexReplace": [{"var": "missing"}, "b", "X"]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "missing"}
+    },
+    {
+      "id": "regex_replace_missing_replacement_is_type_error",
+      "description": "No implicit deletion: dropping the third argument is a lowering bug, not an empty replacement",
+      "predicate": {"rc.regexReplace": ["abc", "b"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexReplace"}
+    },
+    {
+      "id": "regex_replace_extra_operand_is_type_error",
+      "description": "Arity is exact, so a stray fourth argument is never mistaken for a match limit",
+      "predicate": {"rc.regexReplace": ["abc", "b", "X", 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexReplace"}
+    }
+  ]
+}
