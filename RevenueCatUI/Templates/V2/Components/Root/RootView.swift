@@ -71,7 +71,8 @@ struct RootView: View {
         return false
     }
 
-    /// At least the idiom's default padding: a card has no bottom safe area to consume.
+    /// At least the idiom's default padding. A paywall presented in a sheet sits inset from the
+    /// screen, so there is no bottom safe area to consume and the last row would touch its edge.
     static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
         return max(safeAreaBottom, Constants.defaultVerticalPaddingLength(idiom) ?? 0)
     }
