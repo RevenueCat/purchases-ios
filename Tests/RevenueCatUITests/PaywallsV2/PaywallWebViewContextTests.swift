@@ -118,11 +118,13 @@ final class PaywallWebViewContextTests: TestCase {
         let productValue = try self.productValue(
             productType: .nonConsumable,
             subscriptionPeriod: nil,
-            storefrontCountryCode: nil
+            storefrontCountryCode: nil,
+            currencyCode: nil
         )
 
         XCTAssertNil(productValue["period"])
         XCTAssertNil(productValue["store"]?.objectValue?["country"])
+        XCTAssertNil(productValue["price"]?.objectValue?["currency"])
     }
 
     func testSnapshotUsesEmptyScreenTypeWhenUnavailable() throws {
@@ -294,13 +296,15 @@ final class PaywallWebViewContextTests: TestCase {
         productType: StoreProduct.ProductType,
         subscriptionPeriod: SubscriptionPeriod?,
         store: String = "app_store",
-        storefrontCountryCode: String? = "USA"
+        storefrontCountryCode: String? = "USA",
+        currencyCode: String? = "USD"
     ) throws -> [String: PaywallWebViewValue] {
         let context = self.context(
             productType: productType,
             subscriptionPeriod: subscriptionPeriod,
             store: store,
-            storefrontCountryCode: storefrontCountryCode
+            storefrontCountryCode: storefrontCountryCode,
+            currencyCode: currencyCode
         )
         return try XCTUnwrap(
             context.packages.arrayValue?.first?
@@ -315,12 +319,13 @@ final class PaywallWebViewContextTests: TestCase {
         workflow: PaywallWebViewStaticContext.Workflow? = nil,
         store: String = "app_store",
         storefrontCountryCode: String? = "USA",
+        currencyCode: String? = "USD",
         locale: Locale = Locale(identifier: "en_US")
     ) -> PaywallWebViewContext {
-        let product = TestStoreProduct(
+        var product = TestStoreProduct(
             localizedTitle: "Test",
             price: 1.99,
-            currencyCode: "USD",
+            currencyCode: currencyCode ?? "",
             localizedPriceString: "$1.99",
             productIdentifier: "com.revenuecat.test",
             productType: productType,
@@ -328,6 +333,7 @@ final class PaywallWebViewContextTests: TestCase {
             subscriptionPeriod: subscriptionPeriod,
             locale: Locale(identifier: "en_US")
         )
+        product.currencyCode = currencyCode
         let package = Package(
             identifier: "$rc_custom",
             packageType: .custom,

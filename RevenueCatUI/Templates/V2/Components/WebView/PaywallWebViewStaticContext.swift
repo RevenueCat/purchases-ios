@@ -86,6 +86,13 @@ struct PaywallWebViewStaticContext {
             store["country"] = .string(storefrontCountryCode)
         }
 
+        var price: [String: PaywallWebViewValue] = [
+            "amount": .number(Self.doubleValue(product.price))
+        ]
+        if let currencyCode = product.currencyCode {
+            price["currency"] = .string(currencyCode)
+        }
+
         var productValue: [String: PaywallWebViewValue] = [
             "identifier": .string(product.productIdentifier),
             "store": .object(store),
@@ -93,10 +100,7 @@ struct PaywallWebViewStaticContext {
             "is_subscription": .bool(product.productCategory == .subscription),
             "is_family_shareable": .bool(product.isFamilyShareable),
             "is_auto_renewing": .bool(product.subscriptionPeriod != nil), // accounts for both sk1 and sk2
-            "price": .object([
-                "amount": .number(Self.doubleValue(product.price)),
-                "currency": product.currencyCode.map(PaywallWebViewValue.string) ?? .null
-            ])
+            "price": .object(price)
         ]
         if let period {
             productValue["period"] = .string(period)
