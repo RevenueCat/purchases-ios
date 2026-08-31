@@ -71,10 +71,15 @@ struct RootView: View {
         return false
     }
 
-    /// At least the idiom's default padding. A paywall presented in a sheet sits inset from the
-    /// screen, so there is no bottom safe area to consume and the last row would touch its edge.
+    /// A sheet or window reports no bottom safe area, so the footer needs a minimum of its own.
     static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
-        return max(safeAreaBottom, Constants.defaultVerticalPaddingLength(idiom) ?? 0)
+        switch idiom {
+        case .pad, .mac, .vision:
+            return max(safeAreaBottom, Constants.minimumFooterBottomPadding)
+        case .phone, .watch, .unknown:
+            // Always full screen.
+            return safeAreaBottom
+        }
     }
 
     var body: some View {

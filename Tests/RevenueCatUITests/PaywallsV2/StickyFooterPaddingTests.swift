@@ -33,9 +33,17 @@ class StickyFooterPaddingTests: TestCase {
         expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 20, idiom: .pad)).to(equal(20))
     }
 
+    func testPadsAMacWindowWithNoBottomSafeArea() {
+        expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .mac)).to(equal(16))
+    }
+
+    func testPadsAVisionOSWindowWithNoBottomSafeArea() {
+        expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .vision)).to(equal(16))
+    }
+
     func testLeavesOtherIdiomsAlone() {
         expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .phone)).to(equal(0))
-        expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .mac)).to(equal(0))
+        expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .watch)).to(equal(0))
         expect(RootView.stickyFooterBottomPadding(safeAreaBottom: 0, idiom: .unknown)).to(equal(0))
     }
 
