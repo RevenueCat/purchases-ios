@@ -68,7 +68,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             .init(
                 kind: .message,
                 componentID: self.componentID,
-                type: WebViewEnvelope.messageTypeContextUpdate,
+                type: WebViewEnvelope.messageTypeContext,
                 payload: context.payload(updatedAt: self.dateProvider())
             ),
             allowBeforeNavigation: false
@@ -173,7 +173,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
             .init(
                 kind: .`init`,
                 componentID: self.componentID,
-                payload: self.context?.payload(updatedAt: self.dateProvider())
+                payload: self.initPayload()
             ),
             allowBeforeNavigation: true
         ) else {
@@ -181,6 +181,17 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         }
         self.channelOpen = true
         self.sendFitMessageIfNeeded()
+    }
+
+    /// `init.payload` is `{ context: <snapshot> }` so the handshake can grow later.
+    /// Subsequent `context` messages send the snapshot as the payload itself.
+    private func initPayload() -> [String: PaywallWebViewValue]? {
+        guard let context = self.context else {
+            return nil
+        }
+        return [
+            WebViewEnvelope.messageTypeContext: .object(context.payload(updatedAt: self.dateProvider()))
+        ]
     }
 
     private func handleResize(_ payload: [String: PaywallWebViewValue]?) {

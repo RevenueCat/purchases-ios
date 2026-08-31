@@ -38,8 +38,10 @@ final class WebViewSessionTests: TestCase {
 
         let envelope = try XCTUnwrap(harness.outboundEnvelopes().first)
         XCTAssertEqual(envelope.kind, .`init`)
-        XCTAssertEqual(envelope.payload?["custom"]?.objectValue?["name"]?.stringValue, "Alex")
-        let deviceMeta = try XCTUnwrap(envelope.payload?["device_meta"]?.objectValue)
+        XCTAssertNil(envelope.payload?["custom"])
+        let context = try XCTUnwrap(envelope.payload?[WebViewEnvelope.messageTypeContext]?.objectValue)
+        XCTAssertEqual(context["custom"]?.objectValue?["name"]?.stringValue, "Alex")
+        let deviceMeta = try XCTUnwrap(context["device_meta"]?.objectValue)
         XCTAssertEqual(deviceMeta["locale"]?.stringValue, "en_US")
         XCTAssertEqual(deviceMeta["updated_at"]?.numberValue, 1_787_000_000_000)
     }
@@ -57,7 +59,7 @@ final class WebViewSessionTests: TestCase {
         let envelopes = try harness.outboundEnvelopes()
         XCTAssertEqual(envelopes.count, 1)
         XCTAssertEqual(envelopes[0].kind, .message)
-        XCTAssertEqual(envelopes[0].type, WebViewEnvelope.messageTypeContextUpdate)
+        XCTAssertEqual(envelopes[0].type, WebViewEnvelope.messageTypeContext)
         XCTAssertEqual(envelopes[0].payload?["device_meta"]?.objectValue?["locale"]?.stringValue, "es_ES")
         XCTAssertNotNil(envelopes[0].payload?["packages"])
         XCTAssertNotNil(envelopes[0].payload?["selected_package"])
