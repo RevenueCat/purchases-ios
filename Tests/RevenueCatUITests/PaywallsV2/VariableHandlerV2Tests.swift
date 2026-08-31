@@ -795,7 +795,8 @@ class VariableHandlerV2Test: TestCase {
         introPrice: Decimal,
         introLocalizedPriceString: String,
         introPeriod: SubscriptionPeriod,
-        period: SubscriptionPeriod = .init(value: 1, unit: .month)
+        period: SubscriptionPeriod = .init(value: 1, unit: .month),
+        numberOfPeriods: Int = 3
     ) -> Package {
         return Package(
             identifier: PackageType.monthly.identifier,
@@ -816,7 +817,7 @@ class VariableHandlerV2Test: TestCase {
                     localizedPriceString: introLocalizedPriceString,
                     paymentMode: .payAsYouGo,
                     subscriptionPeriod: introPeriod,
-                    numberOfPeriods: 3,
+                    numberOfPeriods: numberOfPeriods,
                     type: .introductory
                 ),
                 locale: Locale(identifier: "en_US")
@@ -1025,6 +1026,117 @@ class VariableHandlerV2Test: TestCase {
             locale: locale,
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: false
+        )
+        expect(result).to(equal(""))
+    }
+
+    // MARK: - Discount variables priced off the current offer
+
+    private func handler(mostExpensivePricePerMonth: Double?) -> VariableHandlerV2 {
+        return VariableHandlerV2(
+            variableCompatibilityMap: Self.variableMapping,
+            functionCompatibilityMap: Self.functionMapping,
+            discountRelativeToMostExpensivePerMonth: nil,
+            mostExpensivePricePerMonth: mostExpensivePricePerMonth,
+            showZeroDecimalPlacePrices: false
+        )
+    }
+
+    func testRelativeDiscountWithOfferPricesTheOfferAgainstTheAnchor() {
+        // The Yousician case: $9.99/mo anchor, annual $99.99/yr with a paid intro year at
+        // $52.99 -> $4.42/mo. The base-price comparison would say 17% instead.
+        let package = self.packageWithPricedIntroOffer(
+            price: 99.99,
+            localizedPriceString: "$99.99",
+            introPrice: 52.99,
+            introLocalizedPriceString: "$52.99",
+            introPeriod: .init(value: 1, unit: .year),
+            period: .init(value: 1, unit: .year),
+            numberOfPeriods: 1
+        )
+
+        let result = self.handler(mostExpensivePricePerMonth: 9.99).processVariables(
+            in: "{{ product.relative_discount_with_offer }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("56%"))
+    }
+
+    func testAbsoluteDiscountWithOfferSpansTheOfferDuration() {
+        let package = self.packageWithPricedIntroOffer(
+            price: 99.99,
+            localizedPriceString: "$99.99",
+            introPrice: 52.99,
+            introLocalizedPriceString: "$52.99",
+            introPeriod: .init(value: 1, unit: .year),
+            period: .init(value: 1, unit: .year),
+            numberOfPeriods: 1
+        )
+
+        let result = self.handler(mostExpensivePricePerMonth: 9.99).processVariables(
+            in: "{{ product.absolute_discount_with_offer }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$66.89"))
+    }
+
+    func testWithOfferVariablesFallBackToTheBaseComparisonWithoutAnOffer() {
+        // annualPackage60 has only a free 14-day trial, so there is no usable offer and
+        // these should match `relative_discount` / `absolute_discount`.
+        let handler = self.handler(mostExpensivePricePerMonth: 10.00)
+
+        let relative = handler.processVariables(
+            in: "{{ product.relative_discount_with_offer }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(relative).to(equal("50%"))
+
+        let absolute = handler.processVariables(
+            in: "{{ product.absolute_discount_with_offer }}",
+            with: TestData.annualPackage60,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(absolute).to(equal("$60.00"))
+    }
+
+    func testAbsoluteDiscountWithOfferSpansEveryOfferCycle() {
+        // 3 cycles at $5.99/mo against a $9.99/mo anchor: $4.00/mo x 3 = $12.00.
+        let package = self.packageWithPricedIntroOffer(
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            introPrice: 5.99,
+            introLocalizedPriceString: "$5.99",
+            introPeriod: .init(value: 1, unit: .month)
+        )
+
+        let result = self.handler(mostExpensivePricePerMonth: 9.99).processVariables(
+            in: "{{ product.absolute_discount_with_offer }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$12.00"))
+    }
+
+    func testWithOfferVariablesAreEmptyForNonSubscriptions() {
+        let result = self.handler(mostExpensivePricePerMonth: 10.00).processVariables(
+            in: "{{ product.absolute_discount_with_offer }}",
+            with: TestData.lifetimePackage,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
         )
         expect(result).to(equal(""))
     }

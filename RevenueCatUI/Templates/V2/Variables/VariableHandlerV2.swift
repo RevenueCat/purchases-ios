@@ -266,6 +266,8 @@ enum VariablesV2: String {
     case productAbsoluteDiscount = "product.absolute_discount"
     case productOfferRelativeDiscount = "product.offer_relative_discount"
     case productOfferAbsoluteDiscount = "product.offer_absolute_discount"
+    case productRelativeDiscountWithOffer = "product.relative_discount_with_offer"
+    case productAbsoluteDiscountWithOffer = "product.absolute_discount_with_offer"
     case productStoreProductName = "product.store_product_name"
 
     // Countdown variables
@@ -554,6 +556,24 @@ extension VariablesV2 {
         case .productOfferAbsoluteDiscount:
             if let package {
                 return self.productOfferAbsoluteDiscount(
+                    package: package,
+                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                    offerContext: offerContext
+                )
+            }
+        case .productRelativeDiscountWithOffer:
+            if let package {
+                return self.productRelativeDiscountWithOffer(
+                    mostExpensivePricePerMonth: mostExpensivePricePerMonth,
+                    package: package,
+                    localizations: localizations,
+                    offerContext: offerContext
+                )
+            }
+        case .productAbsoluteDiscountWithOffer:
+            if let package {
+                return self.productAbsoluteDiscountWithOffer(
+                    mostExpensivePricePerMonth: mostExpensivePricePerMonth,
                     package: package,
                     showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
                     offerContext: offerContext
@@ -1136,6 +1156,66 @@ extension VariablesV2 {
         )
     }
 
+    /// Same cross-package comparison as `product.relative_discount`, but priced off the offer the
+    /// customer would actually get. With no usable offer the effective rate is the package's own,
+    /// so this collapses to `relative_discount`.
+    func productRelativeDiscountWithOffer(
+        mostExpensivePricePerMonth: Double?,
+        package: Package,
+        localizations: [String: String],
+        offerContext: OfferContext
+    ) -> String {
+        guard let mostExpensivePricePerMonth,
+              let term = effectiveOfferTerm(for: package, offerContext: offerContext),
+              term.months > 0,
+              let localizedFormat = localizations[VariableLocalizationKey.percent.rawValue] else {
+            return ""
+        }
+
+        let anchor = Decimal(mostExpensivePricePerMonth)
+        let rate = term.total / term.months
+        guard rate < anchor else {
+            return ""
+        }
+
+        let fraction = (anchor - rate) / anchor
+        let percent = Int((NSDecimalNumber(decimal: fraction).doubleValue * 100).rounded(.toNearestOrAwayFromZero))
+        return String(format: localizedFormat, percent)
+    }
+
+    /// The saving against the most expensive package across the span the offer actually runs for.
+    /// Renders empty when that span can't be determined, matching how the other discount variables
+    /// treat a package with no period.
+    func productAbsoluteDiscountWithOffer(
+        mostExpensivePricePerMonth: Double?,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool,
+        offerContext: OfferContext
+    ) -> String {
+        guard let mostExpensivePricePerMonth,
+              let term = effectiveOfferTerm(for: package, offerContext: offerContext),
+              term.months > 0 else {
+            return ""
+        }
+
+        let anchor = Decimal(mostExpensivePricePerMonth)
+        guard term.total < anchor * term.months else {
+            return ""
+        }
+
+        let saving = ((anchor * term.months) - term.total as NSDecimalNumber)
+            .rounding(accordingToBehavior: Self.savingRoundingBehavior) as Decimal
+        guard saving > 0 else {
+            return ""
+        }
+
+        return formatDiscountPrice(
+            saving,
+            package: package,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
+    }
+
     func productStoreProductName(package: Package) -> String {
         return package.storeProduct.localizedTitle
     }
@@ -1188,6 +1268,32 @@ private extension VariablesV2 {
         case .payAsYouGo, .payUpFront:
             return false
         }
+    }
+
+    /// What the customer actually pays, and over how long: the resolved offer's total across all of
+    /// its periods, or the package's own price and period when there is no usable offer. A free offer
+    /// counts as no offer — "100% off" isn't the claim these variables make.
+    ///
+    /// Returns the total rather than a monthly rate on purpose. `StoreProductDiscount.pricePerMonth`
+    /// is already rounded to two places, and multiplying that back up by the duration would amplify
+    /// the rounding error by the number of months.
+    func effectiveOfferTerm(
+        for package: Package,
+        offerContext: VariablesV2.OfferContext
+    ) -> (total: Decimal, months: Decimal)? {
+        if let discount = resolvedDiscount(for: package, offerContext: offerContext), discount.price > 0 {
+            let periods = Decimal(discount.numberOfPeriods)
+            return (
+                total: discount.price * periods,
+                months: discount.subscriptionPeriod.numberOfUnitsAs(unit: .month) * periods
+            )
+        }
+
+        guard let period = package.storeProduct.subscriptionPeriod else {
+            return nil
+        }
+
+        return (total: package.storeProduct.price, months: period.numberOfUnitsAs(unit: .month))
     }
 
     /// The resolved offer's price, but only when it can be compared like-for-like against the standard
