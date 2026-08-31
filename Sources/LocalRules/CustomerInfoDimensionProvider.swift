@@ -64,39 +64,42 @@ private extension CustomerInfoDimensionProvider {
     struct DatedPurchase {
 
         let purchaseDate: Date
-        let productIdentifier: String
         let store: Store
         let values: [String: DimensionValue]
     }
 
     static func purchases(from customerInfo: CustomerInfo, at date: Date) -> [[String: DimensionValue]] {
-        let subscriptions = customerInfo.subscriptionsByProductIdentifier.values.map { subscription in
-            DatedPurchase(
-                purchaseDate: subscription.purchaseDate,
-                productIdentifier: subscription.productIdentifier,
-                store: subscription.store,
-                values: Self.values(for: subscription, at: date)
-            )
-        }
+        let subscriptions = customerInfo.subscriptionsByProductIdentifier.values
+            .sorted { $0.productIdentifier < $1.productIdentifier }
+            .map { subscription in
+                DatedPurchase(
+                    purchaseDate: subscription.purchaseDate,
+                    store: subscription.store,
+                    values: Self.values(for: subscription, at: date)
+                )
+            }
 
         let nonSubscriptions = customerInfo.nonSubscriptions.map { transaction in
             DatedPurchase(
                 purchaseDate: transaction.purchaseDate,
-                productIdentifier: transaction.productIdentifier,
                 store: transaction.store,
                 values: Self.values(for: transaction)
             )
         }
 
+        // Match Android's stable date sort explicitly: subscriptions are placed first and sorted by product,
+        // followed by CustomerInfo's existing non-subscription order. Equal dates preserve that combined order.
         return (subscriptions + nonSubscriptions)
+            .enumerated()
             .sorted {
-                if $0.purchaseDate != $1.purchaseDate {
-                    return $0.purchaseDate > $1.purchaseDate
+                if $0.element.purchaseDate != $1.element.purchaseDate {
+                    return $0.element.purchaseDate > $1.element.purchaseDate
                 }
 
-                return $0.productIdentifier < $1.productIdentifier
+                return $0.offset < $1.offset
             }
-            .map { purchase in
+            .map { indexedPurchase in
+                let purchase = indexedPurchase.element
                 guard let store = purchase.store.dimensionValue else { return purchase.values }
 
                 var values = purchase.values
@@ -221,7 +224,7 @@ private extension Dictionary where Key == String, Value == DimensionValue {
     mutating func set(price: ProductPaidPrice?) {
         guard let price else { return }
 
-        let amountMicros = (price.amount * 1_000_000).rounded()
+        let amountMicros = price.amount * 1_000_000
         if amountMicros.isFinite,
            amountMicros >= Double(Int64.min),
            amountMicros < Double(Int64.max) {

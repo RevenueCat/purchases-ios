@@ -217,6 +217,21 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func subscriptionsComeBeforeNonSubscriptionsWithTheSamePurchaseDate() async throws {
+        let purchaseDate = "2024-05-01T00:00:00Z"
+        let provider = Self.provider(
+            customerInfoData: Self.customerInfoData(
+                subscriptions: ["zeta": Self.subscription(purchaseDate: purchaseDate)],
+                nonSubscriptions: ["alpha": [Self.nonSubscription(purchaseDate: purchaseDate)]]
+            )
+        )
+
+        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+
+        #expect(Self.productIdentifiers(from: dimensions) == ["zeta", "alpha"])
+    }
+
+    @Test
     func mapsEveryStoreAndOmitsAnUnknownStore() async throws {
         let stores: [(rawValue: Any, expected: String?)] = [
             ("app_store", "app_store"),
@@ -435,10 +450,10 @@ extension CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func convertsPricesToMicrosUsingNearestRounding() async throws {
+    func convertsPricesToMicrosByTruncatingFractionalMicros() async throws {
         let cases: [(amount: Double, expectedMicros: Int64)] = [
             (1.234567, 1_234_567),
-            (0.0000005, 1)
+            (0.0000005, 0)
         ]
 
         for (index, testCase) in cases.enumerated() {
