@@ -571,12 +571,12 @@ final class WebViewSessionTests: TestCase {
     private static func context(localeIdentifier: String) -> PaywallWebViewContext {
         return .init(
             custom: .object(["name": .string("Alex")]),
+            inputs: .null,
             offering: .object(["identifier": .string("default")]),
             packages: .array([]),
             package: .null,
             selectedPackage: .null,
             workflow: .null,
-            isPreview: false,
             localeIdentifier: localeIdentifier,
             isDarkMode: false
         )
