@@ -122,6 +122,7 @@ struct LocalRulesEvaluatorTests {
 
         let snapshot = try await DimensionResolver(
             dimensionProviders: [identity, environment, store],
+            currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot()
 
@@ -172,7 +173,10 @@ struct LocalRulesEvaluatorTests {
             ]]
         )
 
-        let snapshot = try await DimensionResolver(dimensionProviders: [provider]).snapshot()
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { "user" }
+        ).snapshot()
 
         #expect(snapshot.values.filter { $0.key != "evaluated_at" } == [
             "platform": .string("ios"),
@@ -254,7 +258,10 @@ struct LocalRulesEvaluatorTests {
         )
 
         do {
-            _ = try await DimensionResolver(dimensionProviders: [first, second]).snapshot()
+            _ = try await DimensionResolver(
+                dimensionProviders: [first, second],
+                currentAppUserIDProvider: { "user" }
+            ).snapshot()
             Issue.record("Expected duplicate ownership to fail")
         } catch let error as DimensionResolutionError {
             #expect(error == .conflictingValue(path: "app_version"))
@@ -271,7 +278,10 @@ struct LocalRulesEvaluatorTests {
         )
 
         do {
-            _ = try await DimensionResolver(dimensionProviders: [provider]).snapshot()
+            _ = try await DimensionResolver(
+                dimensionProviders: [provider],
+                currentAppUserIDProvider: { "user" }
+            ).snapshot()
             Issue.record("Expected reserved root ownership to fail")
         } catch let error as DimensionResolutionError {
             #expect(error == .conflictingValue(path: reservedRoot))
@@ -297,6 +307,71 @@ struct LocalRulesEvaluatorTests {
                 return
             }
             #expect(providerName == "store")
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func customerChangeWhileDimensionsAreCollectedThrows() async {
+        let currentAppUserID = Atomic("user-a")
+        let provider = ClosureDimensionProvider(name: "identity_flipper") { _ in
+            currentAppUserID.value = "user-b"
+            return [:]
+        }
+        let resolver = DimensionResolver(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        do {
+            _ = try await resolver.snapshot()
+            Issue.record("Expected a customer change to fail the snapshot")
+        } catch let error as DimensionResolutionError {
+            #expect(error == .customerChanged)
+        } catch {
+            Issue.record("Unexpected error: \(error)")
+        }
+    }
+
+    @Test
+    func customerChangingBackBeforeCollectionFinishesDoesNotFailTheSnapshot() async throws {
+        let currentAppUserID = Atomic("user-a")
+        let changeCustomer = ClosureDimensionProvider(name: "identity_flipper") { _ in
+            currentAppUserID.value = "user-b"
+            return [:]
+        }
+        let restoreCustomer = ClosureDimensionProvider(name: "identity_flipper_back") { _ in
+            currentAppUserID.value = "user-a"
+            return [:]
+        }
+        let resolver = DimensionResolver(
+            dimensionProviders: [changeCustomer, restoreCustomer],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        _ = try await resolver.snapshot()
+    }
+
+    @Test
+    func customerChangeDuringSnapshotFailsRuleEvaluation() async {
+        let currentAppUserID = Atomic("user-a")
+        let provider = ClosureDimensionProvider(name: "identity_flipper") { _ in
+            currentAppUserID.value = "user-b"
+            return [:]
+        }
+        let evaluator = Self.evaluator(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        do {
+            _ = try await evaluator.match(in: [
+                TestLocalRule(id: "test", predicate: "true")
+            ])
+            Issue.record("Expected a customer change to fail rule evaluation")
+        } catch let error as DimensionResolutionError {
+            #expect(error == .customerChanged)
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
@@ -536,10 +611,12 @@ private extension LocalRulesEvaluatorTests {
 
     static func evaluator(
         dimensionProviders: [any DimensionProvider],
-        date: Date = Date(timeIntervalSince1970: 100)
+        date: Date = Date(timeIntervalSince1970: 100),
+        currentAppUserIDProvider: @escaping @Sendable () -> String = { "user" }
     ) -> LocalRulesEvaluator {
         LocalRulesEvaluator(
             dimensionProviders: dimensionProviders,
+            currentAppUserIDProvider: currentAppUserIDProvider,
             dateProvider: MockDateProvider(stubbedNow: date)
         )
     }
@@ -603,6 +680,16 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
     func dimensions(at date: Date) async throws -> [String: DimensionValue] {
         throw CancellationError()
+    }
+}
+
+private struct ClosureDimensionProvider: DimensionProvider {
+
+    let name: String
+    let dimensionsProvider: @Sendable (Date) async throws -> [String: DimensionValue]
+
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+        return try await self.dimensionsProvider(date)
     }
 }
 

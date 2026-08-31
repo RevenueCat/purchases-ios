@@ -139,9 +139,12 @@ struct SubscriberDimensionsProviderTests {
 
     @Test
     func dimensionsAreReadableByPredicates() async throws {
-        let snapshot = try await DimensionResolver(dimensionProviders: [
-            Self.provider(#"{"plan":"annual","seats":3,"profile":{"tier":"gold"}}"#)
-        ]).snapshot()
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [
+                Self.provider(#"{"plan":"annual","seats":3,"profile":{"tier":"gold"}}"#)
+            ],
+            currentAppUserIDProvider: { "user" }
+        ).snapshot()
 
         #expect(try RulesEngine.evaluate(
             predicate: #"{"==":[{"var":"plan"},"annual"]}"#,
@@ -163,7 +166,10 @@ struct SubscriberDimensionsProviderTests {
         let device = TestProvider(values: ["platform": .string("ios")])
 
         do {
-            _ = try await DimensionResolver(dimensionProviders: [device, subscriber]).snapshot()
+            _ = try await DimensionResolver(
+                dimensionProviders: [device, subscriber],
+                currentAppUserIDProvider: { "user" }
+            ).snapshot()
             Issue.record("Expected duplicate ownership to fail")
         } catch let error as DimensionResolutionError {
             #expect(error == .conflictingValue(path: "platform"))

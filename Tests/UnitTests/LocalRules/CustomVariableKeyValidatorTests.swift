@@ -56,7 +56,10 @@ struct CustomVariableKeyValidatorTests {
 
     @Test
     func invalidKeysAreOmittedFromCustomNamespace() async throws {
-        let snapshot = try await DimensionResolver(dimensionProviders: []).snapshot(customVariables: [
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [],
+            currentAppUserIDProvider: { "user" }
+        ).snapshot(customVariables: [
             "valid_key": .string("kept"),
             "my.property": .string("dropped"),
             "2fast": .string("also kept"),
@@ -71,7 +74,10 @@ struct CustomVariableKeyValidatorTests {
 
     @Test
     func onlyInvalidVariablesLeaveCustomNamespaceAbsent() async throws {
-        let snapshot = try await DimensionResolver(dimensionProviders: []).snapshot(customVariables: [
+        let snapshot = try await DimensionResolver(
+            dimensionProviders: [],
+            currentAppUserIDProvider: { "user" }
+        ).snapshot(customVariables: [
             "invalid.key": .string("dropped")
         ])
 

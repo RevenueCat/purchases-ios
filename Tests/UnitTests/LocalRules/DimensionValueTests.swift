@@ -184,6 +184,7 @@ struct DimensionValueTests {
     ) async throws -> DimensionSnapshot {
         return try await DimensionResolver(
             dimensionProviders: [StaticDimensionProvider(values: values)],
+            currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 123))
         ).snapshot()
     }
