@@ -24,21 +24,111 @@ enum CheckpointEvent: FeatureEvent {
 
 }
 
+/// What a checkpoint resolved to, reported in the `result` field of a checkpoint hit.
+enum CheckpointHitResult: String {
+
+    case workflow
+    case offering
+    case noMatch = "no_match"
+    case configurationUnavailable = "configuration_unavailable"
+    case unknownCheckpoint = "unknown_checkpoint"
+    case disabled
+
+}
+
 extension CheckpointEvent {
 
     /// The content of a ``CheckpointEvent``.
+    ///
+    /// `date` is when the user reached the checkpoint, not when the event was created, so hit volume over time
+    /// stays comparable with events recorded before the outcome was attached.
     struct Data {
 
         var id: UUID
         var identifier: String
         var date: Date
+        /// What the checkpoint resolved to. `nil` only for hits stored by an SDK version that recorded them
+        /// before evaluating the checkpoint.
+        var result: CheckpointHitResult?
+        /// The workflow the checkpoint matched, when it matched one.
+        var workflowID: String?
+        /// The offering the checkpoint resolved to, when it resolved to one.
+        var offeringID: String?
 
-        init(id: UUID = .init(), identifier: String, date: Date) {
+        init(
+            id: UUID = .init(),
+            identifier: String,
+            date: Date,
+            result: CheckpointHitResult? = nil,
+            workflowID: String? = nil,
+            offeringID: String? = nil
+        ) {
             self.id = id
             self.identifier = identifier
             self.date = date
+            self.result = result
+            self.workflowID = workflowID
+            self.offeringID = offeringID
         }
 
+    }
+
+}
+
+extension CheckpointEvent.Data {
+
+    // The `ID` suffix has to be spelled out: the events store encodes with `convertToSnakeCase` and decodes with
+    // `convertFromSnakeCase`, which turns `workflow_id` back into `workflowId` and would otherwise miss these
+    // keys on the way in.
+    private enum CodingKeys: String, CodingKey {
+
+        case id
+        case identifier
+        case date
+        case result
+        case workflowID = "workflowId"
+        case offeringID = "offeringId"
+
+    }
+
+}
+
+extension CheckpointEvent {
+
+    /// Builds the hit event for a resolved checkpoint.
+    ///
+    /// - Parameter date: when the checkpoint was reached, captured before resolution started.
+    static func hit(identifier: String, date: Date, resolution: CheckpointResolution) -> CheckpointEvent {
+        switch resolution {
+        case let .matchedWorkflow(resolved):
+            return .hit(.init(identifier: identifier,
+                              date: date,
+                              result: .workflow,
+                              workflowID: resolved.workflow.id,
+                              offeringID: resolved.offering.identifier))
+
+        case let .matchedOffering(offering):
+            return .hit(.init(identifier: identifier,
+                              date: date,
+                              result: .offering,
+                              offeringID: offering.identifier))
+
+        case let .noAction(reason):
+            return .hit(.init(identifier: identifier, date: date, result: .init(reason)))
+        }
+    }
+
+}
+
+extension CheckpointHitResult {
+
+    init(_ reason: CheckpointResolutionReason) {
+        switch reason {
+        case .noMatch: self = .noMatch
+        case .configurationUnavailable: self = .configurationUnavailable
+        case .disabled: self = .disabled
+        case .unknownCheckpoint: self = .unknownCheckpoint
+        }
     }
 
 }
@@ -62,5 +152,6 @@ extension CheckpointEvent {
 
 }
 
+extension CheckpointHitResult: Equatable, Codable, Sendable {}
 extension CheckpointEvent.Data: Equatable, Codable, Sendable {}
 extension CheckpointEvent: Equatable, Codable, Sendable {}

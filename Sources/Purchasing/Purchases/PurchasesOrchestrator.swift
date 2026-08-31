@@ -303,22 +303,30 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // Tracked before resolving, and regardless of the outcome: the hit is also how the backend learns the
-        // checkpoint exists, so it has to be reported even when nothing is configured for it yet.
-        await self.trackCheckpointHit(identifier: identifier)
+        // The date is captured before resolving so the event keeps reporting when the user reached the
+        // checkpoint, while its payload reports what the checkpoint resolved to. An identifier nothing is
+        // configured for still emits a hit, which is how the backend learns the checkpoint exists.
+        let hitDate = self.dateProvider.now()
 
-        return try await self.checkpointResolver.resolve(
+        let resolution = try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params
         )
+        await self.trackCheckpointHit(identifier: identifier, date: hitDate, resolution: resolution)
+
+        return resolution
     }
 
-    private func trackCheckpointHit(identifier: String) async {
+    private func trackCheckpointHit(
+        identifier: String,
+        date: Date,
+        resolution: CheckpointResolution
+    ) async {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         await manager.track(
-            featureEvent: CheckpointEvent.hit(.init(identifier: identifier, date: self.dateProvider.now()))
+            featureEvent: CheckpointEvent.hit(identifier: identifier, date: date, resolution: resolution)
         )
     }
 

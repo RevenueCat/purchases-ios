@@ -26,6 +26,9 @@ extension FeatureEventsRequest {
         let appUserID: String
         let appSessionID: String
         let timestamp: UInt64
+        let result: CheckpointHitResult?
+        let workflowID: String?
+        let offeringID: String?
 
     }
 
@@ -57,7 +60,10 @@ extension FeatureEventsRequest.CheckpointEvent {
                 identifier: event.data.identifier,
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
-                timestamp: event.data.date.millisecondsSince1970
+                timestamp: event.data.date.millisecondsSince1970,
+                result: event.data.result,
+                workflowID: event.data.workflowID,
+                offeringID: event.data.offeringID
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -82,6 +88,9 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case appUserID = "app_user_id"
         case appSessionID = "app_session_id"
         case timestamp
+        case result
+        case workflowID = "workflow_id"
+        case offeringID = "offering_id"
 
     }
 
@@ -94,6 +103,9 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)
+        try container.encodeIfPresent(self.result, forKey: .result)
+        try container.encodeIfPresent(self.workflowID, forKey: .workflowID)
+        try container.encodeIfPresent(self.offeringID, forKey: .offeringID)
     }
 
 }

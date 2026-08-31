@@ -273,13 +273,19 @@ private extension WorkflowEvent {
 private extension CheckpointEvent {
 
     func checkpointEventMap() -> [String: Any] {
-        return [
+        var result: [String: Any] = [
             "discriminator": "checkpoint",
             "type": self.eventType,
             "id": self.data.id.uuidString,
             "timestamp": self.data.date.millisecondsSince1970,
             "identifier": self.data.identifier
         ]
+
+        if let checkpointResult = self.data.result { result["result"] = checkpointResult.rawValue }
+        if let workflowID = self.data.workflowID { result["workflow_id"] = workflowID }
+        if let offeringID = self.data.offeringID { result["offering_id"] = offeringID }
+
+        return result
     }
 
 }

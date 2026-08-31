@@ -48,10 +48,69 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             fail("Expected resolution to report no action, got \(resolution)")
             return
         }
-        _ = try await self.singleTrackedCheckpointEvent()
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.result) == .disabled
+        expect(event.data.workflowID).to(beNil())
+        expect(event.data.offeringID).to(beNil())
     }
 
-    func testTracksHitWhenResolutionFails() async throws {
+    func testTracksNoActionReasonOnTheHit() async throws {
+        let reasons: [CheckpointResolutionReason] = [
+            .noMatch, .configurationUnavailable, .unknownCheckpoint, .disabled
+        ]
+        self.setUpCheckpointPurchases(
+            resolver: StubCheckpointWorkflowResolver(resolutions: reasons.map { .noAction($0) })
+        )
+
+        for _ in reasons {
+            _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+        }
+
+        let tracked = await (try self.mockEventsManager).trackedEvents.compactMap { $0 as? CheckpointEvent }
+        expect(tracked.map { $0.data.result }) == [
+            .noMatch, .configurationUnavailable, .unknownCheckpoint, .disabled
+        ]
+    }
+
+    func testTracksMatchedOfferingOnTheHit() async throws {
+        let offering = Self.offering
+        self.setUpCheckpointPurchases(
+            resolver: StubCheckpointWorkflowResolver(resolution: .matchedOffering(offering))
+        )
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.result) == .offering
+        expect(event.data.offeringID) == offering.identifier
+        expect(event.data.workflowID).to(beNil())
+    }
+
+    func testTracksMatchedWorkflowOnTheHit() async throws {
+        let offering = Self.offering
+        let workflow = Self.workflow
+        self.setUpCheckpointPurchases(
+            resolver: StubCheckpointWorkflowResolver(resolution: .matchedWorkflow(.init(
+                workflow: workflow,
+                uiConfig: Self.uiConfig,
+                offering: offering,
+                offerings: .preview(offerings: [offering])
+            )))
+        )
+
+        _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
+
+        let event = try await self.singleTrackedCheckpointEvent()
+        expect(event.data.result) == .workflow
+        expect(event.data.workflowID) == workflow.id
+        expect(event.data.offeringID) == offering.identifier
+        expect(event.data.date) == Self.hitDate
+    }
+
+    /// The hit reports what the checkpoint resolved to, so a resolution that never completes has nothing to
+    /// report. Registration of the identifier is lost only in that case.
+    func testTracksNothingWhenResolutionFails() async throws {
         self.setUpCheckpointPurchases(resolver: ThrowingCheckpointWorkflowResolver())
 
         do {
@@ -59,10 +118,33 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             fail("Expected resolution to throw")
         } catch {}
 
-        _ = try await self.singleTrackedCheckpointEvent()
+        let tracked = await (try self.mockEventsManager).trackedEvents
+        expect(tracked).to(beEmpty())
     }
 
     // MARK: - Helpers
+
+    private static let offering = Offering(
+        identifier: "onboarding",
+        serverDescription: "Onboarding offering",
+        availablePackages: [],
+        webCheckoutUrl: nil
+    )
+
+    private static let uiConfig = UIConfig(
+        app: .init(colors: [:], fonts: [:]),
+        localizations: [:],
+        variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
+    )
+
+    private static let workflow = PublishedWorkflow(
+        id: "wf_123",
+        displayName: "Onboarding",
+        initialStepId: "step_1",
+        singleStepFallbackId: nil,
+        steps: [:],
+        screens: [:]
+    )
 
     private func setUpCheckpointPurchases(
         resolver: CheckpointWorkflowResolver = DisabledCheckpointWorkflowResolver()
@@ -79,6 +161,28 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         let tracked = await (try self.mockEventsManager).trackedEvents
         expect(tracked).to(haveCount(1))
         return try XCTUnwrap(tracked.first as? CheckpointEvent)
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private final class StubCheckpointWorkflowResolver: CheckpointWorkflowResolver {
+
+    private let resolutions: Atomic<[CheckpointResolution]>
+
+    convenience init(resolution: CheckpointResolution) {
+        self.init(resolutions: [resolution])
+    }
+
+    init(resolutions: [CheckpointResolution]) {
+        self.resolutions = .init(resolutions)
+    }
+
+    /// Returns each resolution in turn, repeating the last one once they run out.
+    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+        return self.resolutions.modify { pending in
+            pending.count > 1 ? pending.removeFirst() : pending[0]
+        }
     }
 
 }
