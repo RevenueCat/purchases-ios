@@ -16,7 +16,9 @@ import Foundation
 struct OfferingsResponse {
 
     enum DecodingMode: Hashable, Sendable {
+#if DEBUG
         case withPaywallComponents
+#endif
         case withoutPaywallComponents
     }
 
@@ -147,17 +149,19 @@ extension OfferingsResponse.Offering: Codable, Equatable {
             forKey: .hasPaywallComponents
         )
         let decodingMode = decoder.userInfo[OfferingsResponse.decodingModeUserInfoKey]
-            as? OfferingsResponse.DecodingMode ?? .withPaywallComponents
+            as? OfferingsResponse.DecodingMode ?? Self.defaultDecodingMode
         let inferredHasPaywallComponents = decodingMode == .withoutPaywallComponents
             ? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
             : nil
 
         switch decodingMode {
+#if DEBUG
         case .withPaywallComponents:
             self.paywallComponents = try container.decodeIfPresent(
                 PaywallComponentsData.self,
                 forKey: .paywallComponents
             )
+#endif
 
         case .withoutPaywallComponents:
             self.paywallComponents = nil
@@ -172,6 +176,14 @@ extension OfferingsResponse.Offering: Codable, Equatable {
     ) -> Bool? {
         guard container.contains(key) else { return nil }
         return (try? container.decodeNil(forKey: key)) == false
+    }
+
+    private static var defaultDecodingMode: OfferingsResponse.DecodingMode {
+#if DEBUG
+        return .withPaywallComponents
+#else
+        return .withoutPaywallComponents
+#endif
     }
 
 }

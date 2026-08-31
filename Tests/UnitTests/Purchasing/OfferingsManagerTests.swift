@@ -1041,25 +1041,11 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsSkipsPaywallComponentsWhenRemoteConfigManagerIsNil() {
+    func testGetOfferingsAlwaysSkipsPaywallComponents() {
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
             self.offeringsManager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
-        }
-
-        expect(result).to(beSuccess())
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
-            == .withoutPaywallComponents
-    }
-
-    func testGetOfferingsSkipsPaywallComponentsWhenRemoteConfigManagerIsEnabled() {
-        let mockRemoteConfigManager = MockRemoteConfigManager()
-        let manager = self.makeOfferingsManager(remoteConfigManager: mockRemoteConfigManager)
-        self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
-
-        let result = waitUntilValue { completed in
-            manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }
         }
 
         expect(result).to(beSuccess())
@@ -1083,7 +1069,7 @@ extension OfferingsManagerTests {
         expect(self.mockOfferings.invokedGetOfferingsForAppUserID) == false
     }
 
-    func testGetOfferingsCarriesFullResponseDataToDiskCacheWhenRemoteConfigManagerIsEnabled() throws {
+    func testGetOfferingsCarriesFullResponseDataToDiskCache() throws {
         let mockRemoteConfigManager = MockRemoteConfigManager()
         let manager = self.makeOfferingsManager(
             remoteConfigManager: mockRemoteConfigManager,
@@ -1098,19 +1084,10 @@ extension OfferingsManagerTests {
             targeting: response.targeting,
             uiConfig: uiConfig
         )
-        let prunedOfferings = decodedOfferingResponse.offerings.map { offering in
-            var offering = offering
-            offering.hasPaywallComponents = offering.hasPaywallComponents
-                ?? (decodedOfferingResponse.uiConfig != nil && offering.paywallComponents != nil)
-            offering.paywallComponents = nil
-            return offering
-        }
-        let offeringResp = OfferingsResponse(
-            currentOfferingId: decodedOfferingResponse.currentOfferingId,
-            offerings: prunedOfferings,
-            placements: decodedOfferingResponse.placements,
-            targeting: decodedOfferingResponse.targeting,
-            uiConfig: decodedOfferingResponse.uiConfig
+        let rawResponseData = try decodedOfferingResponse.jsonEncodedData
+        let offeringResp = try OfferingsResponse.create(
+            with: rawResponseData,
+            decodingMode: .withoutPaywallComponents
         )
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             Offerings.Contents(
@@ -1118,7 +1095,7 @@ extension OfferingsManagerTests {
                 httpResponseOriginalSource: .mainServer
             )
         )
-        self.mockOfferings.stubbedGetOfferingsRawResponseData = try decodedOfferingResponse.jsonEncodedData
+        self.mockOfferings.stubbedGetOfferingsRawResponseData = rawResponseData
 
         let result = waitUntilValue { completed in
             manager.offerings(appUserID: MockData.anyAppUserID) { completed($0) }

@@ -57,15 +57,11 @@ class OfferingsFactory {
             return nil
         }
 
-        let storedContents = includePaywallComponents
-            ? contents
-            : contents.removingPaywallComponents()
-
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
                          targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
-                         contents: storedContents,
+                         contents: contents,
                          loadedFromDiskCache: loadedFromDiskCache)
     }
 
@@ -191,8 +187,6 @@ extension OfferingsFactory {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension OfferingsFactory: @unchecked Sendable {}
 
-// MARK: - Private
-
 private extension Package {
 
     convenience init(
@@ -206,39 +200,6 @@ private extension Package {
                   storeProduct: product,
                   offeringIdentifier: offeringIdentifier,
                   webCheckoutUrl: webCheckoutUrl)
-    }
-
-}
-
-private extension Offerings.Contents {
-
-    /// Drops offerings-provided paywall component bodies from the retained/cacheable response.
-    /// Production component paywalls are served by workflows, so retaining the offerings copy
-    /// duplicates memory. Custom entitlement computation does not support component paywalls.
-    func removingPaywallComponents() -> Self {
-        let prunedOfferings = self.response.offerings.map { offering in
-            var offering = offering
-            let canCreatePaywallComponents = self.response.uiConfig != nil && offering.paywallComponents != nil
-            offering.hasPaywallComponents = offering.hasPaywallComponents ?? canCreatePaywallComponents
-            offering.paywallComponents = nil
-            return offering
-        }
-        let response = OfferingsResponse(
-            currentOfferingId: self.response.currentOfferingId,
-            offerings: prunedOfferings,
-            placements: self.response.placements,
-            targeting: self.response.targeting,
-            uiConfig: self.response.uiConfig
-        )
-
-        return self.replacingResponse(with: response)
-    }
-
-    /// Returns a copy that preserves all SDK-generated metadata while replacing only the backend response.
-    func replacingResponse(with response: OfferingsResponse) -> Self {
-        var copy = self
-        copy.response = response
-        return copy
     }
 
 }
