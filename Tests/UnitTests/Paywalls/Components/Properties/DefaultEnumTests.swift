@@ -277,7 +277,7 @@ class DefaultEnumTests: TestCase {
             from: json.data(using: .utf8)!
         )
 
-        expect(thing.prop).to(equal(.fit))
+        expect(thing.prop).to(equal(.fit(nil)))
     }
 
     func testStackComponentOverflow() throws {

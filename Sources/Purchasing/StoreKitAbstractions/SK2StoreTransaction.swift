@@ -29,6 +29,9 @@ internal struct SK2StoreTransaction: StoreTransactionType {
         self.quantity = sk2Transaction.purchasedQuantity
         self.jwsRepresentation = jwsRepresentation
         self.environment = environmentOverride ?? .init(sk2Transaction: sk2Transaction)
+        self.revocationDate = sk2Transaction.revocationDate
+        self.revocationReason = sk2Transaction.revocationReason
+            .flatMap { RevocationReason.from(sk2RevocationReason: $0) }
 
         #if swift(>=5.9)
         if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
@@ -54,6 +57,8 @@ internal struct SK2StoreTransaction: StoreTransactionType {
     let jwsRepresentation: String?
     var environment: StoreEnvironment?
     let reason: TransactionReason?
+    let revocationDate: Date?
+    let revocationReason: RevocationReason?
 
     var hasKnownPurchaseDate: Bool { return true }
     var hasKnownTransactionIdentifier: Bool { return true }

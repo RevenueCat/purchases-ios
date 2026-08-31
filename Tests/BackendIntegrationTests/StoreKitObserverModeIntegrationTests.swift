@@ -103,7 +103,7 @@ class StoreKit1ObserverModeIntegrationTests: BaseStoreKitObserverModeIntegration
 
         try await asyncWait(
             description: "Delegate should be notified",
-            timeout: .seconds(4),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(100)
         ) {
             await self.purchasesDelegate.customerInfo?.entitlements.active.isEmpty == false

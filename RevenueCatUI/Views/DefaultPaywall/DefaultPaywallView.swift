@@ -96,11 +96,11 @@ struct DefaultPaywallView: View {
     // MARK: - Warning
 
     var shouldShowWarning: Bool {
-        var showWarning = false
         #if DEBUG
-        showWarning = (warning != nil)
+        return warning != nil
+        #else
+        return warning != nil && handler.isUIPreviewMode
         #endif
-        return showWarning
     }
 
     @ViewBuilder

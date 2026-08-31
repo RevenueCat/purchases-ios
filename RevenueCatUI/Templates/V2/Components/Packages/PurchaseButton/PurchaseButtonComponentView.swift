@@ -127,7 +127,7 @@ struct PurchaseButtonComponentView: View {
             guard result else { return }
         }
 
-        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
+        let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
@@ -135,7 +135,11 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(packageContext: packageContext) else {
+        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
+            packageContext: self.packageContext,
+            appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
+            isSandbox: Purchases.isConfigured ? Purchases.shared.isSandbox : false
+        ) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }
@@ -190,6 +194,8 @@ struct PurchaseButtonComponentView: View {
                            method: method,
                            openURL: self.openURL,
                            inAppBrowserURL: self.$inAppBrowserURL)
+
+        self.purchaseHandler.signalWebCheckoutOpened()
 
         if launchWebCheckout.autoDismiss {
             self.onDismiss()

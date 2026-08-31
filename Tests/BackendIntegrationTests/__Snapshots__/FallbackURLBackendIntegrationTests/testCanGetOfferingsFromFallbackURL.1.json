@@ -3,6 +3,7 @@
   "offerings" : [
     {
       "description" : "standard set of packages",
+      "has_paywall_components" : true,
       "identifier" : "default",
       "metadata" : {
         "meta" : "data"
@@ -29,1493 +30,11 @@
           "platform_product_identifier" : "non_renewing_subscription"
         }
       ],
-      "paywall" : null,
-      "paywall_components" : {
-        "asset_base_url" : "https://assets.pawwalls.com",
-        "automatically_scale_font_size" : true,
-        "components_config" : {
-          "base" : {
-            "background" : {
-              "type" : "color",
-              "value" : {
-                "light" : {
-                  "degrees" : 0,
-                  "points" : [
-                    {
-                      "color" : "#c1e3e0ff",
-                      "percent" : 0
-                    },
-                    {
-                      "color" : "#ffffffff",
-                      "percent" : 52
-                    }
-                  ],
-                  "type" : "linear"
-                }
-              }
-            },
-            "stack" : {
-              "components" : [
-                {
-                  "components" : [
-                    {
-                      "components" : [
-
-                      ],
-                      "dimension" : {
-                        "alignment" : "center",
-                        "distribution" : "space_between",
-                        "type" : "vertical"
-                      },
-                      "margin" : {
-                        "bottom" : 0,
-                        "leading" : 24,
-                        "top" : 0,
-                        "trailing" : 24
-                      },
-                      "name" : "",
-                      "padding" : {
-                        "bottom" : 0,
-                        "leading" : 0,
-                        "top" : 0,
-                        "trailing" : 0
-                      },
-                      "shape" : {
-                        "corners" : {
-                          "bottom_leading" : 0,
-                          "bottom_trailing" : 0,
-                          "top_leading" : 0,
-                          "top_trailing" : 0
-                        },
-                        "type" : "rectangle"
-                      },
-                      "size" : {
-                        "height" : {
-                          "type" : "fit"
-                        },
-                        "width" : {
-                          "type" : "fill"
-                        }
-                      },
-                      "spacing" : 0,
-                      "type" : "stack"
-                    },
-                    {
-                      "components" : [
-                        {
-                          "action" : {
-                            "type" : "navigate_back"
-                          },
-                          "id" : "68b5fP9Fpd",
-                          "name" : "",
-                          "stack" : {
-                            "components" : [
-                              {
-                                "base_url" : "https://icons.pawwalls.com/icons",
-                                "color" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#ffffffff"
-                                  }
-                                },
-                                "formats" : {
-                                  "heic" : "x.heic",
-                                  "png" : "x.png",
-                                  "svg" : "x.svg",
-                                  "webp" : "x.webp"
-                                },
-                                "icon_background" : {
-                                  "color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#0e0e0e4d"
-                                    }
-                                  },
-                                  "shape" : {
-                                    "type" : "circle"
-                                  }
-                                },
-                                "icon_name" : "x",
-                                "margin" : {
-                                  "bottom" : 0,
-                                  "leading" : 0,
-                                  "top" : 0,
-                                  "trailing" : 0
-                                },
-                                "padding" : {
-                                  "bottom" : 4,
-                                  "leading" : 4,
-                                  "top" : 4,
-                                  "trailing" : 4
-                                },
-                                "size" : {
-                                  "height" : {
-                                    "type" : "fixed",
-                                    "value" : 24
-                                  },
-                                  "width" : {
-                                    "type" : "fixed",
-                                    "value" : 24
-                                  }
-                                },
-                                "type" : "icon"
-                              }
-                            ],
-                            "dimension" : {
-                              "alignment" : "leading",
-                              "distribution" : "space_between",
-                              "type" : "vertical"
-                            },
-                            "margin" : {
-                              "bottom" : 0,
-                              "leading" : 0,
-                              "top" : 0,
-                              "trailing" : 0
-                            },
-                            "name" : "",
-                            "padding" : {
-                              "bottom" : 4,
-                              "leading" : 4,
-                              "top" : 4,
-                              "trailing" : 4
-                            },
-                            "size" : {
-                              "height" : {
-                                "type" : "fit"
-                              },
-                              "width" : {
-                                "type" : "fit"
-                              }
-                            },
-                            "spacing" : 0,
-                            "type" : "stack"
-                          },
-                          "type" : "button"
-                        }
-                      ],
-                      "dimension" : {
-                        "alignment" : "trailing",
-                        "type" : "zlayer"
-                      },
-                      "margin" : {
-                        "bottom" : 0,
-                        "leading" : 24,
-                        "top" : 24,
-                        "trailing" : 24
-                      },
-                      "name" : "",
-                      "padding" : {
-                        "bottom" : 0,
-                        "leading" : 0,
-                        "top" : 0,
-                        "trailing" : 0
-                      },
-                      "shape" : {
-                        "corners" : {
-                          "bottom_leading" : 0,
-                          "bottom_trailing" : 0,
-                          "top_leading" : 0,
-                          "top_trailing" : 0
-                        },
-                        "type" : "rectangle"
-                      },
-                      "size" : {
-                        "height" : {
-                          "type" : "fit"
-                        },
-                        "width" : {
-                          "type" : "fill"
-                        }
-                      },
-                      "spacing" : 0,
-                      "type" : "stack"
-                    }
-                  ],
-                  "dimension" : {
-                    "alignment" : "center",
-                    "type" : "zlayer"
-                  },
-                  "margin" : {
-                    "bottom" : 0,
-                    "leading" : 0,
-                    "top" : 8,
-                    "trailing" : 0
-                  },
-                  "name" : "",
-                  "padding" : {
-                    "bottom" : 0,
-                    "leading" : 0,
-                    "top" : 0,
-                    "trailing" : 0
-                  },
-                  "shape" : {
-                    "corners" : {
-                      "bottom_leading" : 0,
-                      "bottom_trailing" : 0,
-                      "top_leading" : 0,
-                      "top_trailing" : 0
-                    },
-                    "type" : "rectangle"
-                  },
-                  "size" : {
-                    "height" : {
-                      "type" : "fit"
-                    },
-                    "width" : {
-                      "type" : "fill"
-                    }
-                  },
-                  "spacing" : 0,
-                  "type" : "stack"
-                },
-                {
-                  "color" : {
-                    "light" : {
-                      "type" : "hex",
-                      "value" : "#000000"
-                    }
-                  },
-                  "font_size" : 32,
-                  "font_weight" : "regular",
-                  "font_weight_int" : 400,
-                  "horizontal_alignment" : "center",
-                  "margin" : {
-                    "bottom" : 0,
-                    "leading" : 0,
-                    "top" : 0,
-                    "trailing" : 0
-                  },
-                  "name" : "",
-                  "padding" : {
-                    "bottom" : 0,
-                    "leading" : 0,
-                    "top" : 0,
-                    "trailing" : 0
-                  },
-                  "size" : {
-                    "height" : {
-                      "type" : "fit"
-                    },
-                    "width" : {
-                      "type" : "fit"
-                    }
-                  },
-                  "text_lid" : "d640Hi_Cjd",
-                  "type" : "text"
-                }
-              ],
-              "dimension" : {
-                "alignment" : "center",
-                "distribution" : "start",
-                "type" : "vertical"
-              },
-              "margin" : {
-                "bottom" : 0,
-                "leading" : 0,
-                "top" : 0,
-                "trailing" : 0
-              },
-              "name" : "Content",
-              "padding" : {
-                "bottom" : 0,
-                "leading" : 0,
-                "top" : 0,
-                "trailing" : 0
-              },
-              "shape" : {
-                "corners" : {
-                  "bottom_leading" : 0,
-                  "bottom_trailing" : 0,
-                  "top_leading" : 0,
-                  "top_trailing" : 0
-                },
-                "type" : "rectangle"
-              },
-              "size" : {
-                "height" : {
-                  "type" : "fit"
-                },
-                "width" : {
-                  "type" : "fill"
-                }
-              },
-              "spacing" : 0,
-              "type" : "stack"
-            },
-            "sticky_footer" : {
-              "stack" : {
-                "background" : {
-                  "type" : "color",
-                  "value" : {
-                    "light" : {
-                      "type" : "hex",
-                      "value" : "#ffffffff"
-                    }
-                  }
-                },
-                "components" : [
-                  {
-                    "components" : [
-                      {
-                        "components" : [
-                          {
-                            "is_selected_by_default" : true,
-                            "name" : "",
-                            "package_id" : "$rc_annual",
-                            "stack" : {
-                              "background" : {
-                                "type" : "color",
-                                "value" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#FFFFFFFF"
-                                  }
-                                }
-                              },
-                              "badge" : {
-                                "alignment" : "top_trailing",
-                                "stack" : {
-                                  "background" : {
-                                    "type" : "color",
-                                    "value" : {
-                                      "light" : {
-                                        "type" : "hex",
-                                        "value" : "#2eca92ff"
-                                      }
-                                    }
-                                  },
-                                  "background_color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#2eca92ff"
-                                    }
-                                  },
-                                  "components" : [
-                                    {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#ffffffFF"
-                                        }
-                                      },
-                                      "font_size" : 11,
-                                      "font_weight" : "semibold",
-                                      "horizontal_alignment" : "center",
-                                      "margin" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "name" : "",
-                                      "padding" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "size" : {
-                                        "height" : {
-                                          "type" : "fit"
-                                        },
-                                        "width" : {
-                                          "type" : "fit"
-                                        }
-                                      },
-                                      "text_lid" : "MZhIz_vGEP",
-                                      "type" : "text"
-                                    }
-                                  ],
-                                  "dimension" : {
-                                    "alignment" : "center",
-                                    "distribution" : "center",
-                                    "type" : "vertical"
-                                  },
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 12,
-                                    "top" : 0,
-                                    "trailing" : 12
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 4,
-                                    "leading" : 8,
-                                    "top" : 4,
-                                    "trailing" : 8
-                                  },
-                                  "shape" : {
-                                    "corners" : {
-                                      "bottom_leading" : 6,
-                                      "bottom_trailing" : 6,
-                                      "top_leading" : 6,
-                                      "top_trailing" : 6
-                                    },
-                                    "type" : "rectangle"
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "spacing" : 0,
-                                  "type" : "stack"
-                                },
-                                "style" : "overlay"
-                              },
-                              "border" : {
-                                "color" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#dededeff"
-                                  }
-                                },
-                                "width" : 2
-                              },
-                              "components" : [
-                                {
-                                  "components" : [
-                                    {
-                                      "components" : [
-                                        {
-                                          "base_url" : "https://icons.pawwalls.com/icons",
-                                          "color" : {
-                                            "light" : {
-                                              "type" : "hex",
-                                              "value" : "#dededeFF"
-                                            }
-                                          },
-                                          "formats" : {
-                                            "heic" : "circle.heic",
-                                            "png" : "circle.png",
-                                            "svg" : "circle.svg",
-                                            "webp" : "circle.webp"
-                                          },
-                                          "icon_name" : "circle",
-                                          "margin" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "overrides" : [
-                                            {
-                                              "conditions" : [
-                                                {
-                                                  "type" : "selected"
-                                                }
-                                              ],
-                                              "properties" : {
-                                                "color" : {
-                                                  "light" : {
-                                                    "type" : "hex",
-                                                    "value" : "#2eca92ff"
-                                                  }
-                                                },
-                                                "formats" : {
-                                                  "heic" : "filled-circle-check.heic",
-                                                  "png" : "filled-circle-check.png",
-                                                  "svg" : "filled-circle-check.svg",
-                                                  "webp" : "filled-circle-check.webp"
-                                                },
-                                                "icon_name" : "filled-circle-check"
-                                              }
-                                            }
-                                          ],
-                                          "padding" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "size" : {
-                                            "height" : {
-                                              "type" : "fixed",
-                                              "value" : 20
-                                            },
-                                            "width" : {
-                                              "type" : "fixed",
-                                              "value" : 20
-                                            }
-                                          },
-                                          "type" : "icon"
-                                        },
-                                        {
-                                          "color" : {
-                                            "light" : {
-                                              "type" : "hex",
-                                              "value" : "#0e0e0fff"
-                                            }
-                                          },
-                                          "font_size" : 16,
-                                          "font_weight" : "bold",
-                                          "horizontal_alignment" : "leading",
-                                          "margin" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "name" : "",
-                                          "padding" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "size" : {
-                                            "height" : {
-                                              "type" : "fit"
-                                            },
-                                            "width" : {
-                                              "type" : "fit"
-                                            }
-                                          },
-                                          "text_lid" : "5eKOCJdp9X",
-                                          "type" : "text"
-                                        }
-                                      ],
-                                      "dimension" : {
-                                        "alignment" : "center",
-                                        "distribution" : "start",
-                                        "type" : "horizontal"
-                                      },
-                                      "margin" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "name" : "",
-                                      "padding" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "shape" : {
-                                        "corners" : {
-                                          "bottom_leading" : 0,
-                                          "bottom_trailing" : 0,
-                                          "top_leading" : 0,
-                                          "top_trailing" : 0
-                                        },
-                                        "type" : "rectangle"
-                                      },
-                                      "size" : {
-                                        "height" : {
-                                          "type" : "fit"
-                                        },
-                                        "width" : {
-                                          "type" : "fit"
-                                        }
-                                      },
-                                      "spacing" : 8,
-                                      "type" : "stack"
-                                    },
-                                    {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#0e0e0fcc"
-                                        }
-                                      },
-                                      "font_size" : 14,
-                                      "font_weight" : "regular",
-                                      "horizontal_alignment" : "leading",
-                                      "margin" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "name" : "",
-                                      "padding" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "size" : {
-                                        "height" : {
-                                          "type" : "fit"
-                                        },
-                                        "width" : {
-                                          "type" : "fit"
-                                        }
-                                      },
-                                      "text_lid" : "IWEN6BIZ3b",
-                                      "type" : "text"
-                                    }
-                                  ],
-                                  "dimension" : {
-                                    "alignment" : "leading",
-                                    "distribution" : "center",
-                                    "type" : "vertical"
-                                  },
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "shape" : {
-                                    "corners" : {
-                                      "bottom_leading" : 0,
-                                      "bottom_trailing" : 0,
-                                      "top_leading" : 0,
-                                      "top_trailing" : 0
-                                    },
-                                    "type" : "rectangle"
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "spacing" : 6,
-                                  "type" : "stack"
-                                },
-                                {
-                                  "color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#0e0e0fff"
-                                    }
-                                  },
-                                  "font_size" : 16,
-                                  "font_weight" : "regular",
-                                  "horizontal_alignment" : "leading",
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "text_lid" : "JAHqsrKu8T",
-                                  "type" : "text"
-                                }
-                              ],
-                              "dimension" : {
-                                "alignment" : "center",
-                                "distribution" : "space_between",
-                                "type" : "horizontal"
-                              },
-                              "margin" : {
-                                "bottom" : 0,
-                                "leading" : 0,
-                                "top" : 0,
-                                "trailing" : 0
-                              },
-                              "name" : "",
-                              "overrides" : [
-                                {
-                                  "conditions" : [
-                                    {
-                                      "type" : "selected"
-                                    }
-                                  ],
-                                  "properties" : {
-                                    "border" : {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#2eca92ff"
-                                        }
-                                      },
-                                      "width" : 2
-                                    },
-                                    "shadow" : {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#53ba8b1a"
-                                        }
-                                      },
-                                      "radius" : 8,
-                                      "x" : 0,
-                                      "y" : 4
-                                    }
-                                  }
-                                }
-                              ],
-                              "padding" : {
-                                "bottom" : 10,
-                                "leading" : 12,
-                                "top" : 10,
-                                "trailing" : 12
-                              },
-                              "shape" : {
-                                "corners" : {
-                                  "bottom_leading" : 12,
-                                  "bottom_trailing" : 12,
-                                  "top_leading" : 12,
-                                  "top_trailing" : 12
-                                },
-                                "type" : "rectangle"
-                              },
-                              "size" : {
-                                "height" : {
-                                  "type" : "fit"
-                                },
-                                "width" : {
-                                  "type" : "fill"
-                                }
-                              },
-                              "spacing" : 0,
-                              "type" : "stack"
-                            },
-                            "type" : "package"
-                          },
-                          {
-                            "is_selected_by_default" : false,
-                            "name" : "",
-                            "package_id" : "$rc_monthly",
-                            "stack" : {
-                              "background" : {
-                                "type" : "color",
-                                "value" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#ffffffff"
-                                  }
-                                }
-                              },
-                              "border" : {
-                                "color" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#dededeff"
-                                  }
-                                },
-                                "width" : 2
-                              },
-                              "components" : [
-                                {
-                                  "components" : [
-                                    {
-                                      "components" : [
-                                        {
-                                          "base_url" : "https://icons.pawwalls.com/icons",
-                                          "color" : {
-                                            "light" : {
-                                              "type" : "hex",
-                                              "value" : "#dededeff"
-                                            }
-                                          },
-                                          "formats" : {
-                                            "heic" : "circle.heic",
-                                            "png" : "circle.png",
-                                            "svg" : "circle.svg",
-                                            "webp" : "circle.webp"
-                                          },
-                                          "icon_name" : "circle",
-                                          "margin" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "overrides" : [
-                                            {
-                                              "conditions" : [
-                                                {
-                                                  "type" : "selected"
-                                                }
-                                              ],
-                                              "properties" : {
-                                                "color" : {
-                                                  "light" : {
-                                                    "type" : "hex",
-                                                    "value" : "#2eca92ff"
-                                                  }
-                                                },
-                                                "formats" : {
-                                                  "heic" : "filled-circle-check.heic",
-                                                  "png" : "filled-circle-check.png",
-                                                  "svg" : "filled-circle-check.svg",
-                                                  "webp" : "filled-circle-check.webp"
-                                                },
-                                                "icon_name" : "filled-circle-check"
-                                              }
-                                            }
-                                          ],
-                                          "padding" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "size" : {
-                                            "height" : {
-                                              "type" : "fixed",
-                                              "value" : 20
-                                            },
-                                            "width" : {
-                                              "type" : "fixed",
-                                              "value" : 20
-                                            }
-                                          },
-                                          "type" : "icon"
-                                        },
-                                        {
-                                          "color" : {
-                                            "light" : {
-                                              "type" : "hex",
-                                              "value" : "#0e0e0fff"
-                                            }
-                                          },
-                                          "font_size" : 16,
-                                          "font_weight" : "bold",
-                                          "horizontal_alignment" : "leading",
-                                          "margin" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "name" : "",
-                                          "padding" : {
-                                            "bottom" : 0,
-                                            "leading" : 0,
-                                            "top" : 0,
-                                            "trailing" : 0
-                                          },
-                                          "size" : {
-                                            "height" : {
-                                              "type" : "fit"
-                                            },
-                                            "width" : {
-                                              "type" : "fit"
-                                            }
-                                          },
-                                          "text_lid" : "eRyaJRHifR",
-                                          "type" : "text"
-                                        }
-                                      ],
-                                      "dimension" : {
-                                        "alignment" : "center",
-                                        "distribution" : "start",
-                                        "type" : "horizontal"
-                                      },
-                                      "margin" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "name" : "",
-                                      "padding" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "shape" : {
-                                        "corners" : {
-                                          "bottom_leading" : 0,
-                                          "bottom_trailing" : 0,
-                                          "top_leading" : 0,
-                                          "top_trailing" : 0
-                                        },
-                                        "type" : "rectangle"
-                                      },
-                                      "size" : {
-                                        "height" : {
-                                          "type" : "fit"
-                                        },
-                                        "width" : {
-                                          "type" : "fit"
-                                        }
-                                      },
-                                      "spacing" : 8,
-                                      "type" : "stack"
-                                    },
-                                    {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#0e0e0fcc"
-                                        }
-                                      },
-                                      "font_size" : 14,
-                                      "font_weight" : "regular",
-                                      "horizontal_alignment" : "leading",
-                                      "margin" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "name" : "",
-                                      "padding" : {
-                                        "bottom" : 0,
-                                        "leading" : 0,
-                                        "top" : 0,
-                                        "trailing" : 0
-                                      },
-                                      "size" : {
-                                        "height" : {
-                                          "type" : "fit"
-                                        },
-                                        "width" : {
-                                          "type" : "fit"
-                                        }
-                                      },
-                                      "text_lid" : "U5TvMLb1cK",
-                                      "type" : "text"
-                                    }
-                                  ],
-                                  "dimension" : {
-                                    "alignment" : "leading",
-                                    "distribution" : "center",
-                                    "type" : "vertical"
-                                  },
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "shape" : {
-                                    "corners" : {
-                                      "bottom_leading" : 0,
-                                      "bottom_trailing" : 0,
-                                      "top_leading" : 0,
-                                      "top_trailing" : 0
-                                    },
-                                    "type" : "rectangle"
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "spacing" : 6,
-                                  "type" : "stack"
-                                },
-                                {
-                                  "color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#0e0e0fff"
-                                    }
-                                  },
-                                  "font_size" : 16,
-                                  "font_weight" : "regular",
-                                  "horizontal_alignment" : "leading",
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "text_lid" : "zGa_rSME8E",
-                                  "type" : "text"
-                                }
-                              ],
-                              "dimension" : {
-                                "alignment" : "center",
-                                "distribution" : "space_between",
-                                "type" : "horizontal"
-                              },
-                              "margin" : {
-                                "bottom" : 0,
-                                "leading" : 0,
-                                "top" : 0,
-                                "trailing" : 0
-                              },
-                              "name" : "",
-                              "overrides" : [
-                                {
-                                  "conditions" : [
-                                    {
-                                      "type" : "selected"
-                                    }
-                                  ],
-                                  "properties" : {
-                                    "border" : {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#2eca92ff"
-                                        }
-                                      },
-                                      "width" : 2
-                                    },
-                                    "shadow" : {
-                                      "color" : {
-                                        "light" : {
-                                          "type" : "hex",
-                                          "value" : "#53ba8b1a"
-                                        }
-                                      },
-                                      "radius" : 8,
-                                      "x" : 0,
-                                      "y" : 4
-                                    }
-                                  }
-                                }
-                              ],
-                              "padding" : {
-                                "bottom" : 10,
-                                "leading" : 12,
-                                "top" : 10,
-                                "trailing" : 12
-                              },
-                              "shape" : {
-                                "corners" : {
-                                  "bottom_leading" : 12,
-                                  "bottom_trailing" : 12,
-                                  "top_leading" : 12,
-                                  "top_trailing" : 12
-                                },
-                                "type" : "rectangle"
-                              },
-                              "size" : {
-                                "height" : {
-                                  "type" : "fit"
-                                },
-                                "width" : {
-                                  "type" : "fill"
-                                }
-                              },
-                              "spacing" : 0,
-                              "type" : "stack"
-                            },
-                            "type" : "package"
-                          }
-                        ],
-                        "dimension" : {
-                          "alignment" : "leading",
-                          "distribution" : "start",
-                          "type" : "vertical"
-                        },
-                        "margin" : {
-                          "bottom" : 0,
-                          "leading" : 0,
-                          "top" : 0,
-                          "trailing" : 0
-                        },
-                        "name" : "Packages",
-                        "padding" : {
-                          "bottom" : 0,
-                          "leading" : 0,
-                          "top" : 0,
-                          "trailing" : 0
-                        },
-                        "shape" : {
-                          "corners" : {
-                            "bottom_leading" : 0,
-                            "bottom_trailing" : 0,
-                            "top_leading" : 0,
-                            "top_trailing" : 0
-                          },
-                          "type" : "rectangle"
-                        },
-                        "size" : {
-                          "height" : {
-                            "type" : "fit"
-                          },
-                          "width" : {
-                            "type" : "fill"
-                          }
-                        },
-                        "spacing" : 16,
-                        "type" : "stack"
-                      },
-                      {
-                        "components" : [
-                          {
-                            "name" : "",
-                            "stack" : {
-                              "background" : {
-                                "type" : "color",
-                                "value" : {
-                                  "light" : {
-                                    "type" : "hex",
-                                    "value" : "#2eca92FF"
-                                  }
-                                }
-                              },
-                              "components" : [
-                                {
-                                  "color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#ffffff"
-                                    }
-                                  },
-                                  "font_size" : 16,
-                                  "font_weight" : "semibold",
-                                  "horizontal_alignment" : "center",
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "text_lid" : "myPbQ8U2SY",
-                                  "type" : "text"
-                                }
-                              ],
-                              "dimension" : {
-                                "alignment" : "center",
-                                "distribution" : "start",
-                                "type" : "vertical"
-                              },
-                              "margin" : {
-                                "bottom" : 0,
-                                "leading" : 0,
-                                "top" : 0,
-                                "trailing" : 0
-                              },
-                              "name" : "",
-                              "padding" : {
-                                "bottom" : 14,
-                                "leading" : 8,
-                                "top" : 14,
-                                "trailing" : 8
-                              },
-                              "shape" : {
-                                "corners" : {
-                                  "bottom_leading" : 8,
-                                  "bottom_trailing" : 8,
-                                  "top_leading" : 8,
-                                  "top_trailing" : 8
-                                },
-                                "type" : "rectangle"
-                              },
-                              "size" : {
-                                "height" : {
-                                  "type" : "fit"
-                                },
-                                "width" : {
-                                  "type" : "fill"
-                                }
-                              },
-                              "spacing" : 0,
-                              "type" : "stack"
-                            },
-                            "type" : "purchase_button"
-                          },
-                          {
-                            "action" : {
-                              "type" : "restore_purchases"
-                            },
-                            "id" : "vLoUgvChkK",
-                            "name" : "",
-                            "stack" : {
-                              "components" : [
-                                {
-                                  "color" : {
-                                    "light" : {
-                                      "type" : "hex",
-                                      "value" : "#2e8760cc"
-                                    }
-                                  },
-                                  "font_size" : 14,
-                                  "font_weight" : "semibold",
-                                  "horizontal_alignment" : "center",
-                                  "margin" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "name" : "",
-                                  "padding" : {
-                                    "bottom" : 0,
-                                    "leading" : 0,
-                                    "top" : 0,
-                                    "trailing" : 0
-                                  },
-                                  "size" : {
-                                    "height" : {
-                                      "type" : "fit"
-                                    },
-                                    "width" : {
-                                      "type" : "fit"
-                                    }
-                                  },
-                                  "text_lid" : "ynMUOHsUhc",
-                                  "type" : "text"
-                                }
-                              ],
-                              "dimension" : {
-                                "alignment" : "center",
-                                "distribution" : "start",
-                                "type" : "vertical"
-                              },
-                              "margin" : {
-                                "bottom" : 0,
-                                "leading" : 0,
-                                "top" : 0,
-                                "trailing" : 0
-                              },
-                              "name" : "",
-                              "padding" : {
-                                "bottom" : 0,
-                                "leading" : 0,
-                                "top" : 0,
-                                "trailing" : 0
-                              },
-                              "shape" : {
-                                "corners" : {
-                                  "bottom_leading" : 0,
-                                  "bottom_trailing" : 0,
-                                  "top_leading" : 0,
-                                  "top_trailing" : 0
-                                },
-                                "type" : "rectangle"
-                              },
-                              "size" : {
-                                "height" : {
-                                  "type" : "fit"
-                                },
-                                "width" : {
-                                  "type" : "fit"
-                                }
-                              },
-                              "spacing" : 0,
-                              "type" : "stack"
-                            },
-                            "type" : "button"
-                          }
-                        ],
-                        "dimension" : {
-                          "alignment" : "center",
-                          "distribution" : "center",
-                          "type" : "vertical"
-                        },
-                        "margin" : {
-                          "bottom" : 0,
-                          "leading" : 0,
-                          "top" : 0,
-                          "trailing" : 0
-                        },
-                        "name" : "Buttons",
-                        "padding" : {
-                          "bottom" : 0,
-                          "leading" : 0,
-                          "top" : 0,
-                          "trailing" : 0
-                        },
-                        "shape" : {
-                          "corners" : {
-                            "bottom_leading" : 0,
-                            "bottom_trailing" : 0,
-                            "top_leading" : 0,
-                            "top_trailing" : 0
-                          },
-                          "type" : "rectangle"
-                        },
-                        "size" : {
-                          "height" : {
-                            "type" : "fit"
-                          },
-                          "width" : {
-                            "type" : "fill"
-                          }
-                        },
-                        "spacing" : 12,
-                        "type" : "stack"
-                      }
-                    ],
-                    "dimension" : {
-                      "alignment" : "center",
-                      "distribution" : "start",
-                      "type" : "vertical"
-                    },
-                    "margin" : {
-                      "bottom" : 0,
-                      "leading" : 0,
-                      "top" : 0,
-                      "trailing" : 0
-                    },
-                    "name" : "",
-                    "padding" : {
-                      "bottom" : 0,
-                      "leading" : 0,
-                      "top" : 0,
-                      "trailing" : 0
-                    },
-                    "shape" : {
-                      "corners" : {
-                        "bottom_leading" : 0,
-                        "bottom_trailing" : 0,
-                        "top_leading" : 0,
-                        "top_trailing" : 0
-                      },
-                      "type" : "rectangle"
-                    },
-                    "size" : {
-                      "height" : {
-                        "type" : "fit"
-                      },
-                      "width" : {
-                        "type" : "fill"
-                      }
-                    },
-                    "spacing" : 16,
-                    "type" : "stack"
-                  }
-                ],
-                "dimension" : {
-                  "alignment" : "leading",
-                  "distribution" : "start",
-                  "type" : "vertical"
-                },
-                "margin" : {
-                  "bottom" : 0,
-                  "leading" : 0,
-                  "top" : 0,
-                  "trailing" : 0
-                },
-                "name" : "Footer",
-                "padding" : {
-                  "bottom" : 0,
-                  "leading" : 16,
-                  "top" : 20,
-                  "trailing" : 16
-                },
-                "shadow" : {
-                  "color" : {
-                    "light" : {
-                      "type" : "hex",
-                      "value" : "#0000001a"
-                    }
-                  },
-                  "radius" : 16,
-                  "x" : 0,
-                  "y" : 4
-                },
-                "shape" : {
-                  "corners" : {
-                    "bottom_leading" : 0,
-                    "bottom_trailing" : 0,
-                    "top_leading" : 28,
-                    "top_trailing" : 28
-                  },
-                  "type" : "rectangle"
-                },
-                "size" : {
-                  "height" : {
-                    "type" : "fit"
-                  },
-                  "width" : {
-                    "type" : "fill"
-                  }
-                },
-                "spacing" : 0,
-                "type" : "stack"
-              }
-            }
-          }
-        },
-        "components_localizations" : {
-          "en_US" : {
-            "5eKOCJdp9X" : "Annual",
-            "IWEN6BIZ3b" : "12 mo • {{ product.price }}",
-            "JAHqsrKu8T" : "{{ product.price_per_month }}/mo",
-            "MZhIz_vGEP" : "{{ product.relative_discount }} OFF",
-            "U5TvMLb1cK" : "1 mo • {{ product.price }}",
-            "d640Hi_Cjd" : "Test StoreKit\n\nbackend integration tests",
-            "eRyaJRHifR" : "Monthly",
-            "myPbQ8U2SY" : "Continue",
-            "ynMUOHsUhc" : "Restore purchases",
-            "zGa_rSME8E" : "{{ product.price_per_period_abbreviated }}"
-          }
-        },
-        "default_locale" : "en_US",
-        "exit_offers" : {
-
-        },
-        "id" : "pweda62449327d4aef",
-        "revision" : 2,
-        "template_name" : "components",
-        "zero_decimal_place_countries" : {
-          "apple" : [
-            "TWN",
-            "KAZ",
-            "MEX",
-            "PHL",
-            "THA",
-            "IND"
-          ]
-        }
-      }
+      "paywall" : null
     },
     {
       "description" : "Coins",
+      "has_paywall_components" : false,
       "identifier" : "coins",
       "metadata" : {
 
@@ -1530,6 +49,7 @@
     },
     {
       "description" : "Alternate offering",
+      "has_paywall_components" : false,
       "identifier" : "alternate_offering",
       "metadata" : {
 
@@ -1637,6 +157,12 @@
       }
     }
   ],
+  "placements" : {
+    "fallback_offering_id" : "default",
+    "offering_ids_by_placement" : {
+
+    }
+  },
   "ui_config" : {
     "app" : {
       "colors" : {
@@ -2354,6 +880,53 @@
         "year" : "año",
         "year_short" : "año",
         "yearly" : "anual"
+      },
+      "et" : {
+        "annual" : "aastane",
+        "annual_short" : "a",
+        "annually" : "iga aasta",
+        "daily" : "iga päev",
+        "day" : "päev",
+        "day_short" : "p",
+        "free_price" : "tasuta",
+        "month" : "kuu",
+        "month_short" : "k",
+        "monthly" : "iga kuu",
+        "num_day_few" : "%d päeva",
+        "num_day_many" : "%d päeva",
+        "num_day_one" : "%d päev",
+        "num_day_other" : "%d päeva",
+        "num_day_two" : "%d päeva",
+        "num_day_zero" : "%d päeva",
+        "num_days_short" : "%dp",
+        "num_month_few" : "%d kuud",
+        "num_month_many" : "%d kuud",
+        "num_month_one" : "%d kuu",
+        "num_month_other" : "%d kuud",
+        "num_month_two" : "%d kuud",
+        "num_month_zero" : "%d kuud",
+        "num_months_short" : "%dk",
+        "num_week_few" : "%d nädalat",
+        "num_week_many" : "%d nädalat",
+        "num_week_one" : "%d nädal",
+        "num_week_other" : "%d nädalat",
+        "num_week_two" : "%d nädalat",
+        "num_week_zero" : "%d nädalat",
+        "num_weeks_short" : "%dnäd",
+        "num_year_few" : "%d aastat",
+        "num_year_many" : "%d aastat",
+        "num_year_one" : "%d aasta",
+        "num_year_other" : "%d aastat",
+        "num_year_two" : "%d aastat",
+        "num_year_zero" : "%d aastat",
+        "num_years_short" : "%da",
+        "percent" : "%d%%",
+        "week" : "nädal",
+        "week_short" : "näd",
+        "weekly" : "iga nädal",
+        "year" : "aasta",
+        "year_short" : "a",
+        "yearly" : "iga aasta"
       },
       "eu" : {
         "annual" : "urteko",
@@ -3483,6 +2056,53 @@
         "year_short" : "r",
         "yearly" : "ročne"
       },
+      "sl" : {
+        "annual" : "letni",
+        "annual_short" : "l",
+        "annually" : "letno",
+        "daily" : "dnevno",
+        "day" : "dan",
+        "day_short" : "d",
+        "free_price" : "brezplačno",
+        "month" : "mesec",
+        "month_short" : "mes",
+        "monthly" : "mesečno",
+        "num_day_few" : "%d dnevi",
+        "num_day_many" : "%d dni",
+        "num_day_one" : "%d dan",
+        "num_day_other" : "%d dni",
+        "num_day_two" : "%d dneva",
+        "num_day_zero" : "%d dni",
+        "num_days_short" : "%dd",
+        "num_month_few" : "%d meseci",
+        "num_month_many" : "%d mesecev",
+        "num_month_one" : "%d mesec",
+        "num_month_other" : "%d mesecev",
+        "num_month_two" : "%d meseca",
+        "num_month_zero" : "%d mesecev",
+        "num_months_short" : "%dmes",
+        "num_week_few" : "%d tedni",
+        "num_week_many" : "%d tednov",
+        "num_week_one" : "%d teden",
+        "num_week_other" : "%d tednov",
+        "num_week_two" : "%d tedna",
+        "num_week_zero" : "%d tednov",
+        "num_weeks_short" : "%dted",
+        "num_year_few" : "%d leta",
+        "num_year_many" : "%d let",
+        "num_year_one" : "%d leto",
+        "num_year_other" : "%d let",
+        "num_year_two" : "%d leti",
+        "num_year_zero" : "%d let",
+        "num_years_short" : "%dl",
+        "percent" : "%d%%",
+        "week" : "teden",
+        "week_short" : "ted",
+        "weekly" : "tedensko",
+        "year" : "leto",
+        "year_short" : "l",
+        "yearly" : "letno"
+      },
       "sr_Cyrl" : {
         "annual" : "годишњи",
         "annual_short" : "год",
@@ -3588,33 +2208,33 @@
         "month" : "månad",
         "month_short" : "mån",
         "monthly" : "månadsvis",
-        "num_day_few" : "%d days",
-        "num_day_many" : "%d days",
-        "num_day_one" : "%d day",
-        "num_day_other" : "%d days",
-        "num_day_two" : "%d days",
-        "num_day_zero" : "%d day",
+        "num_day_few" : "%d dagar",
+        "num_day_many" : "%d dagar",
+        "num_day_one" : "%d dag",
+        "num_day_other" : "%d dagar",
+        "num_day_two" : "%d dagar",
+        "num_day_zero" : "%d dag",
         "num_days_short" : "%dd",
-        "num_month_few" : "%d months",
-        "num_month_many" : "%d months",
-        "num_month_one" : "%d month",
-        "num_month_other" : "%d months",
-        "num_month_two" : "%d months",
-        "num_month_zero" : "%d month",
+        "num_month_few" : "%d månader",
+        "num_month_many" : "%d månader",
+        "num_month_one" : "%d månad",
+        "num_month_other" : "%d månader",
+        "num_month_two" : "%d månader",
+        "num_month_zero" : "%d månad",
         "num_months_short" : "%dmån",
-        "num_week_few" : "%d weeks",
-        "num_week_many" : "%d weeks",
-        "num_week_one" : "%d week",
-        "num_week_other" : "%d weeks",
-        "num_week_two" : "%d weeks",
-        "num_week_zero" : "%d week",
+        "num_week_few" : "%d veckor",
+        "num_week_many" : "%d veckor",
+        "num_week_one" : "%d vecka",
+        "num_week_other" : "%d veckor",
+        "num_week_two" : "%d veckor",
+        "num_week_zero" : "%d vecka",
         "num_weeks_short" : "%dv",
-        "num_year_few" : "%d years",
-        "num_year_many" : "%d years",
-        "num_year_one" : "%d year",
-        "num_year_other" : "%d years",
-        "num_year_two" : "%d years",
-        "num_year_zero" : "%d year",
+        "num_year_few" : "%d år",
+        "num_year_many" : "%d år",
+        "num_year_one" : "%d år",
+        "num_year_other" : "%d år",
+        "num_year_two" : "%d år",
+        "num_year_zero" : "%d år",
         "num_years_short" : "%dår",
         "percent" : "%d%%",
         "week" : "vecka",

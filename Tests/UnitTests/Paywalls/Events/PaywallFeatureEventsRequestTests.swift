@@ -352,6 +352,76 @@ class PaywallFeatureEventsRequestTests: TestCase {
         assertSnapshot(of: requestEvent, as: .formattedJson)
     }
 
+    // MARK: - Workflow Attribution Tests
+
+    func testImpressionEventWithWorkflowAttribution() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        assertSnapshot(of: requestEvent, as: .formattedJson)
+    }
+
+    // The context used to be nil unless placement or targeting was set, which workflow paywalls rarely are.
+    func testWorkflowAttributionSurvivesWithoutPlacementOrTargeting() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        let context = try XCTUnwrap(requestEvent.presentedOfferingContext)
+        expect(context.placementIdentifier).to(beNil())
+        expect(context.targetingRevision).to(beNil())
+        expect(context.targetingRuleId).to(beNil())
+    }
+
+    func testWorkflowAttributionIsNotSentAtTopLevel() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventDataWithWorkflowAttribution)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        let encoded = try JSONEncoder.prettyPrinted.encode(requestEvent)
+        let json = try XCTUnwrap(String(data: encoded, encoding: .utf8))
+        let topLevel = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: encoded) as? [String: Any]
+        )
+
+        expect(topLevel.keys.contains("workflow_id")) == false
+        expect(topLevel.keys.contains("trace_id")) == false
+        expect(json).to(contain("wf_abc123"))
+    }
+
+    // Matches purchases-android, where `paywallId` also keeps the context alive on its own.
+    func testStandalonePaywallEventCarriesPaywallIdInPresentedOfferingContext() throws {
+        let event = PaywallEvent.impression(Self.eventCreationData, Self.eventData)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        let context = try XCTUnwrap(requestEvent.presentedOfferingContext)
+        expect(context.paywallId) == Self.eventData.paywallIdentifier
+        expect(context.placementIdentifier).to(beNil())
+        expect(context.targetingRevision).to(beNil())
+        expect(context.targetingRuleId).to(beNil())
+        expect(context.workflowId).to(beNil())
+        expect(context.traceId).to(beNil())
+    }
+
+    func testPaywallEventWithoutPaywallIdHasNoPresentedOfferingContext() throws {
+        let data = PaywallEvent.Data(
+            paywallIdentifier: nil,
+            offeringIdentifier: "offering",
+            paywallRevision: 0,
+            sessionID: Self.eventData.sessionIdentifier,
+            displayMode: .fullScreen,
+            localeIdentifier: "es_ES",
+            darkMode: true
+        )
+        let event = PaywallEvent.impression(Self.eventCreationData, data)
+        let storedEvent = try Self.createStoredFeatureEvent(from: event)
+        let requestEvent: FeatureEventsRequest.PaywallEvent = try XCTUnwrap(.init(storedEvent: storedEvent))
+
+        expect(requestEvent.presentedOfferingContext).to(beNil())
+    }
+
     // MARK: - Milliseconds Precision Tests
 
     func testPaywallEventImpressionPreservesMillisecondsInCreationDate() throws {
@@ -542,6 +612,18 @@ private extension PaywallFeatureEventsRequestTests {
             placementIdentifier: nil,
             targetingContext: .init(revision: 3, ruleId: "rule_abc123")
         )
+    )
+
+    static let eventDataWithWorkflowAttribution: PaywallEvent.Data = .init(
+        paywallIdentifier: "test_paywall_id_1",
+        offeringIdentifier: "offering_1",
+        paywallRevision: 5,
+        sessionID: .init(uuidString: "98CC0F1D-7665-4093-9624-1D7308FFF4DB")!,
+        displayMode: .fullScreen,
+        localeIdentifier: "es_ES",
+        darkMode: true,
+        workflowId: "wf_abc123",
+        traceId: "3F2504E0-4F89-11D3-9A0C-0305E82C3301"
     )
 
     static let eventDataWithSource: PaywallEvent.Data = .init(

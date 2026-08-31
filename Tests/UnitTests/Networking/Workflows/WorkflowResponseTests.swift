@@ -225,6 +225,72 @@ class WorkflowResponseTests: TestCase {
         expect(screen.offeringIdentifier) == "default"
     }
 
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSize() throws {
+        let screen = try Self.decodeWorkflowScreen(automaticallyScaleFontSize: false)
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenAutomaticallyScaleFontSizeDefaultsToTrue() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.automaticallyScaleFontSize) == true
+    }
+
+    func testWorkflowScreenInitializerCanDisableAutomaticFontScaling() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            automaticallyScaleFontSize: false
+        )
+
+        expect(screen.automaticallyScaleFontSize) == false
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountries() throws {
+        let screen = try Self.decodeWorkflowScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesDefaultsToEmpty() throws {
+        let screen = try Self.decodeWorkflowScreen()
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testDecodeWorkflowScreenZeroDecimalPlaceCountriesIgnoresMalformedValue() throws {
+        let screen = try Self.decodeWorkflowScreen(zeroDecimalPlaceCountriesJSON: "\"TWN\"")
+
+        expect(screen.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testWorkflowScreenInitializerAcceptsZeroDecimalPlaceCountries() throws {
+        let decodedScreen = try Self.decodeWorkflowScreen()
+        let screen = WorkflowScreen(
+            name: decodedScreen.name,
+            templateName: decodedScreen.templateName,
+            assetBaseURL: decodedScreen.assetBaseURL,
+            componentsConfig: decodedScreen.componentsConfig,
+            componentsLocalizations: decodedScreen.componentsLocalizations,
+            defaultLocale: decodedScreen.defaultLocale,
+            offeringIdentifier: decodedScreen.offeringIdentifier,
+            zeroDecimalPlaceCountries: ["TWN"]
+        )
+
+        expect(screen.zeroDecimalPlaceCountries) == ["TWN"]
+    }
+
     func testDecodeWorkflowScreenWithExitOffers() throws {
         let json = """
         {
@@ -326,6 +392,66 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "screen_type": ["paywall"] }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType) == ["paywall"]
+    }
+
+    func testDecodeWorkflowStepScreenTypeEmptyWhenTaggedEmpty() throws {
+        // A step the backend tagged with no known type. `[]` (not `nil`) means "explicitly not a
+        // paywall", which suppresses the impression.
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "screen_type": [] }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType) == []
+    }
+
+    func testDecodeWorkflowStepScreenTypeNilWhenKeyAbsent() throws {
+        // Older workflows omit `screen_type`. `nil` (not `[]`) drives the untagged fallback in the UI
+        // layer (report only on `singleStepFallbackId`); see `PaywallsV2View.shouldTrackPaywallEvents`.
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": { "other_key": "value" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType).to(beNil())
+    }
+
+    func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "metadata": null
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.stepScreenType).to(beNil())
+    }
+
     func testDecodeWorkflowStepMatchingActualBackendResponse() throws {
         let json = """
         {
@@ -369,6 +495,122 @@ class WorkflowResponseTests: TestCase {
         expect(step.outputs).to(beEmpty())
         expect(step.triggerActions["btn_wagcLsIVjN"]) == .step(stepId: "ztBPCwD")
         expect(step.metadata).to(beNil())
+    }
+
+    // MARK: - default_locale
+
+    func testDecodeWorkflowScreenDefaultLocalePreservesValue() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: "\"es_ES\"")
+
+        expect(screen.defaultLocale) == "es_ES"
+    }
+
+    func testDecodeWorkflowScreenDefaultLocaleDefaultsToEnglishWhenNull() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: "null")
+
+        expect(screen.defaultLocale) == "en"
+    }
+
+    func testDecodeWorkflowScreenDefaultLocaleDefaultsToEnglishWhenMissing() throws {
+        let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: nil)
+
+        expect(screen.defaultLocale) == "en"
+    }
+
+    func testWorkflowAndOfferingsPathsAgreeOnDefaultLocale() throws {
+        for localeJSON in ["\"es_ES\"", "null", nil] {
+            let screen = try Self.decodeWorkflowScreen(defaultLocaleJSON: localeJSON)
+            let componentsData = try Self.decodePaywallComponentsData(defaultLocaleJSON: localeJSON)
+
+            expect(screen.defaultLocale).to(
+                equal(componentsData.defaultLocale),
+                description: "default_locale diverged for payload \(localeJSON ?? "<omitted>")"
+            )
+        }
+    }
+
+}
+
+private extension WorkflowResponseTests {
+
+    /// - Parameter defaultLocaleJSON: the raw JSON value for `default_locale`, or `nil` to omit the key
+    /// entirely. The backend sends `null` here for template-derived screens.
+    static func decodeWorkflowScreen(
+        defaultLocaleJSON: String? = "\"en_US\"",
+        automaticallyScaleFontSize: Bool? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil
+    ) throws -> WorkflowScreen {
+        var defaultLocaleFragment = ""
+        if let defaultLocaleJSON {
+            defaultLocaleFragment = """
+            "default_locale": \(defaultLocaleJSON),
+            """
+        }
+        var automaticallyScaleFontSizeFragment = ""
+        if let automaticallyScaleFontSize {
+            automaticallyScaleFontSizeFragment = """
+            , "automatically_scale_font_size": \(automaticallyScaleFontSize)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
+            """
+        }
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          \(defaultLocaleFragment)
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)
+        }
+        """.data(using: .utf8)!
+
+        return try JSONDecoder.default.decode(WorkflowScreen.self, from: json)
+    }
+
+    static func decodePaywallComponentsData(defaultLocaleJSON: String?) throws -> PaywallComponentsData {
+        var defaultLocaleFragment = ""
+        if let defaultLocaleJSON {
+            defaultLocaleFragment = """
+            "default_locale": \(defaultLocaleJSON),
+            """
+        }
+        let json = """
+        {
+          "template_name": "tmpl",
+          "asset_base_url": "https://assets.revenuecat.com",
+          \(defaultLocaleFragment)
+          "components_localizations": {},
+          "components_config": {
+            "base": {
+              "stack": {
+                "type": "stack", "components": [],
+                "dimension": { "type": "vertical", "alignment": "center", "distribution": "center" },
+                "size": { "width": { "type": "fill" }, "height": { "type": "fill" } },
+                "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+                "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 }
+              },
+              "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        return try JSONDecoder.default.decode(PaywallComponentsData.self, from: json)
     }
 
 }

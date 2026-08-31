@@ -109,7 +109,9 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
                                                          operationDispatcher: self.operationDispatcher,
                                                          systemInfo: self.systemInfo,
                                                          backend: self.backend,
-                                                         offeringsFactory: OfferingsFactory(),
+                                                         offeringsFactory: OfferingsFactory(
+                                                            systemInfo: self.systemInfo
+                                                         ),
                                                          productsManager: self.productsManager,
                                                          diagnosticsTracker: self.diagnosticsTracker)
 
@@ -517,6 +519,7 @@ class PurchasesOrchestratorSimulatedStoreTests: TestCase {
             diagnosticsTracker: self.diagnosticsTracker,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: self.eventsManager,
+            storeKit2ProductPurchaser: MockStoreKit2ProductPurchaser(),
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper,
             dateProvider: self.mockDateProvider
         )

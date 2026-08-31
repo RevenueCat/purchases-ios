@@ -18,7 +18,7 @@
 
     },
     "images_heic" : {
-      "background" : "background.jpg",
+      "background" : null,
       "header" : null,
       "icon" : "revenuecatui_default_paywall_app_icon"
     },

@@ -22,7 +22,8 @@ extension HTTPResponse where Body == Data? {
         requestHeaders: HTTPRequest.Headers,
         publicKey: Signing.PublicKey?,
         isLoadShedderResponse: Bool,
-        isFallbackUrlResponse: Bool
+        isFallbackUrlResponse: Bool,
+        iamEnabled: Bool
     ) -> VerifiedHTTPResponse<Body> {
         let verificationResult = Self.verificationResult(
             body: self.body,
@@ -33,6 +34,7 @@ extension HTTPResponse where Body == Data? {
             request: request,
             publicKey: publicKey,
             signing: signing,
+            iamEnabled: iamEnabled,
             isFallbackUrlResponse: isFallbackUrlResponse
         )
 
@@ -62,10 +64,21 @@ extension HTTPResponse where Body == Data? {
         request: HTTPRequest,
         publicKey: Signing.PublicKey?,
         signing: SigningType,
+        iamEnabled: Bool,
         isFallbackUrlResponse: Bool
     ) -> VerificationResult {
         guard let publicKey = publicKey, statusCode.isSuccessfulResponse else {
             return .notRequested
+        }
+
+        let contextProvider = request.path.responseSignatureContextProvider
+        let message: Data?
+        do {
+            message = try contextProvider.responsePayloadForSignature(from: body, statusCode: statusCode)
+        } catch {
+            Logger.warn(Strings.signing.signature_payload_failed_creation(request, error))
+
+            return .failed
         }
 
         guard let signature = HTTPResponse.value(
@@ -89,9 +102,10 @@ extension HTTPResponse where Body == Data? {
         if signing.verify(signature: signature,
                           with: .init(
                             path: request.path,
-                            message: body,
+                            iamEnabled: iamEnabled,
+                            message: message,
                             requestHeaders: requestHeaders,
-                            requestBody: request.requestBody,
+                            requestBody: contextProvider.requestBodyForSignature(for: request),
                             nonce: request.nonce,
                             etag: HTTPResponse.value(forCaseInsensitiveHeaderField: .eTag, in: responseHeaders),
                             requestDate: requestDate.millisecondsSince1970,

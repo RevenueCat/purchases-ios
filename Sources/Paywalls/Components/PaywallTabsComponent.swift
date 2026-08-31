@@ -22,12 +22,19 @@ import Foundation
         public let tabId: String
         public let name: String?
         public let stack: StackComponent
+        public let hapticFeedbackEnabled: Bool?
 
-        public init(tabId: String, stack: StackComponent, name: String? = nil) {
+        public init(
+            tabId: String,
+            stack: StackComponent,
+            name: String? = nil,
+            hapticFeedbackEnabled: Bool? = nil
+        ) {
             self.type = .tabControlButton
             self.tabId = tabId
             self.name = name
             self.stack = stack
+            self.hapticFeedbackEnabled = hapticFeedbackEnabled
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -35,13 +42,15 @@ import Foundation
             hasher.combine(tabId)
             hasher.combine(name)
             hasher.combine(stack)
+            hasher.combine(hapticFeedbackEnabled)
         }
 
         public static func == (lhs: TabControlButtonComponent, rhs: TabControlButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.tabId == rhs.tabId &&
                 lhs.name == rhs.name &&
-                lhs.stack == rhs.stack
+                lhs.stack == rhs.stack &&
+                lhs.hapticFeedbackEnabled == rhs.hapticFeedbackEnabled
         }
     }
 
@@ -53,19 +62,22 @@ import Foundation
         public let thumbColorOff: ColorScheme
         public let trackColorOn: ColorScheme
         public let trackColorOff: ColorScheme
+        public let hapticFeedbackEnabled: Bool?
 
         public init(defaultValue: Bool,
                     name: String? = nil,
                     thumbColorOn: ColorScheme,
                     thumbColorOff: ColorScheme,
                     trackColorOn: ColorScheme,
-                    trackColorOff: ColorScheme) {
+                    trackColorOff: ColorScheme,
+                    hapticFeedbackEnabled: Bool? = nil) {
             self.type = .tabControlToggle
             self.name = name
             self.thumbColorOn = thumbColorOn
             self.thumbColorOff = thumbColorOff
             self.trackColorOn = trackColorOn
             self.trackColorOff = trackColorOff
+            self.hapticFeedbackEnabled = hapticFeedbackEnabled
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -75,6 +87,7 @@ import Foundation
             hasher.combine(thumbColorOff)
             hasher.combine(trackColorOn)
             hasher.combine(trackColorOff)
+            hasher.combine(hapticFeedbackEnabled)
         }
 
         public static func == (lhs: TabControlToggleComponent, rhs: TabControlToggleComponent) -> Bool {
@@ -83,7 +96,8 @@ import Foundation
                    lhs.thumbColorOn == rhs.thumbColorOn &&
                    lhs.thumbColorOff == rhs.thumbColorOff &&
                    lhs.trackColorOn == rhs.trackColorOn &&
-                   lhs.trackColorOff == rhs.trackColorOff
+                   lhs.trackColorOff == rhs.trackColorOff &&
+                   lhs.hapticFeedbackEnabled == rhs.hapticFeedbackEnabled
         }
     }
 
@@ -173,11 +187,13 @@ import Foundation
         public let defaultTabId: String?
 
         public let overrides: ComponentOverrides<PartialTabsComponent>?
+        /// State updates applied when a tab is selected. Decode-only in Phase 0.
+        public let stateUpdates: [StateUpdate]?
 
         public init(
             name: String? = nil,
             visible: Bool? = nil,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             padding: Padding = .zero,
             margin: Padding = .zero,
             background: Background? = nil,
@@ -189,7 +205,8 @@ import Foundation
             tabs: [Tab],
             defaultTabId: String? = nil,
 
-            overrides: ComponentOverrides<PartialTabsComponent>? = nil
+            overrides: ComponentOverrides<PartialTabsComponent>? = nil,
+            stateUpdates: [StateUpdate]? = nil
         ) {
             self.type = .stack
             self.name = name
@@ -207,6 +224,7 @@ import Foundation
             self.defaultTabId = defaultTabId
 
             self.overrides = overrides
+            self.stateUpdates = stateUpdates
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -224,6 +242,7 @@ import Foundation
             hasher.combine(tabs)
             hasher.combine(defaultTabId)
             hasher.combine(overrides)
+            hasher.combine(stateUpdates)
         }
 
         public static func == (lhs: TabsComponent, rhs: TabsComponent) -> Bool {
@@ -240,7 +259,8 @@ import Foundation
                    lhs.control == rhs.control &&
                    lhs.tabs == rhs.tabs &&
                    lhs.defaultTabId == rhs.defaultTabId &&
-                   lhs.overrides == rhs.overrides
+                   lhs.overrides == rhs.overrides &&
+                   lhs.stateUpdates == rhs.stateUpdates
         }
     }
 

@@ -32,16 +32,13 @@ class BaseBackendTests: TestCase {
     private(set) var webBilling: WebBillingAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
+    private(set) var token: TokenAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
-    private(set) var workflowsAPI: WorkflowsAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
-    /// Controls what the CDN fetch returns. Tests can reassign this before triggering a `use_cdn` response
-    /// because the closure registered with `WorkflowsAPI` captures `self` and reads this property at call time.
-    var stubbedCdnFetch: WorkflowCdnFetch = { _, _, completion in completion(.success(Data())) }
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -92,6 +89,7 @@ class BaseBackendTests: TestCase {
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
+        self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.webBilling = WebBillingAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -99,16 +97,13 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
-        self.workflowsAPI = WorkflowsAPI(backendConfig: backendConfig,
-                                         cdnFetch: { [weak self] cdnUrl, hash, completion in
-            self?.stubbedCdnFetch(cdnUrl, hash, completion) ?? completion(.success(Data()))
-        })
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
+                               tokenAPI: self.token,
                                offeringsAPI: self.offerings,
                                webBillingAPI: self.webBilling,
                                offlineEntitlements: self.offlineEntitlements,
@@ -116,7 +111,6 @@ class BaseBackendTests: TestCase {
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
-                               workflowsAPI: self.workflowsAPI,
                                adsAPI: self.adsAPI,
                                remoteConfigAPI: self.remoteConfigAPI)
     }
@@ -149,6 +143,7 @@ extension BaseBackendTests {
 
         return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

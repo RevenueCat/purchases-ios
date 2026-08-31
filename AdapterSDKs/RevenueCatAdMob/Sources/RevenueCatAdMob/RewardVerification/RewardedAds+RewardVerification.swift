@@ -159,17 +159,19 @@ import GoogleMobileAds
 @available(iOS 15.0, *)
 internal extension RewardVerification.CapableAd {
 
-    /// Returns the handler used by GoogleMobileAds `present` APIs while optionally dispatching
-    /// RevenueCat reward-verification polling results.
+    /// Returns the handler used by GoogleMobileAds `present` APIs, delivering the core SDK's
+    /// reward-verification result through the one-shot guard on the main actor.
     ///
-    /// - Parameter poller: For unit tests; pass `nil` in production to use ``RewardVerification.Poller/makeDefault()``.
+    /// - Parameter pollRewardVerification: For unit tests; pass `nil` in production to use
+    ///   `Purchases.shared.pollRewardVerification(clientTransactionID:trackingMetadata:captureMethod:)`.
+    ///   Virtual-currency cache invalidation happens inside the core call.
     @MainActor
     func createUserDidEarnRewardHandler(
         rewardVerificationStarted: (@MainActor () -> Void)?,
         rewardVerificationCompleted: (@MainActor (RewardVerificationResult) -> Void)?,
-        poller: RewardVerification.Poller? = nil,
-        invalidateVirtualCurrenciesCache: @escaping @MainActor () -> Void
-            = RewardVerification.SideEffects.invalidateVirtualCurrenciesCacheIfConfigured
+        pollRewardVerification: (
+            @Sendable (String, RewardedAdTrackingMetadata?) async -> RewardVerificationResult
+        )? = nil
     ) -> (() -> Void) {
         let state = RewardVerification.Setup.verificationState(for: self)
 
@@ -193,32 +195,26 @@ internal extension RewardVerification.CapableAd {
                 return
             }
 
-            let resolvedPoller = poller ?? .makeDefault()
+            let trackingMetadata = Tracking.Adapter.shared.fullScreenDelegateStore
+                .retrieve(for: self)?
+                .rewardTrackingMetadata()
+
+            let poll = pollRewardVerification ?? { clientTransactionID, trackingMetadata in
+                await Purchases.shared.pollRewardVerification(
+                    clientTransactionID: clientTransactionID,
+                    trackingMetadata: trackingMetadata,
+                    captureMethod: .adapter
+                )
+            }
+
             RewardVerification.Dispatcher.dispatch(
                 clientTransactionID: state.clientTransactionID,
                 state: state,
-                poller: resolvedPoller,
-                outcomeHandler: { internalOutcome in
-                    if case .verified(let reward) = internalOutcome, reward.virtualCurrency != nil {
-                        invalidateVirtualCurrenciesCache()
-                    }
-                    rewardVerificationCompleted(RewardVerification.mapOutcome(internalOutcome))
-                }
+                pollRewardVerification: { clientTransactionID in
+                    await poll(clientTransactionID, trackingMetadata)
+                },
+                resultHandler: { result in rewardVerificationCompleted(result) }
             )
-        }
-    }
-}
-
-// MARK: - Internal outcome -> presentation result
-
-@available(iOS 15.0, *)
-internal extension RewardVerification {
-    static func mapOutcome(_ outcome: Outcome) -> RewardVerificationResult {
-        switch outcome {
-        case .verified(let reward):
-            return .verified(reward)
-        case .failed:
-            return .failed
         }
     }
 }

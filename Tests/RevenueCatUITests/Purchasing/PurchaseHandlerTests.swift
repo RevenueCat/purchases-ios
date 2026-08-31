@@ -23,6 +23,8 @@ import XCTest
 @MainActor
 class PurchaseHandlerTests: TestCase {
 
+    private static let urlOpenedURL = URL(string: "https://revenuecat.com/terms")!
+
     private var purchaseResult = CurrentValueSubject<PurchaseResultData, Never>((nil, TestData.customerInfo, false))
 
     lazy var purchaseResultPublisher = purchaseResult.dropFirst().eraseToAnyPublisher()
@@ -85,6 +87,81 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
         expect(handler.purchaseError).to(matchError(error))
         expect(handler.restoreError).to(beNil())
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsRestoredCustomerInfo() async throws {
+        // The handler is held as a @StateObject and reused across present/dismiss cycles, so a successful
+        // restore from one session must not leak into the next (it is a per-session completion signal that
+        // gates workflow_close abandonment).
+        let handler: PurchaseHandler = .mock()
+        handler.setRestored(TestData.customerInfo, success: true)
+        expect(handler.restoredCustomerInfo?.success) == true
+
+        handler.resetForNewSession()
+
+        expect(handler.restoredCustomerInfo).to(beNil())
+    }
+
+    @MainActor
+    func testSignalWebCheckoutOpenedSetsANewUUID() async throws {
+        let handler: PurchaseHandler = .mock()
+        expect(handler.webCheckoutOpened).to(beNil())
+
+        handler.signalWebCheckoutOpened()
+        let firstID = handler.webCheckoutOpened
+        expect(firstID).toNot(beNil())
+
+        handler.signalWebCheckoutOpened()
+        expect(handler.webCheckoutOpened).toNot(equal(firstID))
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsWebCheckoutOpened() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalWebCheckoutOpened()
+        expect(handler.webCheckoutOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+
+        // Cleared a tick later (see `deferredClearWebCheckoutOpened`), not synchronously.
+        await expect(handler.webCheckoutOpened).toEventually(beNil())
+    }
+
+    @MainActor
+    func testSignalURLOpenedSetsANewSignalForTheSameURL() async throws {
+        let handler: PurchaseHandler = .mock()
+        expect(handler.urlOpened).to(beNil())
+
+        handler.signalURLOpened(Self.urlOpenedURL)
+        let firstSignal = handler.urlOpened
+        expect(firstSignal?.url) == Self.urlOpenedURL
+
+        handler.signalURLOpened(Self.urlOpenedURL)
+        expect(handler.urlOpened?.url) == Self.urlOpenedURL
+        expect(handler.urlOpened).toNot(equal(firstSignal))
+    }
+
+    @MainActor
+    func testResetForNewSessionClearsURLOpened() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalURLOpened(Self.urlOpenedURL)
+        expect(handler.urlOpened).toNot(beNil())
+
+        handler.resetForNewSession()
+
+        // Cleared a tick later (see `deferredClearURLOpened`), not synchronously.
+        await expect(handler.urlOpened).toEventually(beNil())
+    }
+
+    @MainActor
+    func testClearURLOpenedClearsSynchronously() async throws {
+        let handler: PurchaseHandler = .mock()
+        handler.signalURLOpened(Self.urlOpenedURL)
+
+        handler.clearURLOpened()
+
+        expect(handler.urlOpened).to(beNil())
     }
 
     func testCancelEventContainsProductIdentifierWhenCompletedByRevenueCat() async throws {
@@ -489,6 +566,63 @@ class PurchaseHandlerTests: TestCase {
 
     }
 
+    func testTrackPaywallCloseBySessionClosesThatSpecificSessionNotJustTheActiveOne() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        func impressionData(_ sessionID: PaywallEvent.SessionID) -> PaywallEvent.Data {
+            return .init(
+                paywallIdentifier: TestData.paywallWithIntroOffer.id,
+                offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+                paywallRevision: TestData.paywallWithIntroOffer.revision,
+                sessionID: sessionID,
+                displayMode: .fullScreen,
+                localeIdentifier: "en_US",
+                darkMode: false,
+                source: nil
+            )
+        }
+
+        let sessionA: PaywallEvent.SessionID = .init()
+        let sessionB: PaywallEvent.SessionID = .init()
+
+        // Two paywall pages are impressed (as in a workflow). `activePaywallSessionID` now points at B.
+        handler.trackPaywallImpression(impressionData(sessionA))
+        handler.trackPaywallImpression(impressionData(sessionB))
+
+        // The earlier session (A) must still be closeable by id, even though it is not the active one.
+        // `trackPaywallClose()` (no arg) would only ever close B, leaving A dangling open.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == true
+        expect(handler.trackPaywallClose(sessionID: sessionB)) == true
+
+        // Closing an already-closed session is a no-op.
+        expect(handler.trackPaywallClose(sessionID: sessionA)) == false
+    }
+
+    func testClearActivePaywallSessionMakesPurchaseEventsUnattributed() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        let eventData = PaywallEvent.Data(
+            paywallIdentifier: TestData.paywallWithIntroOffer.id,
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: TestData.paywallWithIntroOffer.revision,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false,
+            source: nil
+        )
+
+        // A paywall step is impressed, so purchase events resolve against its session.
+        handler.trackPaywallImpression(eventData)
+        expect(handler.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer)).toNot(beNil())
+
+        // Navigating onto a non-paywall workflow step clears the active session (see the gate in
+        // `PaywallsV2View.firePaywallImpression`). A purchase there is now unattributed rather than
+        // charged to the prior paywall step's session.
+        handler.clearActivePaywallSession()
+        expect(handler.createPurchaseInitiatedEvent(package: TestData.packageWithIntroOffer)).to(beNil())
+    }
+
     func testPaywallSourceIsPropagatedToTrackedEvents() async throws {
         let source = PaywallSource.customerCenter
         let trackedEvents: Atomic<[PaywallEvent]> = .init([])
@@ -774,6 +908,70 @@ private extension PurchaseHandlerTests {
         """
         )
     }()
+
+}
+
+#endif
+
+#if os(macOS)
+
+@available(macOS 12.0, *)
+@MainActor
+final class PurchaseHandlerMacOSTests: TestCase {
+
+    func testResignsFirstResponderBeforePublishingActionInProgress() async throws {
+        var events: [String] = []
+        let focusResigner = KeyWindowFocusResignerSpy {
+            events.append("resigned")
+        }
+        let purchases = MockPurchases { _, _, _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(
+                purchases: purchases,
+                eventDispatcher: PaywallEventTrackerTestDispatcher.value
+            ),
+            keyWindowFocusResigner: focusResigner
+        )
+        let cancellable = handler.$actionTypeInProgress
+            .dropFirst()
+            .compactMap { $0 }
+            .sink { _ in
+                events.append("published")
+            }
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        expect(events.prefix(2)) == ["resigned", "published"]
+        withExtendedLifetime(cancellable) {}
+    }
+
+}
+
+@available(macOS 12.0, *)
+@MainActor
+private final class KeyWindowFocusResignerSpy: KeyWindowFocusResigning {
+
+    private let onResign: () -> Void
+
+    init(onResign: @escaping () -> Void) {
+        self.onResign = onResign
+    }
+
+    func resignFirstResponder() {
+        self.onResign()
+    }
 
 }
 

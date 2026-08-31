@@ -24,6 +24,7 @@ class HTTPClient {
     let systemInfo: SystemInfo
     let timeout: TimeInterval
     let authHeaders: RequestHeaders
+    let tokenManager: TokenManager
 
     private let session: URLSession
     private let state: Atomic<State> = .init(.initial)
@@ -34,7 +35,8 @@ class HTTPClient {
     private let dateProvider: DateProvider
     private let retriableStatusCodes: Set<HTTPStatusCode>
     private let operationDispatcher: OperationDispatcher
-    private let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    let requestTimeoutManager: HTTPRequestTimeoutManagerType
+    private let apiSourceFailover: APISourceFailoverType?
 
     private let retryBackoffIntervals: [TimeInterval] = [
         TimeInterval(0),
@@ -42,39 +44,44 @@ class HTTPClient {
         TimeInterval(3)
     ]
 
+    /// Defensive cap on API source attempts within one logical request, in case the source list is
+    /// re-armed (topic rebuild or interval restart) while a request is walking it.
+    private static let maxAPISourceAttempts = 5
+
     init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          signing: SigningType,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
          retriableStatusCodes: Set<HTTPStatusCode> = Set([.tooManyRequests]),
-         requestTimeout: TimeInterval = Configuration.networkTimeoutDefault,
+         networkTimeout: NetworkTimeout,
          dateProvider: DateProvider = DateProvider(),
          operationDispatcher: OperationDispatcher,
-         timeoutManager: HTTPRequestTimeoutManagerType? = nil
+         apiSourceFailover: APISourceFailoverType?,
+         timeoutManager: HTTPRequestTimeoutManagerType
     ) {
         let config = URLSessionConfiguration.ephemeral
         config.httpMaximumConnectionsPerHost = 1
-        config.timeoutIntervalForRequest = requestTimeout
-        config.timeoutIntervalForResource = requestTimeout
+        config.timeoutIntervalForRequest = networkTimeout.timeoutInterval
+        config.timeoutIntervalForResource = networkTimeout.timeoutInterval
         config.urlCache = nil // We implement our own caching with `ETagManager`.
         self.session = URLSession(configuration: config,
                                   delegate: RedirectLoggerSessionDelegate(),
                                   delegateQueue: nil)
         self.systemInfo = systemInfo
         self.eTagManager = eTagManager
+        self.tokenManager = tokenManager
         self.signing = signing
         self.diagnosticsTracker = diagnosticsTracker
         self.dnsChecker = dnsChecker
         self.retriableStatusCodes = retriableStatusCodes
-        self.timeout = requestTimeout
+        self.timeout = networkTimeout.timeoutInterval
         self.authHeaders = HTTPClient.authorizationHeader(withAPIKey: systemInfo.apiKey)
         self.dateProvider = dateProvider
         self.operationDispatcher = operationDispatcher
-        self.requestTimeoutManager = timeoutManager ?? HTTPRequestTimeoutManager(
-            defaultTimeout: timeout,
-            dateProvider: dateProvider
-        )
+        self.apiSourceFailover = apiSourceFailover
+        self.requestTimeoutManager = timeoutManager
     }
 
     /// - Parameter verificationMode: if `nil`, this will default to `SystemInfo.responseVerificationMode`
@@ -83,10 +90,13 @@ class HTTPClient {
         with verificationMode: Signing.ResponseVerificationMode? = nil,
         completionHandler: Completion<Value>?
     ) {
+        // NOTE: these authHeaders will not include any token-based Authorization headers
+        // Those are applied immediately before the request begins executing
         self.perform(request: .init(httpRequest: request,
                                     authHeaders: self.authHeaders,
                                     defaultHeaders: self.defaultHeaders,
                                     verificationMode: verificationMode ?? self.systemInfo.responseVerificationMode,
+                                    preferIAMPath: self.tokenManager.enabled,
                                     internalSettings: self.systemInfo.dangerousSettings.internalSettings,
                                     completionHandler: completionHandler))
     }
@@ -152,6 +162,11 @@ class HTTPClient {
 
 extension HTTPClient {
 
+    static let rcContainerFormatAcceptHeaderValue = "application/x-rc-format"
+    static var rcContainerFormatElementEncodingHeaderValue: String {
+        return RCContainer.Element.ContentEncoding.requestElementEncodingHeaderValue
+    }
+
     static func authorizationHeader(withAPIKey apiKey: String) -> RequestHeaders {
         return [RequestHeader.authorization.rawValue: "Bearer \(apiKey)"]
     }
@@ -185,9 +200,11 @@ extension HTTPClient {
     enum RequestHeader: String {
 
         case authorization = "Authorization"
+        case accept = "Accept"
+        case acceptRCElementEncoding = "Accept-RC-Element-Encoding"
         case nonce = "X-Nonce"
         case eTag = "X-RevenueCat-ETag"
-        case eTagValidationTime = "X-RC-Last-Refresh-Time"
+        case lastRefreshTime = "X-RC-Last-Refresh-Time"
         case postParameters = "X-Post-Params-Hash"
         case headerParametersForSignature = "X-Headers-Hash"
         case sandbox = "X-Is-Sandbox"
@@ -246,10 +263,33 @@ internal extension HTTPClient {
 internal extension HTTPClient {
 
     struct State {
+        var paused: Bool
         var queuedRequests: [Request]
         var currentSerialRequest: Request?
 
-        static let initial: Self = .init(queuedRequests: [], currentSerialRequest: nil)
+        static let initial: Self = .init(paused: false, queuedRequests: [], currentSerialRequest: nil)
+    }
+
+    /// The API-source resolution state of a request, modeled as one value so an inconsistent
+    /// combination (e.g. a targeted source without an attempt count) is unrepresentable.
+    enum APISourceState {
+
+        /// Source resolution hasn't run yet for this logical request.
+        case unresolved
+
+        /// Resolution ran and API sources don't apply (setting disabled, proxy or overridden
+        /// base URL, endpoint fallback attempt, opted-out path, or an exhausted source list).
+        case noSource
+
+        /// The request targets `source`; `attemptCount` is the number of source attempts made
+        /// by this logical request so far (1 when a source is first resolved, +1 per failover).
+        case source(APISourceFailover.ResolvedSource, attemptCount: Int)
+
+        var source: APISourceFailover.ResolvedSource? {
+            guard case let .source(source, _) = self else { return nil }
+            return source
+        }
+
     }
 
     struct Request: CustomStringConvertible {
@@ -257,6 +297,7 @@ internal extension HTTPClient {
         var httpRequest: HTTPRequest
         var headers: HTTPClient.RequestHeaders
         var verificationMode: Signing.ResponseVerificationMode
+        var preferIAMPath: Bool
         var completionHandler: HTTPClient.Completion<Data>?
         private(set) var fallbackUrlIndex: Int?
 
@@ -273,10 +314,22 @@ internal extension HTTPClient {
             return self.fallbackUrlIndex != nil
         }
 
+        /// Whether the attempt is aimed at a fallback host, either because the fallback walk moved it
+        /// there or because the path targets one on its own. Such attempts get the flat fallback
+        /// timeout and never take part in the main source's per-host fail-fast memory.
+        var targetsFallbackHost: Bool {
+            return self.isFallbackURLRequest || self.httpRequest.path.isFallbackHostPath
+        }
+
+        /// Carried on the request so a failure can report the exact handle unhealthy, and so
+        /// retries of any kind (ETag refresh, status-code backoff) keep targeting the same host.
+        private(set) var apiSourceState: APISourceState = .unresolved
+
         init<Value: HTTPResponseBody>(httpRequest: HTTPRequest,
                                       authHeaders: HTTPClient.RequestHeaders,
                                       defaultHeaders: HTTPClient.RequestHeaders,
                                       verificationMode: Signing.ResponseVerificationMode,
+                                      preferIAMPath: Bool,
                                       internalSettings: InternalDangerousSettingsType,
                                       completionHandler: HTTPClient.Completion<Value>?) {
             self.httpRequest = httpRequest.requestAddingNonceIfRequired(with: verificationMode)
@@ -287,6 +340,7 @@ internal extension HTTPClient {
                 internalSettings: internalSettings
             )
             self.verificationMode = verificationMode
+            self.preferIAMPath = preferIAMPath
 
             if let completionHandler = completionHandler {
                 self.completionHandler = { result in
@@ -298,12 +352,20 @@ internal extension HTTPClient {
         }
 
         var method: HTTPRequest.Method { self.httpRequest.method }
-        var path: String { self.httpRequest.path.relativePath }
+        var path: String {
+            if self.preferIAMPath {
+                return self.httpRequest.path.relativeIAMPath
+            } else {
+                return self.httpRequest.path.relativePath
+            }
+        }
 
-        func getCurrentRequestURL(proxyURL: URL?) -> URL? {
+        func getCurrentRequestURL(proxyURL: URL?, apiSourceURL: URL?) -> URL? {
             return self.httpRequest.path.url(
                 proxyURL: proxyURL,
-                fallbackUrlIndex: self.fallbackUrlIndex
+                apiSourceURL: apiSourceURL,
+                fallbackUrlIndex: self.fallbackUrlIndex,
+                preferIAMPath: self.preferIAMPath
             )
         }
 
@@ -314,6 +376,30 @@ internal extension HTTPClient {
             return copy
         }
 
+        /// Resolves the API source once per logical request. Retries of any kind keep the carried
+        /// source instead of re-resolving, so they deterministically target the same host.
+        mutating func resolveAPISourceIfNeeded(with failover: APISourceFailoverType?) {
+            guard case .unresolved = self.apiSourceState else { return }
+            if let source = failover?.currentSource(for: self.httpRequest.path,
+                                                    isFallbackAttempt: self.isFallbackURLRequest) {
+                self.apiSourceState = .source(source, attemptCount: 1)
+            } else {
+                self.apiSourceState = .noSource
+            }
+        }
+
+        /// Only meaningful on a request that is already targeting a source (a failover decision can
+        /// only come from one); the previous attempt count carries over and increments.
+        func requestWith(nextAPISource: APISourceFailover.ResolvedSource) -> Self {
+            guard case let .source(_, attemptCount) = self.apiSourceState else {
+                assertionFailure("Retrying on a next API source requires a current one")
+                return self
+            }
+            var copy = self
+            copy.apiSourceState = .source(nextAPISource, attemptCount: attemptCount + 1)
+            return copy
+        }
+
         func requestWithNextFallbackHost(proxyURL: URL?) -> Self? {
             guard proxyURL == nil else {
                 // Don't fallback to next host if proxyURL is set
@@ -321,7 +407,10 @@ internal extension HTTPClient {
             }
             var copy = self
             copy.fallbackUrlIndex = self.fallbackUrlIndex?.advanced(by: 1) ?? 0
-            guard copy.getCurrentRequestURL(proxyURL: nil) != nil else {
+            // The static fallback walk drops the API source: fallback attempts pin their own host and
+            // must not re-enter source failover.
+            copy.apiSourceState = .noSource
+            guard copy.getCurrentRequestURL(proxyURL: nil, apiSourceURL: nil) != nil else {
                 // No more fallback hosts available
                 return nil
             }
@@ -352,6 +441,12 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.serial_request_queued(httpMethod: request.method.httpMethod,
                                                                        path: request.path,
                                                                        queuedRequestsCount: $0.queuedRequests.count))
+
+                    $0.queuedRequests.append(request)
+                    return true
+                } else if $0.paused == true {
+                    Logger.debug(Strings.network.serial_request_paused(httpMethod: request.method.httpMethod,
+                                                                       path: request.path))
 
                     $0.queuedRequests.append(request)
                     return true
@@ -387,10 +482,7 @@ private extension HTTPClient {
 
         let statusCode: HTTPStatusCode = .init(rawValue: httpURLResponse.statusCode)
 
-        // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
-        let dataIfAvailable = statusCode == .notModified
-            ? nil
-            : data
+        let dataIfAvailable = Self.responseBodyData(statusCode: statusCode, data: data)
 
         return self.createVerifiedResponse(request: request,
                                            urlRequest: urlRequest,
@@ -417,10 +509,10 @@ private extension HTTPClient {
             ))
             requestHeaders = [:]
         } else {
-            requestHeaders = request.headers
+            requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         }
         #else
-        let requestHeaders = request.headers
+        let requestHeaders = urlRequest.allHTTPHeaderFields ?? [:]
         #endif
 
         let result = Result
@@ -443,11 +535,16 @@ private extension HTTPClient {
                     requestHeaders: requestHeaders,
                     publicKey: request.verificationMode.publicKey,
                     isLoadShedderResponse: isLoadShedderResponse,
-                    isFallbackUrlResponse: isFallbackUrlResponse
+                    isFallbackUrlResponse: isFallbackUrlResponse,
+                    iamEnabled: request.preferIAMPath
                 )
             }
             // Fetch from ETagManager if available
             .map { (response) -> VerifiedHTTPResponse<Data>? in
+                guard request.httpRequest.path.shouldSendEtag else {
+                    return response.asOptionalResponse
+                }
+
                 return self.eTagManager.httpResultFromCacheOrBackend(
                     with: response,
                     request: urlRequest,
@@ -494,9 +591,16 @@ private extension HTTPClient {
 
         var requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult = .other
 
+        // The requestTimeoutManager tracks how fast a host answers, so a non-error response clears the
+        // entry even when parsing or verifying that response fails afterwards.
+        if !request.targetsFallbackHost,
+           networkError == nil,
+           (urlResponse as? HTTPURLResponse)?.httpStatusCode.isSuccessfulResponse == true {
+            requestTimeoutResult = .successOnMainBackend
+        }
+
         if let response = response {
             let httpURLResponse = urlResponse as? HTTPURLResponse
-            var retryScheduled = false
 
             switch response {
             case let .success(response):
@@ -512,14 +616,14 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // Record successful response from the main backend
-                if !request.isFallbackURLRequest {
-                    requestTimeoutResult = .successOnMainBackend
-                }
+                self.finish(request: request,
+                            response: .success(response),
+                            retryScheduled: false,
+                            requestTimeoutResult: requestTimeoutResult,
+                            urlRequest: urlRequest,
+                            requestStartTime: requestStartTime)
 
             case let .failure(error):
-                let httpURLResponse = urlResponse as? HTTPURLResponse
-
                 Logger.debug(Strings.network.api_request_failed(request.httpRequest,
                                                                 httpCode: httpURLResponse?.httpStatusCode,
                                                                 error: error,
@@ -529,24 +633,67 @@ private extension HTTPClient {
                     Logger.debug(Strings.network.request_handled_by_load_shedder(request.httpRequest.path))
                 }
 
-                // A timeout on a main backend URL for a request that has a fallback URL
-                if let error = networkError as? URLError, case .timedOut = error.code,
-                    !request.isFallbackURLRequest,
-                    request.httpRequest.path.supportsFallbackURLs {
-                    requestTimeoutResult = .timeoutOnMainBackendForFallbackSupportedEndpoint
+                // A timeout on a non-fallback (main-source) request arms the per-host fail-fast memory.
+                // With API sources enabled this covers every main-source timeout; otherwise it stays
+                // limited to fallback-supporting endpoints, matching the legacy behavior.
+                if networkError?.isURLRequestTimeout == true,
+                    !request.targetsFallbackHost,
+                    self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
+                        || request.httpRequest.path.supportsFallbackURLs {
+                    requestTimeoutResult = .mainSourceTimedOut
                 }
 
-                retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
-                                                                               error: error)
+                // A failure that points at the host (never a device-connectivity error or a 4xx) on a
+                // request targeting an API source may fail over to the next source, but only after the
+                // current source's health check fails. The decision is asynchronous: the serial pipeline
+                // stays stalled (as if the request were still in flight) until it completes.
+                if case let .source(source, attemptCount) = request.apiSourceState,
+                   attemptCount < Self.maxAPISourceAttempts,
+                   error.isAllowedToRetryWithFallbackHost,
+                   let apiSourceFailover = self.apiSourceFailover {
+                    let requestTimeoutResult = requestTimeoutResult
+
+                    // Make sure to already update the shared timeout state before making any other requests
+                    self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+
+                    apiSourceFailover.onRequestFailure(source) { decision in
+                        let retryScheduled = self.handleAPISourceFailureDecision(decision,
+                                                                                 request: request,
+                                                                                 error: error,
+                                                                                 httpURLResponse: httpURLResponse)
+                        self.finish(request: request,
+                                    response: .failure(error),
+                                    retryScheduled: retryScheduled,
+                                    requestTimeoutResult: requestTimeoutResult,
+                                    recordRequestTimeoutResult: false,
+                                    urlRequest: urlRequest,
+                                    requestStartTime: requestStartTime)
+                    }
+                    return
+                }
+
+                // if we got back a 401 Unauthorized and we are running with access token support,
+                // then get a new access token and try again
+                var retryScheduled = self.reauthorizeRequestIfNeeded(request: request,
+                                                                     basedOn: response,
+                                                                     response: httpURLResponse)
+
+                if !retryScheduled {
+                    retryScheduled = self.retryRequestWithNextFallbackHostIfNeeded(request: request,
+                                                                                   error: error)
+                }
 
                 if !retryScheduled {
                     retryScheduled = self.retryRequestIfNeeded(request: request,
                                                                httpURLResponse: httpURLResponse)
                 }
-            }
 
-            if !retryScheduled {
-                request.completionHandler?(response)
+                self.finish(request: request,
+                            response: .failure(error),
+                            retryScheduled: retryScheduled,
+                            requestTimeoutResult: requestTimeoutResult,
+                            urlRequest: urlRequest,
+                            requestStartTime: requestStartTime)
             }
         } else {
             Logger.debug(Strings.network.retrying_request(httpMethod: request.method.httpMethod, path: request.path))
@@ -554,9 +701,60 @@ private extension HTTPClient {
             self.state.modify {
                 $0.queuedRequests.insert(request.retriedRequest(), at: 0)
             }
+
+            self.finish(request: request,
+                        response: nil,
+                        retryScheduled: true,
+                        requestTimeoutResult: requestTimeoutResult,
+                        urlRequest: urlRequest,
+                        requestStartTime: requestStartTime)
+        }
+    }
+
+    /// Schedules the retry (if any) that a failover `decision` calls for, returning whether one was
+    /// scheduled. A source that failed its health check is retried on the next source; otherwise the
+    /// pre-existing chain runs: the static fallback host walk, then the status-code backoff retry.
+    private func handleAPISourceFailureDecision(_ decision: APISourceFailover.FailureDecision,
+                                                request: Request,
+                                                error: NetworkError,
+                                                httpURLResponse: HTTPURLResponse?) -> Bool {
+        switch decision {
+        case let .retryNextSource(nextSource):
+            Logger.debug(Strings.network.retrying_request_with_next_api_source(
+                httpMethod: request.method.httpMethod,
+                path: request.path,
+                host: nextSource.handle.url
+            ))
+            self.state.modify {
+                $0.queuedRequests.insert(request.requestWith(nextAPISource: nextSource), at: 0)
+            }
+            return true
+
+        case .sourceHealthy, .sourcesExhausted:
+            // Declining to switch sources doesn't disable the pre-existing static fallback: the
+            // request still failed, so endpoints with fallback hosts keep retrying there as before.
+            return self.retryRequestWithNextFallbackHostIfNeeded(request: request, error: error)
+                || self.retryRequestIfNeeded(request: request, httpURLResponse: httpURLResponse)
+        }
+    }
+
+    /// The shared tail of `handle(...)`: completes the request (unless a retry was scheduled), records
+    /// timeout bookkeeping and diagnostics for the attempt, and unblocks the serial pipeline.
+    // swiftlint:disable:next function_parameter_count
+    private func finish(request: Request,
+                        response: VerifiedHTTPResponse<Data>.Result?,
+                        retryScheduled: Bool,
+                        requestTimeoutResult: HTTPRequestTimeoutManager.RequestResult,
+                        recordRequestTimeoutResult: Bool = true,
+                        urlRequest: URLRequest,
+                        requestStartTime: Date) {
+        if !retryScheduled, let response = response {
+            request.completionHandler?(response)
         }
 
-        self.requestTimeoutManager.recordRequestResult(requestTimeoutResult)
+        if recordRequestTimeoutResult {
+            self.requestTimeoutManager.recordRequestResult(host: urlRequest.url?.host, requestTimeoutResult)
+        }
 
         self.trackHttpRequestPerformedIfNeeded(request: request,
                                                host: urlRequest.url?.host,
@@ -568,6 +766,8 @@ private extension HTTPClient {
 
     func beginNextRequest() {
         let nextRequest: Request? = self.state.modify {
+            if $0.paused == true { return nil }
+
             Logger.debug(Strings.network.serial_request_done(httpMethod: $0.currentSerialRequest?.method.httpMethod,
                                                              path: $0.currentSerialRequest?.path,
                                                              queuedRequestsCount: $0.queuedRequests.count))
@@ -583,6 +783,9 @@ private extension HTTPClient {
     }
 
     func start(request: Request) {
+        var request = request
+        request.resolveAPISourceIfNeeded(with: self.apiSourceFailover)
+
         let urlRequest = self.convert(request: request)
 
         guard let urlRequest = urlRequest else {
@@ -601,36 +804,30 @@ private extension HTTPClient {
 
         #if DEBUG
         // Meant only for testing error handling behavior of the SDK.
-        if let forceErrorStrategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy {
-
-            if let (fakeResponse, fakeData) = forceErrorStrategy.fakeResponseWithoutPerformingRequest(request) {
-
-                // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
-                // might be empty if called immediately after `Product.purchase()`.
-                // This introduces a delay to simulate a real API request, and avoid that race condition.
-
-                Logger.warn(Strings.network.api_request_faking_error_response(request.httpRequest))
-                DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
-                    self.handle(urlResponse: fakeResponse,
-                                request: request,
-                                urlRequest: urlRequest,
-                                data: fakeData,
-                                error: nil,
-                                requestStartTime: requestStartTime)
-                }
-                return
+        if let (fakeResponse, fakeData) = self.applyForceServerErrorStrategy(to: &finalURLRequest, request: request) {
+            // `FB13133387`: when computing offline CustomerInfo, `StoreKit.Transaction.unfinished`
+            // might be empty if called immediately after `Product.purchase()`.
+            // This introduces a delay to simulate a real API request, and avoid that race condition.
+            DispatchQueue.global().asyncAfter(deadline: .now() + .milliseconds(300)) {
+                self.handle(urlResponse: fakeResponse,
+                            request: request,
+                            urlRequest: urlRequest,
+                            data: fakeData,
+                            error: nil,
+                            requestStartTime: requestStartTime)
             }
-
-            if forceErrorStrategy.shouldForceServerError(request) {
-                Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest))
-                finalURLRequest = URLRequest(url: forceErrorStrategy.serverErrorURL)
-            }
+            return
         }
         #endif
 
         finalURLRequest.timeoutInterval = requestTimeoutManager.timeout(
-            isFallback: request.isFallbackURLRequest,
-            fallbackAvailable: request.httpRequest.path.supportsFallbackURLs && SystemInfo.proxyURL == nil
+            host: finalURLRequest.url?.host,
+            isFallbackHostRequest: request.targetsFallbackHost,
+            endpointSupportsFallbackURLs: request.httpRequest.path.supportsFallbackURLs,
+            isProxied: SystemInfo.proxyURL != nil,
+            // The re-tiered fail-fast timeouts for main-API requests only apply when API sources are
+            // enabled. Blob-source downloads opt in independently of this setting.
+            reTieredTimeoutsEnabled: self.systemInfo.dangerousSettings.internalSettings.usesRemoteConfigAPISources
         )
 
         // swiftlint:disable:next redundant_void_return
@@ -645,8 +842,47 @@ private extension HTTPClient {
         task.resume()
     }
 
+    #if DEBUG
+    /// Applies `forceServerErrorStrategy`, if configured, to `urlRequest`.
+    /// - Returns: the response to return without performing the request, if the strategy fakes one.
+    func applyForceServerErrorStrategy(
+        to urlRequest: inout URLRequest,
+        request: Request
+    ) -> (HTTPURLResponse, Data)? {
+        guard let strategy = self.systemInfo.dangerousSettings.internalSettings.forceServerErrorStrategy else {
+            return nil
+        }
+
+        switch strategy.action(request) {
+        case let .fakeResponse(fakeResponse, fakeData):
+            Logger.warn(Strings.network.api_request_faking_response(request.httpRequest,
+                                                                    statusCode: fakeResponse.statusCode))
+            return (fakeResponse, fakeData)
+
+        case let .serverErrorURL(serverErrorURL):
+            Logger.warn(Strings.network.api_request_forcing_server_error(request.httpRequest,
+                                                                         serverErrorURL: serverErrorURL))
+            urlRequest = URLRequest(url: serverErrorURL)
+
+        case let .appendQueryItems(queryItems):
+            Logger.warn(Strings.network.api_request_appending_query_items(request.httpRequest, queryItems: queryItems))
+            if let url = urlRequest.url?.appendingQueryItems(queryItems) {
+                urlRequest.url = url
+            }
+
+        case .performRequest:
+            break
+        }
+
+        return nil
+    }
+    #endif
+
     func convert(request: Request) -> URLRequest? {
-        guard let requestURL = request.getCurrentRequestURL(proxyURL: SystemInfo.proxyURL) else {
+        guard let requestURL = request.getCurrentRequestURL(
+            proxyURL: SystemInfo.proxyURL,
+            apiSourceURL: request.apiSourceState.source?.url
+        ) else {
             return nil
         }
         var urlRequest = URLRequest(url: requestURL)
@@ -664,16 +900,26 @@ private extension HTTPClient {
     }
 
     private func headers(for request: Request, urlRequest: URLRequest) -> HTTPClient.RequestHeaders {
+        var headers = request.headers
         if request.httpRequest.path.shouldSendEtag {
             let eTagHeader = self.eTagManager.eTagHeader(
                 for: urlRequest,
                 withSignatureVerification: request.verificationMode.isEnabled,
                 refreshETag: request.retried
             )
-            return request.headers.merging(eTagHeader)
-        } else {
-            return request.headers
+            headers = headers.merging(eTagHeader)
         }
+
+        if request.httpRequest.path.authenticated {
+            // NOTE: it's almost guaranteed that the request will already have an "Authorization" header,
+            // because it's how the API key is sent up
+            // if the TokenManager produces a new authorization header, it will override
+            // any existing authorization header present
+            let authorization = self.tokenManager.authorizationHeaders(for: request)
+            headers = headers.merging(authorization)
+        }
+
+        return headers
     }
 
     private func signing(for request: HTTPRequest) -> SigningType {
@@ -729,6 +975,87 @@ private extension HTTPClient {
             }
         }
     }
+}
+
+// MARK: - Request Reauthorize Logic
+extension HTTPClient {
+
+    internal func reauthorizeRequestIfNeeded(request: HTTPClient.Request,
+                                             basedOn originalResult: VerifiedHTTPResponse<Data>.Result,
+                                             response: HTTPURLResponse?) -> Bool {
+
+        let reauthAction = self.tokenManager.tokenRefreshRequest(for: request,
+                                                                 response: response,
+                                                                 duplicateRequestHandler: { wasSuccessful in
+            self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                            originalRequest: request,
+                                            originalResult: originalResult)
+        })
+
+        switch reauthAction {
+        case .noAction:
+            return false
+        case .refresh(let reauthRequest):
+            let clientRequest = Request(httpRequest: reauthRequest,
+                                        authHeaders: self.authHeaders,
+                                        defaultHeaders: self.defaultHeaders,
+                                        verificationMode: self.systemInfo.responseVerificationMode,
+                                        preferIAMPath: self.tokenManager.enabled,
+                                        internalSettings: self.systemInfo.dangerousSettings.internalSettings,
+                                        completionHandler: { (result: VerifiedHTTPResponse<TokenResponse>.Result) in
+                let wasSuccessful = self.tokenManager.handleTokenRefreshResponse(result)
+                self.reauthorizationDidComplete(wasSuccessful: wasSuccessful,
+                                                originalRequest: request,
+                                                originalResult: originalResult)
+            })
+
+            self.state.modify {
+                $0.queuedRequests.insert(clientRequest, at: 0)
+            }
+            return true
+        case .waitingForOtherRequest:
+            self.state.modify {
+                $0.paused = true
+            }
+            // return true to indicate that the request *will* be retried
+            return true
+        }
+    }
+
+    private func reauthorizationDidComplete(wasSuccessful: Bool,
+                                            originalRequest: HTTPClient.Request,
+                                            originalResult: VerifiedHTTPResponse<Data>.Result) {
+        let needsToRestart: Bool
+
+        if wasSuccessful {
+            let retried = originalRequest.retriedRequest()
+
+            needsToRestart = self.state.modify {
+                let shouldRestart = ($0.paused == true)
+                $0.paused = false
+                $0.queuedRequests.insert(retried, at: 0)
+                return shouldRestart
+            }
+        } else {
+            // the token manager did not get new tokens
+            // therefore, the original request should be failed
+
+            needsToRestart = self.state.modify {
+                let shouldRestart = ($0.paused == true)
+                $0.paused = false
+                return shouldRestart
+            }
+            // the original request needs to be failed
+            // re-use the original 401 Unauthorized
+            originalRequest.completionHandler?(originalResult)
+        }
+
+        if needsToRestart {
+            self.beginNextRequest()
+        }
+
+    }
+
 }
 
 // MARK: - Request Retry Logic
@@ -861,19 +1188,6 @@ extension HTTPClient {
 
 // MARK: - Extensions
 
-fileprivate extension NetworkError {
-    var isAllowedToRetryWithFallbackHost: Bool {
-        switch self {
-        case .decoding, .unableToCreateRequest, .signatureVerificationFailed:
-            return false
-        case .dnsError, .networkError, .unexpectedResponse:
-            return true
-        case let .errorResponse(_, statusCode, _):
-            return HTTPStatusCode(rawValue: statusCode.rawValue).isServerError
-        }
-    }
-}
-
 extension HTTPClient {
 
     /// Information from a response to help identify a request.
@@ -907,6 +1221,8 @@ extension HTTPRequest {
         internalSettings: InternalDangerousSettingsType
     ) -> HTTPClient.RequestHeaders {
         var result: HTTPClient.RequestHeaders = defaultHeaders
+        result += self.path.additionalHeaders
+        result += self.additionalHeaders
 
         if self.path.authenticated {
             result += authHeaders
@@ -919,7 +1235,7 @@ extension HTTPRequest {
         if verificationMode.isEnabled,
            self.path.supportsSignatureVerification {
             let headerParametersSignature = HTTPClient.headerParametersForSignatureHeader(
-                with: defaultHeaders,
+                with: result,
                 path: self.path
             )
 
@@ -960,6 +1276,22 @@ private extension NetworkError {
 
 }
 
+extension HTTPClient {
+
+    static func responseBodyData(statusCode: HTTPStatusCode, data: Data?) -> Data? {
+        switch statusCode {
+        case .notModified:
+            // `nil` if status code is 304, since the response will be empty and fetched from the eTag.
+            return nil
+        case .noContent:
+            return data ?? Data()
+        default:
+            return data
+        }
+    }
+
+}
+
 extension Result where Success == Data?, Failure == NetworkError {
 
     /// Converts a `Result<Data?, NetworkError>` into `Result<HTTPResponse<Data?>, NetworkError>`
@@ -984,10 +1316,19 @@ extension Result where Success == VerifiedHTTPResponse<Data>, Failure == Network
 
     // Parses a `Result<VerifiedHTTPResponse<Data>>` to `Result<VerifiedHTTPResponse<Value>>`
     func parseResponse<Value: HTTPResponseBody>() -> VerifiedHTTPResponse<Value>.Result {
+        return self.parseResponse { data, statusCode in
+            try Value.create(with: data, httpStatusCode: statusCode)
+        }
+    }
+
+    /// Parses a response using a request-specific decoder while preserving standard network decoding errors.
+    func parseResponse<Value: HTTPResponseBody>(
+        using create: (Data, HTTPStatusCode) throws -> Value
+    ) -> VerifiedHTTPResponse<Value>.Result {
         return self.flatMap { response in                   // Convert the `Result` type
             Result<VerifiedHTTPResponse<Value>, Error> {    // Create a new `Result<Value>`
                 try response.mapBody { data in              // Convert the from `Data` -> `Value`
-                    try Value.create(with: data)            // Decode `Data` into `Value`
+                    try create(data, response.httpStatusCode)
                 }
                 .copyWithNewRequestDate()                   // Update request date for 304 responses
             }
@@ -1058,3 +1399,20 @@ private extension HTTPResponse where Body == Data {
     }
 
 }
+
+#if DEBUG
+
+private extension URL {
+
+    /// Returns this URL with `queryItems` added to the ones it already contains, if any.
+    func appendingQueryItems(_ queryItems: [URLQueryItem]) -> URL? {
+        // Request URLs are relative to a base URL, so the base needs resolving to keep the host.
+        guard var components = URLComponents(url: self, resolvingAgainstBaseURL: true) else { return nil }
+
+        components.queryItems = (components.queryItems ?? []) + queryItems
+        return components.url
+    }
+
+}
+
+#endif

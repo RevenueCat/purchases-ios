@@ -49,6 +49,10 @@ import Foundation
     /// nil if the customer has never been in a grace period.
     @objc public let gracePeriodExpiresDate: Date?
 
+    /// Date when a paused subscription is expected to automatically resume.
+    /// Only set for Google Play subscriptions that have been paused; nil otherwise.
+    @objc public let autoResumeDate: Date?
+
     /// How the Customer received access to this subscription:
     /// - ``PurchaseOwnershipType/purchased``: The customer bought the subscription.
     /// - ``PurchaseOwnershipType/familyShared``: The Customer has access to the product via their family.
@@ -81,6 +85,10 @@ import Foundation
     /// Management purchase URL
     @objc public let managementURL: URL?
 
+    /// The base plan identifier that unlocked this subscription (Google Play base plans
+    /// and Apple purchases with non-upfront billing plans).
+    @objc public let productPlanIdentifier: String?
+
     init(productIdentifier: String,
          purchaseDate: Date,
          originalPurchaseDate: Date?,
@@ -94,10 +102,12 @@ import Foundation
          periodType: PeriodType,
          refundedAt: Date?,
          storeTransactionId: String?,
+         autoResumeDate: Date?,
          requestDate: Date,
          price: ProductPaidPrice?,
          managementURL: URL?,
-         displayName: String?) {
+         displayName: String?,
+         productPlanIdentifier: String?) {
         self.productIdentifier = productIdentifier
         self.purchaseDate = purchaseDate
         self.originalPurchaseDate = originalPurchaseDate
@@ -107,6 +117,7 @@ import Foundation
         self.unsubscribeDetectedAt = unsubscribeDetectedAt
         self.billingIssuesDetectedAt = billingIssuesDetectedAt
         self.gracePeriodExpiresDate = gracePeriodExpiresDate
+        self.autoResumeDate = autoResumeDate
         self.ownershipType = ownershipType
         self.periodType = periodType
         self.refundedAt = refundedAt
@@ -120,6 +131,7 @@ import Foundation
         self.price = price
         self.managementURL = managementURL
         self.displayName = displayName
+        self.productPlanIdentifier = productPlanIdentifier
 
         super.init()
     }
@@ -135,6 +147,7 @@ import Foundation
             unsubscribeDetectedAt: \(String(describing: unsubscribeDetectedAt)),
             billingIssuesDetectedAt: \(String(describing: billingIssuesDetectedAt)),
             gracePeriodExpiresDate: \(String(describing: gracePeriodExpiresDate)),
+            autoResumeDate: \(String(describing: autoResumeDate)),
             ownershipType: \(ownershipType),
             periodType: \(String(describing: periodType)),
             refundedAt: \(String(describing: refundedAt)),
@@ -142,7 +155,8 @@ import Foundation
             isActive: \(isActive),
             willRenew: \(willRenew),
             managementURL: \(String(describing: managementURL)),
-            displayName: \(String(describing: displayName))
+            displayName: \(String(describing: displayName)),
+            productPlanIdentifier: \(String(describing: productPlanIdentifier))
         }
         """
     }

@@ -45,6 +45,40 @@ class ErrorUtilsTests: TestCase {
         expect(error.userInfo["rc_receipt_file_exists"] as? Bool) == true
     }
 
+    func testUnsupportedErrorHasUnsupportedErrorCode() {
+        let error = ErrorUtils.unsupportedError(message: "custom unsupported message")
+        expect(error).to(matchError(ErrorCode.unsupportedError))
+    }
+
+    func testUnsupportedErrorIncludesMessageInLocalizedDescription() {
+        let message = "custom unsupported message"
+        let error = ErrorUtils.unsupportedError(message: message)
+
+        let localizedDescription = error.userInfo[NSLocalizedDescriptionKey] as? String
+        expect(localizedDescription) == "\(ErrorCode.unsupportedError.description) \(message)"
+    }
+
+    func testUnsupportedErrorDoesNotDuplicateMessageWhenEqualToCodeDescription() {
+        let error = ErrorUtils.unsupportedError(message: ErrorCode.unsupportedError.description)
+
+        let localizedDescription = error.userInfo[NSLocalizedDescriptionKey] as? String
+        expect(localizedDescription) == ErrorCode.unsupportedError.description
+    }
+
+    func testUnsupportedInUIPreviewModeErrorHasUnsupportedErrorCode() {
+        let error = ErrorUtils.unsupportedInUIPreviewModeError()
+        expect(error).to(matchError(ErrorCode.unsupportedError))
+    }
+
+    func testUnsupportedInUIPreviewModeErrorMessage() {
+        let error = ErrorUtils.unsupportedInUIPreviewModeError()
+
+        let localizedDescription = error.userInfo[NSLocalizedDescriptionKey] as? String
+        let expectedDescription = "\(ErrorCode.unsupportedError.description) " +
+            "Operation not supported in UI preview mode"
+        expect(localizedDescription) == expectedDescription
+    }
+
     func testPublicErrorsCanBeConvertedToErrorCode() throws {
         let error = ErrorUtils.customerInfoError().asPublicError
         let errorCode = try XCTUnwrap(error as? ErrorCode, "Error couldn't be converted to ErrorCode")

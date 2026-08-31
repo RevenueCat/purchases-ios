@@ -27,10 +27,9 @@ class PackageComponentViewModel {
     let package: Package?
     let stackViewModel: StackComponentViewModel
     let hasPurchaseButton: Bool
+    let hapticFeedbackEnabled: Bool
 
-    private let componentVisible: Bool?
-    private let uiConfigProvider: UIConfigProvider
-    private let presentedOverrides: PresentedOverrides<PresentedPackagePartial>?
+    let visibilityResolver: PackageVisibilityResolver
 
     init(
         component: PaywallComponent.PackageComponent,
@@ -40,11 +39,15 @@ class PackageComponentViewModel {
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
-        self.componentVisible = component.visible
-        self.uiConfigProvider = uiConfigProvider
+        self.visibilityResolver = PackageVisibilityResolver(
+            component: component,
+            uiConfigProvider: uiConfigProvider,
+            discardRules: discardRules
+        )
         self.isSelectedByDefault = component.isSelectedByDefault
         self.promotionalOfferProductCode = component.applePromoOfferProductCode
         self.componentName = component.name
+        self.hapticFeedbackEnabled = component.hapticFeedbackEnabled ?? true
 
         self.package = offering.package(identifier: component.packageID)
         if package == nil {
@@ -53,7 +56,6 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
-        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
     // swiftlint:disable:next function_parameter_count
@@ -65,21 +67,14 @@ class PackageComponentViewModel {
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue]
     ) -> Bool {
-        let conditionContext = self.uiConfigProvider.conditionContext(
-            selectedPackageId: selectedPackageId,
-            customVariables: customVariables
-        )
-
-        let partial = PresentedPackagePartial.buildPartial(
+        return self.visibilityResolver.visible(
             state: state,
             condition: condition,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
-            conditionContext: conditionContext,
-            with: self.presentedOverrides
+            selectedPackageId: selectedPackageId,
+            customVariables: customVariables
         )
-
-        return partial?.visible ?? self.componentVisible ?? true
     }
 
 }

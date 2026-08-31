@@ -21,13 +21,27 @@ DIM='\033[2m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-# Figure out where swiftlint is
-HOMEBREW_BINARY_DESTINATION="/opt/homebrew/bin"
-SWIFT_LINT="${HOMEBREW_BINARY_DESTINATION}/swiftlint"
+# Figure out where swiftlint is. PATH first (mise, asdf, ...), since GUI clients run hooks with a
+# minimal PATH where mise isn't active: ask mise directly before falling back to homebrew, so both
+# paths use the version pinned in mise.toml.
+SWIFT_LINT=$(command -v swiftlint)
 
-if ! test -d $HOMEBREW_BINARY_DESTINATION; then
-  # X86_64 macs have this destination
-  SWIFT_LINT="/usr/local/bin/swiftlint"
+if [[ -z "$SWIFT_LINT" ]]; then
+  for mise in "$HOME/.local/bin/mise" /opt/homebrew/bin/mise /usr/local/bin/mise; do
+    if [[ -x "$mise" ]]; then
+      SWIFT_LINT=$("$mise" which swiftlint 2>/dev/null)
+      [[ -n "$SWIFT_LINT" ]] && break
+    fi
+  done
+fi
+
+if [[ -z "$SWIFT_LINT" ]]; then
+  for candidate in /opt/homebrew/bin/swiftlint /usr/local/bin/swiftlint; do
+    if [[ -x "$candidate" ]]; then
+      SWIFT_LINT="$candidate"
+      break
+    fi
+  done
 fi
 
 # Start timer
@@ -80,8 +94,8 @@ verify_no_included_apikeys() {
 }
 
 # Check if SwiftLint is installed
-if [[ ! -e "$SWIFT_LINT" ]]; then
-  print_error "$SWIFT_LINT is not installed. Please install it via: fastlane setup_dev"
+if [[ -z "$SWIFT_LINT" ]]; then
+  print_error "swiftlint is not installed. Please install it via: fastlane setup_dev"
   exit 1
 fi
 

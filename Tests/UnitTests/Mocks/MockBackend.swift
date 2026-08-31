@@ -29,6 +29,10 @@ class MockBackend: Backend {
     var invokedPostReceiptDataParametersList: [PostReceiptParameters] = []
     var onPostReceipt: (() -> Void)?
 
+    /// When set, the next `post(receipt:)` call defers its completion until this gate is opened.
+    /// Consumed after a single use. Used to deterministically test ordering of concurrent receipt posts.
+    let deferredPostReceiptCompletionGate: Atomic<MockAsyncGate?> = nil
+
     public convenience init() {
         let systemInfo = MockSystemInfo(platformInfo: nil,
                                         finishTransactions: false,
@@ -46,13 +50,13 @@ class MockBackend: Backend {
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = MockRedeemWebPurchaseAPI()
         let virtualCurrenciesAPI = MockVirtualCurrenciesAPI()
-        let workflowsAPI = MockWorkflowsAPI()
         let adsAPI = MockAdsAPI()
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.init(backendConfig: backendConfig,
                   customerAPI: customer,
                   identityAPI: identity,
+                  tokenAPI: MockTokenAPI(backendConfig: backendConfig),
                   offeringsAPI: offerings,
                   webBillingAPI: webBilling,
                   offlineEntitlements: offlineEntitlements,
@@ -60,7 +64,6 @@ class MockBackend: Backend {
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
-                  workflowsAPI: workflowsAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
     }
@@ -106,7 +109,15 @@ class MockBackend: Backend {
 
         self.onPostReceipt?()
 
-        completion(stubbedPostReceiptResult ?? .failure(.missingAppUserID()))
+        let result = stubbedPostReceiptResult ?? .failure(.missingAppUserID())
+        if let gate = self.deferredPostReceiptCompletionGate.getAndSet(nil) {
+            Task {
+                await gate.wait()
+                completion(result)
+            }
+        } else {
+            completion(result)
+        }
     }
 
     var invokedGetSubscriberData = false

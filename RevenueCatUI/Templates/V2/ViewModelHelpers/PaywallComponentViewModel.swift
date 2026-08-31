@@ -39,6 +39,7 @@ enum PaywallComponentViewModel {
     case carousel(CarouselComponentViewModel)
     case video(VideoComponentViewModel)
     case countdown(CountdownComponentViewModel)
+    case webView(WebViewComponentViewModel)
 }
 
 #endif

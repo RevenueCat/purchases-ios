@@ -12,6 +12,12 @@ let paywallsTesterDir = repoRoot
 if let apiKey = Environment.rcApiKey {
     let localXcconfig = repoRoot.appendingPathComponent("Local.xcconfig")
 
+    // Local.xcconfig is gitignored, so it doesn't exist on a fresh checkout. Create an empty
+    // one first so the key isn't silently dropped when TUIST_RC_API_KEY is set.
+    if !fileManager.fileExists(atPath: localXcconfig.path) {
+        try? "".write(to: localXcconfig, atomically: true, encoding: .utf8)
+    }
+
     if fileManager.fileExists(atPath: localXcconfig.path),
        var contents = try? String(contentsOf: localXcconfig, encoding: .utf8) {
         // Replace existing API key or add new one
@@ -50,6 +56,7 @@ let allDestinations: Destinations = [
 
 let allDeploymentTargets: DeploymentTargets = .multiplatform(
     iOS: "15.0",
+    macOS: "12.0",
     watchOS: "10.0",
     visionOS: "1.3"
 )
@@ -95,6 +102,24 @@ let schemes: [Scheme] = [
             options: .options(
                 storeKitConfigurationPath:
                     "../../Tests/TestingApps/PaywallsTester/PaywallsTester/LocalKhepri.storekit"
+            )
+        )
+    ),
+    .scheme(
+        name: "PaywallsTester - macOS Focus Regression",
+        shared: true,
+        buildAction: .buildAction(targets: ["PaywallsTesterMacOSUITests"]),
+        testAction: .targets(["PaywallsTesterMacOSUITests"]),
+        runAction: .runAction(
+            configuration: "Debug",
+            executable: "PaywallsTester",
+            arguments: .arguments(
+                launchArguments: [
+                    .launchArgument(
+                        name: "-MacOSPurchaseFocusRegression",
+                        isEnabled: true
+                    )
+                ]
             )
         )
     ),
@@ -145,6 +170,20 @@ let project = Project(
                 .storeKit
             ],
             settings: .appTarget(including: ([:] as SettingsDictionary).appendingTuistSwiftConditions())
+        ),
+        .target(
+            name: "PaywallsTesterMacOSUITests",
+            destinations: [.mac],
+            product: .uiTests,
+            bundleId: "com.revenuecat.PaywallsTesterMacOSUITests",
+            deploymentTargets: .multiplatform(macOS: "12.0"),
+            infoPlist: .default,
+            sources: [
+                "../../Tests/TestingApps/PaywallsTester/PaywallsTesterMacOSUITests/**/*.swift"
+            ],
+            dependencies: [
+                .target(name: "PaywallsTester")
+            ]
         )
     ],
     schemes: schemes,

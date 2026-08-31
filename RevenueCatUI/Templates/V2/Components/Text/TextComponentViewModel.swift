@@ -30,6 +30,20 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    /// Whether this component renders anything a screen reader can announce. An empty base string
+    /// still counts when overrides exist, since an override can supply text of its own.
+    ///
+    /// Only base visibility is consulted. State and condition overrides resolve per render, and
+    /// reaching them from here would mean threading the whole style pipeline into the walk, so text
+    /// hidden by an override still counts as announceable.
+    var announcesText: Bool {
+        guard self.component.visible ?? true else {
+            return false
+        }
+
+        return !self.text.isEmpty || self.presentedOverrides != nil
+    }
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
@@ -62,12 +76,16 @@ class TextComponentViewModel {
         promoOffer: PromotionalOffer?,
         countdownTime: CountdownTime? = nil,
         customVariables: [String: CustomVariableValue] = [:],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
         let conditionContext = uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,

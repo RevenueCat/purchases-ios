@@ -54,6 +54,8 @@ extension FeatureEvent {
             return event.customPaywallEventMap()
         case let event as WorkflowEvent:
             return event.workflowEventMap()
+        case let event as CheckpointEvent:
+            return event.checkpointEventMap()
         default:
             return [
                 "discriminator": "unknown",
@@ -237,8 +239,9 @@ private extension WorkflowEvent {
     func workflowEventMap() -> [String: Any] {
         let typeName: String = {
             switch self {
-            case .stepStarted: return "workflows_step_started"
-            case .stepCompleted: return "workflows_step_completed"
+            case .stepStarted: return "workflow_step_started"
+            case .stepCompleted: return "workflow_step_completed"
+            case .close: return "workflow_close"
             }
         }()
 
@@ -263,6 +266,20 @@ private extension WorkflowEvent {
         if let isLastVariantStep = self.data.isLastVariantStep { result["is_last_variant_step"] = isLastVariantStep }
 
         return result
+    }
+
+}
+
+private extension CheckpointEvent {
+
+    func checkpointEventMap() -> [String: Any] {
+        return [
+            "discriminator": "checkpoint",
+            "type": self.eventType,
+            "id": self.data.id.uuidString,
+            "timestamp": self.data.date.millisecondsSince1970,
+            "identifier": self.data.identifier
+        ]
     }
 
 }

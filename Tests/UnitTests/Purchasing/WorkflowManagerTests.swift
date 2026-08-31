@@ -19,303 +19,407 @@ import XCTest
 
 class WorkflowManagerTests: TestCase {
 
-    private let appUserID = "user_1"
-
-    private var dateProvider: MockCurrentDateProvider!
-    private var mockBackend: MockBackend!
-    private var mockWorkflowsAPI: MockWorkflowsAPI!
-    private var mockDeviceCache: MockDeviceCache!
+    private var mockProvider: MockWorkflowsConfigProvider!
+    private var mockPaywallCache: MockPaywallCacheWarming!
     private var mockOperationDispatcher: MockOperationDispatcher!
-    private var systemInfo: MockSystemInfo!
-    private var workflowsCache: WorkflowsCache!
+    private var mockWebBundleURLBatcher: MockWebBundleURLBatcher!
     private var manager: WorkflowManager!
 
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        self.dateProvider = MockCurrentDateProvider()
-        self.systemInfo = MockSystemInfo(finishTransactions: false)
-        self.systemInfo.stubbedIsSandbox = false
-        self.mockBackend = MockBackend()
-        self.mockWorkflowsAPI = try XCTUnwrap(self.mockBackend.workflowsAPI as? MockWorkflowsAPI)
-        self.mockDeviceCache = MockDeviceCache(systemInfo: self.systemInfo)
+        self.mockProvider = MockWorkflowsConfigProvider()
+        self.mockPaywallCache = MockPaywallCacheWarming()
         self.mockOperationDispatcher = MockOperationDispatcher()
-        self.workflowsCache = WorkflowsCache(deviceCache: self.mockDeviceCache, dateProvider: self.dateProvider)
-        self.manager = WorkflowManager(backend: self.mockBackend,
-                                       workflowsCache: self.workflowsCache,
-                                       paywallCache: nil,
-                                       operationDispatcher: self.mockOperationDispatcher)
+        self.mockOperationDispatcher.shouldInvokeDispatchOnWorkerThreadBlock = false
+        self.mockWebBundleURLBatcher = MockWebBundleURLBatcher()
+        self.manager = WorkflowManager(
+            workflowsConfigProvider: self.mockProvider,
+            paywallCache: self.mockPaywallCache,
+            operationDispatcher: self.mockOperationDispatcher,
+            webBundleURLBatcher: self.mockWebBundleURLBatcher
+        )
     }
 
-    // MARK: - getWorkflow cache
+    // MARK: - getWorkflow
 
-    func testGetWorkflowCachesResultOnSuccess() throws {
-        let expected = try Self.workflowDataResult(id: "wf_1")
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+    func testOfferingIdByWorkflowIdDelegatesToProvider() async {
+        self.mockProvider.stubbedOfferingIdByWorkflowId = ["wf_1": "offering_1"]
 
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        let result = await self.manager.offeringIdByWorkflowId()
 
-        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")) == expected
+        expect(result) == self.mockProvider.stubbedOfferingIdByWorkflowId
+        expect(self.mockProvider.invokedOfferingIdByWorkflowIdCount) == 1
     }
 
-    func testGetWorkflowReturnsCachedResultWithoutCallingBackendWhenFresh() throws {
+    func testGetWorkflowDelegatesToProviderAndSucceeds() async throws {
         let expected = try Self.workflowDataResult(id: "wf_1")
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
-        // First call populates the cache.
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        let result = try await self.manager.getWorkflow(workflowId: "wf_1")
 
-        // Second call within TTL should hit the cache.
-        var secondResult: WorkflowDataResult?
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
-            secondResult = try? $0.get()
+        expect(result) == expected
+        expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
+    }
+
+    func testGetWorkflowSchedulesAssetPrewarmingOnSuccess() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
         }
-
-        expect(secondResult) == expected
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 1
-    }
-
-    func testGetWorkflowRefetchesWhenCacheIsStale() throws {
         let expected = try Self.workflowDataResult(id: "wf_1")
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(expected)
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
+        _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
 
-        // Past the 5-minute foreground TTL.
-        self.dateProvider.advance(by: 6 * 60)
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) { _ in }
-
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
+        expect(self.mockWebBundleURLBatcher.invokedPublishPresentedWorkflowIDs) == ["wf_1"]
     }
 
-    func testGetWorkflowForwardsBackendError() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .failure(.missingAppUserID())
-
-        var error: BackendError?
-        self.manager.getWorkflow(appUserID: self.appUserID, workflowId: "wf_1", isAppBackgrounded: false) {
-            if case let .failure(failure) = $0 { error = failure }
+    func testGetWorkflowFailsWithWorkflowNotFoundWhenProviderReportsNotFound() async {
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "missing")
+            fail("Expected getWorkflow to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowNotFound(workflowId: "missing"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
         }
-
-        expect(error).toNot(beNil())
-        expect(self.workflowsCache.cachedWorkflow(workflowId: "wf_1")).to(beNil())
     }
 
-    // MARK: - getWorkflowsList
+    func testGetWorkflowFailsWithDecodingFailedWhenProviderReportsADecodingFailure() async {
+        let underlyingError = NSError(domain: "test", code: 1)
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .decodingFailed(underlyingError)]
 
-    func testGetWorkflowsListCallsBackendAndCachesPayload() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_1", displayName: "Flow A", offeringId: "default", prefetch: false)
-        ]))
-
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowsParameters?.type) == "paywall"
-        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 1
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 0
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowDecodingFailed(workflowId: "wf_1", error: underlyingError),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
     }
 
-    func testGetWorkflowsListSkipsNetworkWhenCacheIsFresh() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: []))
+    func testGetWorkflowFailsWithUiConfigUnavailableWhenProviderReportsItsMissing() async {
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .uiConfigUnavailable]
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-        self.dateProvider.advance(by: 1) // still within TTL
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch WorkflowError.uiConfigUnavailable(let workflowId) {
+            expect(workflowId) == "wf_1"
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
     }
 
-    func testGetWorkflowsListTriggersGetWorkflowForEachPrefetchEntryOnly() throws {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_prefetch", displayName: "A", offeringId: "off_a", prefetch: true),
-            .init(id: "wf_skip", displayName: "B", offeringId: "off_b", prefetch: false),
-            .init(id: "wf_also_prefetch", displayName: "C", offeringId: "off_c", prefetch: true)
-        ]))
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf"))
+    // MARK: - cachedWorkflow(forOfferingId:)
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+    func testCachedWorkflowSchedulesAssetPrewarmingOnSuccess() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedCachedWorkflowResult = ["default": expected]
 
-        let prefetchedIds = self.mockWorkflowsAPI.invokedGetWorkflowParametersList.map { $0.workflowId }
-        expect(prefetchedIds).to(contain("wf_prefetch", "wf_also_prefetch"))
-        expect(prefetchedIds).toNot(contain("wf_skip"))
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 2
+        let result = self.manager.cachedWorkflow(forOfferingId: "default")
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedCachedWorkflowParameters) == ["default"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssets) == true
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "wf_1"
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsUiConfig) == expected.uiConfig
+        expect(self.mockWebBundleURLBatcher.invokedPublishPresentedWorkflowIDs) == ["wf_1"]
     }
 
-    func testGetWorkflowsListSkipsPrefetchForWorkflowsWithoutOfferingId() throws {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_with_offering", displayName: "A", offeringId: "off_a", prefetch: true),
-            .init(id: "wf_without_offering", displayName: "B", offeringId: nil, prefetch: true)
-        ]))
-        self.mockWorkflowsAPI.stubbedGetWorkflowResult = .success(try Self.workflowDataResult(id: "wf"))
+    // MARK: - scheduleAssetPrewarmingForPrefetchedWorkflows
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+    func testScheduleAssetPrewarmingDecodesEveryCachedBodyAndPrewarmsAssets() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        let first = try Self.workflowDataResult(id: "wf_1")
+        let second = try Self.workflowDataResult(id: "wf_2")
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1", "wf_2"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": first, "wf_2": second]
 
-        let prefetchedIds = self.mockWorkflowsAPI.invokedGetWorkflowParametersList.map { $0.workflowId }
-        expect(prefetchedIds).to(contain("wf_with_offering"))
-        expect(prefetchedIds).toNot(contain("wf_without_offering"))
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowCount) == 1
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "current")
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+
+        expect(self.mockProvider.invokedCachePrefetchedWorkflowBodyDataParameters) == ["current"]
+        expect(Set(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)) == ["wf_1", "wf_2"]
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 2
     }
 
-    func testGetWorkflowsListDoesNotCacheOnBackendFailure() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+    func testScheduleAssetPrewarmingPreservesCurrentFirstOrder() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        let current = try Self.workflowDataResult(id: "wf_current")
+        let prefetched = try Self.workflowDataResult(id: "wf_prefetched")
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_current", "wf_prefetched"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_current": current, "wf_prefetched": prefetched]
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "current")
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
 
-        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)
+            == ["wf_current", "wf_prefetched"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetIDs) == ["wf_current", "wf_prefetched"]
     }
 
-    func testGetWorkflowsListRestoresOfferingIdMapFromDiskOnBackendFailure() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
-        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
-            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
-        ])
+    func testScheduleAssetPrewarmingDoesNotDecodeWorkflowsWhoseAssetPrewarmingStarted() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
 
-        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_1"
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
     }
 
-    func testGetWorkflowsListKeepsCacheStaleAfterBackendFailureSoNextCallRetries() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
-        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
-            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
-        ])
+    func testScheduleAssetPrewarmingDoesNotDecodeInline() async {
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: "current")
 
-        // First fetch fails and restores the list from disk, but leaves it stale.
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-
-        expect(self.workflowsCache.isWorkflowsListCacheStale(isAppBackgrounded: false)) == true
-
-        // A second call therefore still hits the backend rather than short-circuiting on the
-        // restored entry.
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 2
+        expect(self.mockOperationDispatcher.invokedDispatchAsyncOnWorkerThread) == true
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters).to(beEmpty())
     }
 
-    func testGetWorkflowsListDoesNotRewriteDiskWhenRestoringAfterBackendFailure() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
-        self.mockDeviceCache.stubbedCachedWorkflowsListResponse = .init(workflows: [
-            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
-        ])
+    func testScheduleAssetPrewarmingContinuesAfterADecodingFailure() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["broken", "working"]
+        self.mockProvider.stubbedGetWorkflowError = ["broken": .notFound]
+        self.mockProvider.stubbedGetWorkflowResult = ["working": try Self.workflowDataResult(id: "working")]
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
 
-        // The list was read from disk to restore the in-memory map; it must not be written back.
-        expect(self.mockDeviceCache.cacheWorkflowsListResponseCount) == 0
+        expect(Set(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters)) == ["broken", "working"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsWorkflow?.id) == "working"
+        self.logger.verifyMessageWasLogged(
+            Strings.paywalls.workflow_resolution_for_asset_prewarming_failed(
+                workflowId: "broken",
+                error: .notFound
+            ),
+            level: .debug
+        )
     }
 
-    func testGetWorkflowsListWithDuplicateOfferingIdKeepsLastEntry() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_first", displayName: "First", offeringId: "shared", prefetch: false),
-            .init(id: "wf_last", displayName: "Last", offeringId: "shared", prefetch: false)
-        ]))
+    func testScheduleAssetPrewarmingRetriesWorkflowResolutionFailures() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("prewarmWorkflowAssets requires iOS 15+")
+        }
+        self.mockProvider.stubbedWorkflowIDsWithCachedBodyData = ["wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .uiConfigUnavailable]
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
 
-        expect(self.manager.cachedWorkflowId(forOfferingId: "shared")) == "wf_last"
+        self.mockProvider.stubbedGetWorkflowError = [:]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": try Self.workflowDataResult(id: "wf_1")]
+        await self.manager.scheduleAssetPrewarmingForPrefetchedWorkflows(includingOfferingId: nil)
+        await self.mockOperationDispatcher.invokeAllDispatchedAsyncWorkerThreadBlocks()
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1", "wf_1"]
+        expect(self.mockPaywallCache.invokedPrewarmWorkflowAssetsCount) == 1
     }
 
-    // MARK: - cachedWorkflowId(forOfferingId:)
+    // MARK: - workflowId(forOfferingId:)
 
-    func testWorkflowIdForOfferingIdReturnsNilBeforeListIsFetched() {
-        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+    func testWorkflowIdForOfferingIdDelegatesToProvider() async {
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+
+        let workflowId = await self.manager.workflowId(forOfferingId: "default")
+
+        expect(workflowId) == "wf_1"
+        expect(self.mockProvider.invokedWorkflowIdForOfferingIdParameters) == ["default"]
     }
 
-    func testWorkflowIdForOfferingIdReturnsWorkflowIdAfterListIsFetched() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_abc", displayName: "Flow", offeringId: "default", prefetch: false)
-        ]))
+    func testWorkflowIdForOfferingIdReturnsNilWhenUnresolved() async {
+        let workflowId = await self.manager.workflowId(forOfferingId: "unknown")
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
-
-        expect(self.manager.cachedWorkflowId(forOfferingId: "default")) == "wf_abc"
-        expect(self.manager.cachedWorkflowId(forOfferingId: "premium")).to(beNil())
+        expect(workflowId).to(beNil())
     }
 
-    func testWorkflowIdForOfferingIdReturnsNilForWorkflowWithNilOfferingId() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_no_offering", displayName: "Flow", offeringId: nil, prefetch: false)
-        ]))
+    // MARK: - getWorkflow(forOfferingId:)
 
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+    func testGetWorkflowForOfferingIdResolvesWorkflowIdThenFetchesTheWorkflow() async throws {
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
 
-        expect(self.manager.cachedWorkflowId(forOfferingId: "default")).to(beNil())
+        let result = try await self.manager.getWorkflow(forOfferingId: "default")
+
+        expect(result) == expected
+        expect(self.mockProvider.invokedWorkflowIdForOfferingIdParameters) == ["default"]
+        expect(self.mockProvider.invokedGetWorkflowParameters) == ["wf_1"]
     }
 
-    // MARK: - onComplete
-
-    func testGetWorkflowsListCallsOnCompleteAfterSuccessWithNoPrefetch() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_1", displayName: "Flow", offeringId: "default", prefetch: false)
-        ]))
-
-        var completed = false
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
-
-        expect(completed) == true
+    func testGetWorkflowForOfferingIdThrowsOfferingHasNoWorkflowWithoutFetchingWhenUnmapped() async {
+        // No offeringId → workflowId mapping: the offering has no workflow attached. This fails fast
+        // with a distinct error (so the paywall falls back to the default paywall) and must NOT attempt
+        // a guaranteed-miss fetch by offering id. Mirrors purchases-android's presentWorkflow (#3760).
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .offeringHasNoWorkflow(offeringId: "default"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
     }
 
-    func testGetWorkflowsListCallsOnCompleteImmediatelyWhenCacheIsFresh() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: []))
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false)
+    func testGetWorkflowForOfferingIdSurfacesWorkflowNotFoundWhenMappedWorkflowUnresolvable() async {
+        // The offering maps to a workflow, but that workflow can't be resolved (a broken rollout, not
+        // an unmapped offering). It must surface as `workflowNotFound` — which does NOT trigger the
+        // default-paywall fallback — never `offeringHasNoWorkflow`.
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
 
-        self.dateProvider.advance(by: 1)
-        var completed = false
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
-
-        expect(completed) == true
-        expect(self.mockWorkflowsAPI.invokedGetWorkflowsCount) == 1
+        do {
+            _ = try await self.manager.getWorkflow(forOfferingId: "default")
+            fail("Expected getWorkflow(forOfferingId:) to throw")
+        } catch {
+            expect(error as? BackendError) == .unexpectedBackendResponse(
+                .workflowNotFound(workflowId: "wf_1"),
+                extraContext: nil,
+                .init(file: "", function: "", line: 0)
+            )
+        }
     }
 
-    func testGetWorkflowsListCallsOnCompleteOnlyAfterAllPrefetchWorkflowsComplete() throws {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true),
-            .init(id: "wf_b", displayName: "B", offeringId: "off_b", prefetch: true)
-        ]))
-        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
-        let result = try Self.workflowDataResult(id: "wf")
+    // MARK: - publishWebBundleURLs
 
-        var completed = false
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+    func testPublishWebBundleURLsPublishesResolvedTargetOfferingWorkflows() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings()
 
-        expect(completed) == false
-        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a", with: .success(result))
-        expect(completed) == false
-        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_b", with: .success(result))
-        expect(completed) == true
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedWorkflowIdForOfferingIdParameters) == ["default"]
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishOfferings) === offerings
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId["default"]?.id) == "wf_1"
     }
 
-    func testGetWorkflowsListCallsOnCompleteEvenIfAPrefetchWorkflowFails() throws {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .success(.init(workflows: [
-            .init(id: "wf_a", displayName: "A", offeringId: "off_a", prefetch: true),
-            .init(id: "wf_b", displayName: "B", offeringId: "off_b", prefetch: true)
-        ]))
-        self.mockWorkflowsAPI.shouldStoreGetWorkflowCompletions = true
+    func testPublishWebBundleURLsDecodesSharedWorkflowOnlyOnce() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let expected = try Self.workflowDataResult(id: "wf_1")
+        self.mockProvider.stubbedWorkflowIdForOfferingId = [
+            "default": "wf_1",
+            "placement_a": "wf_1",
+            "placement_b": "wf_1"
+        ]
+        self.mockProvider.stubbedGetWorkflowResult = ["wf_1": expected]
+        let offerings = Self.offerings(
+            placements: .init(
+                fallbackOfferingId: nil,
+                offeringIdsByPlacement: [
+                    "a": "placement_a",
+                    "b": "placement_b"
+                ]
+            )
+        )
 
-        var completed = false
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+        await self.manager.publishWebBundleURLs(offerings: offerings)
 
-        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_a",
-                                                        with: .success(try Self.workflowDataResult(id: "wf_a")))
-        expect(completed) == false
-        self.mockWorkflowsAPI.completeStoredGetWorkflow(workflowId: "wf_b", with: .failure(.missingAppUserID()))
-        expect(completed) == true
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId.mapValues(\.id)) == [
+            "default": "wf_1",
+            "placement_a": "wf_1",
+            "placement_b": "wf_1"
+        ]
     }
 
-    func testGetWorkflowsListCallsOnCompleteAfterNetworkError() {
-        self.mockWorkflowsAPI.stubbedGetWorkflowsResult = .failure(.missingAppUserID())
+    func testPublishWebBundleURLsSkipsUncachedWorkflowsWithoutFetching() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        self.mockProvider.stubbedWorkflowIdForOfferingId = ["default": "wf_1"]
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .notFound]
+        let offerings = Self.offerings()
 
-        var completed = false
-        self.manager.getWorkflowsList(appUserID: self.appUserID, isAppBackgrounded: false) { completed = true }
+        await self.manager.publishWebBundleURLs(offerings: offerings)
 
-        expect(completed) == true
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters) == ["wf_1"]
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
+    }
+
+    func testPublishWebBundleURLsSkipsOfferingsWithoutAWorkflowMapping() async throws {
+        guard #available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *) else {
+            throw XCTSkip("publishWebBundleURLs requires iOS 15+")
+        }
+        let offerings = Self.offerings()
+
+        await self.manager.publishWebBundleURLs(offerings: offerings)
+
+        expect(self.mockProvider.invokedDecodeCachedWorkflowForAssetPrewarmingParameters).to(beEmpty())
+        expect(self.mockProvider.invokedGetWorkflowParameters).to(beEmpty())
+        expect(self.mockWebBundleURLBatcher.invokedPublishCount) == 1
+        expect(self.mockWebBundleURLBatcher.invokedPublishWorkflowsByOfferingId).to(beEmpty())
     }
 
     // MARK: - Helpers
 
+    private static func offerings(placements: Offerings.Placements? = nil) -> Offerings {
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "default",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let response = OfferingsResponse(
+            currentOfferingId: "default",
+            offerings: [],
+            placements: nil,
+            targeting: nil,
+            uiConfig: nil
+        )
+        return Offerings(
+            offerings: [offering.identifier: offering],
+            currentOfferingID: "default",
+            placements: placements,
+            targeting: nil,
+            contents: .init(response: response, httpResponseOriginalSource: .mainServer),
+            loadedFromDiskCache: false
+        )
+    }
+
     private static func workflowDataResult(id: String) throws -> WorkflowDataResult {
-        return .init(workflow: try self.publishedWorkflow(id: id), enrolledVariants: nil)
+        return .init(workflow: try self.publishedWorkflow(id: id), uiConfig: .empty, enrolledVariants: nil)
     }
 
     private static func publishedWorkflow(id: String) throws -> PublishedWorkflow {

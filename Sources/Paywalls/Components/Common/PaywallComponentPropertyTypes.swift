@@ -411,7 +411,7 @@ import Foundation
 
     enum SizeConstraint: Codable, Sendable, Hashable {
 
-        case fit
+        case fit(UInt?) // optional default size to show during loading and initial content size calculations
         case fill
         case fixed(UInt)
 
@@ -422,8 +422,11 @@ import Foundation
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .fit:
+            case .fit(let value):
                 try container.encode(SizeConstraintType.fit.rawValue, forKey: .type)
+                if let value {
+                    try container.encode(value, forKey: .default)
+                }
             case .fill:
                 try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
             case .fixed(let value):
@@ -442,7 +445,8 @@ import Foundation
 
                 switch type {
                 case .fit:
-                    self = .fit
+                    let value = try container.decodeIfPresent(UInt.self, forKey: .default)
+                    self = .fit(value)
                 case .fill:
                     self = .fill
                 case .fixed:
@@ -453,7 +457,7 @@ import Foundation
                     self = .relative(value)
                 }
             } catch {
-                self = .fit
+                self = .fit(nil)
             }
         }
 
@@ -462,6 +466,7 @@ import Foundation
 
             case type
             case value
+            case `default`
 
         }
 
@@ -473,6 +478,21 @@ import Foundation
             case fixed
             case relative
 
+        }
+
+        public static func == (lhs: SizeConstraint, rhs: SizeConstraint) -> Bool {
+            switch (lhs, rhs) {
+            case let (.fit(left), .fit(right)):
+                return left == right
+            case (.fill, .fill):
+                return true
+            case let (.fixed(left), .fixed(right)):
+                return left == right
+            case let (.relative(left), .relative(right)):
+                return left == right
+            default:
+                return false
+            }
         }
 
     }

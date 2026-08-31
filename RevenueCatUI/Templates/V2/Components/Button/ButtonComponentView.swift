@@ -55,6 +55,7 @@ struct ButtonComponentView: View {
     private var selectedPackageId
 
     @Environment(\.componentInteractionLogger) var componentInteractionLogger
+    @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
@@ -111,6 +112,9 @@ struct ButtonComponentView: View {
                     showActivityIndicatorOverContent: self.showActivityIndicatorOverContent
                 )
             }
+            .applyIfLet(self.derivedAccessibilityLabel, apply: { view, label in
+                view.accessibilityLabel(label)
+            })
             .withTransition(viewModel.component.transition)
             .disabled(self.shouldBeDisabled)
             .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
@@ -118,15 +122,38 @@ struct ButtonComponentView: View {
             .opacity(self.workflowRenderingContext.isHeader ? self.headerButtonOpacity : 1)
             #if canImport(SafariServices) && canImport(UIKit)
             .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-                SafariView(url: self.inAppBrowserURL!)
+                let url = self.inAppBrowserURL!
+                SafariView(url: url)
+                    // Reported here rather than when the URL is assigned, so the listener only hears about
+                    // in-app browser opens that actually made it on screen.
+                    .onAppear { self.urlOpenedNotifier(url) }
             }
             #if os(iOS)
-            .presentCustomerCenter(isPresented: self.$showCustomerCenter, onDismiss: {
-                self.showCustomerCenter = false
+            .applyIf(self.viewModel.opensCustomerCenter, apply: { view in
+                view.presentCustomerCenter(
+                    isPresented: self.$showCustomerCenter,
+                    purchaseHandler: self.purchaseHandler,
+                    onDismiss: {
+                        self.showCustomerCenter = false
+                    }
+                )
             })
             #endif
             #endif
         }
+    }
+
+    /// Resolved through the same `dismissalAction` the tap itself goes through, so the announced
+    /// word cannot drift from where the button actually leads.
+    private var derivedAccessibilityLabel: String? {
+        let dismissal = WorkflowPaywallView.dismissalAction(
+            canNavigateBack: self.workflowRenderingContext.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        )
+
+        return self.viewModel.derivedAccessibilityLabel(
+            dismissesPaywall: dismissal == .dismissWorkflow
+        )
     }
 
     private var headerPageOffset: CGFloat {
@@ -176,7 +203,7 @@ struct ButtonComponentView: View {
                 )
             )
         case .sheet(let sheet):
-            if let sheetStackViewModel = self.viewModel.sheetStackViewModel {
+            if let sheet, let sheetStackViewModel = self.viewModel.sheetStackViewModel {
                 let sheetViewModel = SheetViewModel(
                     sheet: sheet,
                     sheetStackViewModel: sheetStackViewModel
@@ -237,7 +264,8 @@ struct ButtonComponentView: View {
             Browser.navigateTo(url: url,
                                method: method,
                                openURL: self.openURL,
-                               inAppBrowserURL: self.$inAppBrowserURL)
+                               inAppBrowserURL: self.$inAppBrowserURL,
+                               onURLOpened: self.urlOpenedNotifier.callAsFunction)
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
@@ -282,9 +310,25 @@ struct ButtonComponentView: View {
             }
         }
 #endif
+        self.purchaseHandler.signalWebCheckoutOpened()
         onDismiss()
     }
 }
+
+#if os(iOS)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension ButtonComponentViewModel {
+
+    var opensCustomerCenter: Bool {
+        guard case .navigateTo(destination: .customerCenter) = self.action else {
+            return false
+        }
+
+        return true
+    }
+
+}
+#endif
 
 #if DEBUG
 

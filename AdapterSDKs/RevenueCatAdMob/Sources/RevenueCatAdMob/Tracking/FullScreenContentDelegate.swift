@@ -41,6 +41,18 @@ internal extension Tracking {
             self.responseInfoProvider = responseInfoProvider
         }
 
+        func rewardTrackingMetadata() -> RewardedAdTrackingMetadata {
+            let responseInfo = self.responseInfoProvider()
+            return RewardedAdTrackingMetadata(
+                networkName: Tracking.Adapter.networkName(from: responseInfo),
+                mediatorName: .adMob,
+                adFormat: self.adFormat,
+                placement: self.placement,
+                adUnitId: self.adUnitID,
+                impressionId: Tracking.Adapter.impressionID(from: responseInfo)
+            )
+        }
+
         func adDidRecordImpression(_ presentingAd: any GoogleMobileAds.FullScreenPresentingAd) {
             let responseInfo = self.responseInfoProvider()
             self.adapter.trackDisplayed(

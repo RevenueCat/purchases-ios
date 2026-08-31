@@ -1,0 +1,18 @@
+{
+    "fill_fill": {
+        "width": { "type": "fill" },
+        "height": { "type": "fill" }
+    },
+    "fit_fit": {
+        "width": { "type": "fit" },
+        "height": { "type": "fit" }
+    },
+    "fit_withDefault_fill": {
+        "width": { "type": "fit", "default": 2 },
+        "height": { "type": "fill" }
+    },
+    "fill_fit_withDefault": {
+        "width": { "type": "fill" },
+        "height": { "type": "fit", "default": 2 }
+    }
+}

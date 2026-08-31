@@ -14,7 +14,7 @@ import Nimble
 import StoreKit
 import XCTest
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 class PurchasesSubscriberAttributesTests: TestCase {
 
@@ -67,6 +67,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
     var mockBeginRefundRequestHelper: MockBeginRefundRequestHelper!
     var mockStoreMessagesHelper: MockStoreMessagesHelper!
     var mockWinBackOfferEligibilityCalculator: MockWinBackOfferEligibilityCalculator!
+    var storeKit2ProductPurchaser: StoreKit2ProductPurchaser!
     var webPurchaseRedemptionHelper: WebPurchaseRedemptionHelper!
     var userDefaultsSuiteName: String!
 
@@ -166,6 +167,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
         self.mockTransactionsManager = MockTransactionsManager(receiptParser: mockReceiptParser)
         self.mockStoreMessagesHelper = .init()
         self.mockWinBackOfferEligibilityCalculator = MockWinBackOfferEligibilityCalculator()
+        self.storeKit2ProductPurchaser = StoreKit2ProductPurchaser(systemInfo: systemInfo)
         self.webPurchaseRedemptionHelper = .init(backend: self.mockBackend,
                                                  identityManager: self.mockIdentityManager,
                                                  customerInfoManager: self.customerInfoManager)
@@ -210,6 +212,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
             diagnosticsTracker: nil,
             winBackOfferEligibilityCalculator: self.mockWinBackOfferEligibilityCalculator,
             eventsManager: nil,
+            storeKit2ProductPurchaser: self.storeKit2ProductPurchaser,
             webPurchaseRedemptionHelper: self.webPurchaseRedemptionHelper)
         let trialOrIntroductoryPriceEligibilityChecker = TrialOrIntroPriceEligibilityChecker(
             systemInfo: systemInfo,
@@ -246,6 +249,7 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               deviceCache: mockDeviceCache,
                               paywallCache: MockPaywallCacheWarming(),
                               identityManager: mockIdentityManager,
+                              tokenManager: MockTokenManager(),
                               subscriberAttributes: attribution,
                               operationDispatcher: mockOperationDispatcher,
                               customerInfoManager: customerInfoManager,
@@ -253,11 +257,13 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               productsManager: mockProductsManager,
                               offeringsManager: mockOfferingsManager,
                               workflowManager: WorkflowManager(
-                                backend: mockBackend,
-                                workflowsCache: WorkflowsCache(deviceCache: mockDeviceCache),
-                                paywallCache: MockPaywallCacheWarming(),
+                                workflowsConfigProvider: WorkflowsConfigProvider(
+                                    manager: NoOpRemoteConfigManager()
+                                ),
+                                paywallCache: nil,
                                 operationDispatcher: mockOperationDispatcher
                               ),
+                              remoteConfigManager: NoOpRemoteConfigManager(),
                               offlineEntitlementsManager: mockOfflineEntitlementsManager,
                               purchasesOrchestrator: purchasesOrchestrator,
                               purchasedProductsFetcher: mockPurchasedProductsFetcher,
@@ -269,7 +275,9 @@ class PurchasesSubscriberAttributesTests: TestCase {
                               virtualCurrencyManager: self.mockVirtualCurrencyManager,
                               healthManager: healthManager,
                               transactionMetadataSyncHelper: transactionMetadataSyncHelper,
-                              currentConfiguration: nil)
+                              currentConfiguration: nil,
+                              webBundleEventBus: .init()
+        )
         purchasesOrchestrator.delegate = purchases
         purchases!.delegate = purchasesDelegate
         Purchases.setDefaultInstance(purchases!)
@@ -534,6 +542,16 @@ class PurchasesSubscriberAttributesTests: TestCase {
         expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[0])
             .to(equal(("solarVisitor", purchases.appUserID)))
         expect(self.mockSubscriberAttributesManager.invokedSetSolarEngineVisitorIdParametersList[1])
+            .to(equal((nil, purchases.appUserID)))
+    }
+
+    func testSetAndClearSingularDeviceID() {
+        setupPurchases()
+        purchases.attribution.setSingularDeviceID("sdid")
+        purchases.attribution.setSingularDeviceID(nil)
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[0])
+            .to(equal(("sdid", purchases.appUserID)))
+        expect(self.mockSubscriberAttributesManager.invokedSetSingularDeviceIDParametersList[1])
             .to(equal((nil, purchases.appUserID)))
     }
 

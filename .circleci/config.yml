@@ -17,7 +17,8 @@ parameters:
         run-manual-docs-deploy,
         update_paywall_templates,
         record_paywall_screenshots,
-        deploy_rct_tester
+        deploy_rct_tester,
+        update_error_codes
       ]
     default: default
   generate_snapshots:

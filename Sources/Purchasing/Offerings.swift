@@ -65,8 +65,8 @@ import Foundation
     /// `false` when loaded from memory cache or fetched from the network.
     internal let loadedFromDiskCache: Bool
 
-    private let currentOfferingID: String?
-    private let placements: Placements?
+    internal let currentOfferingID: String?
+    internal let placements: Placements?
     private let targeting: Targeting?
 
     init(
@@ -177,7 +177,8 @@ private extension Offering {
                         serverDescription: self.serverDescription,
                         metadata: self.metadata,
                         paywall: self.paywall,
-                        paywallComponents: self.paywallComponents,
+                        paywallComponents: self.internalPaywallComponents,
+                        hasPaywallComponents: self.hasPaywallComponents,
                         availablePackages: updatedPackages,
                         webCheckoutUrl: self.webCheckoutUrl
         )
@@ -218,7 +219,8 @@ extension Offerings {
         var response: OfferingsResponse
         var originalSource: Offerings.OriginalSource
 
-        init(response: OfferingsResponse, httpResponseOriginalSource: HTTPResponseOriginalSource) {
+        init(response: OfferingsResponse,
+             httpResponseOriginalSource: HTTPResponseOriginalSource) {
             self.response = response
             self.originalSource = Offerings.OriginalSource(httpResponseOriginalSource: httpResponseOriginalSource)
         }
@@ -248,6 +250,33 @@ extension Offerings.Contents: Codable {
         self.response = try OfferingsResponse(from: decoder)
         self.originalSource = try container.decodeIfPresent(Offerings.OriginalSource.self,
                                                             forKey: .originalSource) ?? .main
+    }
+
+}
+
+@_spi(Internal) public extension Offerings {
+
+    /// Builds an `Offerings` bundle from a list of offerings for injected/preview rendering, with no
+    /// network fetch. Only the offerings dictionary and `offering(identifier:)` lookups are used by
+    /// the workflow preview path, so the backing response is empty.
+    static func preview(offerings: [Offering], currentOfferingID: String? = nil) -> Offerings {
+        return Offerings(
+            offerings: Dictionary(offerings.map { ($0.identifier, $0) }, uniquingKeysWith: { first, _ in first }),
+            currentOfferingID: currentOfferingID,
+            placements: nil,
+            targeting: nil,
+            contents: .init(
+                response: .init(
+                    currentOfferingId: currentOfferingID,
+                    offerings: [],
+                    placements: nil,
+                    targeting: nil,
+                    uiConfig: nil
+                ),
+                httpResponseOriginalSource: .mainServer
+            ),
+            loadedFromDiskCache: false
+        )
     }
 
 }

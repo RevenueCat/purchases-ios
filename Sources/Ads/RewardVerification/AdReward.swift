@@ -15,12 +15,14 @@ import Foundation
 
 /// Reward payload describing the outcome of a verified rewarded ad.
 ///
-/// Inspect the received reward by checking ``virtualCurrency`` or comparing against
+/// Inspect the reward by checking ``virtualCurrency`` / ``entitlement`` or comparing against
 /// ``noReward`` / ``unsupportedReward``:
 ///
 /// ```swift
 /// if let virtualCurrency = adReward.virtualCurrency {
 ///     // Reward is a virtual-currency line item.
+/// } else if let entitlement = adReward.entitlement {
+///     // Reward is a temporary entitlement grant.
 /// } else if adReward == .noReward {
 ///     // Verification succeeded but no reward was granted.
 /// } else if adReward == .unsupportedReward {
@@ -31,6 +33,7 @@ import Foundation
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyReward)
+        case entitlement(EntitlementReward)
         case noReward
         case unsupportedReward
     }
@@ -46,6 +49,10 @@ import Foundation
         AdReward(storage: .virtualCurrency(payload))
     }
 
+    internal static func entitlement(_ payload: EntitlementReward) -> AdReward {
+        AdReward(storage: .entitlement(payload))
+    }
+
     /// Verification succeeded but no reward was granted.
     public static let noReward = AdReward(storage: .noReward)
 
@@ -58,10 +65,17 @@ import Foundation
         return payload
     }
 
+    /// Entitlement reward payload, if present.
+    public var entitlement: EntitlementReward? {
+        guard case .entitlement(let payload) = self.storage else { return nil }
+        return payload
+    }
+
     /// Stable raw value used for wire encoding and ObjC interop.
     internal var kindRawValue: String {
         switch self.storage {
         case .virtualCurrency: return Self.Kind.virtualCurrency
+        case .entitlement: return Self.Kind.entitlement
         case .noReward: return Self.Kind.noReward
         case .unsupportedReward: return Self.Kind.unsupportedReward
         }
@@ -69,6 +83,7 @@ import Foundation
 
     internal enum Kind {
         static let virtualCurrency = "virtual_currency"
+        static let entitlement = "entitlement"
         static let noReward = "no_reward"
         static let unsupportedReward = "unsupported_reward"
     }
@@ -80,36 +95,55 @@ extension AdReward {
 
     /// Encodes flat into the parent's container so the backend wire schema is unchanged
     /// while the kind→wire mapping stays local to ``AdReward``.
+    ///
+    /// `entitlementExpiresAtKey` is local round-trip only — never forward it to the backend request.
+    // swiftlint:disable:next function_parameter_count
     internal func encode<K: CodingKey>(
         into container: inout KeyedEncodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K,
+        entitlementExpiresAtKey: K
     ) throws {
         try container.encode(self.kindRawValue, forKey: typeKey)
         try container.encodeIfPresent(self.virtualCurrency?.code, forKey: codeKey)
         try container.encodeIfPresent(self.virtualCurrency?.amount, forKey: amountKey)
+        try container.encodeIfPresent(self.entitlement?.identifier, forKey: entitlementIdKey)
+        try container.encodeIfPresent(self.entitlement?.expiresAt, forKey: entitlementExpiresAtKey)
     }
 
     /// Unknown kinds and malformed payloads log a warning and fall back to ``unsupportedReward``
     /// — backend wire data not matching the schema is not a programming bug.
+    // swiftlint:disable:next function_parameter_count
     internal static func decode<K: CodingKey>(
         from container: KeyedDecodingContainer<K>,
         typeKey: K,
         codeKey: K,
-        amountKey: K
+        amountKey: K,
+        entitlementIdKey: K,
+        entitlementExpiresAtKey: K
     ) throws -> AdReward {
         let kindRawValue = try container.decode(String.self, forKey: typeKey)
-        let code = try container.decodeIfPresent(String.self, forKey: codeKey)
-        let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
         switch kindRawValue {
         case Kind.virtualCurrency:
+            let code = try container.decodeIfPresent(String.self, forKey: codeKey)
+            let amount = try container.decodeIfPresent(Int.self, forKey: amountKey)
             guard let code, let amount,
                   let payload = VirtualCurrencyReward(code: code, amount: amount) else {
                 Logger.warn(AdsStrings.invalid_virtual_currency_payload(code: code, amount: amount))
                 return .unsupportedReward
             }
             return .virtualCurrency(payload)
+        case Kind.entitlement:
+            let identifier = try container.decodeIfPresent(String.self, forKey: entitlementIdKey)
+            let expiresAt = try container.decodeIfPresent(Date.self, forKey: entitlementExpiresAtKey)
+            guard let identifier, let expiresAt,
+                  let payload = EntitlementReward(identifier: identifier, expiresAt: expiresAt) else {
+                Logger.warn(AdsStrings.invalid_entitlement_payload(identifier: identifier))
+                return .unsupportedReward
+            }
+            return .entitlement(payload)
         case Kind.noReward:
             return .noReward
         case Kind.unsupportedReward:

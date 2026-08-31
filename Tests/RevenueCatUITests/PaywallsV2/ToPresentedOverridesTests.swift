@@ -243,7 +243,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -256,7 +256,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil
                 ),
@@ -275,7 +275,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -288,7 +288,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil
                 ),
@@ -307,7 +307,7 @@ class ToPresentedOverridesTests: TestCase {
             itemSpacing: nil,
             textSpacing: nil,
             columnGutter: nil,
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             padding: .zero,
             margin: .zero,
             items: [.init(
@@ -316,7 +316,7 @@ class ToPresentedOverridesTests: TestCase {
                 icon: .init(
                     baseUrl: "https://example.com", iconName: "icon",
                     formats: .init(svg: "a", png: "b", heic: "c", webp: "d"),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     padding: .zero, margin: .zero,
                     color: .init(light: .hex("#000000")), iconBackground: nil,
                     overrides: [.init(extendedConditions: [.unsupported], properties: .init())]
@@ -621,6 +621,87 @@ class ToPresentedOverridesTests: TestCase {
 
         let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
         expect(result.count).to(equal(3))
+    }
+
+    // MARK: - State Condition Rule Behavior
+
+    func testStateConditionIsARule() throws {
+        let condition = PaywallComponent.ExtendedCondition.state(
+            operator: .equals,
+            name: "planComparisonOpen",
+            value: .bool(true)
+        )
+
+        expect(condition.isRule).to(beTrue())
+    }
+
+    func testHasUnsupportedCondition_WithStateCondition_ReturnsFalse() throws {
+        // A recognized state condition is supported on this SDK version.
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [
+                .state(operator: .equals, name: "planComparisonOpen", value: .bool(true))
+            ], properties: .init())
+        ]
+
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_DiscardsStateOverrides() throws {
+        // When an unsupported condition is found anywhere in the paywall, all rule-based overrides
+        // (state included) are discarded so the default paywall renders with legacy overrides only.
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.compact], properties: .init()),
+            .init(extendedConditions: [
+                .state(operator: .equals, name: "planComparisonOpen", value: .bool(true))
+            ], properties: .init()),
+            .init(extendedConditions: [.medium], properties: .init())
+        ]
+
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(2))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.compact]))
+        expect(result[1].conditions).to(equal([PaywallComponent.ExtendedCondition.medium]))
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesFalse_KeepsStateOverrides() throws {
+        let stateCondition = PaywallComponent.ExtendedCondition.state(
+            operator: .equals,
+            name: "planComparisonOpen",
+            value: .bool(true)
+        )
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [stateCondition], properties: .init())
+        ]
+
+        let result = overrides.toPresentedOverrides(discardRules: false) { $0 }
+        expect(result.count).to(equal(1))
+        expect(result[0].conditions).to(equal([stateCondition]))
+    }
+
+    // MARK: - Forward Compatibility (older-SDK degradation path)
+
+    func testMalformedStateConditionDecodesAsUnsupportedAndTriggersDefaultPaywall() throws {
+        // A state condition this SDK cannot parse behaves exactly like an unknown condition type:
+        // it decodes as .unsupported, which flags the paywall for default-paywall degradation.
+        let json = """
+        {
+            "conditions": [
+                {"type": "state_condition", "operator": "=", "name": "planComparisonOpen", "value": [1, 2]}
+            ],
+            "properties": {}
+        }
+        """
+        let override = try JSONDecoder().decode(
+            PaywallComponent.ComponentOverride<PaywallComponent.PartialStackComponent>.self,
+            from: json.data(using: .utf8)!
+        )
+
+        expect(override.extendedConditions).to(equal([.unsupported]))
+        expect([override].hasUnsupportedCondition()).to(beTrue())
+
+        // The degradation path then discards all rule-based overrides globally.
+        let result = [override].toPresentedOverrides(discardRules: true) { $0 }
+        expect(result).to(beEmpty())
     }
 
 }

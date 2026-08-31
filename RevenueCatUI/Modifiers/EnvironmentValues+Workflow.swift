@@ -41,24 +41,42 @@ struct WorkflowRenderingContext {
     let pageHeaderSuppressed: Bool
     /// Marks the header subtree so only header buttons consume workflow page transition context.
     let isHeader: Bool
+    /// Whether the workflow has a step to go back to. Lets a `navigate_back` button describe itself
+    /// as going back rather than closing, matching where `onDismiss` will actually take the user.
+    let canNavigateBack: Bool
 
     static let identity = Self()
 
     init(
         pageTransition: WorkflowPageTransitionContext = .identity,
         pageHeaderSuppressed: Bool = false,
-        isHeader: Bool = false
+        isHeader: Bool = false,
+        canNavigateBack: Bool = false
     ) {
         self.pageTransition = pageTransition
         self.pageHeaderSuppressed = pageHeaderSuppressed
         self.isHeader = isHeader
+        self.canNavigateBack = canNavigateBack
+    }
+
+    /// For subtrees whose dismissal is local, like a bottom sheet: a `navigate_back` button there
+    /// closes that subtree rather than stepping back through the workflow, so it must not describe
+    /// itself as going back.
+    func withoutBackNavigation() -> Self {
+        return .init(
+            pageTransition: self.pageTransition,
+            pageHeaderSuppressed: self.pageHeaderSuppressed,
+            isHeader: self.isHeader,
+            canNavigateBack: false
+        )
     }
 
     func markingHeader() -> Self {
         return .init(
             pageTransition: self.pageTransition,
             pageHeaderSuppressed: self.pageHeaderSuppressed,
-            isHeader: true
+            isHeader: true,
+            canNavigateBack: self.canNavigateBack
         )
     }
 
@@ -89,6 +107,11 @@ private struct WorkflowPackageContextKey: EnvironmentKey {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowExitOfferOfferingBindingKey: EnvironmentKey {
     static let defaultValue: Binding<Offering?> = .constant(nil)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct WorkflowCompletedInSessionBindingKey: EnvironmentKey {
+    static let defaultValue: Binding<Bool> = .constant(false)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -125,6 +148,13 @@ extension EnvironmentValues {
     var workflowExitOfferOfferingBinding: Binding<Offering?> {
         get { self[WorkflowExitOfferOfferingBindingKey.self] }
         set { self[WorkflowExitOfferOfferingBindingKey.self] = newValue }
+    }
+
+    /// A binding injected by the outer presenter so restore-driven dismissal can mark the workflow
+    /// as completed before the embedded workflow view disappears. Regular paywalls do not read this.
+    var workflowCompletedInSessionBinding: Binding<Bool> {
+        get { self[WorkflowCompletedInSessionBindingKey.self] }
+        set { self[WorkflowCompletedInSessionBindingKey.self] = newValue }
     }
 }
 

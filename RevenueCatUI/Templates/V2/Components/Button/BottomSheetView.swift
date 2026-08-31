@@ -46,6 +46,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
     let safeAreaInsets: EdgeInsets
     let onSheetContentAppear: (() -> Void)?
 
+    @Environment(\.workflowRenderingContext) private var workflowRenderingContext
+
     @State private var parentHeight: CGFloat?
 
     var sheetHeight: CGFloat? {
@@ -97,6 +99,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
                             trailing: 0
                         )
                     )
+                    // Dismissal in here closes the sheet, so a `navigate_back` button must not
+                    // inherit the workflow's back stack and call itself "Go back".
+                    .environment(
+                        \.workflowRenderingContext,
+                        self.workflowRenderingContext.withoutBackNavigation()
+                    )
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
@@ -104,6 +112,14 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .onAppear {
                         self.onSheetContentAppear?()
                     }
+                    // Tie the sheet content's identity to the sheet's `id` so that
+                    // switching to a different sheet disposes the previous sheet's
+                    // content and builds the new one from scratch, instead of reusing
+                    // the views positionally. Without this, a rapid dismiss→open reuses
+                    // the same view identity while the dismiss animation is still in
+                    // flight, and media such as a video from the previous sheet keeps
+                    // playing in the newly-opened sheet.
+                    .id(sheetViewModel.sheet.id)
                 }
             }
             .background(
@@ -166,7 +182,7 @@ struct BottomSheetViewTestView: View {
                 backgroundColor: nil
             ),
             backgroundBlur: false,
-            size: .init(width: .fill, height: .fit)
+            size: .init(width: .fill, height: .fit(nil))
         ),
         // swiftlint:disable:next force_try
         sheetStackViewModel: try! .init(component: .init(
