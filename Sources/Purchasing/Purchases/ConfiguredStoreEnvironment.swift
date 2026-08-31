@@ -8,16 +8,18 @@
 import Foundation
 
 /// Describes the underlying store used to make purchases with the RenvenueCat SDK
-@objc(RCConfiguredStoreEnvironment)
-@_spi(Internal) public final class ConfiguredStoreEnvironment: NSObject, @unchecked Sendable {
+@_spi(Internal) public struct ConfiguredStoreEnvironment: Sendable {
     private let apiKey: String
-    private let _storeFrontCountryCode: () -> String?
+    private let _storeFrontCountryCode: @Sendable () -> String?
 
-    convenience init(systemInfo: SystemInfo) {
+    init(systemInfo: SystemInfo) {
         self.init(apiKey: systemInfo.apiKey, storeFrontCountryCode: systemInfo.storefront?.countryCode)
     }
 
-    @_spi(Internal) public init(apiKey: String, storeFrontCountryCode: @autoclosure @escaping () -> String?) {
+    @_spi(Internal) public init(
+        apiKey: String,
+        storeFrontCountryCode: @autoclosure @escaping @Sendable () -> String?
+    ) {
         self.apiKey = apiKey
         self._storeFrontCountryCode = storeFrontCountryCode
     }
