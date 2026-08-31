@@ -644,12 +644,8 @@ private extension RemoteConfigManager {
         requestEpoch: Int
     ) {
         guard error.isRemoteConfigFallbackEligible,
-              !self.hasUsableCachedConfig(previous, for: request.domain) else {
-            self.handleFinalFailure(error, requestEpoch: requestEpoch)
-            return
-        }
-
-        guard SystemInfo.proxyURL == nil else {
+              !self.hasUsableCachedConfig(previous, for: request.domain),
+              SystemInfo.proxyURL == nil else {
             self.handleFinalFailure(error, requestEpoch: requestEpoch)
             return
         }
