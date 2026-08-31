@@ -864,12 +864,6 @@ private extension HTTPClient {
                                                                          serverErrorURL: serverErrorURL))
             urlRequest = URLRequest(url: serverErrorURL)
 
-        case let .appendQueryItems(queryItems):
-            Logger.warn(Strings.network.api_request_appending_query_items(request.httpRequest, queryItems: queryItems))
-            if let url = urlRequest.url?.appendingQueryItems(queryItems) {
-                urlRequest.url = url
-            }
-
         case .performRequest:
             break
         }

@@ -26,8 +26,7 @@ class OfferingsFactory {
     func createOfferings(
         from storeProductsByID: [String: StoreProduct],
         contents: Offerings.Contents,
-        loadedFromDiskCache: Bool,
-        shouldCreatePaywallComponents: Bool = true
+        loadedFromDiskCache: Bool
     ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
@@ -35,8 +34,7 @@ class OfferingsFactory {
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
-                               uiConfig: data.uiConfig,
-                               shouldCreatePaywallComponents: shouldCreatePaywallComponents)
+                               uiConfig: data.uiConfig)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -44,23 +42,18 @@ class OfferingsFactory {
             return nil
         }
 
-        let storedContents = shouldCreatePaywallComponents
-            ? contents
-            : contents.removingPaywallComponents()
-
         return Offerings(offerings: offerings,
                          currentOfferingID: data.currentOfferingId,
                          placements: createPlacement(with: data.placements),
                          targeting: data.targeting.flatMap { .init(revision: $0.revision, ruleId: $0.ruleId) },
-                         contents: storedContents,
+                         contents: contents,
                          loadedFromDiskCache: loadedFromDiskCache)
     }
 
     func createOffering(
         from storeProductsByID: [String: StoreProduct],
         offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?,
-        shouldCreatePaywallComponents: Bool = true
+        uiConfig: UIConfig?
     ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
@@ -81,7 +74,7 @@ class OfferingsFactory {
         let hasPaywallComponents = offering.hasPaywallComponents == true
             || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
-            if shouldCreatePaywallComponents, let uiConfig, let paywallComponents = offering.paywallComponents {
+            if let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
                     uiConfig: uiConfig,
                     data: paywallComponents
@@ -131,8 +124,6 @@ class OfferingsFactory {
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.
 extension OfferingsFactory: @unchecked Sendable {}
 
-// MARK: - Private
-
 private extension Package {
 
     convenience init(
@@ -146,39 +137,6 @@ private extension Package {
                   storeProduct: product,
                   offeringIdentifier: offeringIdentifier,
                   webCheckoutUrl: webCheckoutUrl)
-    }
-
-}
-
-private extension Offerings.Contents {
-
-    /// Drops offerings-provided paywall component bodies from the retained/cacheable response.
-    /// When workflows are active, those component bodies are served by remote config instead, so
-    /// retaining them here duplicates memory.
-    func removingPaywallComponents() -> Self {
-        let prunedOfferings = self.response.offerings.map { offering in
-            var offering = offering
-            let canCreatePaywallComponents = self.response.uiConfig != nil && offering.paywallComponents != nil
-            offering.hasPaywallComponents = offering.hasPaywallComponents ?? canCreatePaywallComponents
-            offering.paywallComponents = nil
-            return offering
-        }
-        let response = OfferingsResponse(
-            currentOfferingId: self.response.currentOfferingId,
-            offerings: prunedOfferings,
-            placements: self.response.placements,
-            targeting: self.response.targeting,
-            uiConfig: self.response.uiConfig
-        )
-
-        return self.replacingResponse(with: response)
-    }
-
-    /// Returns a copy that preserves all SDK-generated metadata while replacing only the backend response.
-    func replacingResponse(with response: OfferingsResponse) -> Self {
-        var copy = self
-        copy.response = response
-        return copy
     }
 
 }

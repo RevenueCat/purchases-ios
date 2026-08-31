@@ -354,12 +354,10 @@ extension PurchaseHandler {
         remoteConfigEnabled: Bool
     ) -> ResolvedPaywallViewData? {
         if !remoteConfigEnabled {
-            // A pruned offering has nothing to render, so don't seed it: falling through leaves the async
-            // path to re-resolve it against the offerings cache.
             guard let offering = self.cachedInitialOffering(
                 for: content,
                 remoteConfigEnabled: remoteConfigEnabled
-            ), !offering.hasPrunedPaywallComponents else {
+            ) else {
                 return nil
             }
 
@@ -394,7 +392,7 @@ extension PurchaseHandler {
 #endif
 
     // Exposes the gate so tests can cover both states deterministically, without having to configure
-    // the SDK in the mode (custom entitlement computation) or kill-switch state that disables it.
+    // the SDK in custom entitlement computation mode.
     func cachedInitialOffering(
         for content: PaywallViewConfiguration.Content,
         remoteConfigEnabled: Bool
@@ -544,24 +542,16 @@ extension PurchaseHandler {
 
     /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
     /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
-    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. If the
-    /// workflow fetch fails, falls back to `paywallComponents` (the offerings-provided paywall) when
-    /// available; when the offering simply has no workflow attached, it falls back to the default
-    /// paywall even without components (matching the legacy path). Other failures with no components
-    /// (e.g. network, malformed workflow) propagate, as do non-fetch-eligible failures.
+    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. When the
+    /// offering simply has no workflow attached, it falls back to the default paywall (matching the
+    /// legacy path). Other failures (e.g. network, malformed workflow) propagate.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
         remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
         guard remoteConfigEnabled, offering.paywall == nil else {
-            return .init(
-                offering: await self.restoringPrunedPaywallComponents(
-                    offering,
-                    remoteConfigEnabled: remoteConfigEnabled
-                ),
-                workflowContext: nil
-            )
+            return .init(offering: offering, workflowContext: nil)
         }
 
         do {
@@ -573,65 +563,20 @@ extension PurchaseHandler {
 
             return .init(offering: context.initialOffering, workflowContext: context)
         } catch {
-            // This very fetch may be what disabled remote config (the kill switch trips on a 4xx), so read
-            // the gate again rather than reusing the caller's snapshot: the offering's own components become
-            // restorable at that point.
-            let fallbackOffering = await self.restoringPrunedPaywallComponents(
-                offering,
-                remoteConfigEnabled: self.remoteConfigEnabled
-            )
-
-            // Fall back to rendering the offering when there are components to show, or when the
-            // offering simply has no workflow attached (render the default paywall, matching the
-            // legacy path). Other failures with no components — including a mapped workflow whose item
-            // or blob failed to resolve — still propagate so a broken rollout surfaces.
-            guard error.isWorkflowFetchFallbackEligible,
-                  fallbackOffering.internalPaywallComponents != nil || error.isOfferingWithoutWorkflowError else {
+            // An offering without a workflow renders the default paywall, matching the legacy path.
+            // Other failures — including a mapped workflow whose item or blob failed to resolve —
+            // still propagate so a broken rollout surfaces.
+            guard error.isOfferingWithoutWorkflowError else {
                 throw error
             }
 
             Logger.warning(
-                Strings.workflow_fetch_failed_falling_back_to_offerings_paywall(
-                    offeringIdentifier: offering.identifier,
-                    error: error
-                )
-            )
-
-            return .init(offering: fallbackOffering, workflowContext: nil)
-        }
-    }
-
-    /// Re-resolves an offering whose paywall components the SDK pruned while remote config was active.
-    ///
-    /// Under workflows, offerings retain only the components marker because components are served by
-    /// `/v1/config`, so an offering captured then — including one the app holds and passes back in — can no
-    /// longer render once the kill switch disables remote config mid-session. `OfferingsManager` restores the
-    /// components in its own cache on disable, so reading offerings again yields a renderable offering.
-    /// Returns the offering untouched when there is nothing to restore.
-    private func restoringPrunedPaywallComponents(
-        _ offering: Offering,
-        remoteConfigEnabled: Bool
-    ) async -> Offering {
-        guard !remoteConfigEnabled, offering.hasPrunedPaywallComponents else { return offering }
-
-        do {
-            guard let restored = try await self.purchases.offerings().offering(identifier: offering.identifier),
-                  !restored.hasPrunedPaywallComponents else {
-                return offering
-            }
-
-            Logger.debug(
-                Strings.restored_paywall_components_for_disabled_remote_config(
+                Strings.offering_has_no_workflow_falling_back_to_default_paywall(
                     offeringIdentifier: offering.identifier
                 )
             )
 
-            guard let presentedOfferingContext = offering.presentedOfferingContext else { return restored }
-
-            return restored.withPresentedOfferingContext(presentedOfferingContext)
-        } catch {
-            Logger.warning(Strings.errorFetchingOfferings(error))
-            return offering
+            return .init(offering: offering, workflowContext: nil)
         }
     }
 
@@ -713,20 +658,6 @@ extension PurchaseHandler {
     #endif
 
 }
-
-#if !os(tvOS)
-private extension Error {
-
-    /// Whether this error should fall back to the offerings-provided paywall instead of surfacing.
-    /// Excludes ``PaywallError`` (a structural workflow misconfiguration, not an availability
-    /// failure — matches Android's design, where that failure never throws at all) and
-    /// `CancellationError` (control flow, not a workflow failure).
-    var isWorkflowFetchFallbackEligible: Bool {
-        return !(self is PaywallError) && !(self is CancellationError)
-    }
-
-}
-#endif
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension PurchaseHandler {

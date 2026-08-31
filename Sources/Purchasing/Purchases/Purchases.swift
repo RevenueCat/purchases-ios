@@ -944,10 +944,6 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
-        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
-            guard let self else { return }
-            self.offeringsManager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: self.appUserID)
-        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -2736,11 +2732,11 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
-    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
-    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
+    // Exposes whether workflows and remote config are available to RevenueCatUI, which
+    // can't see the custom entitlement computation mode.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
-        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
+        return self.systemInfo.remoteConfigEnabled
     }
 
     // swiftlint:disable missing_docs

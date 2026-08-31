@@ -716,7 +716,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(secondData) == blob
     }
 
-    func testEndpointDisabledPreventsReadTriggeredNetworkWork() async throws {
+    func testClientErrorAllowsReadTriggeredNetworkWork() async throws {
         self.mockRemoteConfigError(Self.disablingNetworkError)
 
         self.manager.refreshRemoteConfig(fetchContext: .appStart, isAppBackgrounded: false)
@@ -727,10 +727,9 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         expect(topic).to(beNil())
         expect(data).to(beNil())
-        expect(self.manager.isDisabled) == true
         let requestedURLs = await self.downloader.requestedURLs()
 
-        expect(self.remoteConfigRequestCount) == 1
+        expect(self.remoteConfigRequestCount) == 2
         expect(requestedURLs).to(beEmpty())
     }
 

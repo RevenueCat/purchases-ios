@@ -53,7 +53,7 @@ class MockOfferingsAPI: OfferingsAPI {
 
     override func getOfferings(appUserID: String,
                                isAppBackgrounded: Bool,
-                               decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
+                               decodingMode: OfferingsResponse.DecodingMode = .withoutPaywallComponents,
                                completion: @escaping OfferingsResponseHandler) {
         self.invokedGetOfferingsForAppUserID = true
         self.invokedGetOfferingsForAppUserIDCount += 1

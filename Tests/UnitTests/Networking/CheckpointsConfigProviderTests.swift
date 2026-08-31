@@ -130,12 +130,12 @@ class CheckpointsConfigProviderTests: TestCase {
         XCTAssertEqual(error, .payloadUnavailable)
     }
 
-    func testReturnsDisabledWhenRemoteConfigIsDisabled() async {
+    func testNoOpManagerReturnsPayloadUnavailable() async {
         let provider = CheckpointsConfigProvider(manager: NoOpRemoteConfigManager())
 
         let error = await self.providerError(for: "onboarding", provider: provider)
 
-        XCTAssertEqual(error, .remoteConfigDisabled)
+        XCTAssertEqual(error, .payloadUnavailable)
     }
 
     func testResolvesACheckpointWhosePayloadHasNoRules() async throws {

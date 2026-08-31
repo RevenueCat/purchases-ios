@@ -37,7 +37,7 @@ class OfferingsAPI {
 
     func getOfferings(appUserID: String,
                       isAppBackgrounded: Bool,
-                      decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
+                      decodingMode: OfferingsResponse.DecodingMode = .withoutPaywallComponents,
                       completion: @escaping OfferingsResponseHandler) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
                                                                 appUserID: appUserID)

@@ -449,7 +449,7 @@ extension BasePurchasesTests {
 
         override func getOfferings(appUserID: String,
                                    isAppBackgrounded: Bool,
-                                   decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents,
+                                   decodingMode: OfferingsResponse.DecodingMode = .withoutPaywallComponents,
                                    completion: @escaping OfferingsAPI.OfferingsResponseHandler) {
             self.gotOfferings += 1
             if self.failOfferings {
@@ -695,8 +695,6 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         let isAppBackgrounded: Bool
     }
 
-    var isDisabled = false
-    var onRemoteConfigDisabled: (() -> Void)?
     var onConfigGenerationRead: (() -> Void)?
     var configGeneration: Int {
         get {
@@ -849,7 +847,7 @@ final class MockRemoteConfigManager: RemoteConfigManagerType {
         as type: T.Type
     ) async throws -> T? {
         self._invokedMergeItemsBlobDataParameters.modify { $0.append((topic, itemKeys)) }
-        guard !self.isDisabled, !itemKeys.isEmpty else { return nil }
+        guard !itemKeys.isEmpty else { return nil }
 
         var mergedBlobValues: [String: AnyDecodable] = [:]
         for itemKey in itemKeys.deduplicated() {

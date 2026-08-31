@@ -20,17 +20,6 @@ import XCTest
 /// off `RemoteConfigManager` now, not a dedicated `WorkflowsAPI` backend call.
 class PurchasesWorkflowTests: BasePurchasesTests {
 
-    func testRemoteConfigEnabledReturnsFalseWhenDisabledByKillSwitch() {
-        self.systemInfo.stubbedRemoteConfigEnabled = true
-        self.setupPurchases()
-
-        expect(self.purchases.remoteConfigEnabled) == true
-
-        self.mockRemoteConfigManager.isDisabled = true
-
-        expect(self.purchases.remoteConfigEnabled) == false
-    }
-
     func testWorkflowForOfferingIdentifierThrowsWhenOfferingHasNoWorkflow() async throws {
         self.setupPurchases()
 

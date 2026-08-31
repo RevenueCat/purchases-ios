@@ -112,16 +112,6 @@ typealias OfferingsCompletion = @MainActor @Sendable (Result<Offerings, Error>) 
         invokedInvalidateAndReFetchCachedOfferingsIfAppropiateParametersList.append(appUserID)
     }
 
-    var invokedRefreshCachedOfferingsForRemoteConfigDisable = false
-    var invokedRefreshCachedOfferingsForRemoteConfigDisableCount = 0
-    var invokedRefreshCachedOfferingsForRemoteConfigDisableParameters: String?
-
-    override func refreshCachedOfferingsForRemoteConfigDisable(appUserID: String) {
-        invokedRefreshCachedOfferingsForRemoteConfigDisable = true
-        invokedRefreshCachedOfferingsForRemoteConfigDisableCount += 1
-        invokedRefreshCachedOfferingsForRemoteConfigDisableParameters = appUserID
-    }
-
 }
 
 extension MockOfferingsManager: @unchecked Sendable {}
