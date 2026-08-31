@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -66,6 +69,20 @@ struct RootView: View {
             return true
         }
         return false
+    }
+
+    /// Bottom spacing for the sticky footer.
+    ///
+    /// The safe area inset alone is not enough. Where there is no bottom safe area to avoid —
+    /// an iPad presenting the paywall in a card, in either orientation — the footer's last row
+    /// ends up flush against the card's edge, while the same paywall has a comfortable margin
+    /// on iPhone. Falling back to the idiom's default vertical padding restores that margin,
+    /// and reuses the value the rest of the SDK already uses to give iPad breathing room.
+    ///
+    /// Takes the larger of the two rather than replacing, so a device that does report a bottom
+    /// inset (a phone's home indicator) keeps the spacing it has today.
+    static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
+        return max(safeAreaBottom, Constants.defaultVerticalPaddingLength(idiom) ?? 0)
     }
 
     var body: some View {
@@ -116,7 +133,15 @@ struct RootView: View {
                     StackComponentView(
                         viewModel: stickyFooterViewModel.stackViewModel,
                         onDismiss: onDismiss,
-                        additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: safeAreaInsets.bottom, trailing: 0)
+                        additionalPadding: EdgeInsets(
+                            top: 0,
+                            leading: 0,
+                            bottom: Self.stickyFooterBottomPadding(
+                                safeAreaBottom: safeAreaInsets.bottom,
+                                idiom: self.userInterfaceIdiom
+                            ),
+                            trailing: 0
+                        )
                     )
                     .fixedSize(horizontal: false, vertical: true)
                     .onSizeChange { overlaidFooterHeight = $0.height }
