@@ -39,6 +39,9 @@ extension RulesEngine {
             case "rc.semverCompare":
                 return try SemverOperator.opSemverCompare(args: args, vars: vars)
 
+            case "rc.sortBy":
+                return try SortByOperator.opSortBy(args: args, vars: vars)
+
             case "rc.split":
                 return try SplitOperator.opSplit(args: args, vars: vars)
 
