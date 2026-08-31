@@ -837,13 +837,17 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingForPreviewWithPaywallComponents() throws {
+    func testCreateOfferingUsingWithPaywallComponentsDecodingModeIncludesPayload() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
         ]
 
-        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        let offeringResp = try OfferingsResponse.create(
+            with: fixtureData,
+            decodingMode: .withPaywallComponents
+        )
         let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 0])
 
         expect(offeringResponse0.identifier) == "paywall_components"
@@ -852,9 +856,9 @@ class OfferingsTests: TestCase {
         let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
 
         let offering = try XCTUnwrap(
-            self.offeringsFactory.createOfferingForPreview(from: products,
-                                                           offering: offeringResponse0,
-                                                           uiConfig: uiConfig)
+            self.offeringsFactory.createOffering(from: products,
+                                                 offering: offeringResponse0,
+                                                 uiConfig: uiConfig)
             )
 
         expect(offering.paywall).to(beNil())
@@ -862,17 +866,21 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingWithPaywallComponentsSkipsPayloadInProduction() throws {
+    func testCreateOfferingUsingWithoutPaywallComponentsDecodingModeOmitsPayload() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
         ]
 
-        let offeringResp: OfferingsResponse = try BaseHTTPResponseTest.decodeFixture("OfferingsWithPaywallComponents")
+        let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
+        let offeringResp = try OfferingsResponse.create(
+            with: fixtureData,
+            decodingMode: .withoutPaywallComponents
+        )
         let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 0])
 
         expect(offeringResponse0.identifier) == "paywall_components"
-        expect(offeringResponse0.paywallComponents).toNot(beNil())
+        expect(offeringResponse0.paywallComponents).to(beNil())
 
         let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
 
