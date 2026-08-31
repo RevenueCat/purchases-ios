@@ -588,6 +588,48 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(dimensions) == ["plan": "annual"]
     }
 
+    func testSubscriberDimensionsRoundTripFromCustomerInfoThroughProvider() throws {
+        let info = try Self.customerInfo(dimensions: [
+            "plan": "annual",
+            "beta": true,
+            "seats": 3,
+            "score": 0.75,
+            "profile": [
+                "tier": "gold",
+                "age": 42,
+                "ignored_null": NSNull(),
+                "ignored_primitive_array": [1, 2]
+            ] as [String: Any],
+            "teams": [
+                ["id": "a", "active": true] as [String: Any],
+                ["id": "b", "active": false] as [String: Any]
+            ],
+            "ignored_null": NSNull(),
+            "ignored_primitive_array": ["a", "b"]
+        ])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        let provider = SubscriberDimensionsProvider(
+            deviceCache: self.mockDeviceCache,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+        )
+        expect(provider.dimensions(at: Date())) == [
+            "plan": .string("annual"),
+            "beta": .bool(true),
+            "seats": .int(3),
+            "score": .double(0.75),
+            "profile": .object([
+                "tier": .string("gold"),
+                "age": .int(42)
+            ]),
+            "teams": .objectList([
+                ["id": .string("a"), "active": .bool(true)],
+                ["id": .string("b"), "active": .bool(false)]
+            ])
+        ]
+    }
+
     func testNonEmptySubscriberDimensionsReplaceCompletePreviousSnapshot() throws {
         self.customerInfoManager.cache(
             customerInfo: try Self.customerInfo(dimensions: [
