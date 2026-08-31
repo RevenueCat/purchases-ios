@@ -84,9 +84,6 @@ extension MockPurchases: InternalPurchasesType {
 }
 
 extension MockPurchases: PurchasesType {
-    var configuredStoreEnvironment: RevenueCat.ConfiguredStoreEnvironment {
-        return ConfiguredStoreEnvironment(apiKey: "test_", storeFrontCountryCode: "USA")
-    }
 
     func getCustomerInfo(completion: @escaping ((CustomerInfo?, PublicError?) -> Void)) {
         self.invokedGetCustomerInfo = true
