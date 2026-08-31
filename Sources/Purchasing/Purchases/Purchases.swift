@@ -1218,7 +1218,39 @@ public extension Purchases {
             return
         }
 
-        self.syncSubscriberAttributes(completion: {
+        let firstBlockingError: Atomic<PublicError?> = nil
+        /// Returns whether an attribute sync error should prevent offerings from being fetched.
+        let shouldBlockOfferingsFetch: @Sendable (PublicError) -> Bool = { error in
+            guard
+                error.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+                    == BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                let attributeErrors = error.subscriberAttributesErrors,
+                !attributeErrors.isEmpty
+            else {
+                return true
+            }
+
+            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes,
+            // some of which cannot be overwritten. Non-`$` keys are custom attributes,
+            // so a failure means their intended values were not synced.
+            return attributeErrors.keys.contains { !$0.hasPrefix("$") }
+        }
+
+        self.syncSubscriberAttributes(syncedAttribute: { error in
+            // Reserved-only errors are non-blocking because those attributes cannot always be updated.
+            if let error, shouldBlockOfferingsFetch(error) {
+                firstBlockingError.modify {
+                    $0 = $0 ?? error
+                }
+            }
+        }, completion: {
+            if let error = firstBlockingError.value {
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, error)
+                }
+                return
+            }
+
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.remoteConfigManager.refreshRemoteConfig(
                     fetchContext: .read,
@@ -1253,23 +1285,31 @@ public extension Purchases {
 
 extension Purchases: InternalAuthenticatorDelegate {
 
-    func authenticatorDidLogIn(info: CustomerInfo) {
-        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(
-                fetchContext: .identityChange,
-                isAppBackgrounded: isAppBackgrounded
-            )
-        }
-    }
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
+        switch reason {
+        case .logIn:
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                didHandle(nil)
+            }
 
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
-        // The web view cache must retain the cache on login to support multipage paywalls and workflows
-        // making `.identityChange` an insufficient signal.
-        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
-        // we would have an issue. 
-        Task { await self.webBundleEventBus.clearCache() }
-        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
+        case .logOut:
+            // The web view cache retains the cache on login to support multipage paywalls and workflows,
+            // and clears the cache when the current user "logs out"
+            Task { await self.webBundleEventBus.clearCache() }
+
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+
+        case .identified:
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+        }
     }
 
 }
@@ -1719,6 +1759,68 @@ public extension Purchases {
 
     @objc func invalidateVirtualCurrenciesCache() {
         self.virtualCurrencyManager.invalidateVirtualCurrenciesCache()
+    }
+
+    /// Spend virtual currency
+    ///
+    /// Spending virtual currency is only allowed when the SDK is configured using
+    /// ``Configuration.Builder.with(iamEnabled:)``. Attempting to spend virtual currency
+    /// without enabling IAM will result in a thrown error.
+    ///
+    /// - Parameters:
+    ///   - amounts: A dictionary containing the amounts of each currency to spend.
+    ///   The key is virtual currency's `code`, and the value is how much of that currency to spend.
+    ///   All values should be greater than zero. Values less than or equal to zero are ignored.
+    ///
+    ///   If the dictionary is empty or all values are less thn or equal to zero, then no currencies
+    ///   will be spent, and this will return the result of invoking ``virtualCurrencies()``.
+    ///
+    ///   You may specify multiple currencies to spend in a single transaction.
+    ///   - reference: An optional app-specific reference string that refers to this transaction.
+    /// - Returns: The latest ``VirtualCurrencies`` for the user after the transaction has processed
+    @_spi(Internal)
+    func spendVirtualCurrencies(amounts: [String: Int], reference: String? = nil) async throws -> VirtualCurrencies {
+        guard self.tokenManager.enabled else {
+            let message = "Spending virtual currencies requires configuring the SDK .with(iamEnabled: true)"
+            let error = NewErrorUtils.unsupportedError(message: message)
+            throw error
+        }
+
+        do {
+            return try await self.virtualCurrencyManager.spendVirtualCurrencies(amounts: amounts,
+                                                                                reference: reference)
+        } catch {
+            let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+            throw publicError
+        }
+    }
+
+    /// Spend virtual currency
+    ///
+    /// - SeeAlso: ``spendVirtualCurrencies(amounts:reference:)``
+    @_spi(Internal)
+    func spendVirtualCurrency(code: String, amount: Int, reference: String? = nil) async throws -> VirtualCurrencies {
+        return try await spendVirtualCurrencies(amounts: [code: amount], reference: reference)
+    }
+
+    @_spi(Internal)
+    @objc
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
+        Task {
+            do {
+                let virtualCurrencies = try await self.spendVirtualCurrencies(amounts: amounts, reference: reference)
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(virtualCurrencies, nil)
+                }
+            } catch {
+                let publicError = NewErrorUtils.purchasesError(withUntypedError: error).asPublicError
+                OperationDispatcher.dispatchOnMainActor {
+                    completion(nil, publicError)
+                }
+            }
+        }
     }
 }
 #endif

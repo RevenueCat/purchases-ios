@@ -2546,7 +2546,10 @@ workflows:
             pattern: "^generated_(snapshots|swiftinterface)/main-.*"
             value: << pipeline.git.branch >>
     jobs:
-      - danger
+      - danger:
+          filters:
+            branches:
+              ignore: main
 
   weekly-run-workflow:
     when:

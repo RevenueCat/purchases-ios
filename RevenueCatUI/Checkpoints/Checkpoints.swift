@@ -27,32 +27,13 @@ extension CustomVariableValue {
 
 }
 
-/// Per-call parameters for a checkpoint.
-@_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointParams: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
+final class CheckpointCallParams: @unchecked Sendable {
 
-    /// Custom variables usable in checkpoint targeting rules and feature events.
-    public let customVariables: [String: CustomVariableValue]
+    let customVariables: [String: CustomVariableValue]
 
-    /// Creates checkpoint parameters with the supplied custom variables.
-    public init(customVariables: [String: CustomVariableValue] = [:]) {
+    init(customVariables: [String: CustomVariableValue] = [:]) {
         self.customVariables = RevenueCat.CustomVariableKeyValidator.validateAndFilter(customVariables)
-    }
-
-    /// Returns whether two parameter collections contain the same custom variables.
-    public static func == (lhs: CheckpointParams, rhs: CheckpointParams) -> Bool {
-        return lhs.customVariables == rhs.customVariables
-    }
-
-    /// Hashes the checkpoint parameters.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(self.customVariables)
-    }
-
-    /// A debug description of the checkpoint parameters.
-    public var description: String {
-        return "CheckpointParams(customVariables=\(self.customVariables))"
     }
 
     var coreParams: RevenueCat.CheckpointParams {
@@ -69,29 +50,28 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
     /// The identifier of the checkpoint that was hit.
     public let identifier: String
 
-    /// The parameters supplied when the checkpoint was hit.
-    public let params: CheckpointParams
+    /// The custom variables supplied when the checkpoint was hit.
+    public let customVariables: [String: CustomVariableValue]
 
-    /// Creates checkpoint information for an identifier and its parameters.
-    public init(identifier: String, params: CheckpointParams) {
+    init(identifier: String, params: CheckpointCallParams) {
         self.identifier = identifier
-        self.params = params
+        self.customVariables = params.customVariables
     }
 
     /// Returns whether two checkpoint information values are equal.
     public static func == (lhs: CheckpointInfo, rhs: CheckpointInfo) -> Bool {
-        return lhs.identifier == rhs.identifier && lhs.params == rhs.params
+        return lhs.identifier == rhs.identifier && lhs.customVariables == rhs.customVariables
     }
 
     /// Hashes the checkpoint information.
     public func hash(into hasher: inout Hasher) {
         hasher.combine(self.identifier)
-        hasher.combine(self.params)
+        hasher.combine(self.customVariables)
     }
 
     /// A debug description of the checkpoint information.
     public var description: String {
-        return "CheckpointInfo(identifier='\(self.identifier)', params=\(self.params))"
+        return "CheckpointInfo(identifier='\(self.identifier)', customVariables=\(self.customVariables))"
     }
 
 }
@@ -101,8 +81,7 @@ public final class CheckpointInfo: Equatable, Hashable, CustomStringConvertible,
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
 
-    /// The value identifying the reason.
-    public let value: String
+    let value: String
 
     /// No targeting rule matched.
     public static let noMatch = CheckpointNoActionReason(value: "NO_MATCH")
@@ -110,10 +89,8 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
     public static let holdout = CheckpointNoActionReason(value: "HOLDOUT")
     /// The customer reached the configured frequency cap.
     public static let frequencyCapped = CheckpointNoActionReason(value: "FREQUENCY_CAPPED")
-    /// Checkpoint configuration could not be loaded.
+    /// The checkpoint could not be evaluated because required configuration or resources were unavailable.
     public static let configurationUnavailable = CheckpointNoActionReason(value: "CONFIGURATION_UNAVAILABLE")
-    /// Checkpoints are disabled.
-    public static let disabled = CheckpointNoActionReason(value: "DISABLED")
     /// The checkpoint identifier is not configured.
     public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
     /// The checkpoint identifier is invalid.
@@ -136,107 +113,22 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
 }
 
-/// Base class for the result of hitting a checkpoint.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
-
-    /// Information about the checkpoint that produced this result.
-    public let checkpoint: CheckpointInfo
-
-    init(checkpoint: CheckpointInfo) {
-        self.checkpoint = checkpoint
-    }
-
-    /// A debug description of the checkpoint result.
-    public var description: String {
-        return "CheckpointResult(checkpoint=\(self.checkpoint))"
-    }
-
-    /// Returns whether two checkpoint results are equal.
-    public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
-        return lhs.isEqual(to: rhs)
-    }
-
-    func isEqual(to other: CheckpointResult) -> Bool {
-        return type(of: self) == type(of: other) && self.checkpoint == other.checkpoint
-    }
-
-    /// Hashes the checkpoint result.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: self)))
-        hasher.combine(self.checkpoint)
-    }
-
-}
-
-/// Nothing was served for a checkpoint.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointNoActionResult: CheckpointResult {
-
-    /// The reason no experience was served.
-    public let reason: CheckpointNoActionReason
-
-    init(checkpoint: CheckpointInfo, reason: CheckpointNoActionReason) {
-        self.reason = reason
-        super.init(checkpoint: checkpoint)
-    }
-
-    public override var description: String {
-        return "NoAction(checkpoint=\(self.checkpoint), reason=\(self.reason))"
-    }
-
-    override func isEqual(to other: CheckpointResult) -> Bool {
-        guard let other = other as? CheckpointNoActionResult else { return false }
-        return self.checkpoint == other.checkpoint && self.reason == other.reason
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.checkpoint)
-        hasher.combine(self.reason)
-    }
-
-}
-
-/// An offering was selected for a checkpoint, with no RevenueCat-managed UI presented. The app decides
-/// whether and how to use it.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointReceivedOfferingResult: CheckpointResult {
-
-    /// The offering the checkpoint selected.
-    public let offering: Offering
-
-    init(checkpoint: CheckpointInfo, offering: Offering) {
-        self.offering = offering
-        super.init(checkpoint: checkpoint)
-    }
-
-    public override var description: String {
-        return "ReceivedOffering(checkpoint=\(self.checkpoint), offering=\(self.offering.identifier))"
-    }
-
-    override func isEqual(to other: CheckpointResult) -> Bool {
-        guard let other = other as? CheckpointReceivedOfferingResult else { return false }
-        return self.checkpoint == other.checkpoint && self.offering == other.offering
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.checkpoint)
-        hasher.combine(self.offering)
-    }
-
-}
-
 /// Global listener for checkpoint activity. All methods are called on the main thread.
+///
+/// ``CheckpointListener/onCheckpointHit(_:)`` is called before evaluation starts. After evaluation and any
+/// presented UI finish, ``CheckpointListener/onCheckpointCompleted(_:result:)`` is called before the per-call
+/// checkpoint API delivers its result.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public protocol CheckpointListener: AnyObject {
 
-    /// A checkpoint was hit, before evaluation.
+    /// A checkpoint was hit and evaluation is about to start.
+    ///
+    /// This does not indicate that a targeting rule matched or that UI will be presented.
     func onCheckpointHit(_ checkpoint: CheckpointInfo)
-    /// The checkpoint completed and its result was returned.
+    /// Checkpoint evaluation and any presented UI finished.
+    ///
+    /// This is called before the per-call checkpoint API delivers its result.
     func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult)
 
 }

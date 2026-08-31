@@ -131,7 +131,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "this-checkpoint-does-not-exist",
-                                    params: self.customVariables.checkpointParams
+                                    customVariables: self.customVariables.checkpointCustomVariables
                                 )
                                 self.model.showOutcome(result)
                             } catch {
@@ -149,7 +149,7 @@ struct ContentView: View {
                             do {
                                 let result = try await Purchases.shared.checkpoint(
                                     "error_checkpoint",
-                                    params: self.customVariables.checkpointParams
+                                    customVariables: self.customVariables.checkpointCustomVariables
                                 )
                                 self.model.showOutcome(result)
                             } catch {
