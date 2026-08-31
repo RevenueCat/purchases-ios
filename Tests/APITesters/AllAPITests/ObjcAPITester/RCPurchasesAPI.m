@@ -233,6 +233,12 @@ NSURL *url;
 
     RCVirtualCurrencies * _Nullable __unused virtualCurrencies = p.cachedVirtualCurrencies;
 
+    [p spendVirtualCurrenciesWithAmounts:@{ @"GLD": @42 }
+                               reference:@"test-123"
+                              completion:^(RCVirtualCurrencies * _Nullable vc, NSError * _Nullable err) {
+
+    }];
+
     if (@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)) {
         [p recordPurchaseForProductID:@"product_id" completion:^(RCStoreTransaction * _Nullable transaction, NSError * _Nullable error) { }];
     }

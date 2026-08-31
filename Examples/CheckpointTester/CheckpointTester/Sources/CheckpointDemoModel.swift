@@ -81,7 +81,7 @@ final class CheckpointDemoModel: ObservableObject {
         case let received as CheckpointReceivedOfferingResult:
             return "Received offering · \(received.checkpoint.identifier) · \(received.offering.identifier)"
         case let noAction as CheckpointNoActionResult:
-            return "No action · \(noAction.checkpoint.identifier) · \(noAction.reason.value)"
+            return "No action · \(noAction.checkpoint.identifier) · \(noAction.reason)"
         default:
             return "Unknown checkpoint result · \(result.checkpoint.identifier)"
         }

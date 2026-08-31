@@ -46,4 +46,46 @@ class BackendErrorCodeTests: TestCase {
         expect(BackendErrorCode.cannotAliasToAuthenticatedUser.toPurchasesErrorCode()) == .configurationError
     }
 
+    // MARK: - unknownVirtualCurrencyCode
+
+    func testUnknownVirtualCurrencyCodeDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 7870)) == .unknownVirtualCurrencyCode
+    }
+
+    func testUnknownVirtualCurrencyCodeDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "7870")) == .unknownVirtualCurrencyCode
+    }
+
+    func testUnknownVirtualCurrencyCodeMapsToPurchaseInvalidError() {
+        expect(BackendErrorCode.unknownVirtualCurrencyCode.toPurchasesErrorCode()) == .purchaseInvalidError
+    }
+
+    // MARK: - duplicateVirtualCurrencyTransaction
+
+    func testDuplicateVirtualCurrencyTransactionDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 8139)) == .duplicateVirtualCurrencyTransaction
+    }
+
+    func testDuplicateVirtualCurrencyTransactionDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "8139")) == .duplicateVirtualCurrencyTransaction
+    }
+
+    func testDuplicateVirtualCurrencyTransactionMapsToPurchaseInvalidError() {
+        expect(BackendErrorCode.duplicateVirtualCurrencyTransaction.toPurchasesErrorCode()) == .purchaseInvalidError
+    }
+
+    // MARK: - invalidIdempotencyKey
+
+    func testInvalidIdempotencyKeyDecodesFromItsRawIntValue() {
+        expect(BackendErrorCode(code: 8140)) == .invalidIdempotencyKey
+    }
+
+    func testInvalidIdempotencyKeyDecodesFromItsRawStringValue() {
+        expect(BackendErrorCode(code: "8140")) == .invalidIdempotencyKey
+    }
+
+    func testInvalidIdempotencyKeyMapsToPurchaseInvalidError() {
+        expect(BackendErrorCode.invalidIdempotencyKey.toPurchasesErrorCode()) == .purchaseInvalidError
+    }
+
 }
