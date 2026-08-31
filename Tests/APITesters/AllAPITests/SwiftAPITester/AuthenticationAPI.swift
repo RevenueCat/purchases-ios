@@ -24,6 +24,8 @@ func checkAuthenticationAPI() {
 
     }
 
+    let _: String? = auth.currentAccessToken
+
     let siwa: Identity = Identity.signInWithApple(Data())
     let _: IdentitySource = siwa.identitySource
 
@@ -47,4 +49,5 @@ func checkAuthenticationAPI() {
 
 class AuthDelegate: NSObject, AuthenticationDelegate {
     func authenticatorDidEncounterError(_ error: PublicError) { }
+    func authenticatorDidUpdateAccessToken(_ newAccessToken: String?) { }
 }
