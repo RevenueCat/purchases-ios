@@ -15,20 +15,16 @@ extension RulesEngine {
     enum IndexOfOperator {
 
         /// `{"rc.indexOf": [haystack, needle]}` — the position of the first
-        /// occurrence, or `-1` when there is none. The haystack comes first,
-        /// like every other `rc.` operator, even though `in` takes the needle
-        /// first.
+        /// occurrence, or `-1` when there is none.
         ///
         /// - **Array**: strict equality against each element, the same test
         ///   `in` uses, so an array or object needle never matches.
         /// - **String**: substring search. An empty needle sits at `0`, as in
         ///   JS.
         ///
-        /// Absence returns `-1` rather than throwing: a value that is not
-        /// there is an ordinary answer, not a lowering bug, and `-1` keeps the
-        /// result usable in arithmetic. A haystack that is neither array nor
-        /// string, or a non-string needle against a string haystack, is a
-        /// lowering bug and throws `EvaluationError.typeMismatch`.
+        /// Absence returns `-1`. A haystack that is neither array nor string,
+        /// or a non-string needle against a string haystack, is a lowering bug
+        /// and throws `EvaluationError.typeMismatch`.
         static func opIndexOf(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
 
