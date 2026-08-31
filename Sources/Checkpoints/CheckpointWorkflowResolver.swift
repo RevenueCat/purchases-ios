@@ -185,7 +185,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             audienceConfiguration: audienceConfiguration,
             checkpointIdentifier: identifier
         )
-
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }

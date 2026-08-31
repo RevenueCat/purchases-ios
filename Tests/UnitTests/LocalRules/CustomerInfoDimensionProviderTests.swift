@@ -133,6 +133,46 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
+    func customerChangeWhileCustomerInfoIsFetchedFailsTheSnapshot() async {
+        let currentAppUserID = Atomic(Self.appUserID)
+        let provider = CustomerInfoDimensionProvider(
+            currentAppUserIDProvider: { currentAppUserID.value },
+            customerInfoProvider: { _ in
+                currentAppUserID.value = "another_user"
+                return try Self.customerInfo()
+            }
+        )
+        let resolver = DimensionResolver(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        await #expect(throws: DimensionResolutionError.customerChanged) {
+            _ = try await resolver.snapshot()
+        }
+    }
+
+    @Test
+    func customerInfoFailureCausedByCustomerChangeFailsInsteadOfDegradingSnapshot() async {
+        let currentAppUserID = Atomic(Self.appUserID)
+        let provider = CustomerInfoDimensionProvider(
+            currentAppUserIDProvider: { currentAppUserID.value },
+            customerInfoProvider: { _ in
+                currentAppUserID.value = "another_user"
+                throw TestError.customerInfoUnavailable
+            }
+        )
+        let resolver = DimensionResolver(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        await #expect(throws: DimensionResolutionError.customerChanged) {
+            _ = try await resolver.snapshot()
+        }
+    }
+
+    @Test
     func cancellationPropagates() async {
         let provider = CustomerInfoDimensionProvider(
             currentAppUserIDProvider: { Self.appUserID },
@@ -146,7 +186,10 @@ struct CustomerInfoDimensionProviderTests {
 
     @Test
     func propertiesCanBeEvaluatedUsingCanonicalPaths() async throws {
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [Self.provider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [Self.provider()],
+            currentAppUserIDProvider: { Self.appUserID }
+        )
         let predicates = [
             #"{"==":[{"var":"app_user_id"},"current_user"]}"#,
             #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"kind"},"subscription"]},{"var":"is_active"}]}]}"#,
@@ -161,7 +204,10 @@ struct CustomerInfoDimensionProviderTests {
 
     @Test
     func expandedPurchasePropertiesCanBeEvaluatedUsingCanonicalPaths() async throws {
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [Self.provider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [Self.provider()],
+            currentAppUserIDProvider: { Self.appUserID }
+        )
         let predicate = #"""
         {
             "some": [
