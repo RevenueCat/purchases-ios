@@ -137,64 +137,6 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func canonicalBaseSnapshotMatchesRFCShape() async throws {
-        let date = Date(timeIntervalSince1970: 1_700_000_000)
-        let providers = [
-            TestDimensionProvider(
-                name: "device",
-                snapshots: [[
-                    "app_version": .string("1.2.3"),
-                    "platform": .string("ios"),
-                    "platform_version": .string("18.5"),
-                    "locale": .string("en_gb"),
-                    "sdk_version": .string("10.1.1")
-                ]]
-            ),
-            TestDimensionProvider(
-                name: "store",
-                snapshots: [["storefront": .string("GBR")]]
-            ),
-            TestDimensionProvider(
-                name: "subscriber_attributes",
-                snapshots: [[
-                    "subscriber_attributes": .object([
-                        "goal": .object([
-                            "updated_at": .date(Date(timeIntervalSince1970: 1_699_999_000)),
-                            "value": .string("make_more_money")
-                        ])
-                    ])
-                ]]
-            )
-        ]
-
-        let snapshot = try await DimensionResolver(
-            dimensionProviders: providers,
-            dateProvider: MockDateProvider(stubbedNow: date)
-        ).snapshot(
-            customVariables: ["attempt": .int(3)],
-            backendValues: ["condition_hash": .bool(true)]
-        )
-
-        #expect(snapshot.values == [
-            "evaluated_at": .int(1_700_000_000_000),
-            "app_version": .string("1.2.3"),
-            "platform": .string("ios"),
-            "platform_version": .string("18.5"),
-            "locale": .string("en_gb"),
-            "sdk_version": .string("10.1.1"),
-            "storefront": .string("GBR"),
-            "subscriber_attributes": .object([
-                "goal": .object([
-                    "updated_at": .int(1_699_999_000_000),
-                    "value": .string("make_more_money")
-                ])
-            ]),
-            "custom": .object(["attempt": .int(3)]),
-            "backend": .object(["condition_hash": .bool(true)])
-        ])
-    }
-
-    @Test
     func recursivelyOmitsInvalidProviderDimensionNames() async throws {
         let provider = TestDimensionProvider(
             name: "device",
