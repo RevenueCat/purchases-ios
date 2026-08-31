@@ -29,32 +29,67 @@ extension RulesEngine {
         /// Both operands must be strings and the pattern must compile,
         /// otherwise `EvaluationError.typeMismatch`.
         static func opRegexMatch(args: Value, vars: Scope) throws -> Value {
-            let operands = try Self.operands(
-                args,
-                vars: vars,
-                operatorName: "rc.regexMatch",
-                argumentCount: 2
-            )
+            let operatorName = "rc.regexMatch"
+            let evaluated = try Operators.evalArgs(args, vars: vars)
+            try Self.checkArity(evaluated.count, allowed: [2], operatorName: operatorName)
+
+            let operands = try Self.operands(evaluated, operatorName: operatorName)
             return .bool(Self.firstMatch(of: operands.regex, in: operands.input) != nil)
         }
 
-        /// Evaluates and type-checks the `[input, pattern]` pair every regex
-        /// operator starts with, returning any arguments beyond it.
-        static func operands(
-            _ args: Value,
-            vars: Scope,
-            operatorName: String,
-            argumentCount: Int
-        ) throws -> (input: String, regex: NSRegularExpression, rest: [Value]) {
+        /// `{"rc.regexExtract": [input, pattern]}` or
+        /// `{"rc.regexExtract": [input, pattern, group]}` — the text of the
+        /// first match, or of one of its capture groups. Group `0`, the
+        /// default, is the whole match.
+        ///
+        /// Returns `null` when the pattern does not match, and when the group
+        /// exists but took no part in the match, as group 1 of `(a)|(b)` does
+        /// against `"b"`.
+        ///
+        /// A group number the pattern does not have is a lowering bug and
+        /// throws `EvaluationError.typeMismatch`, as do non-string operands, a
+        /// pattern that does not compile, and a fractional group.
+        static func opRegexExtract(args: Value, vars: Scope) throws -> Value {
+            let operatorName = "rc.regexExtract"
             let evaluated = try Operators.evalArgs(args, vars: vars)
+            try Self.checkArity(evaluated.count, allowed: [2, 3], operatorName: operatorName)
 
-            guard evaluated.count == argumentCount else {
+            let operands = try Self.operands(evaluated, operatorName: operatorName)
+            let group = try Self.group(evaluated.count == 3 ? evaluated[2] : nil,
+                                       operatorName: operatorName)
+
+            guard group <= operands.regex.numberOfCaptureGroups else {
                 throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects \(argumentCount) arguments, "
-                        + "got \(evaluated.count)"
+                    message: "operator '\(operatorName)' asked for group \(group) of a pattern "
+                        + "with \(operands.regex.numberOfCaptureGroups) capture group(s)"
                 )
             }
 
+            guard let match = Self.firstMatch(of: operands.regex, in: operands.input),
+                  let range = Range(match.range(at: group), in: operands.input) else {
+                return .null
+            }
+
+            return .string(String(operands.input[range]))
+        }
+
+        /// Rejects an argument count no overload accepts.
+        static func checkArity(_ count: Int, allowed: [Int], operatorName: String) throws {
+            guard allowed.contains(count) else {
+                let expected = allowed.map(String.init).joined(separator: " or ")
+                throw EvaluationError.typeMismatch(
+                    message: "operator '\(operatorName)' expects \(expected) arguments, "
+                        + "got \(count)"
+                )
+            }
+        }
+
+        /// Type-checks the `[input, pattern]` pair every regex operator starts
+        /// with, and compiles the pattern.
+        static func operands(
+            _ evaluated: [Value],
+            operatorName: String
+        ) throws -> (input: String, regex: NSRegularExpression) {
             guard case .string(let input) = evaluated[0] else {
                 throw EvaluationError.typeMismatch(
                     message: "operator '\(operatorName)' expected a string to match against, "
@@ -75,7 +110,7 @@ extension RulesEngine {
                 )
             }
 
-            return (input, regex, Array(evaluated.dropFirst(2)))
+            return (input, regex)
         }
 
         static func firstMatch(
@@ -83,6 +118,24 @@ extension RulesEngine {
             in input: String
         ) -> NSTextCheckingResult? {
             regex.firstMatch(in: input, range: NSRange(input.startIndex..., in: input))
+        }
+
+        /// Reads the optional group argument, defaulting to the whole match.
+        private static func group(_ value: Value?, operatorName: String) throws -> Int {
+            switch value {
+            case .none:
+                return 0
+            case .int(let number) where number >= 0:
+                return Int(clamping: number)
+            case .float(let number)
+                where number >= 0 && number.truncatingRemainder(dividingBy: 1) == 0:
+                return Operators.clampedInt(number)
+            case .some(let other):
+                throw EvaluationError.typeMismatch(
+                    message: "operator '\(operatorName)' expected a whole, non-negative group "
+                        + "number, got \(other)"
+                )
+            }
         }
     }
 }
