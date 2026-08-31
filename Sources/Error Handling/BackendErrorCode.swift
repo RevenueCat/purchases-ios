@@ -50,9 +50,13 @@ enum BackendErrorCode: Int, Error {
     case invalidWebRedemptionToken = 7849
     case purchaseBelongsToOtherUser = 7852
     case expiredWebRedemptionToken = 7853
+    case unknownVirtualCurrencyCode = 7870
 
     case invalidIAMToken = 7981
     case cannotAliasToAuthenticatedUser = 8077
+
+    case duplicateVirtualCurrencyTransaction = 8139
+    case invalidIdempotencyKey = 8140
 
     /**
      * - Parameter code: Generally comes from the backend in json. This may be a String, or an Int, or nothing.
@@ -110,7 +114,10 @@ extension BackendErrorCode {
              .invalidIAMToken:
             return .invalidCredentialsError
         case .invalidPaymentModeOrIntroPriceNotProvided,
-             .productIdForGoogleReceiptNotProvided:
+             .productIdForGoogleReceiptNotProvided,
+             .unknownVirtualCurrencyCode,
+             .duplicateVirtualCurrencyTransaction,
+             .invalidIdempotencyKey:
             return .purchaseInvalidError
         case .emptyAppUserId,
              .invalidAppUserId:

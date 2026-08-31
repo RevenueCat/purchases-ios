@@ -24,17 +24,24 @@
     [auth identifyCurrentUserAsID:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *error) { }];
     [auth logOutWithCompletion:^(RCCustomerInfo *i, NSError *error) { }];
 
+    NSString *__unused token = auth.currentAccessToken;
+
     RCIdentity *siwa = [RCIdentity identityWithSignInWithAppleToken:[NSData data]];
     RCIdentitySource *__unused source = siwa.identitySource;
+
+    RCIdentity *__unused oidc = [RCIdentity identityWithOIDCToken:[NSData data]];
+    RCIdentity *__unused firebase = [RCIdentity identityWithFirebaseToken:[NSData data]];
 
     RCIdentitySource *__unused anonymousSource = [RCIdentitySource anonymous];
     RCIdentitySource *__unused appleSource = [RCIdentitySource signInWithApple];
     RCIdentitySource *__unused googleSource = [RCIdentitySource google];
-    RCIdentitySource *__unused firebase = [RCIdentitySource firebase];
-    RCIdentitySource *__unused facebook = [RCIdentitySource facebook];
-    RCIdentitySource *__unused oidc = [RCIdentitySource oidc];
+    RCIdentitySource *__unused firebaseSource = [RCIdentitySource firebase];
+    RCIdentitySource *__unused facebookSource = [RCIdentitySource facebook];
+    RCIdentitySource *__unused oidcSource = [RCIdentitySource oidc];
 }
 
 - (void)authenticatorDidEncounterError:(NSError *)error { }
+
+- (void)authenticatorDidUpdateAccessToken:(NSString *)newAccessToken { }
 
 @end
