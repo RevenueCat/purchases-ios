@@ -71,16 +71,7 @@ struct RootView: View {
         return false
     }
 
-    /// Bottom spacing for the sticky footer.
-    ///
-    /// The safe area inset alone is not enough. Where there is no bottom safe area to avoid —
-    /// an iPad presenting the paywall in a card, in either orientation — the footer's last row
-    /// ends up flush against the card's edge, while the same paywall has a comfortable margin
-    /// on iPhone. Falling back to the idiom's default vertical padding restores that margin,
-    /// and reuses the value the rest of the SDK already uses to give iPad breathing room.
-    ///
-    /// Takes the larger of the two rather than replacing, so a device that does report a bottom
-    /// inset (a phone's home indicator) keeps the spacing it has today.
+    /// At least the idiom's default padding: a card has no bottom safe area to consume.
     static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
         return max(safeAreaBottom, Constants.defaultVerticalPaddingLength(idiom) ?? 0)
     }

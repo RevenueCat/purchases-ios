@@ -43,6 +43,23 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         )
     }
 
+    /// The iPad case above passes an inset of 34, larger than the fallback, so it misses this.
+    func testStickyFooterOnIPadCardWithoutBottomSafeArea() throws {
+        let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
+        let view = PaywallsV2LayoutFixtures.makeRootView(
+            viewModel: viewModel,
+            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
+            safeAreaInsets: EdgeInsets(top: 47, leading: 0, bottom: 0, trailing: 0)
+        )
+        .environment(\.userInterfaceIdiom, .pad)
+
+        view.snapshot(
+            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
+            record: Self.shouldRecordSnapshots,
+            separateOSVersions: false
+        )
+    }
+
     func testStickyFooterRootZLayerOnIPhoneFullScreen() throws {
         let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
         let view = PaywallsV2LayoutFixtures.makeRootView(
