@@ -70,8 +70,7 @@ extension RulesEngine {
         /// code units like `in` and `rc.split`. *How far in* that is, is a
         /// count, so the text before the match is measured with
         /// `LengthOperator.stringLength` — the same function behind
-        /// `rc.length`. The two operators therefore always report positions in
-        /// the same unit, including if that unit ever changes.
+        /// `rc.length`, so both operators state positions in one unit.
         ///
         /// Neither operand can hold an unpaired surrogate, so a match never
         /// starts inside a surrogate pair and the prefix is always whole text.
