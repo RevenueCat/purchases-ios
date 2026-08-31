@@ -76,13 +76,14 @@
     },
     {
       "id": "in_string_haystack_does_not_match_a_different_spelling",
-      "description": "indexOf searches code units, so a precomposed needle is absent from a decomposed haystack",
+      "description": "The needle is a precomposed e-acute é (U+00E9); the haystack spells it decomposed, as x, e (U+0065), a combining acute accent ◌́ (U+0301), y. indexOf searches code units, so the precomposed needle is absent",
       "predicate": { "in": ["\u00e9", "xe\u0301y"] },
       "variables": {},
       "expected": false
     },
     {
       "id": "in_array_haystack_does_not_match_a_different_spelling",
+      "description": "The same two spellings of e-acute, now as needle and sole array element, where the search compares with === instead",
       "predicate": { "in": ["\u00e9", ["e\u0301"]] },
       "variables": {},
       "expected": false
@@ -96,6 +97,7 @@
     },
     {
       "id": "in_astral_needle_matches_a_string_haystack",
+      "description": "The needle is the grinning face emoji 😀 (U+1F600, encoded as the surrogate pair U+D83D U+DE00) and the haystack holds it between a and b, so both code units match in order",
       "predicate": { "in": ["\ud83d\ude00", "a\ud83d\ude00b"] },
       "variables": {},
       "expected": true

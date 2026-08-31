@@ -235,39 +235,42 @@
     },
     {
       "id": "lt_orders_strings_by_utf16_code_unit",
-      "description": "Strings order as UTF-16 code units: an astral character starts with a leading surrogate, which sorts below any code unit above the surrogate range",
+      "description": "Fullwidth capital A Ａ (U+FF21) against the grinning face emoji 😀 (U+1F600, encoded as the surrogate pair U+D83D U+DE00). Strings order as UTF-16 code units, so the comparison is U+FF21 against U+D83D and the emoji sorts first, even though its code point is the higher of the two",
       "predicate": { "<": ["\uff21", "\ud83d\ude00"] },
       "variables": {},
       "expected": false
     },
     {
       "id": "gt_orders_strings_by_utf16_code_unit",
+      "description": "The same two characters under >: fullwidth capital A Ａ (U+FF21) sorts after the grinning face 😀 (U+1F600) because U+FF21 is above that emoji's leading surrogate U+D83D",
       "predicate": { ">": ["\uff21", "\ud83d\ude00"] },
       "variables": {},
       "expected": true
     },
     {
       "id": "le_orders_strings_by_utf16_code_unit",
+      "description": "The same two characters under <=: fullwidth capital A Ａ (U+FF21) is neither below nor equal to the grinning face 😀 (U+1F600)",
       "predicate": { "<=": ["\uff21", "\ud83d\ude00"] },
       "variables": {},
       "expected": false
     },
     {
       "id": "lt_code_unit_below_the_surrogate_range_sorts_first",
-      "description": "Control case: an ASCII code unit sorts below a leading surrogate",
+      "description": "Control case: Z (U+005A) sorts below the grinning face 😀 (U+1F600) because U+005A is below that emoji's leading surrogate U+D83D. Unlike fullwidth A, an ASCII character orders the same way whether strings compare by code unit or by code point",
       "predicate": { "<": ["Z", "\ud83d\ude00"] },
       "variables": {},
       "expected": true
     },
     {
       "id": "le_canonically_equivalent_strings_are_not_equal",
-      "description": "The two spellings of e-acute are distinct strings, so exactly one of <= and >= can hold",
+      "description": "Precomposed e-acute é (U+00E9) against the decomposed spelling, e (U+0065) followed by a combining acute accent ◌́ (U+0301). The two render alike but are distinct strings, so exactly one of <= and >= can hold; the precomposed spelling sorts second because U+00E9 is above U+0065",
       "predicate": { "<=": ["\u00e9", "e\u0301"] },
       "variables": {},
       "expected": false
     },
     {
       "id": "ge_canonically_equivalent_strings_compare_by_code_unit",
+      "description": "The same two spellings of e-acute under >=, the direction that does hold",
       "predicate": { ">=": ["\u00e9", "e\u0301"] },
       "variables": {},
       "expected": true

@@ -28,7 +28,7 @@
     },
     {
       "id": "length_string_uses_utf16_code_units_not_grapheme_clusters",
-      "description": "Waving-hand emoji is a single grapheme cluster but two UTF-16 code units, and String.length counts code units",
+      "description": "The waving-hand emoji 👋 (U+1F44B, encoded as the surrogate pair U+D83D U+DC4B) is a single grapheme cluster but two UTF-16 code units, and String.length counts code units",
       "predicate": {
         "===": [
           {
