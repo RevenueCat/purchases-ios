@@ -576,6 +576,70 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(self.mockDeviceCache.cacheCustomerInfoCount) == 1
     }
 
+    func testCacheCustomerInfoStoresNonEmptySubscriberDimensionsSeparately() throws {
+        let info = try Self.customerInfo(dimensions: ["plan": "annual"])
+
+        self.customerInfoManager.cache(customerInfo: info, appUserID: Self.appUserID)
+
+        let data = try XCTUnwrap(
+            self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)
+        )
+        let dimensions = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+        expect(dimensions) == ["plan": "annual"]
+    }
+
+    func testNonEmptySubscriberDimensionsReplaceCompletePreviousSnapshot() throws {
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: [
+                "plan": "annual",
+                "segment": "high_value"
+            ]),
+            appUserID: Self.appUserID
+        )
+
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: ["plan": "monthly"]),
+            appUserID: Self.appUserID
+        )
+
+        let data = try XCTUnwrap(
+            self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)
+        )
+        let dimensions = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
+        expect(dimensions) == ["plan": "monthly"]
+    }
+
+    func testCacheCustomerInfoWithoutDimensionsKeepsPreviousSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+
+        self.customerInfoManager.cache(customerInfo: self.mockCustomerInfo, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
+    func testCacheCustomerInfoWithEmptyDimensionsKeepsPreviousSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+
+        self.customerInfoManager.cache(
+            customerInfo: try Self.customerInfo(dimensions: [:]),
+            appUserID: Self.appUserID
+        )
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
+    func testCacheLoadedCustomerInfoDoesNotReplaceSubscriberDimensions() throws {
+        let previous = Data(#"{"plan":"annual"}"#.utf8)
+        self.mockDeviceCache.cache(subscriberDimensions: previous, appUserID: Self.appUserID)
+        let loadedFromCache = try Self.customerInfo(dimensions: ["plan": "monthly"]).loadedFromCache()
+
+        self.customerInfoManager.cache(customerInfo: loadedFromCache, appUserID: Self.appUserID)
+
+        expect(self.mockDeviceCache.cachedSubscriberDimensionsData(appUserID: Self.appUserID)) == previous
+    }
+
     func testCachesCustomerInfoWithVerifiedEntitlements() throws {
         let appUserID = "myUser"
         let info = self.mockCustomerInfo.copy(with: .verified, httpResponseOriginalSource: .mainServer)
@@ -727,6 +791,24 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
         expect(cachedLoadShedderInfo) == loadShedderInfo
         expect(cachedLoadShedderInfo?.isLoadedFromCache).to(beTrue())
         expect(cachedLoadShedderInfo?.originalSource) == .loadShedder
+    }
+
+}
+
+private extension CustomerInfoManagerTests {
+
+    static func customerInfo(dimensions: [String: Any]) throws -> CustomerInfo {
+        return try CustomerInfo(data: [
+            "request_date": "2023-12-21T02:40:36Z",
+            "dimensions": dimensions,
+            "subscriber": [
+                "original_app_user_id": Self.appUserID,
+                "first_seen": "2019-06-17T16:05:33Z",
+                "subscriptions": [String: Any](),
+                "other_purchases": [String: Any](),
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ])
     }
 
 }

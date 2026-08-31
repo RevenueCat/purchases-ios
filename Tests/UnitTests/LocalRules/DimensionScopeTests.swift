@@ -46,7 +46,10 @@ struct DimensionScopeTests {
                 currentAppUserIDProvider: { "current_user" },
                 customerInfoProvider: { _ in try CustomerInfo(data: Self.customerInfoData) }
             ),
-            SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] })
+            SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] }),
+            SubscriberDimensionsProvider(cachedDimensionsProvider: {
+                Data(#"{"acquisition_channel":"paid_search","predicted_ltv_band":3}"#.utf8)
+            })
         ]
 
         let snapshot = try await DimensionResolver(
@@ -71,6 +74,8 @@ private extension DimensionScopeTests {
         "locale": .string("en_gb"),
         "sdk_version": .string("10.1.1"),
         "storefront": .string("GBR"),
+        "acquisition_channel": .string("paid_search"),
+        "predicted_ltv_band": .int(3),
         "app_user_id": .string("current_user"),
         "original_app_user_id": .string("original_user"),
         "first_seen_at": .int(1_672_531_200_000),
