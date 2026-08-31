@@ -70,7 +70,7 @@ struct PaywallWebViewStaticContext {
             packages: .array(self.packages.map(self.packageValue)),
             package: package.map(self.packageValue) ?? .null,
             selectedPackage: selectedPackage.map(self.packageValue) ?? .null,
-            workflow: self.workflow.map(Self.workflowValue) ?? .null,
+            workflow: self.workflow.map(Self.workflowValue),
             localeIdentifier: locale.identifier,
             isDarkMode: isDarkMode
         )
@@ -78,27 +78,34 @@ struct PaywallWebViewStaticContext {
 
     private func packageValue(_ package: Package) -> PaywallWebViewValue {
         let product = package.storeProduct
-        let period = product.subscriptionPeriod.map(Self.isoPeriod)
+        let period = product.subscriptionPeriod.flatMap(Self.isoPeriod)
+        var store: [String: PaywallWebViewValue] = [
+            "store_type": .string(self.store)
+        ]
+        if let storefrontCountryCode = self.storefrontCountryCode {
+            store["country"] = .string(storefrontCountryCode)
+        }
+
+        var productValue: [String: PaywallWebViewValue] = [
+            "identifier": .string(product.productIdentifier),
+            "store": .object(store),
+            "display_name": .string(product.localizedTitle),
+            "is_subscription": .bool(product.productCategory == .subscription),
+            "is_family_shareable": .bool(product.isFamilyShareable),
+            "is_auto_renewing": .bool(product.subscriptionPeriod != nil), // accounts for both sk1 and sk2
+            "price": .object([
+                "amount": .number(Self.doubleValue(product.price)),
+                "currency": product.currencyCode.map(PaywallWebViewValue.string) ?? .null
+            ])
+        ]
+        if let period {
+            productValue["period"] = .string(period)
+        }
 
         return .object([
             "identifier": .string(package.identifier),
             "products": .array([
-                .object([
-                    "identifier": .string(product.productIdentifier),
-                    "store": .object([
-                        "store_type": .string(self.store),
-                        "country": self.storefrontCountryCode.map(PaywallWebViewValue.string) ?? .null
-                    ]),
-                    "display_name": .string(product.localizedTitle),
-                    "is_subscription": .bool(product.productCategory == .subscription),
-                    "period": period.map(PaywallWebViewValue.string) ?? .null,
-                    "is_family_shareable": .bool(product.isFamilyShareable),
-                    "is_auto_renewing": .bool(product.subscriptionPeriod != nil), // accounts for both sk1 and sk2
-                    "price": .object([
-                        "amount": .number(Self.doubleValue(product.price)),
-                        "currency": product.currencyCode.map(PaywallWebViewValue.string) ?? .null
-                    ])
-                ])
+                .object(productValue)
             ])
         ])
     }
@@ -110,7 +117,7 @@ struct PaywallWebViewStaticContext {
             "step_type": workflow.stepType.map(PaywallWebViewValue.string) ?? .null,
             "screen_type": workflow.screenType.map {
                 .array($0.map(PaywallWebViewValue.string))
-            } ?? .null
+            } ?? .array([])
         ])
     }
 
@@ -129,14 +136,14 @@ struct PaywallWebViewStaticContext {
         return Double(decimalNumber.stringValue) ?? decimalNumber.doubleValue
     }
 
-    private static func isoPeriod(_ period: SubscriptionPeriod) -> String {
+    private static func isoPeriod(_ period: SubscriptionPeriod) -> String? {
         let unit: String
         switch period.unit {
         case .day: unit = "D"
         case .week: unit = "W"
         case .month: unit = "M"
         case .year: unit = "Y"
-        @unknown default: unit = ""
+        @unknown default: return nil
         }
         return "P\(period.value)\(unit)"
     }
@@ -153,21 +160,20 @@ struct PaywallWebViewContext: Equatable {
     let packages: PaywallWebViewValue
     let package: PaywallWebViewValue
     let selectedPackage: PaywallWebViewValue
-    let workflow: PaywallWebViewValue
+    let workflow: PaywallWebViewValue?
     let localeIdentifier: String
     let isDarkMode: Bool
 
     func payload(updatedAt date: Date) -> [String: PaywallWebViewValue] {
         let updatedAtMilliseconds = floor(date.timeIntervalSince1970 * 1_000)
 
-        return [
+        var payload: [String: PaywallWebViewValue] = [
             "custom": self.custom,
             "inputs": self.inputs,
             "offering": self.offering,
             "packages": self.packages,
             "package": self.package,
             "selected_package": self.selectedPackage,
-            "workflow": self.workflow,
             "device_meta": .object([
                 "is_preview": .bool(false),
                 "locale": .string(self.localeIdentifier),
@@ -175,6 +181,10 @@ struct PaywallWebViewContext: Equatable {
                 "updated_at": .number(updatedAtMilliseconds)
             ])
         ]
+        if let workflow = self.workflow {
+            payload["workflow"] = workflow
+        }
+        return payload
     }
 
     func payloadJSON(updatedAt date: Date = .now, encoder: JSONEncoder = .init()) -> String? {

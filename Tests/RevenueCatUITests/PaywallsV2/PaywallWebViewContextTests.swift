@@ -104,6 +104,42 @@ final class PaywallWebViewContextTests: TestCase {
         XCTAssertEqual(productValue["store"]?.objectValue?["store_type"]?.stringValue, "test_store")
     }
 
+    func testSnapshotOmitsUnavailableWorkflow() throws {
+        let context = self.context(
+            productType: .nonConsumable,
+            subscriptionPeriod: nil,
+            workflow: nil
+        )
+
+        XCTAssertNil(context.payload(updatedAt: .now)["workflow"])
+    }
+
+    func testSnapshotOmitsUnavailableProductValues() throws {
+        let productValue = try self.productValue(
+            productType: .nonConsumable,
+            subscriptionPeriod: nil,
+            storefrontCountryCode: nil
+        )
+
+        XCTAssertNil(productValue["period"])
+        XCTAssertNil(productValue["store"]?.objectValue?["country"])
+    }
+
+    func testSnapshotUsesEmptyScreenTypeWhenUnavailable() throws {
+        let context = self.context(
+            productType: .nonConsumable,
+            subscriptionPeriod: nil,
+            workflow: .init(
+                id: "wf_123",
+                stepID: "step_paywall",
+                stepType: "screen",
+                screenType: nil
+            )
+        )
+
+        XCTAssertEqual(context.workflow?.objectValue?["screen_type"], .array([]))
+    }
+
     private static let expectedPayload = """
     {
       "custom" : {
@@ -246,8 +282,29 @@ final class PaywallWebViewContextTests: TestCase {
     private func productValue(
         productType: StoreProduct.ProductType,
         subscriptionPeriod: SubscriptionPeriod?,
-        store: String = "app_store"
+        store: String = "app_store",
+        storefrontCountryCode: String? = "USA"
     ) throws -> [String: PaywallWebViewValue] {
+        let context = self.context(
+            productType: productType,
+            subscriptionPeriod: subscriptionPeriod,
+            store: store,
+            storefrontCountryCode: storefrontCountryCode
+        )
+        return try XCTUnwrap(
+            context.packages.arrayValue?.first?
+                .objectValue?["products"]?.arrayValue?.first?
+                .objectValue
+        )
+    }
+
+    private func context(
+        productType: StoreProduct.ProductType,
+        subscriptionPeriod: SubscriptionPeriod?,
+        workflow: PaywallWebViewStaticContext.Workflow? = nil,
+        store: String = "app_store",
+        storefrontCountryCode: String? = "USA"
+    ) -> PaywallWebViewContext {
         let product = TestStoreProduct(
             localizedTitle: "Test",
             price: 1.99,
@@ -275,9 +332,9 @@ final class PaywallWebViewContextTests: TestCase {
         let context = PaywallWebViewStaticContext(
             offering: offering,
             packages: [package],
-            workflow: nil,
+            workflow: workflow,
             store: store,
-            storefrontCountryCode: "USA"
+            storefrontCountryCode: storefrontCountryCode
         ).snapshot(
             package: package,
             selectedPackageID: nil,
@@ -285,11 +342,7 @@ final class PaywallWebViewContextTests: TestCase {
             locale: Locale(identifier: "en_US"),
             isDarkMode: false
         )
-        return try XCTUnwrap(
-            context.packages.arrayValue?.first?
-                .objectValue?["products"]?.arrayValue?.first?
-                .objectValue
-        )
+        return context
     }
 
 }
