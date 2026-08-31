@@ -1,0 +1,171 @@
+{
+  "fixtures": [
+    {
+      "id": "sort_by_ascending_string_keys",
+      "description": "The sorted array is read by rebinding scope to it, the same way rc.split results are read",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "subs"}, {"var": "expires"}]}], {"and": [{"===": [{"var": "0.id"}, "weekly"]}, {"===": [{"var": "1.id"}, "monthly"]}, {"===": [{"var": "2.id"}, "annual"]}]}]},
+      "variables": {"subs": [{"id": "monthly", "expires": "2026-03-09"}, {"id": "weekly", "expires": "2026-01-02"}, {"id": "annual", "expires": "2026-11-30"}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_string_keys_order_by_utf16_code_unit",
+      "description": "String keys order as UTF-16 code units: an astral key starts with a leading surrogate, which sorts below any code unit above the surrogate range",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"var": "0"}, "\uD83D\uDE00"]}, {"===": [{"var": "1"}, "\uFF21"]}]}]},
+      "variables": {"xs": ["\uFF21", "\uD83D\uDE00"]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_utf16_order_holds_whatever_the_input_order",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"var": "0"}, "\uD83D\uDE00"]}, {"===": [{"var": "1"}, "\uFF21"]}]}]},
+      "variables": {"xs": ["\uD83D\uDE00", "\uFF21"]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_ascii_sorts_before_an_astral_key",
+      "description": "Control case: an ASCII code unit sorts below a leading surrogate",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"var": "0"}, "Z"]}, {"===": [{"var": "1"}, "\uD83D\uDE00"]}, {"===": [{"var": "2"}, "\uFF21"]}]}]},
+      "variables": {"xs": ["\uFF21", "\uD83D\uDE00", "Z"]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_orders_canonically_equivalent_keys_by_code_unit",
+      "description": "The two spellings of e-acute are distinct keys, and the decomposed one starts with 'e' so it sorts first. UTF-16 length is what tells the two spellings apart",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"rc.length": {"var": "0"}}, 2]}, {"===": [{"rc.length": {"var": "1"}}, 1]}]}]},
+      "variables": {"xs": ["\u00E9", "e\u0301"]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_returns_the_original_items_not_the_keys",
+      "description": "Like filter, the retained values are the inputs; the key is only the ordering",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "subs"}, {"var": "expires"}]}], {"===": [{"var": "0.id"}, "weekly"]}]},
+      "variables": {"subs": [{"id": "monthly", "expires": "2026-03-09"}, {"id": "weekly", "expires": "2026-01-02"}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_numeric_keys_compare_numerically",
+      "description": "The motivating case: lexicographic ordering would put 100 before 9",
+      "predicate": {"some": [[{"rc.sortBy": [[9, 10, 100], {"var": ""}]}], {"and": [{"===": [{"var": "0"}, 9]}, {"===": [{"var": "1"}, 10]}, {"===": [{"var": "2"}, 100]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "sort_by_mixes_ints_and_floats",
+      "predicate": {"some": [[{"rc.sortBy": [[3, -1, 2.5], {"var": ""}]}], {"and": [{"===": [{"var": "0"}, -1]}, {"===": [{"var": "1"}, 2.5]}, {"===": [{"var": "2"}, 3]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "sort_by_is_stable_for_equal_keys",
+      "description": "Ties keep input order, so the two engines agree on an output the key alone does not determine",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": "k"}]}], {"and": [{"===": [{"var": "0.id"}, "third"]}, {"===": [{"var": "1.id"}, "first"]}, {"===": [{"var": "2.id"}, "second"]}]}]},
+      "variables": {"xs": [{"id": "first", "k": 1}, {"id": "second", "k": 1}, {"id": "third", "k": 0}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_keeps_every_duplicate",
+      "description": "Unlike sorting through rc.fromEntries, items sharing a key are not collapsed",
+      "predicate": {"===": [{"rc.length": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]}}, 3]},
+      "variables": {"xs": [{"k": 1}, {"k": 1}, {"k": 1}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_empty_array_is_empty",
+      "predicate": {"===": [{"rc.length": {"rc.sortBy": [[], {"var": ""}]}}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "sort_by_single_element",
+      "predicate": {"some": [[{"rc.sortBy": [[5], {"var": ""}]}], {"===": [{"var": "0"}, 5]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "sort_by_key_expression_sees_the_item",
+      "description": "The key template is evaluated per item with scope rebound, as map does",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"cat": [{"var": "a"}, {"var": "b"}]}]}], {"===": [{"var": "0.a"}, "x"]}]},
+      "variables": {"xs": [{"a": "y", "b": "1"}, {"a": "x", "b": "9"}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_key_expression_can_reach_the_root",
+      "description": "Scope is rebound to the item, so rc.rootVar is how the key reads top-level data",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"-": [{"rc.rootVar": "base"}, {"var": "k"}]}]}], {"===": [{"var": "0.k"}, 3]}]},
+      "variables": {"base": 100, "xs": [{"k": 1}, {"k": 3}, {"k": 2}]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_descending_is_expressed_by_negating_the_key",
+      "description": "No direction argument: a descending numeric sort negates the key instead",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"-": [0, {"var": ""}]}]}], {"===": [{"var": "0"}, 3]}]},
+      "variables": {"xs": [1, 3, 2]},
+      "expected": true
+    },
+    {
+      "id": "sort_by_non_array_source_is_a_type_error",
+      "predicate": {"rc.sortBy": ["nope", {"var": ""}]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_missing_operand_is_a_type_error",
+      "description": "No implicit key expression: a one-sided call is a lowering bug",
+      "predicate": {"rc.sortBy": [[1, 2]]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_extra_operand_is_a_type_error",
+      "description": "Arity is exact so a third argument is not mistaken for a direction flag",
+      "predicate": {"rc.sortBy": [[1, 2], {"var": ""}, "desc"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_null_key_is_a_type_error",
+      "predicate": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]},
+      "variables": {"xs": [{"k": null}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_bool_key_is_a_type_error",
+      "predicate": {"rc.sortBy": [[true], {"var": ""}]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_object_key_is_a_type_error",
+      "predicate": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]},
+      "variables": {"xs": [{"k": {"a": 1}}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_mixed_key_types_is_a_type_error",
+      "description": "Ordering a number against a string would need a total order the rule never asked for",
+      "predicate": {"rc.sortBy": [[1, "a"], {"var": ""}]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_nan_key_is_a_type_error",
+      "description": "Negating a string key is the natural way to attempt a descending sort by date; it yields NaN, which would tie with everything and hand back the input unsorted",
+      "predicate": {"rc.sortBy": [{"var": "subs"}, {"-": [0, {"var": "expires"}]}]},
+      "variables": {"subs": [{"expires": "2026-03-09"}, {"expires": "2026-01-02"}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_infinite_key_is_a_type_error",
+      "description": "A non-finite key means the key arithmetic went wrong, so it is refused alongside NaN",
+      "predicate": {"rc.sortBy": [{"var": "xs"}, {"/": [{"var": "k"}, 0]}]},
+      "variables": {"xs": [{"k": 1}, {"k": 2}]},
+      "expected": {"error": "typeMismatch", "operator": "rc.sortBy"}
+    },
+    {
+      "id": "sort_by_missing_key_fails_at_the_lookup",
+      "description": "An item without the key is caught by var before rc.sortBy compares anything",
+      "predicate": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]},
+      "variables": {"xs": [{"k": 1}, {"other": 2}]},
+      "expected": {"error": "unresolvedVariable", "path": "k"}
+    }
+  ]
+}
