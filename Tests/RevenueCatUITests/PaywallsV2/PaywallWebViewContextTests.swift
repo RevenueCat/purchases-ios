@@ -140,6 +140,17 @@ final class PaywallWebViewContextTests: TestCase {
         XCTAssertEqual(context.workflow?.objectValue?["screen_type"], .array([]))
     }
 
+    func testSnapshotUsesBCP47LocaleIdentifier() {
+        let context = self.context(
+            productType: .nonConsumable,
+            subscriptionPeriod: nil,
+            locale: Locale(identifier: "sr_Latn_RS")
+        )
+
+        let locale = context.payload(updatedAt: .now)["device_meta"]?.objectValue?["locale"]
+        XCTAssertEqual(locale?.stringValue, "sr-Latn-RS")
+    }
+
     private static let expectedPayload = """
     {
       "custom" : {
@@ -150,7 +161,7 @@ final class PaywallWebViewContextTests: TestCase {
       "device_meta" : {
         "dark_mode" : true,
         "is_preview" : false,
-        "locale" : "en_US",
+        "locale" : "en-US",
         "updated_at" : 1787000000000
       },
       "inputs" : {
@@ -303,7 +314,8 @@ final class PaywallWebViewContextTests: TestCase {
         subscriptionPeriod: SubscriptionPeriod?,
         workflow: PaywallWebViewStaticContext.Workflow? = nil,
         store: String = "app_store",
-        storefrontCountryCode: String? = "USA"
+        storefrontCountryCode: String? = "USA",
+        locale: Locale = Locale(identifier: "en_US")
     ) -> PaywallWebViewContext {
         let product = TestStoreProduct(
             localizedTitle: "Test",
@@ -339,7 +351,7 @@ final class PaywallWebViewContextTests: TestCase {
             package: package,
             selectedPackageID: nil,
             customVariables: [:],
-            locale: Locale(identifier: "en_US"),
+            locale: locale,
             isDarkMode: false
         )
         return context

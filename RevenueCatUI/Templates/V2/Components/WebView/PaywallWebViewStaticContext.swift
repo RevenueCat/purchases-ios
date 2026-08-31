@@ -71,7 +71,7 @@ struct PaywallWebViewStaticContext {
             package: package.map(self.packageValue) ?? .null,
             selectedPackage: selectedPackage.map(self.packageValue) ?? .null,
             workflow: self.workflow.map(Self.workflowValue),
-            localeIdentifier: locale.identifier,
+            localeIdentifier: Self.bcp47Identifier(for: locale),
             isDarkMode: isDarkMode
         )
     }
@@ -134,6 +134,14 @@ struct PaywallWebViewStaticContext {
         // `53.989999999999995`. The result remains a `Double` because JavaScript uses `Number`.
         let decimalNumber = NSDecimalNumber(decimal: value)
         return Double(decimalNumber.stringValue) ?? decimalNumber.doubleValue
+    }
+
+    private static func bcp47Identifier(for locale: Locale) -> String {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            return Locale.identifier(.bcp47, from: locale.identifier)
+        } else {
+            return Locale.canonicalLanguageIdentifier(from: locale.identifier)
+        }
     }
 
     private static func isoPeriod(_ period: SubscriptionPeriod) -> String? {
