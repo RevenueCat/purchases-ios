@@ -34,7 +34,7 @@ extension RulesEngine {
 
             switch input {
             case .string(let string):
-                return .int(Int64(string.utf16.count))
+                return .int(Int64(Self.stringLength(string)))
 
             case .array(let items):
                 return .int(Int64(items.count))
@@ -44,6 +44,13 @@ extension RulesEngine {
                     message: "operator 'rc.length' expected string or array, got \(input)"
                 )
             }
+        }
+
+        /// The unit strings are measured in. `rc.indexOf` reports positions
+        /// through this too, so a change here moves both operators at once
+        /// and no rule can end up mixing two units.
+        static func stringLength(_ string: String) -> Int {
+            string.utf16.count
         }
     }
 }
