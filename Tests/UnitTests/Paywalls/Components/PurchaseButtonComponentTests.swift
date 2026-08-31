@@ -277,7 +277,9 @@ class PurchaseButtonComponentCodableTests: TestCase {
                 "type": "custom_web_checkout",
                 "custom_url": {
                     "url_lid": "123",
-                    "package_param": "rc_package"
+                    "package_param": "rc_package",
+                    "app_user_id_param": "rc_app_user_id",
+                    "env_param": "rc_env"
                 },
                 "auto_dismiss": false,
                 "open_method": "in_app_browser"
@@ -298,7 +300,12 @@ class PurchaseButtonComponentCodableTests: TestCase {
             action: nil,
             method: .customWebCheckout(
                 .init(
-                    customUrl: .init(url: "123", packageParam: "rc_package"),
+                    customUrl: .init(
+                        url: "123",
+                        packageParam: "rc_package",
+                        appUserIDParam: "rc_app_user_id",
+                        envParam: "rc_env"
+                    ),
                     autoDismiss: false,
                     openMethod: .inAppBrowser
                 )
@@ -307,6 +314,62 @@ class PurchaseButtonComponentCodableTests: TestCase {
         )
 
         XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
+    }
+
+    func testMethodCustomWebCheckoutWithNullParamsDecoding() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "method": {
+                "type": "custom_web_checkout",
+                "custom_url": {
+                    "url_lid": "123",
+                    "package_param": null,
+                    "app_user_id_param": null,
+                    "env_param": null
+                }
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        guard case let .customWebCheckout(customWebCheckout)? = decodedPurchaseButton.method else {
+            return XCTFail("Expected a custom web checkout method")
+        }
+
+        XCTAssertNil(customWebCheckout.customUrl.packageParam)
+        XCTAssertNil(customWebCheckout.customUrl.appUserIDParam)
+        XCTAssertNil(customWebCheckout.customUrl.envParam)
+    }
+
+    func testMethodCustomWebCheckoutWithMissingParamsDecoding() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "method": {
+                "type": "custom_web_checkout",
+                "custom_url": {
+                    "url_lid": "123"
+                }
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        guard case let .customWebCheckout(customWebCheckout)? = decodedPurchaseButton.method else {
+            return XCTFail("Expected a custom web checkout method")
+        }
+
+        XCTAssertEqual(customWebCheckout.customUrl.url, "123")
+        XCTAssertNil(customWebCheckout.customUrl.packageParam)
+        XCTAssertNil(customWebCheckout.customUrl.appUserIDParam)
+        XCTAssertNil(customWebCheckout.customUrl.envParam)
     }
 
     // MARK: - Method.description

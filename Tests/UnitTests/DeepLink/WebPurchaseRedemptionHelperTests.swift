@@ -73,6 +73,19 @@ class WebPurchaseRedemptionHelperTests: TestCase {
         expect(receivedCustomerInfo) == expectedCustomerInfo
     }
 
+    func testHandleRedeemWebPurchaseCachesCustomerInfoForUserThatStartedRequest() async throws {
+        let expectedCustomerInfo = CustomerInfo(testData: BaseBackendLoginTests.validCustomerResponse)!
+        self.redeemWebPurchaseAPI.stubbedPostRedeemWebPurchaseResult = .success(expectedCustomerInfo)
+        self.redeemWebPurchaseAPI.postRedeemWebPurchaseCallback = {
+            self.identityManager.mockAppUserID = "new-user-id"
+        }
+
+        _ = await self.helper.handleRedeemWebPurchase(redemptionToken: "test-redemption-token")
+
+        expect(self.redeemWebPurchaseAPI.invokedPostRedeemWebPurchaseParameters?.appUserId) == "test-user-id"
+        expect(self.customerInfoManager.invokedCacheCustomerInfoParameters?.appUserID) == "test-user-id"
+    }
+
     func testHandleRedeemWebPurchaseInvalidToken() async throws {
         self.redeemWebPurchaseAPI.stubbedPostRedeemWebPurchaseResult = .failure(.invalidWebRedemptionToken)
 

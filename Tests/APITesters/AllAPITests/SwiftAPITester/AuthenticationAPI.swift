@@ -24,8 +24,13 @@ func checkAuthenticationAPI() {
 
     }
 
+    let _: String? = auth.currentAccessToken
+
     let siwa: Identity = Identity.signInWithApple(Data())
     let _: IdentitySource = siwa.identitySource
+
+    let _: Identity = Identity.oidc(Data())
+    let _: Identity = Identity.firebase(Data())
 
     let _: IdentitySource = IdentitySource.anonymous
     let _: IdentitySource = IdentitySource.signInWithApple
@@ -44,4 +49,5 @@ func checkAuthenticationAPI() {
 
 class AuthDelegate: NSObject, AuthenticationDelegate {
     func authenticatorDidEncounterError(_ error: PublicError) { }
+    func authenticatorDidUpdateAccessToken(_ newAccessToken: String?) { }
 }

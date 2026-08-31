@@ -183,6 +183,7 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case spendVirtualCurrencies
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
@@ -284,6 +285,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -315,6 +317,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -339,6 +342,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -366,6 +370,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .logIn,
                 .postReceiptData,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
                 .isPurchaseAllowedByRestoreBehavior,
@@ -461,6 +466,11 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case .spendVirtualCurrencies:
+            assertionFailure("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            Logger.error("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            return "customer/virtual_currencies/spend"
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
@@ -520,6 +530,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "customer/customercenter"
         case .getVirtualCurrencies:
             return "customer/virtual_currencies"
+        case .spendVirtualCurrencies:
+            return "customer/virtual_currencies/spend"
         case .postRedeemWebPurchase:
             return self.pathComponent
         case .postCreateTicket:
@@ -585,6 +597,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
+
+        case .spendVirtualCurrencies:
+            return "spend_virtual_currencies"
 
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"

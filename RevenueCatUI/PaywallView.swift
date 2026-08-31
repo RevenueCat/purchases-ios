@@ -152,7 +152,7 @@ public struct PaywallView: View {
                 displayCloseButton: displayCloseButton,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler,
-                promoOfferCache: simulatePromoEligible ? PaywallPromoOfferCache(simulateEligible: true) : nil
+                promoOfferCache: .simulated(if: simulatePromoEligible)
             )
         )
     }
@@ -166,6 +166,7 @@ public struct PaywallView: View {
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -177,7 +178,8 @@ public struct PaywallView: View {
             fonts: fonts,
             displayCloseButton: displayCloseButton,
             introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler
+            purchaseHandler: purchaseHandler,
+            promoOfferCache: .simulated(if: simulatePromoEligible)
         )
         configuration.injectedWorkflowContext = workflowContext
 

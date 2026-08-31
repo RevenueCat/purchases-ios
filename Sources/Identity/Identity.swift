@@ -25,6 +25,18 @@ public final class Identity: NSObject {
         Identity(token: .signInWithApple(identityToken))
     }
 
+    /// An OIDC identity
+    @objc(identityWithOIDCToken:)
+    public static func oidc(_ identityToken: Data) -> Identity {
+        Identity(token: .oidc(identityToken))
+    }
+
+    /// A Firebase identity
+    @objc(identityWithFirebaseToken:)
+    public static func firebase(_ identityToken: Data) -> Identity {
+        Identity(token: .firebase(identityToken))
+    }
+
     internal let authToken: IdentityAuthToken
 
     /// Retrieve the source service of this identity
@@ -57,7 +69,7 @@ public final class IdentitySource: NSObject, CaseIterable {
     @objc public static let google = IdentitySource("google")
 
     /// The identity is a Sign In With Apple identity
-    @objc public static let signInWithApple = IdentitySource("signInWithApple")
+    @objc public static let signInWithApple = IdentitySource("apple")
 
     /// The identity is from Facebook
     @objc public static let facebook = IdentitySource("facebook")
