@@ -14,6 +14,7 @@ extension RulesEngine {
     /// future standard JSON Logic operator.
     enum CustomOperators {
 
+        // swiftlint:disable:next cyclomatic_complexity
         static func dispatch(
             op operatorName: String,
             args: Value,
@@ -38,6 +39,12 @@ extension RulesEngine {
 
             case "rc.semverCompare":
                 return try SemverOperator.opSemverCompare(args: args, vars: vars)
+
+            case "rc.slice":
+                return try SliceOperator.opSlice(args: args, vars: vars)
+
+            case "rc.sortBy":
+                return try SortByOperator.opSortBy(args: args, vars: vars)
 
             case "rc.split":
                 return try SplitOperator.opSplit(args: args, vars: vars)

@@ -48,12 +48,56 @@ class IdentityTests: TestCase {
         expect(identity1.authToken.cacheIdentifier) == identity2.authToken.cacheIdentifier
     }
 
+    func testOIDCFactoryCreatesIdentityWithOIDCSource() {
+        let token = "identity-token".asData
+        let identity = Identity.oidc(token)
+
+        expect(identity.identitySource) === IdentitySource.oidc
+    }
+
+    func testOIDCFactoryCreatesDistinctIdentitiesForDifferentTokens() {
+        let identity1 = Identity.oidc("token-1".asData)
+        let identity2 = Identity.oidc("token-2".asData)
+
+        expect(identity1.authToken.cacheIdentifier) != identity2.authToken.cacheIdentifier
+    }
+
+    func testOIDCFactoryCreatesEqualCacheIdentifierForSameToken() {
+        let token = "identity-token".asData
+        let identity1 = Identity.oidc(token)
+        let identity2 = Identity.oidc(token)
+
+        expect(identity1.authToken.cacheIdentifier) == identity2.authToken.cacheIdentifier
+    }
+
+    func testFirebaseFactoryCreatesIdentityWithFirebaseSource() {
+        let token = "identity-token".asData
+        let identity = Identity.firebase(token)
+
+        expect(identity.identitySource) === IdentitySource.firebase
+    }
+
+    func testFirebaseFactoryCreatesDistinctIdentitiesForDifferentTokens() {
+        let identity1 = Identity.firebase("token-1".asData)
+        let identity2 = Identity.firebase("token-2".asData)
+
+        expect(identity1.authToken.cacheIdentifier) != identity2.authToken.cacheIdentifier
+    }
+
+    func testFirebaseFactoryCreatesEqualCacheIdentifierForSameToken() {
+        let token = "identity-token".asData
+        let identity1 = Identity.firebase(token)
+        let identity2 = Identity.firebase(token)
+
+        expect(identity1.authToken.cacheIdentifier) == identity2.authToken.cacheIdentifier
+    }
+
     // MARK: - IdentitySource
 
     func testIdentitySourceAllCasesContainsEverySource() {
         let rawValues = Set(IdentitySource.allCases.map { $0.rawValue })
 
-        expect(rawValues) == Set(["anonymous", "oidc", "google", "signInWithApple", "facebook", "firebase"])
+        expect(rawValues) == Set(["anonymous", "oidc", "google", "apple", "facebook", "firebase"])
     }
 
     func testIdentitySourceDescriptionMatchesRawValue() {
