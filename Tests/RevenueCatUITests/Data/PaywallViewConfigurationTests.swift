@@ -292,31 +292,11 @@ final class PaywallViewConfigurationTests: TestCase {
         expect(packageContext.offeringIdentifier) == initialOffering.identifier
     }
 
-    func testResolvePaywallViewDataFallsBackToOfferingsPaywallWhenWorkflowFetchFails() async throws {
-        let (offering, paywallComponents, purchases, handler) = try Self.createOfferingWithFallbackFixture()
-        var workflowFetchAttempted = false
+    func testResolvePaywallViewDataThrowsWhenWorkflowFetchFailsEvenWithPaywallComponents() async throws {
+        let (offering, purchases, handler) = try Self.createOfferingWithPaywallComponentsFixture()
+        expect(offering.internalPaywallComponents).toNot(beNil())
         purchases.workflowBlock = { _ in
-            workflowFetchAttempted = true
             throw ErrorCode.networkError
-        }
-
-        let result = try await handler.resolvePaywallViewData(
-            for: .offering(offering),
-            remoteConfigEnabled: true
-        )
-
-        expect(workflowFetchAttempted) == true
-        expect(result.offering.identifier) == offering.identifier
-        expect(result.offering.internalPaywallComponents?.data) == paywallComponents.data
-        expect(result.workflowContext).to(beNil())
-    }
-
-    func testResolvePaywallViewDataThrowsWhenWorkflowScreenOfferingMissingEvenWithFallbackAvailable() async throws {
-        // A structural workflow misconfiguration (unlike a fetch failure) must still surface, even
-        // with a fallback available: mirrors isWorkflowFetchFallbackEligible's PaywallError exclusion.
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
-        purchases.workflowBlock = { _ in
-            try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
         }
 
         do {
@@ -325,13 +305,18 @@ final class PaywallViewConfigurationTests: TestCase {
                 remoteConfigEnabled: true
             )
             XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
+        } catch {
+            expect((error as? ErrorCode)) == ErrorCode.networkError
         }
     }
 
-    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailableEvenWithFallbackAvailable() async throws {
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+    func testResolvePaywallViewDataThrowsWhenWorkflowUiConfigUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
         purchases.workflowBlock = { _ in
             throw WorkflowError.uiConfigUnavailable(workflowId: "wf_test")
         }
@@ -347,10 +332,13 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsOnCancellationEvenWithFallbackAvailable() async throws {
-        // Cancellation must propagate even with a fallback available: mirrors
-        // isWorkflowFetchFallbackEligible's CancellationError exclusion.
-        let (offering, _, purchases, handler) = try Self.createOfferingWithFallbackFixture()
+    func testResolvePaywallViewDataThrowsOnCancellation() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
         purchases.workflowBlock = { _ in
             throw CancellationError()
         }
@@ -705,21 +693,17 @@ private extension PaywallViewConfigurationTests {
     }
 
     /// A dashboard-authored V2 paywall independent of any workflow, built from the same screen shape
-    /// a workflow would map, to simulate an offering with a fallback paywall already delivered.
+    /// a workflow would map, to verify pre-attached components don't affect workflow error handling.
     static func createPaywallComponents(offeringIdentifier: String) throws -> Offering.PaywallComponents {
         let workflow = try Self.createWorkflow(offeringIdentifier: offeringIdentifier)
         let screen = try XCTUnwrap(workflow.screens["screen_1"])
         return WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: PreviewUIConfig.make())
     }
 
-    /// A non-legacy offering with a fallback paywall already available, wired into a handler whose
-    /// offerings fetch resolves it. Shared by the fallback-eligibility tests, which each only need to
-    /// set `workflowBlock` and assert.
-    static func createOfferingWithFallbackFixture(
+    static func createOfferingWithPaywallComponentsFixture(
         identifier: String = "offering_a"
     ) throws -> (
         offering: Offering,
-        paywallComponents: Offering.PaywallComponents,
         purchases: MockPurchases,
         handler: PurchaseHandler
     ) {
@@ -733,7 +717,7 @@ private extension PaywallViewConfigurationTests {
             Self.createOfferings([offering], currentOfferingID: offering.identifier)
         }
 
-        return (offering, paywallComponents, purchases, handler)
+        return (offering, purchases, handler)
     }
 #endif
 
