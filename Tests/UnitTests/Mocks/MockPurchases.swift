@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 10/10/22.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 
 final class MockPurchases {
@@ -84,6 +84,9 @@ extension MockPurchases: InternalPurchasesType {
 }
 
 extension MockPurchases: PurchasesType {
+    var configuredStoreEnvironment: RevenueCat.ConfiguredStoreEnvironment {
+        return ConfiguredStoreEnvironment(apiKey: "test_", storeFrontCountryCode: "USA")
+    }
 
     func getCustomerInfo(completion: @escaping ((CustomerInfo?, PublicError?) -> Void)) {
         self.invokedGetCustomerInfo = true
