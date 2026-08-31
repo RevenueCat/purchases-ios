@@ -1,0 +1,114 @@
+{
+  "fixtures": [
+    {
+      "id": "regex_match_literal_found",
+      "predicate": {"rc.regexMatch": ["pro_monthly", "monthly"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_literal_absent",
+      "predicate": {"rc.regexMatch": ["pro_monthly", "annual"]},
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "regex_match_searches_rather_than_anchoring",
+      "description": "An unanchored pattern is found anywhere in the input, as in JS test()",
+      "predicate": {"rc.regexMatch": ["abc", "b"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_anchors_make_it_whole_string",
+      "predicate": {"rc.regexMatch": ["abc", "^abc$"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_anchored_pattern_rejects_a_prefix",
+      "predicate": {"rc.regexMatch": ["xabc", "^abc$"]},
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "regex_match_quantifier",
+      "predicate": {"rc.regexMatch": ["aaa", "^a+$"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_explicit_digit_class",
+      "description": "Digits are written [0-9] rather than \\d, which is Unicode-aware in some engines and ASCII-only in others",
+      "predicate": {"rc.regexMatch": ["es-419", "^[a-z]+-[0-9]+$"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_alternation_for_case_insensitivity",
+      "description": "There is no flags argument, so a case-insensitive letter is spelled as a class",
+      "predicate": {"rc.regexMatch": ["Pro_monthly", "^[pP]ro"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_groups_are_allowed_but_ignored",
+      "description": "Capture groups affect rc.regexExtract, not whether this matches",
+      "predicate": {"rc.regexMatch": ["ab", "^(a)(b)$"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_reads_pattern_from_a_variable",
+      "predicate": {"rc.regexMatch": [{"var": "productId"}, {"var": "pattern"}]},
+      "variables": {"productId": "pro_annual", "pattern": "_annual$"},
+      "expected": true
+    },
+    {
+      "id": "regex_match_uncompilable_pattern_is_type_error",
+      "description": "An unclosed group is a lowering bug, not a pattern that fails to match",
+      "predicate": {"rc.regexMatch": ["abc", "("]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    },
+    {
+      "id": "regex_match_non_string_input_is_type_error",
+      "description": "No stringification: matching a number against a pattern is a lowering bug",
+      "predicate": {"rc.regexMatch": [419, "^[0-9]+$"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    },
+    {
+      "id": "regex_match_non_string_pattern_is_type_error",
+      "predicate": {"rc.regexMatch": ["abc", 1]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    },
+    {
+      "id": "regex_match_explicit_null_input_is_type_error",
+      "description": "A key that is present but null is a known value, so it reaches the operator and is refused there",
+      "predicate": {"rc.regexMatch": [{"var": "maybe"}, "abc"]},
+      "variables": {"maybe": null},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    },
+    {
+      "id": "regex_match_missing_variable_fails_at_the_lookup",
+      "predicate": {"rc.regexMatch": [{"var": "missing"}, "abc"]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "missing"}
+    },
+    {
+      "id": "regex_match_missing_pattern_is_type_error",
+      "predicate": {"rc.regexMatch": ["abc"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    },
+    {
+      "id": "regex_match_extra_operand_is_type_error",
+      "description": "Arity is exact, so a stray third argument is never mistaken for flags",
+      "predicate": {"rc.regexMatch": ["abc", "b", "i"]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexMatch"}
+    }
+  ]
+}
