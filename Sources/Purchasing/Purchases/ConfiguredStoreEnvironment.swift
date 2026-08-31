@@ -7,10 +7,11 @@
 
 import Foundation
 
+/// Describes the underlying store used to make purchases with the RenvenueCat SDK
 @objc(RCConfiguredStoreEnvironment)
 @_spi(Internal) public final class ConfiguredStoreEnvironment: NSObject, @unchecked Sendable {
     private let apiKey: String
-    private let fixedStoreFrontCountryCode: () -> String?
+    private let _storeFrontCountryCode: () -> String?
 
     convenience init(systemInfo: SystemInfo) {
         self.init(apiKey: systemInfo.apiKey, storeFrontCountryCode: systemInfo.storefront?.countryCode)
@@ -18,13 +19,15 @@ import Foundation
 
     @_spi(Internal) public init(apiKey: String, storeFrontCountryCode: @autoclosure @escaping () -> String?) {
         self.apiKey = apiKey
-        self.fixedStoreFrontCountryCode = storeFrontCountryCode
+        self._storeFrontCountryCode = storeFrontCountryCode
     }
 
+    /// The Apple app store country identifier. i.e. "USA"
     @_spi(Internal) public var storeFrontCountryCode: String? {
-        return self.fixedStoreFrontCountryCode()
+        return self._storeFrontCountryCode()
     }
 
+    /// Get the the RevenueCat configured entitlement provider
     @_spi(Internal) public func entitlementProviderName() -> String {
         if self.apiKey.starts(with: "mac_") {
             return "mac_app_store"
