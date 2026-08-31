@@ -28,28 +28,13 @@ class OfferingsFactory {
         contents: Offerings.Contents,
         loadedFromDiskCache: Bool
     ) -> Offerings? {
-        return self.createOfferings(
-            from: storeProductsByID,
-            contents: contents,
-            loadedFromDiskCache: loadedFromDiskCache,
-            includePaywallComponents: false
-        )
-    }
-
-    private func createOfferings(
-        from storeProductsByID: [String: StoreProduct],
-        contents: Offerings.Contents,
-        loadedFromDiskCache: Bool,
-        includePaywallComponents: Bool
-    ) -> Offerings? {
         let data = contents.response
         let offerings: [String: Offering] = data
             .offerings
             .compactMap { offeringData in
                 createOffering(from: storeProductsByID,
                                offering: offeringData,
-                               uiConfig: data.uiConfig,
-                               includePaywallComponents: includePaywallComponents)
+                               uiConfig: data.uiConfig)
             }
             .dictionaryAllowingDuplicateKeys { $0.identifier }
 
@@ -70,20 +55,6 @@ class OfferingsFactory {
         offering: OfferingsResponse.Offering,
         uiConfig: UIConfig?
     ) -> Offering? {
-        return self.createOffering(
-            from: storeProductsByID,
-            offering: offering,
-            uiConfig: uiConfig,
-            includePaywallComponents: false
-        )
-    }
-
-    private func createOffering(
-        from storeProductsByID: [String: StoreProduct],
-        offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?,
-        includePaywallComponents: Bool
-    ) -> Offering? {
         let availablePackages: [Package] = offering.packages.compactMap { package in
             createPackage(with: package, productsByID: storeProductsByID, offeringIdentifier: offering.identifier)
         }
@@ -103,7 +74,7 @@ class OfferingsFactory {
         let hasPaywallComponents = offering.hasPaywallComponents == true
             || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
-            if includePaywallComponents, let uiConfig, let paywallComponents = offering.paywallComponents {
+            if let uiConfig, let paywallComponents = offering.paywallComponents {
                 return .init(
                     uiConfig: uiConfig,
                     data: paywallComponents
@@ -148,40 +119,6 @@ class OfferingsFactory {
                      offeringIdsByPlacement: data.offeringIdsByPlacement)
     }
 }
-
-#if DEBUG
-extension OfferingsFactory {
-
-    /// Preview-only path for rendering local offerings fixtures that contain paywall components.
-    func createOfferingsForPreview(
-        from storeProductsByID: [String: StoreProduct],
-        contents: Offerings.Contents,
-        loadedFromDiskCache: Bool
-    ) -> Offerings? {
-        return self.createOfferings(
-            from: storeProductsByID,
-            contents: contents,
-            loadedFromDiskCache: loadedFromDiskCache,
-            includePaywallComponents: true
-        )
-    }
-
-    /// Preview-only path for rendering a local offering fixture that contains paywall components.
-    func createOfferingForPreview(
-        from storeProductsByID: [String: StoreProduct],
-        offering: OfferingsResponse.Offering,
-        uiConfig: UIConfig?
-    ) -> Offering? {
-        return self.createOffering(
-            from: storeProductsByID,
-            offering: offering,
-            uiConfig: uiConfig,
-            includePaywallComponents: true
-        )
-    }
-
-}
-#endif
 
 // @unchecked because:
 // - Class is not `final` (it's mocked). This implicitly makes subclasses `Sendable` even if they're not thread-safe.

@@ -133,7 +133,7 @@ class PaywallPreviewResourcesLoader {
                 apiKey: "preview_api_key",
                 preferredLocalesProvider: .init(preferredLocaleOverride: nil)
             )
-            let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferingsForPreview(from: [
+            let offerings = OfferingsFactory(systemInfo: systemInfo).createOfferings(from: [
                 "com.revenuecat.lifetime_product": .init(sk1Product: PreviewMock.Product(
                     price: 1.99,
                     unit: .week,
