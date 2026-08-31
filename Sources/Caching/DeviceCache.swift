@@ -132,6 +132,9 @@ class DeviceCache {
             userDefaults.removeObject(
                 forKey: CacheKey.customerInfo(oldAppUserID)
             )
+            userDefaults.removeObject(
+                forKey: CacheKey.subscriberDimensions(oldAppUserID)
+            )
 
             // Clear CustomerInfo cache timestamp for oldAppUserID.
             userDefaults.removeObject(forKey: CacheKey.customerInfoLastUpdated(oldAppUserID))
@@ -177,6 +180,20 @@ class DeviceCache {
         self.userDefaults.write {
             $0.set(customerInfo, forKey: CacheKey.customerInfo(appUserID))
             Self.setCustomerInfoCacheTimestampToNow($0, appUserID: appUserID)
+        }
+    }
+
+    // MARK: - Subscriber dimensions
+
+    func cachedSubscriberDimensionsData(appUserID: String) -> Data? {
+        return self.userDefaults.read {
+            $0.data(forKey: CacheKey.subscriberDimensions(appUserID))
+        }
+    }
+
+    func cache(subscriberDimensions: Data, appUserID: String) {
+        self.userDefaults.write {
+            $0.set(subscriberDimensions, forKey: CacheKey.subscriberDimensions(appUserID))
         }
     }
 
@@ -568,6 +585,7 @@ class DeviceCache {
 
         case customerInfo(String)
         case customerInfoLastUpdated(String)
+        case subscriberDimensions(String)
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
@@ -579,6 +597,7 @@ class DeviceCache {
             switch self {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
+            case let .subscriberDimensions(userID): return "\(Self.base)subscriberDimensions.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"
