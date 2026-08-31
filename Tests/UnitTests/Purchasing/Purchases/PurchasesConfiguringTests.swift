@@ -28,6 +28,7 @@ class PurchasesConfiguringTests: BasePurchasesTests {
             ("mac_key", "mac_app_store"),
             ("appl_key", "app_store"),
             ("test_key", "test_store"),
+            ("legacykey", "app_store"),
             ("unknown_key", "unknown")
         ]
 

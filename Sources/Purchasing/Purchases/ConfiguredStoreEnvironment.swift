@@ -37,6 +37,8 @@ import Foundation
             return "app_store"
         } else if self.apiKey.starts(with: "test_") {
             return "test_store"
+        } else if !self.apiKey.contains("_") {
+            return "app_store"
         }
         return "unknown"
     }
