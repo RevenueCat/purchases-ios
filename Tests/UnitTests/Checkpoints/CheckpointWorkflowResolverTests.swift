@@ -73,7 +73,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     func testDisabledResolverResolvesDisabled() async throws {
         let resolver = DisabledCheckpointWorkflowResolver()
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .disabled)
     }
@@ -143,6 +146,35 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [self.workflowID])
     }
 
+    func testMatchedWorkflowReportsTheServedRule() async throws {
+        let resolved = try await self.resolveCheckpoint()
+
+        XCTAssertNotNil(Self.resolvedWorkflow(resolved.resolution))
+        XCTAssertEqual(resolved.checkpointRuleID, "rule_\(self.workflowID)")
+    }
+
+    func testMatchedWorkflowReportsNoRuleWhenTheRulesTopicOmitsIt() async throws {
+        self.checkpointsProvider.result = .success(
+            CheckpointRuleSet(rules: [CheckpointRule(audienceId: "audience", workflowId: self.workflowID)])
+        )
+
+        let resolved = try await self.resolveCheckpoint()
+
+        XCTAssertNotNil(Self.resolvedWorkflow(resolved.resolution))
+        XCTAssertNil(resolved.checkpointRuleID)
+    }
+
+    /// `configurationUnavailable` describes this SDK's state rather than the rule, so a rule that matched but
+    /// could not be served reports no rule id.
+    func testUnservableRuleReportsNoRuleID() async throws {
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId = [:]
+
+        let resolved = try await self.resolveCheckpoint()
+
+        XCTAssertEqual(Self.noActionReason(resolved.resolution), .configurationUnavailable)
+        XCTAssertNil(resolved.checkpointRuleID)
+    }
+
     func testDimensionProviderFailureResolvesConfigurationUnavailableWithoutFetchingOfferings() async throws {
         let fetchCount = Atomic<Int>(0)
         let evaluator = LocalRulesEvaluator(dimensionProviders: [FailingDimensionProvider()])
@@ -154,7 +186,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             localRulesEvaluator: evaluator
         )
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
@@ -233,7 +268,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             return self.offerings
         }
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
@@ -244,7 +282,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             throw ErrorUtils.networkError(message: "Offline")
         }
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
@@ -268,7 +309,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             return self.offerings
         }
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
@@ -285,7 +329,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
             self.checkpointsProvider.configGeneration += 1
         }
 
-        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+        let resolution = try await resolver.resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        ).resolution
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0, "A rule matched against stale config should not be resolved")
@@ -365,11 +412,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let matched = try await resolver.resolve(
             identifier: self.checkpointIdentifier,
             params: CheckpointParams(customVariables: ["plan": .string("pro")])
-        )
+        ).resolution
         let missed = try await resolver.resolve(
             identifier: self.checkpointIdentifier,
             params: CheckpointParams(customVariables: ["plan": .string("free")])
-        )
+        ).resolution
 
         XCTAssertEqual(Self.resolvedWorkflow(matched)?.workflow.id, self.workflowID)
         XCTAssertEqual(Self.noActionReason(missed), .noMatch)
@@ -660,6 +707,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func resolve(identifier: String? = nil) async throws -> CheckpointResolution {
+        return try await self.resolveCheckpoint(identifier: identifier).resolution
+    }
+
+    private func resolveCheckpoint(identifier: String? = nil) async throws -> ResolvedCheckpoint {
         return try await self.makeResolver().resolve(
             identifier: identifier ?? self.checkpointIdentifier,
             params: self.params

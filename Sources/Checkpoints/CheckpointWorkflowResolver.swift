@@ -62,17 +62,45 @@ import Foundation
 
 }
 
+/// A ``CheckpointResolution`` together with the checkpoint rule that produced it, when a rule matched.
+///
+/// The rule id is only needed to attribute the hit event, so it travels here rather than on
+/// ``CheckpointResolution``, which RevenueCatUI consumes and which stays free of event-only fields.
+struct ResolvedCheckpoint {
+
+    let resolution: CheckpointResolution
+    let checkpointRuleID: String?
+
+    init(_ resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
+        self.resolution = resolution
+        self.checkpointRuleID = checkpointRuleID
+    }
+
+    /// Reports `rule` only when it was actually served. A rule that matched but could not be served resolves to
+    /// `configurationUnavailable`, which describes this SDK's state rather than the rule.
+    init(_ resolution: CheckpointResolution, servedBy rule: CheckpointRule) {
+        switch resolution {
+        case .matchedWorkflow, .matchedOffering:
+            self.init(resolution, checkpointRuleID: rule.id)
+
+        case .noAction:
+            self.init(resolution)
+        }
+    }
+
+}
+
 /// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
 protocol CheckpointWorkflowResolver: AnyObject {
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint
 
 }
 
 final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
-        return .noAction(.disabled)
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        return .init(.noAction(.disabled))
     }
 
 }
@@ -110,7 +138,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         self.offeringsProvider = offeringsProvider
     }
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         #if DEBUG
         // Temporary CheckpointTester escape hatch. Config-backed resolution has no natural throwing case yet.
         if identifier == Self.simulatedErrorCheckpointIdentifier {
@@ -126,19 +154,19 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private func resolveConfiguredWorkflow(
         identifier: String,
         params: CheckpointParams
-    ) async throws -> CheckpointResolution {
+    ) async throws -> ResolvedCheckpoint {
         let rulesSnapshot: CheckpointRulesSnapshot
         do {
             guard let snapshot = try await self.checkpointsConfigProvider.rules(for: identifier) else {
-                return .noAction(.unknownCheckpoint)
+                return .init(.noAction(.unknownCheckpoint))
             }
             rulesSnapshot = snapshot
         } catch let error as CancellationError {
             throw error
         } catch CheckpointRulesProviderError.remoteConfigDisabled {
-            return .noAction(.disabled)
+            return .init(.noAction(.disabled))
         } catch {
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         let rule: CheckpointRule?
@@ -153,24 +181,24 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         // Audiences are read live rather than pinned to this snapshot, so a refresh landing mid-walk leaves
         // the match built from config that is already gone.
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
-        guard let rule else { return .noAction(.noMatch) }
+        guard let rule else { return .init(.noAction(.noMatch)) }
 
         let resolution = await self.resolve(rule)
         guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else {
-            return .noAction(.configurationUnavailable)
+            return .init(.noAction(.configurationUnavailable))
         }
 
-        return resolution
+        return .init(resolution, servedBy: rule)
     }
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.

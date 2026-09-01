@@ -53,6 +53,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.result) == .configurationUnavailable
         expect(event.data.workflowID).to(beNil())
         expect(event.data.offeringID).to(beNil())
+        expect(event.data.checkpointRuleID).to(beNil())
     }
 
     func testTracksNoActionReasonOnTheHit() async throws {
@@ -78,7 +79,10 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
     func testTracksMatchedOfferingOnTheHit() async throws {
         let offering = Self.offering
         self.setUpCheckpointPurchases(
-            resolver: StubCheckpointWorkflowResolver(resolution: .matchedOffering(offering))
+            resolver: StubCheckpointWorkflowResolver(
+                resolution: .matchedOffering(offering),
+                checkpointRuleID: "rule_123"
+            )
         )
 
         _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
@@ -86,6 +90,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         let event = try await self.singleTrackedCheckpointEvent()
         expect(event.data.result) == .offering
         expect(event.data.offeringID) == offering.identifier
+        expect(event.data.checkpointRuleID) == "rule_123"
         expect(event.data.workflowID).to(beNil())
     }
 
@@ -93,12 +98,15 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         let offering = Self.offering
         let workflow = Self.workflow
         self.setUpCheckpointPurchases(
-            resolver: StubCheckpointWorkflowResolver(resolution: .matchedWorkflow(.init(
-                workflow: workflow,
-                uiConfig: Self.uiConfig,
-                offering: offering,
-                offerings: .preview(offerings: [offering])
-            )))
+            resolver: StubCheckpointWorkflowResolver(
+                resolution: .matchedWorkflow(.init(
+                    workflow: workflow,
+                    uiConfig: Self.uiConfig,
+                    offering: offering,
+                    offerings: .preview(offerings: [offering])
+                )),
+                checkpointRuleID: "rule_123"
+            )
         )
 
         _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
@@ -107,6 +115,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         expect(event.data.result) == .workflow
         expect(event.data.workflowID) == workflow.id
         expect(event.data.offeringID) == offering.identifier
+        expect(event.data.checkpointRuleID) == "rule_123"
         expect(event.data.date) == Self.hitDate
     }
 
@@ -170,19 +179,23 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private final class StubCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
-    private let resolutions: Atomic<[CheckpointResolution]>
+    private let resolved: Atomic<[ResolvedCheckpoint]>
 
-    convenience init(resolution: CheckpointResolution) {
-        self.init(resolutions: [resolution])
+    convenience init(resolution: CheckpointResolution, checkpointRuleID: String? = nil) {
+        self.init(resolved: [.init(resolution, checkpointRuleID: checkpointRuleID)])
     }
 
-    init(resolutions: [CheckpointResolution]) {
-        self.resolutions = .init(resolutions)
+    convenience init(resolutions: [CheckpointResolution]) {
+        self.init(resolved: resolutions.map { .init($0) })
+    }
+
+    init(resolved: [ResolvedCheckpoint]) {
+        self.resolved = .init(resolved)
     }
 
     /// Returns each resolution in turn, repeating the last one once they run out.
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
-        return self.resolutions.modify { pending in
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
+        return self.resolved.modify { pending in
             pending.count > 1 ? pending.removeFirst() : pending[0]
         }
     }
@@ -194,7 +207,7 @@ private final class ThrowingCheckpointWorkflowResolver: CheckpointWorkflowResolv
 
     private struct ResolutionError: Error {}
 
-    func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
+    func resolve(identifier: String, params: CheckpointParams) async throws -> ResolvedCheckpoint {
         throw ResolutionError()
     }
 

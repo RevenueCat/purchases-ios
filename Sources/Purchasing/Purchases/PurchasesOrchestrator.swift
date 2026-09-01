@@ -308,25 +308,25 @@ final class PurchasesOrchestrator {
         // configured for still emits a hit, which is how the backend learns the checkpoint exists.
         let hitDate = self.dateProvider.now()
 
-        let resolution = try await self.checkpointResolver.resolve(
+        let resolved = try await self.checkpointResolver.resolve(
             identifier: identifier,
             params: params
         )
-        await self.trackCheckpointHit(identifier: identifier, date: hitDate, resolution: resolution)
+        await self.trackCheckpointHit(identifier: identifier, date: hitDate, resolved: resolved)
 
-        return resolution
+        return resolved.resolution
     }
 
     private func trackCheckpointHit(
         identifier: String,
         date: Date,
-        resolution: CheckpointResolution
+        resolved: ResolvedCheckpoint
     ) async {
         guard #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *),
               let manager = self.eventsManager else { return }
 
         await manager.track(
-            featureEvent: CheckpointEvent.hit(identifier: identifier, date: date, resolution: resolution)
+            featureEvent: CheckpointEvent.hit(identifier: identifier, date: date, resolved: resolved)
         )
     }
 

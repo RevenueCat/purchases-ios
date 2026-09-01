@@ -53,6 +53,8 @@ extension CheckpointEvent {
         var workflowID: String?
         /// The offering the checkpoint resolved to, when it resolved to one.
         var offeringID: String?
+        /// The checkpoint rule that was served, when the checkpoint matched one.
+        var checkpointRuleID: String?
 
         init(
             id: UUID = .init(),
@@ -60,7 +62,8 @@ extension CheckpointEvent {
             date: Date,
             result: CheckpointHitResult? = nil,
             workflowID: String? = nil,
-            offeringID: String? = nil
+            offeringID: String? = nil,
+            checkpointRuleID: String? = nil
         ) {
             self.id = id
             self.identifier = identifier
@@ -68,6 +71,7 @@ extension CheckpointEvent {
             self.result = result
             self.workflowID = workflowID
             self.offeringID = offeringID
+            self.checkpointRuleID = checkpointRuleID
         }
 
     }
@@ -87,6 +91,7 @@ extension CheckpointEvent.Data {
         case result
         case workflowID = "workflowId"
         case offeringID = "offeringId"
+        case checkpointRuleID = "checkpointRuleId"
 
     }
 
@@ -97,20 +102,22 @@ extension CheckpointEvent {
     /// Builds the hit event for a resolved checkpoint.
     ///
     /// - Parameter date: when the checkpoint was reached, captured before resolution started.
-    static func hit(identifier: String, date: Date, resolution: CheckpointResolution) -> CheckpointEvent {
-        switch resolution {
-        case let .matchedWorkflow(resolved):
+    static func hit(identifier: String, date: Date, resolved: ResolvedCheckpoint) -> CheckpointEvent {
+        switch resolved.resolution {
+        case let .matchedWorkflow(matched):
             return .hit(.init(identifier: identifier,
                               date: date,
                               result: .workflow,
-                              workflowID: resolved.workflow.id,
-                              offeringID: resolved.offering.identifier))
+                              workflowID: matched.workflow.id,
+                              offeringID: matched.offering.identifier,
+                              checkpointRuleID: resolved.checkpointRuleID))
 
         case let .matchedOffering(offering):
             return .hit(.init(identifier: identifier,
                               date: date,
                               result: .offering,
-                              offeringID: offering.identifier))
+                              offeringID: offering.identifier,
+                              checkpointRuleID: resolved.checkpointRuleID))
 
         case let .noAction(reason):
             return .hit(.init(identifier: identifier, date: date, result: .init(reason)))
