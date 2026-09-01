@@ -276,7 +276,7 @@ private extension Store {
         case .playStore: return "play_store"
         case .stripe: return "stripe"
         case .promotional: return "promotional"
-        case .unknownStore: return nil
+        case .unknownStore: return "unknown"
         case .amazon: return "amazon"
         case .rcBilling: return "rc_billing"
         case .external: return "external"

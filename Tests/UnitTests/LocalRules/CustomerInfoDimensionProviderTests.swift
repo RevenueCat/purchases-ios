@@ -232,14 +232,14 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func mapsEveryStoreAndOmitsAnUnknownStore() async throws {
-        let stores: [(rawValue: Any, expected: String?)] = [
+    func mapsEveryStoreIncludingUnknown() async throws {
+        let stores: [(rawValue: Any, expected: String)] = [
             ("app_store", "app_store"),
             ("mac_app_store", "mac_app_store"),
             ("play_store", "play_store"),
             ("stripe", "stripe"),
             ("promotional", "promotional"),
-            (NSNull(), nil),
+            (NSNull(), "unknown"),
             ("amazon", "amazon"),
             ("rc_billing", "rc_billing"),
             ("external", "external"),
@@ -257,7 +257,7 @@ struct CustomerInfoDimensionProviderTests {
 
         for (index, store) in stores.enumerated() {
             let identifier = String(format: "product_%02d", index)
-            #expect(purchases[identifier]?["store"] == store.expected.map(DimensionValue.string))
+            #expect(purchases[identifier]?["store"] == .string(store.expected))
         }
     }
 
