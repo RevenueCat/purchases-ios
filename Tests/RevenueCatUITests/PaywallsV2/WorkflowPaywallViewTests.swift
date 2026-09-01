@@ -141,6 +141,30 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.headerButtonOpacity(for: .outgoing)) == 0
     }
 
+    func testOnlyCurrentAndOutgoingPagesAreOnScreen() {
+        let stepOne = IdentifiablePage(id: "step_1")
+        let stepTwo = IdentifiablePage(id: "step_2")
+        let stepThree = IdentifiablePage(id: "step_3")
+
+        var state = WorkflowPageTransitionState(currentPage: stepOne)
+
+        // No transition: only the current page is on-screen.
+        expect(state.isPageOnScreen(stepOne)) == true
+        expect(state.isPageOnScreen(stepTwo)) == false
+
+        // Mid-transition: the outgoing page is still sliding off, so it stays on-screen too.
+        state.beginTransition(to: stepTwo, direction: .forward)
+        expect(state.isPageOnScreen(stepTwo)) == true
+        expect(state.isPageOnScreen(stepOne)) == true
+        expect(state.isPageOnScreen(stepThree)) == false
+
+        // Transition complete: the outgoing page is now hidden and should quiesce.
+        state.advanceAnimation()
+        state.completeTransition()
+        expect(state.isPageOnScreen(stepTwo)) == true
+        expect(state.isPageOnScreen(stepOne)) == false
+    }
+
     func testCompletingTransitionDropsOutgoingPage() {
         var state = WorkflowPageTransitionState(currentPage: "step_1")
 
@@ -174,6 +198,12 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(defaultPackage?.identifier) == TestData.annualPackage.identifier
     }
 
+}
+
+/// Minimal Identifiable page used to exercise `WorkflowPageTransitionState.isPageOnScreen`,
+/// which is constrained to `Page: Identifiable` (the production `Page` is `RenderedPage`).
+private struct IdentifiablePage: Identifiable {
+    let id: String
 }
 
 // MARK: - workflowPackageContext tests

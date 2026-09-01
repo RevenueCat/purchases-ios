@@ -124,6 +124,15 @@ struct WorkflowPageTransitionState<Page> {
 
 }
 
+extension WorkflowPageTransitionState where Page: Identifiable {
+
+    /// On-screen while it is the current step or animating off as the outgoing one.
+    func isPageOnScreen(_ page: Page) -> Bool {
+        return page.id == self.currentPage?.id || page.id == self.outgoingPage?.id
+    }
+
+}
+
 struct WorkflowHeaderTransition {
 
     fileprivate enum Mode {
@@ -483,7 +492,8 @@ struct WorkflowPaywallView: View {
                             ),
                         // Hidden pages are not part of the animation; only the current/outgoing
                         // pair should see the transition flag so they don't react to it off-screen.
-                        isTransitioning: isHidden ? false : self.transitionState.isTransitioning
+                        isTransitioning: isHidden ? false : self.transitionState.isTransitioning,
+                        isPageActive: self.transitionState.isPageOnScreen(page)
                     ),
                     pageHeaderSuppressed: self.shouldRenderWorkflowHeaderOverlay,
                     canNavigateBack: self.navigator.canNavigateBack
