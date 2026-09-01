@@ -26,8 +26,14 @@ extension RulesEngine {
             case "rc.fromEntries":
                 return try EntriesOperators.opFromEntries(args: args, vars: vars)
 
+            case "rc.indexOf":
+                return try IndexOfOperator.opIndexOf(args: args, vars: vars)
+
             case "rc.length":
                 return try LengthOperator.opLength(args: args, vars: vars)
+
+            case "rc.let":
+                return try LetOperator.opLet(args: args, vars: vars)
 
             case "rc.lower":
                 return try CaseOperators.opLower(args: args, vars: vars)
