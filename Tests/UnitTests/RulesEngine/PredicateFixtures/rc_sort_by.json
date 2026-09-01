@@ -29,8 +29,8 @@
     },
     {
       "id": "sort_by_orders_canonically_equivalent_keys_by_code_unit",
-      "description": "The two spellings of e-acute are distinct keys, and the decomposed one starts with 'e' so it sorts first. UTF-16 length is what tells the two spellings apart",
-      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"rc.length": {"var": "0"}}, 2]}, {"===": [{"rc.length": {"var": "1"}}, 1]}]}]},
+      "description": "The two spellings of e-acute are distinct keys, and the decomposed one starts with 'e' so it sorts first. The leading code unit is what tells the two spellings apart",
+      "predicate": {"some": [[{"rc.sortBy": [{"var": "xs"}, {"var": ""}]}], {"and": [{"===": [{"substr": [{"var": "0"}, 0, 1]}, "e"]}, {"!==": [{"substr": [{"var": "1"}, 0, 1]}, "e"]}]}]},
       "variables": {"xs": ["\u00E9", "e\u0301"]},
       "expected": true
     },
@@ -64,13 +64,13 @@
     {
       "id": "sort_by_keeps_every_duplicate",
       "description": "Unlike sorting through rc.fromEntries, items sharing a key are not collapsed",
-      "predicate": {"===": [{"rc.length": {"rc.sortBy": [{"var": "xs"}, {"var": "k"}]}}, 3]},
+      "predicate": {"===": [{"reduce": [{"rc.sortBy": [{"var": "xs"}, {"var": "k"}]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 3]},
       "variables": {"xs": [{"k": 1}, {"k": 1}, {"k": 1}]},
       "expected": true
     },
     {
       "id": "sort_by_empty_array_is_empty",
-      "predicate": {"===": [{"rc.length": {"rc.sortBy": [[], {"var": ""}]}}, 0]},
+      "predicate": {"===": [{"reduce": [{"rc.sortBy": [[], {"var": ""}]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
       "variables": {},
       "expected": true
     },

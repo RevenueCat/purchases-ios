@@ -102,7 +102,7 @@
     {
       "id": "let_missing_does_not_report_a_bound_name",
       "description": "var and missing agree on what exists",
-      "predicate": {"===": [{"rc.length": {"rc.let": [{"bound": 1}, {"missing": ["bound"]}]}}, 0]},
+      "predicate": {"===": [{"reduce": [{"rc.let": [{"bound": 1}, {"missing": ["bound"]}]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
       "variables": {},
       "expected": true
     },
