@@ -64,7 +64,74 @@ class PurchaseButtonComponentViewModel {
 
     typealias LaunchWebCheckout = (url: URL, method: PaywallComponent.ButtonComponent.URLMethod, autoDismiss: Bool)
 
+    /// PoC: routes every web checkout through the in-app `WKWebView` sheet, ignoring the open method and
+    /// auto-dismiss configured on the dashboard. Set to `false` to restore server-driven behaviour.
+    private static let forcesInAppWebCheckout = true
+
+    /// PoC: rewrite `pay.rev.cat` checkout URLs to the local `rc-billing-checkout` vite server
+    /// (`pnpm run dev` on port 3003). Path and query stay intact. Set to `nil` to hit production.
+    private static let localWebCheckoutOrigin = URL(string: "https://localhost:3003")
+
     func urlForWebCheckout(
+        packageContext: PackageContext?,
+        appUserID: String,
+        isSandbox: Bool
+    ) -> LaunchWebCheckout? {
+        guard let launchWebCheckout = self.configuredUrlForWebCheckout(
+            packageContext: packageContext,
+            appUserID: appUserID,
+            isSandbox: isSandbox
+        ) else {
+            return nil
+        }
+
+        guard Self.forcesInAppWebCheckout else {
+            return launchWebCheckout
+        }
+
+        // Keeping the paywall on screen lets the sheet own the checkout lifecycle.
+        return (
+            Self.rewritingToLocalDirectCheckout(
+                launchWebCheckout.url,
+                packageId: packageContext?.package?.identifier
+            ),
+            .inAppBrowser,
+            false
+        )
+    }
+
+    /// Rewrites `pay.rev.cat` → local vite, and lands on `/checkout?package_id=` so we skip
+    /// the WPL package-selection page (that page still uses the old centred spinner).
+    private static func rewritingToLocalDirectCheckout(_ url: URL, packageId: String?) -> URL {
+        guard var components = URLComponents(url: url, resolvingAgainstBaseURL: false) else {
+            return url
+        }
+
+        if let origin = localWebCheckoutOrigin, components.host == "pay.rev.cat" {
+            components.scheme = origin.scheme
+            components.host = origin.host
+            components.port = origin.port
+        }
+
+        let path = components.path
+        if !path.hasSuffix("/checkout") && !path.hasSuffix("/checkout/") {
+            let trimmed = path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+            components.path = "/\(trimmed)/checkout"
+        }
+
+        var items = components.queryItems ?? []
+        if let packageId, !items.contains(where: { $0.name == "package_id" }) {
+            items.append(URLQueryItem(name: "package_id", value: packageId))
+        }
+        if !items.contains(where: { $0.name == "rc_source" }) {
+            items.append(URLQueryItem(name: "rc_source", value: "app"))
+        }
+        components.queryItems = items
+
+        return components.url ?? url
+    }
+
+    private func configuredUrlForWebCheckout(
         packageContext: PackageContext?,
         appUserID: String,
         isSandbox: Bool
