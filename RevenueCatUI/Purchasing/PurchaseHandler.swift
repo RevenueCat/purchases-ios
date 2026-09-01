@@ -84,6 +84,10 @@ final class PurchaseHandler: ObservableObject {
         return actionTypeInProgress != nil
     }
 
+    var configuredStoreEnvironment: ConfiguredStoreEnvironment {
+        return purchases.configuredStoreEnvironment
+    }
+
     /// The result of a purchase completed in the current session.
     /// This is reset when a new paywall session starts, allowing us to track
     /// whether a purchase happened during this specific paywall presentation.
@@ -1161,6 +1165,11 @@ private final class NotConfiguredPurchases: PaywallPurchasesType {
     func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
 
     var cachedOfferings: Offerings? { nil }
+
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
 
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
