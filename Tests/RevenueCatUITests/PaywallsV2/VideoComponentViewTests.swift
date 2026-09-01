@@ -39,41 +39,37 @@ final class VideoComponentViewTests: TestCase {
     }
 #endif
 
-#if os(iOS)
-    /// Moovit reported the video keeping the previous appearance's asset when the device theme is
-    /// toggled while the paywall is on screen, while every other component flips. The source is
-    /// resolved once, so this asserts the view asks the cache for the dark asset after the switch.
-    func testResolvesTheDarkAssetWhenTheColorSchemeChangesWhileOnScreen() throws {
-        let requestedURLs: Box<[URL]> = .init([])
-        let theme = ThemeBox()
-        let view = try Self.makeVideoComponentView(
-            size: CGSize(width: 100, height: 100),
-            cachedFileURL: { url, _ in
-                requestedURLs.value.append(url)
-                return nil
-            }
+    /// The view re-resolves when the asset it observes changes, so that value has to differ
+    /// between appearances. Without this the theme switch leaves the previous video playing.
+    func testViewDataDiffersBetweenAppearances() {
+        let style = Self.makeStyle(
+            darkUrl: URL(string: "https://assets.revenuecat.com/video-dark.mp4")!
         )
 
-        let (window, _) = Self.host(ThemedProbe(theme: theme, content: AnyView(view)))
-        defer {
-            window.isHidden = true
-            window.rootViewController = nil
-        }
-
-        XCTAssertTrue(
-            requestedURLs.value.contains(Self.lightVideoURL),
-            "The light asset should be resolved on appear. Asked for: \(requestedURLs.value)"
-        )
-
-        theme.colorScheme = .dark
-        RunLoop.main.run(until: Date().addingTimeInterval(0.3))
-
-        XCTAssertTrue(
-            requestedURLs.value.contains(Self.darkVideoURL),
-            "The dark asset was never resolved after the appearance changed. Asked for: \(requestedURLs.value)"
-        )
+        XCTAssertNotEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
     }
-#endif
+
+    /// Light and dark can point at the same file while carrying different checksums. The file
+    /// cache keys on url and checksum together, so these are two different cached assets and the
+    /// appearance switch still has to register as a change.
+    func testViewDataDiffersWhenOnlyTheChecksumChanges() {
+        let sharedUrl = URL(string: "https://assets.revenuecat.com/video.mp4")!
+        let style = Self.makeStyle(
+            url: sharedUrl,
+            darkUrl: sharedUrl,
+            checksum: .init(algorithm: .md5, value: "light"),
+            darkChecksum: .init(algorithm: .md5, value: "dark")
+        )
+
+        XCTAssertNotEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
+    }
+
+    /// A paywall with no dark variant resolves to the same asset, so the view must not churn.
+    func testViewDataIsUnchangedWithoutADarkVariant() {
+        let style = Self.makeStyle()
+
+        XCTAssertEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
+    }
 
     func testCalculateMaxWidthClampsNegativeInitialFullscreenFillWidth() {
         let style = Self.makeStyle(
@@ -108,27 +104,13 @@ final class VideoComponentViewTests: TestCase {
 private extension VideoComponentViewTests {
 
 #if os(iOS)
-    static let lightVideoURL = URL(string: "https://assets.revenuecat.com/video.mp4")!
-    static let darkVideoURL = URL(string: "https://assets.revenuecat.com/video-dark.mp4")!
-
-    static func makeVideoComponentView(
-        size: CGSize,
-        cachedFileURL: @escaping (URL, Checksum?) -> URL? = { _, _ in nil }
-    ) throws -> some View {
+    static func makeVideoComponentView(size: CGSize) throws -> some View {
         let component = PaywallComponent.VideoComponent(
             source: .init(
                 light: .init(
                     width: 1080,
                     height: 1920,
-                    url: Self.lightVideoURL,
-                    checksum: nil,
-                    urlLowRes: nil,
-                    checksumLowRes: nil
-                ),
-                dark: .init(
-                    width: 1080,
-                    height: 1920,
-                    url: Self.darkVideoURL,
+                    url: URL(string: "https://assets.revenuecat.com/video.mp4")!,
                     checksum: nil,
                     urlLowRes: nil,
                     checksumLowRes: nil
@@ -143,7 +125,7 @@ private extension VideoComponentViewTests {
             component: component
         )
 
-        return VideoComponentView(viewModel: viewModel, size: size, cachedFileURL: cachedFileURL)
+        return VideoComponentView(viewModel: viewModel, size: size)
             .environmentObject(PackageContext(package: nil, variableContext: .init(packages: [])))
             .environmentObject(
                 IntroOfferEligibilityContext(
@@ -166,14 +148,19 @@ private extension VideoComponentViewTests {
         fitMode: PaywallComponent.FitMode = .fit,
         padding: PaywallComponent.Padding? = nil,
         margin: PaywallComponent.Padding? = nil,
-        border: PaywallComponent.Border? = nil
+        border: PaywallComponent.Border? = nil,
+        url: URL = URL(string: "https://assets.revenuecat.com/video.mp4")!,
+        darkUrl: URL? = nil,
+        checksum: Checksum? = nil,
+        darkChecksum: Checksum? = nil
     ) -> VideoComponentStyle {
         VideoComponentStyle(
             showControls: false,
             autoPlay: true,
             loop: true,
-            url: URL(string: "https://assets.revenuecat.com/video.mp4")!,
+            url: url,
             lowResUrl: nil,
+            darkUrl: darkUrl,
             size: size,
             widthLight: 1920,
             heightLight: 1080,
@@ -184,52 +171,13 @@ private extension VideoComponentViewTests {
             padding: padding,
             margin: margin,
             border: border,
+            checksum: checksum,
+            darkChecksum: darkChecksum,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             colorScheme: .light
         )
     }
 
 }
-
-#if os(iOS)
-
-/// Lets a test flip the appearance of an already-hosted view, the way the device does when the user
-/// changes it while the paywall is on screen.
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class ThemeBox: ObservableObject {
-    @Published var colorScheme: ColorScheme = .light
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct ThemedProbe: View {
-    @ObservedObject var theme: ThemeBox
-    let content: AnyView
-
-    var body: some View {
-        self.content.environment(\.colorScheme, self.theme.colorScheme)
-    }
-}
-
-private final class Box<Value>: @unchecked Sendable {
-    var value: Value
-    init(_ value: Value) { self.value = value }
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension VideoComponentViewTests {
-
-    static func host<Content: View>(_ view: Content) -> (UIWindow, UIView) {
-        let controller = UIHostingController(rootView: view.frame(width: 100, height: 100))
-        let window = UIWindow(frame: CGRect(origin: .zero, size: CGSize(width: 100, height: 100)))
-        window.rootViewController = controller
-        window.makeKeyAndVisible()
-        controller.view.layoutIfNeeded()
-        RunLoop.main.run(until: Date().addingTimeInterval(0.1))
-        return (window, controller.view)
-    }
-
-}
-
-#endif
 
 #endif

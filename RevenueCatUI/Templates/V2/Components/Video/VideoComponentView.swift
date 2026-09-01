@@ -51,21 +51,12 @@ struct VideoComponentView: View {
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
-    /// Injected so a test can observe which asset the view asks the cache for. `FileRepositoryType`
-    /// does not expose the synchronous lookup, so the seam is this one closure rather than the
-    /// whole repository.
-    private let cachedFileURL: (URL, Checksum?) -> URL?
-
     init(
         viewModel: VideoComponentViewModel,
-        size: CGSize = .zero,
-        cachedFileURL: @escaping (URL, Checksum?) -> URL? = {
-            FileRepository.shared.getCachedFileURL(for: $0, withChecksum: $1)
-        }
+        size: CGSize = .zero
     ) {
         self.viewModel = viewModel
         self._size = .init(initialValue: size)
-        self.cachedFileURL = cachedFileURL
     }
 
     /// Tracks whether this page is active or adjacent in a carousel.
@@ -143,13 +134,12 @@ struct VideoComponentView: View {
                     .onAppear {
                         self.resolveSource(viewData: viewData)
                     }
-                    // Keyed on the resolved asset rather than on the color scheme, so a paywall
-                    // with no dark variant never re-resolves. Recreating the player is what makes
-                    // the swap visible: `cachedURL` is deliberately not part of the player's
-                    // identity, so that an automatic low-res to high-res swap does not restart
-                    // playback mid-video (#6254). A theme change is the one case that should.
-                    .onChangeOf(viewData.url) { _ in
-                        self.resolveSource(viewData: viewData)
+                    // Recreating the player is what makes the swap visible. `cachedURL` is
+                    // deliberately not part of the player's identity so that an automatic low-res
+                    // to high-res swap does not restart playback mid-video (#6254), and a cache
+                    // upgrade leaves this value untouched.
+                    .onChangeOf(viewData) { newViewData in
+                        self.resolveSource(viewData: newViewData)
                         self.playerRefreshToggle.toggle()
                     }
                     .applyMediaWidth(size: style.size)
@@ -178,15 +168,14 @@ struct VideoComponentView: View {
     }
 
     /// Picks the best available source for the current appearance and hands it to the player.
-    ///
-    /// Called on appear and again whenever the resolved asset changes, so a light/dark switch while
-    /// the paywall is on screen swaps the video instead of leaving the previous appearance's asset
-    /// playing.
     private func resolveSource(viewData: VideoComponentStyle.ViewData) {
         let fileRepository = FileRepository.shared
 
         // 1. High-res cached → use immediately
-        if let fullResCachedURL = self.cachedFileURL(viewData.url, viewData.checksum) {
+        if let fullResCachedURL = fileRepository.getCachedFileURL(
+            for: viewData.url,
+            withChecksum: viewData.checksum
+        ) {
             self.cachedURL = fullResCachedURL
             self.imageSource = nil
             return
@@ -195,7 +184,10 @@ struct VideoComponentView: View {
         // 2. Low-res cached → use immediately, cache high-res in background
         if let lowResUrl = viewData.lowResUrl,
            lowResUrl != viewData.url,
-           let lowResCachedURL = self.cachedFileURL(lowResUrl, viewData.lowResChecksum) {
+           let lowResCachedURL = fileRepository.getCachedFileURL(
+               for: lowResUrl,
+               withChecksum: viewData.lowResChecksum
+           ) {
             self.cachedURL = lowResCachedURL
             self.imageSource = nil
             cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
