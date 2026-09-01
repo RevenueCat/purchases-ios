@@ -411,12 +411,24 @@ import Foundation
 
     enum SizeConstraint: Codable, Sendable, Hashable {
 
-        case fit(UInt?, MinMax) // optional default size to show during loading and initial content size calculations
+        // optional default size to show during loading and initial content size calculations
+        case fit(UInt?, MinMax = .null)
         case fill(MinMax)
         case fixed(UInt)
 
         // Only used for button sheet for now
-        case relative(Double, MinMax)
+        case relative(Double, MinMax = .null)
+
+        /// Preserves the existing `.fill` syntax while allowing constrained fill values.
+        public static var fill: Self { .fill(.null) }
+
+        public var isFill: Bool {
+            if case .fill = self {
+                return true
+            }
+
+            return false
+        }
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
@@ -490,14 +502,14 @@ import Foundation
 
         public static func == (lhs: SizeConstraint, rhs: SizeConstraint) -> Bool {
             switch (lhs, rhs) {
-            case let (.fit(left), .fit(right)):
+            case let (.fit(leftDefault, leftMinMax), .fit(rightDefault, rightMinMax)):
+                return leftDefault == rightDefault && leftMinMax == rightMinMax
+            case let (.fill(left), .fill(right)):
                 return left == right
-            case (.fill, .fill):
-                return true
             case let (.fixed(left), .fixed(right)):
                 return left == right
-            case let (.relative(left), .relative(right)):
-                return left == right
+            case let (.relative(leftValue, leftMinMax), .relative(rightValue, rightMinMax)):
+                return leftValue == rightValue && leftMinMax == rightMinMax
             default:
                 return false
             }
@@ -685,7 +697,7 @@ import Foundation
 
 }
 
-@_spi(Internal) public struct MinMax: Codable, Hashable {
+@_spi(Internal) public struct MinMax: Codable, Hashable, Sendable {
     public let min: UInt?
     public let max: UInt?
 
@@ -694,5 +706,5 @@ import Foundation
         self.max = max
     }
 
-    @_spi(Internal) public static let null = MinMax(min: nil, max: nil)
+    public static let null = MinMax(min: nil, max: nil)
 }
