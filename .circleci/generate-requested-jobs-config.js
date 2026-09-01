@@ -23,7 +23,7 @@ const JOBS = {
   "build-tv-watch-mac-and-visionos": ["slack-secrets"],
   "check-api-changes": ["slack-secrets-ios", "slack-secrets"],
   "docs-build": ["slack-secrets"],
-  "emerge_binary_size_analysis": ["slack-secrets"],
+  "binary_size_analysis": ["slack-secrets", "sentry"],
   "emerge_purchases_ui_snapshot_tests": ["slack-secrets"],
   "generate-swiftinterface": ["slack-secrets-ios"],
   "installation-tests-all-but-carthage": ["slack-secrets"],
