@@ -23,6 +23,7 @@ extension FeatureEventsRequest {
         let version: Int
         let type: String
         let identifier: String
+        let checkpointType: CheckpointType?
         let appUserID: String
         let appSessionID: String
         let timestamp: UInt64
@@ -59,6 +60,7 @@ extension FeatureEventsRequest.CheckpointEvent {
                 version: Self.schemaVersion,
                 type: event.eventType,
                 identifier: event.data.identifier,
+                checkpointType: event.data.checkpointType,
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
                 timestamp: event.data.date.millisecondsSince1970,
@@ -87,6 +89,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case version
         case type
         case identifier
+        case checkpointType = "checkpoint_type"
         case appUserID = "app_user_id"
         case appSessionID = "app_session_id"
         case timestamp
@@ -103,6 +106,7 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.version, forKey: .version)
         try container.encode(self.type, forKey: .type)
         try container.encode(self.identifier, forKey: .identifier)
+        try container.encodeIfPresent(self.checkpointType, forKey: .checkpointType)
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)

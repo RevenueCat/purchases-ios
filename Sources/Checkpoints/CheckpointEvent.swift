@@ -24,6 +24,17 @@ enum CheckpointEvent: FeatureEvent {
 
 }
 
+/// Whether a checkpoint is one RevenueCat defines or one the app declares.
+///
+/// Every checkpoint is `custom` today. `standard` is declared so this vocabulary and the backend's stay in step,
+/// and so producing it later is a one-line change rather than a new type.
+enum CheckpointType: String {
+
+    case standard
+    case custom
+
+}
+
 /// What a checkpoint resolved to, reported in the `result` field of a checkpoint hit.
 enum CheckpointHitResult: String {
 
@@ -46,6 +57,9 @@ extension CheckpointEvent {
         var id: UUID
         var identifier: String
         var date: Date
+        /// Whether the checkpoint is one RevenueCat defines or one the app declares. `nil` only for hits stored
+        /// by an SDK version that predates the field.
+        var checkpointType: CheckpointType?
         /// What the checkpoint resolved to. `nil` only for hits stored by an SDK version that recorded them
         /// before evaluating the checkpoint.
         var result: CheckpointHitResult?
@@ -60,6 +74,7 @@ extension CheckpointEvent {
             id: UUID = .init(),
             identifier: String,
             date: Date,
+            checkpointType: CheckpointType? = nil,
             result: CheckpointHitResult? = nil,
             workflowID: String? = nil,
             offeringID: String? = nil,
@@ -68,6 +83,7 @@ extension CheckpointEvent {
             self.id = id
             self.identifier = identifier
             self.date = date
+            self.checkpointType = checkpointType
             self.result = result
             self.workflowID = workflowID
             self.offeringID = offeringID
@@ -88,6 +104,7 @@ extension CheckpointEvent.Data {
         case id
         case identifier
         case date
+        case checkpointType
         case result
         case workflowID = "workflowId"
         case offeringID = "offeringId"
@@ -107,6 +124,7 @@ extension CheckpointEvent {
         case let .matchedWorkflow(matched):
             return .hit(.init(identifier: identifier,
                               date: date,
+                              checkpointType: .custom,
                               result: .workflow,
                               workflowID: matched.workflow.id,
                               offeringID: matched.offering.identifier,
@@ -115,12 +133,16 @@ extension CheckpointEvent {
         case let .matchedOffering(offering):
             return .hit(.init(identifier: identifier,
                               date: date,
+                              checkpointType: .custom,
                               result: .offering,
                               offeringID: offering.identifier,
                               checkpointRuleID: resolved.checkpointRuleID))
 
         case let .noAction(reason):
-            return .hit(.init(identifier: identifier, date: date, result: .init(reason)))
+            return .hit(.init(identifier: identifier,
+                              date: date,
+                              checkpointType: .custom,
+                              result: .init(reason)))
         }
     }
 
@@ -160,6 +182,7 @@ extension CheckpointEvent {
 
 }
 
+extension CheckpointType: Equatable, Codable, Sendable {}
 extension CheckpointHitResult: Equatable, Codable, Sendable {}
 extension CheckpointEvent.Data: Equatable, Codable, Sendable {}
 extension CheckpointEvent: Equatable, Codable, Sendable {}

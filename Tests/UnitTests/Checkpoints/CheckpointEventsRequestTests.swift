@@ -36,6 +36,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.version) == 1
         expect(request.type) == "checkpoint_hit"
         expect(request.identifier) == "onboarding_complete"
+        expect(request.checkpointType) == .custom
         expect(request.appUserID) == Self.userID
         expect(request.appSessionID) == Self.appSessionID.uuidString
         expect(request.timestamp) == self.date.millisecondsSince1970
@@ -52,6 +53,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).to(contain("\"version\":1"))
         expect(json).to(contain("\"type\":\"checkpoint_hit\""))
         expect(json).to(contain("\"identifier\":\"onboarding_complete\""))
+        expect(json).to(contain("\"checkpoint_type\":\"custom\""))
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
         expect(json).to(contain("\"app_session_id\":\"\(Self.appSessionID.uuidString)\""))
         expect(json).to(contain("\"timestamp\":\(self.date.millisecondsSince1970)"))
@@ -100,16 +102,19 @@ class CheckpointEventsRequestTests: TestCase {
         let stored = try self.storedEvent(result: nil,
                                           workflowID: nil,
                                           offeringID: nil,
-                                          checkpointRuleID: nil)
+                                          checkpointRuleID: nil,
+                                          checkpointType: nil)
 
         expect(stored.encodedEvent).toNot(contain("result"))
         expect(stored.encodedEvent).toNot(contain("workflow_id"))
         expect(stored.encodedEvent).toNot(contain("offering_id"))
         expect(stored.encodedEvent).toNot(contain("checkpoint_rule_id"))
+        expect(stored.encodedEvent).toNot(contain("checkpoint_type"))
 
         let request = try XCTUnwrap(FeatureEventsRequest.CheckpointEvent(storedEvent: stored))
 
         expect(request.identifier) == "onboarding_complete"
+        expect(request.checkpointType).to(beNil())
         expect(request.result).to(beNil())
         expect(request.workflowID).to(beNil())
         expect(request.offeringID).to(beNil())
@@ -149,11 +154,13 @@ class CheckpointEventsRequestTests: TestCase {
         result: CheckpointHitResult? = .workflow,
         workflowID: String? = "wf_123",
         offeringID: String? = "offering_id",
-        checkpointRuleID: String? = "rule_123"
+        checkpointRuleID: String? = "rule_123",
+        checkpointType: CheckpointType? = .custom
     ) throws -> StoredFeatureEvent {
         let event = CheckpointEvent.hit(.init(id: self.id,
                                               identifier: "onboarding_complete",
                                               date: self.date,
+                                              checkpointType: checkpointType,
                                               result: result,
                                               workflowID: workflowID,
                                               offeringID: offeringID,

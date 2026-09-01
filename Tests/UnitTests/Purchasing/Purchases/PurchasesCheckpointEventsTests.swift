@@ -31,6 +31,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
 
         let event = try await self.singleTrackedCheckpointEvent()
         expect(event.data.identifier) == "onboarding_complete"
+        expect(event.data.checkpointType) == .custom
         expect(event.data.date) == Self.hitDate
     }
 

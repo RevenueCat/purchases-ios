@@ -281,6 +281,7 @@ private extension CheckpointEvent {
             "identifier": self.data.identifier
         ]
 
+        if let checkpointType = self.data.checkpointType { result["checkpoint_type"] = checkpointType.rawValue }
         if let checkpointResult = self.data.result { result["result"] = checkpointResult.rawValue }
         if let workflowID = self.data.workflowID { result["workflow_id"] = workflowID }
         if let offeringID = self.data.offeringID { result["offering_id"] = offeringID }
