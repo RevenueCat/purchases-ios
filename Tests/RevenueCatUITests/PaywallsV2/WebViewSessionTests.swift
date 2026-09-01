@@ -32,7 +32,7 @@ final class WebViewSessionTests: TestCase {
 
     func testConnectIncludesLatestContextInInit() throws {
         let harness = Harness()
-        harness.session.updateContext(Self.context(localeIdentifier: "en_US"))
+        harness.session.updateContext(Self.context(localeIdentifier: "en-US"))
 
         harness.handle(.init(kind: .connect, componentID: "", protocolVersion: 1))
 
@@ -42,14 +42,14 @@ final class WebViewSessionTests: TestCase {
         let context = try XCTUnwrap(envelope.payload?[WebViewEnvelope.messageTypeContext]?.objectValue)
         XCTAssertEqual(context["custom"]?.objectValue?["name"]?.stringValue, "Alex")
         let deviceMeta = try XCTUnwrap(context["device_meta"]?.objectValue)
-        XCTAssertEqual(deviceMeta["locale"]?.stringValue, "en_US")
+        XCTAssertEqual(deviceMeta["locale"]?.stringValue, "en-US")
         XCTAssertEqual(deviceMeta["updated_at"]?.numberValue, 1_787_000_000_000)
     }
 
     func testContextChangeSendsCompleteUpdateAndDeduplicatesUnchangedContext() throws {
         let harness = Harness()
-        let initial = Self.context(localeIdentifier: "en_US")
-        let updated = Self.context(localeIdentifier: "es_ES")
+        let initial = Self.context(localeIdentifier: "en-US")
+        let updated = Self.context(localeIdentifier: "es-ES")
         harness.session.updateContext(initial)
         harness.connect()
 
@@ -60,7 +60,7 @@ final class WebViewSessionTests: TestCase {
         XCTAssertEqual(envelopes.count, 1)
         XCTAssertEqual(envelopes[0].kind, .message)
         XCTAssertEqual(envelopes[0].type, WebViewEnvelope.messageTypeContext)
-        XCTAssertEqual(envelopes[0].payload?["device_meta"]?.objectValue?["locale"]?.stringValue, "es_ES")
+        XCTAssertEqual(envelopes[0].payload?["device_meta"]?.objectValue?["locale"]?.stringValue, "es-ES")
         XCTAssertNotNil(envelopes[0].payload?["packages"])
         XCTAssertNotNil(envelopes[0].payload?["selected_package"])
     }
