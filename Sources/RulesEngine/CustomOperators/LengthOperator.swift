@@ -34,7 +34,7 @@ extension RulesEngine {
 
             switch input {
             case .string(let string):
-                return .int(Int64(string.utf16.count))
+                return .int(Int64(RulesEngineUtils.stringLength(string)))
 
             case .array(let items):
                 return .int(Int64(items.count))
