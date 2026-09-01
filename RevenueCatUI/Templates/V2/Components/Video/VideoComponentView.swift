@@ -134,10 +134,9 @@ struct VideoComponentView: View {
                     .onAppear {
                         self.resolveSource(viewData: viewData)
                     }
-                    // Recreating the player is what makes the swap visible. `cachedURL` is
-                    // deliberately not part of the player's identity so that an automatic low-res
-                    // to high-res swap does not restart playback mid-video (#6254), and a cache
-                    // upgrade leaves this value untouched.
+                    // The player only swaps when its identity changes, and `cachedURL` is
+                    // deliberately not part of it so a low-res to high-res swap cannot restart
+                    // playback (#6254).
                     .onChangeOf(viewData) { newViewData in
                         self.resolveSource(viewData: newViewData)
                         self.playerRefreshToggle.toggle()
