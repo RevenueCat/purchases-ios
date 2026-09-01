@@ -227,11 +227,18 @@ extension RulesEngine {
         /// can never mask a field the scope actually has, and a predicate with
         /// no `rc.let` around it resolves exactly as it did before bindings
         /// existed.
+        ///
+        /// The first path segment decides which of the two owns the whole
+        /// lookup. Once the data has that segment, a missing descendant stays
+        /// missing instead of being answered by a binding of the same name,
+        /// which would otherwise pull a value out of an unrelated object.
         static func lookupInScope(_ vars: Scope, path: String) -> Value? {
             if let found = lookupVar(in: vars.current, path: path) {
                 return found
             }
             guard !vars.bindings.isEmpty, !path.isEmpty else { return nil }
+            let firstSegment = path.split(separator: ".", maxSplits: 1).first.map(String.init) ?? path
+            guard lookupVar(in: vars.current, path: firstSegment) == nil else { return nil }
             return lookupPath(in: .object(vars.bindings), path: path)
         }
 

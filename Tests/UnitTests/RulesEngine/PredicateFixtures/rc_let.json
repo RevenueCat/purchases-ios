@@ -34,6 +34,20 @@
       "expected": true
     },
     {
+      "id": "let_current_name_blocks_nested_binding_fallback",
+      "description": "Once the first path segment resolves in current data, a missing descendant must not fall back to a binding with the same name",
+      "predicate": {"rc.let": [{"profile": {"var": "outerProfile"}}, {"some": [{"var": "players"}, {"missing": ["profile.score"]}]}]},
+      "variables": {"outerProfile": {"score": 10}, "players": [{"profile": {}}]},
+      "expected": true
+    },
+    {
+      "id": "let_binding_does_not_supply_a_missing_descendant",
+      "description": "The same shape read through var: the path is unresolved rather than answered by the bound object",
+      "predicate": {"rc.let": [{"profile": {"var": "outerProfile"}}, {"some": [{"var": "players"}, {"===": [{"var": "profile.score"}, 10]}]}]},
+      "variables": {"outerProfile": {"score": 10}, "players": [{"profile": {}}]},
+      "expected": {"error": "unresolvedVariable", "path": "profile.score"}
+    },
+    {
       "id": "let_reduce_scope_wins_over_a_binding_named_current",
       "description": "Same precedence rule against reduce's synthetic scope, not just real data",
       "predicate": {"===": [{"rc.let": [{"current": "shadowed"}, {"reduce": [["a"], {"var": "current"}, "seed"]}]}, "a"]},
