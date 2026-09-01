@@ -36,27 +36,13 @@ import Foundation
 /// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointResult: Equatable, Hashable, CustomStringConvertible {
+public class CheckpointResult: CustomStringConvertible {
 
     init() {}
 
     /// A debug description of the checkpoint result.
     public var description: String {
         return "CheckpointResult"
-    }
-
-    /// Returns whether two checkpoint results are equal.
-    public static func == (lhs: CheckpointResult, rhs: CheckpointResult) -> Bool {
-        return lhs.isEqual(to: rhs)
-    }
-
-    func isEqual(to other: CheckpointResult) -> Bool {
-        return type(of: self) == type(of: other)
-    }
-
-    /// Hashes the checkpoint result.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: self)))
     }
 
 }
@@ -76,15 +62,6 @@ public final class CheckpointNoActionResult: CheckpointResult {
 
     public override var description: String {
         return "NoAction(reason=\(self.reason))"
-    }
-
-    override func isEqual(to other: CheckpointResult) -> Bool {
-        guard let other = other as? CheckpointNoActionResult else { return false }
-        return self.reason == other.reason
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.reason)
     }
 
 }
@@ -107,15 +84,6 @@ public final class CheckpointReceivedOfferingResult: CheckpointResult {
         return "ReceivedOffering(offering=\(self.offering.identifier))"
     }
 
-    override func isEqual(to other: CheckpointResult) -> Bool {
-        guard let other = other as? CheckpointReceivedOfferingResult else { return false }
-        return self.offering == other.offering
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.offering)
-    }
-
 }
 
 /// A checkpoint-triggered paywall was presented and finished.
@@ -133,15 +101,6 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 
     public override var description: String {
         return "PaywallPresented(paywallOutcome=\(self.paywallOutcome))"
-    }
-
-    override func isEqual(to other: CheckpointResult) -> Bool {
-        guard let other = other as? CheckpointPaywallPresentedResult else { return false }
-        return self.paywallOutcome == other.paywallOutcome
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.paywallOutcome)
     }
 
 }
@@ -169,26 +128,12 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 /// ```
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConvertible {
+public class CheckpointPaywallOutcome: CustomStringConvertible {
 
     fileprivate init() {}
 
     /// A debug description of the paywall outcome.
     public var description: String { return "CheckpointPaywallOutcome" }
-
-    /// Returns whether two paywall outcomes are equal.
-    public static func == (lhs: CheckpointPaywallOutcome, rhs: CheckpointPaywallOutcome) -> Bool {
-        return lhs.isEqual(to: rhs)
-    }
-
-    func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-        return type(of: self) == type(of: other)
-    }
-
-    /// Hashes the paywall outcome.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: self)))
-    }
 
     /// The customer dismissed the paywall without a purchase, restore, or error.
     public final class Dismissed: CheckpointPaywallOutcome {
@@ -231,16 +176,6 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
 
         public override var description: String { return "Purchased" }
 
-        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-            guard let other = other as? Purchased else { return false }
-            return self.transaction == other.transaction && self.customerInfo.isEqual(other.customerInfo)
-        }
-
-        public override func hash(into hasher: inout Hasher) {
-            hasher.combine(self.transaction)
-            hasher.combine(self.customerInfo.hash)
-        }
-
     }
 
     /// The customer restored purchases.
@@ -255,12 +190,6 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
         }
 
         public override var description: String { return "Restored" }
-
-        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-            return (other as? Restored)?.customerInfo.isEqual(self.customerInfo) == true
-        }
-
-        public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
 
     }
 
@@ -277,12 +206,6 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
         }
 
         public override var description: String { return "Error(error=\(self.error))" }
-
-        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-            return (other as? Error)?.error.isEqual(self.error) == true
-        }
-
-        public override func hash(into hasher: inout Hasher) { hasher.combine(self.error.hash) }
 
     }
 

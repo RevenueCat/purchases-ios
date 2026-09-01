@@ -79,7 +79,10 @@ final class CheckpointsManagerTests: TestCase {
         )
         XCTAssertEqual(listener.hitContexts.first?.customVariables["name"], "Rick")
         XCTAssertEqual(listener.completedContexts.first?.customVariables["name"], "Rick")
-        XCTAssertEqual(listener.completedContexts.first?.result, noAction)
+        XCTAssertEqual(
+            (listener.completedContexts.first?.result as? CheckpointNoActionResult)?.reason,
+            noAction.reason
+        )
     }
 
     func testInvalidCustomVariableKeysDoNotReachResolution() async throws {
@@ -262,37 +265,6 @@ final class CheckpointsManagerTests: TestCase {
         }
 
         self.waitForExpectations(timeout: 1)
-    }
-
-    func testUIOwnedReferenceModelsPreserveValueEqualityAndHashing() {
-        let firstHitContext = CheckpointHitContext(
-            identifier: "test",
-            params: CheckpointCallParams(customVariables: ["name": "Rick"])
-        )
-        let secondHitContext = CheckpointHitContext(
-            identifier: "test",
-            params: CheckpointCallParams(customVariables: ["name": "Rick"])
-        )
-        let firstResult = CheckpointNoActionResult(reason: .noMatch)
-        let secondResult = CheckpointNoActionResult(reason: .noMatch)
-        let firstCompletedContext = CheckpointCompletedContext(
-            identifier: "test",
-            params: CheckpointCallParams(customVariables: ["name": "Rick"]),
-            result: firstResult
-        )
-        let secondCompletedContext = CheckpointCompletedContext(
-            identifier: "test",
-            params: CheckpointCallParams(customVariables: ["name": "Rick"]),
-            result: secondResult
-        )
-
-        XCTAssertEqual(firstHitContext, secondHitContext)
-        XCTAssertEqual(firstCompletedContext, secondCompletedContext)
-        XCTAssertNotEqual(firstHitContext, firstCompletedContext)
-        XCTAssertEqual(firstResult, secondResult)
-        XCTAssertEqual(Set([firstHitContext, secondHitContext]).count, 1)
-        XCTAssertEqual(Set([firstCompletedContext, secondCompletedContext]).count, 1)
-        XCTAssertEqual(Set([firstResult, secondResult]).count, 1)
     }
 
     private static func offering() -> Offering {

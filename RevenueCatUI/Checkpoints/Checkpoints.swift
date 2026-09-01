@@ -45,7 +45,7 @@ final class CheckpointCallParams: @unchecked Sendable {
 /// Context shared by checkpoint listener events.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointContext: Equatable, Hashable, CustomStringConvertible, @unchecked Sendable {
+public class CheckpointContext: CustomStringConvertible, @unchecked Sendable {
 
     /// The identifier of the checkpoint that was hit.
     public let identifier: String
@@ -56,24 +56,6 @@ public class CheckpointContext: Equatable, Hashable, CustomStringConvertible, @u
     init(identifier: String, params: CheckpointCallParams) {
         self.identifier = identifier
         self.customVariables = params.customVariables
-    }
-
-    /// Returns whether two checkpoint contexts are equal.
-    public static func == (lhs: CheckpointContext, rhs: CheckpointContext) -> Bool {
-        return lhs.isEqual(to: rhs)
-    }
-
-    func isEqual(to other: CheckpointContext) -> Bool {
-        return type(of: self) == type(of: other) &&
-            self.identifier == other.identifier &&
-            self.customVariables == other.customVariables
-    }
-
-    /// Hashes the checkpoint information.
-    public func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type(of: self)))
-        hasher.combine(self.identifier)
-        hasher.combine(self.customVariables)
     }
 
     /// A debug description of the checkpoint context.
@@ -109,18 +91,6 @@ public final class CheckpointCompletedContext: CheckpointContext, @unchecked Sen
     init(identifier: String, params: CheckpointCallParams, result: CheckpointResult) {
         self.result = result
         super.init(identifier: identifier, params: params)
-    }
-
-    override func isEqual(to other: CheckpointContext) -> Bool {
-        guard let other = other as? CheckpointCompletedContext else { return false }
-        return self.identifier == other.identifier &&
-            self.customVariables == other.customVariables &&
-            self.result == other.result
-    }
-
-    public override func hash(into hasher: inout Hasher) {
-        super.hash(into: &hasher)
-        hasher.combine(self.result)
     }
 
     public override var description: String {
