@@ -21,8 +21,8 @@ extension RulesEngine {
     ///   predicate evaluates to anything other than an object.
     static func transform(
         predicate: String,
-        variables: [String: Value]
-    ) -> Result<[String: Value], EvaluationError> {
+        variables: ObjectValue
+    ) -> Result<ObjectValue, EvaluationError> {
         evaluated(predicate: predicate, variables: variables).flatMap { result in
             guard case .object(let transformed) = result else {
                 return .failure(.typeMismatch(
@@ -43,7 +43,7 @@ extension RulesEngine {
     ///   an `EvaluationError` when parsing or evaluation fails.
     static func evaluate(
         predicate: String,
-        variables: [String: Value]
+        variables: ObjectValue
     ) -> Result<Bool, EvaluationError> {
         evaluated(predicate: predicate, variables: variables).map(\.isTruthy)
     }
@@ -52,7 +52,7 @@ extension RulesEngine {
     /// thrown error into a `.failure`.
     private static func evaluated(
         predicate: String,
-        variables: [String: Value]
+        variables: ObjectValue
     ) -> Result<Value, EvaluationError> {
         do {
             let predicateValue = try Value.fromJSONString(predicate)

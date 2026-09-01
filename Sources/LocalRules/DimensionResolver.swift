@@ -16,7 +16,7 @@ import Foundation
 
 struct DimensionSnapshot: Equatable, Sendable {
 
-    let values: [String: RulesEngine.Value]
+    let values: RulesEngine.ObjectValue
     let evaluationDate: Date
 }
 
@@ -47,7 +47,7 @@ struct DimensionResolver: Sendable {
     /// `device.appVersion: "1.2.3"` in the RulesEngine input.
     func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
-        var values: [String: RulesEngine.Value] = [:]
+        var values = RulesEngine.ObjectValue()
 
         for provider in self.dimensionProviders {
             try Task.checkCancellation()
@@ -65,7 +65,7 @@ struct DimensionResolver: Sendable {
             }
 
             let namespace = provider.namespace.rawValue
-            var namespaceValues: [String: RulesEngine.Value] = [:]
+            var namespaceValues = RulesEngine.ObjectValue()
             if case .object(let existing) = values[namespace] {
                 namespaceValues = existing
             }
@@ -108,8 +108,8 @@ private enum DimensionValueConverter {
     static func convert(
         _ dimensions: [String: DimensionValue],
         parentPath: String
-    ) -> [String: RulesEngine.Value] {
-        return dimensions.reduce(into: [:]) { result, dimension in
+    ) -> RulesEngine.ObjectValue {
+        return dimensions.reduce(into: RulesEngine.ObjectValue()) { result, dimension in
             let (name, value) = dimension
             guard Self.isValidName(name) else {
                 Logger.warn(Strings.remoteConfig.invalidDimensionName(name, parentPath: parentPath))

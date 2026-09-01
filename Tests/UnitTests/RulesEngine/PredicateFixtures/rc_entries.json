@@ -162,6 +162,27 @@
       "predicate": {"some": [[{"rc.entries": [{"var": "o"}]}], {"and": [{"===": [{"var": "0.0"}, "\ud83d\ude00"]}, {"===": [{"var": "1.0"}, "\uff21"]}]}]},
       "variables": {"o": {"\uff21": 1, "\ud83d\ude00": 2}},
       "expected": true
+    },
+    {
+      "id": "from_entries_keeps_two_spellings_of_the_same_character_apart",
+      "description": "One key is é (U+00E9), the other is é spelled e (U+0065) followed by a combining acute accent (U+0301). They render alike but are different UTF-16 code unit sequences, so the object has two entries",
+      "predicate": {"===": [{"rc.length": {"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["e\u0301", 2]]]}}}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "from_entries_pairs_each_spelling_with_its_own_value",
+      "description": "The decomposed spelling é (U+0065 U+0301) keeps its own value instead of being folded into the precomposed é (U+00E9)",
+      "predicate": {"some": [{"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["e\u0301", 2]]]}}, {"and": [{"===": [{"var": "0"}, "e\u0301"]}, {"===": [{"var": "1"}, 2]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "from_entries_still_merges_a_repeated_identical_key",
+      "description": "Two entries spelled with the same code units are one key, the last value winning, as in JS",
+      "predicate": {"===": [{"rc.length": {"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["\u00e9", 2]]]}}}, 1]},
+      "variables": {},
+      "expected": true
     }
   ]
 }
