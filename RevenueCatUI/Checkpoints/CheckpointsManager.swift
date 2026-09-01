@@ -80,7 +80,7 @@ final class CheckpointsManager {
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointNoActionResult(reason: .invalidCheckpointIdentifier)
+            let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
             self.listener?.onCheckpointCompleted(
                 CheckpointCompletedContext(identifier: identifier, params: params, result: result)
             )
@@ -95,12 +95,12 @@ final class CheckpointsManager {
                 customVariables: params.customVariables
             )
             let outcome = try await self.executor.execute(presentation)
-            result = CheckpointPaywallPresentedResult(paywallOutcome: outcome)
+            result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .matchedOffering(offering):
             // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointReceivedOfferingResult(offering: offering)
+            result = CheckpointResult.ReceivedOffering(offering: offering)
         case let .noAction(reason):
-            result = CheckpointNoActionResult(reason: reason.noActionReason)
+            result = CheckpointResult.NoAction(reason: reason.noActionReason)
         }
 
         self.listener?.onCheckpointCompleted(
