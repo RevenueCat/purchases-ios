@@ -65,7 +65,7 @@ extension RulesEngine {
         /// *Where* the needle occurs is a match, so it is searched over UTF-16
         /// code units like `in` and `rc.split`. *How far in* that is, is a
         /// count, so the text before the match is measured with
-        /// `LengthOperator.stringLength` — the same function behind
+        /// `RulesEngineUtils.stringLength` — the same function behind
         /// `rc.length`, so both operators state positions in one unit.
         ///
         /// Neither operand can hold an unpaired surrogate, so a match never
@@ -79,7 +79,7 @@ extension RulesEngine {
 
             for start in 0...(units.count - needleUnits.count)
             where units[start..<(start + needleUnits.count)].elementsEqual(needleUnits) {
-                return LengthOperator.stringLength(String(decoding: units[..<start], as: UTF16.self))
+                return RulesEngineUtils.stringLength(String(decoding: units[..<start], as: UTF16.self))
             }
 
             return -1
