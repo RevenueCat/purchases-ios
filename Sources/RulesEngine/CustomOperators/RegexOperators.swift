@@ -71,14 +71,9 @@ extension RulesEngine {
         /// `{"rc.regexReplace": [input, pattern, replacement]}` — every match
         /// replaced, left to right.
         ///
-        /// The replacement is literal text. `$1` is not a backreference: the
-        /// template is read by each platform's own API rather than by ICU, so
-        /// this is the one part of the feature where the two devices differ.
-        /// `$&` substitutes the match in JS, throws on Android, and stays
-        /// literal here; `$1` against a pattern with no groups throws on
-        /// Android and yields the empty string here. None of it is exposed.
-        /// Build a replacement out of captures with `rc.regexExtract` and
-        /// `cat` instead.
+        /// The replacement is literal text: `$1` and `$&` are not
+        /// backreferences. Build a replacement out of captures with
+        /// `rc.regexExtract` and `cat` instead.
         ///
         /// All operands must be strings and the pattern must compile,
         /// otherwise `EvaluationError.typeMismatch`.
