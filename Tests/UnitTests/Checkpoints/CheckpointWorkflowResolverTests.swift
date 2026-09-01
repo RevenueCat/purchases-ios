@@ -162,6 +162,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
         XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+        self.logger.verifyMessageWasLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error
+        )
     }
 
     func testCancellationWhileCollectingDimensionsPropagates() async {
@@ -383,6 +387,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
         XCTAssertEqual(evaluationCount.value, 2)
+        self.logger.verifyMessageWasNotLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error,
+            allowNoMessages: true
+        )
     }
 
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
