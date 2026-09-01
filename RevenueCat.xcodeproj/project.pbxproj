@@ -80,6 +80,7 @@
 		F60718293A4B5C03D02A2 /* SplitOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D02A1 /* SplitOperator.swift */; };
 		F60718293A4B5C03D03A2 /* SortByOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D03A1 /* SortByOperator.swift */; };
 		F60718293A4B5C03D04A2 /* SliceOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D04A1 /* SliceOperator.swift */; };
+		F60718293A4B5C03D05A2 /* LetOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D05A1 /* LetOperator.swift */; };
 		B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
 		A0F100000000000000000002 /* PaywallWebViewStaticContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F100000000000000000001 /* PaywallWebViewStaticContext.swift */; };
@@ -3084,6 +3085,7 @@
 		F60718293A4B5C03D02A1 /* SplitOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SplitOperator.swift; sourceTree = "<group>"; };
 		F60718293A4B5C03D03A1 /* SortByOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SortByOperator.swift; sourceTree = "<group>"; };
 		F60718293A4B5C03D04A1 /* SliceOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SliceOperator.swift; sourceTree = "<group>"; };
+		F60718293A4B5C03D05A1 /* LetOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetOperator.swift; sourceTree = "<group>"; };
 		B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootVarOperator.swift; sourceTree = "<group>"; };
 		AC01FEB700000000000000B5 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
 		AC06C294F30E7D8000000002 /* SelectedPackageId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPackageId.swift; sourceTree = "<group>"; };
@@ -6692,6 +6694,7 @@
 				F60718293A4B5C03D02A1 /* SplitOperator.swift */,
 				F60718293A4B5C03D03A1 /* SortByOperator.swift */,
 				F60718293A4B5C03D04A1 /* SliceOperator.swift */,
+				F60718293A4B5C03D05A1 /* LetOperator.swift */,
 				B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */,
 			);
 			name = CustomOperators;
@@ -8137,6 +8140,7 @@
 				F60718293A4B5C03D02A2 /* SplitOperator.swift in Sources */,
 				F60718293A4B5C03D03A2 /* SortByOperator.swift in Sources */,
 				F60718293A4B5C03D04A2 /* SliceOperator.swift in Sources */,
+				F60718293A4B5C03D05A2 /* LetOperator.swift in Sources */,
 				B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */,
 				55DACDF3302BC30A005EE017 /* IAMCallbacks.swift in Sources */,
 				1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */,
