@@ -21,7 +21,8 @@ extension RulesEngine {
         /// that item, the same way `map` evaluates its template.
         ///
         /// Keys must be all strings or all finite numbers; anything else,
-        /// including a mix, throws `EvaluationError.typeMismatch`. There is no
+        /// including a mix, throws `EvaluationError.typeMismatch`. String keys
+        /// order by UTF-16 code unit, via `jsStringPrecedes`. There is no
         /// direction argument.
         static func opSortBy(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
@@ -102,12 +103,7 @@ extension RulesEngine {
                     guard case .string(let left) = left, case .string(let right) = right else {
                         return false
                     }
-                    // Swift orders by Unicode scalar and treats canonically
-                    // equivalent strings as equal; JS and Kotlin both order by
-                    // UTF-16 code unit. The two disagree once a scalar above
-                    // the surrogate range meets an astral one, so follow the
-                    // engines the rules are written against.
-                    return left.utf16.lexicographicallyPrecedes(right.utf16)
+                    return jsStringPrecedes(left, right)
                 }
             }
             return { left, right in (left.asNumber ?? 0) < (right.asNumber ?? 0) }

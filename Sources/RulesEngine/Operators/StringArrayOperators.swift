@@ -36,7 +36,7 @@ extension RulesEngine {
                 // json-logic-js: `if (!haystack || …) return false` — empty
                 // string is falsy, so `in` never matches regardless of needle.
                 if haystackString.isEmpty { return .bool(false) }
-                return .bool(haystackString.contains(jsString(needle)))
+                return .bool(jsStringContains(haystack: haystackString, needle: jsString(needle)))
             case .array(let items):
                 return .bool(items.contains { strictEq(needle, $0) })
             default:

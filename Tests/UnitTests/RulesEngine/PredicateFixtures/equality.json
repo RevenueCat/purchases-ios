@@ -94,6 +94,34 @@
       "predicate": { "===": [null] },
       "variables": {},
       "expected": false
+    },
+    {
+      "id": "strict_eq_distinguishes_canonically_equivalent_strings",
+      "description": "Precomposed e-acute é (U+00E9) against the decomposed spelling, e (U+0065) followed by a combining acute accent ◌́ (U+0301). Strings compare as UTF-16 code units, so one code unit against two is a mismatch even though both render the same",
+      "predicate": { "===": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_ne_distinguishes_canonically_equivalent_strings",
+      "description": "The same two spellings of e-acute under !==",
+      "predicate": { "!==": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "loose_eq_distinguishes_canonically_equivalent_strings",
+      "description": "Loose equality compares two strings the same way strict equality does, so the two spellings of e-acute stay distinct",
+      "predicate": { "==": ["\u00e9", "e\u0301"] },
+      "variables": {},
+      "expected": false
+    },
+    {
+      "id": "strict_eq_matches_the_same_spelling",
+      "description": "Control case: precomposed e-acute é (U+00E9) against itself, where identical code units still compare equal",
+      "predicate": { "===": ["\u00e9", "\u00e9"] },
+      "variables": {},
+      "expected": true
     }
   ]
 }
