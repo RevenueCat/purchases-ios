@@ -17,13 +17,13 @@ import RevenueCat
 
 private final class CheckpointListenerAPITester: CheckpointListener {
 
-    func onCheckpointHit(_ context: CheckpointHitContext) {
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {
         let _: CheckpointContext = context
         let _: String = context.identifier
         let _: [String: CustomVariableValue] = context.customVariables
     }
 
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
         let _: CheckpointContext = context
         let _: String = context.identifier
         let _: [String: CustomVariableValue] = context.customVariables
