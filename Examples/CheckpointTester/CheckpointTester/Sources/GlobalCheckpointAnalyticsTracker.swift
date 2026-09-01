@@ -71,15 +71,15 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
 
     private static func describe(_ result: CheckpointPaywallOutcome) -> String {
         switch result {
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             return "Dismissed"
-        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
             return "Web checkout opened"
-        case is CheckpointPaywallPurchasedOutcome:
+        case is CheckpointPaywallOutcome.Purchased:
             return "Purchased"
-        case is CheckpointPaywallRestoredOutcome:
+        case is CheckpointPaywallOutcome.Restored:
             return "Restored"
-        case let error as CheckpointPaywallErrorOutcome:
+        case let error as CheckpointPaywallOutcome.Error:
             return "Error · \(error.error.localizedDescription)"
         default:
             return "Unknown paywall outcome"

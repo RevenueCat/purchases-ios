@@ -32,17 +32,17 @@ private final class CheckpointListenerAPITester: CheckpointListener {
         if let presented = result as? CheckpointPaywallPresentedResult {
             let outcome: CheckpointPaywallOutcome = presented.paywallOutcome
 
-            if let purchased = outcome as? CheckpointPaywallPurchasedOutcome {
+            if let purchased = outcome as? CheckpointPaywallOutcome.Purchased {
                 let _: StoreTransaction? = purchased.transaction
                 let _: CustomerInfo = purchased.customerInfo
-            } else if let restored = outcome as? CheckpointPaywallRestoredOutcome {
+            } else if let restored = outcome as? CheckpointPaywallOutcome.Restored {
                 let _: CustomerInfo = restored.customerInfo
-            } else if let failed = outcome as? CheckpointPaywallErrorOutcome {
+            } else if let failed = outcome as? CheckpointPaywallOutcome.Error {
                 let _: PublicError = failed.error
-            } else if outcome is CheckpointPaywallWebCheckoutOpenedOutcome {
+            } else if outcome is CheckpointPaywallOutcome.WebCheckoutOpened {
                 let _: String = outcome.description
             } else {
-                let _: Bool = outcome is CheckpointPaywallDismissedOutcome
+                let _: Bool = outcome is CheckpointPaywallOutcome.Dismissed
             }
 
             let _: String = outcome.description

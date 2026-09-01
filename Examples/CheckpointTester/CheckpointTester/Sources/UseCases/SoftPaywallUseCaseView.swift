@@ -97,15 +97,15 @@ struct SoftPaywallUseCaseView: View {
     @MainActor
     private func handle(_ outcome: CheckpointPaywallOutcome) {
         switch outcome {
-        case let purchased as CheckpointPaywallPurchasedOutcome:
+        case let purchased as CheckpointPaywallOutcome.Purchased:
             self.updateSubscriptionStatus(with: purchased.customerInfo, action: "Purchased")
-        case let restored as CheckpointPaywallRestoredOutcome:
+        case let restored as CheckpointPaywallOutcome.Restored:
             self.updateSubscriptionStatus(with: restored.customerInfo, action: "Restored")
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             self.status = "Paywall dismissed. Content remains available."
-        case is CheckpointPaywallWebCheckoutOpenedOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
             self.status = "Web checkout opened. Content remains available."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case let failed as CheckpointPaywallOutcome.Error:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:
             self.status = "Unknown paywall outcome. Content remains available."

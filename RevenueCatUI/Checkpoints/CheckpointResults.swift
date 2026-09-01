@@ -152,15 +152,15 @@ public final class CheckpointPaywallPresentedResult: CheckpointResult {
 ///
 /// ```swift
 /// switch result.paywallOutcome {
-/// case let outcome as CheckpointPaywallPurchasedOutcome:
+/// case let outcome as CheckpointPaywallOutcome.Purchased:
 ///     handlePurchase(outcome.transaction, outcome.customerInfo)
-/// case let outcome as CheckpointPaywallRestoredOutcome:
+/// case let outcome as CheckpointPaywallOutcome.Restored:
 ///     handleRestore(outcome.customerInfo)
-/// case is CheckpointPaywallDismissedOutcome:
+/// case is CheckpointPaywallOutcome.Dismissed:
 ///     handleDismissal()
-/// case is CheckpointPaywallWebCheckoutOpenedOutcome:
+/// case is CheckpointPaywallOutcome.WebCheckoutOpened:
 ///     handleWebCheckoutOpened()
-/// case let outcome as CheckpointPaywallErrorOutcome:
+/// case let outcome as CheckpointPaywallOutcome.Error:
 ///     handleError(outcome.error)
 /// default:
 ///     // Handle outcome types added in future SDK versions.
@@ -190,111 +190,100 @@ public class CheckpointPaywallOutcome: Equatable, Hashable, CustomStringConverti
         hasher.combine(ObjectIdentifier(type(of: self)))
     }
 
-}
+    /// The customer dismissed the paywall without a purchase, restore, or error.
+    public final class Dismissed: CheckpointPaywallOutcome {
 
-/// The customer dismissed the paywall without a purchase, restore, or error.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointPaywallDismissedOutcome: CheckpointPaywallOutcome {
+        static let shared = Dismissed()
 
-    static let shared = CheckpointPaywallDismissedOutcome()
+        private override init() { super.init() }
 
-    private override init() { super.init() }
+        public override var description: String { return "Dismissed" }
 
-    public override var description: String { return "Dismissed" }
-
-}
-
-/// The customer opened a web checkout from the paywall to pay externally.
-///
-/// There is no in-app completion signal for the external payment.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-// swiftlint:disable:next type_name
-public final class CheckpointPaywallWebCheckoutOpenedOutcome: CheckpointPaywallOutcome {
-
-    static let shared = CheckpointPaywallWebCheckoutOpenedOutcome()
-
-    private override init() { super.init() }
-
-    public override var description: String { return "WebCheckoutOpened" }
-
-}
-
-/// The customer completed a purchase.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointPaywallPurchasedOutcome: CheckpointPaywallOutcome {
-
-    /// The transaction completed by the purchase, if available.
-    public let transaction: StoreTransaction?
-
-    /// Customer information after the completed purchase.
-    public let customerInfo: CustomerInfo
-
-    init(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
-        self.transaction = transaction
-        self.customerInfo = customerInfo
-        super.init()
     }
 
-    public override var description: String { return "Purchased" }
+    /// The customer opened a web checkout from the paywall to pay externally.
+    ///
+    /// There is no in-app completion signal for the external payment.
+    public final class WebCheckoutOpened: CheckpointPaywallOutcome {
 
-    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-        guard let other = other as? CheckpointPaywallPurchasedOutcome else { return false }
-        return self.transaction == other.transaction && self.customerInfo.isEqual(other.customerInfo)
+        static let shared = WebCheckoutOpened()
+
+        private override init() { super.init() }
+
+        public override var description: String { return "WebCheckoutOpened" }
+
     }
 
-    public override func hash(into hasher: inout Hasher) {
-        hasher.combine(self.transaction)
-        hasher.combine(self.customerInfo.hash)
+    /// The customer completed a purchase.
+    public final class Purchased: CheckpointPaywallOutcome {
+
+        /// The transaction completed by the purchase, if available.
+        public let transaction: StoreTransaction?
+
+        /// Customer information after the completed purchase.
+        public let customerInfo: CustomerInfo
+
+        init(transaction: StoreTransaction?, customerInfo: CustomerInfo) {
+            self.transaction = transaction
+            self.customerInfo = customerInfo
+            super.init()
+        }
+
+        public override var description: String { return "Purchased" }
+
+        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+            guard let other = other as? Purchased else { return false }
+            return self.transaction == other.transaction && self.customerInfo.isEqual(other.customerInfo)
+        }
+
+        public override func hash(into hasher: inout Hasher) {
+            hasher.combine(self.transaction)
+            hasher.combine(self.customerInfo.hash)
+        }
+
     }
 
-}
+    /// The customer restored purchases.
+    public final class Restored: CheckpointPaywallOutcome {
 
-/// The customer restored purchases.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointPaywallRestoredOutcome: CheckpointPaywallOutcome {
+        /// Customer information after restoring purchases.
+        public let customerInfo: CustomerInfo
 
-    /// Customer information after restoring purchases.
-    public let customerInfo: CustomerInfo
+        init(customerInfo: CustomerInfo) {
+            self.customerInfo = customerInfo
+            super.init()
+        }
 
-    init(customerInfo: CustomerInfo) {
-        self.customerInfo = customerInfo
-        super.init()
+        public override var description: String { return "Restored" }
+
+        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+            return (other as? Restored)?.customerInfo.isEqual(self.customerInfo) == true
+        }
+
+        public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
+
     }
 
-    public override var description: String { return "Restored" }
+    /// A purchase or restore failed with an error. Cancellations are reported as
+    /// ``Dismissed`` instead.
+    public final class Error: CheckpointPaywallOutcome {
 
-    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-        return (other as? CheckpointPaywallRestoredOutcome)?.customerInfo.isEqual(self.customerInfo) == true
+        /// The error that ended the checkpoint experience.
+        public let error: PublicError
+
+        init(error: PublicError) {
+            self.error = error
+            super.init()
+        }
+
+        public override var description: String { return "Error(error=\(self.error))" }
+
+        override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
+            return (other as? Error)?.error.isEqual(self.error) == true
+        }
+
+        public override func hash(into hasher: inout Hasher) { hasher.combine(self.error.hash) }
+
     }
-
-    public override func hash(into hasher: inout Hasher) { hasher.combine(self.customerInfo.hash) }
-
-}
-
-/// A purchase or restore failed with an error. Cancellations are reported as
-/// ``CheckpointPaywallDismissedOutcome`` instead.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointPaywallErrorOutcome: CheckpointPaywallOutcome {
-
-    /// The error that ended the checkpoint experience.
-    public let error: PublicError
-
-    init(error: PublicError) {
-        self.error = error
-        super.init()
-    }
-
-    public override var description: String { return "Error(error=\(self.error))" }
-
-    override func isEqual(to other: CheckpointPaywallOutcome) -> Bool {
-        return (other as? CheckpointPaywallErrorOutcome)?.error.isEqual(self.error) == true
-    }
-
-    public override func hash(into hasher: inout Hasher) { hasher.combine(self.error.hash) }
 
 }
