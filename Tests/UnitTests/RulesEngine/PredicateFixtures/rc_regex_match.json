@@ -38,6 +38,19 @@
       "expected": true
     },
     {
+      "id": "regex_match_empty_input_accepted_by_a_pattern_that_can_match_nothing",
+      "description": "An empty input is still searched, so a pattern able to match the empty string succeeds on it",
+      "predicate": {"rc.regexMatch": ["", "a*"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_match_empty_input_rejected_by_a_pattern_that_needs_a_character",
+      "predicate": {"rc.regexMatch": ["", "a"]},
+      "variables": {},
+      "expected": false
+    },
+    {
       "id": "regex_match_explicit_digit_class",
       "description": "Digits are written [0-9] rather than \\d, which is Unicode-aware in some engines and ASCII-only in others",
       "predicate": {"rc.regexMatch": ["es-419", "^[a-z]+-[0-9]+$"]},

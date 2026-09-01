@@ -25,6 +25,8 @@ extension RulesEngine {
     ///   as a malformed quantifier. JS accepts either, so an unescaped brace
     ///   compiles in Funnels and throws on both devices.
     /// - `$` matches before a trailing newline in ICU but not in JS.
+    /// - An empty pattern does not compile in ICU at all, where JS reads it
+    ///   as a match at every position.
     ///
     /// The one place the devices part company is an unknown escape such as
     /// `\q`: Android rejects the pattern, this engine reads it as a literal
