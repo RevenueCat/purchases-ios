@@ -50,7 +50,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         }
 
         let event = try await self.singleTrackedCheckpointEvent()
-        expect(event.data.result) == .disabled
+        expect(event.data.result) == .configurationUnavailable
         expect(event.data.workflowID).to(beNil())
         expect(event.data.offeringID).to(beNil())
     }
@@ -67,9 +67,11 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
         }
 
+        // `.disabled` has no result of its own: a checkpoint reached with remote config
+        // off reports the same thing as configuration that could not be read.
         let tracked = await (try self.mockEventsManager).trackedEvents.compactMap { $0 as? CheckpointEvent }
         expect(tracked.map { $0.data.result }) == [
-            .noMatch, .configurationUnavailable, .unknownCheckpoint, .disabled
+            .noMatch, .configurationUnavailable, .unknownCheckpoint, .configurationUnavailable
         ]
     }
 

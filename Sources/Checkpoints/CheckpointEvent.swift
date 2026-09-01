@@ -32,7 +32,6 @@ enum CheckpointHitResult: String {
     case noMatch = "no_match"
     case configurationUnavailable = "configuration_unavailable"
     case unknownCheckpoint = "unknown_checkpoint"
-    case disabled
 
 }
 
@@ -125,8 +124,10 @@ extension CheckpointHitResult {
     init(_ reason: CheckpointResolutionReason) {
         switch reason {
         case .noMatch: self = .noMatch
-        case .configurationUnavailable: self = .configurationUnavailable
-        case .disabled: self = .disabled
+        // A checkpoint reached while remote config is off is, for analytics, the same
+        // story as configuration that could not be read — and it is what Android
+        // reports for its own kill switch.
+        case .configurationUnavailable, .disabled: self = .configurationUnavailable
         case .unknownCheckpoint: self = .unknownCheckpoint
         }
     }

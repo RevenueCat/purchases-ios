@@ -65,8 +65,7 @@ class CheckpointEventsRequestTests: TestCase {
             .offering: "offering",
             .noMatch: "no_match",
             .configurationUnavailable: "configuration_unavailable",
-            .unknownCheckpoint: "unknown_checkpoint",
-            .disabled: "disabled"
+            .unknownCheckpoint: "unknown_checkpoint"
         ]
 
         for (result, expectedValue) in expectedValues {
