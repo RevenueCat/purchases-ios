@@ -359,7 +359,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(rulesRequestCount.value, 2)
     }
 
-    func testCustomerChangeDuringAudienceEvaluationRetriesAgainstTheNewGeneration() async throws {
+    func testAppUserChangeDuringAudienceEvaluationRetriesAgainstTheNewGeneration() async throws {
         let currentAppUserID = Atomic("user-a")
         let evaluationCount = Atomic(0)
         let provider = CheckpointTestDimensionProvider(name: "identity_flipper") { _ in

@@ -313,7 +313,7 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func customerChangeWhileDimensionsAreCollectedThrows() async {
+    func appUserChangeWhileDimensionsAreCollectedThrows() async {
         let currentAppUserID = Atomic("user-a")
         let provider = ClosureDimensionProvider(name: "identity_flipper") { _ in
             currentAppUserID.value = "user-b"
@@ -326,27 +326,27 @@ struct LocalRulesEvaluatorTests {
 
         do {
             _ = try await resolver.snapshot()
-            Issue.record("Expected a customer change to fail the snapshot")
+            Issue.record("Expected an app user change to fail the snapshot")
         } catch let error as DimensionResolutionError {
-            #expect(error == .customerChanged)
+            #expect(error == .appUserChanged)
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
     }
 
     @Test
-    func customerChangingBackBeforeCollectionFinishesDoesNotFailTheSnapshot() async throws {
+    func appUserChangingBackBeforeCollectionFinishesDoesNotFailTheSnapshot() async throws {
         let currentAppUserID = Atomic("user-a")
-        let changeCustomer = ClosureDimensionProvider(name: "identity_flipper") { _ in
+        let changeAppUser = ClosureDimensionProvider(name: "identity_flipper") { _ in
             currentAppUserID.value = "user-b"
             return [:]
         }
-        let restoreCustomer = ClosureDimensionProvider(name: "identity_flipper_back") { _ in
+        let restoreAppUser = ClosureDimensionProvider(name: "identity_flipper_back") { _ in
             currentAppUserID.value = "user-a"
             return [:]
         }
         let resolver = DimensionResolver(
-            dimensionProviders: [changeCustomer, restoreCustomer],
+            dimensionProviders: [changeAppUser, restoreAppUser],
             currentAppUserIDProvider: { currentAppUserID.value }
         )
 
@@ -354,7 +354,7 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func customerChangeDuringSnapshotFailsRuleEvaluation() async {
+    func appUserChangeDuringSnapshotFailsRuleEvaluation() async {
         let currentAppUserID = Atomic("user-a")
         let provider = ClosureDimensionProvider(name: "identity_flipper") { _ in
             currentAppUserID.value = "user-b"
@@ -369,9 +369,9 @@ struct LocalRulesEvaluatorTests {
             _ = try await evaluator.match(in: [
                 TestLocalRule(id: "test", predicate: "true")
             ])
-            Issue.record("Expected a customer change to fail rule evaluation")
+            Issue.record("Expected an app user change to fail rule evaluation")
         } catch let error as DimensionResolutionError {
-            #expect(error == .customerChanged)
+            #expect(error == .appUserChanged)
         } catch {
             Issue.record("Unexpected error: \(error)")
         }

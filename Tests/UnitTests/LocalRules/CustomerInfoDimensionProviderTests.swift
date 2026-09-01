@@ -133,7 +133,7 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func customerChangeWhileCustomerInfoIsFetchedFailsTheSnapshot() async {
+    func appUserChangeWhileCustomerInfoIsFetchedFailsTheSnapshot() async {
         let currentAppUserID = Atomic(Self.appUserID)
         let provider = CustomerInfoDimensionProvider(
             currentAppUserIDProvider: { currentAppUserID.value },
@@ -147,13 +147,13 @@ struct CustomerInfoDimensionProviderTests {
             currentAppUserIDProvider: { currentAppUserID.value }
         )
 
-        await #expect(throws: DimensionResolutionError.customerChanged) {
+        await #expect(throws: DimensionResolutionError.appUserChanged) {
             _ = try await resolver.snapshot()
         }
     }
 
     @Test
-    func customerInfoFailureCausedByCustomerChangeFailsInsteadOfDegradingSnapshot() async {
+    func customerInfoFailureCausedByAppUserChangeFailsInsteadOfDegradingSnapshot() async {
         let currentAppUserID = Atomic(Self.appUserID)
         let provider = CustomerInfoDimensionProvider(
             currentAppUserIDProvider: { currentAppUserID.value },
@@ -167,7 +167,7 @@ struct CustomerInfoDimensionProviderTests {
             currentAppUserIDProvider: { currentAppUserID.value }
         )
 
-        await #expect(throws: DimensionResolutionError.customerChanged) {
+        await #expect(throws: DimensionResolutionError.appUserChanged) {
             _ = try await resolver.snapshot()
         }
     }
