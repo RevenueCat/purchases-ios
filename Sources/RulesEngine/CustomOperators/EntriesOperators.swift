@@ -23,10 +23,10 @@ extension RulesEngine {
         /// literal array operand, wrap it:
         /// `{"rc.entries": [["a", "b"]]}`.
         ///
-        /// - **Object**: pairs sorted **lexicographically by key**. Swift
-        ///   dictionaries have no insertion order; this deliberately diverges
-        ///   from JS `Object.entries` insertion order. Rules must not depend on
-        ///   insertion order.
+        /// - **Object**: pairs sorted **by key, in UTF-16 code unit order**.
+        ///   Swift dictionaries have no insertion order; this deliberately
+        ///   diverges from JS `Object.entries` insertion order. Rules must not
+        ///   depend on insertion order.
         /// - **Array**: index/value pairs with **string** keys (`"0"`, `"1"`, …),
         ///   matching `Object.entries(["a","b"]) === [["0","a"],["1","b"]]`.
         /// - **Anything else** (null, undefined, bool, number, string): throws
@@ -41,7 +41,7 @@ extension RulesEngine {
 
             switch input {
             case .object(let map):
-                let sortedKeys = map.keys.sorted()
+                let sortedKeys = map.keys.sorted(by: jsStringPrecedes)
                 let pairs = sortedKeys.map { key in
                     Value.array([.string(key), map[key] ?? .null])
                 }
