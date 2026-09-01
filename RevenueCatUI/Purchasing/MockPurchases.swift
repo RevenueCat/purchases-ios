@@ -35,6 +35,11 @@ final class MockPurchases: PaywallPurchasesType, @unchecked Sendable {
     var isUIPreviewMode = false
     var remoteConfigEnabled = false
 
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return _purchasesAreCompletedBy }
         set { _ = newValue }
