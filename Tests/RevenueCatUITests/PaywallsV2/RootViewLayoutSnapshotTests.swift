@@ -43,6 +43,22 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
         )
     }
 
+    func testStickyFooterOnIPadCardWithoutBottomSafeArea() throws {
+        let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
+        let view = PaywallsV2LayoutFixtures.makeRootView(
+            viewModel: viewModel,
+            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
+            safeAreaInsets: EdgeInsets(top: 47, leading: 0, bottom: 0, trailing: 0)
+        )
+        .environment(\.userInterfaceIdiom, .pad)
+
+        view.snapshot(
+            size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
+            record: Self.shouldRecordSnapshots,
+            separateOSVersions: false
+        )
+    }
+
     func testStickyFooterRootZLayerOnIPhoneFullScreen() throws {
         let viewModel = try PaywallsV2LayoutFixtures.makeStickyFooterRootZLayerViewModel()
         let view = PaywallsV2LayoutFixtures.makeRootView(

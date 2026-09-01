@@ -73,8 +73,36 @@
     },
     {
       "id": "split_preserves_multi_scalar_characters",
-      "description": "Splitting works on characters, so a multi-scalar grapheme survives intact",
+      "description": "A separator can never match inside a surrogate pair, so the thumbs up 👍 (U+1F44D, the pair D83D DC4D) survives intact",
       "predicate": {"some": [[{"rc.split": ["a,👍", ","]}], {"===": [{"var": "1"}, "👍"]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "split_astral_separator_splits",
+      "description": "A separator that is itself a surrogate pair matches: the thumbs up 👍 (U+1F44D) separates two fields",
+      "predicate": {"===": [{"rc.length": {"rc.split": ["a👍b", "👍"]}}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "split_precomposed_separator_does_not_match_a_decomposed_input",
+      "description": "The separator is a precomposed e-acute é (U+00E9); the input spells it decomposed, as x, e (U+0065), a combining acute accent ◌́ (U+0301), y. The separator is matched by code unit, so it is absent and the whole input is the single field",
+      "predicate": {"===": [{"rc.length": {"rc.split": ["xe\u0301y", "\u00e9"]}}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "split_decomposed_separator_does_not_match_a_precomposed_input",
+      "description": "The mirror case: the separator is a decomposed e-acute, e (U+0065) followed by a combining acute accent ◌́ (U+0301), and the input x, é (U+00E9), y spells it precomposed",
+      "predicate": {"===": [{"rc.length": {"rc.split": ["x\u00e9y", "e\u0301"]}}, 1]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "split_separator_matches_the_identical_spelling",
+      "description": "Same decomposed separator as above, now against an input that spells the e-acute the same way, so it does split",
+      "predicate": {"===": [{"rc.length": {"rc.split": ["xe\u0301y", "e\u0301"]}}, 2]},
       "variables": {},
       "expected": true
     },
