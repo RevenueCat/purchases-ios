@@ -69,9 +69,13 @@ extension RulesEngine {
                 )
             }
 
-            guard let regex = try? NSRegularExpression(pattern: pattern) else {
+            let regex: NSRegularExpression
+            do {
+                regex = try NSRegularExpression(pattern: pattern)
+            } catch {
                 throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' could not compile pattern '\(pattern)'"
+                    message: "operator '\(operatorName)' could not compile pattern "
+                        + "'\(pattern)': \(error.localizedDescription)"
                 )
             }
 
