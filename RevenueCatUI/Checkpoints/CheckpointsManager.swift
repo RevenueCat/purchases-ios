@@ -76,13 +76,13 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
-        self.listener?.onCheckpointHit(CheckpointHitContext(identifier: identifier, params: params))
+        self.listener?.onCheckpointHit(CheckpointContext.Hit(identifier: identifier, params: params))
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
             let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
             self.listener?.onCheckpointCompleted(
-                CheckpointCompletedContext(identifier: identifier, params: params, result: result)
+                CheckpointContext.Completed(identifier: identifier, params: params, result: result)
             )
             return result
         }
@@ -104,7 +104,7 @@ final class CheckpointsManager {
         }
 
         self.listener?.onCheckpointCompleted(
-            CheckpointCompletedContext(identifier: identifier, params: params, result: result)
+            CheckpointContext.Completed(identifier: identifier, params: params, result: result)
         )
         return result
     }

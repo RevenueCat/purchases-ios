@@ -584,15 +584,15 @@ private final class ListenerRecorder: CheckpointListener {
     }
 
     private(set) var events: [Event] = []
-    private(set) var hitContexts: [CheckpointHitContext] = []
-    private(set) var completedContexts: [CheckpointCompletedContext] = []
+    private(set) var hitContexts: [CheckpointContext.Hit] = []
+    private(set) var completedContexts: [CheckpointContext.Completed] = []
 
-    func onCheckpointHit(_ context: CheckpointHitContext) {
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {
         self.hitContexts.append(context)
         self.events.append(.hit(context.identifier))
     }
 
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
         self.completedContexts.append(context)
         self.events.append(.completed(context.identifier))
     }

@@ -31,13 +31,13 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
     // MARK: - New checkpoint public API implementation
 
     // These callbacks demonstrate an app-wide analytics integration using CheckpointListener.
-    func onCheckpointHit(_ context: CheckpointHitContext) {
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {
         self.track(
             "Hit · \(context.identifier) · customVariables=\(context.customVariables)"
         )
     }
 
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
         self.track(
             "Completed · \(context.identifier) · \(Self.describe(context.result)) · " +
                 "customVariables=\(context.customVariables)"
