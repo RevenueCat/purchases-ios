@@ -150,6 +150,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
+        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
         guard !rulesSnapshot.ruleSet.rules.isEmpty else {
             return .noAction(.noMatch)
         }
@@ -157,12 +158,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         let audienceConfiguration: AudienceConfigurationSnapshot
         do {
             guard let configuration = try await self.audiencesConfigProvider.configuration() else {
+                guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
                 return .noAction(.configurationUnavailable)
             }
             audienceConfiguration = configuration
         } catch let error as CancellationError {
             throw error
         } catch {
+            guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
             Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
                 checkpointID: identifier,
                 reason: "\(error)"

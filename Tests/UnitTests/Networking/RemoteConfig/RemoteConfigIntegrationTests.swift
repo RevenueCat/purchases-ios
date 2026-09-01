@@ -226,6 +226,27 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(configuration).to(beNil())
     }
 
+    func testAudiencesProviderLeavesStaleSnapshotRetryToCaller() async throws {
+        let manager = MockRemoteConfigManager()
+        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
+        manager.stubbedTopics[.audiences] = [
+            "default": .init(blobRef: "audiences-ref")
+        ]
+        manager.stubbedBlobData[.audiences] = ["default": payload]
+
+        var didAdvanceGeneration = false
+        manager.onConfigGenerationRead = {
+            guard !didAdvanceGeneration else { return }
+            didAdvanceGeneration = true
+            manager.configGeneration += 1
+        }
+
+        let configuration = try await AudiencesConfigProvider(manager: manager).configuration()
+
+        expect(configuration).to(beNil())
+        expect(manager.invokedTopicCount) == 1
+    }
+
     func testAudiencesProviderReturnsEmptyBackendResultsWhenItemIsAbsent() async throws {
         let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
         let ref = RCContainerTestData.blobRef(for: payload)

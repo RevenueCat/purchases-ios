@@ -316,6 +316,43 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(fetchCount.value, 1, "The stale attempt should not resolve its matched rule")
     }
 
+    func testStaleUnavailableAudienceConfigurationRetries() async throws {
+        let configurationCount = Atomic<Int>(0)
+        self.audiencesProvider.onConfiguration = {
+            let count = configurationCount.modify { $0 += 1; return $0 }
+            self.audiencesProvider.configurationUnavailable = count == 1
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+    }
+
+    func testStaleEmptyRulesRetry() async throws {
+        let rulesRequestCount = Atomic<Int>(0)
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
+        self.checkpointsProvider.onRules = {
+            let count = rulesRequestCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+                self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+                    Self.rule(workflowID: self.workflowID)
+                ]))
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(rulesRequestCount.value, 2)
+    }
+
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
         let secondWorkflowID = "wf5678"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
@@ -845,6 +882,7 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     }
     var configGeneration = 0
     var backendPredicateResults: [String: DimensionValue] = [:]
+    var configurationUnavailable = false
     var onConfiguration: (() -> Void)?
     private(set) var configurationRequestCount = 0
     private var defaultAudienceIdentifiers: Set<String> = ["audience"]
@@ -863,6 +901,8 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     func configuration() async throws -> AudienceConfigurationSnapshot? {
         self.configurationRequestCount += 1
         self.onConfiguration?()
+
+        guard !self.configurationUnavailable else { return nil }
 
         return AudienceConfigurationSnapshot(
             audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
@@ -906,6 +946,7 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
     var error: Error?
     var configGeneration = 0
+    var onRules: (() -> Void)?
     private(set) var requestedIdentifiers: [String] = []
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
@@ -913,9 +954,11 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         if let error = self.error {
             throw error
         }
-        return try self.result.get().map {
+        let snapshot = try self.result.get().map {
             CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
         }
+        self.onRules?()
+        return snapshot
     }
 
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {

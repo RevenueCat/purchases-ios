@@ -44,49 +44,46 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
     }
 
     func configuration() async throws -> AudienceConfigurationSnapshot? {
-        while true {
-            try Task.checkCancellation()
+        try Task.checkCancellation()
 
-            guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences) else {
+        guard let topicSnapshot = await self.manager.topicCacheSnapshot(.audiences) else {
+            return nil
+        }
+
+        let prefetchRefs = topicSnapshot.key.values.compactMap { $0.prefetch ? $0.blobRef : nil }
+        await self.manager.ensureBlobsDownloaded(prefetchRefs)
+        guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
+
+        if let cached = self.cachedConfiguration.value(for: topicSnapshot) {
+            return cached
+        }
+
+        do {
+            guard topicSnapshot.key[Self.audiencesBlobItemKey] != nil,
+                  let blob = await self.manager.blobData(
+                    for: .audiences,
+                    itemKey: Self.audiencesBlobItemKey
+                  ) else {
+                guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
                 return nil
             }
 
-            let topicSnapshot = GenerationGuardedCacheSnapshot(
-                generation: self.manager.configGeneration,
-                key: topic
+            let audiences = try Self.decodeAudiences(from: blob)
+            let backendPredicateResults = Self.decodeBackendPredicateResults(from: topicSnapshot.key)
+
+            guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
+
+            let configuration = AudienceConfigurationSnapshot(
+                audiences: audiences,
+                backendPredicateResults: backendPredicateResults,
+                configGeneration: topicSnapshot.generation
             )
-            if let cached = self.cachedConfiguration.value(for: topicSnapshot) {
-                guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { continue }
-                return cached
-            }
-
-            do {
-                guard topic[Self.audiencesBlobItemKey]?.blobRef != nil,
-                      let blob = await self.manager.blobData(
-                        for: .audiences,
-                        itemKey: Self.audiencesBlobItemKey
-                      ) else {
-                    guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { continue }
-                    return nil
-                }
-
-                let audiences = try Self.decodeAudiences(from: blob)
-                let backendPredicateResults = Self.decodeBackendPredicateResults(from: topic)
-
-                guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { continue }
-
-                let configuration = AudienceConfigurationSnapshot(
-                    audiences: audiences,
-                    backendPredicateResults: backendPredicateResults,
-                    configGeneration: topicSnapshot.generation
-                )
-                self.cachedConfiguration.store(configuration, for: topicSnapshot)
-                return configuration
-            } catch {
-                guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { continue }
-                Logger.error(Strings.remoteConfig.audienceConfigurationDecodeFailed(error))
-                throw error
-            }
+            self.cachedConfiguration.store(configuration, for: topicSnapshot)
+            return configuration
+        } catch {
+            guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
+            Logger.error(Strings.remoteConfig.audienceConfigurationDecodeFailed(error))
+            throw error
         }
     }
 
