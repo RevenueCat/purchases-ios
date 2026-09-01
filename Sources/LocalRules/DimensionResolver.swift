@@ -24,22 +24,22 @@ enum DimensionResolutionError: Error, Equatable, Sendable {
 
     case providerFailed(providerName: String, message: String)
     case conflictingValue(path: String)
-    case customerChanged
+    case appUserChanged
 }
 
 /// Builds an immutable, point-in-time root scope for local rule evaluation.
 ///
 /// Providers can suspend while collecting values. The current app user ID is therefore read before collection and
-/// verified after every provider finishes, preventing a snapshot from combining values belonging to two customers.
+/// verified after every provider finishes, preventing a snapshot from combining values belonging to two app users.
 /// Identity changes also advance the remote-config generation, allowing checkpoint resolution to retry against the
-/// new customer instead of evaluating the invalid snapshot.
+/// new app user instead of evaluating the invalid snapshot.
 struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
     private let currentAppUserIDProvider: @Sendable () -> String
     private let dateProvider: DateProvider
 
-    /// Creates a resolver from injected providers, the current customer, and a clock.
+    /// Creates a resolver from injected providers, the current app user, and a clock.
     init(
         dimensionProviders: [any DimensionProvider],
         currentAppUserIDProvider: @escaping @Sendable () -> String,
@@ -105,7 +105,7 @@ struct DimensionResolver: Sendable {
 
         try Task.checkCancellation()
         guard self.currentAppUserIDProvider() == appUserID else {
-            throw DimensionResolutionError.customerChanged
+            throw DimensionResolutionError.appUserChanged
         }
 
         return DimensionSnapshot(values: values, evaluationDate: date)
