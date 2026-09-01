@@ -29,12 +29,7 @@ extension RulesEngine {
         static func opSlice(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
 
-            guard evaluated.count == 2 || evaluated.count == 3 else {
-                throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects 2 or 3 arguments, "
-                        + "got \(evaluated.count)"
-                )
-            }
+            try Operators.checkArity(evaluated.count, allowed: [2, 3], operatorName: operatorName)
 
             guard case .array(let items) = evaluated[0] else {
                 var hint = ""

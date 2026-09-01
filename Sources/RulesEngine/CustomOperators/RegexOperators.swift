@@ -26,7 +26,7 @@ extension RulesEngine {
         static func opRegexMatch(args: Value, vars: Scope) throws -> Value {
             let operatorName = "rc.regexMatch"
             let evaluated = try Operators.evalArgs(args, vars: vars)
-            try Self.checkArity(evaluated.count, allowed: [2], operatorName: operatorName)
+            try Operators.checkArity(evaluated.count, allowed: [2], operatorName: operatorName)
 
             let operands = try Self.operands(evaluated, operatorName: operatorName)
             return .bool(Self.firstMatch(of: operands.regex, in: operands.input) != nil)
@@ -47,7 +47,7 @@ extension RulesEngine {
         static func opRegexExtract(args: Value, vars: Scope) throws -> Value {
             let operatorName = "rc.regexExtract"
             let evaluated = try Operators.evalArgs(args, vars: vars)
-            try Self.checkArity(evaluated.count, allowed: [2, 3], operatorName: operatorName)
+            try Operators.checkArity(evaluated.count, allowed: [2, 3], operatorName: operatorName)
 
             let operands = try Self.operands(evaluated, operatorName: operatorName)
             let group = try Self.group(evaluated.count == 3 ? evaluated[2] : nil,
@@ -80,7 +80,7 @@ extension RulesEngine {
         static func opRegexReplace(args: Value, vars: Scope) throws -> Value {
             let operatorName = "rc.regexReplace"
             let evaluated = try Operators.evalArgs(args, vars: vars)
-            try Self.checkArity(evaluated.count, allowed: [3], operatorName: operatorName)
+            try Operators.checkArity(evaluated.count, allowed: [3], operatorName: operatorName)
 
             let operands = try Self.operands(evaluated, operatorName: operatorName)
 
@@ -99,17 +99,6 @@ extension RulesEngine {
                     withTemplate: NSRegularExpression.escapedTemplate(for: replacement)
                 )
             )
-        }
-
-        /// Rejects an argument count no overload accepts.
-        static func checkArity(_ count: Int, allowed: [Int], operatorName: String) throws {
-            guard allowed.contains(count) else {
-                let expected = allowed.map(String.init).joined(separator: " or ")
-                throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects \(expected) arguments, "
-                        + "got \(count)"
-                )
-            }
         }
 
         /// Type-checks the `[input, pattern]` pair every regex operator starts
