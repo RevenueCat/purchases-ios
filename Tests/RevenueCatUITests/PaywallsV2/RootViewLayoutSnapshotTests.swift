@@ -62,6 +62,8 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     /// Scrolled to the bottom, the last row must still clear the sticky footer once the footer
     /// gains its minimum padding.
     func testStickyFooterReservesScrollSpaceOnIPadCard() throws {
+        // defaultScrollAnchor is an iOS 17 SDK symbol, so Xcode 14 cannot compile the call at all.
+        #if swift(>=5.9)
         guard #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) else {
             throw XCTSkip("defaultScrollAnchor requires iOS 17")
         }
@@ -73,13 +75,16 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             safeAreaInsets: EdgeInsets(top: 47, leading: 0, bottom: 0, trailing: 0)
         )
         .environment(\.userInterfaceIdiom, .pad)
-        .defaultScrollAnchorBottom()
+        .defaultScrollAnchor(.bottom)
 
         view.snapshot(
             size: PaywallsV2LayoutFixtures.iPadFormSheetSize,
             record: Self.shouldRecordSnapshots,
             separateOSVersions: false
         )
+        #else
+        throw XCTSkip("defaultScrollAnchor requires the iOS 17 SDK")
+        #endif
     }
 
     func testStickyFooterRootZLayerOnIPhoneFullScreen() throws {
@@ -130,26 +135,6 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
 
     private func makeFullScreenSnapshotView(_ makeViewModel: () throws -> RootViewModel) throws -> some View {
         PaywallsV2LayoutFixtures.makeRootView(viewModel: try makeViewModel(), size: Self.fullScreenSize)
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension View {
-
-    /// `defaultScrollAnchor` only exists in the iOS 17 SDK, so it needs the compiler check as well
-    /// as the availability one to build with older Xcode versions.
-    @ViewBuilder
-    func defaultScrollAnchorBottom() -> some View {
-        #if swift(>=5.9)
-        if #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) {
-            AnyView(self.defaultScrollAnchor(.bottom))
-        } else {
-            AnyView(self)
-        }
-        #else
-        self
-        #endif
     }
 
 }
