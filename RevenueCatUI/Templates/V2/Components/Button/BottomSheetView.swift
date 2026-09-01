@@ -60,11 +60,11 @@ struct BottomSheetOverlayModifier: ViewModifier {
             return nil
         case .fixed(let height):
             return CGFloat(height)
-        case .relative(let percent):
+        case let .relative(percent, minMax):
             guard let parentHeight = self.parentHeight else {
                 return nil
             }
-            return parentHeight * percent
+            return minMax.clamped(parentHeight * percent)
         }
     }
 
