@@ -127,28 +127,6 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
 extension AudiencesConfigProvider: @unchecked Sendable {}
 
-private extension AnyDecodable {
-
-    var dimensionValue: DimensionValue? {
-        switch self {
-        case let .string(value): return .string(value)
-        case let .int(value): return .int(Int64(value))
-        case let .double(value): return .double(value)
-        case let .bool(value): return .bool(value)
-        case let .object(value):
-            return .object(value.compactMapValues(\AnyDecodable.dimensionValue))
-        case let .array(value):
-            let objects = value.compactMap { element -> [String: DimensionValue]? in
-                guard case let .object(object) = element else { return nil }
-                return object.compactMapValues(\AnyDecodable.dimensionValue)
-            }
-            return objects.count == value.count ? .objectList(objects) : nil
-        case .null: return nil
-        }
-    }
-
-}
-
 private struct FailableAudience: Decodable {
 
     let result: Result<Audience, Error>

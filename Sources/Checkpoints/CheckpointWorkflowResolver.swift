@@ -123,6 +123,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
         Logger.verbose(Strings.remoteConfig.checkpointResolutionRetry(identifier: identifier))
 
+        // A `nil` attempt means its configuration became stale while resolving.
+        // Retry once against the latest generation before treating repeated staleness as unavailable.
         if let resolution = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
             return resolution
         }
