@@ -11,9 +11,6 @@ extension RulesEngine {
     /// String + array operators: `in`, `cat`, `substr`, `merge`.
     ///
     /// Behavior follows the JSON Logic JS reference (`json-logic-js`).
-    /// `substr` slices by Unicode code points, not UTF-16 code units —
-    /// matches Swift's `String.Character` semantics; differs from JS only
-    /// for surrogate-pair characters.
     enum StringArrayOperators {
 
         /// `{"in": [needle, haystack]}` — substring or array-membership
@@ -57,21 +54,28 @@ extension RulesEngine {
         /// `{"substr": [source, start]}` or
         /// `{"substr": [source, start, length]}`. `source` is stringified.
         /// Negative `start` counts from the end. A negative `length` drops
-        /// that many characters from the right of the substring that starts
-        /// at `start`. Code-point-based, not byte-based — see type docs.
-        /// `json-logic-js` declares `substr` as
+        /// that many code units from the right of the substring that starts
+        /// at `start`. `json-logic-js` declares `substr` as
         /// `function(source, start, end)`, so a missing `start` defaults
         /// to `0` and arguments past the third are silently ignored. A
         /// missing `source` is `undefined`, which stringifies to
         /// `"undefined"` (not `"null"`).
+        ///
+        /// Indices are **UTF-16 code units**, since `json-logic-js` is
+        /// `String.prototype.substr` and that is the unit a JS string is
+        /// indexed in. A slice can therefore land inside a surrogate pair.
+        /// JS and Kotlin hand back the half pair as-is; a Swift `String`
+        /// cannot hold an unpaired surrogate, so it becomes U+FFFD — the
+        /// same code-unit count, different content. That is the one input
+        /// class where the engines cannot agree.
         static func opSubstr(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
             let source = evaluated.first ?? .undefined
             let start = evaluated.indices.contains(1) ? evaluated[1] : .null
             let length: Value? = evaluated.indices.contains(2) ? evaluated[2] : nil
 
-            let chars = Array(jsString(source))
-            let total = chars.count
+            let units = Array(jsString(source).utf16)
+            let total = units.count
 
             // Non-numeric start coerces to 0 (matches JS `ToInteger`).
             let startN = Operators.clampedInt(start.asNumber ?? 0)
@@ -82,7 +86,7 @@ extension RulesEngine {
                 begin = min(startN, total)
             }
 
-            let afterStart = Array(chars[begin...])
+            let afterStart = units[begin...]
 
             let result: String
             if let length = length {
@@ -93,9 +97,9 @@ extension RulesEngine {
                 } else {
                     count = min(lenN, afterStart.count)
                 }
-                result = String(afterStart[..<count])
+                result = String(decoding: afterStart.prefix(count), as: UTF16.self)
             } else {
-                result = String(afterStart)
+                result = String(decoding: afterStart, as: UTF16.self)
             }
             return .string(result)
         }
