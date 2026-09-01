@@ -32,8 +32,17 @@ struct WebViewComponentView: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
+    @Environment(\.locale)
+    private var locale
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+
+    @Environment(\.paywallWebViewStaticContext)
+    private var webViewStaticContext
 
     @Environment(\.paywallStateValues)
     private var paywallStateValues
@@ -57,6 +66,16 @@ struct WebViewComponentView: View {
         )
     }
 
+    private var webViewContext: PaywallWebViewContext? {
+        return self.webViewStaticContext?.snapshot(
+            package: self.packageContext.package,
+            selectedPackageID: self.selectedPackageId,
+            customVariables: self.viewModel.resolvedCustomVariables(overridingWith: self.customVariables),
+            locale: self.locale,
+            isDarkMode: self.colorScheme == .dark
+        )
+    }
+
     var body: some View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
@@ -65,7 +84,9 @@ struct WebViewComponentView: View {
         // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
         // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
-        if style.isRenderable, let url = style.url, let instance = self.viewModel.webViewInstance() {
+        if style.isRenderable,
+           let url = style.url,
+           let instance = self.viewModel.webViewInstance(context: self.webViewContext) {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,

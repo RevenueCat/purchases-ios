@@ -62,6 +62,8 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
     /// Scrolled to the bottom, the last row must still clear the sticky footer once the footer
     /// gains its minimum padding.
     func testStickyFooterReservesScrollSpaceOnIPadCard() throws {
+        // defaultScrollAnchor is an iOS 17 SDK symbol, so Xcode 14 cannot compile the call at all.
+        #if swift(>=5.9)
         guard #available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *) else {
             throw XCTSkip("defaultScrollAnchor requires iOS 17")
         }
@@ -80,6 +82,9 @@ final class RootViewLayoutSnapshotTests: BaseSnapshotTest {
             record: Self.shouldRecordSnapshots,
             separateOSVersions: false
         )
+        #else
+        throw XCTSkip("defaultScrollAnchor requires the iOS 17 SDK")
+        #endif
     }
 
     func testStickyFooterRootZLayerOnIPhoneFullScreen() throws {
