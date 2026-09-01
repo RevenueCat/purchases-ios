@@ -193,8 +193,9 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         case let .completed(matchedRule):
             rule = matchedRule
         case let .unavailable(error):
-            // An audience the SDK failed to evaluate is not the same answer as an audience the app user is
-            // outside of, so this can't report `noMatch`.
+            // Only return `noMatch` when audience evaluation succeeds and no rule matches. If evaluation fails,
+            // the SDK can't determine whether the app user matches, so treat the checkpoint configuration as
+            // unavailable.
             Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
                 checkpointID: identifier,
                 reason: "\(error)"
