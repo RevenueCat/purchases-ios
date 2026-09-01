@@ -34,6 +34,19 @@
       "expected": true
     },
     {
+      "id": "regex_replace_empty_input_still_takes_a_replacement",
+      "description": "An empty input is one position rather than none, so a pattern able to match nothing replaces there",
+      "predicate": {"===": [{"rc.regexReplace": ["", "a*", "-"]}, "-"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_replace_empty_input_unchanged_by_a_pattern_needing_a_character",
+      "predicate": {"===": [{"rc.regexReplace": ["", "a", "-"]}, ""]},
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "regex_replace_replacement_is_literal_text",
       "description": "$1 is not a backreference, because the three engines disagree on template syntax",
       "predicate": {"===": [{"rc.regexReplace": ["ab", "b", "[$1]"]}, "a[$1]"]},

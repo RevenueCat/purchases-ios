@@ -59,6 +59,19 @@
       "expected": true
     },
     {
+      "id": "regex_extract_empty_input_yields_the_empty_match",
+      "description": "An empty input is still searched, so a pattern able to match nothing extracts the empty string rather than null",
+      "predicate": {"===": [{"rc.regexExtract": ["", "a*"]}, ""]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "regex_extract_empty_input_has_no_match_for_a_pattern_needing_a_character",
+      "predicate": {"==": [{"rc.regexExtract": ["", "a"]}, null]},
+      "variables": {},
+      "expected": true
+    },
+    {
       "id": "regex_extract_feeds_another_operator",
       "predicate": {
         "===": [
@@ -73,6 +86,19 @@
       "id": "regex_extract_group_the_pattern_does_not_have_is_type_error",
       "description": "Asking for a group that cannot exist is a lowering bug, unlike a group that simply did not participate",
       "predicate": {"rc.regexExtract": ["abc", "(a)", 2]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexExtract"}
+    },
+    {
+      "id": "regex_extract_group_beyond_the_integer_range_is_type_error",
+      "description": "A group number too large to be an index is clamped rather than overflowing, and then fails as a group the pattern does not have",
+      "predicate": {"rc.regexExtract": ["abc", "(a)", 9223372036854775807]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.regexExtract"}
+    },
+    {
+      "id": "regex_extract_whole_float_group_beyond_the_integer_range_is_type_error",
+      "predicate": {"rc.regexExtract": ["abc", "(a)", 1e18]},
       "variables": {},
       "expected": {"error": "typeMismatch", "operator": "rc.regexExtract"}
     },
