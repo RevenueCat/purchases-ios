@@ -43,9 +43,10 @@ final class WebViewComponentViewModel: Hashable {
     /// The live web view for this component, created on first use. `nil` when the component has no
     /// resolvable origin to gate the bridge against.
     @MainActor
-    func webViewInstance() -> WebViewInstance? {
+    func webViewInstance(context: PaywallWebViewContext? = nil) -> WebViewInstance? {
         if let storedWebViewInstance = self.storedWebViewInstance {
             guard storedWebViewInstance.isUnusable else {
+                storedWebViewInstance.session.updateContext(context)
                 return storedWebViewInstance
             }
 
@@ -63,10 +64,19 @@ final class WebViewComponentViewModel: Hashable {
             fitsWidth: self.component.size.width.isFit,
             fitsHeight: self.component.size.height.isFit
         )
+        webViewInstance.session.updateContext(context)
         self.storedWebViewInstance = webViewInstance
         return webViewInstance
     }
     #endif
+
+    func resolvedCustomVariables(
+        overridingWith customVariables: [String: CustomVariableValue]
+    ) -> [String: CustomVariableValue] {
+        return self.uiConfigProvider.defaultCustomVariables.merging(customVariables) { _, supplied in
+            supplied
+        }
+    }
 
     /// Resolves the component's rendered properties for the current presentation context, applying any
     /// matching overrides on top of the base component values.
