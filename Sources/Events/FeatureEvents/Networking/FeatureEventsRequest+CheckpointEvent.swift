@@ -23,9 +23,14 @@ extension FeatureEventsRequest {
         let version: Int
         let type: String
         let identifier: String
+        let checkpointType: CheckpointType?
         let appUserID: String
         let appSessionID: String
         let timestamp: UInt64
+        let result: CheckpointHitResult?
+        let workflowID: String?
+        let offeringID: String?
+        let checkpointRuleID: String?
 
     }
 
@@ -55,9 +60,14 @@ extension FeatureEventsRequest.CheckpointEvent {
                 version: Self.schemaVersion,
                 type: event.eventType,
                 identifier: event.data.identifier,
+                checkpointType: event.data.checkpointType,
                 appUserID: storedEvent.userID,
                 appSessionID: appSessionID.uuidString,
-                timestamp: event.data.date.millisecondsSince1970
+                timestamp: event.data.date.millisecondsSince1970,
+                result: event.data.result,
+                workflowID: event.data.workflowID,
+                offeringID: event.data.offeringID,
+                checkpointRuleID: event.data.checkpointRuleID
             )
         } catch {
             Logger.error(Strings.paywalls.event_cannot_deserialize(error))
@@ -79,9 +89,14 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         case version
         case type
         case identifier
+        case checkpointType = "checkpoint_type"
         case appUserID = "app_user_id"
         case appSessionID = "app_session_id"
         case timestamp
+        case result
+        case workflowID = "workflow_id"
+        case offeringID = "offering_id"
+        case checkpointRuleID = "checkpoint_rule_id"
 
     }
 
@@ -91,9 +106,14 @@ extension FeatureEventsRequest.CheckpointEvent: Encodable {
         try container.encode(self.version, forKey: .version)
         try container.encode(self.type, forKey: .type)
         try container.encode(self.identifier, forKey: .identifier)
+        try container.encodeIfPresent(self.checkpointType, forKey: .checkpointType)
         try container.encode(self.appUserID, forKey: .appUserID)
         try container.encode(self.appSessionID, forKey: .appSessionID)
         try container.encode(self.timestamp, forKey: .timestamp)
+        try container.encodeIfPresent(self.result, forKey: .result)
+        try container.encodeIfPresent(self.workflowID, forKey: .workflowID)
+        try container.encodeIfPresent(self.offeringID, forKey: .offeringID)
+        try container.encodeIfPresent(self.checkpointRuleID, forKey: .checkpointRuleID)
     }
 
 }

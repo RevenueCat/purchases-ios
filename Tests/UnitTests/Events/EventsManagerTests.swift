@@ -151,6 +151,27 @@ class EventsManagerTests: TestCase {
         expect(map["id"] as? String) == event.data.id.uuidString
         expect(map["timestamp"] as? UInt64) == event.data.date.millisecondsSince1970
         expect(map["identifier"] as? String) == "onboarding_complete"
+        expect(map["result"]).to(beNil())
+        expect(map["workflow_id"]).to(beNil())
+        expect(map["offering_id"]).to(beNil())
+    }
+
+    func testCheckpointHitToMapIncludesTheOutcome() {
+        let event = CheckpointEvent.hit(
+            .init(identifier: "onboarding_complete",
+                  date: Date(timeIntervalSince1970: 1_699_270_688.995),
+                  checkpointType: .custom,
+                  result: .workflow,
+                  workflowID: "wf_123",
+                  offeringID: "offering_id")
+        )
+
+        let map = event.toMap()
+
+        expect(map["checkpoint_type"] as? String) == "custom"
+        expect(map["result"] as? String) == "workflow"
+        expect(map["workflow_id"] as? String) == "wf_123"
+        expect(map["offering_id"] as? String) == "offering_id"
     }
 
     func testPaywallCloseToMap() {
