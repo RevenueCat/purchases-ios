@@ -32,20 +32,27 @@ extension RulesEngine {
         ///   the data `var` reads from; path/default args evaluate against
         ///   `current` as well.
         static func opVar(args: Value, vars: Scope) throws -> Value {
-            try resolveVar(args: args, target: vars.current, vars: vars, operatorName: "var")
+            try resolveVar(
+                args: args,
+                lookup: { lookupInScope(vars, path: $0) },
+                vars: vars,
+                operatorName: "var"
+            )
         }
 
         /// Shared lookup for `var` and `rc.rootVar`. Path and default args
-        /// evaluate against `vars.current`; the final lookup walks `target`.
+        /// evaluate against `vars.current`; `lookup` performs the final
+        /// resolution, which differs per operator — `var` also sees `rc.let`
+        /// bindings, while `rc.rootVar` reads the root and nothing else.
         static func resolveVar(
             args: Value,
-            target: Value,
+            lookup: (String) -> Value?,
             vars: Scope,
             operatorName: String
         ) throws -> Value {
             let (path, defaultValue) = try resolveVarArgs(args, vars: vars, operatorName: operatorName)
 
-            if let found = lookupVar(in: target, path: path) {
+            if let found = lookup(path) {
                 return found
             }
             if let defaultValue = defaultValue {
@@ -85,7 +92,7 @@ extension RulesEngine {
             var missing: [Value] = []
             for key in keys {
                 guard let path = keyAsPath(key) else { continue }
-                if isMissingValue(varLookup(in: vars.current, path: path)) {
+                if isMissingValue(lookupInScope(vars, path: path) ?? .null) {
                     missing.append(.string(path))
                 }
             }
@@ -215,20 +222,34 @@ extension RulesEngine {
             }
         }
 
+        /// The lookup `var` and `missing` share: the active data first, then
+        /// any names an enclosing `rc.let` bound. Data wins, so a bound name
+        /// can never mask a field the scope actually has, and a predicate with
+        /// no `rc.let` around it resolves exactly as it did before bindings
+        /// existed.
+        ///
+        /// The first path segment decides which of the two owns the whole
+        /// lookup. Once the data has that segment, a missing descendant stays
+        /// missing instead of being answered by a binding of the same name,
+        /// which would otherwise pull a value out of an unrelated object.
+        static func lookupInScope(_ vars: Scope, path: String) -> Value? {
+            if let found = lookupVar(in: vars.current, path: path) {
+                return found
+            }
+            guard !vars.bindings.isEmpty, !path.isEmpty else { return nil }
+            let firstSegment = path.split(separator: ".", maxSplits: 1).first.map(String.init) ?? path
+            guard lookupVar(in: vars.current, path: firstSegment) == nil else { return nil }
+            return lookupPath(in: .object(vars.bindings), path: path)
+        }
+
         /// Resolve `path` the way `var` does. Empty path returns the entire
         /// data scope; a resolving path returns its value (including explicit
         /// `.null`); a non-resolving path returns `nil`.
-        private static func lookupVar(in vars: Value, path: String) -> Value? {
+        static func lookupVar(in vars: Value, path: String) -> Value? {
             if path.isEmpty {
                 return vars
             }
             return lookupPath(in: vars, path: path)
-        }
-
-        /// Like `lookupVar`, but maps a non-resolving path to `.null`
-        /// instead of `nil` — the shape `missing` needs.
-        private static func varLookup(in vars: Value, path: String) -> Value {
-            lookupVar(in: vars, path: path) ?? .null
         }
 
         /// `missing` reports a key when its `var` lookup resolves to `null`

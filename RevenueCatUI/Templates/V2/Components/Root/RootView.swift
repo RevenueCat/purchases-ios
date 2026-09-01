@@ -23,6 +23,9 @@ struct RootView: View {
     @Environment(\.safeAreaInsets)
     private var safeAreaInsets
 
+    @Environment(\.userInterfaceIdiom)
+    private var userInterfaceIdiom
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -66,6 +69,12 @@ struct RootView: View {
             return true
         }
         return false
+    }
+
+    /// At least the idiom's default padding. A paywall presented in a sheet sits inset from the
+    /// screen, so there is no bottom safe area to consume and the last row would touch its edge.
+    static func stickyFooterBottomPadding(safeAreaBottom: CGFloat, idiom: UserInterfaceIdiom) -> CGFloat {
+        return max(safeAreaBottom, Constants.defaultVerticalPaddingLength(idiom) ?? 0)
     }
 
     var body: some View {
@@ -116,7 +125,15 @@ struct RootView: View {
                     StackComponentView(
                         viewModel: stickyFooterViewModel.stackViewModel,
                         onDismiss: onDismiss,
-                        additionalPadding: EdgeInsets(top: 0, leading: 0, bottom: safeAreaInsets.bottom, trailing: 0)
+                        additionalPadding: EdgeInsets(
+                            top: 0,
+                            leading: 0,
+                            bottom: Self.stickyFooterBottomPadding(
+                                safeAreaBottom: safeAreaInsets.bottom,
+                                idiom: self.userInterfaceIdiom
+                            ),
+                            trailing: 0
+                        )
                     )
                     .fixedSize(horizontal: false, vertical: true)
                     .onSizeChange { overlaidFooterHeight = $0.height }
