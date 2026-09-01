@@ -32,7 +32,6 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
 
     func dimensions(at date: Date) async throws -> [String: DimensionValue] {
         let appUserID = self.currentAppUserIDProvider()
-        guard !appUserID.isEmpty else { return [:] }
 
         var dimensions: [String: DimensionValue] = [
             "app_user_id": .string(appUserID)
@@ -87,8 +86,8 @@ private extension CustomerInfoDimensionProvider {
             )
         }
 
-        // Match Android's stable date sort explicitly: subscriptions are placed first and sorted by product,
-        // followed by CustomerInfo's existing non-subscription order. Equal dates preserve that combined order.
+        // Subscriptions are placed first and sorted by product, followed by CustomerInfo's existing
+        // non-subscription order. Equal dates preserve that combined order.
         return (subscriptions + nonSubscriptions)
             .enumerated()
             .sorted {

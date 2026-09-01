@@ -117,23 +117,6 @@ struct CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func emptyAppUserIDContributesNothingWithoutFetchingCustomerInfo() async throws {
-        let fetchCount = Atomic(0)
-        let provider = CustomerInfoDimensionProvider(
-            currentAppUserIDProvider: { "" },
-            customerInfoProvider: { _ in
-                fetchCount.modify { $0 += 1 }
-                return try Self.customerInfo()
-            }
-        )
-
-        let dimensions = try await provider.dimensions(at: Self.evaluationDate)
-
-        #expect(dimensions.isEmpty)
-        #expect(fetchCount.value == 0)
-    }
-
-    @Test
     func unavailableCustomerInfoStillExposesTheCurrentAppUserID() async throws {
         let provider = CustomerInfoDimensionProvider(
             currentAppUserIDProvider: { Self.appUserID },
