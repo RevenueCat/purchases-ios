@@ -411,28 +411,34 @@ import Foundation
 
     enum SizeConstraint: Codable, Sendable, Hashable {
 
-        case fit(UInt?) // optional default size to show during loading and initial content size calculations
-        case fill
+        case fit(UInt?, MinMax) // optional default size to show during loading and initial content size calculations
+        case fill(MinMax)
         case fixed(UInt)
 
         // Only used for button sheet for now
-        case relative(Double)
+        case relative(Double, MinMax)
 
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
             switch self {
-            case .fit(let value):
+            case let .fit(value, minMax):
                 try container.encode(SizeConstraintType.fit.rawValue, forKey: .type)
                 if let value {
                     try container.encode(value, forKey: .default)
                 }
-            case .fill:
+                try container.encodeIfPresent(minMax.min, forKey: .min)
+                try container.encodeIfPresent(minMax.max, forKey: .max)
+            case let .fill(minMax):
                 try container.encode(SizeConstraintType.fill.rawValue, forKey: .type)
-            case .fixed(let value):
+                try container.encodeIfPresent(minMax.min, forKey: .min)
+                try container.encodeIfPresent(minMax.max, forKey: .max)
+            case let .fixed(value):
                 try container.encode(SizeConstraintType.fixed.rawValue, forKey: .type)
                 try container.encode(value, forKey: .value)
-            case .relative(let value):
+            case let .relative(value, minMax):
+                try container.encodeIfPresent(minMax.min, forKey: .min)
+                try container.encodeIfPresent(minMax.max, forKey: .max)
                 try container.encode(SizeConstraintType.relative.rawValue, forKey: .type)
                 try container.encode(value, forKey: .value)
             }
@@ -441,23 +447,24 @@ import Foundation
         public init(from decoder: Decoder) throws {
             do {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
+                let minMax = (try? MinMax(from: decoder)) ?? .null
                 let type = try container.decode(SizeConstraintType.self, forKey: .type)
 
                 switch type {
                 case .fit:
                     let value = try container.decodeIfPresent(UInt.self, forKey: .default)
-                    self = .fit(value)
+                    self = .fit(value, minMax)
                 case .fill:
-                    self = .fill
+                    self = .fill(minMax)
                 case .fixed:
                     let value = try container.decode(UInt.self, forKey: .value)
                     self = .fixed(value)
                 case .relative:
                     let value = try container.decode(Double.self, forKey: .value)
-                    self = .relative(value)
+                    self = .relative(value, minMax)
                 }
             } catch {
-                self = .fit(nil)
+                self = .fit(nil, .null)
             }
         }
 
@@ -467,7 +474,8 @@ import Foundation
             case type
             case value
             case `default`
-
+            case min
+            case max
         }
 
         // swiftlint:disable:next nesting
@@ -675,4 +683,16 @@ import Foundation
 
     }
 
+}
+
+@_spi(Internal) public struct MinMax: Codable, Hashable {
+    public let min: UInt?
+    public let max: UInt?
+
+    public init(min: UInt?, max: UInt?) {
+        self.min = min
+        self.max = max
+    }
+
+    @_spi(Internal) public static let null = MinMax(min: nil, max: nil)
 }
