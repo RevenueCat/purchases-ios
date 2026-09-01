@@ -45,9 +45,65 @@
       "expected": true
     },
     {
-      "id": "substr_slices_by_codepoint_not_byte",
-      "description": "multibyte UTF-8: \"café\" is 4 characters but 5 bytes; slicing from index 1 gives \"afé\"",
+      "id": "substr_slices_by_code_unit_not_byte",
+      "description": "multibyte UTF-8: \"café\" is 4 code units but 5 bytes; slicing from index 1 gives \"afé\"",
       "predicate": { "===": [{ "substr": ["café", 1] }, "afé"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_keeps_a_surrogate_pair_when_the_slice_is_aligned",
+      "description": "The thumbs up 👍 (U+1F44D) is two code units, the pair D83D DC4D, so a length of 2 takes exactly the emoji and nothing else",
+      "predicate": { "===": [{ "substr": ["👍x", 0, 2] }, "👍"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_start_after_a_surrogate_pair",
+      "description": "Index 2 is the first code unit past the thumbs up 👍 (U+1F44D), not the second character",
+      "predicate": { "===": [{ "substr": ["👍x", 2] }, "x"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_negative_start_counts_code_units_from_the_end",
+      "description": "A start of -1 is one code unit back, which is the x rather than the thumbs up 👍 (U+1F44D)",
+      "predicate": { "===": [{ "substr": ["👍x", -1] }, "x"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_splitting_a_surrogate_pair_yields_one_code_unit",
+      "description": "A length of 1 cuts the thumbs up 👍 (U+1F44D) in half. json-logic-js and Kotlin return the lone high surrogate D83D; a Swift string cannot hold an unpaired surrogate and yields U+FFFD instead, so only the code-unit count is portable here",
+      "predicate": { "===": [{ "rc.length": { "substr": ["👍x", 0, 1] } }, 1] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_splitting_a_surrogate_pair_keeps_the_rest",
+      "description": "Starting at 1 leaves the low surrogate DC4D followed by the x: two code units everywhere, though the first is a lone surrogate for json-logic-js and Kotlin and U+FFFD for Swift",
+      "predicate": { "===": [{ "rc.length": { "substr": ["👍x", 1] } }, 2] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_flag_emoji_last_two_code_units_are_a_whole_scalar",
+      "description": "The Spanish flag 🇪🇸 is two regional indicators, four code units. The last two spell the regional indicator S (U+1F1F8), a complete scalar, so this slice is displayable text",
+      "predicate": { "===": [{ "substr": ["🇪🇸", -2] }, "\ud83c\uddf8"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_drops_a_combining_accent",
+      "description": "The input is a (U+0061), a combining acute accent ◌́ (U+0301), b. A length of 1 keeps only the a and drops the accent, because the index counts code units and not whole characters",
+      "predicate": { "===": [{ "substr": ["a\u0301b", 0, 1] }, "a"] },
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "substr_keeps_a_combining_accent",
+      "description": "Same input, length 2: the a and its accent are the first two code units, so the á survives intact",
+      "predicate": { "===": [{ "substr": ["a\u0301b", 0, 2] }, "a\u0301"] },
       "variables": {},
       "expected": true
     },
