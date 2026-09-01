@@ -27,6 +27,7 @@ opt_in_rules:
   - vertical_parameter_alignment
   - vertical_parameter_alignment_on_call
   - explicit_init
+  - duplicate_imports
 
 disabled_rules:
   - orphaned_doc_comment
@@ -118,6 +119,15 @@ custom_rules:
       - "RevenueCatUI/.*\\.swift"
       - "AdapterSDKs/RevenueCatAdMob/Sources/.*\\.swift"
     regex: '(?s)(?<!@_spi\(Internal\)\s)\bpublic\s+(?:indirect\s+)?enum\s+[A-Z]'
+
+  no_default_empty_string_param:
+    name: "No default empty-string parameters"
+    regex: ':\s*String\s*=\s*""'
+    message: "Avoid default empty-string parameters — callers can silently forget to pass a value. Use an explicit argument or make the parameter optional."
+    severity: warning
+    included:
+      - "Sources/.*\\.swift"
+      - "RevenueCatUI/.*\\.swift"
 
 identifier_name:
   max_length:
