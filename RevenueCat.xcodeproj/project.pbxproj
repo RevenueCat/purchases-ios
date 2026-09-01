@@ -80,7 +80,8 @@
 		F60718293A4B5C03D02A2 /* SplitOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D02A1 /* SplitOperator.swift */; };
 		F60718293A4B5C03D03A2 /* SortByOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D03A1 /* SortByOperator.swift */; };
 		F60718293A4B5C03D04A2 /* SliceOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D04A1 /* SliceOperator.swift */; };
-		F60718293A4B5C03D05A2 /* IndexOfOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D05A1 /* IndexOfOperator.swift */; };
+		F60718293A4B5C03D05A2 /* LetOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D05A1 /* LetOperator.swift */; };
+		F60718293A4B5C03D06A2 /* IndexOfOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F60718293A4B5C03D06A1 /* IndexOfOperator.swift */; };
 		B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */; };
 		0F4E490A741F00F18C4985D8 /* WebViewSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72CC1CD0385BF18D1392EB43 /* WebViewSession.swift */; };
 		A0F100000000000000000002 /* PaywallWebViewStaticContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = A0F100000000000000000001 /* PaywallWebViewStaticContext.swift */; };
@@ -3085,7 +3086,8 @@
 		F60718293A4B5C03D02A1 /* SplitOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SplitOperator.swift; sourceTree = "<group>"; };
 		F60718293A4B5C03D03A1 /* SortByOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SortByOperator.swift; sourceTree = "<group>"; };
 		F60718293A4B5C03D04A1 /* SliceOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SliceOperator.swift; sourceTree = "<group>"; };
-		F60718293A4B5C03D05A1 /* IndexOfOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IndexOfOperator.swift; sourceTree = "<group>"; };
+		F60718293A4B5C03D05A1 /* LetOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LetOperator.swift; sourceTree = "<group>"; };
+		F60718293A4B5C03D06A1 /* IndexOfOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = IndexOfOperator.swift; sourceTree = "<group>"; };
 		B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RootVarOperator.swift; sourceTree = "<group>"; };
 		AC01FEB700000000000000B5 /* WebViewComponentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentTests.swift; sourceTree = "<group>"; };
 		AC06C294F30E7D8000000002 /* SelectedPackageId.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectedPackageId.swift; sourceTree = "<group>"; };
@@ -3205,6 +3207,7 @@
 		DBE7C6542F02D48900A28663 /* StoreProductDiscount+CustomerCenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "StoreProductDiscount+CustomerCenter.swift"; sourceTree = "<group>"; };
 		DC0A0E98168FF1F7847D04C7 /* StringArrayOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StringArrayOperators.swift; sourceTree = "<group>"; };
 		DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = RootViewLayoutSnapshotTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/RootViewLayoutSnapshotTests.swift; sourceTree = SOURCE_ROOT; };
+		5D571A5AD826C1E3491BF18A /* StickyFooterPaddingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StickyFooterPaddingTests.swift; path = Tests/RevenueCatUITests/PaywallsV2/StickyFooterPaddingTests.swift; sourceTree = SOURCE_ROOT; };
 		DF4D7487E0B0348ED8ECCBD3 /* Value+JSON.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Value+JSON.swift"; sourceTree = "<group>"; };
 		E1C0A006BEEF0001CCDD0001 /* PaywallHeaderComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallHeaderComponent.swift; sourceTree = "<group>"; };
 		E1C0A007BEEF0001CCDD0001 /* HeaderComponentViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderComponentViewModel.swift; sourceTree = "<group>"; };
@@ -3535,6 +3538,7 @@
 				834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */,
 				CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */,
 				DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */,
+				5D571A5AD826C1E3491BF18A /* StickyFooterPaddingTests.swift */,
 				1D76F25F2F921DB800863AF8 /* ButtonComponentViewModelInteractionTests.swift */,
 				808963A62FE168FD008E858C /* TabsComponentStateTests.swift */,
 				8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */,
@@ -6692,7 +6696,8 @@
 				F60718293A4B5C03D02A1 /* SplitOperator.swift */,
 				F60718293A4B5C03D03A1 /* SortByOperator.swift */,
 				F60718293A4B5C03D04A1 /* SliceOperator.swift */,
-				F60718293A4B5C03D05A1 /* IndexOfOperator.swift */,
+				F60718293A4B5C03D05A1 /* LetOperator.swift */,
+				F60718293A4B5C03D06A1 /* IndexOfOperator.swift */,
 				B2C3D4E5F60718293A4B5C01 /* RootVarOperator.swift */,
 			);
 			name = CustomOperators;
@@ -8138,7 +8143,8 @@
 				F60718293A4B5C03D02A2 /* SplitOperator.swift in Sources */,
 				F60718293A4B5C03D03A2 /* SortByOperator.swift in Sources */,
 				F60718293A4B5C03D04A2 /* SliceOperator.swift in Sources */,
-				F60718293A4B5C03D05A2 /* IndexOfOperator.swift in Sources */,
+				F60718293A4B5C03D05A2 /* LetOperator.swift in Sources */,
+				F60718293A4B5C03D06A2 /* IndexOfOperator.swift in Sources */,
 				B2C3D4E5F60718293A4B5C02 /* RootVarOperator.swift in Sources */,
 				55DACDF3302BC30A005EE017 /* IAMCallbacks.swift in Sources */,
 				1701E7CE20E0879817B3F61B /* RulesEngineLogger.swift in Sources */,

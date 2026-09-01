@@ -156,7 +156,7 @@ extension RulesEngine {
         case (.bool(let left), .bool(let right)):
             return left == right
         case (.string(let left), .string(let right)):
-            return left == right
+            return jsStringEquals(left, right)
 
         case (.int(let left), .int(let right)):
             return left == right
@@ -190,6 +190,37 @@ extension RulesEngine {
                 return leftNumber == rightNumber
             }
             return false
+        }
+    }
+
+    // MARK: - JS string semantics
+
+    /// A JS string is a sequence of UTF-16 code units, and every string
+    /// operation works on those units. Swift's `String` instead compares
+    /// canonical equivalence over Unicode scalars, which differs twice over:
+    /// differently encoded spellings of the same character are equal to Swift
+    /// but distinct to JS, and a scalar above the surrogate range sorts after
+    /// an astral one for Swift but before it for JS. Kotlin matches JS, so
+    /// every string comparison in the engine goes through these helpers.
+    static func jsStringEquals(_ lhs: String, _ rhs: String) -> Bool {
+        lhs.utf16.elementsEqual(rhs.utf16)
+    }
+
+    /// JS `<` on two strings. See `jsStringEquals` for why Swift's own `<`
+    /// is not it.
+    static func jsStringPrecedes(_ lhs: String, _ rhs: String) -> Bool {
+        lhs.utf16.lexicographicallyPrecedes(rhs.utf16)
+    }
+
+    /// JS `haystack.indexOf(needle) !== -1`: a code-unit search, so it can
+    /// match half of a surrogate pair and an empty needle always matches.
+    static func jsStringContains(haystack: String, needle: String) -> Bool {
+        let haystack = Array(haystack.utf16)
+        let needle = Array(needle.utf16)
+        guard !needle.isEmpty else { return true }
+        guard needle.count <= haystack.count else { return false }
+        return (0...(haystack.count - needle.count)).contains { start in
+            haystack[start..<(start + needle.count)].elementsEqual(needle)
         }
     }
 
@@ -313,7 +344,7 @@ extension RulesEngine {
              (.float(let floatValue), .int(let intValue)):
             return Double(intValue) == floatValue
         case (.string(let left), .string(let right)):
-            return left == right
+            return jsStringEquals(left, right)
         default:
             return false
         }
