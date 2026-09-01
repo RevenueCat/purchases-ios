@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 10/10/22.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 
 final class MockPurchases {
