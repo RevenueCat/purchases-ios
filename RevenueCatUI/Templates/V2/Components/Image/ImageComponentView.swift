@@ -387,29 +387,29 @@ struct ImageComponentView_Previews: PreviewProvider {
         switch size.width {
         case .fixed(let value):
             estimatedContentWidth = CGFloat(value)
-        case .fill:
-            estimatedContentWidth = availableContentWidth
-        case .fit:
+        case let .fill(minMax):
+            estimatedContentWidth = minMax.clamped(availableContentWidth)
+        case let .fit(_, minMax):
+            let fittedWidth: CGFloat
             switch size.height {
             case .fixed(let value):
-                estimatedContentWidth = min(availableContentWidth, CGFloat(value) * aspectRatio)
+                fittedWidth = min(availableContentWidth, CGFloat(value) * aspectRatio)
             case .fit, .fill:
-                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+                fittedWidth = min(availableContentWidth, intrinsicWidth)
             case .relative:
-                estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
+                fittedWidth = min(availableContentWidth, intrinsicWidth)
             }
-        case .relative(let value):
-            estimatedContentWidth = max(0, availableContentWidth * CGFloat(value))
+            estimatedContentWidth = minMax.clamped(fittedWidth)
+        case let .relative(value, minMax):
+            estimatedContentWidth = minMax.clamped(max(0, availableContentWidth * CGFloat(value)))
         }
 
         let estimatedContentHeight: CGFloat
         switch size.height {
         case .fixed(let value):
             estimatedContentHeight = CGFloat(value)
-        case .fit, .fill:
-            estimatedContentHeight = estimatedContentWidth / aspectRatio
-        case .relative:
-            estimatedContentHeight = estimatedContentWidth / aspectRatio
+        case let .fit(_, minMax), let .fill(minMax), let .relative(_, minMax):
+            estimatedContentHeight = minMax.clamped(estimatedContentWidth / aspectRatio)
         }
 
         return CGSize(
