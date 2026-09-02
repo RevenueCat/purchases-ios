@@ -41,7 +41,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
-        return try await self.manager.readConsistent {
+        return try await self.manager.readConsistent { _ in
             let rules = try await self.loadRules(for: identifier)
             return rules.map {
                 CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.manager.configGeneration)
