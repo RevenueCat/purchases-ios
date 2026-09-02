@@ -567,13 +567,16 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testStaleConfigurationAfterUnevaluatablePredicateRetriesBeforeReturningUnavailable() async throws {
         let dimensionEvaluationCount = Atomic<Int>(0)
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [CallbackDimensionProvider {
-            let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
-            if count == 1 {
-                self.checkpointsProvider.configGeneration += 1
-                self.audiencesProvider.configGeneration += 1
-            }
-        }])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [CallbackDimensionProvider {
+                let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
+                if count == 1 {
+                    self.checkpointsProvider.configGeneration += 1
+                    self.audiencesProvider.configGeneration += 1
+                }
+            }],
+            currentAppUserIDProvider: { "user" }
+        )
         self.audiencesProvider.defaultRules = "{not-json"
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
 
