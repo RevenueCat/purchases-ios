@@ -24,7 +24,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withSingleUnderlineTag() throws {
         let input = try AttributedString(markdown: "Hello <u>world</u>!")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "Hello world!")
@@ -39,7 +39,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withMultipleUnderlineTags() throws {
         let input = try AttributedString(markdown: "<u>one</u> and <u>two</u>")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "one and two")
@@ -53,7 +53,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withNoUnderlineTags() throws {
         let input = try AttributedString(markdown: "Hello world!")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "Hello world!")
@@ -64,7 +64,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withEmptyUnderlineTag() throws {
         let input = try AttributedString(markdown: "Hello <u></u> world")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "Hello  world")
@@ -76,7 +76,7 @@ final class MarkdownTests: TestCase {
             markdown: "<u>line1\nline2</u>",
             options: .init(interpretedSyntax: .inlineOnly)
         )
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "line1\nline2")
@@ -90,7 +90,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withUnclosedTag() throws {
         let input = try AttributedString(markdown: "Hello <u>world")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         // Unclosed tag should remain as-is
@@ -105,7 +105,7 @@ final class MarkdownTests: TestCase {
             markdown: "<u>**bold text**</u>",
             options: .init(interpretedSyntax: .inlineOnly)
         )
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "bold text")
@@ -126,7 +126,7 @@ final class MarkdownTests: TestCase {
             markdown: "<u>_italic text_</u>",
             options: .init(interpretedSyntax: .inlineOnly)
         )
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "italic text")
@@ -144,7 +144,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withAdjacentUnderlineTags() throws {
         let input = try AttributedString(markdown: "<u>first</u><u>second</u>")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "firstsecond")
@@ -155,7 +155,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withIdenticalUnderlineTags_separatedByOtherText() throws {
         let input = try AttributedString(markdown: "<u>TEST_IDENTICAL</u> <u>TEST_IDENTICAL</u>")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "TEST_IDENTICAL TEST_IDENTICAL")
@@ -169,7 +169,7 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withIdenticalUnderlineTag() throws {
         let input = try AttributedString(markdown: "<u>TEST_IDENTICAL</u><u>TEST_IDENTICAL</u>")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "TEST_IDENTICALTEST_IDENTICAL")
@@ -183,13 +183,51 @@ final class MarkdownTests: TestCase {
 
     func testApplyUnderlines_withSpecialCharactersInContent() throws {
         let input = try AttributedString(markdown: "<u>$100 & <test></u>")
-        let result = NonLocalizedMarkdownText.applyUnderlines(to: input)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
         XCTAssertEqual(plainText, "$100 & <test>")
 
         let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
         XCTAssertFalse(underlinedRuns.isEmpty)
+    }
+
+    func testApplyUnderlines_keepsInnerFormattingWhenContentMatchesTagCharacters() throws {
+        let input = try AttributedString(markdown: "<u>**u**</u>")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        let plainText = String(result.characters)
+        XCTAssertEqual(plainText, "u")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertEqual(underlinedRuns.count, 1)
+        XCTAssertEqual(
+            underlinedRuns.first?.inlinePresentationIntent?.contains(.stronglyEmphasized),
+            true
+        )
+    }
+
+    func testApplyUnderlines_keepsLinkInsideUnderline() throws {
+        let input = try AttributedString(markdown: "<u>[RevenueCat](https://revenuecat.com)</u>")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        let plainText = String(result.characters)
+        XCTAssertEqual(plainText, "RevenueCat")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertEqual(underlinedRuns.count, 1)
+        XCTAssertEqual(underlinedRuns.first?.link?.absoluteString, "https://revenuecat.com")
+    }
+
+    func testApplyUnderlines_withUppercaseTagIsNotUnderlined() throws {
+        let input = try AttributedString(markdown: "<U>hi</U>")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        let plainText = String(result.characters)
+        XCTAssertEqual(plainText, "<U>hi</U>")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertTrue(underlinedRuns.isEmpty)
     }
 
     // MARK: - NonLocalizedMarkdownText View Tests
@@ -218,15 +256,11 @@ final class MarkdownTests: TestCase {
         let plainText = String(result!.characters)
         XCTAssertEqual(plainText, "Hello world")
 
-        // With regular weight, bold should be applied
-        let boldRuns = result!.runs.filter { run in
-            if run.font != nil {
-                // Check if font has bold weight applied
-                return true // Font attribute exists
-            }
-            return false
+        let boldRuns = result!.runs.filter {
+            $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true
         }
-        XCTAssertFalse(boldRuns.isEmpty)
+        XCTAssertEqual(boldRuns.count, 1)
+        XCTAssertEqual(boldRuns.first?.font, Font.body.weight(.bold))
     }
 
     func testMarkdownText_withBoldAndBlackWeight() {

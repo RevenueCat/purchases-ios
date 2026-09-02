@@ -169,57 +169,9 @@ struct NonLocalizedMarkdownText: View {
         }
 
         // Handle underline with <u>text</u> syntax
-        attrString = Self.applyUnderlines(to: attrString)
+        attrString = MarkdownUnderlineFormatter.apply(to: attrString)
 
         return attrString
-    }
-
-    /// Processes `<u>text</u>` syntax and applies underline styling
-    static func applyUnderlines(to attrString: AttributedString) -> AttributedString {
-        var result = attrString
-        let plainString = String(result.characters)
-
-        // Find all <u>...</u> matches
-        guard let regex = NSRegularExpression.underlineHTML else {
-            return result
-        }
-
-        let nsRange = NSRange(plainString.startIndex..., in: plainString)
-        let matches = regex.matches(in: plainString, options: [], range: nsRange)
-
-        // Process in reverse order to preserve indices
-        for match in matches.reversed() {
-            guard let fullRange = Range(match.range, in: plainString),
-                  let contentNSRange = Range(match.range(at: 1), in: plainString) else {
-                continue
-            }
-
-            // Convert String ranges to AttributedString ranges
-            guard let attrFullRange = result.range(of: String(plainString[fullRange])) else {
-                continue
-            }
-
-            let contentString = String(plainString[contentNSRange])
-
-            // Handle empty <u></u> tags by removing them entirely
-            if contentString.isEmpty {
-                result.replaceSubrange(attrFullRange, with: AttributedString())
-                continue
-            }
-
-            guard let attrContentRange = result[attrFullRange].range(of: contentString) else {
-                continue
-            }
-
-            // Extract content with existing attributes, add underline
-            var content = AttributedString(result[attrContentRange])
-            content.underlineStyle = .single
-
-            // Replace <u>content</u> with just the underlined content
-            result.replaceSubrange(attrFullRange, with: content)
-        }
-
-        return result
     }
 
     var body: some View {
@@ -267,10 +219,6 @@ private extension Font.Weight {
             return false
         }
     }
-}
-
-private extension NSRegularExpression {
-    static let underlineHTML = try? NSRegularExpression(pattern: "<u>(.*?)</u>", options: [.dotMatchesLineSeparators])
 }
 
 #if DEBUG
