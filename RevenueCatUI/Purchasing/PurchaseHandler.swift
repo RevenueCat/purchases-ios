@@ -997,8 +997,14 @@ extension PurchaseHandler {
         }
     }
 
-    func componentInteractionLogger(sessionID: PaywallEvent.SessionID) -> ComponentInteractionLogger {
-        return self.paywallEventTracker.componentInteractionLogger(sessionID: sessionID)
+    func componentInteractionLogger(
+        sessionID: PaywallEvent.SessionID,
+        onInteraction: PaywallInteractionHandler? = nil
+    ) -> ComponentInteractionLogger {
+        return self.paywallEventTracker.componentInteractionLogger(
+            sessionID: sessionID,
+            onInteraction: onInteraction
+        )
     }
 
     /// - Returns: whether the event was tracked
@@ -1371,6 +1377,18 @@ extension EnvironmentValues {
     var onRequestedDismissal: (() -> Void)? {
         get { self[RequestedDismissalKey.self] }
         set { self[RequestedDismissalKey.self] = newValue }
+    }
+}
+
+struct PaywallInteractionHandlerKey: EnvironmentKey {
+    static let defaultValue: PaywallInteractionHandler? = nil
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension EnvironmentValues {
+    var onPaywallInteraction: PaywallInteractionHandler? {
+        get { self[PaywallInteractionHandlerKey.self] }
+        set { self[PaywallInteractionHandlerKey.self] = newValue }
     }
 }
 

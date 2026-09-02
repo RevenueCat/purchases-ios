@@ -204,14 +204,14 @@ class PaywallEventTrackerTests: TestCase {
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: nil, componentValue: "a"),
             sessionID: sessionID
-        )) == false
+        )) == nil
 
         tracker.trackPaywallImpression(Self.eventData)
 
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: "n", componentValue: "id1"),
             sessionID: sessionID
-        )) == true
+        )) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -243,7 +243,7 @@ class PaywallEventTrackerTests: TestCase {
             componentName: nil,
             componentValue: "navigate_to_url",
             componentURL: linkURL
-        ), sessionID: sessionID)) == true
+        ), sessionID: sessionID)) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -278,7 +278,7 @@ class PaywallEventTrackerTests: TestCase {
             originContextName: "monthly",
             destinationContextName: "annual",
             defaultIndex: 0
-        ), sessionID: sessionID)) == true
+        ), sessionID: sessionID)) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -318,7 +318,7 @@ class PaywallEventTrackerTests: TestCase {
             originProductIdentifier: "com.monthly",
             destinationProductIdentifier: "com.annual",
             defaultProductIdentifier: "com.annual"
-        ), sessionID: sessionID)) == true
+        ), sessionID: sessionID)) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -355,7 +355,7 @@ class PaywallEventTrackerTests: TestCase {
                 rootSelectedPackage: TestData.weeklyPackage
             ),
             sessionID: sessionID
-        )) == true
+        )) != nil
 
         expect(tracker.trackComponentInteraction(
             .paywallPackageSelectionSheetClose(
@@ -364,7 +364,7 @@ class PaywallEventTrackerTests: TestCase {
                 resultingRootPackage: TestData.weeklyPackage
             ),
             sessionID: sessionID
-        )) == true
+        )) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(3), timeout: .seconds(2))
 
@@ -489,7 +489,7 @@ class PaywallEventTrackerTests: TestCase {
                 currentProductIdentifier: "com.app.annual"
             ),
             sessionID: sessionID
-        )) == true
+        )) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -522,7 +522,7 @@ class PaywallEventTrackerTests: TestCase {
                 componentValue: "web_checkout"
             ),
             sessionID: sessionID
-        )) == true
+        )) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(2), timeout: .seconds(2))
 
@@ -562,7 +562,7 @@ class PaywallEventTrackerTests: TestCase {
                         ),
                         sessionID: sessionID
                     )
-                    if interactionTracked {
+                    if interactionTracked != nil {
                         interactionSuccessCount.modify { $0 += 1 }
                     }
                 }
@@ -591,21 +591,21 @@ class PaywallEventTrackerTests: TestCase {
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: "n", componentValue: "for_a"),
             sessionID: dataA.sessionIdentifier
-        )) == true
+        )) != nil
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: "n", componentValue: "for_b"),
             sessionID: dataB.sessionIdentifier
-        )) == true
+        )) != nil
 
         _ = tracker.trackPaywallClose(sessionID: dataA.sessionIdentifier)
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: "n", componentValue: "after_close_a"),
             sessionID: dataA.sessionIdentifier
-        )) == false
+        )) == nil
         expect(tracker.trackComponentInteraction(
             .init(componentType: .tab, componentName: "n", componentValue: "still_b"),
             sessionID: dataB.sessionIdentifier
-        )) == true
+        )) != nil
 
         await expect(trackedEvents.value).toEventually(haveCount(6), timeout: .seconds(2))
     }

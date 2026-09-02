@@ -85,6 +85,137 @@ class ComponentInteractionLoggerTests: TestCase {
         expect(interaction.componentURL) == URL(string: "https://example.com/docs")
     }
 
+    func testOnInteractionHandlerReceivesContractKeysOnlyAfterImpression() async throws {
+        let tracker = PaywallEventTracker(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { _ in },
+                customerInfo: { TestData.customerInfo }
+            ),
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
+        )
+        let eventData: PaywallEvent.Data = .init(
+            offering: TestData.offeringWithIntroOffer,
+            paywall: TestData.paywallWithIntroOffer,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            locale: .init(identifier: "en_US"),
+            darkMode: false,
+            source: nil
+        )
+        let interactionData = PaywallEvent.ComponentInteractionData(
+            componentType: .tab,
+            componentName: "plans",
+            componentValue: "annual",
+            originIndex: 0,
+            destinationIndex: 1
+        )
+        let received: Atomic<[PaywallInteractionEvent]> = .init([])
+        let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier) { event in
+            received.modify { $0.append(event) }
+        }
+
+        expect(logger(interactionData)) == false
+        await Task.yield()
+        expect(received.value).to(beEmpty())
+
+        tracker.trackPaywallImpression(eventData)
+        expect(logger(interactionData)) == true
+        await expect(received.value).toEventually(haveCount(1))
+
+        let event = try XCTUnwrap(received.value.first)
+        expect(Set(event.rawProperties.keys).isSubset(of: PaywallInteractionEvent.Keys.all)) == true
+        expect(event.property(for: PaywallInteractionEvent.Keys.sessionId)) == eventData.sessionIdentifier.uuidString
+        expect(event.property(for: PaywallInteractionEvent.Keys.offeringId)) == eventData.offeringIdentifier
+        expect(event.property(for: PaywallInteractionEvent.Keys.componentType))
+            == PaywallInteractionEvent.ComponentTypes.tab
+        expect(event.property(for: PaywallInteractionEvent.Keys.componentValue)) == "annual"
+        expect(event.property(for: PaywallInteractionEvent.Keys.componentName)) == "plans"
+        expect(event.property(for: PaywallInteractionEvent.Keys.originIndex)) == 0
+        expect(event.property(for: PaywallInteractionEvent.Keys.destinationIndex)) == 1
+        expect(event.property(for: PaywallInteractionEvent.Keys.darkMode)) == false
+        expect(event.property(for: PaywallInteractionEvent.Keys.timestamp)).toNot(beNil())
+        expect(event.property(for: PaywallInteractionEvent.Keys.componentUrl)).to(beNil())
+    }
+
+    func testOnInteractionHandlerReceivesEveryContractKeyWhenFullyPopulated() async throws {
+        let tracker = PaywallEventTracker(
+            purchases: MockPurchases(
+                purchase: { _, _, _ in
+                    (transaction: nil, customerInfo: TestData.customerInfo, userCancelled: false)
+                },
+                restorePurchases: { TestData.customerInfo },
+                trackEvent: { _ in },
+                customerInfo: { TestData.customerInfo }
+            ),
+            eventDispatcher: PaywallEventTrackerTestDispatcher.value
+        )
+        let eventData: PaywallEvent.Data = .init(
+            paywallIdentifier: "pw_123",
+            offeringIdentifier: TestData.offeringWithIntroOffer.identifier,
+            paywallRevision: 7,
+            sessionID: .init(),
+            displayMode: .fullScreen,
+            localeIdentifier: "en_US",
+            darkMode: false
+        )
+        let interactionData = PaywallEvent.ComponentInteractionData(
+            componentType: .carousel,
+            componentName: "hero",
+            componentValue: "page_change",
+            componentURL: URL(string: "https://example.com"),
+            originIndex: 0,
+            destinationIndex: 1,
+            originContextName: "first",
+            destinationContextName: "second",
+            defaultIndex: 0,
+            originPackageIdentifier: "monthly",
+            destinationPackageIdentifier: "annual",
+            defaultPackageIdentifier: "monthly",
+            originProductIdentifier: "com.app.monthly",
+            destinationProductIdentifier: "com.app.annual",
+            defaultProductIdentifier: "com.app.monthly",
+            currentPackageIdentifier: "monthly",
+            resultingPackageIdentifier: "annual",
+            currentProductIdentifier: "com.app.monthly",
+            resultingProductIdentifier: "com.app.annual"
+        )
+        let received: Atomic<[PaywallInteractionEvent]> = .init([])
+        let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier) { event in
+            received.modify { $0.append(event) }
+        }
+
+        tracker.trackPaywallImpression(eventData)
+        expect(logger(interactionData)) == true
+        await expect(received.value).toEventually(haveCount(1))
+
+        let event = try XCTUnwrap(received.value.first)
+        expect(PaywallInteractionEvent.Keys.all).to(haveCount(27))
+        expect(Set(event.rawProperties.keys)) == PaywallInteractionEvent.Keys.all
+        let wireKeys = Set(PaywallEvent.componentInteraction(.init(), eventData, interactionData).paywallMap().keys)
+        expect(wireKeys.subtracting(["discriminator", "type", "id"])) == PaywallInteractionEvent.Keys.all
+        expect(event.property(for: PaywallInteractionEvent.Keys.paywallId)) == "pw_123"
+        expect(event.property(for: PaywallInteractionEvent.Keys.componentUrl)) == "https://example.com"
+        expect(event.property(for: PaywallInteractionEvent.Keys.resultingProductId)) == "com.app.annual"
+    }
+
+    func testComponentTypeConstantsMatchWireValues() {
+        typealias WireType = ComponentInteractionType
+        typealias Constants = PaywallInteractionEvent.ComponentTypes
+
+        expect(Constants.tab) == WireType.tab.rawValue
+        expect(Constants.switch) == WireType.toggleSwitch.rawValue
+        expect(Constants.carousel) == WireType.carousel.rawValue
+        expect(Constants.button) == WireType.button.rawValue
+        expect(Constants.text) == WireType.text.rawValue
+        expect(Constants.package) == WireType.package.rawValue
+        expect(Constants.packageSelectionSheet) == WireType.packageSelectionSheet.rawValue
+        expect(Constants.purchaseButton) == WireType.purchaseButton.rawValue
+    }
+
     // MARK: - paywallPurchaseButtonAction factory
 
     func testPurchaseButtonActionFactory_setsComponentTypeToPurchaseButton() {

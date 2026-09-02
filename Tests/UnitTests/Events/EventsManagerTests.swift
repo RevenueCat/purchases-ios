@@ -132,6 +132,7 @@ class EventsManagerTests: TestCase {
         expect(map["id"] as? String) == creationData.id.uuidString
         expect(map["timestamp"] as? UInt64) == creationData.date.millisecondsSince1970
         expect(map["offering_id"] as? String) == data.offeringIdentifier
+        expect(map["paywall_id"] as? String) == data.paywallIdentifier
         expect(map["paywall_revision"] as? Int) == data.paywallRevision
         expect(map["session_id"] as? String) == data.sessionIdentifier.uuidString
         expect(map["display_mode"] as? String) == data.displayMode.identifier

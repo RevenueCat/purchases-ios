@@ -771,6 +771,11 @@ public protocol PaywallViewControllerDelegate: AnyObject {
     optional func paywallViewController(_ controller: PaywallViewController,
                                         didOpenURL url: URL)
 
+    /// Notifies that the user interacted with a paywall control.
+    @objc(paywallViewController:didTrackInteraction:)
+    optional func paywallViewController(_ controller: PaywallViewController,
+                                        didTrackInteraction event: PaywallInteractionEvent)
+
     /// Notifies that the purchase operation has failed in a ``PaywallViewController``.
     @objc(paywallViewController:didFailPurchasingWithError:)
     optional func paywallViewController(_ controller: PaywallViewController,
@@ -878,6 +883,9 @@ private extension PaywallViewController {
             urlOpened: { [weak self] url in
                 self?.notifyDelegateURLOpened(url)
             },
+            interaction: { [weak self] event in
+                self?.notifyDelegateInteraction(event)
+            },
             restoreCompleted: { [weak self] customerInfo in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didFinishRestoringWith: customerInfo)
@@ -918,6 +926,10 @@ private extension PaywallViewController {
     /// `createHostingController`'s cyclomatic complexity within the linter's limit.
     private func notifyDelegateURLOpened(_ url: URL) {
         self.delegate?.paywallViewController?(self, didOpenURL: url)
+    }
+
+    private func notifyDelegateInteraction(_ event: PaywallInteractionEvent) {
+        self.delegate?.paywallViewController?(self, didTrackInteraction: event)
     }
 
     private func createPurchaseInitiatedHandler() -> (Package, @escaping (Bool) -> Void) -> Void {
@@ -1017,6 +1029,7 @@ private struct PaywallContainerView: View {
     let purchaseCancelled: PurchaseCancelledHandler
     let webCheckoutOpened: WebCheckoutOpenedHandler
     let urlOpened: URLOpenedHandler
+    let interaction: PaywallInteractionHandler
     let restoreCompleted: PurchaseOrRestoreCompletedHandler
     let purchaseFailure: PurchaseFailureHandler
     let restoreStarted: RestoreStartedHandler
@@ -1039,6 +1052,7 @@ private struct PaywallContainerView: View {
             .onPurchaseCancelled(self.purchaseCancelled)
             .onWebCheckoutOpened(self.webCheckoutOpened)
             .onURLOpened(self.urlOpened)
+            .onPaywallInteraction(self.interaction)
             .onPurchaseFailure(self.purchaseFailure)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.restoreCompleted)
