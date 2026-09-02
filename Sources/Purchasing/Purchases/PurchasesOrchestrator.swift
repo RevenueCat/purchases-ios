@@ -303,9 +303,8 @@ final class PurchasesOrchestrator {
         identifier: String,
         params: CheckpointParams
     ) async throws -> CheckpointResolution {
-        // The date is captured before resolving so the event keeps reporting when the user reached the
-        // checkpoint, while its payload reports what the checkpoint resolved to. An identifier nothing is
-        // configured for still emits a hit, which is how the backend learns the checkpoint exists.
+        // Captured before resolving: the date is when the user reached the checkpoint, not when we finished
+        // evaluating it.
         let hitDate = self.dateProvider.now()
 
         let resolved = try await self.checkpointResolver.resolve(
