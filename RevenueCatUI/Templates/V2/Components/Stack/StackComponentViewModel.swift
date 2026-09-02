@@ -227,7 +227,7 @@ extension PresentedStackPartial: PresentedPartial {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentStyle {
 
-    enum StackStrategy: Equatable {
+    enum StackStrategy {
         case normal, flex
     }
 
@@ -314,10 +314,10 @@ struct StackComponentStyle {
         case .start, .center, .end:
             return .normal
         case .spaceBetween, .spaceAround, .spaceEvenly:
-            // An unconstrained fit stack must not contain flexible spacers because that would make
-            // it act like fill. A positive minimum creates space that flex distribution must use.
             switch sizeConstraint {
-            case let .fit(_, minMax) where minMax.min == nil || minMax.min == 0:
+            // A fit stack must not contain flexible spacers because they consume the parent
+            // proposal before the minimum-size frame is applied, making fit behave like fill.
+            case .fit:
                 return .normal
             default:
                 return .flex

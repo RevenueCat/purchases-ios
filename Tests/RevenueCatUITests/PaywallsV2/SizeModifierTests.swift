@@ -98,41 +98,72 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
     }
 
-    func testFitWithMinimumUsesFlexDistribution() {
-        for distribution in [
-            PaywallComponent.FlexDistribution.spaceBetween,
-            .spaceAround,
-            .spaceEvenly
-        ] {
-            XCTAssertEqual(
-                StackComponentStyle.strategy(
-                    for: distribution,
-                    sizeConstraint: .fit(nil, .init(min: 100, max: nil))
-                ),
-                .flex
-            )
+    func testFitWithMinimumDoesNotExpandVerticalStackToParentProposal() {
+        let height = PaywallComponent.SizeConstraint.fit(nil, .init(min: 100, max: nil))
+        let view = Self.verticalStack(distribution: .spaceBetween, height: height)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 500)).height,
+            100
+        )
+    }
+
+    func testFitWithMinimumDoesNotExpandHorizontalStackToParentProposal() {
+        let width = PaywallComponent.SizeConstraint.fit(nil, .init(min: 100, max: nil))
+        let view = Self.horizontalStack(distribution: .spaceBetween, width: width)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 100)).width,
+            100
+        )
+    }
+
+    @ViewBuilder
+    private static func verticalStack(
+        distribution: PaywallComponent.FlexDistribution,
+        height: PaywallComponent.SizeConstraint
+    ) -> some View {
+        let row = Color.clear.frame(width: 10, height: 20)
+
+        switch StackComponentStyle.strategy(for: distribution, sizeConstraint: height) {
+        case .normal:
+            VStack(spacing: 0) {
+                row
+                row
+            }
+            .size(.init(width: .fit(nil), height: height))
+        case .flex:
+            VStack(spacing: 0) {
+                row
+                Spacer(minLength: 0)
+                row
+            }
+            .size(.init(width: .fit(nil), height: height))
         }
     }
 
-    func testUnconstrainedFitDoesNotUseFlexDistribution() {
-        XCTAssertEqual(
-            StackComponentStyle.strategy(for: .spaceBetween, sizeConstraint: .fit(nil)),
-            .normal
-        )
-        XCTAssertEqual(
-            StackComponentStyle.strategy(
-                for: .spaceBetween,
-                sizeConstraint: .fit(nil, .init(min: nil, max: 100))
-            ),
-            .normal
-        )
-        XCTAssertEqual(
-            StackComponentStyle.strategy(
-                for: .spaceBetween,
-                sizeConstraint: .fit(nil, .init(min: 0, max: nil))
-            ),
-            .normal
-        )
+    @ViewBuilder
+    private static func horizontalStack(
+        distribution: PaywallComponent.FlexDistribution,
+        width: PaywallComponent.SizeConstraint
+    ) -> some View {
+        let column = Color.clear.frame(width: 20, height: 10)
+
+        switch StackComponentStyle.strategy(for: distribution, sizeConstraint: width) {
+        case .normal:
+            HStack(spacing: 0) {
+                column
+                column
+            }
+            .size(.init(width: width, height: .fit(nil)))
+        case .flex:
+            HStack(spacing: 0) {
+                column
+                Spacer(minLength: 0)
+                column
+            }
+            .size(.init(width: width, height: .fit(nil)))
+        }
     }
 
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
