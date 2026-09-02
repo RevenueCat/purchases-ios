@@ -86,8 +86,8 @@ private extension CustomerInfoDimensionProvider {
             )
         }
 
-        // Subscriptions are placed first and sorted by product, followed by CustomerInfo's existing
-        // non-subscription order. Equal dates preserve that combined order.
+        // Purchases are sorted from newest to oldest. Equal dates preserve source order,
+        // with subscriptions ordered by product before non-subscriptions.
         return (subscriptions + nonSubscriptions)
             .enumerated()
             .sorted {
@@ -99,10 +99,10 @@ private extension CustomerInfoDimensionProvider {
             }
             .map { indexedPurchase in
                 let purchase = indexedPurchase.element
-                guard let store = purchase.store.dimensionValue else { return purchase.values }
-
                 var values = purchase.values
-                values["store"] = .string(store)
+                if let store = purchase.store.dimensionValue {
+                    values["store"] = .string(store)
+                }
                 return values
             }
     }
@@ -204,34 +204,6 @@ private extension CustomerInfoDimensionProvider {
             productIdentifier: productIdentifier,
             productPlanIdentifier: productPlanIdentifier
         )?.compoundProductIdentifier ?? productIdentifier
-    }
-
-}
-
-private extension Dictionary where Key == String, Value == DimensionValue {
-
-    mutating func set(_ key: String, string: String?) {
-        guard let string, !string.isEmpty else { return }
-        self[key] = .string(string)
-    }
-
-    mutating func set(_ key: String, date: Date?) {
-        guard let date else { return }
-        self[key] = .date(date)
-    }
-
-    mutating func set(price: ProductPaidPrice?) {
-        guard let price else { return }
-
-        let amountMicros = price.amount * 1_000_000
-        if amountMicros.isFinite,
-           amountMicros >= Double(Int64.min),
-           amountMicros < Double(Int64.max) {
-            self["price_amount_micros"] = .int(Int64(amountMicros))
-        }
-        if !price.currency.isEmpty {
-            self["price_currency"] = .string(price.currency)
-        }
     }
 
 }
