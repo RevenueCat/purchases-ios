@@ -387,6 +387,12 @@ extension CustomerInfo {
         CustomerInfo.currentSchemaVersion
     ]
 
+    var allIdentitiesAreAnonymous: Bool {
+        guard let user = self.data.response.user else { return false }
+        let amrs = user.amr.compactMap { IdentitySource.source(with: $0) }
+        if amrs.isEmpty { return false }
+        return amrs.allSatisfy { $0 == .anonymous }
+    }
 }
 
 extension CustomerInfo {
