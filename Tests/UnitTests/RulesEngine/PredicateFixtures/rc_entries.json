@@ -166,7 +166,7 @@
     {
       "id": "from_entries_keeps_two_spellings_of_the_same_character_apart",
       "description": "One key is é (U+00E9), the other is é spelled e (U+0065) followed by a combining acute accent (U+0301). They render alike but are different UTF-16 code unit sequences, so the object has two entries",
-      "predicate": {"===": [{"rc.length": {"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["e\u0301", 2]]]}}}, 2]},
+      "predicate": {"===": [{"reduce": [{"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["e\u0301", 2]]]}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]},
       "variables": {},
       "expected": true
     },
@@ -180,7 +180,7 @@
     {
       "id": "from_entries_still_merges_a_repeated_identical_key",
       "description": "Two entries spelled with the same code units are one key, the last value winning, as in JS",
-      "predicate": {"===": [{"rc.length": {"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["\u00e9", 2]]]}}}, 1]},
+      "predicate": {"===": [{"reduce": [{"rc.entries": {"rc.fromEntries": [[["\u00e9", 1], ["\u00e9", 2]]]}}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 1]},
       "variables": {},
       "expected": true
     }

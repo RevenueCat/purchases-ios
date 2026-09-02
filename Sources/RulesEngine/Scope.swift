@@ -18,19 +18,35 @@ extension RulesEngine {
         let current: Value
         /// Data the predicate started with, never replaced.
         let root: Value
+        /// Names bound by enclosing `rc.let` calls. Unlike `current`, these
+        /// survive iteration, which is what lets an inner predicate still see
+        /// a value captured outside the loop.
+        let bindings: ObjectValue
 
         init(root: Value) {
             self.root = root
             self.current = root
+            self.bindings = ObjectValue()
         }
 
         func scoped(to current: Value) -> Scope {
-            Scope(current: current, root: root)
+            Scope(current: current, root: root, bindings: bindings)
         }
 
-        private init(current: Value, root: Value) {
+        /// Adds names visible from here down. An inner `rc.let` reusing a name
+        /// shadows the outer one.
+        func binding(_ names: ObjectValue) -> Scope {
+            var merged = bindings
+            for (name, value) in names {
+                merged[name] = value
+            }
+            return Scope(current: current, root: root, bindings: merged)
+        }
+
+        private init(current: Value, root: Value, bindings: ObjectValue) {
             self.current = current
             self.root = root
+            self.bindings = bindings
         }
     }
 }

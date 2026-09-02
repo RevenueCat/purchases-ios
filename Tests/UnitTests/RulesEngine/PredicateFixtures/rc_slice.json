@@ -8,14 +8,14 @@
     },
     {
       "id": "slice_start_zero_keeps_everything",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b", "c"], 0]}}, 3]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [["a", "b", "c"], 0]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 3]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_with_length_takes_a_run",
       "description": "The third argument is a count, matching substr rather than JS slice's end index",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, 2]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "b"]}, {"===": [{"var": "1"}, "c"]}]}]},
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, 2]}], {"and": [{"===": [{"reduce": [{"var": ""}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]}, {"===": [{"var": "0"}, "b"]}, {"===": [{"var": "1"}, "c"]}]}]},
       "variables": {},
       "expected": true
     },
@@ -28,45 +28,45 @@
     },
     {
       "id": "slice_negative_length_drops_from_the_right",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, -1]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "b"]}]}]},
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 1, -1]}], {"and": [{"===": [{"reduce": [{"var": ""}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]}, {"===": [{"var": "0"}, "b"]}]}]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_length_beyond_the_end_clamps",
       "description": "Asking for more than exists is normal for a top-N rule, not an error",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 0, 10]}}, 2]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [["a", "b"], 0, 10]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_start_beyond_the_end_is_empty",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 5]}}, 0]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [["a", "b"], 5]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_negative_start_beyond_the_length_clamps_to_zero",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], -10]}}, 2]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [["a", "b"], -10]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_zero_length_is_empty",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [["a", "b"], 0, 0]}}, 0]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [["a", "b"], 0, 0]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_empty_array_stays_empty",
-      "predicate": {"===": [{"rc.length": {"rc.slice": [[], 0, 3]}}, 0]},
+      "predicate": {"===": [{"reduce": [{"rc.slice": [[], 0, 3]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
       "variables": {},
       "expected": true
     },
     {
       "id": "slice_computed_index_from_arithmetic",
       "description": "Arithmetic returns floats, so a whole-valued float must be a usable index",
-      "predicate": {"some": [[{"rc.slice": [{"var": "xs"}, {"-": [{"rc.length": {"var": "xs"}}, 1]}]}], {"===": [{"var": "0"}, "d"]}]},
+      "predicate": {"some": [[{"rc.slice": [{"var": "xs"}, {"-": [{"reduce": [{"var": "xs"}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 1]}]}], {"===": [{"var": "0"}, "d"]}]},
       "variables": {"xs": ["a", "b", "c", "d"]},
       "expected": true
     },
@@ -79,7 +79,7 @@
     },
     {
       "id": "slice_whole_float_length_is_accepted",
-      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 0, {"+": [1, 1]}]}], {"and": [{"===": [{"rc.length": {"var": ""}}, 2]}, {"===": [{"var": "0"}, "a"]}]}]},
+      "predicate": {"some": [[{"rc.slice": [["a", "b", "c", "d"], 0, {"+": [1, 1]}]}], {"and": [{"===": [{"reduce": [{"var": ""}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 2]}, {"===": [{"var": "0"}, "a"]}]}]},
       "variables": {},
       "expected": true
     },
