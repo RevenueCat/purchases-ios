@@ -39,7 +39,7 @@ struct DimensionValueTests {
             from: json.asData
         )
 
-        #expect(values["null"]?.dimensionValue == .null)
+        #expect(values["null"]?.dimensionValue == nil)
         #expect(values["nested"]?.dimensionValue == .object(["kept": .bool(true)]))
         #expect(values["records"]?.dimensionValue == .objectList([["id": .string("one")]]))
         #expect(values["mixed"]?.dimensionValue == nil)
