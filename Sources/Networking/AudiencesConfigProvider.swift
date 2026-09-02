@@ -44,7 +44,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
     }
 
     func configuration() async throws -> AudienceConfigurationSnapshot? {
-        return try await self.manager.readConsistent {
+        return try await self.manager.readConsistent { _ in
             try await self.loadConfiguration()
         }
     }

@@ -138,7 +138,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         return await self.readConsistent(
-            { await self.getWorkflowOnce(workflowId: workflowId) },
+            { _ in await self.getWorkflowOnce(workflowId: workflowId) },
             fallback: .failure(.notFound)
         )
     }
@@ -169,7 +169,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         workflowId: String
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         return await self.readConsistent(
-            { await self.decodeCachedWorkflowForAssetPrewarmingOnce(workflowId: workflowId) },
+            { _ in await self.decodeCachedWorkflowForAssetPrewarmingOnce(workflowId: workflowId) },
             fallback: .failure(.notFound)
         )
     }
@@ -194,7 +194,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// proceeding.
     func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
         return await self.readConsistent(
-            { await self.cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: includingOfferingId) },
+            { _ in await self.cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: includingOfferingId) },
             fallback: []
         )
     }
@@ -251,7 +251,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func readConsistent<Value>(
-        _ operation: () async -> Value?,
+        _ operation: (Int) async -> Value?,
         fallback: @autoclosure () -> Value
     ) async -> Value {
         do {
