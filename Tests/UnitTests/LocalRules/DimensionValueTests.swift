@@ -26,9 +26,17 @@ struct DimensionValueTests {
 
     @Test
     func anyDecodableConvertsSupportedDimensionValues() throws {
+        let json = #"""
+        {
+            "null": null,
+            "nested": {"kept": true, "unsupported": [1, 2]},
+            "records": [{"id": "one", "unsupported": [1, 2]}],
+            "mixed": [{"id": "one"}, "invalid"]
+        }
+        """#
         let values = try JSONDecoder.default.decode(
             [String: AnyDecodable].self,
-            from: #"{"null":null,"nested":{"kept":true,"unsupported":[1,2]},"records":[{"id":"one","unsupported":[1,2]}],"mixed":[{"id":"one"},"invalid"]}"#.asData
+            from: json.asData
         )
 
         #expect(values["null"]?.dimensionValue == .null)
