@@ -32,7 +32,7 @@ struct PredicateFixtureTests {
     /// fixtures are added or removed.
     @Test
     func fixtureCountMatchesExpected() {
-        let expectedCount = 616
+        let expectedCount = 676
         #expect(
             Self.fixtures.count == expectedCount,
             "Expected \(expectedCount) fixtures, loaded \(Self.fixtures.count)"

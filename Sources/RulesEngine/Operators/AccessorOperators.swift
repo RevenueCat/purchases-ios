@@ -105,11 +105,7 @@ extension RulesEngine {
         /// returns `[]`.
         static func opMissingSome(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
-            guard evaluated.count == 2 else {
-                throw RulesEngine.EvaluationError.typeMismatch(
-                    message: "operator 'missing_some' expects 2 arguments, got \(evaluated.count)"
-                )
-            }
+            try Operators.checkArity(evaluated.count, allowed: [2], operatorName: "missing_some")
             let needCountValue = evaluated[0]
             let options = evaluated[1]
 
