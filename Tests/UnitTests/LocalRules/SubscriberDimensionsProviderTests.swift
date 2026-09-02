@@ -84,28 +84,30 @@ struct SubscriberDimensionsProviderTests {
 
     @Test
     func missingCacheContributesNothing() {
-        let provider = SubscriberDimensionsProvider(cachedDimensionsProvider: { nil })
-
-        #expect(provider.dimensions(at: Date()).isEmpty)
-    }
-
-    @Test
-    func cacheReadFailureContributesNothing() {
-        let provider = SubscriberDimensionsProvider(cachedDimensionsProvider: {
-            throw TestError.unavailable
-        })
+        let provider = Self.providerWithoutCache()
 
         #expect(provider.dimensions(at: Date()).isEmpty)
     }
 
     @Test
     func cacheIsReadForEveryEvaluation() {
-        let data = Atomic(Data(#"{"plan":"annual"}"#.utf8))
-        let provider = SubscriberDimensionsProvider(cachedDimensionsProvider: { data.value })
+        let deviceCache = MockDeviceCache()
+        let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "test")
+        let provider = SubscriberDimensionsProvider(
+            deviceCache: deviceCache,
+            currentUserProvider: currentUserProvider
+        )
+        deviceCache.cache(
+            subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            appUserID: "test"
+        )
 
         #expect(provider.dimensions(at: Date())["plan"] == .string("annual"))
 
-        data.value = Data(#"{"plan":"monthly"}"#.utf8)
+        deviceCache.cache(
+            subscriberDimensions: Data(#"{"plan":"monthly"}"#.utf8),
+            appUserID: "test"
+        )
 
         #expect(provider.dimensions(at: Date())["plan"] == .string("monthly"))
     }
@@ -170,14 +172,27 @@ struct SubscriberDimensionsProviderTests {
     }
 
     private static func provider(_ json: String) -> SubscriberDimensionsProvider {
-        return SubscriberDimensionsProvider(cachedDimensionsProvider: { Data(json.utf8) })
+        let deviceCache = MockDeviceCache()
+        let currentUserProvider = MockCurrentUserProvider(mockAppUserID: "test")
+        deviceCache.cache(
+            subscriberDimensions: Data(json.utf8),
+            appUserID: "test"
+        )
+        return SubscriberDimensionsProvider(
+            deviceCache: deviceCache,
+            currentUserProvider: currentUserProvider
+        )
+    }
+
+    private static func providerWithoutCache() -> SubscriberDimensionsProvider {
+        return SubscriberDimensionsProvider(
+            deviceCache: MockDeviceCache(),
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: "test")
+        )
     }
 
 }
 
-private enum TestError: Error {
-    case unavailable
-}
 
 private struct TestProvider: DimensionProvider {
 

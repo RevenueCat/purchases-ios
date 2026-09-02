@@ -47,9 +47,12 @@ struct DimensionScopeTests {
                 customerInfoProvider: { _ in try CustomerInfo(data: Self.customerInfoData) }
             ),
             SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] }),
-            SubscriberDimensionsProvider(cachedDimensionsProvider: {
-                Data(#"{"acquisition_channel":"paid_search","predicted_ltv_band":3}"#.utf8)
-            })
+            SubscriberDimensionsProvider(
+                deviceCache: Self.deviceCache(
+                    with: #"{"acquisition_channel":"paid_search","predicted_ltv_band":3}"#
+                ),
+                currentUserProvider: MockCurrentUserProvider(mockAppUserID: "current_user")
+            )
         ]
 
         let snapshot = try await DimensionResolver(
@@ -62,6 +65,19 @@ struct DimensionScopeTests {
 
         #expect(snapshot.values == Self.expectedValues)
     }
+}
+
+private extension DimensionScopeTests {
+
+    static func deviceCache(with json: String) -> MockDeviceCache {
+        let deviceCache = MockDeviceCache()
+        deviceCache.cache(
+            subscriberDimensions: Data(json.utf8),
+            appUserID: "current_user"
+        )
+        return deviceCache
+    }
+
 }
 
 private extension DimensionScopeTests {
