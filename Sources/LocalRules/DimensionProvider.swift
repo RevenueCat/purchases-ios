@@ -19,6 +19,9 @@ import Foundation
 /// This keeps providers independent from the RulesEngine representation.
 enum DimensionValue: Equatable, Sendable {
 
+    /// An explicit null value supplied by the provider.
+    case null
+
     case string(String)
     case bool(Bool)
     case int(Int64)

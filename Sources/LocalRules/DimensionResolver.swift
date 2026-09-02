@@ -139,6 +139,7 @@ private enum DimensionValueConverter {
     /// Converts a provider value into its RulesEngine equivalent while filtering invalid nested names.
     private static func convert(_ dimension: DimensionValue, path: String) -> RulesEngine.Value? {
         switch dimension {
+        case .null: return .null
         case .string(let value): return .string(value)
         case .bool(let value): return .bool(value)
         case .int(let value): return .int(value)

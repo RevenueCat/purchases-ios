@@ -54,12 +54,27 @@ struct SubscriberDimensionsProviderTests {
     }
 
     @Test
-    func unreadableValuesAreDroppedWithoutDroppingOthers() {
+    func explicitNullValuesAreKeptWithoutDroppingOthers() {
         let dimensions = Self.provider(
             #"{"gone":null,"codes":[1,2],"plan":"annual"}"#
         ).dimensions(at: Date())
 
-        #expect(dimensions == ["plan": .string("annual")])
+        #expect(dimensions == ["gone": .null, "plan": .string("annual")])
+    }
+
+    @Test
+    func explicitNullValuesAreKeptInsideObjects() {
+        let dimensions = Self.provider(
+            #"{"profile":{"nickname":null,"tier":"gold"},"plan":"annual"}"#
+        ).dimensions(at: Date())
+
+        #expect(dimensions == [
+            "profile": .object([
+                "nickname": .null,
+                "tier": .string("gold")
+            ]),
+            "plan": .string("annual")
+        ])
     }
 
     @Test(arguments: ["not json", #"["an","array"]"#, #""a string""#, "42"])
