@@ -494,6 +494,30 @@ extension View {
     public func onRequestedDismissal(_ action: @escaping (() -> Void)) -> some View {
         self.environment(\.onRequestedDismissal, action)
     }
+
+    /// Invokes the given closure when the user interacts with a paywall control.
+    ///
+    /// Example:
+    /// ```swift
+    ///  PaywallView()
+    ///     .onPaywallInteraction { event in
+    ///         if event.property(for: PaywallInteractionEvent.Keys.componentType)
+    ///             == PaywallInteractionEvent.ComponentTypes.tab {
+    ///             analytics.track("paywall_component_interacted", properties: event.rawProperties)
+    ///         }
+    ///     }
+    /// ```
+    public func onPaywallInteraction(_ handler: @escaping PaywallInteractionHandler) -> some View {
+        self.environment(\.onPaywallInteraction, handler)
+    }
+
+    func onPaywallInteraction(ifSet handler: PaywallInteractionHandler?) -> some View {
+        self.transformEnvironment(\.onPaywallInteraction) { current in
+            if let handler {
+                current = handler
+            }
+        }
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
