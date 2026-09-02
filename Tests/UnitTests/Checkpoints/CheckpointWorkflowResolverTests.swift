@@ -961,7 +961,7 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
 private final class CallbackDimensionProvider: DimensionProvider, @unchecked Sendable {
 
-    let namespace = DimensionNamespace.device
+    let name = "device"
     let callback: () -> Void
 
     init(callback: @escaping () -> Void) {
