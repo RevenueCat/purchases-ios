@@ -38,6 +38,8 @@ extension RulesEngine {
                 return try RegexOperators.opRegexExtract(args: args, vars: vars)
             case "rc.regexMatch":
                 return try RegexOperators.opRegexMatch(args: args, vars: vars)
+            case "rc.regexReplace":
+                return try RegexOperators.opRegexReplace(args: args, vars: vars)
 
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)

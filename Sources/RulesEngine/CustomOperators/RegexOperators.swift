@@ -68,6 +68,39 @@ extension RulesEngine {
             return .string(String(operands.input[range]))
         }
 
+        /// `{"rc.regexReplace": [input, pattern, replacement]}` — every match
+        /// replaced, left to right.
+        ///
+        /// The replacement is literal text: `$1` and `$&` are not
+        /// backreferences. Build a replacement out of captures with
+        /// `rc.regexExtract` and `cat` instead.
+        ///
+        /// All operands must be strings and the pattern must compile,
+        /// otherwise `EvaluationError.typeMismatch`.
+        static func opRegexReplace(args: Value, vars: Scope) throws -> Value {
+            let operatorName = "rc.regexReplace"
+            let evaluated = try Operators.evalArgs(args, vars: vars)
+            try Self.checkArity(evaluated.count, allowed: [3], operatorName: operatorName)
+
+            let operands = try Self.operands(evaluated, operatorName: operatorName)
+
+            guard case .string(let replacement) = evaluated[2] else {
+                throw EvaluationError.typeMismatch(
+                    message: "operator '\(operatorName)' expected a string replacement, "
+                        + "got \(evaluated[2])"
+                )
+            }
+
+            let input = operands.input
+            return .string(
+                operands.regex.stringByReplacingMatches(
+                    in: input,
+                    range: NSRange(input.startIndex..., in: input),
+                    withTemplate: NSRegularExpression.escapedTemplate(for: replacement)
+                )
+            )
+        }
+
         /// Rejects an argument count no overload accepts.
         static func checkArity(_ count: Int, allowed: [Int], operatorName: String) throws {
             guard allowed.contains(count) else {
