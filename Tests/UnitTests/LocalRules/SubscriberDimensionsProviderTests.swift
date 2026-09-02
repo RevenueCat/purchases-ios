@@ -193,7 +193,6 @@ struct SubscriberDimensionsProviderTests {
 
 }
 
-
 private struct TestProvider: DimensionProvider {
 
     let name = "test"
