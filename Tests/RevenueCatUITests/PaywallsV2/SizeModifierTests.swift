@@ -77,6 +77,64 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 40)
     }
 
+    func testSheetFitRespectsMinimumHeight() {
+        let view = Color.clear
+            .frame(height: 10)
+            .applySheetHeight(
+                .fit(nil, .init(min: 40, max: nil)),
+                parentHeight: 100
+            )
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
+    }
+
+    func testSheetFillRespectsMaximumHeight() {
+        let view = Color.clear
+            .applySheetHeight(
+                .fill(.init(min: nil, max: 40)),
+                parentHeight: 100
+            )
+
+        XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
+    }
+
+    func testFitWithMinimumUsesFlexDistribution() {
+        for distribution in [
+            PaywallComponent.FlexDistribution.spaceBetween,
+            .spaceAround,
+            .spaceEvenly
+        ] {
+            XCTAssertEqual(
+                StackComponentStyle.strategy(
+                    for: distribution,
+                    sizeConstraint: .fit(nil, .init(min: 100, max: nil))
+                ),
+                .flex
+            )
+        }
+    }
+
+    func testUnconstrainedFitDoesNotUseFlexDistribution() {
+        XCTAssertEqual(
+            StackComponentStyle.strategy(for: .spaceBetween, sizeConstraint: .fit(nil)),
+            .normal
+        )
+        XCTAssertEqual(
+            StackComponentStyle.strategy(
+                for: .spaceBetween,
+                sizeConstraint: .fit(nil, .init(min: nil, max: 100))
+            ),
+            .normal
+        )
+        XCTAssertEqual(
+            StackComponentStyle.strategy(
+                for: .spaceBetween,
+                sizeConstraint: .fit(nil, .init(min: 0, max: nil))
+            ),
+            .normal
+        )
+    }
+
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
     }
