@@ -50,14 +50,6 @@ struct BottomSheetOverlayModifier: ViewModifier {
 
     @State private var parentHeight: CGFloat?
 
-    var sheetHeight: CGFloat? {
-        guard let size = self.sheetViewModel?.sheet.size else {
-            return nil
-        }
-
-        return Self.resolvedHeight(for: size.height, parentHeight: self.parentHeight)
-    }
-
     static func resolvedHeight(
         for constraint: PaywallComponent.SizeConstraint,
         parentHeight: CGFloat?
@@ -112,9 +104,10 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
                     )
-                    .applyIfLet(self.sheetHeight, apply: { view, height in
-                        view.frame(height: height)
-                    })
+                    .applySheetHeight(
+                        sheetViewModel.sheet.size?.height,
+                        parentHeight: self.parentHeight
+                    )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
                     .onAppear {
                         self.onSheetContentAppear?()
@@ -140,6 +133,37 @@ struct BottomSheetOverlayModifier: ViewModifier {
             .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
         }
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
+
+    @ViewBuilder
+    func applySheetHeight(
+        _ constraint: PaywallComponent.SizeConstraint?,
+        parentHeight: CGFloat?
+    ) -> some View {
+        if let constraint {
+            switch constraint {
+            case let .fit(_, minMax), let .fill(minMax):
+                self.applyHeightLimits(minMax, alignment: .center)
+            case .fixed(let height):
+                self.frame(height: CGFloat(height))
+            case .relative:
+                if let height = BottomSheetOverlayModifier.resolvedHeight(
+                    for: constraint,
+                    parentHeight: parentHeight
+                ) {
+                    self.frame(height: height)
+                } else {
+                    self
+                }
+            }
+        } else {
+            self
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
