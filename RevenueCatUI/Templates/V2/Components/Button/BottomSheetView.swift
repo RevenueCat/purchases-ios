@@ -104,8 +104,8 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
                     )
-                    .applySheetHeight(
-                        sheetViewModel.sheet.size?.height,
+                    .applySheetSize(
+                        sheetViewModel.sheet.size,
                         parentHeight: self.parentHeight
                     )
                     .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -137,6 +137,20 @@ struct BottomSheetOverlayModifier: ViewModifier {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
+
+    @ViewBuilder
+    func applySheetSize(
+        _ size: PaywallComponent.Size?,
+        parentHeight: CGFloat?
+    ) -> some View {
+        if let size {
+            self
+                .applyWidth(size.width, alignment: .center)
+                .applySheetHeight(size.height, parentHeight: parentHeight)
+        } else {
+            self
+        }
+    }
 
     @ViewBuilder
     func applySheetHeight(

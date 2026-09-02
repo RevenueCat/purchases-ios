@@ -98,6 +98,22 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
     }
 
+    func testSheetSizeAppliesWidthAndHeightConstraints() {
+        let view = Color.clear
+            .applySheetSize(
+                .init(
+                    width: .fill(.init(min: nil, max: 40)),
+                    height: .fixed(30)
+                ),
+                parentHeight: 100
+            )
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 100)),
+            .init(width: 40, height: 30)
+        )
+    }
+
     func testFitWithPositiveMinimumUsesFlexDistribution() {
         for distribution in [
             PaywallComponent.FlexDistribution.spaceBetween,
