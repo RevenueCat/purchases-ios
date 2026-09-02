@@ -74,6 +74,16 @@ class ConditionDeserializationTests: TestCase {
         expect(condition).to(equal(.promoOffer))
     }
 
+    // MARK: - Hover Condition Tests
+
+    func testDecodeHoverCondition() throws {
+        let json = """
+        {"type": "hover"}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.hover))
+    }
+
     // MARK: - Extended Intro Offer Condition Tests
 
     func testDecodeExtendedIntroOfferConditionEqualsTrue() throws {
