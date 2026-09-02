@@ -19,57 +19,80 @@ enum MarkdownUnderlineFormatter {
     /// Processes `<u>text</u>` syntax and applies underline styling.
     static func apply(to attributedString: AttributedString) -> AttributedString {
         var result = attributedString
-        let plainString = String(result.characters)
-        let tagPairs = Self.matchedTagPairs(in: plainString)
-
-        func attributedRange(for range: Range<String.Index>) -> Range<AttributedString.Index> {
-            let lowerOffset = plainString.distance(from: plainString.startIndex, to: range.lowerBound)
-            let upperOffset = plainString.distance(from: plainString.startIndex, to: range.upperBound)
-            let lowerBound = result.index(result.startIndex, offsetByCharacters: lowerOffset)
-            let upperBound = result.index(result.startIndex, offsetByCharacters: upperOffset)
-
-            return lowerBound..<upperBound
-        }
+        let tags = Self.underlineTags(in: result)
+        let tagPairs = Self.matchedTagPairs(in: tags)
 
         for pair in tagPairs {
-            let contentRange = attributedRange(for: pair.opening.range.upperBound..<pair.closing.range.lowerBound)
+            let contentRange = pair.opening.range.upperBound..<pair.closing.range.lowerBound
             var content = result[contentRange]
             content.underlineStyle = .single
             result[contentRange] = content
         }
 
+        // Match Android by stripping recognized inline HTML tags even when they are unmatched.
         // Process in reverse order so earlier tag offsets remain valid as tags are removed.
-        let matchedTags = tagPairs
-            .flatMap { [$0.opening, $0.closing] }
-            .sorted { $0.range.lowerBound > $1.range.lowerBound }
-        for tag in matchedTags {
-            result.replaceSubrange(attributedRange(for: tag.range), with: AttributedString())
+        for tag in tags.sorted(by: { $0.range.lowerBound > $1.range.lowerBound }) {
+            result.replaceSubrange(tag.range, with: AttributedString())
         }
 
         return result
     }
 
-    private static func matchedTagPairs(in string: String) -> [TagPair] {
+    private static func underlineTags(in attributedString: AttributedString) -> [Tag] {
+        var tags: [Tag] = []
+
+        for run in attributedString.runs
+        where run.inlinePresentationIntent?.contains(.inlineHTML) == true {
+            let runText = String(attributedString[run.range].characters)
+            var index = runText.startIndex
+
+            while index < runText.endIndex {
+                let remainingText = runText[index...]
+                let kind: TagKind?
+
+                if remainingText.hasPrefix(Self.openingTag) {
+                    kind = .opening
+                } else if remainingText.hasPrefix(Self.closingTag) {
+                    kind = .closing
+                } else {
+                    kind = nil
+                }
+
+                guard let kind else {
+                    index = runText.index(after: index)
+                    continue
+                }
+
+                let tagLength = kind == .opening ? Self.openingTag.count : Self.closingTag.count
+                let upperBound = runText.index(index, offsetBy: tagLength)
+                let lowerOffset = runText.distance(from: runText.startIndex, to: index)
+                let upperOffset = runText.distance(from: runText.startIndex, to: upperBound)
+                let lowerBound = attributedString.index(run.range.lowerBound, offsetByCharacters: lowerOffset)
+                let attributedUpperBound = attributedString.index(
+                    run.range.lowerBound,
+                    offsetByCharacters: upperOffset
+                )
+
+                tags.append(Tag(kind: kind, range: lowerBound..<attributedUpperBound))
+                index = upperBound
+            }
+        }
+
+        return tags
+    }
+
+    private static func matchedTagPairs(in tags: [Tag]) -> [TagPair] {
         var pairs: [TagPair] = []
         var unmatchedOpeningTags: [Tag] = []
-        var index = string.startIndex
 
-        while index < string.endIndex {
-            let remainingText = string[index...]
-
-            if remainingText.hasPrefix(Self.openingTag) {
-                let upperBound = string.index(index, offsetBy: Self.openingTag.count)
-                let tag = Tag(range: index..<upperBound)
+        for tag in tags {
+            switch tag.kind {
+            case .opening:
                 unmatchedOpeningTags.append(tag)
-                index = upperBound
-            } else if remainingText.hasPrefix(Self.closingTag) {
-                let upperBound = string.index(index, offsetBy: Self.closingTag.count)
+            case .closing:
                 if let openingTag = unmatchedOpeningTags.popLast() {
-                    pairs.append(TagPair(opening: openingTag, closing: Tag(range: index..<upperBound)))
+                    pairs.append(TagPair(opening: openingTag, closing: tag))
                 }
-                index = upperBound
-            } else {
-                index = string.index(after: index)
             }
         }
 
@@ -77,7 +100,13 @@ enum MarkdownUnderlineFormatter {
     }
 
     private struct Tag {
-        let range: Range<String.Index>
+        let kind: TagKind
+        let range: Range<AttributedString.Index>
+    }
+
+    private enum TagKind {
+        case opening
+        case closing
     }
 
     private struct TagPair {

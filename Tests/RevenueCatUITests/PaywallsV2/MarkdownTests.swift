@@ -62,6 +62,22 @@ final class MarkdownTests: TestCase {
         XCTAssertTrue(underlinedRuns.isEmpty)
     }
 
+    func testApplyUnderlines_doesNotInterpretTagsInsideCodeSpan() throws {
+        let input = try AttributedString(markdown: "`<u>literal</u>`")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        XCTAssertEqual(String(result.characters), "<u>literal</u>")
+        XCTAssertTrue(result.runs.filter { $0.underlineStyle == .single }.isEmpty)
+    }
+
+    func testApplyUnderlines_doesNotInterpretEscapedTags() throws {
+        let input = try AttributedString(markdown: #"\<u>literal\</u>"#)
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        XCTAssertEqual(String(result.characters), "<u>literal</u>")
+        XCTAssertTrue(result.runs.filter { $0.underlineStyle == .single }.isEmpty)
+    }
+
     func testApplyUnderlines_withEmptyUnderlineTag() throws {
         let input = try AttributedString(markdown: "Hello <u></u> world")
         let result = MarkdownUnderlineFormatter.apply(to: input)
@@ -93,8 +109,7 @@ final class MarkdownTests: TestCase {
         let result = MarkdownUnderlineFormatter.apply(to: input)
 
         let plainText = String(result.characters)
-        // Unclosed tag should remain as-is
-        XCTAssertEqual(plainText, "Hello <u>world")
+        XCTAssertEqual(plainText, "Hello world")
 
         let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
         XCTAssertTrue(underlinedRuns.isEmpty)
@@ -104,10 +119,20 @@ final class MarkdownTests: TestCase {
         let input = try AttributedString(markdown: "Hello </u>world")
         let result = MarkdownUnderlineFormatter.apply(to: input)
 
-        XCTAssertEqual(String(result.characters), "Hello </u>world")
+        XCTAssertEqual(String(result.characters), "Hello world")
 
         let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
         XCTAssertTrue(underlinedRuns.isEmpty)
+    }
+
+    func testApplyUnderlines_withUnclosedOuterTagOnlyUnderlinesMatchedInnerTag() throws {
+        let input = try AttributedString(markdown: "Hello <u>outer <u>inner</u> remainder")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        XCTAssertEqual(String(result.characters), "Hello outer inner remainder")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertEqual(underlinedRuns.map { String(result[$0.range].characters) }, ["inner"])
     }
 
     func testApplyUnderlines_withNestedUnderlineTags() throws {
