@@ -181,6 +181,20 @@ private extension Axis {
 
 }
 
+private extension PaywallComponent.SizeConstraint {
+
+    var positiveFitMinimum: CGFloat? {
+        guard case let .fit(_, minMax) = self,
+              let minimum = minMax.min,
+              minimum > 0 else {
+            return nil
+        }
+
+        return CGFloat(minimum)
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
 
@@ -305,6 +319,7 @@ struct VerticalStack: View {
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
+                fitMinimum: style.size.height.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )
@@ -341,6 +356,7 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
+                fitMinimum: style.size.width.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )

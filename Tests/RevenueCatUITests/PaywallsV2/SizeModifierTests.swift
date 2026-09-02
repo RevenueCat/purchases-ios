@@ -98,6 +98,68 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
     }
 
+    func testFitWithPositiveMinimumUsesFlexDistribution() {
+        for distribution in [
+            PaywallComponent.FlexDistribution.spaceBetween,
+            .spaceAround,
+            .spaceEvenly
+        ] {
+            XCTAssertEqual(
+                StackComponentStyle.strategy(
+                    for: distribution,
+                    sizeConstraint: .fit(nil, .init(min: 100, max: nil))
+                ),
+                .flex
+            )
+        }
+    }
+
+    func testFitWithoutPositiveMinimumDoesNotUseFlexDistribution() {
+        for sizeConstraint in [
+            PaywallComponent.SizeConstraint.fit(nil),
+            .fit(nil, .init(min: 0, max: nil)),
+            .fit(nil, .init(min: nil, max: 100))
+        ] {
+            XCTAssertEqual(
+                StackComponentStyle.strategy(for: .spaceBetween, sizeConstraint: sizeConstraint),
+                .normal
+            )
+        }
+    }
+
+    func testFitMinimumDistributesOnlyRemainingSpace() {
+        XCTAssertEqual(
+            FlexSpacer.lengthPerWeight(
+                fitMinimum: 100,
+                contentLength: 40,
+                spacing: 10,
+                componentCount: 2,
+                totalWeight: 1
+            ),
+            50
+        )
+        XCTAssertEqual(
+            FlexSpacer.lengthPerWeight(
+                fitMinimum: 100,
+                contentLength: 40,
+                spacing: 10,
+                componentCount: 2,
+                totalWeight: 4
+            ),
+            12.5
+        )
+        XCTAssertEqual(
+            FlexSpacer.lengthPerWeight(
+                fitMinimum: 30,
+                contentLength: 40,
+                spacing: 0,
+                componentCount: 2,
+                totalWeight: 1
+            ),
+            0
+        )
+    }
+
     func testFitWithMinimumDoesNotExpandVerticalStackToParentProposal() {
         let height = PaywallComponent.SizeConstraint.fit(nil, .init(min: 100, max: nil))
         let view = Self.verticalStack(distribution: .spaceBetween, height: height)
@@ -118,6 +180,25 @@ final class SizeModifierTests: TestCase {
         )
     }
 
+    func testFitWithMinimumCanStillGrowToContentSize() {
+        let constraint = PaywallComponent.SizeConstraint.fit(nil, .init(min: 30, max: nil))
+
+        XCTAssertEqual(
+            Self.fittingSize(
+                of: Self.verticalStack(distribution: .spaceBetween, height: constraint),
+                in: .init(width: 100, height: 500)
+            ).height,
+            40
+        )
+        XCTAssertEqual(
+            Self.fittingSize(
+                of: Self.horizontalStack(distribution: .spaceBetween, width: constraint),
+                in: .init(width: 500, height: 100)
+            ).width,
+            40
+        )
+    }
+
     @ViewBuilder
     private static func verticalStack(
         distribution: PaywallComponent.FlexDistribution,
@@ -135,7 +216,17 @@ final class SizeModifierTests: TestCase {
         case .flex:
             VStack(spacing: 0) {
                 row
-                Spacer(minLength: 0)
+                if let spacerLength = FlexSpacer.lengthPerWeight(
+                    fitMinimum: Self.fitMinimum(height),
+                    contentLength: 40,
+                    spacing: 0,
+                    componentCount: 2,
+                    totalWeight: 1
+                ) {
+                    Spacer(minLength: 0).frame(height: spacerLength)
+                } else {
+                    Spacer(minLength: 0)
+                }
                 row
             }
             .size(.init(width: .fit(nil), height: height))
@@ -159,11 +250,29 @@ final class SizeModifierTests: TestCase {
         case .flex:
             HStack(spacing: 0) {
                 column
-                Spacer(minLength: 0)
+                if let spacerLength = FlexSpacer.lengthPerWeight(
+                    fitMinimum: Self.fitMinimum(width),
+                    contentLength: 40,
+                    spacing: 0,
+                    componentCount: 2,
+                    totalWeight: 1
+                ) {
+                    Spacer(minLength: 0).frame(width: spacerLength)
+                } else {
+                    Spacer(minLength: 0)
+                }
                 column
             }
             .size(.init(width: width, height: .fit(nil)))
         }
+    }
+
+    private static func fitMinimum(_ sizeConstraint: PaywallComponent.SizeConstraint) -> CGFloat? {
+        guard case let .fit(_, minMax) = sizeConstraint else {
+            return nil
+        }
+
+        return minMax.min.map(CGFloat.init)
     }
 
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
