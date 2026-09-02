@@ -55,13 +55,20 @@ struct BottomSheetOverlayModifier: ViewModifier {
             return nil
         }
 
-        switch size.height {
+        return Self.resolvedHeight(for: size.height, parentHeight: self.parentHeight)
+    }
+
+    static func resolvedHeight(
+        for constraint: PaywallComponent.SizeConstraint,
+        parentHeight: CGFloat?
+    ) -> CGFloat? {
+        switch constraint {
         case .fit, .fill:
             return nil
         case .fixed(let height):
             return CGFloat(height)
         case let .relative(percent, minMax):
-            guard let parentHeight = self.parentHeight else {
+            guard let parentHeight else {
                 return nil
             }
             return minMax.clamped(parentHeight * percent)
