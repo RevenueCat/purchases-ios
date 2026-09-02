@@ -49,9 +49,6 @@ enum CheckpointHitResult: String {
 extension CheckpointEvent {
 
     /// The content of a ``CheckpointEvent``.
-    ///
-    /// `date` is when the user reached the checkpoint, not when the event was created, so hit volume over time
-    /// stays comparable with events recorded before the outcome was attached.
     struct Data {
 
         var id: UUID
@@ -117,8 +114,6 @@ extension CheckpointEvent.Data {
 extension CheckpointEvent {
 
     /// Builds the hit event for a resolved checkpoint.
-    ///
-    /// - Parameter date: when the checkpoint was reached, captured before resolution started.
     static func hit(identifier: String, date: Date, resolved: ResolvedCheckpoint) -> CheckpointEvent {
         switch resolved.resolution {
         case let .matchedWorkflow(matched):
