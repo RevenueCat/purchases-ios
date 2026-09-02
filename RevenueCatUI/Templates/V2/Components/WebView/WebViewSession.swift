@@ -27,6 +27,7 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
     var currentURL: () -> URL?
 
     let fitAxes: (width: Bool, height: Bool)
+    private let dateProvider: () -> Date
 
     /// The single protocol version this SDK build implements. Deliberately not the schema's
     /// `protocol_version`: the host must never accept a handshake for a version it cannot service,
@@ -35,19 +36,43 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
 
     private var lastAppliedWidth: CGFloat?
     private var lastAppliedHeight: CGFloat?
+    private var context: PaywallWebViewContext?
 
     init(
         componentID: String,
         expectedOrigin: WebViewOrigin,
         fitAxes: (width: Bool, height: Bool),
         evaluateJavaScript: @escaping (String) -> Bool,
-        currentURL: @escaping () -> URL?
+        currentURL: @escaping () -> URL?,
+        dateProvider: @escaping () -> Date = Date.init
     ) {
         self.componentID = componentID
         self.expectedOrigin = expectedOrigin
         self.fitAxes = fitAxes
         self.evaluateJavaScript = evaluateJavaScript
         self.currentURL = currentURL
+        self.dateProvider = dateProvider
+    }
+
+    func updateContext(_ context: PaywallWebViewContext?) {
+        guard context != self.context else {
+            return
+        }
+
+        self.context = context
+        guard self.channelOpen, let context else {
+            return
+        }
+
+        self.send(
+            .init(
+                kind: .message,
+                componentID: self.componentID,
+                type: WebViewEnvelope.messageTypeContext,
+                payload: context.payload(updatedAt: self.dateProvider())
+            ),
+            allowBeforeNavigation: false
+        )
     }
 
     /// Resets handshake and resize thresholds for a new main-frame document.
@@ -144,11 +169,29 @@ final class WebViewSession: NSObject, ObservableObject, WKScriptMessageHandler {
         // `connect` retry instead of stranding the bridge half-open (native "open", page never got
         // `init`). `allowBeforeNavigation: true` because the top-level `url` may not be populated
         // this early; the `connect` was already origin-gated and later sends still check it.
-        guard self.send(.init(kind: .`init`, componentID: self.componentID), allowBeforeNavigation: true) else {
+        guard self.send(
+            .init(
+                kind: .`init`,
+                componentID: self.componentID,
+                payload: self.initPayload()
+            ),
+            allowBeforeNavigation: true
+        ) else {
             return
         }
         self.channelOpen = true
         self.sendFitMessageIfNeeded()
+    }
+
+    /// `init.payload` is `{ context: <snapshot> }` so the handshake can grow later.
+    /// Subsequent `context` messages send the snapshot as the payload itself.
+    private func initPayload() -> [String: PaywallWebViewValue]? {
+        guard let context = self.context else {
+            return nil
+        }
+        return [
+            WebViewEnvelope.messageTypeContext: .object(context.payload(updatedAt: self.dateProvider()))
+        ]
     }
 
     private func handleResize(_ payload: [String: PaywallWebViewValue]?) {

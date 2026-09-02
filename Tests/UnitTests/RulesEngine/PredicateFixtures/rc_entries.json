@@ -155,6 +155,13 @@
         }
       },
       "expected": true
+    },
+    {
+      "id": "entries_keys_sort_by_utf16_code_unit",
+      "description": "The keys are fullwidth capital A Ａ (U+FF21) and the grinning face emoji 😀 (U+1F600, encoded as the surrogate pair U+D83D U+DE00). Keys sort as UTF-16 code units, so the emoji's leading surrogate U+D83D places it ahead of U+FF21, even though its code point is the higher of the two",
+      "predicate": {"some": [[{"rc.entries": [{"var": "o"}]}], {"and": [{"===": [{"var": "0.0"}, "\ud83d\ude00"]}, {"===": [{"var": "1.0"}, "\uff21"]}]}]},
+      "variables": {"o": {"\uff21": 1, "\ud83d\ude00": 2}},
+      "expected": true
     }
   ]
 }

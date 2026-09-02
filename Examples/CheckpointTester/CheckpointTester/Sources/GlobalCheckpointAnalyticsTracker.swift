@@ -31,15 +31,16 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
     // MARK: - New checkpoint public API implementation
 
     // These callbacks demonstrate an app-wide analytics integration using CheckpointListener.
-    func onCheckpointHit(_ checkpoint: CheckpointInfo) {
+    func onCheckpointHit(_ context: CheckpointHitContext) {
         self.track(
-            "Hit · \(checkpoint.identifier) · customVariables=\(checkpoint.customVariables)"
+            "Hit · \(context.identifier) · customVariables=\(context.customVariables)"
         )
     }
 
-    func onCheckpointCompleted(_ checkpoint: CheckpointInfo, result: CheckpointResult) {
+    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
         self.track(
-            "Completed · \(Self.describe(result)) · customVariables=\(checkpoint.customVariables)"
+            "Completed · \(context.identifier) · \(Self.describe(context.result)) · " +
+                "customVariables=\(context.customVariables)"
         )
     }
 
@@ -58,26 +59,27 @@ final class GlobalCheckpointAnalyticsTracker: ObservableObject, CheckpointListen
     private static func describe(_ result: CheckpointResult) -> String {
         switch result {
         case let presented as CheckpointPaywallPresentedResult:
-            return "Paywall presented · \(presented.checkpoint.identifier) · " +
-                Self.describe(presented.paywallOutcome)
+            return "Paywall presented · \(Self.describe(presented.paywallOutcome))"
         case let received as CheckpointReceivedOfferingResult:
-            return "Received offering · \(received.checkpoint.identifier) · \(received.offering.identifier)"
+            return "Received offering · \(received.offering.identifier)"
         case let noAction as CheckpointNoActionResult:
-            return "No action · \(noAction.checkpoint.identifier) · \(noAction.reason)"
+            return "No action · \(noAction.reason)"
         default:
-            return "Unknown result · \(result.checkpoint.identifier)"
+            return "Unknown result"
         }
     }
 
     private static func describe(_ result: CheckpointPaywallOutcome) -> String {
         switch result {
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             return "Dismissed"
-        case is CheckpointPaywallPurchasedOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            return "Web checkout opened"
+        case is CheckpointPaywallOutcome.Purchased:
             return "Purchased"
-        case is CheckpointPaywallRestoredOutcome:
+        case is CheckpointPaywallOutcome.Restored:
             return "Restored"
-        case let error as CheckpointPaywallErrorOutcome:
+        case let error as CheckpointPaywallOutcome.Error:
             return "Error · \(error.error.localizedDescription)"
         default:
             return "Unknown paywall outcome"

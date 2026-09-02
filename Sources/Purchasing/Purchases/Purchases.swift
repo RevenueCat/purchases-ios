@@ -341,6 +341,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
 
+    @_spi(Internal) public let configuredStoreEnvironment: ConfiguredStoreEnvironment
+
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
                      appUserID: String?,
@@ -880,6 +882,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     ) {
         self.webBundleEventBus = webBundleEventBus
 
+        self.configuredStoreEnvironment = .init(systemInfo: systemInfo)
+
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
         }
@@ -1218,7 +1222,39 @@ public extension Purchases {
             return
         }
 
-        self.syncSubscriberAttributes(completion: {
+        let firstBlockingError: Atomic<PublicError?> = nil
+        /// Returns whether an attribute sync error should prevent offerings from being fetched.
+        let shouldBlockOfferingsFetch: @Sendable (PublicError) -> Bool = { error in
+            guard
+                error.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+                    == BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                let attributeErrors = error.subscriberAttributesErrors,
+                !attributeErrors.isEmpty
+            else {
+                return true
+            }
+
+            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes,
+            // some of which cannot be overwritten. Non-`$` keys are custom attributes,
+            // so a failure means their intended values were not synced.
+            return attributeErrors.keys.contains { !$0.hasPrefix("$") }
+        }
+
+        self.syncSubscriberAttributes(syncedAttribute: { error in
+            // Reserved-only errors are non-blocking because those attributes cannot always be updated.
+            if let error, shouldBlockOfferingsFetch(error) {
+                firstBlockingError.modify {
+                    $0 = $0 ?? error
+                }
+            }
+        }, completion: {
+            if let error = firstBlockingError.value {
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, error)
+                }
+                return
+            }
+
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.remoteConfigManager.refreshRemoteConfig(
                     fetchContext: .read,
@@ -1253,23 +1289,31 @@ public extension Purchases {
 
 extension Purchases: InternalAuthenticatorDelegate {
 
-    func authenticatorDidLogIn(info: CustomerInfo) {
-        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(
-                fetchContext: .identityChange,
-                isAppBackgrounded: isAppBackgrounded
-            )
-        }
-    }
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
+        switch reason {
+        case .logIn:
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                didHandle(nil)
+            }
 
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
-        // The web view cache must retain the cache on login to support multipage paywalls and workflows
-        // making `.identityChange` an insufficient signal.
-        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
-        // we would have an issue. 
-        Task { await self.webBundleEventBus.clearCache() }
-        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
+        case .logOut:
+            // The web view cache retains the cache on login to support multipage paywalls and workflows,
+            // and clears the cache when the current user "logs out"
+            Task { await self.webBundleEventBus.clearCache() }
+
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+
+        case .identified:
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+        }
     }
 
 }

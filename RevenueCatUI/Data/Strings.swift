@@ -119,6 +119,7 @@ enum Strings {
     case paywall_web_view_load_failed(String)
     case paywall_web_view_http_error(statusCode: Int)
     case web_view_data_store_removal_failed(UUID, Error)
+    case web_view_context_encoding_failed(Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -442,6 +443,8 @@ extension Strings: CustomStringConvertible {
             "its offerings-provided paywall."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
+        case .web_view_context_encoding_failed(let error):
+            return "Encoding web view context failed with error: \(error)"
         }
     }
 
