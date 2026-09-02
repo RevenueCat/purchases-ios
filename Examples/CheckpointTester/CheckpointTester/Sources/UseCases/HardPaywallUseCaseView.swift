@@ -106,15 +106,17 @@ struct HardPaywallUseCaseView: View {
     @MainActor
     private func handle(_ outcome: CheckpointPaywallOutcome) {
         switch outcome {
-        case is CheckpointPaywallPurchasedOutcome:
+        case is CheckpointPaywallOutcome.Purchased:
             self.hasAccess = true
             self.status = "Purchase completed. Access granted."
-        case is CheckpointPaywallRestoredOutcome:
+        case is CheckpointPaywallOutcome.Restored:
             self.hasAccess = true
             self.status = "Restore completed. Access granted."
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             self.status = "Paywall dismissed. Content remains locked."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            self.status = "Web checkout opened. Complete the purchase to unlock content."
+        case let failed as CheckpointPaywallOutcome.Error:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:
             self.status = "Unknown paywall outcome. Content remains locked."

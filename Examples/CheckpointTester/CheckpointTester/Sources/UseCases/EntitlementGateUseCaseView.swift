@@ -115,13 +115,15 @@ struct EntitlementGateUseCaseView: View {
     @MainActor
     private func handle(_ outcome: CheckpointPaywallOutcome) {
         switch outcome {
-        case let purchased as CheckpointPaywallPurchasedOutcome:
+        case let purchased as CheckpointPaywallOutcome.Purchased:
             self.updateAccess(with: purchased.customerInfo, action: "Purchase completed")
-        case let restored as CheckpointPaywallRestoredOutcome:
+        case let restored as CheckpointPaywallOutcome.Restored:
             self.updateAccess(with: restored.customerInfo, action: "Restore completed")
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             self.status = "Paywall dismissed. Content remains locked."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            self.status = "Web checkout opened. Refresh access after completing the purchase."
+        case let failed as CheckpointPaywallOutcome.Error:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:
             self.status = "Unknown paywall outcome. Content remains locked."

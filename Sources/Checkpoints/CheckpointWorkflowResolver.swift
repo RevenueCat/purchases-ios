@@ -34,8 +34,6 @@ import Foundation
     case noMatch
     /// Checkpoint configuration could not be loaded.
     case configurationUnavailable
-    /// Checkpoints are disabled.
-    case disabled
     /// The checkpoint identifier is not configured.
     case unknownCheckpoint
 
@@ -72,7 +70,7 @@ protocol CheckpointWorkflowResolver: AnyObject {
 final class DisabledCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     func resolve(identifier: String, params: CheckpointParams) async throws -> CheckpointResolution {
-        return .noAction(.disabled)
+        return .noAction(.configurationUnavailable)
     }
 
 }
@@ -136,7 +134,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         } catch let error as CancellationError {
             throw error
         } catch CheckpointRulesProviderError.remoteConfigDisabled {
-            return .noAction(.disabled)
+            return .noAction(.configurationUnavailable)
         } catch {
             return .noAction(.configurationUnavailable)
         }

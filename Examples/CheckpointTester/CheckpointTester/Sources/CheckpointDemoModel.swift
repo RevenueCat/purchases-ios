@@ -29,10 +29,10 @@ final class CheckpointDemoModel: ObservableObject {
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
-    func showOutcome(_ result: CheckpointResult) {
+    func showOutcome(_ result: CheckpointResult, checkpointIdentifier: String) {
         self.showOutcomeAlert(
             title: "Checkpoint result",
-            message: Self.describe(result)
+            message: Self.describe(result, checkpointIdentifier: checkpointIdentifier)
         )
     }
 
@@ -73,29 +73,31 @@ final class CheckpointDemoModel: ObservableObject {
         self.outcomeAlert = self.pendingOutcomeAlerts.removeFirst()
     }
 
-    private static func describe(_ result: CheckpointResult) -> String {
+    private static func describe(_ result: CheckpointResult, checkpointIdentifier: String) -> String {
         switch result {
         case let presented as CheckpointPaywallPresentedResult:
-            return "Paywall presented · \(presented.checkpoint.identifier)\n\n" +
+            return "Paywall presented · \(checkpointIdentifier)\n\n" +
                 "Paywall outcome: \(Self.describe(presented.paywallOutcome))"
         case let received as CheckpointReceivedOfferingResult:
-            return "Received offering · \(received.checkpoint.identifier) · \(received.offering.identifier)"
+            return "Received offering · \(checkpointIdentifier) · \(received.offering.identifier)"
         case let noAction as CheckpointNoActionResult:
-            return "No action · \(noAction.checkpoint.identifier) · \(noAction.reason)"
+            return "No action · \(checkpointIdentifier) · \(noAction.reason)"
         default:
-            return "Unknown checkpoint result · \(result.checkpoint.identifier)"
+            return "Unknown checkpoint result · \(checkpointIdentifier)"
         }
     }
 
     private static func describe(_ result: CheckpointPaywallOutcome) -> String {
         switch result {
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             return "Dismissed"
-        case is CheckpointPaywallPurchasedOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            return "Web checkout opened"
+        case is CheckpointPaywallOutcome.Purchased:
             return "Purchased"
-        case is CheckpointPaywallRestoredOutcome:
+        case is CheckpointPaywallOutcome.Restored:
             return "Restored"
-        case let error as CheckpointPaywallErrorOutcome:
+        case let error as CheckpointPaywallOutcome.Error:
             return "Error · \(error.error.localizedDescription)"
         default:
             return "Unknown paywall outcome"
