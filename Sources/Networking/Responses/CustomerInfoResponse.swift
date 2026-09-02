@@ -114,6 +114,7 @@ extension CustomerInfoResponse {
 
     struct User {
 
+        // swiftlint:disable:next nesting
         struct Identity {
             var id: String?
             var method: String
@@ -229,7 +230,7 @@ extension CustomerInfoResponse.User.Identity: Codable, Hashable {
     }
 
     func encode(to encoder: any Encoder) throws {
-        try encoder.encodeRawData(rawData)
+        encoder.encodeRawData(rawData)
     }
 
 }

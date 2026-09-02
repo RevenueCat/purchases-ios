@@ -51,7 +51,7 @@ extension Encoder {
 
     func encodeRawData(_ rawData: [String: Any]) {
         do {
-            var container = try self.singleValueContainer()
+            var container = self.singleValueContainer()
             try container.encode(AnyEncodable(rawData))
         } catch {
             Logger.warn(Strings.codable.encoding_error(error))
