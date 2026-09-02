@@ -19,24 +19,22 @@ struct SubscriberDimensionsProvider: DimensionProvider {
 
     let name = "subscriber_dimensions"
 
-    private let cachedDimensionsProvider: @Sendable () throws -> Data?
+    private let deviceCache: DeviceCache
+    private let currentUserProvider: any CurrentUserProvider
 
     init(
         deviceCache: DeviceCache,
         currentUserProvider: CurrentUserProvider
     ) {
-        self.init {
-            deviceCache.cachedSubscriberDimensionsData(appUserID: currentUserProvider.currentAppUserID)
-        }
-    }
-
-    init(cachedDimensionsProvider: @escaping @Sendable () throws -> Data?) {
-        self.cachedDimensionsProvider = cachedDimensionsProvider
+        self.deviceCache = deviceCache
+        self.currentUserProvider = currentUserProvider
     }
 
     func dimensions(at _: Date) -> [String: DimensionValue] {
         do {
-            guard let data = try self.cachedDimensionsProvider() else { return [:] }
+            guard let data = self.deviceCache.cachedSubscriberDimensionsData(
+                appUserID: self.currentUserProvider.currentAppUserID
+            ) else { return [:] }
             let values = try JSONDecoder.default.decode([String: AnyDecodable].self, from: data)
 
             return values.compactMapValues(\AnyDecodable.dimensionValue)
