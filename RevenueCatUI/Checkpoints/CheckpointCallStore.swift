@@ -28,7 +28,7 @@ final class CheckpointCallStore {
         init(
             presentation: CheckpointPresentation,
             delegate: CheckpointPresentationDelegate,
-            stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallDismissedOutcome.shared
+            stagedOutcome: CheckpointPaywallOutcome = CheckpointPaywallOutcome.Dismissed.shared
         ) {
             self.presentation = presentation
             self.delegate = delegate
