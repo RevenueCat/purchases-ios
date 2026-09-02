@@ -845,6 +845,77 @@ struct StackComponentFillConstraints_Previews: PreviewProvider {
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentCappedFillDistributions_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            VStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): Fill(max: 50) × 2",
+                        horizontal: true,
+                        constraints: [
+                            .fill(.init(min: nil, max: 50)),
+                            .fill(.init(min: nil, max: 50))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 320, height: 450))
+            .previewDisplayName("Stack · Horizontal capped Fill distributions")
+
+            VStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): max 30 + max 70",
+                        horizontal: true,
+                        constraints: [
+                            .fill(.init(min: nil, max: 30)),
+                            .fill(.init(min: nil, max: 70))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 320, height: 450))
+            .previewDisplayName("Stack · Horizontal nonuniform Fill distributions")
+
+            HStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): Fill(max: 50) × 2",
+                        horizontal: false,
+                        constraints: [
+                            .fill(.init(min: nil, max: 50)),
+                            .fill(.init(min: nil, max: 50))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 840, height: 330))
+            .previewDisplayName("Stack · Vertical capped Fill distributions")
+
+            HStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): max 30 + max 70",
+                        horizontal: false,
+                        constraints: [
+                            .fill(.init(min: nil, max: 30)),
+                            .fill(.init(min: nil, max: 70))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 840, height: 330))
+            .previewDisplayName("Stack · Vertical nonuniform Fill distributions")
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentMarginConstraint_Previews: PreviewProvider {
     static var previews: some View {
         stackMarginConstraintPreview(
@@ -872,6 +943,11 @@ private let stackSizingPreviewContent = Color(
     blue: 235.0 / 255.0
 )
 private let stackSizingPreviewChildColors = ["#DC2626", "#2563EB", "#16A34A"]
+private let stackSizingSpaceDistributions: [PaywallComponent.FlexDistribution] = [
+    .spaceBetween,
+    .spaceAround,
+    .spaceEvenly
+]
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private func stackSizeConstraintGallery(
@@ -906,7 +982,8 @@ private func stackSizeConstraintGallery(
 private func stackFillConstraintPreview(
     title: String,
     horizontal: Bool,
-    constraints: [PaywallComponent.SizeConstraint]
+    constraints: [PaywallComponent.SizeConstraint],
+    distribution: PaywallComponent.FlexDistribution = .start
 ) -> some View {
     let labels = constraints.map(stackFillConstraintLabel)
     let components: [PaywallComponent] = constraints.enumerated().map { index, constraint in
@@ -923,8 +1000,8 @@ private func stackFillConstraintPreview(
         ))
     }
     let dimension: PaywallComponent.Dimension = horizontal
-        ? .horizontal(.center, .start)
-        : .vertical(.center, .start)
+        ? .horizontal(.center, distribution)
+        : .vertical(.center, distribution)
     let size: PaywallComponent.Size = horizontal
         ? .init(width: .fixed(240), height: .fixed(72))
         : .init(width: .fixed(240), height: .fixed(240))
