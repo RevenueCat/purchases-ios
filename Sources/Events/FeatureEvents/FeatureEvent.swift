@@ -67,9 +67,10 @@ extension FeatureEvent {
 
 }
 
-private extension PaywallEvent {
+extension PaywallEvent {
 
-    func paywallMap() -> [String: Any] {
+    /// Snake-case dictionary of this event, matching the backend wire payload keys.
+    @_spi(Internal) public func paywallMap() -> [String: Any] {
         let typeName: String = {
             switch self {
             case .impression: return "paywall_impression"
@@ -94,6 +95,10 @@ private extension PaywallEvent {
             "locale": self.data.localeIdentifier,
             "dark_mode": self.data.darkMode
         ]
+
+        if let paywallIdentifier = self.data.paywallIdentifier {
+            result["paywall_id"] = paywallIdentifier
+        }
 
         if let interaction = self.componentInteractionData {
             interaction.mergeIntoPaywallFeatureMap(&result)

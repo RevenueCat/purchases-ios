@@ -23,6 +23,53 @@ struct App: View {
     private var purchaseCancelled: PurchaseCancelledHandler = { () in }
     private var webCheckoutOpened: WebCheckoutOpenedHandler = { () in }
     private var urlOpened: URLOpenedHandler = { (_: URL) in }
+    private var interaction: PaywallInteractionHandler = { (event: PaywallInteractionEvent) in
+        let rawProperties: [String: Any] = event.rawProperties
+        let componentType: String? = event.property(for: PaywallInteractionEvent.Keys.componentType)
+        let originIndex: Int? = event.property(for: PaywallInteractionEvent.Keys.originIndex)
+        let timestamp: UInt64? = event.property(for: PaywallInteractionEvent.Keys.timestamp)
+        let darkMode: Bool? = event.property(for: PaywallInteractionEvent.Keys.darkMode)
+        let name: String = PaywallInteractionEvent.Keys.componentType.name
+    }
+    private let interactionKeys: [Any] = [
+        PaywallInteractionEvent.Keys.timestamp,
+        PaywallInteractionEvent.Keys.sessionId,
+        PaywallInteractionEvent.Keys.offeringId,
+        PaywallInteractionEvent.Keys.paywallId,
+        PaywallInteractionEvent.Keys.paywallRevision,
+        PaywallInteractionEvent.Keys.displayMode,
+        PaywallInteractionEvent.Keys.darkMode,
+        PaywallInteractionEvent.Keys.locale,
+        PaywallInteractionEvent.Keys.componentType,
+        PaywallInteractionEvent.Keys.componentValue,
+        PaywallInteractionEvent.Keys.componentName,
+        PaywallInteractionEvent.Keys.componentUrl,
+        PaywallInteractionEvent.Keys.originIndex,
+        PaywallInteractionEvent.Keys.destinationIndex,
+        PaywallInteractionEvent.Keys.originContextName,
+        PaywallInteractionEvent.Keys.destinationContextName,
+        PaywallInteractionEvent.Keys.defaultIndex,
+        PaywallInteractionEvent.Keys.originPackageId,
+        PaywallInteractionEvent.Keys.destinationPackageId,
+        PaywallInteractionEvent.Keys.defaultPackageId,
+        PaywallInteractionEvent.Keys.currentPackageId,
+        PaywallInteractionEvent.Keys.resultingPackageId,
+        PaywallInteractionEvent.Keys.originProductId,
+        PaywallInteractionEvent.Keys.destinationProductId,
+        PaywallInteractionEvent.Keys.defaultProductId,
+        PaywallInteractionEvent.Keys.currentProductId,
+        PaywallInteractionEvent.Keys.resultingProductId
+    ]
+    private let interactionComponentTypes: [String] = [
+        PaywallInteractionEvent.ComponentTypes.tab,
+        PaywallInteractionEvent.ComponentTypes.`switch`,
+        PaywallInteractionEvent.ComponentTypes.carousel,
+        PaywallInteractionEvent.ComponentTypes.button,
+        PaywallInteractionEvent.ComponentTypes.text,
+        PaywallInteractionEvent.ComponentTypes.package,
+        PaywallInteractionEvent.ComponentTypes.packageSelectionSheet,
+        PaywallInteractionEvent.ComponentTypes.purchaseButton
+    ]
     private var restoreStarted: RestoreStartedHandler = { }
     private var failureHandler: PurchaseFailureHandler = { (_: NSError) in }
 
@@ -188,6 +235,7 @@ struct App: View {
                                     restoreFailure: nil,
                                     webCheckoutOpened: self.webCheckoutOpened,
                                     urlOpened: self.urlOpened,
+                                    onInteraction: self.interaction,
                                     onDismiss: nil)
     }
 
@@ -308,6 +356,7 @@ struct App: View {
                                     restoreFailure: nil,
                                     webCheckoutOpened: self.webCheckoutOpened,
                                     urlOpened: self.urlOpened,
+                                    onInteraction: self.interaction,
                                     onDismiss: nil)
     }
 
@@ -357,11 +406,14 @@ struct App: View {
                             restoreFailure: nil,
                             webCheckoutOpened: nil,
                             urlOpened: nil,
+                            onInteraction: nil,
                             onDismiss: nil)
             .presentPaywall(offering: self.$offeringBinding,
                             webCheckoutOpened: self.webCheckoutOpened)
             .presentPaywall(offering: self.$offeringBinding,
                             urlOpened: self.urlOpened)
+            .presentPaywall(offering: self.$offeringBinding,
+                            onInteraction: self.interaction)
             .presentPaywall(offering: self.$offeringBinding,
                             fonts: self.fonts,
                             presentationMode: .sheet,
@@ -807,6 +859,7 @@ struct App: View {
             .onPurchaseCancelled(self.purchaseCancelled)
             .onWebCheckoutOpened(self.webCheckoutOpened)
             .onURLOpened(self.urlOpened)
+            .onPaywallInteraction(self.interaction)
             .onRestoreStarted(self.restoreStarted)
             .onRestoreCompleted(self.purchaseOrRestoreCompleted)
             .onRequestedDismissal(self.requestedDismissal)

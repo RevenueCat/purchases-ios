@@ -107,6 +107,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -125,6 +126,7 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
+            onInteraction: onInteraction,
             onDismiss: onDismiss
         )
     }
@@ -165,6 +167,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -187,6 +190,7 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
+            onInteraction: onInteraction,
             onDismiss: onDismiss
         )
     }
@@ -248,6 +252,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -267,6 +272,7 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
+            onInteraction: onInteraction,
             onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
@@ -331,6 +337,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -348,6 +355,7 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
+            onInteraction: onInteraction,
             onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
@@ -377,6 +385,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil,
         customerInfoFetcher: @escaping CustomerInfoFetcher
     ) -> some View {
@@ -395,6 +404,7 @@ extension View {
                 onDismiss: onDismiss,
                 webCheckoutOpened: webCheckoutOpened,
                 urlOpened: urlOpened,
+                onInteraction: onInteraction,
                 content: .optionalOffering(offering),
                 fontProvider: fonts,
                 customerInfoFetcher: customerInfoFetcher,
@@ -442,6 +452,7 @@ extension View {
     ///   - webCheckoutOpened: Called when the user taps a web checkout CTA and leaves the app to
     ///     complete payment externally.
     ///   - urlOpened: Called when the paywall successfully opened a URL.
+    ///   - onInteraction: Called when the user interacts with a paywall control. See ``PaywallInteractionEvent``.
     ///   - onDismiss: Called when the paywall (and any exit offer) is fully dismissed.
     ///
     /// ### Related Articles
@@ -460,6 +471,7 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
+        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.modifier(PresentingPaywallBindingModifier(
@@ -476,7 +488,8 @@ extension View {
             restoreFailure: restoreFailure,
             onDismiss: onDismiss,
             webCheckoutOpened: webCheckoutOpened,
-            urlOpened: urlOpened
+            urlOpened: urlOpened,
+            onInteraction: onInteraction
         ))
     }
 
@@ -502,6 +515,7 @@ private struct PresentingPaywallModifier: ViewModifier {
     var onDismiss: (() -> Void)?
     var webCheckoutOpened: WebCheckoutOpenedHandler?
     var urlOpened: URLOpenedHandler?
+    var onInteraction: PaywallInteractionHandler?
 
     var content: PaywallViewConfiguration.Content
     var fontProvider: PaywallFontProvider
@@ -523,6 +537,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         onDismiss: (() -> Void)?,
         webCheckoutOpened: WebCheckoutOpenedHandler?,
         urlOpened: URLOpenedHandler?,
+        onInteraction: PaywallInteractionHandler?,
         content: PaywallViewConfiguration.Content,
         fontProvider: PaywallFontProvider,
         customerInfoFetcher: @escaping View.CustomerInfoFetcher,
@@ -541,6 +556,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         self.onDismiss = onDismiss
         self.webCheckoutOpened = webCheckoutOpened
         self.urlOpened = urlOpened
+        self.onInteraction = onInteraction
         self.content = content
         self.fontProvider = fontProvider
         self.customerInfoFetcher = customerInfoFetcher
@@ -693,6 +709,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
+        .onPaywallInteraction(ifSet: self.onInteraction)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .workflowExitOfferSource(presenter: self.exitOfferPresenter) {
             await self.purchaseHandler.resolveOffering(for: self.content)
@@ -817,6 +834,7 @@ private struct PresentingPaywallModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
+        .onPaywallInteraction(ifSet: self.onInteraction)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
@@ -855,6 +873,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
     var onDismiss: (() -> Void)?
     var webCheckoutOpened: WebCheckoutOpenedHandler?
     var urlOpened: URLOpenedHandler?
+    var onInteraction: PaywallInteractionHandler?
 
     /// Owns the exit-offer lifecycle (sourcing + presentation state + transitions).
     @StateObject
@@ -885,7 +904,8 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         restoreFailure: PurchaseFailureHandler?,
         onDismiss: (() -> Void)?,
         webCheckoutOpened: WebCheckoutOpenedHandler?,
-        urlOpened: URLOpenedHandler?
+        urlOpened: URLOpenedHandler?,
+        onInteraction: PaywallInteractionHandler?
     ) {
         self._offering = offering
         self.presentationMode = presentationMode
@@ -900,6 +920,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         self.onDismiss = onDismiss
         self.webCheckoutOpened = webCheckoutOpened
         self.urlOpened = urlOpened
+        self.onInteraction = onInteraction
         let handler = PurchaseHandler.default(performPurchase: myAppPurchaseLogic?.performPurchase,
                                               performRestore: myAppPurchaseLogic?.performRestore)
         self._purchaseHandler = .init(wrappedValue: handler)
@@ -985,6 +1006,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
+        .onPaywallInteraction(ifSet: self.onInteraction)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
         .workflowExitOfferSource(presenter: self.exitOfferPresenter) {
             offering
@@ -1034,6 +1056,7 @@ private struct PresentingPaywallBindingModifier: ViewModifier {
         .onURLOpened { url in
             self.urlOpened?(url)
         }
+        .onPaywallInteraction(ifSet: self.onInteraction)
         .interactiveDismissDisabled(self.purchaseHandler.actionInProgress)
     }
 
