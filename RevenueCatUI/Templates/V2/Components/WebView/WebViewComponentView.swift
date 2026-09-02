@@ -26,6 +26,9 @@ struct WebViewComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -57,6 +60,7 @@ struct WebViewComponentView: View {
         return self.viewModel.style(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.componentHoverState,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: currentPackage),
             isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: currentPackage),
             selectedPackageId: self.selectedPackageId,
