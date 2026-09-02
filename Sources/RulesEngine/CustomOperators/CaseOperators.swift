@@ -42,7 +42,7 @@ extension RulesEngine {
         /// `String(x).toLowerCase()` would accept them. Coercion makes data of
         /// the wrong shape look like real data: an explicit `null` would lower
         /// to `"null"` and compare equal to that string. Same reasoning as
-        /// `rc.length` and `rc.entries`.
+        /// `rc.entries`.
         private static func stringArgument(
             _ args: Value,
             vars: Scope,
