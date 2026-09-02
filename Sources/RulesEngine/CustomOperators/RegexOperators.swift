@@ -118,17 +118,24 @@ extension RulesEngine {
             _ evaluated: [Value],
             operatorName: String
         ) throws -> (input: String, regex: NSRegularExpression) {
-            guard case .string(let input) = evaluated[0] else {
+            guard let first = evaluated[safe: 0], let second = evaluated[safe: 1] else {
                 throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expected a string to match against, "
-                        + "got \(evaluated[0])"
+                    message: "operator '\(operatorName)' expects at least 2 arguments, "
+                        + "got \(evaluated.count)"
                 )
             }
 
-            guard case .string(let pattern) = evaluated[1] else {
+            guard case .string(let input) = first else {
+                throw EvaluationError.typeMismatch(
+                    message: "operator '\(operatorName)' expected a string to match against, "
+                        + "got \(first)"
+                )
+            }
+
+            guard case .string(let pattern) = second else {
                 throw EvaluationError.typeMismatch(
                     message: "operator '\(operatorName)' expected a string pattern, "
-                        + "got \(evaluated[1])"
+                        + "got \(second)"
                 )
             }
 
