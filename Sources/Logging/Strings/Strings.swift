@@ -16,6 +16,7 @@ enum Strings {
 
     static let attribution = AttributionStrings.self
     static let analytics = AnalyticsStrings.self
+    static let authentication = AuthenticationStrings.self
     static let cache = CacheStrings.self
     static let codable = CodableStrings.self
     static let configure = ConfigureStrings.self
@@ -31,6 +32,7 @@ enum Strings {
     static let offlineEntitlements = OfflineEntitlementsStrings.self
     static let paywalls = PaywallsStrings.self
     static let purchase = PurchaseStrings.self
+    static let remoteConfig = RemoteConfigStrings.self
     static let webRedemption = WebRedemptionStrings.self
     static let receipt = ReceiptStrings.self
     static let signing = SigningStrings.self

@@ -12,7 +12,7 @@
 //  Created by Madeline Beyl on 8/25/21.
 
 import Foundation
-@_spi(Experimental) import RevenueCat
+@_spi(Internal) @_spi(Experimental) import RevenueCat
 import StoreKit
 
 func checkPurchasesAPI() {
@@ -34,6 +34,7 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
+    checkRewardVerificationAPI(purchases: purch)
 
     let _: Attribution = purch.attribution
 
@@ -180,6 +181,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     packageParamsBuilder = packageParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
 
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        packageParamsBuilder = packageParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
+
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         packageParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
     }
@@ -192,6 +197,10 @@ private func checkPurchasesPurchasingAPI(purchases: Purchases) {
     #if ENABLE_TRANSACTION_METADATA
     productParamsBuilder = productParamsBuilder.with(metadata: ["foo":"bar"])
     #endif
+
+    if #available(iOS 15.0, macOS 15.4, tvOS 18.4, watchOS 11.4, visionOS 2.4, *) {
+        productParamsBuilder = productParamsBuilder.with(introductoryOfferEligibilityJWS: "abc123")
+    }
 
     if #available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *) {
         productParamsBuilder = packageParamsBuilder.with(winBackOffer: winBackOffer)
@@ -275,6 +284,27 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
+private func checkRewardVerificationAPI(purchases: Purchases) {
+    let token: RewardVerificationToken = purchases.generateRewardVerificationToken(impressionId: "")
+    let _: String = token.customData
+    let _: String = token.clientTransactionID
+    let _: String = token.appUserID
+
+    let result: RewardVerificationResult = .failed
+    let reward: AdReward? = result.verifiedReward
+    let _: Bool = result == .failed
+
+    let _: AdReward = .noReward
+    let _: AdReward = .unsupportedReward
+    let _: Bool = reward == .noReward
+
+    if let virtualCurrency: VirtualCurrencyReward = reward?.virtualCurrency {
+        let _: String = virtualCurrency.code
+        let _: Int = virtualCurrency.amount
+        let _: Bool = virtualCurrency == virtualCurrency
+    }
+}
+
 private func checkAsyncMethods(purchases: Purchases) async {
     let pack: Package! = nil
     let stp: StoreProduct! = nil
@@ -296,7 +326,6 @@ private func checkAsyncMethods(purchases: Purchases) async {
         )
         let _: CustomerInfo = try await purchases.logOut()
         let _: Offerings = try await purchases.offerings()
-
         let _: Offerings? = try await purchases.syncAttributesAndOfferingsIfNeeded()
 
         let storeProducts : [StoreProduct] = await purchases.products([])
@@ -365,6 +394,19 @@ private func checkAsyncMethods(purchases: Purchases) async {
         let webPurchaseRedemptionResult: WebPurchaseRedemptionResult = await purchases.redeemWebPurchase(
             webPurchaseRedemption
         )
+
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+        let _: RewardVerificationResult = await purchases.pollRewardVerification(
+            clientTransactionID: "",
+            trackingMetadata: RewardedAdTrackingMetadata(
+                networkName: nil,
+                mediatorName: .adMob,
+                adFormat: .rewarded,
+                placement: nil,
+                adUnitId: "",
+                impressionId: ""
+            )
+        )
     } catch {}
 }
 
@@ -385,6 +427,28 @@ func checkWebPurchaseRedemptionResult(result: WebPurchaseRedemptionResult) -> Bo
         return true
     }
 }
+
+#if canImport(UIKit)
+func checkPurchaseParamBuilderUIKitAPIs(
+    builder: PurchaseParams.Builder,
+    uiScene: UIScene
+) {
+    if #available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInScene: uiScene)
+    }
+}
+#endif
+
+#if canImport(AppKit)
+func checkPurchaseParamBuilderAppKitAPIs(
+    builder: PurchaseParams.Builder,
+    nsWindow: NSWindow
+) {
+    if #available(macOS 15.2, *) {
+        let builder: PurchaseParams.Builder = builder.with(confirmInWindow: nsWindow)
+    }
+}
+#endif
 
 func checkNonAsyncMethods(_ purchases: Purchases) {
     let webPurchaseRedemption: WebPurchaseRedemption! = nil
@@ -438,12 +502,6 @@ private func checkConfigure() -> Purchases! {
     return nil
 }
 
-private func checkPaywallsAPI(_ purchases: Purchases, _ event: PaywallEvent) async {
-    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
-        await purchases.track(paywallEvent: event)
-    }
-}
-
 private func checkPreferredUILocaleAPIs(purchases: Purchases) {
     purchases.overridePreferredUILocale("de_DE")
     purchases.overridePreferredUILocale(nil)
@@ -461,6 +519,14 @@ private func checkVirtualCurrenciesAPI(_ purchases: Purchases) async throws {
 
     // Cached virtual currencies
     let _: VirtualCurrencies? = purchases.cachedVirtualCurrencies
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrencies(amounts: [
+        "GLD": 42
+    ], reference: String?.none)
+
+    let _: VirtualCurrencies = try await purchases.spendVirtualCurrency(code: "GLD",
+                                                                        amount: 42,
+                                                                        reference: "test-123")
 }
 
 @available(*, deprecated) // Ignore deprecation warnings

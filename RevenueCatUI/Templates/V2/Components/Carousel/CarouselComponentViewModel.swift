@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 1/27/25.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -26,6 +26,7 @@ class CarouselComponentViewModel {
     let uiConfigProvider: UIConfigProvider
     private let component: PaywallComponent.CarouselComponent
     let pageStackViewModels: [StackComponentViewModel]
+    private let pageContextNames: [String?]
 
     private let presentedOverrides: PresentedOverrides<PresentedCarouselPartial>?
 
@@ -40,9 +41,26 @@ class CarouselComponentViewModel {
         self.uiConfigProvider = uiConfigProvider
         self.component = component
         self.pageStackViewModels = pageStackViewModels
+        self.pageContextNames = component.pages.map(\.name)
 
         self.presentedOverrides = self.component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
+
+    var componentName: String? {
+        self.component.name
+    }
+
+    func pageContextName(at index: Int) -> String? {
+        guard self.pageContextNames.indices.contains(index) else { return nil }
+
+        return self.pageContextNames[index]
+    }
+
+    /// Invoked each time the carousel's `onAppear` fires. Set in tests to detect that the
+    /// carousel view was recreated (and its `@State` reset) after a tab switch.
+    #if DEBUG
+    var onViewAppear: (() -> Void)?
+    #endif
 
     @ViewBuilder
     // swiftlint:disable:next function_parameter_count
@@ -179,7 +197,7 @@ struct CarouselComponentStyle {
         colorScheme: ColorScheme
     ) {
         self.visible = visible
-        self.size = size ?? .init(width: .fit, height: .fit)
+        self.size = size ?? .init(width: .fit(nil), height: .fit(nil))
         self.padding = (padding ?? .zero).edgeInsets
         self.margin = (margin ?? .zero).edgeInsets
         self.backgroundStyle = background?.asDisplayable(uiConfigProvider: uiConfigProvider)

@@ -34,7 +34,8 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: nil,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -55,7 +56,8 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: key,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .notRequested
@@ -76,7 +78,8 @@ class HTTPResponseTests: TestCase {
             requestHeaders: [:],
             publicKey: key,
             isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
+            isFallbackUrlResponse: false,
+            iamEnabled: false
         )
 
         expect(verifiedResponse.verificationResult) == .failed
@@ -170,6 +173,45 @@ class HTTPResponseBodyTests: TestCase {
 
         let body = Body(data: "test")
         expect(body.copy(with: Date())) == body
+    }
+
+    func testOptionalResponseBodyCreatesNilForNoContentResponse() throws {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        let body = try Body?.create(
+            with: Data(),
+            httpStatusCode: .noContent
+        )
+
+        expect(body).to(beNil())
+    }
+
+    func testOptionalResponseBodyThrowsForEmptySuccessfulResponse() {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        expect {
+            try Body?.create(
+                with: Data(),
+                httpStatusCode: .success
+            )
+        }.to(throwError())
+    }
+
+    func testOptionalResponseBodyCreatesWrappedBodyForContentResponse() throws {
+        struct Body: Equatable, Codable, HTTPResponseBody {
+            var data: String
+        }
+
+        let body = try Body?.create(
+            with: #"{"data":"test"}"#.asData,
+            httpStatusCode: .success
+        )
+
+        expect(body) == Body(data: "test")
     }
 
 }

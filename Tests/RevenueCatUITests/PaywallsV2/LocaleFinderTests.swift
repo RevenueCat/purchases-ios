@@ -229,4 +229,16 @@ class LocaleFinderTest: TestCase {
         let foundLocalizations = localizations.findLocale(locale)
         expect(foundLocalizations).to(equal(Self.expectedTranslations))
     }
+
+    func test_sl_SI() {
+        let localizations = [
+            "sl": Self.expectedTranslations,
+            "en": ["wrong": "this is en"]
+        ]
+
+        let locale = Locale(identifier: "sl_SI")
+
+        let foundLocalizations = localizations.findLocale(locale)
+        expect(foundLocalizations).to(equal(Self.expectedTranslations))
+    }
 }

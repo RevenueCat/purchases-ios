@@ -51,6 +51,14 @@ struct VideoComponentView: View {
     @State private var cachedURL: URL?
     @State var imageSource: PaywallComponent.ThemeImageUrls?
 
+    init(
+        viewModel: VideoComponentViewModel,
+        size: CGSize = .zero
+    ) {
+        self.viewModel = viewModel
+        self._size = .init(initialValue: size)
+    }
+
     /// Tracks whether this page is active or adjacent in a carousel.
     /// Updated via onChange to ensure SwiftUI detects the change.
     @State private var isPlayable: Bool = true
@@ -124,46 +132,14 @@ struct VideoComponentView: View {
                     }
                     .allowsHitTesting(style.showControls)
                     .onAppear {
-                        let fileRepository = FileRepository.shared
-
-                        // 1. High-res cached → use immediately
-                        if let fullResCachedURL = fileRepository.getCachedFileURL(
-                            for: viewData.url,
-                            withChecksum: viewData.checksum
-                        ) {
-                            self.cachedURL = fullResCachedURL
-                            self.imageSource = nil
-                            return
-                        }
-
-                        // 2. Low-res cached → use immediately, cache high-res in background
-                        if let lowResUrl = viewData.lowResUrl,
-                           lowResUrl != viewData.url,
-                           let lowResCachedURL = fileRepository.getCachedFileURL(
-                               for: lowResUrl,
-                               withChecksum: viewData.lowResChecksum
-                           ) {
-                            self.cachedURL = lowResCachedURL
-                            self.imageSource = nil
-                            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
-                            return
-                        }
-
-                        // 3. Nothing cached → stream remote URL, cache in background
-                        self.cachedURL = viewData.url
-                        self.imageSource = viewModel.imageSource
-
-                        // Cache both resolutions as a failsafe: if the high-res
-                        // download fails or is canceled, the low-res version is
-                        // available as a fallback on next open.
-                        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
-                        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            cacheVideo(
-                                fileRepository: fileRepository,
-                                url: lowResUrl,
-                                checksum: viewData.lowResChecksum
-                            )
-                        }
+                        self.resolveSource(viewData: viewData)
+                    }
+                    // The player only swaps when its identity changes, and `cachedURL` is
+                    // deliberately not part of it so a low-res to high-res swap cannot restart
+                    // playback (#6254).
+                    .onChangeOf(viewData) { newViewData in
+                        self.resolveSource(viewData: newViewData)
+                        self.playerRefreshToggle.toggle()
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
@@ -188,6 +164,50 @@ struct VideoComponentView: View {
                 updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
             }
 
+    }
+
+    /// Picks the best available source for the current appearance and hands it to the player.
+    private func resolveSource(viewData: VideoComponentStyle.ViewData) {
+        let fileRepository = FileRepository.shared
+
+        // 1. High-res cached → use immediately
+        if let fullResCachedURL = fileRepository.getCachedFileURL(
+            for: viewData.url,
+            withChecksum: viewData.checksum
+        ) {
+            self.cachedURL = fullResCachedURL
+            self.imageSource = nil
+            return
+        }
+
+        // 2. Low-res cached → use immediately, cache high-res in background
+        if let lowResUrl = viewData.lowResUrl,
+           lowResUrl != viewData.url,
+           let lowResCachedURL = fileRepository.getCachedFileURL(
+               for: lowResUrl,
+               withChecksum: viewData.lowResChecksum
+           ) {
+            self.cachedURL = lowResCachedURL
+            self.imageSource = nil
+            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+            return
+        }
+
+        // 3. Nothing cached → stream remote URL, cache in background
+        self.cachedURL = viewData.url
+        self.imageSource = viewModel.imageSource
+
+        // Cache both resolutions as a failsafe: if the high-res
+        // download fails or is canceled, the low-res version is
+        // available as a fallback on next open.
+        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+            cacheVideo(
+                fileRepository: fileRepository,
+                url: lowResUrl,
+                checksum: viewData.lowResChecksum
+            )
+        }
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {
@@ -233,20 +253,23 @@ struct VideoComponentView: View {
         size: CGSize,
         with style: VideoComponentStyle
     ) -> some View {
-        video
-            .frame(maxWidth: calculateMaxWidth(parentWidth: size.width, style: style))
+        let maxWidth = Self.calculateMaxWidth(parentWidth: size.width, style: style)
+        return video
+            .frame(maxWidth: maxWidth)
             .fitToAspectRatio(
+                maxWidth: maxWidth,
                 aspectRatio: aspectRatio(style: style),
                 contentMode: .fill, // This must be set to fill for the modifier to work correctly
                 containerContentMode: style.contentMode // the container is what truly controls this
             )
     }
 
-    private func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
+    static func calculateMaxWidth(parentWidth: CGFloat, style: VideoComponentStyle) -> CGFloat {
         let totalBorderWidth = (style.border?.width ?? 0) * 2
-        return parentWidth - totalBorderWidth
+        let maxWidth = parentWidth - totalBorderWidth
             - style.margin.leading - style.margin.trailing
             - style.padding.leading - style.padding.trailing
+        return max(0, maxWidth)
     }
 }
 

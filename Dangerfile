@@ -4,16 +4,21 @@ require 'pathname'
 require 'set'
 
 EXCLUDED_SWIFT_PATH_PREFIXES = [
-  'Tests/APITesters/'
+  'Tests/APITesters/',
+  # Tuist-only: these targets exist solely in Projects/PaywallFixtures/Project.swift and are
+  # deliberately absent from RevenueCat.xcodeproj.
+  'Tests/TestingApps/PaywallFixtures/',
+  'Tests/TestingApps/PaywallFixturesUITests/',
+  # SPM / Tuist-only: Release-stripped integration tests are not in RevenueCat.xcodeproj.
+  'Tests/PurchasesUIServiceIntegrationTests/',
+  'Tests/TestingApps/PaywallsTester/'
 ].freeze
 
-# Check for submodules
-submodules = `git submodule status`.strip
-if !submodules.empty?
-  fail("This repository should not contain any submodules. When using Swift Package Manager, developers will get a resolution error because SPM cannot access private submodules.")
-end
+COMMENT_MARKER = "<!-- purchases-ios-danger -->"
 
-# Check for new Swift files that aren't added to RevenueCat.xcodeproj
+PROD_LINES_LIMIT = 300
+SKIP_SIZE_LABEL = "skip-pr-lines-changed-check"
+
 def normalize_path(path)
   Pathname(path).cleanpath.to_s.sub(%r{\A\./}, '')
 end
@@ -29,6 +34,14 @@ def relevant_swift_file?(path)
   in_project_sources || in_tests
 end
 
+def production_swift_file?(path)
+  path = normalize_path(path)
+  return false unless path.end_with?('.swift')
+  return false if path.start_with?('Sources/Generated/')
+
+  path.start_with?('Sources/') || path.start_with?('RevenueCatUI/')
+end
+
 def project_swift_file_paths(project_file)
   require 'xcodeproj'
 
@@ -42,57 +55,55 @@ def project_swift_file_paths(project_file)
          .map { |path| normalize_path(path.cleanpath.relative_path_from(root).to_s) }
          .to_set
 rescue LoadError
-  warn("xcodeproj gem not available; skipping RevenueCat.xcodeproj sync check")
   nil
-rescue StandardError => e
-  warn("Unable to read #{project_file}: #{e.message}")
+rescue StandardError
   nil
 end
 
-def check_swift_files_in_project
+def xcodeproj_messages
+  failures = []
+  warnings = []
+
   project_file = 'RevenueCat.xcodeproj'
-  
+
   unless File.exist?(project_file)
-    warn("RevenueCat.xcodeproj not found")
-    return
+    warnings << "RevenueCat.xcodeproj not found"
+    return [failures, warnings]
   end
-  
+
   project_swift_files = project_swift_file_paths(project_file)
-  return if project_swift_files.nil?
-  
+  return [failures, warnings] if project_swift_files.nil?
+
   added_swift_files = git.added_files
     .select { |file| relevant_swift_file?(file) }
     .map { |file| normalize_path(file) }
-  
+
   deleted_swift_files = git.deleted_files
     .select { |file| relevant_swift_file?(file) }
     .map { |file| normalize_path(file) }
-  
+
   missing_files = added_swift_files.reject { |file| project_swift_files.include?(file) }
   lingering_references = deleted_swift_files.select { |file| project_swift_files.include?(file) }
 
-  return if missing_files.empty? && lingering_references.empty?
+  return [failures, warnings] if missing_files.empty? && lingering_references.empty?
 
   message = "**`RevenueCat.xcodeproj` is out of sync.**\n"
   unless missing_files.empty?
     message += "\nThe following Swift files were added but are missing from `RevenueCat.xcodeproj`:\n"
     missing_files.each { |file| message += "• `#{file}`\n" }
   end
-
   unless lingering_references.empty?
     message += "\nThe following Swift files were deleted but still referenced in `RevenueCat.xcodeproj`:\n"
     lingering_references.each { |file| message += "• `#{file}`\n" }
   end
-
   message += "\nTo fix: open `RevenueCat.xcodeproj` in Xcode, add/remove the files above in the appropriate target. "
   message += "Check where similar files in the same directory are assigned if you're unsure which target to use."
-  warn(message)
+
+  failures << message
+  [failures, warnings]
 end
 
-check_swift_files_in_project
-
-# Check for new public enums in Swift files
-def check_for_public_enums
+def public_enum_messages
   swift_files = (git.added_files + git.modified_files)
     .select { |file| file.start_with?('Sources/') || file.start_with?('RevenueCatUI/') }
     .select { |file| file.end_with?('.swift') }
@@ -115,13 +126,94 @@ def check_for_public_enums
     end
   end
 
-  return if files_with_public_enums.empty?
+  return [[], []] if files_with_public_enums.empty?
 
   message = "Public enums should not be added. Consider using a struct with static properties or an @objc enum instead.\n\n"
   message += "The following files contain new public enums:\n"
   files_with_public_enums.each { |file| message += "• #{file}\n" }
 
-  warn(message)
+  [[], [message]]
 end
 
-check_for_public_enums
+# Fail PRs that change too many lines of production Swift code.
+# Large PRs are hard to review well, so we cap the churn (insertions + deletions)
+# across real .swift files, excluding tests, example apps, and generated output.
+# Authors who legitimately need a large PR can add the bypass label.
+def pr_size_messages
+  prod_files = (git.modified_files + git.added_files).uniq.select { |f| production_swift_file?(f) }
+
+  total_changed = prod_files.sum do |f|
+    # `git.info_for_file` raises for renamed files: the new path is listed in
+    # `added_files`/`modified_files`, but git keys the diff stats under the
+    # `{old => new}` rename entry, so the internal `stats[:insertions]` lookup
+    # hits nil. Treat any file whose churn we can't resolve as zero.
+    info =
+      begin
+        git.info_for_file(f)
+      rescue StandardError
+        nil
+      end
+    info ? info[:insertions] + info[:deletions] : 0
+  end
+
+  return [[], []] if total_changed <= PROD_LINES_LIMIT
+
+  if github.pr_labels.include?(SKIP_SIZE_LABEL)
+    [[], ["This PR changes #{total_changed} lines of production Swift (limit #{PROD_LINES_LIMIT}); " \
+          "skipped via `#{SKIP_SIZE_LABEL}` label."]]
+  else
+    [["This PR changes #{total_changed} lines of production Swift code, over the #{PROD_LINES_LIMIT}-line " \
+      "limit. Split it into smaller PRs, or add the `#{SKIP_SIZE_LABEL}` label to bypass."], []]
+  end
+end
+
+# Collect all issues
+all_failures = []
+all_warnings = []
+
+submodules = `git submodule status`.strip
+unless submodules.empty?
+  all_failures << "This repository should not contain any submodules. When using Swift Package Manager, developers will get a resolution error because SPM cannot access private submodules."
+end
+
+f, w = xcodeproj_messages
+all_failures.concat(f)
+all_warnings.concat(w)
+
+f, w = public_enum_messages
+all_failures.concat(f)
+all_warnings.concat(w)
+
+f, w = pr_size_messages
+all_failures.concat(f)
+all_warnings.concat(w)
+
+# Manage a single sticky comment — edit it on each run, delete it when all checks pass
+repo = github.pr_json["base"]["repo"]["full_name"]
+pr_number = github.pr_json["number"]
+
+existing_comment = github.api.issue_comments(repo, pr_number)
+                           .find { |c| c.body.include?(COMMENT_MARKER) }
+
+if all_failures.empty? && all_warnings.empty?
+  github.api.delete_comment(repo, existing_comment.id) if existing_comment
+else
+  sections = [COMMENT_MARKER]
+  unless all_failures.empty?
+    sections << "### :x: Failures\n\n" + all_failures.join("\n\n---\n\n")
+  end
+  unless all_warnings.empty?
+    sections << "### :warning: Warnings\n\n" + all_warnings.join("\n\n---\n\n")
+  end
+  body = sections.join("\n\n")
+
+  if existing_comment
+    github.api.update_comment(repo, existing_comment.id, body)
+  else
+    github.api.add_comment(repo, pr_number, body)
+  end
+
+  fail("Purchases iOS checks failed — see the comment above for details.") unless all_failures.empty?
+end
+
+fail_on_generated_edits(["Sources/Generated/"])

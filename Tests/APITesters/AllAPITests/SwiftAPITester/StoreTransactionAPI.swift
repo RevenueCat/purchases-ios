@@ -17,6 +17,12 @@ func checkStoreTransactionAPI(storefront: RevenueCat.Storefront?) {
     let _: String = transaction.transactionIdentifier
     let _: Int = transaction.quantity
     let _: RevenueCat.Storefront? = transaction.storefront
+    let _: Date? = transaction.revocationDate
+    let _: RevocationReason? = transaction.revocationReason
+    let _: RevocationReason = .developerIssue
+    let _: RevocationReason = .other
+    let _: RevocationReason = RevocationReason(rawValue: "x")
+    let _: String = RevocationReason.other.rawValue
 
     let _: SKPaymentTransaction? = transaction.sk1Transaction
 

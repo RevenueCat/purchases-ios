@@ -149,7 +149,7 @@ private extension CachingProductsManager {
     }
 
     static func cache<T: StoreProductType>(_ products: Set<T>, container: Atomic<[String: T]>) {
-        container.modify { $0 += products.dictionaryAllowingDuplicateKeys { $0.productIdentifier } }
+        container.modify { $0 += products.dictionaryAllowingDuplicateKeys { $0.id } }
     }
 
     /// - Returns: true if there is already a request in progress for these products.

@@ -156,19 +156,29 @@ public typealias ProductIdentifier = String
 
         let subscriptionsDescription = self.subscriptionsByProductIdentifier.mapValues { $0.description }
 
+        var parts = [
+            "originalApplicationVersion=\(self.originalApplicationVersion ?? "")",
+            "latestExpirationDate=\(String(describing: self.latestExpirationDate))",
+            "activeEntitlements=\(activeEntitlementsDescription)",
+            "activeSubscriptions=\(activeSubsDescription)",
+            "nonSubscriptions=\(self.nonSubscriptions)",
+            "subscriptions=\(subscriptionsDescription)",
+            "requestDate=\(String(describing: self.requestDate))",
+            "firstSeen=\(String(describing: self.firstSeen))",
+            "originalAppUserId=\(self.originalAppUserId)",
+            "entitlements=\(allEntitlementsDescription)",
+            "verification=\(verificationResult)"
+        ]
+        if let attributes = self.data.response.subscriber.subscriberAttributes {
+            let keyNames = attributes.attributes.map(\.key)
+            parts.append("attributes=\(keyNames)")
+        }
+
+        let contents = parts.map { "  " + $0 }.joined(separator: ",\n")
+
         return """
             <\(String(describing: CustomerInfo.self)):
-            originalApplicationVersion=\(self.originalApplicationVersion ?? ""),
-            latestExpirationDate=\(String(describing: self.latestExpirationDate)),
-            activeEntitlements=\(activeEntitlementsDescription),
-            activeSubscriptions=\(activeSubsDescription),
-            nonSubscriptions=\(self.nonSubscriptions),
-            subscriptions=\(subscriptionsDescription),
-            requestDate=\(String(describing: self.requestDate)),
-            firstSeen=\(String(describing: self.firstSeen)),
-            originalAppUserId=\(self.originalAppUserId),
-            entitlements=\(allEntitlementsDescription)
-            verification=\(verificationResult)
+            \(contents)
             >
             """
     }
@@ -285,10 +295,12 @@ public typealias ProductIdentifier = String
                 periodType: subscriptionData.periodType,
                 refundedAt: subscriptionData.refundedAt,
                 storeTransactionId: subscriptionData.storeTransactionId,
+                autoResumeDate: subscriptionData.autoResumeDate,
                 requestDate: response.requestDate,
                 price: subscriptionData.price.map { ProductPaidPrice(currency: $0.currency, amount: $0.amount) },
                 managementURL: subscriptionData.managementUrl,
-                displayName: subscriptionData.displayName
+                displayName: subscriptionData.displayName,
+                productPlanIdentifier: subscriptionData.productPlanIdentifier
             ))
         })
 

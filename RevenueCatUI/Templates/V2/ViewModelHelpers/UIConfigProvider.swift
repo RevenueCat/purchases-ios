@@ -23,11 +23,19 @@ final class UIConfigProvider {
 
     private let uiConfig: UIConfig
     private let failedToLoadFont: FailedToLoadFont?
+    /// Dashboard flag: Dynamic Type only when `automatically_scale_font_size` is true on paywall components.
+    private let automaticallyScaleFontSize: Bool
     private var loggedMessages: Set<LogMessage> = []
 
-    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil) {
+    init(uiConfig: UIConfig, failedToLoadFont: FailedToLoadFont? = nil, automaticallyScaleFontSize: Bool = true) {
         self.uiConfig = uiConfig
         self.failedToLoadFont = failedToLoadFont
+        self.automaticallyScaleFontSize = automaticallyScaleFontSize
+    }
+
+    /// Dynamic Type is enabled unless the dashboard explicitly sets `automatically_scale_font_size` to `false`.
+    func useDynamicType() -> Bool {
+        return self.automaticallyScaleFontSize
     }
 
     var variableConfig: UIConfig.VariableConfig {
@@ -64,14 +72,21 @@ final class UIConfigProvider {
     }
 
     /// Creates a `ConditionContext` by merging developer-provided custom variables with dashboard defaults.
+    /// `stateValues` / `stateDefaults` carry the presentation session's state-store snapshot for
+    /// `state` condition evaluation; they default to empty for call sites without a store (wired
+    /// per component in later state-driven-paywalls phases).
     func conditionContext(
         selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) -> ConditionContext {
         ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            defaultCustomVariables: self.defaultCustomVariables
+            defaultCustomVariables: self.defaultCustomVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
     }
 
@@ -121,7 +136,7 @@ final class UIConfigProvider {
                 let textStyle = GenericFont.textStyle(for: fontSize)
                 return Font.custom(fontName, size: fontSize, relativeTo: textStyle)
             } else {
-                return Font.custom(fontName, size: fontSize)
+                return Font.custom(fontName, fixedSize: fontSize)
             }
         } else {
             self.logMessageIfNeeded(.customFontFailedToLoad(fontName: fontName))

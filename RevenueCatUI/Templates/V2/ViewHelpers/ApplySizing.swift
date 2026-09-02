@@ -11,7 +11,7 @@
 //
 //  Created by Jacob Zivan Rakidzich on 9/12/25.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

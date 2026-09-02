@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct VariableHandlerV2 {
@@ -557,11 +557,12 @@ extension VariablesV2 {
     }
 
     func productCurrencySymbol(package: Package) -> String {
-        // Use the product's priceFormatter to get the currency symbol.
-        // Returns empty string if unavailable - we intentionally don't fallback to
-        // locale.currencySymbol because that returns the user's locale currency symbol
-        // (e.g., "¤" for Romanian) instead of the product's currency symbol (e.g., "$" for USD).
-        return package.storeProduct.priceFormatter?.currencySymbol ?? ""
+        // Derive the currency token from the displayed price string rather than
+        // `NumberFormatter.currencySymbol`, because formatter metadata can reflect
+        // the formatter locale instead of the product's displayed currency token.
+        return package.storeProduct.localizedPriceString.currencySymbolFromPriceString
+            ?? package.storeProduct.priceFormatter?.currencySymbol
+            ?? ""
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
@@ -741,14 +742,17 @@ extension VariablesV2 {
             return localizations[VariableLocalizationKey.freePrice.rawValue] ?? ""
         }
 
+        // Formatting the displayed string keeps the product's currency token, which
+        // `NumberFormatter` can get wrong when its locale doesn't match the currency.
         return formatDiscountPrice(
-            discount.price,
+            discount.localizedPriceString,
             package: package,
-            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices,
-            fallback: discount.localizedPriceString
+            showZeroDecimalPlacePrices: offerContext.showZeroDecimalPlacePrices
         )
     }
 
+    // Note: the per-period offer variables below still reformat through `NumberFormatter`, so their
+    // currency token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
     func productOfferPricePerDay(
         package: Package,
         localizations: [String: String],
@@ -1087,6 +1091,37 @@ private extension VariablesV2 {
             price,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         ) ?? fallback
+    }
+
+    /// Formats an already-displayed discount price string, mirroring `Package.localizedPrice`.
+    func formatDiscountPrice(
+        _ priceString: String,
+        package: Package,
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        guard let formatter = package.storeProduct.priceFormatter else {
+            return priceString
+        }
+        return formatter.formattedPriceStrippingTrailingZerosIfNeeded(
+            from: priceString,
+            showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+        )
+    }
+
+}
+
+private extension String {
+
+    var currencySymbolFromPriceString: String? {
+        guard let firstDigit = self.firstIndex(where: \.isNumber),
+              let lastDigit = self.lastIndex(where: \.isNumber) else {
+            return nil
+        }
+
+        let symbol = "\(self[..<firstDigit])\(self[self.index(after: lastDigit)...])"
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        return symbol.isEmpty ? nil : symbol
     }
 
 }

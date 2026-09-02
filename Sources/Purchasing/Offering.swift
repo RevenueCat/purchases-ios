@@ -11,6 +11,7 @@
 //
 //  Created by Joshua Liebowitz on 7/9/21.
 //
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -34,15 +35,15 @@ import Foundation
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let uiConfig: UIConfig
+        @_spi(Internal) public let uiConfig: UIConfig
 
         /**
          Paywall components configuration defined in RevenueCat dashboard.
          */
-        public let data: PaywallComponentsData
+        @_spi(Internal) public let data: PaywallComponentsData
 
         /// Initialize a ``PaywallComponents``.
-        public init(uiConfig: UIConfig, data: PaywallComponentsData) {
+        @_spi(Internal) public init(uiConfig: UIConfig, data: PaywallComponentsData) {
             self.uiConfig = uiConfig
             self.data = data
         }
@@ -78,19 +79,26 @@ import Foundation
 
      Use ``hasPaywall`` to check if the offering has a paywall.
      */
-    public let paywallComponents: PaywallComponents?
+    @available(*, deprecated, message: "Use hasPaywall to check whether the Offering has a paywall.")
+    public var paywallComponents: PaywallComponents? { self.internalPaywallComponents }
 
     /**
-     Whether the offering contains a paywall.
+     Paywall components configuration defined in RevenueCat dashboard, used internally by the SDK.
+     */
+    @_spi(Internal) public let internalPaywallComponents: PaywallComponents?
+
+    /**
+    Whether the offering contains a paywall.
      */
     public var hasPaywall: Bool {
-        return paywall != nil || paywallComponents != nil
+        return paywall != nil || internalPaywallComponents != nil || hasPaywallComponents
     }
 
     /**
-     Draft paywall components configuration defined in RevenueCat dashboard.
+     Whether the backend served paywall components for this offering, tracked independently
+     of whether the components payload is retained in memory.
      */
-    @_spi(Internal) public let draftPaywallComponents: PaywallComponents?
+    let hasPaywallComponents: Bool
 
     /**
      Array of ``Package`` objects available for purchase.
@@ -203,21 +211,30 @@ import Foundation
         identifier: String,
         serverDescription: String,
         metadata: [String: Any] = [:],
-        paywall: PaywallData? = nil,
-        paywallComponents: PaywallComponents? = nil,
+        paywall: PaywallData?,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
-        self.init(
-            identifier: identifier,
-            serverDescription: serverDescription,
-            metadata: metadata,
-            paywall: paywall,
-            paywallComponents: paywallComponents,
-            draftPaywallComponents: nil,
-            availablePackages: availablePackages,
-            webCheckoutUrl: webCheckoutUrl
-        )
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: nil, hasPaywallComponents: false,
+                  availablePackages: availablePackages, webCheckoutUrl: webCheckoutUrl)
+    }
+
+    /// Initialize an ``Offering`` given a list of ``Package``s, including paywall components.
+    public convenience init(
+        identifier: String,
+        serverDescription: String,
+        metadata: [String: Any] = [:],
+        paywall: PaywallData? = nil,
+        paywallComponents: PaywallComponents?,
+        availablePackages: [Package],
+        webCheckoutUrl: URL?
+    ) {
+        self.init(identifier: identifier, serverDescription: serverDescription, metadata: metadata,
+                  paywall: paywall, paywallComponents: paywallComponents,
+                  hasPaywallComponents: paywallComponents != nil,
+                  availablePackages: availablePackages,
+                  webCheckoutUrl: webCheckoutUrl)
     }
 
     init(
@@ -226,7 +243,7 @@ import Foundation
         metadata: [String: Any] = [:],
         paywall: PaywallData? = nil,
         paywallComponents: PaywallComponents? = nil,
-        draftPaywallComponents: PaywallComponents?,
+        hasPaywallComponents: Bool = false,
         availablePackages: [Package],
         webCheckoutUrl: URL?
     ) {
@@ -235,8 +252,8 @@ import Foundation
         self.availablePackages = availablePackages
         self._metadata = Metadata(data: metadata)
         self.paywall = paywall
-        self.paywallComponents = paywallComponents
-        self.draftPaywallComponents = draftPaywallComponents
+        self.internalPaywallComponents = paywallComponents
+        self.hasPaywallComponents = hasPaywallComponents || paywallComponents != nil
         self.webCheckoutUrl = webCheckoutUrl
 
         var foundPackages: [PackageType: Package] = [:]
@@ -294,6 +311,19 @@ import Foundation
 @_spi(Internal)
 public extension Offering {
 
+    /// The `PresentedOfferingContext` from the first available package, or `nil` if the offering has no packages.
+    var presentedOfferingContext: PresentedOfferingContext? {
+        return availablePackages.first?.presentedOfferingContext
+    }
+
+    /// Whether the backend served paywall components that this offering doesn't carry. Offerings parsed
+    /// while remote config is active keep only the marker, since workflows resolve components from
+    /// `/v1/config`. Such an offering can't render on its own once remote config is disabled, so callers
+    /// must re-resolve it against the offerings cache instead of rendering it as-is.
+    var hasPrunedPaywallComponents: Bool {
+        return hasPaywallComponents && internalPaywallComponents == nil
+    }
+
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
         return Self(
@@ -301,9 +331,23 @@ public extension Offering {
             serverDescription: serverDescription,
             metadata: metadata,
             paywall: paywall,
-            paywallComponents: paywallComponents,
-            draftPaywallComponents: draftPaywallComponents,
+            paywallComponents: internalPaywallComponents,
+            hasPaywallComponents: hasPaywallComponents,
             availablePackages: availablePackages.map { $0.withPresentedOfferingContext(presentedOfferingContext) },
+            webCheckoutUrl: webCheckoutUrl
+        )
+    }
+
+    /// Copies the Offering, replacing `paywallComponents` with the provided value.
+    func withPaywallComponents(_ paywallComponents: PaywallComponents) -> Self {
+        return Self(
+            identifier: identifier,
+            serverDescription: serverDescription,
+            metadata: metadata,
+            paywall: paywall,
+            paywallComponents: paywallComponents,
+            hasPaywallComponents: true,
+            availablePackages: availablePackages,
             webCheckoutUrl: webCheckoutUrl
         )
     }

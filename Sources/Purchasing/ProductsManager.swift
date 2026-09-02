@@ -38,6 +38,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         diagnosticsTracker: DiagnosticsTrackerType?,
         systemInfo: SystemInfo,
         requestTimeout: TimeInterval,
+        installmentsInfoFactory: InstallmentsInfoFactoryType = InstallmentsInfoFactory(),
         dateProvider: DateProvider = DateProvider()
     ) {
         self.productsFetcherSK1 = ProductsFetcherSK1(productsRequestFactory: productsRequestFactory,
@@ -47,7 +48,7 @@ class ProductsManager: NSObject, ProductsManagerType {
         self.dateProvider = dateProvider
 
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *) {
-            self._productsFetcherSK2 = ProductsFetcherSK2()
+            self._productsFetcherSK2 = ProductsFetcherSK2(installmentsInfoFactory: installmentsInfoFactory)
         } else {
             self._productsFetcherSK2 = nil
         }
@@ -55,16 +56,23 @@ class ProductsManager: NSObject, ProductsManagerType {
 
     func products(withIdentifiers identifiers: Set<String>, completion: @escaping Completion) {
         let startTime = self.dateProvider.now()
+
         if #available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *),
            self.systemInfo.storeKitVersion.isStoreKit2EnabledAndAvailable {
             self.sk2Products(withIdentifiers: identifiers) { result in
-                let notFoundProducts = identifiers.subtracting(result.value?.map(\.productIdentifier) ?? [])
+                let notFoundProducts = identifiers.subtracting(result.value?.map(\.id) ?? [])
                 self.trackProductsRequestIfNeeded(startTime,
                                                   requestedProductIds: identifiers,
                                                   notFoundProductIds: notFoundProducts,
                                                   storeKitVersion: .storeKit2,
                                                   error: result.error)
-                completion(result.map { Set($0.map(StoreProduct.from(product:))) })
+
+                switch result {
+                case .success(let storeProductsFromStoreKit):
+                    completion(.success(Set(storeProductsFromStoreKit.map(StoreProduct.from(product:)))))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
             }
         } else {
             self.sk1Products(withIdentifiers: identifiers) { result in
@@ -84,9 +92,8 @@ class ProductsManager: NSObject, ProductsManagerType {
         Async.call(with: completion) {
             do {
                 let products = try await self.productsFetcherSK2.products(identifiers: identifiers)
-
                 Logger.debug(Strings.storeKit.store_product_request_finished)
-                return Set(products)
+                return products
             } catch let error as NSError {
                 Logger.debug(Strings.storeKit.store_products_request_failed(error))
                 throw ErrorUtils.storeProblemError(error: error)
@@ -113,7 +120,10 @@ private extension ProductsManager {
 
     func sk1Products(withIdentifiers identifiers: Set<String>,
                      completion: @escaping (Result<Set<SK1StoreProduct>, PurchasesError>) -> Void) {
-        return self.productsFetcherSK1.products(withIdentifiers: identifiers, completion: completion)
+        return self.productsFetcherSK1.products(
+            withIdentifiers: identifiers,
+            completion: completion
+        )
     }
 
     func trackProductsRequestIfNeeded(_ startTime: Date,

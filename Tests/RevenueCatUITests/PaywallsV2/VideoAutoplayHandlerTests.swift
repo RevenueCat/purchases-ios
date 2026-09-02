@@ -127,6 +127,27 @@ class VideoAutoplayHandlerTests: TestCase {
         XCTAssertFalse(mockPlayer.playWasCalled)
     }
 
+    func testDoesNotResumeAfterInvalidate() {
+        // Given: video was playing and recorded before backgrounding
+        mockPlayer.isPlaying = true
+        handler = VideoAutoplayHandler(
+            playbackController: mockPlayer,
+            lifecycleObserver: mockLifecycle
+        )
+        mockLifecycle.triggerWillResignActive()
+
+        // When: the player is torn down (handler invalidated) before returning to foreground
+        handler.invalidate()
+        mockPlayer.isPlaying = false
+        mockLifecycle.triggerDidBecomeActive()
+
+        // Then: playback must NOT resume for a dismantled player
+        XCTAssertFalse(
+            mockPlayer.playWasCalled,
+            "Expected play() to NOT be called after invalidate()"
+        )
+    }
+
 }
 
 // MARK: - Mocks

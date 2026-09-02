@@ -15,6 +15,7 @@
 import Nimble
 @testable import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
+import SwiftUI
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -122,6 +123,142 @@ class VariableHandlerV2Test: TestCase {
             localizations: localizations["en_US"]!,
             isEligibleForIntroOffer: true
         )
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolUsesDisplayedPriceWhenFormatterLocaleDoesNotMatchCurrency() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "USD",
+                localizedPriceString: "$6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_regression",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "ro_RO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
+    func testProductCurrencySymbolSupportsMultiCharacterDisplayedSymbols() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: TestData.annualPackage60Taiwan,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("US$"))
+    }
+
+    func testProductCurrencySymbolSupportsPrefixSymbolsWithPunctuation() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "BOB",
+                localizedPriceString: "Bs.6.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_prefix_punctuation",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "es_BO")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("Bs."))
+    }
+
+    func testProductCurrencySymbolSupportsSuffixSymbols() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 6.99,
+                currencyCode: "SEK",
+                localizedPriceString: "6,99 kr",
+                productIdentifier: "com.revenuecat.product.currency_symbol_suffix",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "sv_SE")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("kr"))
+    }
+
+    func testProductCurrencySymbolFallsBackWhenDisplayedPriceHasNoDigits() {
+        let package = Package(
+            identifier: PackageType.monthly.identifier,
+            packageType: .monthly,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Monthly",
+                price: 0,
+                currencyCode: "USD",
+                localizedPriceString: "Free",
+                productIdentifier: "com.revenuecat.product.currency_symbol_free",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO monthly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .month),
+                locale: Locale(identifier: "en_US")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
         expect(result).to(equal("$"))
     }
 
@@ -420,6 +557,18 @@ class VariableHandlerV2Test: TestCase {
             isEligibleForIntroOffer: true
         )
         expect(result).to(equal("$1.99"))
+    }
+
+    func testOfferPriceUsesDisplayedPriceCurrencyTokenWhenFormatterLocaleDoesNotMatch() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }}",
+            with: mismatchedFormatterLocalePackage(price: 6.99, localizedPriceString: "$6.99"),
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$6.99"))
     }
 
     func testProductPayUpFrontOfferPricePerDay() {
@@ -1224,6 +1373,31 @@ class V2ZeroDecimalPlacePricesTest: TestCase {
         expect(resultWithoutZeroDecimal).to(equal("$2.00"))
     }
 
+    func testOfferPriceKeepsDisplayedPriceWhenFormatterLocaleDoesNotMatch() {
+        // The ro_RO/USD formatter can't parse "$2.00", so the decimals stay in place instead of
+        // being re-rendered as "2 USD". `product.price` behaves the same way, so the paywall
+        // stays internally consistent.
+        let package = mismatchedFormatterLocalePackage(price: 2.00, localizedPriceString: "$2.00")
+
+        let offerPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.offer_price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        let productPrice = variableHandlerWithZeroDecimal.processVariables(
+            in: "{{ product.price }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(offerPrice).to(equal("$2.00"))
+        expect(offerPrice).to(equal(productPrice))
+    }
+
     func testOfferPricePerMonthRespectsZeroDecimalPlacePrices() {
         let resultWithZeroDecimal = variableHandlerWithZeroDecimal.processVariables(
             in: "{{ product.offer_price_per_month }}",
@@ -1740,6 +1914,23 @@ class CustomVariablesV2Tests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class CustomVariableValueTests: TestCase {
 
+    func testEnvironmentFiltersInvalidCustomVariableKeys() {
+        var environment = EnvironmentValues()
+
+        environment.customPaywallVariables = [
+            "valid_key": "kept",
+            "invalid-key": "dropped",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]
+
+        expect(environment.customPaywallVariables).to(equal([
+            "valid_key": "kept",
+            "2fast": "also kept",
+            "_private": "also kept"
+        ]))
+    }
+
     // MARK: - stringValue Tests
 
     func testStringValueForString() {
@@ -1827,6 +2018,61 @@ class CustomVariableValueTests: TestCase {
         expect(value).to(equal(.string("test")))
     }
 
+    func testExpressibleByNumericAndBooleanLiterals() {
+        let integer: CustomVariableValue = 42
+        let double: CustomVariableValue = 4.5
+        let boolean: CustomVariableValue = true
+
+        expect(integer).to(equal(.number(42)))
+        expect(double).to(equal(.number(4.5)))
+        expect(boolean).to(equal(.bool(true)))
+    }
+
+    // MARK: - Foundation Bridge Tests
+
+    func testFoundationValuesPreserveSupportedPrimitiveTypes() {
+        expect(CustomVariableValue(foundationValue: "value")).to(equal(.string("value")))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: true))).to(equal(.bool(true)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: false))).to(equal(.bool(false)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Int64(42)))).to(equal(.number(42)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(4.5)))).to(equal(.number(4.5)))
+    }
+
+    func testFoundationValuesSupportAllNSNumberIntegerAndFloatingPointStorageTypes() {
+        let integers: [NSNumber] = [
+            NSNumber(value: Int8(1)), NSNumber(value: Int16(2)), NSNumber(value: Int32(3)),
+            NSNumber(value: Int64(4)), NSNumber(value: UInt8(5)), NSNumber(value: UInt16(6)),
+            NSNumber(value: UInt32(7)), NSNumber(value: UInt64(8))
+        ]
+
+        for number in integers {
+            expect(CustomVariableValue(foundationValue: number)).to(equal(.number(number.doubleValue)))
+        }
+
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Float(1.5)))).to(equal(.number(1.5)))
+        expect(CustomVariableValue(foundationValue: NSNumber(value: Double(2.5)))).to(equal(.number(2.5)))
+    }
+
+    func testFoundationValueRejectsUnsupportedTypes() {
+        expect(CustomVariableValue(foundationValue: Date())).to(beNil())
+        expect(CustomVariableValue(foundationValue: NSNull())).to(beNil())
+        expect(CustomVariableValue(foundationValue: ["nested": "value"])).to(beNil())
+    }
+
+    func testFoundationValueRoundTripsEverySupportedType() {
+        let values: [CustomVariableValue] = [
+            .string("value"),
+            .number(42),
+            .number(4.5),
+            .bool(true),
+            .bool(false)
+        ]
+
+        for value in values {
+            expect(CustomVariableValue(foundationValue: value.foundationValue)).to(equal(value))
+        }
+    }
+
     // MARK: - Dictionary Conversion Tests
 
     func testAsStringDictionary() {
@@ -1843,6 +2089,38 @@ class CustomVariableValueTests: TestCase {
         expect(stringDict["premium"]).to(equal("true"))
     }
 
+}
+
+/// Product whose displayed price uses "$" but whose formatter locale (ro_RO) renders USD as "2,00 USD".
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func mismatchedFormatterLocalePackage(price: Decimal, localizedPriceString: String) -> Package {
+    return Package(
+        identifier: PackageType.monthly.identifier,
+        packageType: .monthly,
+        storeProduct: TestStoreProduct(
+            localizedTitle: "Monthly",
+            price: price,
+            currencyCode: "USD",
+            localizedPriceString: localizedPriceString,
+            productIdentifier: "com.revenuecat.product.mismatched_formatter_locale",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: .init(
+                identifier: "intro",
+                price: price,
+                localizedPriceString: localizedPriceString,
+                paymentMode: .payUpFront,
+                subscriptionPeriod: .init(value: 1, unit: .week),
+                numberOfPeriods: 1,
+                type: .introductory
+            ),
+            locale: Locale(identifier: "ro_RO")
+        ).toStoreProduct(),
+        offeringIdentifier: "offering",
+        webCheckoutUrl: nil
+    )
 }
 
 #endif

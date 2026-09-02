@@ -32,10 +32,13 @@ class BaseBackendTests: TestCase {
     private(set) var webBilling: WebBillingAPI!
     private(set) var offlineEntitlements: OfflineEntitlementsAPI!
     private(set) var identity: IdentityAPI!
+    private(set) var token: TokenAPI!
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
+    private(set) var adsAPI: AdsAPI!
+    private(set) var remoteConfigAPI: RemoteConfigAPI!
 
     static let apiKey = "asharedsecret"
     static let userID = "user"
@@ -60,6 +63,7 @@ class BaseBackendTests: TestCase {
             finishTransactions: true,
             storefrontProvider: MockStorefrontProvider(),
             storeKitVersion: storeKitVersion,
+            apiKey: Self.apiKey,
             responseVerificationMode: self.responseVerificationMode,
             dangerousSettings: dangerousSettings,
             isAppBackgrounded: false,
@@ -85,6 +89,7 @@ class BaseBackendTests: TestCase {
 
         let customer = CustomerAPI(backendConfig: backendConfig, attributionFetcher: attributionFetcher)
         self.identity = IdentityAPI(backendConfig: backendConfig)
+        self.token = TokenAPI(backendConfig: backendConfig)
         self.offerings = OfferingsAPI(backendConfig: backendConfig)
         self.webBilling = WebBillingAPI(backendConfig: backendConfig)
         self.offlineEntitlements = OfflineEntitlementsAPI(backendConfig: backendConfig)
@@ -92,17 +97,22 @@ class BaseBackendTests: TestCase {
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
+        self.adsAPI = AdsAPI(backendConfig: backendConfig)
+        self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
         self.backend = Backend(backendConfig: backendConfig,
                                customerAPI: customer,
                                identityAPI: self.identity,
+                               tokenAPI: self.token,
                                offeringsAPI: self.offerings,
                                webBillingAPI: self.webBilling,
                                offlineEntitlements: self.offlineEntitlements,
                                internalAPI: self.internalAPI,
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
-                               virtualCurrenciesAPI: self.virtualCurrenciesAPI)
+                               virtualCurrenciesAPI: self.virtualCurrenciesAPI,
+                               adsAPI: self.adsAPI,
+                               remoteConfigAPI: self.remoteConfigAPI)
     }
 
     var verificationMode: Configuration.EntitlementVerificationMode {
@@ -131,9 +141,9 @@ extension BaseBackendTests {
             self.diagnosticsTracker = nil
         }
 
-        return MockHTTPClient(apiKey: Self.apiKey,
-                              systemInfo: self.systemInfo,
+        return MockHTTPClient(systemInfo: self.systemInfo,
                               eTagManager: eTagManager,
+                              tokenManager: MockTokenManager(),
                               diagnosticsTracker: self.diagnosticsTracker,
                               sourceTestFile: file)
     }

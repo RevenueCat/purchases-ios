@@ -7,7 +7,7 @@
 
 
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 #if DEBUG
 @_spi(Internal) @testable import RevenueCatUI
 #else
@@ -48,7 +48,6 @@ struct SamplePaywallsList: View {
             case .fullScreen, .sheet:
                 PaywallView(configuration: .init(
                     offering: Self.loader.offering(for: template),
-                    customerInfo: Self.loader.customerInfo,
                     displayCloseButton: Self.displayCloseButton,
                     introEligibility: Self.introEligibility
                 ))
@@ -58,10 +57,15 @@ struct SamplePaywallsList: View {
             case .presentPaywall:
                 fatalError()
 
+            case .workflow:
+                fatalError()
+
+            case .presentWorkflow:
+                fatalError()
+
             #if !os(watchOS) && !os(macOS)
             case .footer, .condensedFooter:
                 CustomPaywall(offering: Self.loader.offering(for: template),
-                              customerInfo: Self.loader.customerInfo,
                               condensed: mode == .condensedFooter,
                               introEligibility: Self.introEligibility)
             #endif
@@ -71,7 +75,6 @@ struct SamplePaywallsList: View {
             PaywallView(
                 configuration: .init(
                     offering: Self.loader.offering(for: template),
-                    customerInfo: Self.loader.customerInfo,
                     fonts: Self.customFontProvider,
                     displayCloseButton: Self.displayCloseButton,
                     introEligibility: Self.introEligibility
@@ -80,15 +83,13 @@ struct SamplePaywallsList: View {
 
         #if os(iOS)
         case let .customPaywall(mode):
-            CustomPaywall(customerInfo: Self.loader.customerInfo,
-                          condensed: mode == .condensedFooter)
+            CustomPaywall(condensed: mode == .condensedFooter)
         #endif
 
         case .missingPaywall:
             PaywallView(
                 configuration: .init(
                     offering: Self.loader.offeringWithDefaultPaywall(),
-                    customerInfo: Self.loader.customerInfo,
                     introEligibility: Self.introEligibility
                 )
             )
@@ -97,7 +98,6 @@ struct SamplePaywallsList: View {
             PaywallView(
                 configuration: .init(
                     offering: Self.loader.offeringWithUnrecognizedPaywall(),
-                    customerInfo: Self.loader.customerInfo,
                     introEligibility: Self.introEligibility
                 )
             )
@@ -105,7 +105,6 @@ struct SamplePaywallsList: View {
         case .componentPaywall(let data):
             PaywallView(configuration: .init(
                 offering: Self.loader.offering(with: data),
-                customerInfo: Self.loader.customerInfo,
                 displayCloseButton: Self.displayCloseButton,
                 introEligibility: Self.introEligibility
             ))
@@ -176,6 +175,14 @@ struct SamplePaywallsList: View {
                 } label: {
                     TemplateLabel(name: "Unrecognized paywall", icon: "exclamationmark.triangle")
                 }
+
+                #if !os(tvOS)
+                Button {
+                    self.display = .componentPaywall(SamplePaywallLoader.tabStateComponentsData())
+                } label: {
+                    TemplateLabel(name: "State-driven tabs", icon: "rectangle.stack")
+                }
+                #endif
             }
             #endif
 

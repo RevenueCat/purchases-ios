@@ -19,9 +19,12 @@ let project = Project(
             ],
             dependencies: [
                 .revenueCat
-            ]
-        ),
-    ],
+            ],
+            settings: .settings(
+                base: ([:] as SettingsDictionary).appendingTuistSwiftConditions()
+            )
+        )
+    ].addingXcodeDeploymentTargetOverrides(),
     schemes: [
         .scheme(
             name: "RevenueCatUI",

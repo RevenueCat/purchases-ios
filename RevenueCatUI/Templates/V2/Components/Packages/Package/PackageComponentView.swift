@@ -23,10 +23,25 @@ struct PackageComponentView: View {
     @EnvironmentObject
     private var packageContext: PackageContext
 
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
     let viewModel: PackageComponentViewModel
     let onDismiss: () -> Void
 
-    private var componentViewState: ComponentViewState {
+    private var packageViewState: ComponentViewState {
         // Gets selected package context from parent heirarchy
         guard let selectedPackage = packageContext.package,
                 let package = viewModel.package else {
@@ -37,12 +52,24 @@ struct PackageComponentView: View {
     }
 
     var body: some View {
-        if let package = self.viewModel.package {
+        if let package = self.viewModel.package,
+           viewModel.visible(
+               state: packageViewState,
+               condition: screenCondition,
+               isEligibleForIntroOffer: introOfferEligibilityContext.isEligible(
+                   package: package
+               ),
+               isEligibleForPromoOffer: paywallPromoOfferCache.isMostLikelyEligible(
+                   for: package
+               ),
+               selectedPackageId: selectedPackageId,
+               customVariables: customVariables
+           ) {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,
                 onDismiss: self.onDismiss
             )
-            .environment(\.componentViewState, componentViewState)
+            .environment(\.componentViewState, packageViewState)
             // Overrides the existing PackageContext
             .environmentObject(PackageContext(
                 // This is needed so text component children use this
@@ -54,11 +81,10 @@ struct PackageComponentView: View {
             .packageSelectorIfNeeded(
                 packageContext: self.packageContext,
                 package: package,
-                hasPurchaseButton: self.viewModel.hasPurchaseButton
+                componentName: self.viewModel.componentName,
+                hasPurchaseButton: self.viewModel.hasPurchaseButton,
+                hapticFeedbackEnabled: self.viewModel.hapticFeedbackEnabled
             )
-
-        } else {
-            EmptyView()
         }
     }
 
@@ -70,23 +96,36 @@ private extension View {
     func packageSelectorIfNeeded(
         packageContext: PackageContext,
         package: Package,
-        hasPurchaseButton: Bool
+        componentName: String?,
+        hasPurchaseButton: Bool,
+        hapticFeedbackEnabled: Bool
     ) -> some View {
         modifier(PackageSelectorIfNeeded(
             packageContext: packageContext,
             package: package,
-            hasPurchaseButton: hasPurchaseButton
+            componentName: componentName,
+            hasPurchaseButton: hasPurchaseButton,
+            hapticFeedbackEnabled: hapticFeedbackEnabled
         ))
     }
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private struct PackageSelectorIfNeeded: ViewModifier {
+struct PackageSelectorIfNeeded: ViewModifier {
+
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+    @Environment(\.planSelectionDefaultPackage)
+    private var planSelectionDefaultPackage
+    @Environment(\.selectionHapticFeedback)
+    private var hapticFeedback
 
     let packageContext: PackageContext
     let package: Package
+    let componentName: String?
     let hasPurchaseButton: Bool
+    let hapticFeedbackEnabled: Bool
 
     func body(content: Content) -> some View {
         if hasPurchaseButton {
@@ -96,6 +135,24 @@ private struct PackageSelectorIfNeeded: ViewModifier {
                 // Updating package with same variable context
                 // This will be needed when different sets of packages
                 // in different tiers
+                let origin = self.packageContext.package
+                if origin?.identifier != self.package.identifier {
+                    self.componentInteractionLogger(
+                        .paywallPackageRowSelection(
+                            componentName: self.componentName,
+                            destination: self.package,
+                            origin: origin,
+                            defaultPackage: self.planSelectionDefaultPackage
+                        )
+                    )
+                }
+                if Self.shouldTriggerHapticFeedback(
+                    origin: origin,
+                    destination: self.package,
+                    hapticFeedbackEnabled: self.hapticFeedbackEnabled
+                ) {
+                    self.hapticFeedback()
+                }
                 self.packageContext.update(
                     package: self.package,
                     variableContext: self.packageContext.variableContext
@@ -103,7 +160,20 @@ private struct PackageSelectorIfNeeded: ViewModifier {
             } label: {
                 content
             }
+            .onAppear {
+                if hapticFeedbackEnabled {
+                    self.hapticFeedback.prepare()
+                }
+            }
         }
+    }
+
+    static func shouldTriggerHapticFeedback(
+        origin: Package?,
+        destination: Package,
+        hapticFeedbackEnabled: Bool
+    ) -> Bool {
+        return hapticFeedbackEnabled && origin?.identifier != destination.identifier
     }
 }
 
@@ -256,7 +326,6 @@ fileprivate extension PackageComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
@@ -268,7 +337,8 @@ fileprivate extension PackageComponentViewModel {
             component: component,
             offering: offering,
             stackViewModel: stackViewModel,
-            hasPurchaseButton: hasPurchaseButton
+            hasPurchaseButton: hasPurchaseButton,
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
 

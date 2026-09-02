@@ -17,17 +17,17 @@ class OtherPaywallViewTests: BaseSnapshotTest {
 
     func testLoadingPaywallView() {
         LoadingPaywallView(mode: .fullScreen, displayCloseButton: false, shimmer: false)
-            .snapshot(size: Self.fullScreenSize)
+            .recordSnapshot(size: Self.fullScreenSize)
     }
 
     func testLoadingFooterPaywallView() {
         LoadingPaywallView(mode: .footer, displayCloseButton: false, shimmer: false)
-            .snapshot(size: Self.footerSize)
+            .recordSnapshot(size: Self.footerSize)
     }
 
     func testLoadingCondensedFooterPaywallView() {
         LoadingPaywallView(mode: .condensedFooter, displayCloseButton: false, shimmer: false)
-            .snapshot(size: Self.footerSize)
+            .recordSnapshot(size: Self.footerSize)
     }
 
 }

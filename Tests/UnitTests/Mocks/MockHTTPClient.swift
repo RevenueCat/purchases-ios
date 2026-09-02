@@ -49,6 +49,29 @@ class MockHTTPClient: HTTPClient {
             self.init(response: .success(response), delay: delay)
         }
 
+        init(
+            statusCode: HTTPStatusCode,
+            body: Data,
+            responseHeaders: HTTPResponse.Headers = [:],
+            verificationResult: VerificationResult = .defaultValue,
+            delay: DispatchTimeInterval = .never,
+            isLoadShedderResponse: Bool = false,
+            isFallbackUrlResponse: Bool = false
+        ) {
+            let response = VerifiedHTTPResponse(
+                response: .init(
+                    httpStatusCode: statusCode,
+                    responseHeaders: responseHeaders,
+                    body: body
+                ),
+                verificationResult: verificationResult,
+                isLoadShedderResponse: isLoadShedderResponse,
+                isFallbackUrlResponse: isFallbackUrlResponse
+            )
+
+            self.init(response: .success(response), delay: delay)
+        }
+
         init(error: NetworkError, delay: DispatchTimeInterval = .never) {
             self.init(response: .failure(error), delay: delay)
         }
@@ -59,23 +82,25 @@ class MockHTTPClient: HTTPClient {
     var calls: [Call] = []
     private var shouldAssertSnapshot: Bool = true
 
-    init(apiKey: String,
-         systemInfo: SystemInfo,
+    init(systemInfo: SystemInfo,
          eTagManager: ETagManager,
+         tokenManager: TokenManager,
          diagnosticsTracker: DiagnosticsTrackerType?,
          dnsChecker: DNSCheckerType.Type = DNSChecker.self,
-         requestTimeout: TimeInterval = 7,
+         networkTimeout: NetworkTimeout = .custom(7),
          sourceTestFile: StaticString = #file) {
         self.sourceTestFile = sourceTestFile
 
-        super.init(apiKey: apiKey,
-                   systemInfo: systemInfo,
+        super.init(systemInfo: systemInfo,
                    eTagManager: eTagManager,
+                   tokenManager: tokenManager,
                    signing: FakeSigning.default,
                    diagnosticsTracker: diagnosticsTracker,
                    dnsChecker: dnsChecker,
-                   requestTimeout: requestTimeout,
-                   operationDispatcher: MockOperationDispatcher())
+                   networkTimeout: networkTimeout,
+                   operationDispatcher: MockOperationDispatcher(),
+                   apiSourceFailover: nil,
+                   timeoutManager: HTTPRequestTimeoutManager(networkTimeout: networkTimeout))
     }
 
     /// Disables snapshot testing for this mock HTTP client.
@@ -112,7 +137,7 @@ class MockHTTPClient: HTTPClient {
                                testName: CurrentTestCaseTracker.osVersionAndTestName)
             }
 
-            let mock = self.mocks[request.path.url!] ?? .init(statusCode: .success)
+            let mock = self.mocks[request.path.url(preferIAMPath: false)!] ?? .init(statusCode: .success)
 
             if let completionHandler = completionHandler {
                 let response: VerifiedHTTPResponse<Value>.Result = mock.response.parseResponse()
@@ -136,12 +161,16 @@ class MockHTTPClient: HTTPClient {
         self.mock(path: requestPath, response: response)
     }
 
+    func mock(requestPath: HTTPRequest.FallbackPath, response: Response) {
+        self.mock(path: requestPath, response: response)
+    }
+
     func mock(requestPath: HTTPRequest.WebBillingPath, response: Response) {
         self.mock(path: requestPath, response: response)
     }
 
     private func mock(path: HTTPRequestPath, response: Response) {
-        self.mocks[path.url!] = response
+        self.mocks[path.url(preferIAMPath: false)!] = response
     }
 
     /// Override headers that depend on the environment to make them stable.
@@ -180,7 +209,7 @@ extension RevenueCat.HTTPRequest: Swift.Encodable {
     public func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
 
-        try container.encode(self.path.url, forKey: .url)
+        try container.encode(self.path.url(preferIAMPath: false), forKey: .url)
         try container.encode(self.method.httpMethod, forKey: .method)
 
         if let body = self.requestBody {

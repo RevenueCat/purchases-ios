@@ -588,7 +588,7 @@ class ETagManagerTests: TestCase {
         let response = self.eTagManager.eTagHeader(for: request, withSignatureVerification: false)
         expect(response) == [
             ETagManager.eTagRequestHeader.rawValue: Self.testETag,
-            ETagManager.eTagValidationTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
+            ETagManager.lastRefreshTimeRequestHeader.rawValue: validationTime.millisecondsSince1970.description
         ]
     }
 
@@ -1195,8 +1195,8 @@ private extension ETagManagerTests {
                      isFallbackUrlResponse: isFallbackUrlResponse)
     }
 
-    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url!
-    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url!
+    private static let testURL = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID").url(preferIAMPath: false)!
+    private static let testURL2 = HTTPRequest.Path.getCustomerInfo(appUserID: "appUserID_2").url(preferIAMPath: false)!
 
     static let testETag = "etag_1"
 

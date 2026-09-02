@@ -11,7 +11,7 @@
 //  
 //  Created by Nacho Soto on 7/18/23.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -31,6 +31,8 @@ struct PurchaseButton: View {
     private var isEnabled
     @Environment(\.purchaseInitiatedAction)
     private var purchaseInitiatedAction: PurchaseInitiatedAction?
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
 
     init(
         packages: TemplateViewConfiguration.PackageConfiguration,
@@ -84,10 +86,14 @@ struct PurchaseButton: View {
             guard !self.purchaseHandler.actionInProgress else {
                 return
             }
-            guard !self.selectedPackage.currentlySubscribed else {
-                Logger.warning(Strings.product_already_subscribed)
-                return
-            }
+
+            let selectedContent = self.selectedPackage.content
+            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                componentName: PaywallComponentInteraction.purchaseButtonName,
+                componentValue: PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description,
+                currentPackageIdentifier: selectedContent.identifier,
+                currentProductIdentifier: selectedContent.storeProduct.productIdentifier
+            ))
 
             // Check if there's a purchase interceptor
             if let interceptor = self.purchaseInitiatedAction {
@@ -102,7 +108,7 @@ struct PurchaseButton: View {
                 guard result else { return }
             }
 
-            _ = try await self.purchaseHandler.purchase(package: self.selectedPackage.content)
+            _ = try await self.purchaseHandler.purchase(package: selectedContent)
         } label: {
             ConsistentPackageContentView(
                 packages: self.packages.all,
@@ -241,7 +247,6 @@ struct PurchaseButton_Previews: PreviewProvider {
                 context: .init(discountRelativeToMostExpensivePerMonth: nil),
                 locale: .current
             ),
-            currentlySubscribed: false,
             discountRelativeToMostExpensivePerMonth: nil
         )
         private static let packages: TemplateViewConfiguration.PackageConfiguration = .single(Self.package)

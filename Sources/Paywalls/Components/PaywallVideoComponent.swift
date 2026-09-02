@@ -15,7 +15,7 @@
 
 import Foundation
 
-extension PaywallComponent {
+@_spi(Internal) extension PaywallComponent {
 
     public final class VideoComponent: PaywallComponentBase {
 
@@ -46,7 +46,7 @@ extension PaywallComponent {
             autoPlay: Bool = true,
             loop: Bool = true,
             muteAudio: Bool = true,
-            size: Size = .init(width: .fill, height: .fit),
+            size: Size = .init(width: .fill, height: .fit(nil)),
             fitMode: FitMode = .fit,
             maskShape: MaskShape? = nil,
             colorOverlay: ColorScheme? = nil,

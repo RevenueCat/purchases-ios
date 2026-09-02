@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 11/7/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -39,6 +39,7 @@ enum PaywallComponentViewModel {
     case carousel(CarouselComponentViewModel)
     case video(VideoComponentViewModel)
     case countdown(CountdownComponentViewModel)
+    case webView(WebViewComponentViewModel)
 }
 
 #endif

@@ -15,7 +15,7 @@
 #if canImport(AppKit)
 import AppKit
 #endif
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 #if canImport(UIKit)
 import UIKit
@@ -57,6 +57,8 @@ struct DefaultPaywallView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.locale) var locale
 
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+
     @StateObject var appIconDetailProvider: AppIconDetailProvider
 
     // MARK: - Colors
@@ -94,11 +96,11 @@ struct DefaultPaywallView: View {
     // MARK: - Warning
 
     var shouldShowWarning: Bool {
-        var showWarning = false
         #if DEBUG
-        showWarning = (warning != nil)
+        return warning != nil
+        #else
+        return warning != nil && handler.isUIPreviewMode
         #endif
-        return showWarning
     }
 
     @ViewBuilder
@@ -169,6 +171,14 @@ struct DefaultPaywallView: View {
                 VStack {
                     let purchaseButton = Button {
                         if let selected {
+                            let method = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout
+                            self.componentInteractionLogger(.paywallPurchaseButtonAction(
+                                componentName: PaywallComponentInteraction.purchaseButtonName,
+                                componentValue: method.description,
+                                componentURL: nil,
+                                currentPackageIdentifier: selected.identifier,
+                                currentProductIdentifier: selected.storeProduct.productIdentifier
+                            ))
                             Task(priority: .userInitiated) {
                                 do {
                                     _ = try await handler.purchase(package: selected)
@@ -197,6 +207,7 @@ struct DefaultPaywallView: View {
                     }
 
                     let restoreButton = Button {
+                        self.componentInteractionLogger(.paywallFooterRestorePurchases())
                         Task(priority: .userInitiated) {
                             do {
                                 _ = try await handler.restorePurchases()

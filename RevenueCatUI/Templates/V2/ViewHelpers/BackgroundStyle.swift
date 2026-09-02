@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/20/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -100,6 +100,9 @@ fileprivate extension View {
                     }
                 }
                 .ignoresSafeArea()
+                // The mask clips drawing only, so a "fill" image overflowing its container would
+                // still swallow taps on the components it overlaps.
+                .allowsHitTesting(false)
             }
         case let .video(viewModel, colorOverlay):
             self.background(alignment: alignment) {
@@ -118,6 +121,8 @@ fileprivate extension View {
                     }
                 }
                 .ignoresSafeArea()
+                // Same reason as the image background above.
+                .allowsHitTesting(false)
             }
         }
     }

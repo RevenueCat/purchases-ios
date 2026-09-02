@@ -13,7 +13,7 @@
 // swiftlint:disable type_name
 
 import Nimble
-import RevenueCat
+@_spi(Internal) import RevenueCat
 @_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
@@ -212,6 +212,7 @@ private extension BasePaywallViewEventsTests {
         case .exitOffer: self.exitOfferEventExpectation.fulfill()
         case .purchaseInitiated: break
         case .purchaseError: break
+        case .componentInteraction: break
         }
     }
 
@@ -219,7 +220,6 @@ private extension BasePaywallViewEventsTests {
         PaywallView(
             configuration: .init(
                 offering: Self.offering.withLocalImages,
-                customerInfo: TestData.customerInfo,
                 mode: self.mode,
                 introEligibility: .producing(eligibility: .eligible),
                 purchaseHandler: self.handler
@@ -260,6 +260,7 @@ private extension PaywallEvent {
         case exitOffer
         case purchaseInitiated
         case purchaseError
+        case componentInteraction
 
     }
 
@@ -271,6 +272,7 @@ private extension PaywallEvent {
         case .exitOffer: return .exitOffer
         case .purchaseInitiated: return .purchaseInitiated
         case .purchaseError: return .purchaseError
+        case .componentInteraction: return .componentInteraction
         }
     }
 

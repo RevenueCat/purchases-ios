@@ -130,6 +130,8 @@ import Foundation
     ) async throws {
         do {
             try await fileManager.saveData(bytes, to: url, checksum: checksum)
+        } catch is Checksum.ChecksumValidationFailure {
+            throw Error.checksumMismatch
         } catch {
             let message = Strings.fileRepository.failedToSaveCachedFile(url, error)
             Logger.error(message)
@@ -180,6 +182,9 @@ extension FileRepository {
 
         /// Used when fetching the data fails
         case failedToFetchFileFromRemoteSource(String)
+
+        /// Used when the downloaded file's checksum does not match the expected value
+        case checksumMismatch
     }
 }
 

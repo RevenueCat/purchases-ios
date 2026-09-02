@@ -160,14 +160,18 @@ extension View {
 
                     // When content is too long: scroll it
                     ScrollView(axis.scrollViewAxis) {
-                        self
+                        self.paywallMarkingVerticalScrollContainer(axis: axis) {
+                            self
+                        }
                     }
                     .scrollBounceBehaviorBasedOnSize()
                 }
             } else {
                 // For FIT content: just use ScrollView (sizes naturally, scrolls if needed)
                 ScrollView(axis.scrollViewAxis) {
-                    self
+                    self.paywallMarkingVerticalScrollContainer(axis: axis) {
+                        self
+                    }
                 }
                 .scrollBounceBehaviorBasedOnSize()
             }

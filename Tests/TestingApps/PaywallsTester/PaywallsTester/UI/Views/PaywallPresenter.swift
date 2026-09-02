@@ -55,6 +55,9 @@ struct PaywallPresenter: View {
                 .onRestoreFailure({ error in
                     print("Paywall Handler - onRestoreFailure")
                 })
+                .onURLOpened({ url in
+                    print("Paywall Handler - onURLOpened: \(url)")
+                })
 
 #if !os(watchOS)
 #if !os(macOS)
@@ -62,14 +65,12 @@ struct PaywallPresenter: View {
         case .footer:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                                               customerInfo: nil,
                                                introEligibility: introEligibilityChecker,
                                                purchaseHandler: .default())
 
         case .condensedFooter:
             CustomPaywallContent()
                 .originalTemplatePaywallFooter(offering: self.offering,
-                                               customerInfo: nil,
                                                condensed: true,
                                                introEligibility: introEligibilityChecker,
                                                purchaseHandler: .default())
@@ -84,13 +85,23 @@ struct PaywallPresenter: View {
                                                condensed: true)
 #endif
 #endif
+#endif
+
         case .presentIfNeeded:
             fatalError()
 
         case .presentPaywall:
             fatalError()
 
-#endif
+        case .workflow:
+            PaywallView(offeringIdentifier: offering.identifier)
+                .onURLOpened({ url in
+                    print("Paywall Handler - onURLOpened: \(url)")
+                })
+
+        case .presentWorkflow:
+            fatalError()
+
         }
     }
 

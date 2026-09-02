@@ -1,5 +1,5 @@
 import Nimble
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import XCTest
 
 #if !os(tvOS) // For Paywalls V2
@@ -277,7 +277,7 @@ class DefaultEnumTests: TestCase {
             from: json.data(using: .utf8)!
         )
 
-        expect(thing.prop).to(equal(.fit))
+        expect(thing.prop).to(equal(.fit(nil)))
     }
 
     func testStackComponentOverflow() throws {

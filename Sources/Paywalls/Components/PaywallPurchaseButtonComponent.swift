@@ -8,10 +8,11 @@
 
 import Foundation
 
-public extension PaywallComponent {
+@_spi(Internal) public extension PaywallComponent {
 
     final class PurchaseButtonComponent: PaywallComponentBase {
 
+        public let name: String?
         let type: ComponentType
         public let stack: PaywallComponent.StackComponent
 
@@ -25,7 +26,22 @@ public extension PaywallComponent {
             case webProductSelection = "web_product_selection"
         }
 
-        public enum Method: Codable, Sendable, Hashable, Equatable {
+        public enum Method: Codable, Sendable, Hashable, Equatable, CustomStringConvertible {
+            public var description: String {
+                switch self {
+                case .inAppCheckout:
+                    return "in_app_checkout"
+                case .webCheckout:
+                    return "web_checkout"
+                case .webProductSelection:
+                    return "web_product_selection"
+                case .customWebCheckout:
+                    return "custom_web_checkout"
+                case .unknown:
+                    return "unknown"
+                }
+            }
+
             case inAppCheckout
             case webCheckout(WebCheckout)
             case webProductSelection(WebCheckout)
@@ -101,15 +117,27 @@ public extension PaywallComponent {
 
                 public let url: LocalizationKey
                 public let packageParam: String?
+                public let appUserIDParam: String?
+                public let envParam: String?
 
-                public init(url: PaywallComponent.LocalizationKey, packageParam: String? = nil) {
+                public init(
+                    url: PaywallComponent.LocalizationKey,
+                    packageParam: String? = nil,
+                    appUserIDParam: String? = nil,
+                    envParam: String? = nil
+                ) {
                     self.url = url
                     self.packageParam = packageParam
+                    self.appUserIDParam = appUserIDParam
+                    self.envParam = envParam
                 }
 
+                // Keys are matched after `JSONDecoder.default` has already converted from snake case.
                 private enum CodingKeys: String, CodingKey {
                     case url = "urlLid"
                     case packageParam
+                    case appUserIDParam = "appUserIdParam"
+                    case envParam
                 }
 
             }
@@ -133,12 +161,14 @@ public extension PaywallComponent {
         public init(
             stack: PaywallComponent.StackComponent,
             action: Action?,
-            method: Method?
+            method: Method?,
+            name: String?
         ) {
             self.type = .purchaseButton
             self.stack = stack
             self.action = action
             self.method = method
+            self.name = name
         }
 
         public func hash(into hasher: inout Hasher) {
@@ -146,14 +176,15 @@ public extension PaywallComponent {
             hasher.combine(stack)
             hasher.combine(action)
             hasher.combine(method)
+            hasher.combine(name)
         }
 
         public static func == (lhs: PurchaseButtonComponent, rhs: PurchaseButtonComponent) -> Bool {
             return lhs.type == rhs.type &&
                 lhs.stack == rhs.stack &&
                 lhs.action == rhs.action &&
-                lhs.method == rhs.method
+                lhs.method == rhs.method &&
+                lhs.name == rhs.name
         }
     }
-
 }

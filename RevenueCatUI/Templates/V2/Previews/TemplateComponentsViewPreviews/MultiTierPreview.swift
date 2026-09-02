@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -85,7 +85,7 @@ private enum MultiTierPreview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
@@ -93,14 +93,14 @@ private enum MultiTierPreview {
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -179,7 +179,7 @@ private enum MultiTierPreview {
                                         .text(.init(
                                             text: "tab_1_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -189,7 +189,7 @@ private enum MultiTierPreview {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -211,7 +211,7 @@ private enum MultiTierPreview {
                                         .text(.init(
                                             text: "tab_2_button",
                                             color: .init(light: .hex("#000000")),
-                                            size: .init(width: .fit, height: .fit),
+                                            size: .init(width: .fit(nil), height: .fit(nil)),
                                             overrides: [
                                                 .init(conditions: [
                                                     .selected
@@ -221,7 +221,7 @@ private enum MultiTierPreview {
                                             ]
                                         ))
                                     ],
-                                    size: .init(width: .fit, height: .fit),
+                                    size: .init(width: .fit(nil), height: .fit(nil)),
                                     padding: .init(top: 4, bottom: 4, leading: 16, trailing: 16),
                                     shape: .pill,
                                     overrides: [
@@ -236,7 +236,7 @@ private enum MultiTierPreview {
                         )
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit),
+                    size: .init(width: .fit(nil), height: .fit(nil)),
                     backgroundColor: .init(light: .hex("#dedede")),
                     padding: .init(top: 3, bottom: 3, leading: 3, trailing: 3),
                     shape: .pill
@@ -294,7 +294,8 @@ private enum MultiTierPreview {
                                     bottomTrailing: 16))
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -404,7 +405,6 @@ struct MultiTierPreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )

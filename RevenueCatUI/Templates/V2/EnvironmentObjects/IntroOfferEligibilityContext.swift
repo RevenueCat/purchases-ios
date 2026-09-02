@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 11/15/24.
 
 import Combine
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 
@@ -45,5 +45,20 @@ extension IntroOfferEligibilityContext {
     }
 
 }
+
+#if DEBUG
+extension IntroOfferEligibilityContext {
+
+    static func forPreview(
+        packages: [Package],
+        eligibility: IntroEligibilityStatus
+    ) -> IntroOfferEligibilityContext {
+        let context = IntroOfferEligibilityContext(introEligibilityChecker: .default())
+        context.all = Dictionary(uniqueKeysWithValues: packages.map { ($0, eligibility) })
+        return context
+    }
+
+}
+#endif
 
 #endif

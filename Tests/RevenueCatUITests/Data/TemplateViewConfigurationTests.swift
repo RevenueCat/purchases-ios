@@ -28,7 +28,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [],
-                activelySubscribedProductIdentifiers: [],
                 filter: [PackageType.monthly.identifier],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
@@ -43,7 +42,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [TestData.monthlyPackage],
-                activelySubscribedProductIdentifiers: [],
                 filter: [],
                 default: nil,
                 localization: TestData.paywallWithIntroOffer.localizedConfiguration,
@@ -58,7 +56,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [TestData.monthlyPackage],
-                activelySubscribedProductIdentifiers: [],
                 filter: [PackageType.monthly.identifier],
                 default: nil,
                 localization: nil,
@@ -72,7 +69,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateSinglePackage() throws {
         let result = try Config.create(
             with: [TestData.monthlyPackage],
-            activelySubscribedProductIdentifiers: [],
             filter: [PackageType.monthly.identifier],
             default: nil,
             localization: Self.localization,
@@ -84,31 +80,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case let .single(package):
             expect(package.content) === TestData.monthlyPackage
-            expect(package.currentlySubscribed) == false
-            expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
-            Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
-        case .multiple, .multiTier:
-            fail("Invalid result: \(result)")
-        }
-    }
-
-    func testCreateSingleSubscribedPackage() throws {
-        let result = try Config.create(
-            with: [TestData.monthlyPackage],
-            activelySubscribedProductIdentifiers: [TestData.monthlyPackage.storeProduct.productIdentifier,
-                                                  "Anotoher product"],
-            filter: [PackageType.monthly.identifier],
-            default: nil,
-            localization: Self.localization,
-            localizationByTier: [:],
-            tiers: [],
-            setting: .single
-        )
-
-        switch result {
-        case let .single(package):
-            expect(package.content) === TestData.monthlyPackage
-            expect(package.currentlySubscribed) == true
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
         case .multiple, .multiTier:
@@ -119,7 +90,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
     func testCreateOnlyLifetime() throws {
         let result = try Config.create(
             with: [TestData.lifetimePackage],
-            activelySubscribedProductIdentifiers: [],
             filter: [PackageType.lifetime.identifier],
             default: nil,
             localization: Self.localization,
@@ -131,7 +101,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         switch result {
         case let .single(package):
             expect(package.content) === TestData.lifetimePackage
-            expect(package.currentlySubscribed) == false
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.lifetimePackage)
         case .multiple, .multiTier:
@@ -146,10 +115,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                    TestData.weeklyPackage,
                    TestData.lifetimePackage,
                    Self.consumable],
-            activelySubscribedProductIdentifiers: [
-                TestData.monthlyPackage.storeProduct.productIdentifier,
-                TestData.lifetimePackage.storeProduct.productIdentifier
-            ],
             filter: [PackageType.annual.identifier,
                      PackageType.monthly.identifier,
                      PackageType.lifetime.identifier,
@@ -174,25 +139,21 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
             let annual = packages[0]
             expect(annual.content) === TestData.annualPackage
-            expect(annual.currentlySubscribed) == false
             expect(annual.discountRelativeToMostExpensivePerMonth)
                 .to(beCloseTo(0.36, within: 0.01))
             Self.verifyLocalizationWasProcessed(annual.localization, for: TestData.annualPackage)
 
             let monthly = packages[1]
             expect(monthly.content) === TestData.monthlyPackage
-            expect(monthly.currentlySubscribed) == true
             expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
 
             let lifetime = packages[2]
             expect(lifetime.content) === TestData.lifetimePackage
-            expect(lifetime.currentlySubscribed) == true
             Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
 
             let consumable = packages[3]
             expect(consumable.content) === Self.consumable
-            expect(consumable.currentlySubscribed) == false
             Self.verifyLocalizationWasProcessed(consumable.localization, for: Self.consumable)
         }
     }
@@ -201,7 +162,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [TestData.monthlyPackage],
-                activelySubscribedProductIdentifiers: [],
                 filter: [],
                 default: nil,
                 localization: nil,
@@ -222,7 +182,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                     TestData.weeklyPackage,
                     TestData.lifetimePackage
                 ],
-                activelySubscribedProductIdentifiers: [],
                 filter: [PackageType.annual.identifier],
                 default: nil,
                 localization: nil,
@@ -257,7 +216,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
         let result = try Config.create(
             with: [TestData.monthlyPackage],
-            activelySubscribedProductIdentifiers: [],
             filter: [],
             default: nil,
             localization: nil,
@@ -285,7 +243,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(tierData.first.content) === TestData.monthlyPackage
 
             let package = tierData.first
-            expect(package.currentlySubscribed) == false
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
 
@@ -304,7 +261,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
         expect {
             try Config.create(
                 with: [TestData.monthlyPackage],
-                activelySubscribedProductIdentifiers: [],
                 filter: [],
                 default: nil,
                 localization: nil,
@@ -346,10 +302,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                 TestData.weeklyPackage,
                 TestData.lifetimePackage
             ],
-            activelySubscribedProductIdentifiers: [
-                TestData.annualProduct.productIdentifier,
-                TestData.lifetimeProduct.productIdentifier
-            ],
             filter: [],
             default: nil,
             localization: nil,
@@ -375,14 +327,12 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
                 let monthly = firstTier.all[0]
                 expect(monthly.content) === TestData.monthlyPackage
-                expect(monthly.currentlySubscribed) == false
                 expect(monthly.discountRelativeToMostExpensivePerMonth).to(beNil())
                 expect(monthly.localization.tierName).to(beNil())
                 Self.verifyLocalizationWasProcessed(monthly.localization, for: TestData.monthlyPackage)
 
                 let annual = firstTier.all[1]
                 expect(annual.content) === TestData.annualPackage
-                expect(annual.currentlySubscribed) == true
                 expect(annual.discountRelativeToMostExpensivePerMonth)
                     .to(beCloseTo(0.36, within: 0.01))
                 expect(annual.localization.tierName).to(beNil())
@@ -394,14 +344,12 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
 
                 let weekly = secondTier.all[0]
                 expect(weekly.content) === TestData.weeklyPackage
-                expect(weekly.currentlySubscribed) == false
                 expect(weekly.discountRelativeToMostExpensivePerMonth).to(beNil())
                 expect(weekly.localization.tierName) == "Premium"
                 Self.verifyLocalizationWasProcessed(weekly.localization, for: TestData.weeklyPackage)
 
                 let lifetime = secondTier.all[1]
                 expect(lifetime.content) === TestData.lifetimePackage
-                expect(lifetime.currentlySubscribed) == true
                 expect(lifetime.discountRelativeToMostExpensivePerMonth).to(beNil())
                 expect(lifetime.localization.tierName) == "Premium"
                 Self.verifyLocalizationWasProcessed(lifetime.localization, for: TestData.lifetimePackage)
@@ -428,7 +376,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
                 TestData.monthlyPackage,
                 TestData.annualPackage
             ],
-            activelySubscribedProductIdentifiers: [],
             filter: [],
             default: nil,
             localization: nil,
@@ -452,7 +399,6 @@ class TemplateViewConfigurationCreationTests: BaseTemplateViewConfigurationTests
             expect(all[firstTier]?.first.content) == TestData.monthlyPackage
 
             let package = try XCTUnwrap(all[firstTier]?.first)
-            expect(package.currentlySubscribed) == false
             expect(package.discountRelativeToMostExpensivePerMonth).to(beNil())
             Self.verifyLocalizationWasProcessed(package.localization, for: TestData.monthlyPackage)
 
@@ -581,7 +527,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
 
         self.singlePackageConfiguration = try Config.create(
             with: [Self.package1],
-            activelySubscribedProductIdentifiers: [],
             filter: [Self.package1.packageType.identifier],
             default: nil,
             localization: Self.localization,
@@ -591,7 +536,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
         )
         self.multiPackageConfigurationSameText = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: Self.allPackages.map(\.packageType.identifier),
             default: nil,
             localization: .init(
@@ -610,7 +554,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
         )
         self.multiPackageConfigurationDifferentText = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: Self.allPackages.map(\.packageType.identifier),
             default: nil,
             localization: Self.localization,
@@ -620,7 +563,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
         )
         self.multiPackageConfigurationNoOfferDetails = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: Self.allPackages.map(\.packageType.identifier),
             default: nil,
             localization: .init(
@@ -638,7 +580,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
 
         self.multiTierConfigurationSameText = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: [],
             default: nil,
             localization: nil,
@@ -669,7 +610,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
         )
         self.multiTierConfigurationDifferentText = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: [],
             default: nil,
             localization: nil,
@@ -682,7 +622,6 @@ class TemplateViewConfigurationBaseExtensionTests: BaseTemplateViewConfiguration
         )
         self.multiTierConfigurationNoOfferDetails = try Config.create(
             with: Self.allPackages,
-            activelySubscribedProductIdentifiers: [],
             filter: [],
             default: nil,
             localization: nil,
@@ -1121,10 +1060,12 @@ private extension BaseTemplateViewConfigurationTests {
     private static let consumableProduct = TestStoreProduct(
         localizedTitle: "Coins",
         price: 199.99,
+        currencyCode: "USD",
         localizedPriceString: "$199.99",
         productIdentifier: "com.revenuecat.coins",
         productType: .consumable,
-        localizedDescription: "Coins"
+        localizedDescription: "Coins",
+        locale: .current
     )
 
     private static let offeringIdentifier = "offering"

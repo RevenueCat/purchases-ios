@@ -18,8 +18,16 @@
   "testTargets" : [
     {
       "skippedTests" : [
+        "OtherPaywallViewTests",
+        "PaywallViewDynamicTypeTests",
+        "PaywallViewLocalizationTests",
         "TakeScreenshotTests",
-        "TakeScreenshotTests\/testPaywallValidationScreenshots()"
+        "Template1ViewTests",
+        "Template2ViewTests",
+        "Template3ViewTests",
+        "Template4ViewTests",
+        "Template5ViewTests",
+        "Template7ViewTests"
       ],
       "target" : {
         "containerPath" : "container:",

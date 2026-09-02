@@ -12,6 +12,7 @@
 //  Created by Nacho Soto on 4/7/22.
 
 // swiftlint:disable multiline_parameters
+// swiftlint:disable file_length
 
 import Foundation
 
@@ -20,6 +21,7 @@ enum BackendError: Error, Equatable {
 
     case networkError(NetworkError)
     case missingAppUserID(Source)
+    case missingClientTransactionID(Source)
     case emptySubscriberAttributes(Source)
     case missingReceiptFile(URL?, Source)
     case missingTransactionProductIdentifier(Source)
@@ -27,6 +29,7 @@ enum BackendError: Error, Equatable {
     case invalidAppleSubscriptionKey(Source)
     case unexpectedBackendResponse(UnexpectedBackendResponseError, extraContext: String?, Source)
     case invalidWebRedemptionToken
+    case invalidAuthorizationToken(Source)
     case purchaseBelongsToOtherUser
     case expiredWebRedemptionToken(obfuscatedEmail: String)
     case unsupportedInUIPreviewMode(Source)
@@ -40,6 +43,12 @@ extension BackendError {
         file: String = #fileID, function: String = #function, line: UInt = #line
     ) -> Self {
         return .missingAppUserID(.init(file: file, function: function, line: line))
+    }
+
+    static func missingClientTransactionID(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .missingClientTransactionID(.init(file: file, function: function, line: line))
     }
 
     static func missingTransactionJWS(
@@ -89,6 +98,12 @@ extension BackendError {
         return .unsupportedInUIPreviewMode(.init(file: file, function: function, line: line))
     }
 
+    static func invalidAuthorizationToken(
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .invalidAuthorizationToken(.init(file: file, function: function, line: line))
+    }
+
 }
 
 extension BackendError: PurchasesErrorConvertible {
@@ -102,6 +117,12 @@ extension BackendError: PurchasesErrorConvertible {
             return ErrorUtils.missingAppUserIDError(fileName: source.file,
                                                     functionName: source.function,
                                                     line: source.line)
+
+        case let .missingClientTransactionID(source):
+            return ErrorUtils.configurationError(message: "Missing client transaction ID.",
+                                                 fileName: source.file,
+                                                 functionName: source.function,
+                                                 line: source.line)
 
         case let .missingTransactionJWS(source):
             return ErrorUtils.storeProblemError(fileName: source.file,
@@ -150,6 +171,10 @@ extension BackendError: PurchasesErrorConvertible {
             let code = BackendErrorCode.invalidWebRedemptionToken
             return ErrorUtils.backendError(withBackendCode: code,
                                            originalBackendErrorCode: code.rawValue)
+        case .invalidAuthorizationToken:
+            let code = BackendErrorCode.invalidAuthToken
+            return ErrorUtils.backendError(withBackendCode: code,
+                                           originalBackendErrorCode: code.rawValue)
         case .purchaseBelongsToOtherUser:
             let code = BackendErrorCode.purchaseBelongsToOtherUser
             return ErrorUtils.backendError(withBackendCode: code,
@@ -191,12 +216,18 @@ extension BackendError {
         return self.networkError?.isServerDown == true
     }
 
+    /// Whether this error is transient and worth retrying. See ``NetworkError/isTransient``.
+    var isTransient: Bool {
+        return self.networkError?.isTransient ?? false
+    }
+
     private var networkError: NetworkError? {
         switch self {
         case let .networkError(networkError):
             return networkError
 
         case .missingAppUserID,
+             .missingClientTransactionID,
              .emptySubscriberAttributes,
              .missingReceiptFile,
              .invalidAppleSubscriptionKey,
@@ -204,6 +235,7 @@ extension BackendError {
              .missingCachedCustomerInfo,
              .unexpectedBackendResponse,
              .invalidWebRedemptionToken,
+             .invalidAuthorizationToken,
              .purchaseBelongsToOtherUser,
              .expiredWebRedemptionToken,
              .unsupportedInUIPreviewMode,
@@ -222,12 +254,14 @@ extension BackendError {
             return error
 
         case .missingAppUserID,
+                .missingClientTransactionID,
                 .emptySubscriberAttributes,
                 .missingReceiptFile,
                 .invalidAppleSubscriptionKey,
                 .missingTransactionProductIdentifier,
                 .missingCachedCustomerInfo,
                 .invalidWebRedemptionToken,
+                .invalidAuthorizationToken,
                 .purchaseBelongsToOtherUser,
                 .expiredWebRedemptionToken,
                 .unsupportedInUIPreviewMode,
@@ -265,6 +299,17 @@ extension BackendError {
 
         /// A call that is supposed to retrieve a CustomerInfo failed because the json object couldn't be parsed.
         case customerInfoResponseParsing(error: NSError, json: String)
+
+        /// A workflow lookup found no matching item in the synced remote config.
+        case workflowNotFound(workflowId: String)
+
+        /// A workflow lookup found a matching item, but its body couldn't be decoded.
+        case workflowDecodingFailed(workflowId: String, error: NSError)
+
+        /// The offering has no workflow attached (no offeringId → workflowId mapping and the offering
+        /// id is not itself a workflow key). Distinct from ``workflowNotFound`` (a mapped workflow whose
+        /// item or blob failed to resolve) so callers can render the default paywall for this case only.
+        case offeringHasNoWorkflow(offeringId: String)
     }
 
 }
@@ -287,6 +332,12 @@ extension BackendError.UnexpectedBackendResponseError: DescribableError {
             return "Unable to instantiate a CustomerInfoResponse, CustomerInfo in response was nil."
         case .customerInfoResponseParsing:
             return "Unable to instantiate a CustomerInfoResponse due to malformed json."
+        case let .workflowNotFound(workflowId):
+            return "Workflow '\(workflowId)' not found in remote config."
+        case let .workflowDecodingFailed(workflowId, error):
+            return "Workflow '\(workflowId)' could not be decoded from remote config: \(error)."
+        case let .offeringHasNoWorkflow(offeringId):
+            return "Offering '\(offeringId)' has no workflow attached in remote config."
         }
     }
 
@@ -300,11 +351,50 @@ extension BackendError {
 
 extension BackendError {
 
-    /// Whether to fall back to cached offerings in case of this error when fetching offerings.
-    var shouldFallBackToCachedOfferings: Bool {
+    static func workflowNotFound(
+        workflowId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowNotFound(workflowId: workflowId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func workflowDecodingFailed(
+        workflowId: String,
+        error: NSError,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .workflowDecodingFailed(workflowId: workflowId, error: error),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+    static func offeringHasNoWorkflow(
+        offeringId: String,
+        file: String = #fileID, function: String = #function, line: UInt = #line
+    ) -> Self {
+        return .unexpectedBackendResponse(
+            .offeringHasNoWorkflow(offeringId: offeringId),
+            extraContext: nil,
+            .init(file: file, function: function, line: line)
+        )
+    }
+
+}
+
+extension BackendError {
+
+    /// Whether to fall back to the last cached response for this error. See
+    /// ``NetworkError/shouldFallBackToCache``.
+    var shouldFallBackToCache: Bool {
         switch self {
         case .networkError(let networkError):
-            return networkError.shouldFallBackToCachedOfferings
+            return networkError.shouldFallBackToCache
         default:
             return true
         }

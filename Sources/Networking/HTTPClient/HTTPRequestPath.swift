@@ -11,6 +11,8 @@
 //
 //  Created by Nacho Soto on 8/8/23.
 
+// swiftlint:disable file_length
+
 import Foundation
 
 protocol HTTPRequestPath {
@@ -41,8 +43,59 @@ protocol HTTPRequestPath {
     /// The full relative path for this endpoint.
     var relativePath: String { get }
 
+    /// The full relative path for this endpoint when using IAM tokens.
+    var relativeIAMPath: String { get }
+
     /// The fallback relative path for this endpoint, if any.
     var fallbackRelativePath: String? { get }
+
+    /// Whether this path resolves its base host from the API source provider (the main-API host
+    /// list with failover) rather than the static `serverHostURL`.
+    var usesAPISources: Bool { get }
+
+    /// Whether this path's `serverHostURL` is a fallback host rather than the main API host.
+    ///
+    /// Requests to such a path are fallback attempts from the very first try, even though
+    /// `HTTPClient`'s own fallback walk never started, so they must not be treated as main-source
+    /// requests when picking a timeout or updating the per-host fail-fast memory.
+    var isFallbackHostPath: Bool { get }
+
+    /// Additional headers specific to this endpoint.
+    var additionalHeaders: HTTPRequest.Headers { get }
+
+    /// Provides endpoint-specific inputs for response signature verification.
+    var responseSignatureContextProvider: ResponseSignatureContextProvider { get }
+
+    /// Whether this path corresponds to an IAM request
+    var isIAMPath: Bool { get }
+}
+
+/// Provides endpoint-specific inputs for backend response signature verification.
+///
+/// Most endpoints use the raw response body and request body. Specialized endpoints can override
+/// either input.
+protocol ResponseSignatureContextProvider {
+
+    /// Returns the response bytes that should be verified against the backend signature.
+    ///
+    /// This may throw when deriving the signed payload requires validating response structure first.
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data?
+
+    /// Returns the request body component to include in signature parameters, if any.
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody?
+
+}
+
+struct DefaultResponseSignatureContextProvider: ResponseSignatureContextProvider {
+
+    func responsePayloadForSignature(from body: Data?, statusCode: HTTPStatusCode) throws -> Data? {
+        return body
+    }
+
+    func requestBodyForSignature(for request: HTTPRequest) -> HTTPRequestBody? {
+        return request.requestBody
+    }
+
 }
 
 extension HTTPRequestPath {
@@ -59,24 +112,53 @@ extension HTTPRequestPath {
         return nil
     }
 
-    var url: URL? { return self.url(proxyURL: nil) }
+    var relativeIAMPath: String {
+        return self.relativePath
+    }
 
-    func url(proxyURL: URL? = nil, fallbackUrlIndex: Int? = nil) -> URL? {
+    var usesAPISources: Bool {
+        return false
+    }
+
+    var isFallbackHostPath: Bool {
+        return false
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        return [:]
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        return DefaultResponseSignatureContextProvider()
+    }
+
+    var isIAMPath: Bool {
+        return false
+    }
+
+    func url(proxyURL: URL? = nil,
+             apiSourceURL: URL? = nil,
+             fallbackUrlIndex: Int? = nil,
+             preferIAMPath: Bool) -> URL? {
         let baseURL: URL
         if let proxyURL {
-            // When a Proxy URL is set, we don't support fallback URLs
-            guard fallbackUrlIndex == nil else {
+            // When a Proxy URL is set, we don't support API sources or fallback URLs
+            guard fallbackUrlIndex == nil, apiSourceURL == nil else {
                 // This is to safe guard against a potential infinite loop if the caller mistakenly
-                // passes both a proxyURL and a fallbackUrlIndex.
+                // passes a proxyURL together with an apiSourceURL or a fallbackUrlIndex.
                 return nil
             }
             baseURL = proxyURL
         } else if let fallbackUrlIndex {
             return self.fallbackUrls[safe: fallbackUrlIndex]
+        } else if let apiSourceURL {
+            baseURL = apiSourceURL
         } else {
             baseURL = Self.serverHostURL
         }
-        return URL(string: self.relativePath, relativeTo: baseURL)
+
+        let path = preferIAMPath ? self.relativeIAMPath : self.relativePath
+        return URL(string: path, relativeTo: baseURL)
     }
 }
 
@@ -101,9 +183,21 @@ extension HTTPRequest {
         case getProductEntitlementMapping
         case getCustomerCenterConfig(appUserID: String)
         case getVirtualCurrencies(appUserID: String)
+        case spendVirtualCurrencies
         case postRedeemWebPurchase
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
+        case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
+        case remoteConfig(domain: String)
+
+        case tokenLogin
+        case tokenRefresh
+        case tokenLogOut
+    }
+
+    enum FallbackPath: Hashable {
+
+        case remoteConfig(domain: String)
 
     }
 
@@ -138,6 +232,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
     static var serverHostURL: URL {
         SystemInfo.apiBaseURL
+    }
+
+    var usesAPISources: Bool {
+        return true
     }
 
     private static let fallbackServerHostURLs = [
@@ -187,9 +285,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus,
+                .remoteConfig,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
 
         case .health,
@@ -213,11 +317,17 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .postCreateTicket,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
-        case .health,
+        case .remoteConfig,
+             .health,
              .appHealthReportAvailability:
             return false
         }
@@ -232,9 +342,12 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .getOfferings,
                 .getProductEntitlementMapping,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .appHealthReport,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus:
             return true
         case .getIntroEligibility,
                 .postSubscriberAttributes,
@@ -243,7 +356,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
                 .getCustomerCenterConfig,
-                .postCreateTicket:
+                .postCreateTicket,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return false
         }
     }
@@ -254,9 +370,15 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .logIn,
                 .postReceiptData,
                 .getVirtualCurrencies,
+                .spendVirtualCurrencies,
                 .health,
                 .appHealthReportAvailability,
-                .isPurchaseAllowedByRestoreBehavior:
+                .isPurchaseAllowedByRestoreBehavior,
+                .remoteConfig,
+                .rewardVerificationStatus,
+                .tokenLogin,
+                .tokenRefresh,
+                .tokenLogOut:
             return true
         case .getOfferings,
                 .getIntroEligibility,
@@ -273,8 +395,25 @@ extension HTTPRequest.Path: HTTPRequestPath {
         }
     }
 
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return RemoteConfigSignatureContextProvider()
+        default:
+            return DefaultResponseSignatureContextProvider()
+        }
+    }
+
     var relativePath: String {
-        return "/v1/\(self.pathComponent)"
+        let component = self.pathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
+    }
+
+    var relativeIAMPath: String {
+        let component = self.iamPathComponent
+        if component.hasPrefix("/") { return component }
+        return "/v1/\(component)"
     }
 
     var pathComponent: String {
@@ -327,10 +466,88 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
+        case .spendVirtualCurrencies:
+            assertionFailure("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            Logger.error("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
+            return "customer/virtual_currencies/spend"
+
         case .postCreateTicket:
             return "customercenter/support/create-ticket"
         case let .isPurchaseAllowedByRestoreBehavior(appUserID):
             return "subscribers/\(Self.escape(appUserID))/restore/eligibility"
+
+        case let .rewardVerificationStatus(appUserID, clientTransactionID):
+            return "subscribers/\(Self.escape(appUserID))/ads/reward_verifications/\(Self.escape(clientTransactionID))"
+
+        case let .remoteConfig(domain):
+            return "config/\(Self.escape(domain))"
+
+        case .tokenLogin:
+            return "/auth/login"
+
+        case .tokenRefresh:
+            return "/auth/token"
+
+        case .tokenLogOut:
+            return "/auth/revoke"
+        }
+    }
+
+    var iamPathComponent: String {
+        // NOTE: cases below that "return self.pathComponent" are indicating
+        // that the corresponding server paths have not yet been migrated to
+        // support access token authorization
+        switch self {
+        case .getCustomerInfo:
+            return "customer"
+        case .getOfferings:
+            return "customer/offerings"
+        case .getIntroEligibility:
+            return "customer/intro_eligibility"
+        case .logIn:
+            assertionFailure("The .login endpoint is not allowed when IAM is enabled")
+            Logger.error("The .login endpoint is not allowed when IAM is enabled")
+            return self.pathComponent
+        case .postAttributionData:
+            return "customer/attribution"
+        case .postOfferForSigning:
+            return "offers"
+        case .postReceiptData:
+            return "receipts"
+        case .postSubscriberAttributes:
+            return "customer/attributes"
+        case .postAdServicesToken:
+            return "customer/adservices_attribution"
+        case .health:
+            return self.pathComponent
+        case .appHealthReport:
+            return "customer/health_report"
+        case .appHealthReportAvailability:
+            return self.pathComponent
+        case .getProductEntitlementMapping:
+            return "product_entitlement_mapping"
+        case .getCustomerCenterConfig:
+            return "customer/customercenter"
+        case .getVirtualCurrencies:
+            return "customer/virtual_currencies"
+        case .spendVirtualCurrencies:
+            return "customer/virtual_currencies/spend"
+        case .postRedeemWebPurchase:
+            return self.pathComponent
+        case .postCreateTicket:
+            return self.pathComponent
+        case .isPurchaseAllowedByRestoreBehavior:
+            return "customer/restore/eligibility"
+        case .rewardVerificationStatus:
+            return self.pathComponent
+        case .remoteConfig:
+            return self.pathComponent
+        case .tokenLogin:
+            return "/auth/login"
+        case .tokenRefresh:
+            return "/auth/token"
+        case .tokenLogOut:
+            return "/auth/revoke"
         }
     }
 
@@ -381,6 +598,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .getVirtualCurrencies:
             return "get_virtual_currencies"
 
+        case .spendVirtualCurrencies:
+            return "spend_virtual_currencies"
+
         case .appHealthReportAvailability:
             return "get_app_health_report_availability"
 
@@ -388,10 +608,116 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "post_create_ticket"
         case .isPurchaseAllowedByRestoreBehavior:
             return "post_restore_eligibility"
+
+        case .rewardVerificationStatus:
+            return "get_reward_verification_status"
+
+        case .remoteConfig:
+            return "remote_config"
+
+        case .tokenLogin:
+            return "token_login"
+
+        case .tokenRefresh:
+            return "token_refresh"
+
+        case .tokenLogOut:
+            return "token_logout"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [
+                HTTPClient.RequestHeader.accept.rawValue: HTTPClient.rcContainerFormatAcceptHeaderValue,
+                HTTPClient.RequestHeader.acceptRCElementEncoding.rawValue:
+                    HTTPClient.rcContainerFormatElementEncodingHeaderValue
+            ]
+        default:
+            return [:]
+        }
+    }
+
+    var isIAMPath: Bool {
+        switch self {
+        case .tokenLogin, .tokenRefresh, .tokenLogOut:
+            return true
+        default: return false
         }
     }
 
     private static func escape(_ appUserID: String) -> String {
         return appUserID.trimmedAndEscaped
     }
+}
+
+extension HTTPRequest.FallbackPath: HTTPRequestPath {
+
+    // swiftlint:disable:next force_unwrapping
+    static let serverHostURL = URL(string: "https://api-production.8-lives-cat.io")!
+
+    var isFallbackHostPath: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var authenticated: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var shouldSendEtag: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var supportsSignatureVerification: Bool {
+        switch self {
+        case .remoteConfig:
+            return true
+        }
+    }
+
+    var needsNonceForSigning: Bool {
+        switch self {
+        case .remoteConfig:
+            return false
+        }
+    }
+
+    var responseSignatureContextProvider: ResponseSignatureContextProvider {
+        switch self {
+        case .remoteConfig:
+            return FallbackSignatureContextProvider()
+        }
+    }
+
+    var relativePath: String {
+        switch self {
+        case let .remoteConfig(domain):
+            return "/v1/config/\(domain.trimmedAndEscaped)"
+        }
+    }
+
+    var name: String {
+        switch self {
+        case .remoteConfig:
+            return "remote_config_fallback"
+        }
+    }
+
+    var additionalHeaders: HTTPRequest.Headers {
+        switch self {
+        case .remoteConfig:
+            return [:]
+        }
+    }
+
 }

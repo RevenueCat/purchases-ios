@@ -39,6 +39,8 @@ enum ConfigureStrings {
 
     case purchase_instance_already_set
 
+    case instance_already_exists_with_same_config
+
     case initial_app_user_id(isSet: Bool)
 
     case no_singleton_instance
@@ -49,7 +51,7 @@ enum ConfigureStrings {
 
     case system_version(String)
 
-    case is_simulator(Bool)
+    case is_simulator(Bool, apiKeyValidationResult: Configuration.APIKeyValidationResult)
 
     case simulatedStoreAPIKey
 
@@ -118,6 +120,8 @@ extension ConfigureStrings: LogMessage {
             return "Delegate set"
         case .purchase_instance_already_set:
             return "Purchases instance already set. Did you mean to configure two Purchases objects?"
+        case .instance_already_exists_with_same_config:
+            return "Purchases instance already set with the same configuration. Ignoring duplicate call."
         case .initial_app_user_id(let isSet):
             return isSet
                 ? "Initial App User ID set"
@@ -131,12 +135,19 @@ extension ConfigureStrings: LogMessage {
             return "Bundle ID - \(bundleID)"
         case let .system_version(osVersion):
             return "System Version - \(osVersion)"
-        case let .is_simulator(isSimulator):
-            return isSimulator
-                ? "Using a simulator. Ensure you have a StoreKit Config " +
-                "file set up before trying to fetch products or make purchases.\n" +
-                "See https://errors.rev.cat/testing-in-simulator for more details."
-                : "Not using a simulator."
+        case let .is_simulator(isSimulator, apiKeyValidationResult):
+            guard isSimulator else {
+                return "Not using a simulator."
+            }
+
+            if case .simulatedStore = apiKeyValidationResult {
+                return "Using a simulator with a Test Store API key. Test Store products are fetched from " +
+                "RevenueCat's backend, so purchases are simulated and don't rely on StoreKit."
+            }
+
+            return "Using a simulator. Ensure you have a StoreKit Config " +
+            "file set up before trying to fetch products or make purchases.\n" +
+            "See https://errors.rev.cat/testing-in-simulator for more details."
         case .simulatedStoreAPIKey:
             return "Using a Test Store API key.\n" +
             "The Test Store is for development only. Never use a Test Store API key in production. " +

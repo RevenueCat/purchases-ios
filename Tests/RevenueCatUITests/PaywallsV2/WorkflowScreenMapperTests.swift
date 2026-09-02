@@ -1,0 +1,264 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowScreenMapperTests.swift
+
+import Nimble
+@_spi(Internal) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCatUI
+import XCTest
+
+#if !os(tvOS) // For Paywalls V2
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class WorkflowScreenMapperTests: TestCase {
+
+    func testMapsPaywallComponentsDataFieldsFromScreen() throws {
+        let screen = try Self.makeScreen(
+            offeringIdentifier: "offering_a",
+            templateName: "componentsTest",
+            assetBaseURL: "https://assets.pawwalls.com",
+            revision: 7,
+            defaultLocale: "en_US"
+        )
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.templateName) == "componentsTest"
+        expect(result.data.assetBaseURL) == URL(string: "https://assets.pawwalls.com")
+        expect(result.data.revision) == 7
+        expect(result.data.defaultLocale) == "en_US"
+        expect(result.data.automaticallyScaleFontSize) == true
+    }
+
+    func testMapsAutomaticallyScaleFontSizeFromScreen() throws {
+        let screen = try Self.makeScreen(automaticallyScaleFontSize: false)
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.automaticallyScaleFontSize) == false
+    }
+
+    func testPassesThroughUiConfig() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.uiConfig) == uiConfig
+    }
+
+    func testPassesThroughComponentsConfig() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.componentsConfig) == screen.componentsConfig
+    }
+
+    func testPassesThroughComponentsLocalizations() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.componentsLocalizations) == screen.componentsLocalizations
+    }
+
+    func testPassesThroughExitOffers() throws {
+        let screen = try Self.makeScreen(exitOfferOfferingId: "exit_offering_a")
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.exitOffers?.dismiss?.offeringId) == "exit_offering_a"
+    }
+
+    func testExitOffersIsNilWhenAbsent() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.exitOffers).to(beNil())
+    }
+
+    func testCarriesThePaywallIdItWasGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(
+            screen: screen,
+            uiConfig: uiConfig,
+            paywallId: "paywall_123"
+        )
+
+        expect(result.data.id) == "paywall_123"
+    }
+
+    func testIdIsNilWhenNotGiven() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.id).to(beNil())
+    }
+
+    func testPassesThroughStateDeclarations() throws {
+        let screen = try Self.makeScreen(
+            stateDeclarationsJSON: """
+            { "selected_tab": { "type": "string", "default": "monthly" } }
+            """
+        )
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        let declaration = try XCTUnwrap(result.data.stateDeclarations?["selected_tab"])
+        expect(declaration.type) == PaywallComponent.StateDeclaration.ValueType.string
+        expect(declaration.defaultValue) == .string("monthly")
+    }
+
+    func testPassesThroughZeroDecimalPlaceCountries() throws {
+        let screen = try Self.makeScreen(
+            zeroDecimalPlaceCountriesJSON: """
+            { "apple": ["TWN", "MEX"], "google": ["TW", "MX"] }
+            """
+        )
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.zeroDecimalPlaceCountries) == ["TWN", "MEX"]
+    }
+
+    func testZeroDecimalPlaceCountriesIsEmptyWhenAbsent() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.zeroDecimalPlaceCountries).to(beEmpty())
+    }
+
+    func testStateDeclarationsAreNilWhenScreenDeclaresNone() throws {
+        let screen = try Self.makeScreen()
+        let uiConfig = try Self.makeUIConfig()
+
+        let result = WorkflowScreenMapper.toPaywallComponents(screen: screen, uiConfig: uiConfig)
+
+        expect(result.data.stateDeclarations).to(beNil())
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension WorkflowScreenMapperTests {
+
+    static func makeScreen(
+        offeringIdentifier: String = "offering_a",
+        templateName: String = "componentsTest",
+        assetBaseURL: String = "https://assets.pawwalls.com",
+        revision: Int = 3,
+        defaultLocale: String = "en_US",
+        automaticallyScaleFontSize: Bool? = nil,
+        exitOfferOfferingId: String? = nil,
+        stateDeclarationsJSON: String? = nil,
+        zeroDecimalPlaceCountriesJSON: String? = nil
+    ) throws -> RevenueCat.WorkflowScreen {
+        var automaticallyScaleFontSizeFragment = ""
+        if let automaticallyScaleFontSize {
+            automaticallyScaleFontSizeFragment = """
+            , "automatically_scale_font_size": \(automaticallyScaleFontSize)
+            """
+        }
+        var stateDeclarationsFragment = ""
+        if let stateDeclarationsJSON {
+            stateDeclarationsFragment = """
+            , "state_declarations": \(stateDeclarationsJSON)
+            """
+        }
+        var zeroDecimalFragment = ""
+        if let zeroDecimalPlaceCountriesJSON {
+            zeroDecimalFragment = """
+            , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
+            """
+        }
+        var exitOffersJSON = ""
+        if let exitOfferOfferingId {
+            exitOffersJSON = """
+            , "exit_offers": { "dismiss": { "offering_id": "\(exitOfferOfferingId)" } }
+            """
+        }
+        let json = """
+        {
+            "offering_identifier": "\(offeringIdentifier)",
+            "template_name": "\(templateName)",
+            "asset_base_url": "\(assetBaseURL)",
+            "revision": \(revision),
+            "default_locale": "\(defaultLocale)",
+            "components_localizations": {},
+            "components_config": {
+                "base": {
+                    "stack": {
+                        "type": "stack",
+                        "components": [],
+                        "dimension": {
+                            "type": "vertical",
+                            "alignment": "center",
+                            "distribution": "center"
+                        },
+                        "size": {
+                            "width": { "type": "fill" },
+                            "height": { "type": "fill" }
+                        },
+                        "margin": {},
+                        "padding": {},
+                        "spacing": 0
+                    },
+                    "background": {
+                        "type": "color",
+                        "value": {
+                            "light": { "type": "hex", "value": "#220000ff" }
+                        }
+                    }
+                }
+            }\(automaticallyScaleFontSizeFragment)\(exitOffersJSON)\(stateDeclarationsFragment)\(zeroDecimalFragment)
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(RevenueCat.WorkflowScreen.self, from: data)
+    }
+
+    static func makeUIConfig() throws -> UIConfig {
+        let json = """
+        {
+            "app": { "colors": {}, "fonts": {} },
+            "localizations": {},
+            "variable_config": {
+                "variable_compatibility_map": {},
+                "function_compatibility_map": {}
+            }
+        }
+        """
+        let data = try XCTUnwrap(json.data(using: .utf8))
+        let decoder = JSONDecoder()
+        decoder.keyDecodingStrategy = .convertFromSnakeCase
+        return try decoder.decode(UIConfig.self, from: data)
+    }
+
+}
+
+#endif

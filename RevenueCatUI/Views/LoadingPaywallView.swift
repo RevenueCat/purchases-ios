@@ -34,11 +34,10 @@ struct LoadingPaywallView: View {
                 identifier: Self.offeringIdentifier,
                 serverDescription: "",
                 metadata: [:],
-                paywall: Self.paywall,
+                paywall: Self.defaultPaywall,
                 availablePackages: Self.packages,
                 webCheckoutUrl: nil
             ),
-            activelySubscribedProductIdentifiers: [],
             paywall: Self.defaultPaywall,
             template: Self.template,
             mode: self.mode,
@@ -52,26 +51,10 @@ struct LoadingPaywallView: View {
         .allowsHitTesting(false)
         .redacted(reason: .placeholder)
         .shimmering(enable: self.mode.shouldDisplayBackground && self.shimmer)
-        .background {
-            TemplateBackgroundImageView(
-                url: Self.defaultPaywall.backgroundImageURL,
-                lowResUrl: Self.defaultPaywall.backgroundLowResImageURL,
-                blurred: true,
-                ignoreSafeArea: self.mode.shouldDisplayBackground
-            )
-        }
     }
 
     private static let template: PaywallTemplate = PaywallData.defaultTemplate
     private static let defaultPaywall: PaywallData = .createDefault(with: Self.packages, locale: .current)
-
-    private static let paywall: PaywallData = {
-        var paywall: PaywallData = Self.defaultPaywall
-        // Hide background so it doesn't get shimmer
-        paywall.config.images.background = nil
-
-        return paywall
-    }()
 
     private static let packages: [Package] = [
         Self.monthlyPackage,
@@ -91,7 +74,8 @@ private extension LoadingPaywallView {
             uniqueKeysWithValues: packages.map { ($0, .unknown) }
         )
     })
-    static let purchaseHandler: PurchaseHandler = .init(purchases: LoadingPaywallPurchases())
+    static let purchases = LoadingPaywallPurchases()
+    static let purchaseHandler: PurchaseHandler = .init(purchases: purchases, eventTracker: .init(purchases: purchases))
 
     static let offeringIdentifier = "offering"
     static let weeklyPackage = Package(
@@ -160,6 +144,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var preferredLocaleOverride: String? { nil }
 
+    var isUIPreviewMode: Bool { false }
+
+    var remoteConfigEnabled: Bool { false }
+
     var purchasesAreCompletedBy: PurchasesAreCompletedBy {
         get { return .myApp }
         set { _ = newValue }
@@ -168,6 +156,25 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     var subscriptionHistoryTracker: RevenueCat.SubscriptionHistoryTracker {
         SubscriptionHistoryTracker()
     }
+
+    func offerings() async throws -> Offerings { throw ErrorCode.configurationError }
+
+    var cachedOfferings: Offerings? { nil }
+
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
+
+#if !os(tvOS)
+    func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
+        throw ErrorCode.configurationError
+    }
+
+    func cachedWorkflow(forOfferingIdentifier offeringID: String) -> WorkflowDataResult? {
+        return nil
+    }
+#endif
 
     func customerInfo() async throws -> RevenueCat.CustomerInfo {
         fatalError("Should not be able to purchase")
@@ -186,6 +193,10 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
     }
 
     func track(paywallEvent: PaywallEvent) async {
+        // Ignoring events from loading paywall view
+    }
+
+    func track(workflowEvent: WorkflowEvent) async {
         // Ignoring events from loading paywall view
     }
 

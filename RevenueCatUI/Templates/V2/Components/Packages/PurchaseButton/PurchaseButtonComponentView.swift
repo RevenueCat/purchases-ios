@@ -35,6 +35,9 @@ struct PurchaseButtonComponentView: View {
     @EnvironmentObject
     private var purchaseHandler: PurchaseHandler
 
+    @Environment(\.componentInteractionLogger)
+    private var componentInteractionLogger
+
     @State private var inAppBrowserURL: URL?
 
     private let viewModel: PurchaseButtonComponentViewModel
@@ -77,9 +80,9 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-        #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
+        #if canImport(SafariServices) && canImport(UIKit)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            WebCheckoutView(url: self.inAppBrowserURL!)
+            SafariView(url: self.inAppBrowserURL!)
         }
         #endif
     }
@@ -110,6 +113,8 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        self.logPurchaseButtonInteractionForInApp(selectedPackage: selectedPackage)
+
         // Check if there's a purchase interceptor
         if let interceptor = self.purchaseInitiatedAction {
             let result = await self.purchaseHandler.withPendingPurchaseContinuation {
@@ -122,7 +127,7 @@ struct PurchaseButtonComponentView: View {
             guard result else { return }
         }
 
-        let promoOffer = self.paywallPromoOfferCache.get(for: selectedPackage)
+        let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
@@ -130,10 +135,16 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
-        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(packageContext: packageContext) else {
+        guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
+            packageContext: self.packageContext,
+            appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
+            isSandbox: Purchases.isConfigured ? Purchases.shared.isSandbox : false
+        ) else {
             Logger.error(Strings.no_web_checkout_url_found)
             return
         }
+
+        self.logPurchaseButtonInteractionForWeb(launchWebCheckout: launchWebCheckout)
 
         self.logIfInPreview("Web Product: \(launchWebCheckout)")
 
@@ -142,6 +153,35 @@ struct PurchaseButtonComponentView: View {
         }
 
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
+    }
+
+    private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
+        let componentValue: String
+        if let method = self.viewModel.method {
+            componentValue = method.description
+        } else {
+            componentValue = PaywallComponent.PurchaseButtonComponent.Method.inAppCheckout.description
+        }
+
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: componentValue,
+            componentURL: nil,
+            currentPackageIdentifier: selectedPackage.identifier,
+            currentProductIdentifier: selectedPackage.storeProduct.productIdentifier
+        ))
+    }
+
+    private func logPurchaseButtonInteractionForWeb(
+        launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout
+    ) {
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: self.viewModel.method?.description ?? "",
+            componentURL: launchWebCheckout.url,
+            currentPackageIdentifier: self.packageContext.package?.identifier,
+            currentProductIdentifier: self.packageContext.package?.storeProduct.productIdentifier
+        ))
     }
 
     private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
@@ -154,6 +194,8 @@ struct PurchaseButtonComponentView: View {
                            method: method,
                            openURL: self.openURL,
                            inAppBrowserURL: self.$inAppBrowserURL)
+
+        self.purchaseHandler.signalWebCheckoutOpened()
 
         if launchWebCheckout.autoDismiss {
             self.onDismiss()
@@ -216,7 +258,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                         ))
                     ]),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -265,7 +308,8 @@ struct PurchaseButtonComponentView_Previews: PreviewProvider {
                                                 bottomTrailing: 8))
                     ),
                     action: .inAppCheckout,
-                    method: .inAppCheckout
+                    method: .inAppCheckout,
+                    name: nil
                 ),
                 localizationProvider: .init(
                     locale: Locale.current,
@@ -304,7 +348,6 @@ fileprivate extension PurchaseButtonComponentViewModel {
         let stackViewModel = try factory.toStackViewModel(
             component: component.stack,
             packageValidator: factory.packageValidator,
-            firstItemIgnoresSafeAreaInfo: nil,
             purchaseButtonCollector: nil,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

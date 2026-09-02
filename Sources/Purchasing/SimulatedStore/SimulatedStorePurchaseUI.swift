@@ -114,30 +114,6 @@ struct DefaultSimulatedStorePurchaseUI: SimulatedStorePurchaseUI {
 
 }
 
-#if os(iOS) || os(tvOS) || VISION_OS || targetEnvironment(macCatalyst)
-
-// MARK: - UIViewController Extensions
-
-private extension UIViewController {
-
-    func topMostViewController() -> UIViewController {
-        if let presentedViewController = self.presentedViewController {
-            return presentedViewController.topMostViewController()
-        }
-
-        if let navigationController = self as? UINavigationController {
-            return navigationController.visibleViewController?.topMostViewController() ?? navigationController
-        }
-
-        if let tabBarController = self as? UITabBarController {
-            return tabBarController.selectedViewController?.topMostViewController() ?? tabBarController
-        }
-
-        return self
-    }
-}
-#endif
-
 // MARK: - Purchase Alert Details
 
 private extension DefaultSimulatedStorePurchaseUI {
@@ -175,8 +151,11 @@ private extension SimulatedStoreProduct {
             message += subscriptionPeriod.debugDescription + "\n"
         }
 
-        if !self.discounts.isEmpty {
-            message += "Offers:\n" + self.discounts.map { $0.testPurchaseDescription }.joined(separator: "\n")
+        // The introductory offer (free trial / intro price) lives in `introductoryDiscount`, while
+        // `discounts` holds promotional offers. List both so the test purchase alert reflects the offer.
+        let offers = [self.introductoryDiscount].compactMap { $0 } + self.discounts
+        if !offers.isEmpty {
+            message += "Offers:\n" + offers.map { $0.testPurchaseDescription }.joined(separator: "\n")
         }
 
         return message
@@ -187,8 +166,14 @@ private extension SimulatedStoreProduct {
 private extension StoreProductDiscount {
 
     var testPurchaseDescription: String {
-        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for " +
-        "\(self.numberOfPeriods * self.subscriptionPeriod.value) \(self.subscriptionPeriod.unit.debugDescription)(s)"
+        let duration = "\(self.numberOfPeriods * self.subscriptionPeriod.value) " +
+        "\(self.subscriptionPeriod.unit.debugDescription)(s)"
+
+        if self.paymentMode == .freeTrial {
+            return "Free trial: \(duration)"
+        }
+
+        return "\(self.type.testPurchaseTitle): \(self.localizedPriceString) for \(duration)"
     }
 }
 
@@ -352,26 +337,11 @@ fileprivate extension DefaultSimulatedStorePurchaseUI {
             return nil
         }
 
-        let window: UIWindow?
-
-        // Try to get the window from the scene first
-        if #available(macCatalyst 13.1, *),
-           let windowScene = application.currentWindowScene {
-            if #available(iOS 15.0, macCatalyst 15.0, tvOS 15.0, *) {
-                window = windowScene.keyWindow
-            } else {
-                window = windowScene.windows.first(where: { $0.isKeyWindow })
-            }
-        } else {
-            if #available(iOS 15.0, macCatalyst 15.0, *) {
-                window = nil
-            } else {
-                // Fallback to legacy approach on OSs where UIApplication's `windows` property is not deprecated
-                window = application.windows.first(where: { $0.isKeyWindow })
-            }
+        if #available(macCatalyst 13.1, *) {
+            return application.currentPresentationViewController
         }
 
-        return window?.rootViewController?.topMostViewController()
+        return nil
     }
 
 }

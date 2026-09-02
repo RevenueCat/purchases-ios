@@ -6,6 +6,7 @@
 //  Copyright © 2021 Purchases. All rights reserved.
 //
 
+import Foundation
 import Nimble
 import OHHTTPStubs
 import OHHTTPStubsSwift
@@ -16,12 +17,15 @@ import StoreKitTest
 import UniformTypeIdentifiers
 import XCTest
 
+#if canImport(UIKit) && !os(watchOS)
+import UIKit
+#endif
+
 // swiftlint:disable file_length type_body_length
 
 class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { return .storeKit2 }
-
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
     func testRecordingPurchaseThrowsIfPurchasesAreNotCompletedByMyApp() async throws {
         let manager = ObserverModeManager()
@@ -152,6 +156,8 @@ class StoreKit2IntegrationTests: StoreKit1IntegrationTests {
 class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
     override class var storeKitVersion: StoreKitVersion { .storeKit1 }
+
+    private static let introEligibilityRequestStartedLogRegex = #"API request started: [^\n]*intro_eligibility"#
 
     override func tearDown() async throws {
         HTTPStubs.removeAllStubs()
@@ -602,6 +608,7 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
     // MARK: - Trial or Intro Eligibility tests
 
     func testTrialEligibilityMakesNoNetworkRequests() async throws {
+        try Self.verifyIntroEligibilityRequestStartedLogRegexMatchesActualLog()
         try await self.verifyReceiptIsPresentBeforeEligibilityChecking()
 
         let product = try await self.monthlyPackage.storeProduct
@@ -610,7 +617,9 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         _ = try await self.purchases.checkTrialOrIntroDiscountEligibility(product: product)
 
-        self.logger.verifyMessageWasNotLogged("API request started")
+        self.logger.verifyMessageWasNotLogged(
+            regexPattern: Self.introEligibilityRequestStartedLogRegex
+        )
     }
 
     func testEligibleForIntroBeforePurchase() async throws {
@@ -1048,6 +1057,25 @@ class StoreKit1IntegrationTests: BaseStoreKitIntegrationTests {
 
         expect(stubbedRequestCount).to(equal(1)) // 1 original request + 0 retries
     }
+
+    #if canImport(UIKit) && !os(watchOS)
+    @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+    func testPurchasePackageWithConfirmInScene() async throws {
+        try AvailabilityChecks.iOS17APIAvailableOrSkipTest()
+
+        let scene = try XCTUnwrap(UIApplication.shared.currentWindowScene)
+        let package = try await self.monthlyPackage
+        let params = PurchaseParams.Builder(package: package)
+            .with(confirmInScene: scene)
+            .build()
+
+        let result = try await self.purchase(params: params, file: #file, line: #line)
+
+        expect(result.transaction).toNot(beNil())
+        try await self.verifyEntitlementWentThrough(result.customerInfo)
+        self.verifyAnyTransactionWasFinished()
+    }
+    #endif
 }
 
 private extension BaseStoreKitIntegrationTests {
@@ -1069,4 +1097,36 @@ private extension BaseStoreKitIntegrationTests {
                      statusCode: 429,
                      headers: headers)
     }
+}
+
+private extension StoreKit1IntegrationTests {
+
+    /// Verifies that our test regex (`introEligibilityRequestStartedLogRegex`) actually matches the string
+    /// `description` of the HTTP request used for the `POST /get_intro_eligibility` request. This gives us a bit
+    /// more confidence that an actual HTTP request would be caught by our test, since we're testing for the absence
+    /// of the log line.
+    static func verifyIntroEligibilityRequestStartedLogRegexMatchesActualLog(
+        file: FileString = #file,
+        line: UInt = #line
+    ) throws {
+        let request = HTTPRequest(
+            method: .post(EmptyRequestBody()),
+            path: .getIntroEligibility(appUserID: "test-app-user-id")
+        )
+        let message = Strings.network.api_request_started(request).description
+        let regex = try NSRegularExpression(pattern: Self.introEligibilityRequestStartedLogRegex)
+        let range = NSRange(location: 0, length: message.utf16.count)
+
+        expect(
+            file: file,
+            line: line,
+            regex.firstMatch(in: message, options: [], range: range)
+        ).toNot(
+            beNil(),
+            description: "Expected intro eligibility request matcher to match actual log: \(message)"
+        )
+    }
+
+    struct EmptyRequestBody: HTTPRequestBody {}
+
 }

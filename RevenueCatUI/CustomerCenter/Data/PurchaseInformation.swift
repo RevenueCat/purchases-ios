@@ -216,7 +216,9 @@ struct PurchaseInformation {
         let isSubscriptionType = transaction.isSubscription && transaction.store != .promotional
 
         self.title = Self.determineTitle(
+            entitlement: entitlement,
             subscribedProduct: subscribedProduct,
+            store: transaction.store,
             isSubscription: isSubscriptionType,
             localization: localization
         )
@@ -413,7 +415,13 @@ extension PurchaseInformation {
     ) async -> RenewalPrice? {
         guard let renewalPriceDetails = await customerCenterStoreKitUtilities.renewalPriceFromRenewalInfo(
             for: product
-        ) else {
+        ), renewalPriceDetails.productIdentifier == product.productIdentifier else {
+            return nil
+        }
+
+        // A pending product change means the renewal price belongs to the upcoming product, not this one.
+        if let autoRenewPreference = renewalPriceDetails.autoRenewPreference,
+           autoRenewPreference != product.productIdentifier {
             return nil
         }
 
@@ -465,6 +473,20 @@ private extension EntitlementInfo {
 
 extension PurchaseInformation {
 
+    func subtitle(localizations: CustomerCenterConfigData.Localization) -> String? {
+        if renewalDate != nil {
+            if let renewalPriceString = priceRenewalString(localizations: localizations) {
+                return renewalPriceString
+            }
+
+            return renewalDateString(localizations: localizations)
+        } else if expirationDate != nil {
+            return expirationString(localizations: localizations)
+        } else {
+            return pricePaidString(localizations: localizations)
+        }
+    }
+
     func pricePaidString(localizations: CustomerCenterConfigData.Localization) -> String? {
         switch pricePaid {
         case .free:
@@ -476,10 +498,10 @@ extension PurchaseInformation {
         }
     }
 
-    func priceRenewalString(
+    private func priceRenewalString(
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
-        guard let renewalPrice, let renewalDate else {
+        guard let renewalDate, let renewalPrice else {
             return nil
         }
 
@@ -495,7 +517,26 @@ extension PurchaseInformation {
         }
     }
 
-    func expirationString(
+    private func renewalDateString(
+        localizations: CustomerCenterConfigData.Localization
+    ) -> String? {
+        guard let renewalDate else {
+            return nil
+        }
+
+        let dateString = dateFormatter.string(from: renewalDate)
+        switch pricePaid {
+        case let .nonFree(priceString):
+            return localizations[.renewsOnDateWithLastPaidPrice]
+                .replacingOccurrences(of: "{{ date }}", with: dateString)
+                .replacingOccurrences(of: "{{ price }}", with: priceString)
+        case .free, .unknown:
+            return localizations[.renewsOnDate]
+                .replacingOccurrences(of: "{{ date }}", with: dateString)
+        }
+    }
+
+    private func expirationString(
         localizations: CustomerCenterConfigData.Localization
     ) -> String? {
         guard let expirationDate else {
@@ -537,12 +578,18 @@ extension PurchaseInformation {
     }
 
     private static func determineTitle(
+        entitlement: EntitlementInfo?,
         subscribedProduct: StoreProduct?,
+        store: Store,
         isSubscription: Bool,
         localization: CustomerCenterConfigData.Localization
     ) -> String {
         if let localizedTitle = subscribedProduct?.localizedTitle, !localizedTitle.isEmpty {
             return localizedTitle
+        }
+
+        if store == .promotional, let identifier = entitlement?.identifier, !identifier.isEmpty {
+            return identifier
         }
 
         let purchaseTypeKey: CCLocalizedString = isSubscription ? .typeSubscription : .typeOneTimePurchase

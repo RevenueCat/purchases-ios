@@ -29,11 +29,10 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
-            .onPurchaseStarted {
+            .onPurchaseStarted { _ in
                 started = true
             }
             .onPurchaseStarted { package in
@@ -57,7 +56,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: handler
         )
@@ -80,7 +78,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
@@ -101,7 +98,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
@@ -127,7 +123,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: handler
         )
@@ -145,13 +140,43 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(cancelled) == true
     }
 
+    func testOnPurchaseCancelledIsCalledForConsecutiveCancellations() throws {
+        let handler: PurchaseHandler = .cancelling()
+        var cancellationCount = 0
+
+        let dispose = try PaywallView(
+            offering: Self.offering.withLocalImages,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        )
+            .onPurchaseCancelled {
+                cancellationCount += 1
+            }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(cancellationCount).toEventually(equal(1))
+        expect(handler.actionInProgress) == false
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(cancellationCount).toEventually(equal(2))
+        expect(handler.actionInProgress) == false
+    }
+
     func testOnPurchaseCancelledWithCompletion() throws {
         var completed = false
         var cancelled = false
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
@@ -174,7 +199,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.failingHandler
         )
@@ -195,7 +219,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
@@ -216,7 +239,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.purchaseHandler
         )
@@ -239,7 +261,6 @@ class PurchaseCompletedHandlerTests: TestCase {
 
         _ = try PaywallView(
             offering: Self.offering.withLocalImages,
-            customerInfo: TestData.customerInfo,
             introEligibility: .producing(eligibility: .eligible),
             purchaseHandler: Self.failingHandler
         )
@@ -255,6 +276,32 @@ class PurchaseCompletedHandlerTests: TestCase {
         expect(error).toEventually(matchError(Self.failureError))
     }
 
+    func testOnPurchaseCompletedInvokedBeforeRequestedDismissal() throws {
+        let handler: PurchaseHandler = .mock()
+        var callbackOrder: [String] = []
+
+        let dispose = try PaywallView(
+            offering: Self.offering.withLocalImages,
+            introEligibility: .producing(eligibility: .eligible),
+            purchaseHandler: handler
+        )
+            .onPurchaseCompleted { _ in
+                callbackOrder.append("onPurchaseCompleted")
+            }
+            .onRequestedDismissal {
+                callbackOrder.append("onRequestedDismissal")
+            }
+            .addToHierarchy()
+
+        defer { dispose() }
+
+        Task {
+            _ = try await handler.purchase(package: Self.package)
+        }
+
+        expect(callbackOrder).toEventually(equal(["onPurchaseCompleted", "onRequestedDismissal"]))
+    }
+
     private static let purchaseHandler: PurchaseHandler = .mock()
     private static let failingHandler: PurchaseHandler = .failing(failureError)
     private static let offering = TestData.offeringWithNoIntroOffer
@@ -268,14 +315,12 @@ private extension PaywallView {
 
     init(
         offering: Offering,
-        customerInfo: CustomerInfo,
         introEligibility: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) {
         self.init(
             configuration: .init(
                 offering: offering,
-                customerInfo: customerInfo,
                 introEligibility: introEligibility,
                 purchaseHandler: purchaseHandler
             )

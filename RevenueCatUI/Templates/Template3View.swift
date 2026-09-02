@@ -124,7 +124,7 @@ struct Template3View: TemplateViewType {
 
     private var features: some View {
         VStack(spacing: 40) {
-            ForEach(self.localization.features, id: \.title) { feature in
+            ForEach(self.localization.features, id: \.self) { feature in
                 FeatureView(feature: feature,
                             colors: self.configuration.colors,
                             fonts: self.configuration.fonts)

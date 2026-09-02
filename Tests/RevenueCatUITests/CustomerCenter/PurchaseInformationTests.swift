@@ -47,20 +47,46 @@ final class PurchaseInformationTests: TestCase {
         localizedStrings: [:]
     )
 
-    private class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
-        var mockRenewalPrice: (price: Decimal, currencyCode: String)?
+    static let mockLocalizationWithLastPaidPrice = CustomerCenterConfigData.Localization(
+        locale: "en_US",
+        localizedStrings: [
+            "renews_on_date_with_last_paid_price": "Renews {{ date }}; previously paid {{ price }}."
+        ]
+    )
 
-        init(mockRenewalPrice: (price: Decimal, currencyCode: String)? = (7.99, "USD")) {
+    static let appleFixtureProductIdentifier = "com.revenuecat.product"
+
+    private class MockCustomerCenterStoreKitUtilities: CustomerCenterStoreKitUtilitiesType {
+        var mockRenewalPrice: RenewalPriceData?
+
+        init(mockRenewalPrice: RenewalPriceData? = RenewalPriceData(
+            price: 7.99,
+            currencyCode: "USD",
+            productIdentifier: "com.revenuecat.product",
+            autoRenewPreference: "com.revenuecat.product"
+        )) {
             self.mockRenewalPrice = mockRenewalPrice
         }
 
-        func renewalPriceFromRenewalInfo(for product: RevenueCat.StoreProduct) async ->
-        (price: Decimal, currencyCode: String)? {
+        func renewalPriceFromRenewalInfo(for product: RevenueCat.StoreProduct) async -> RenewalPriceData? {
             return mockRenewalPrice
         }
     }
 
     private let mockCustomerCenterStoreKitUtilities = MockCustomerCenterStoreKitUtilities()
+
+    func testSubtitleWithFreePricePaidAndNoRenewalPriceOnlyShowsRenewalDate() throws {
+        let renewalDate = try XCTUnwrap(Self.mockDateFormatter.date(from: "Apr 12, 2062"))
+        let purchaseInformation = PurchaseInformation.mock(
+            pricePaid: .free,
+            renewalPrice: nil,
+            dateFormatter: Self.mockDateFormatter,
+            renewalDate: renewalDate
+        )
+
+        expect(purchaseInformation.subtitle(localizations: Self.mockLocalization)) ==
+            "Renews on Apr 12, 2062."
+    }
 
     func testAppleEntitlementAndSubscribedProductWithoutRenewalInfo() throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
@@ -120,6 +146,8 @@ final class PurchaseInformationTests: TestCase {
         expect(subscriptionInfo.title) == "Monthly Product"
         expect(subscriptionInfo.pricePaid) == .nonFree("$6.99")
         expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalization)) ==
+            "Renews on Apr 12, 2062. Last paid $6.99."
         expect(subscriptionInfo.isLifetime).to(beFalse())
         expect(subscriptionInfo.changePlan).toNot(beNil())
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
@@ -185,6 +213,105 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .appStore
+    }
+
+    func testAppleEntitlementIgnoresRenewalInfoForDifferentProduct() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: "different_product",
+                autoRenewPreference: "different_product"
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews Apr 12, 2062; previously paid $6.99."
+    }
+
+    func testAppleEntitlementIgnoresRenewalInfoWhenProductChangeIsPending() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: Self.appleFixtureProductIdentifier,
+                autoRenewPreference: "com.revenuecat.yearly"
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice).to(beNil())
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews Apr 12, 2062; previously paid $6.99."
+    }
+
+    func testAppleEntitlementUsesRenewalInfoWithoutAutoRenewPreference() async throws {
+        let subscriptionInfo = try await renewingAppleSubscriptionInfo(
+            renewalPrice: RenewalPriceData(
+                price: 7.99,
+                currencyCode: "USD",
+                productIdentifier: Self.appleFixtureProductIdentifier,
+                autoRenewPreference: nil
+            )
+        )
+
+        expect(subscriptionInfo.renewalPrice) == .nonFree("$7.99")
+        expect(subscriptionInfo.subtitle(localizations: Self.mockLocalizationWithLastPaidPrice)) ==
+            "Renews on Apr 12, 2062 for $7.99."
+    }
+
+    private func renewingAppleSubscriptionInfo(
+        renewalPrice: RenewalPriceData?
+    ) async throws -> PurchaseInformation {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Monthly Product",
+            price: 6.99,
+            currencyCode: "USD",
+            localizedPriceString: "$6.99",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "PRO monthly",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .month),
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .appStore,
+            type: .subscription(
+                isActive: true,
+                willRenew: true,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            price: .init(currency: "USD", amount: 6.99),
+            displayName: "A product",
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        return await PurchaseInformation.purchaseInformationUsingRenewalInfo(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerCenterStoreKitUtilities: MockCustomerCenterStoreKitUtilities(mockRenewalPrice: renewalPrice),
+            customerInfoRequestedDate: Date(),
+            dateFormatter: Self.mockDateFormatter,
+            numberFormatter: Self.mockNumberFormatter,
+            managementURL: URL(string: "https://www.revenuecat.com")!,
+            changePlan: nil,
+            localization: Self.mockLocalizationWithLastPaidPrice
+        )
     }
 
     func testAppleEntitlementAndLifetimeProduct() async throws {
@@ -545,8 +672,8 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        // title from entitlement instead of product identifier
-        expect(subscriptionInfo.title) == "One-time Purchase"
+        // title uses entitlement identifier when no StoreKit product is available for promotional store
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         expect(subscriptionInfo.isLifetime).to(beFalse())
@@ -592,7 +719,7 @@ final class PurchaseInformationTests: TestCase {
             )
         )
 
-        expect(subscriptionInfo.title) == "One-time Purchase"
+        expect(subscriptionInfo.title) == "premium"
         expect(subscriptionInfo.pricePaid) == .free
         expect(subscriptionInfo.renewalPrice).to(beNil())
         // false - no way to know if its lifetime
@@ -600,6 +727,129 @@ final class PurchaseInformationTests: TestCase {
 
         expect(subscriptionInfo.productIdentifier) == entitlement.productIdentifier
         expect(subscriptionInfo.store) == .promotional
+    }
+
+    func testDetermineTitlePromotionalUsesEntitlementIdentifier() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: nil,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // Promotional store with no product: entitlement identifier is used as title
+        expect(purchaseInfo.title) == "premium"
+    }
+
+    func testDetermineTitlePromotionalNoEntitlementFallsBackToTypeLabel() throws {
+        let mockTransaction = MockTransaction(
+            productIdentifier: "rc_promo_some_product",
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: nil,
+            subscribedProduct: nil,
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // With no entitlement, promotional guard is skipped.
+        // isSubscriptionType = false for .promotional store, so falls through to "One-time Purchase"
+        expect(purchaseInfo.title) == "One-time Purchase"
+    }
+
+    func testDetermineTitleProductTitleTakesPriorityOverEntitlementIdentifier() throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithPromotional
+        let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
+
+        let mockProduct = TestStoreProduct(
+            localizedTitle: "Pro Access",
+            price: 0,
+            currencyCode: "USD",
+            localizedPriceString: "$0.00",
+            productIdentifier: entitlement.productIdentifier,
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Pro access via promo",
+            subscriptionGroupIdentifier: nil,
+            subscriptionPeriod: nil,
+            introductoryDiscount: nil,
+            locale: Self.locale
+        )
+
+        let mockTransaction = MockTransaction(
+            productIdentifier: entitlement.productIdentifier,
+            store: .promotional,
+            type: .subscription(
+                isActive: true,
+                willRenew: false,
+                expiresDate: Self.mockDateFormatter.date(from: "Apr 12, 2062"),
+                isTrial: false,
+                ownershipType: PurchaseOwnershipType.unknown
+            ),
+            isCancelled: false,
+            managementURL: nil,
+            price: .init(currency: "USD", amount: 0),
+            displayName: nil,
+            periodType: .normal,
+            purchaseDate: Date(),
+            isSandbox: false,
+            isSubscription: true
+        )
+
+        let purchaseInfo = PurchaseInformation(
+            entitlement: entitlement,
+            subscribedProduct: mockProduct.toStoreProduct(),
+            transaction: mockTransaction,
+            customerInfoRequestedDate: Date(),
+            managementURL: nil,
+            localization: Self.mockLocalization
+        )
+
+        // StoreKit product title wins over entitlement identifier
+        expect(purchaseInfo.title) == "Pro Access"
     }
 
     func testInitWithStripeEntitlement() throws {
@@ -1105,8 +1355,8 @@ final class PurchaseInformationTests: TestCase {
 
     // MARK: - Tests for improved title and price determination logic
 
-    func testDetermineTitleWithEntitlementIdentifierFallback() throws {
-        // Use existing Google Play fixture which has entitlement identifier "premium"
+    func testDetermineTitlePlayStoreFallsBackToSubscriptionType() throws {
+        // Play Store transactions with no StoreKit product should fall back to type label, not entitlement identifier
         let customerInfo = CustomerInfoFixtures.customerInfoWithGoogleSubscriptions
         let entitlement = try XCTUnwrap(customerInfo.entitlements.all.first?.value)
 

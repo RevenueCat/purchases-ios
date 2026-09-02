@@ -30,8 +30,6 @@ public struct PaywallView: View {
     private let fonts: PaywallFontProvider
     private let displayCloseButton: Bool
     private let paywallViewOwnsPurchaseHandler: Bool
-    private let useDraftPaywall: Bool
-
     @StateObject
     private var internalPurchaseHandler: PurchaseHandler
 
@@ -49,7 +47,8 @@ public struct PaywallView: View {
     private var offering: Offering?
 
     @State
-    private var customerInfo: CustomerInfo?
+    private var workflowContext: WorkflowContext?
+
     @State
     private var error: NSError?
 
@@ -108,14 +107,30 @@ public struct PaywallView: View {
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
         self.init(
-            offering: offering,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            useDraftPaywall: false,
-            performPurchase: performPurchase,
-            performRestore: performRestore
+            configuration: .init(
+                offering: offering,
+                fonts: fonts,
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: purchaseHandler
             )
+        )
+    }
+
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        offeringIdentifier: String,
+        displayCloseButton: Bool = false
+    ) {
+        self.init(
+            configuration: .init(
+                content: .offeringIdentifier(offeringIdentifier, presentedOfferingContext: nil),
+                displayCloseButton: displayCloseButton,
+                purchaseHandler: .default()
+            )
+        )
     }
 
     // swiftlint:disable:next missing_docs
@@ -123,8 +138,8 @@ public struct PaywallView: View {
         offering: Offering,
         fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
         displayCloseButton: Bool = false,
-        useDraftPaywall: Bool,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
         performPurchase: PerformPurchase? = nil,
         performRestore: PerformRestore? = nil
     ) {
@@ -135,11 +150,40 @@ public struct PaywallView: View {
                 offering: offering,
                 fonts: fonts,
                 displayCloseButton: displayCloseButton,
-                useDraftPaywall: useDraftPaywall,
                 introEligibility: introEligibility,
-                purchaseHandler: purchaseHandler
+                purchaseHandler: purchaseHandler,
+                promoOfferCache: .simulated(if: simulatePromoEligible)
             )
         )
+    }
+
+    /// Renders a workflow paywall from an injected ``WorkflowContext`` (built via
+    /// `WorkflowPreview.makeContext`), bypassing the backend `/workflows` fetch. Used to preview
+    /// dashboard workflows (including drafts) in a companion app.
+    // swiftlint:disable:next missing_docs
+    @_spi(Internal) public init(
+        workflowContext: WorkflowContext,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        simulatePromoEligible: Bool = false,
+        performPurchase: PerformPurchase? = nil,
+        performRestore: PerformRestore? = nil
+    ) {
+        let purchaseHandler = PurchaseHandler.default(performPurchase: performPurchase, performRestore: performRestore)
+
+        var configuration = PaywallViewConfiguration(
+            content: .offering(workflowContext.initialOffering),
+            mode: .fullScreen,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler,
+            promoOfferCache: .simulated(if: simulatePromoEligible)
+        )
+        configuration.injectedWorkflowContext = workflowContext
+
+        self.init(configuration: configuration)
     }
 
     init(configuration: PaywallViewConfiguration, paywallViewOwnsPurchaseHandler: Bool = true) {
@@ -156,18 +200,19 @@ public struct PaywallView: View {
 
         self._introEligibility = .init(wrappedValue: configuration.introEligibility ?? .default())
 
-        self._offering = .init(
-            initialValue: configuration.content.extractInitialOffering()
+        let initialPaywallViewData = configuration.purchaseHandler.cachedInitialPaywallViewData(
+            for: configuration.content,
+            injectedWorkflowContext: configuration.injectedWorkflowContext
         )
-        self._customerInfo = .init(
-            initialValue: configuration.customerInfo ?? Self.loadCachedCustomerInfoIfPossible()
+        self._workflowContext = .init(initialValue: initialPaywallViewData?.workflowContext)
+        self._offering = .init(
+            initialValue: initialPaywallViewData?.offering
         )
 
         self.contentToDisplay = configuration.content
         self.mode = configuration.mode
         self.fonts = configuration.fonts
         self.displayCloseButton = configuration.displayCloseButton
-        self.useDraftPaywall = configuration.useDraftPaywall
         self.promoOfferCache = configuration.promoOfferCache
 
         self.initializationError = Self.checkForConfigurationConsistency(purchaseHandler: configuration.purchaseHandler)
@@ -224,10 +269,9 @@ public struct PaywallView: View {
             if let error = self.initializationError {
                 DebugErrorView(error.localizedDescription, releaseBehavior: .fatalError)
             } else if self.introEligibility.isConfigured, self.purchaseHandler.isConfigured {
-                if let offering = self.offering, let customerInfo = self.customerInfo {
+                if let offering = self.offering {
                     self.paywallView(for: offering,
-                                     useDraftPaywall: self.useDraftPaywall,
-                                     activelySubscribedProductIdentifiers: customerInfo.activeSubscriptions,
+                                     workflowContext: self.workflowContext,
                                      fonts: self.fonts,
                                      checker: self.introEligibility,
                                      purchaseHandler: self.purchaseHandler)
@@ -249,13 +293,9 @@ public struct PaywallView: View {
                                     throw PaywallError.purchasesNotConfigured
                                 }
 
-                                if self.offering == nil {
-                                    self.offering = try await self.loadOffering()
-                                }
-
-                                if self.customerInfo == nil {
-                                    self.customerInfo = try await Purchases.shared.customerInfo()
-                                }
+                                let paywallData = try await self.loadPaywallData()
+                                self.offering = paywallData.offering
+                                self.workflowContext = paywallData.workflowContext
                             } catch let error as NSError {
                                 self.error = error
                             }
@@ -284,17 +324,16 @@ public struct PaywallView: View {
 //    }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length function_parameter_count
+    // swiftlint:disable:next function_body_length
     private func paywallView(
         for offering: Offering,
-        useDraftPaywall: Bool,
-        activelySubscribedProductIdentifiers: Set<String>,
+        workflowContext: WorkflowContext?,
         fonts: PaywallFontProvider,
         checker: TrialOrIntroEligibilityChecker,
         purchaseHandler: PurchaseHandler
     ) -> some View {
 
-        if let paywallComponents = useDraftPaywall ? offering.draftPaywallComponents : offering.paywallComponents {
+        if let paywallComponents = offering.internalPaywallComponents {
             // For V2 paywalls, prefer zeroDecimalPlaceCountries from paywallComponents
             let zeroDecimalPlaceCountries = paywallComponents.data.zeroDecimalPlaceCountries
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
@@ -313,7 +352,6 @@ public struct PaywallView: View {
             case .footer, .condensedFooter:
                 LoadedOfferingPaywallView(
                     offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                     paywall: paywall,
                     template: PaywallData.defaultTemplate,
                     mode: self.mode,
@@ -327,42 +365,30 @@ public struct PaywallView: View {
             #endif
             // Show the actually V2 paywall for full screen
             case .fullScreen:
-                let dataForV1DefaultPaywall = DataForV1DefaultPaywall(
-                    offering: offering,
-                    activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
-                    paywall: paywall,
-                    template: PaywallData.defaultTemplate,
-                    mode: self.mode,
-                    fonts: fonts,
-                    displayCloseButton: self.displayCloseButton,
-                    introEligibility: checker,
-                    purchaseHandler: purchaseHandler,
-                    locale: purchaseHandler.preferredLocaleOverride ?? .current,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
-                )
-
-                PaywallsV2View(
-                    paywallComponents: paywallComponents,
-                    offering: offering,
-                    purchaseHandler: purchaseHandler,
-                    introEligibilityChecker: checker,
-                    showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
-                    onDismiss: {
-                        guard let onRequestedDismissal = self.onRequestedDismissal else {
-                            self.dismiss()
-                            return
-                        }
-                        onRequestedDismissal()
-                    },
-                    fallbackContent: .paywallV1View(dataForV1DefaultPaywall),
-                    failedToLoadFont: { fontConfig in
-                        if Purchases.isConfigured {
-                            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
-                        }
-                    },
-                    colorScheme: colorScheme,
-                    promoOfferCache: self.promoOfferCache
-                )
+                if let workflowContext {
+                    WorkflowPaywallView(
+                        context: workflowContext,
+                        purchaseHandler: purchaseHandler,
+                        introEligibilityChecker: checker,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                        displayCloseButton: self.displayCloseButton,
+                        promoOfferCache: self.promoOfferCache,
+                        onDismiss: self.dismissRequested
+                    )
+                } else {
+                    PaywallsV2View(
+                        paywallComponents: paywallComponents,
+                        offering: offering,
+                        purchaseHandler: purchaseHandler,
+                        introEligibilityChecker: checker,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices,
+                        displayCloseButton: self.displayCloseButton,
+                        onDismiss: self.dismissRequested,
+                        failedToLoadFont: self.failedToLoadFont,
+                        colorScheme: colorScheme,
+                        promoOfferCache: self.promoOfferCache
+                    )
+                }
             }
         } else {
             let showZeroDecimalPlacePrices = self.showZeroDecimalPlacePrices(
@@ -375,7 +401,6 @@ public struct PaywallView: View {
 
             LoadedOfferingPaywallView(
                 offering: offering,
-                activelySubscribedProductIdentifiers: activelySubscribedProductIdentifiers,
                 paywall: paywall,
                 template: template,
                 mode: self.mode,
@@ -400,74 +425,21 @@ public struct PaywallView: View {
 @available(tvOS, unavailable)
 private extension PaywallView {
 
-    static func loadCachedCustomerInfoIfPossible() -> CustomerInfo? {
+    func loadPaywallData() async throws -> PurchaseHandler.ResolvedPaywallViewData {
+        return try await self.purchaseHandler.resolvePaywallViewData(for: self.contentToDisplay)
+    }
+
+    func dismissRequested() {
+        guard let onRequestedDismissal = self.onRequestedDismissal else {
+            self.dismiss()
+            return
+        }
+        onRequestedDismissal()
+    }
+
+    func failedToLoadFont(_ fontConfig: UIConfig.FontsConfig) {
         if Purchases.isConfigured {
-            return Purchases.shared.cachedCustomerInfo
-        } else {
-            return nil
-        }
-    }
-
-    func loadOffering() async throws -> Offering {
-        switch self.contentToDisplay {
-        case let .offering(offering):
-            return offering
-
-        case .defaultOffering:
-            return try await Purchases.shared.offerings().current.orThrow(PaywallError.noCurrentOffering)
-
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = try await Purchases.shared.offerings()
-                .offering(identifier: identifier)
-                .orThrow(PaywallError.offeringNotFound(identifier: identifier))
-
-            if let presentedOfferingContext {
-                return offering.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-}
-
-// MARK: -
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private extension PaywallViewConfiguration.Content {
-
-    func extractInitialOffering() -> Offering? {
-        switch self {
-        case let .offering(offering):
-            return offering
-        case .defaultOffering:
-            return Self.loadCachedCurrentOfferingIfPossible()
-        case let .offeringIdentifier(identifier, presentedOfferingContext):
-            let offering = Self.loadCachedOfferingIfPossible(
-                identifier: identifier
-            )
-
-            if let presentedOfferingContext {
-                return offering?.withPresentedOfferingContext(presentedOfferingContext)
-            }
-
-            return offering
-        }
-    }
-
-    private static func loadCachedCurrentOfferingIfPossible() -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.current
-        } else {
-            return nil
-        }
-    }
-
-    private static func loadCachedOfferingIfPossible(identifier: String) -> Offering? {
-        if Purchases.isConfigured {
-            return Purchases.shared.cachedOfferings?.offering(identifier: identifier)
-        } else {
-            return nil
+            Purchases.shared.failedToLoadFontWithConfig(fontConfig)
         }
     }
 
@@ -480,7 +452,6 @@ private extension PaywallViewConfiguration.Content {
 struct LoadedOfferingPaywallView: View {
 
     private let offering: Offering
-    private let activelySubscribedProductIdentifiers: Set<String>
     private let paywall: PaywallData
     private let template: PaywallTemplate
     private let mode: PaywallViewMode
@@ -508,9 +479,11 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.paywallSource)
     private var paywallSource
 
+    @State
+    private var paywallSessionID: PaywallEvent.SessionID = .init()
+
     init(
         offering: Offering,
-        activelySubscribedProductIdentifiers: Set<String>,
         paywall: PaywallData,
         template: PaywallTemplate,
         mode: PaywallViewMode,
@@ -523,7 +496,6 @@ struct LoadedOfferingPaywallView: View {
         error: Offering.PaywallValidationError? = nil
     ) {
         self.offering = offering
-        self.activelySubscribedProductIdentifiers = activelySubscribedProductIdentifiers
         self.paywall = paywall
         self.template = template
         self.mode = mode
@@ -544,7 +516,11 @@ struct LoadedOfferingPaywallView: View {
             .preference(key: PurchaseInProgressPreferenceKey.self,
                         value: self.purchaseHandler.packageBeingPurchased)
             .preference(key: PurchasedResultPreferenceKey.self,
-                        value: .init(data: self.purchaseHandler.sessionPurchaseResult))
+                        value: .init(
+                            data: self.purchaseHandler.sessionPurchaseResult,
+                            diffKey: (self.purchaseHandler.sessionPurchaseResult?.userCancelled == true) ?
+                            self.purchaseHandler.consecutiveCancellationRequestID : nil
+                        ))
             .preference(key: RestoredCustomerInfoPreferenceKey.self,
                         value: self.purchaseHandler.restoredCustomerInfo)
             .preference(key: RestoreInProgressPreferenceKey.self,
@@ -553,6 +529,10 @@ struct LoadedOfferingPaywallView: View {
                         value: self.purchaseHandler.purchaseError as NSError?)
             .preference(key: RestoreErrorPreferenceKey.self,
                         value: self.purchaseHandler.restoreError as NSError?)
+            .preference(key: WebCheckoutOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.webCheckoutOpened)
+            .preference(key: URLOpenedPreferenceKey.self,
+                        value: self.purchaseHandler.urlOpened)
     }
 
     @ViewBuilder
@@ -566,10 +546,14 @@ struct LoadedOfferingPaywallView: View {
             )
         } else {
             self.paywall
-                .createView(for: self.offering,
-                            template: self.template,
-                            configuration: configuration,
-                            introEligibility: self.introEligibility)
+                .createView(
+                    for: self.offering,
+                    template: self.template,
+                    configuration: configuration,
+                    introEligibility: self.introEligibility,
+                    mode: self.mode,
+                    purchaseHandler: purchaseHandler
+                )
         }
     }
 
@@ -577,7 +561,6 @@ struct LoadedOfferingPaywallView: View {
     private var content: some View {
         let configuration = self.paywall.configuration(
             for: self.offering,
-            activelySubscribedProductIdentifiers: self.activelySubscribedProductIdentifiers,
             template: self.template,
             mode: self.mode,
             fonts: self.fonts,
@@ -585,22 +568,32 @@ struct LoadedOfferingPaywallView: View {
             showZeroDecimalPlacePrices: self.showZeroDecimalPlacePrices
         )
         let view = paywallView(withConfig: configuration)
+            .environment(\.locale, self.locale)
+            .environment(\.layoutDirection, self.locale.swiftUILayoutDirection)
             .environmentObject(self.introEligibility)
+            .environment(
+                \.componentInteractionLogger,
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+            )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
-            .onAppear { self.purchaseHandler.trackPaywallImpression(self.createEventData()) }
+            .onAppear {
+                if error != nil {
+                    self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                } else {
+                    switch configuration {
+                    case .success:
+                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: false))
+                    case .failure:
+                        self.purchaseHandler.trackPaywallImpression(self.createEventData(forDefaultPaywall: true))
+                    }
+                }
+            }
             .onDisappear { self.purchaseHandler.trackPaywallClose() }
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
-                if hasPurchased {
-                    guard let onRequestedDismissal = self.onRequestedDismissal else {
-                        if self.mode.isFullScreen {
-                            Logger.debug(Strings.dismissing_paywall)
-                            self.dismiss()
-                        }
-                        return
-                    }
-                    onRequestedDismissal()
-                }
+                guard hasPurchased else { return }
+
+                self.dismissAfterPurchaseCompletionCallbacks()
             }
 
         if self.displayCloseButton {
@@ -633,11 +626,11 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
-    private func createEventData() -> PaywallEvent.Data {
+    private func createEventData(forDefaultPaywall: Bool) -> PaywallEvent.Data {
         return .init(
             offering: self.offering,
-            paywall: self.paywall,
-            sessionID: .init(),
+            paywall: forDefaultPaywall ? self.paywall.toDefaultPaywallData() : self.paywall,
+            sessionID: self.paywallSessionID,
             displayMode: self.mode,
             locale: .current,
             darkMode: self.colorScheme == .dark,
@@ -651,6 +644,23 @@ struct LoadedOfferingPaywallView: View {
             return configuration.colors.closeButtonColor
         case .failure:
             return nil
+        }
+    }
+
+    private func dismissAfterPurchaseCompletionCallbacks() {
+        // Defer dismissal so purchase completion preferences propagate to parent modifiers first.
+        DispatchQueue.main.async {
+            guard self.purchaseHandler.hasPurchasedInSession else { return }
+
+            guard let onRequestedDismissal = self.onRequestedDismissal else {
+                if self.mode.isFullScreen {
+                    Logger.debug(Strings.dismissing_paywall)
+                    self.dismiss()
+                }
+                return
+            }
+
+            onRequestedDismissal()
         }
     }
 
@@ -675,6 +685,21 @@ struct LoadedOfferingPaywallView: View {
         }
     }
 
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension PaywallData {
+    func toDefaultPaywallData() -> PaywallData {
+        PaywallData(
+            id: self.id,
+            templateName: PaywallData.defaultTemplate.rawValue,
+            config: self.config,
+            localization: self.localizedConfiguration ?? .init(title: "", callToAction: ""),
+            assetBaseURL: PaywallData.defaultTemplateBaseURL,
+            revision: PaywallData.revisionID,
+            locale: .current
+        )
+    }
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -713,7 +738,6 @@ struct PaywallView_Previews: PreviewProvider {
                 PaywallView(
                     configuration: .init(
                         offering: offering,
-                        customerInfo: TestData.customerInfo,
                         mode: mode,
                         introEligibility: PreviewHelpers.introEligibilityChecker,
                         purchaseHandler: PreviewHelpers.purchaseHandler
@@ -741,6 +765,98 @@ struct PaywallView_Previews: PreviewProvider {
         light: TestData.lightColors,
         dark: TestData.darkColors
     )
+
+}
+
+// MARK: - Localization previews
+
+/// Regression previews for RTL layout direction when a locale override is active.
+/// When the system locale is LTR (e.g. English) but `overridePreferredUILocale` is set to an RTL
+/// language, the paywall must render with RTL layout — not just RTL strings.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+struct PaywallLocalizationPreviews: PreviewProvider {
+
+    static var previews: some View {
+        Self.paywall(locale: "es_ES", offering: Self.spanishOffering)
+            .previewDisplayName("Spanish (LTR)")
+        Self.paywall(locale: "he-IL", offering: Self.hebrewOffering)
+            .previewDisplayName("Hebrew (RTL)")
+        Self.paywall(locale: "ar", offering: Self.arabicOffering)
+            .previewDisplayName("Arabic (RTL)")
+    }
+
+    private static func paywall(locale: String, offering: Offering) -> some View {
+        PaywallView(
+            configuration: .init(
+                offering: offering,
+                mode: .fullScreen,
+                introEligibility: PreviewHelpers.introEligibilityChecker,
+                purchaseHandler: .mock(preferredLocaleOverride: locale)
+            )
+        )
+        .previewLayout(.device)
+    }
+
+    private static func makeOffering(
+        localization: PaywallData.LocalizedConfiguration,
+        locale: String
+    ) -> Offering {
+        return Offering(
+            identifier: "offering",
+            serverDescription: "Offering",
+            metadata: [:],
+            paywall: .init(
+                templateName: PaywallTemplate.template2.rawValue,
+                config: .init(
+                    packages: [PackageType.weekly.identifier,
+                               PackageType.annual.identifier,
+                               PackageType.monthly.identifier],
+                    images: TestData.images,
+                    colors: .init(
+                        light: TestData.lightColors,
+                        dark: TestData.lightColors
+                    ),
+                    // swiftlint:disable:next force_unwrapping
+                    termsOfServiceURL: URL(string: "https://revenuecat.com/tos")!,
+                    // swiftlint:disable:next force_unwrapping
+                    privacyURL: URL(string: "https://revenuecat.com/tos")!
+                ),
+                localization: localization,
+                assetBaseURL: TestData.paywallAssetBaseURL,
+                locale: Locale(identifier: locale)
+            ),
+            availablePackages: [TestData.weeklyPackage,
+                                TestData.monthlyPackage,
+                                TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+    }
+
+    private static let spanishOffering = makeOffering(localization: .init(
+        title: "Despierta la curiosidad de tu hijo",
+        subtitle: "Accede a todo nuestro contenido educativo, confiado por miles de padres.",
+        callToAction: "Comprar",
+        offerDetails: "€9,99 al mes",
+        features: []
+    ), locale: "es_ES")
+
+    private static let hebrewOffering = makeOffering(localization: .init(
+        title: "עוררו את הסקרנות של ילדכם",
+        subtitle: "גישה לכל התוכן החינוכי שלנו, בו בוטחים אלפי הורים.",
+        callToAction: "לרכישה",
+        offerDetails: "₪39.99 לחודש",
+        features: []
+    ), locale: "he-IL")
+
+    private static let arabicOffering = makeOffering(localization: .init(
+        title: "أيقظ فضول طفلك",
+        subtitle: "استمتع بجميع محتوياتنا التعليمية، التي يثق بها آلاف الآباء.",
+        callToAction: "اشترِ الآن",
+        offerDetails: "9.99 $ شهريًا",
+        features: []
+    ), locale: "ar")
 
 }
 

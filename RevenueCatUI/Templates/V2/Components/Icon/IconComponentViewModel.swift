@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 6/11/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -95,12 +95,16 @@ class IconComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
         let partial = PresentedIconPartial.buildPartial(
             state: state,

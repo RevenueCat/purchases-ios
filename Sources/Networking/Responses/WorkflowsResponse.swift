@@ -1,0 +1,371 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  WorkflowsResponse.swift
+//
+//  Created by RevenueCat.
+// swiftlint:disable missing_docs
+
+import Foundation
+
+// MARK: - Detail models
+
+@_spi(Internal) public enum WorkflowTriggerType: String, Codable, Equatable, Sendable {
+    case onPress = "on_press"
+    case unknown
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(String.self)
+        switch value {
+        case "on_press":
+            self = .onPress
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_type(type: value))
+            self = .unknown
+        }
+    }
+}
+
+@_spi(Internal) public struct WorkflowTrigger {
+
+    public let name: String?
+    public let type: WorkflowTriggerType
+    public let actionId: String?
+    public let componentId: String?
+
+    @_spi(Internal) public init(
+        name: String?,
+        type: WorkflowTriggerType,
+        actionId: String?,
+        componentId: String?
+    ) {
+        self.name = name
+        self.type = type
+        self.actionId = actionId
+        self.componentId = componentId
+    }
+
+}
+
+@_spi(Internal) public enum WorkflowTriggerAction: Equatable, Sendable {
+    case step(stepId: String)
+    case unknown
+}
+
+/// Step `screen_type` classification (returned by the backend under `metadata.screen_type`), used to
+/// decide which workflow steps report a paywall impression.
+@_spi(Internal) public enum WorkflowScreenType {
+
+    static let metadataKey = "screen_type"
+
+    public static let paywall = "paywall"
+
+}
+
+@_spi(Internal) public struct WorkflowStep {
+
+    public let id: String
+    @_spi(Internal) public let type: String
+    public let screenId: String?
+    @DefaultDecodable.EmptyDictionary
+    var paramValues: [String: AnyDecodable]
+    @DefaultDecodable.EmptyArray
+    var triggers: [WorkflowTrigger]
+    @DefaultDecodable.EmptyDictionary
+    var outputs: [String: AnyDecodable]
+    @DefaultDecodable.EmptyDictionary
+    var triggerActions: [String: WorkflowTriggerAction]
+
+    public var stepTriggers: [WorkflowTrigger] { triggers }
+    public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
+    let metadata: [String: AnyDecodable]?
+
+    /// The step's `screen_type` from the backend (`metadata.screen_type`). `nil` = untagged (older
+    /// workflows), `[]` = tagged with no known type; the distinction drives paywall-event gating (see
+    /// `PaywallsV2View.shouldTrackPaywallEvents`). Key is literal snake_case: `convertFromSnakeCase` skips
+    /// keys inside `[String: AnyDecodable]`.
+    public var stepScreenType: [String]? {
+        guard case let .array(values)? = self.metadata?[WorkflowScreenType.metadataKey] else {
+            return nil
+        }
+        return values.compactMap { element in
+            guard case let .string(value) = element else { return nil }
+            return value
+        }
+    }
+
+    // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
+    // read directly (`metadata` is surfaced only via `stepScreenType`), and are typed with the
+    // internal `AnyDecodable`, so they're defaulted rather than exposed.
+    @_spi(Internal) public init(
+        id: String,
+        type: String,
+        screenId: String?,
+        triggers: [WorkflowTrigger] = [],
+        triggerActions: [String: WorkflowTriggerAction] = [:]
+    ) {
+        self.id = id
+        self.type = type
+        self.screenId = screenId
+        self.paramValues = [:]
+        self.triggers = triggers
+        self.outputs = [:]
+        self.triggerActions = triggerActions
+        self.metadata = nil
+    }
+
+}
+
+@_spi(Internal) public struct WorkflowScreen {
+
+    public let name: String?
+    public let templateName: String
+    @DefaultDecodable.Zero
+    // swiftlint:disable:next identifier_name
+    var _revision: Int
+    public var revision: Int { _revision }
+    public let assetBaseURL: URL
+    public let componentsConfig: PaywallComponentsData.ComponentsConfig
+    public let componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary]
+    @DefaultValue<PaywallComponent.DefaultLocaleFallback>
+    // swiftlint:disable:next identifier_name
+    var _defaultLocale: PaywallComponent.LocaleID
+    public var defaultLocale: PaywallComponent.LocaleID { _defaultLocale }
+    @DefaultDecodable.EmptyDictionary
+    var config: [String: AnyDecodable]
+    public let offeringIdentifier: String?
+    public let exitOffers: ExitOffers?
+    @DefaultDecodable.True
+    // swiftlint:disable:next identifier_name
+    var _automaticallyScaleFontSize: Bool
+    public var automaticallyScaleFontSize: Bool { _automaticallyScaleFontSize }
+    /// Whole-map fallback to nil; the offerings path drops entries individually via
+    /// `FailableStateDeclaration`.
+    @IgnoreDecodeErrors<[String: PaywallComponent.StateDeclaration]?>
+    // swiftlint:disable:next identifier_name
+    var _stateDeclarations: [String: PaywallComponent.StateDeclaration]?
+    public var stateDeclarations: [String: PaywallComponent.StateDeclaration]? { _stateDeclarations }
+    /// Keyed by store in the payload (`{ "apple": [...] }`), like the offering paywall's own field.
+    @IgnoreDecodeErrors<PaywallData.ZeroDecimalPlaceCountries?>
+    // swiftlint:disable:next identifier_name
+    var _zeroDecimalPlaceCountries: PaywallData.ZeroDecimalPlaceCountries?
+    /// The storefront country codes that should display whole number prices without decimal places.
+    public var zeroDecimalPlaceCountries: [String] { _zeroDecimalPlaceCountries?.apple ?? [] }
+
+    // `config` carries backend screen config the renderer doesn't read and is typed with the
+    // internal `AnyDecodable`, so it's defaulted rather than exposed.
+    @_spi(Internal) public init(
+        name: String?,
+        templateName: String,
+        revision: Int = 0,
+        assetBaseURL: URL,
+        componentsConfig: PaywallComponentsData.ComponentsConfig,
+        componentsLocalizations: [PaywallComponent.LocaleID: PaywallComponent.LocalizationDictionary],
+        defaultLocale: PaywallComponent.LocaleID,
+        offeringIdentifier: String?,
+        exitOffers: ExitOffers? = nil,
+        automaticallyScaleFontSize: Bool = true,
+        stateDeclarations: [String: PaywallComponent.StateDeclaration]? = nil,
+        zeroDecimalPlaceCountries: [String] = []
+    ) {
+        self.name = name
+        self.templateName = templateName
+        self._revision = revision
+        self.assetBaseURL = assetBaseURL
+        self.componentsConfig = componentsConfig
+        self.componentsLocalizations = componentsLocalizations
+        self._defaultLocale = defaultLocale
+        self.config = [:]
+        self.offeringIdentifier = offeringIdentifier
+        self.exitOffers = exitOffers
+        self._automaticallyScaleFontSize = automaticallyScaleFontSize
+        self._stateDeclarations = stateDeclarations
+        // Kept `nil` when empty so a screen built here matches one decoded without the key.
+        self._zeroDecimalPlaceCountries = zeroDecimalPlaceCountries.isEmpty
+            ? nil
+            : .init(apple: zeroDecimalPlaceCountries)
+    }
+
+}
+
+@_spi(Internal) public struct PublishedWorkflow {
+
+    public let id: String
+    let displayName: String
+    public let initialStepId: String
+    public let singleStepFallbackId: String?
+    public let steps: [String: WorkflowStep]
+    public let screens: [String: WorkflowScreen]
+    let contentMaxWidth: Int?
+    let metadata: [String: AnyDecodable]?
+
+    // `metadata` is typed with the internal `AnyDecodable`, so it's defaulted rather than exposed.
+    @_spi(Internal) public init(
+        id: String,
+        displayName: String,
+        initialStepId: String,
+        singleStepFallbackId: String?,
+        steps: [String: WorkflowStep],
+        screens: [String: WorkflowScreen],
+        contentMaxWidth: Int? = nil
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.initialStepId = initialStepId
+        self.singleStepFallbackId = singleStepFallbackId
+        self.steps = steps
+        self.screens = screens
+        self.contentMaxWidth = contentMaxWidth
+        self.metadata = nil
+    }
+
+    /// Internal-only full initializer: unlike the public one above, this preserves `metadata`.
+    init(
+        id: String,
+        displayName: String,
+        initialStepId: String,
+        singleStepFallbackId: String?,
+        steps: [String: WorkflowStep],
+        screens: [String: WorkflowScreen],
+        contentMaxWidth: Int?,
+        metadata: [String: AnyDecodable]?
+    ) {
+        self.id = id
+        self.displayName = displayName
+        self.initialStepId = initialStepId
+        self.singleStepFallbackId = singleStepFallbackId
+        self.steps = steps
+        self.screens = screens
+        self.contentMaxWidth = contentMaxWidth
+        self.metadata = metadata
+    }
+
+}
+
+@_spi(Internal) public struct WorkflowDataResult {
+
+    public let workflow: PublishedWorkflow
+    public let uiConfig: UIConfig
+    public let enrolledVariants: [String: String]?
+
+}
+
+@_spi(Internal) public enum WorkflowError: Error, Equatable, Sendable {
+
+    /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
+    case uiConfigUnavailable(workflowId: String)
+
+}
+
+// MARK: - Codable
+
+extension WorkflowTrigger: Codable, Equatable, Sendable {}
+
+extension WorkflowTriggerAction: Codable {
+
+    private enum CodingKeys: String, CodingKey {
+        case type
+        case stepId
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let type = try container.decode(String.self, forKey: .type)
+        switch type {
+        case "step":
+            let stepId = try container.decode(String.self, forKey: .stepId)
+            self = .step(stepId: stepId)
+        default:
+            Logger.warn(Strings.backendError.unknown_workflow_trigger_action_type(type: type))
+            self = .unknown
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .step(let stepId):
+            try container.encode("step", forKey: .type)
+            try container.encode(stepId, forKey: .stepId)
+        case .unknown:
+            try container.encode("unknown", forKey: .type)
+        }
+    }
+
+}
+extension WorkflowStep: Codable, Equatable, Sendable {}
+
+extension WorkflowScreen: Codable, Equatable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+        case name
+        case templateName
+        // swiftlint:disable:next identifier_name
+        case _revision = "revision"
+        case assetBaseURL = "assetBaseUrl"
+        case componentsConfig
+        case componentsLocalizations
+        // swiftlint:disable:next identifier_name
+        case _defaultLocale = "defaultLocale"
+        case config
+        case offeringIdentifier
+        case exitOffers
+        // swiftlint:disable:next identifier_name
+        case _automaticallyScaleFontSize = "automaticallyScaleFontSize"
+        // swiftlint:disable:next identifier_name
+        case _stateDeclarations = "stateDeclarations"
+        // swiftlint:disable:next identifier_name
+        case _zeroDecimalPlaceCountries = "zeroDecimalPlaceCountries"
+    }
+
+}
+
+extension PublishedWorkflow: Codable, Equatable, Sendable {
+
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case displayName
+        case initialStepId
+        case singleStepFallbackId
+        case steps
+        case screens
+        case contentMaxWidth
+        case metadata
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try container.decode(String.self, forKey: .id)
+        self.displayName = try container.decode(String.self, forKey: .displayName)
+        self.initialStepId = try container.decode(String.self, forKey: .initialStepId)
+        self.singleStepFallbackId = try container.decodeIfPresent(String.self, forKey: .singleStepFallbackId)
+        self.steps = try container.decode([String: WorkflowStep].self, forKey: .steps)
+        self.screens = try container.decode([String: WorkflowScreen].self, forKey: .screens)
+        self.contentMaxWidth = try container.decodeIfPresent(Int.self, forKey: .contentMaxWidth)
+        self.metadata = try container.decodeIfPresent([String: AnyDecodable].self, forKey: .metadata)
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.id, forKey: .id)
+        try container.encode(self.displayName, forKey: .displayName)
+        try container.encode(self.initialStepId, forKey: .initialStepId)
+        try container.encodeIfPresent(self.singleStepFallbackId, forKey: .singleStepFallbackId)
+        try container.encode(self.steps, forKey: .steps)
+        try container.encode(self.screens, forKey: .screens)
+        try container.encodeIfPresent(self.contentMaxWidth, forKey: .contentMaxWidth)
+        try container.encodeIfPresent(self.metadata, forKey: .metadata)
+    }
+
+}
+
+extension WorkflowDataResult: Codable, Equatable, Sendable {}
+
+extension PublishedWorkflow: HTTPResponseBody {}

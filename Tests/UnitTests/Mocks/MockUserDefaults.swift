@@ -22,21 +22,21 @@ class MockUserDefaults: UserDefaults {
     var mockValues: [String: Any] = [:]
 
     override func string(forKey defaultName: String) -> String? {
-        return self.lock.perform {
+        return self.lock.withLock {
             self.stringForKeyCalledValue = defaultName
             return self.mockValues[defaultName] as? String
         }
     }
 
     override func removeObject(forKey defaultName: String) {
-        self.lock.perform {
+        self.lock.withLock {
             self.removeObjectForKeyCalledValues.append(defaultName)
             self.mockValues.removeValue(forKey: defaultName)
         }
     }
 
     override func set(_ value: Any?, forKey defaultName: String) {
-        self.lock.perform {
+        self.lock.withLock {
             self.setObjectForKeyCallCount += 1
             self.setObjectForKeyCalledValue = defaultName
             self.mockValues[defaultName] = value
@@ -44,35 +44,35 @@ class MockUserDefaults: UserDefaults {
     }
 
     override func data(forKey defaultName: String) -> Data? {
-        return self.lock.perform {
+        return self.lock.withLock {
             self.dataForKeyCalledValue = defaultName
             return self.mockValues[defaultName] as? Data
         }
     }
 
     override func object(forKey defaultName: String) -> Any? {
-        return self.lock.perform {
+        return self.lock.withLock {
             self.objectForKeyCalledValue = defaultName
             return self.mockValues[defaultName]
         }
     }
 
     override func set(_ value: Bool, forKey defaultName: String) {
-        self.lock.perform {
+        self.lock.withLock {
             self.setValueForKeyCalledValue = defaultName
             self.mockValues[defaultName] = value
         }
     }
 
     override func dictionary(forKey defaultName: String) -> [String: Any]? {
-        return self.lock.perform {
+        return self.lock.withLock {
             self.dictionaryForKeyCalledValue = defaultName
             return self.mockValues[defaultName] as? [String: Any]
         }
     }
 
     override func dictionaryRepresentation() -> [String: Any] {
-        self.lock.perform { self.mockValues }
+        self.lock.withLock { self.mockValues }
     }
 
     override func synchronize() -> Bool {
@@ -82,20 +82,8 @@ class MockUserDefaults: UserDefaults {
     }
 
     override func removePersistentDomain(forName domainName: String) {
-        self.lock.perform {
+        self.lock.withLock {
             self.mockValues = [:]
         }
     }
-}
-
-private extension NSLock {
-
-    @discardableResult
-    func perform<T>(_ block: () throws -> T) rethrows -> T {
-        self.lock()
-        defer { self.unlock() }
-
-        return try block()
-    }
-
 }

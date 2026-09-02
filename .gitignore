@@ -27,6 +27,8 @@ Carthage
 .ruby-version
 .bundle/
 .build/
+# Per-platform derived data written by the generate_swiftinterface lane.
+.build-*/
 vendor/
 CarthageUploads
 *.bck
@@ -44,8 +46,9 @@ Tests/paywall-preview-resources
 # Local clone of `paywall-rendering-validation` repo to be available for tests.
 Tests/paywall-rendering-validation
 
-# Local clone of `purchases-ios-snapshots` repo to be available for tests.
-Tests/purchases-ios-snapshots
+
+# Recorded V1 template snapshots (uploaded to Emerge, not stored in git)
+Tests/RevenueCatUITests/Templates/__Snapshots__
 
 # SPM
 

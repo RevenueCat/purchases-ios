@@ -12,7 +12,7 @@
 //  Created by Josh Holtz on 9/26/24.
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -102,7 +102,7 @@ private enum Template1Preview {
             .package(package)
         ],
         dimension: .vertical(.center, .start),
-        size: .init(width: .fill, height: .fit),
+        size: .init(width: .fill, height: .fit(nil)),
         spacing: 30,
         backgroundColor: nil
     )
@@ -125,7 +125,8 @@ private enum Template1Preview {
             shape: .pill
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let contentStack = PaywallComponent.StackComponent(
@@ -224,13 +225,30 @@ struct Template1Preview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.fixed(width: 400, height: 800))
         .previewDisplayName("Template 1")
+
+        PaywallsV2View(
+            paywallComponents: Template1Preview.paywallComponents,
+            offering: .init(identifier: "default",
+                            serverDescription: "",
+                            availablePackages: [package],
+                            webCheckoutUrl: nil),
+            purchaseHandler: PurchaseHandler.default(),
+            introEligibilityChecker: .default(),
+            showZeroDecimalPlacePrices: true,
+            onDismiss: { },
+            failedToLoadFont: { _ in },
+            colorScheme: .light
+        )
+        .environment(\.paywallLoadingOverride, true)
+        .previewRequiredPaywallsV2Properties()
+        .previewLayout(.fixed(width: 400, height: 800))
+        .previewDisplayName("Template 1 (Loading)")
     }
 }
 

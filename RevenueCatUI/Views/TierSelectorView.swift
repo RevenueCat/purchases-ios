@@ -17,6 +17,7 @@ struct TierSelectorView: View {
     private let tiers: [PaywallData.Tier]
     private let namesByTierID: [String: String]
     private let selectedTier: Binding<PaywallData.Tier>
+    private let onSelectTier: ((PaywallData.Tier) -> Void)?
 
     private let fonts: PaywallFontProvider
 
@@ -38,7 +39,8 @@ struct TierSelectorView: View {
         backgroundColor: Color,
         textColor: Color,
         selectedBackgroundColor: Color,
-        selectedTextColor: Color
+        selectedTextColor: Color,
+        onSelectTier: ((PaywallData.Tier) -> Void)? = nil
     ) {
         self.init(
             tiers: [tier],
@@ -48,7 +50,8 @@ struct TierSelectorView: View {
             backgroundColor: backgroundColor,
             textColor: textColor,
             selectedBackgroundColor: selectedBackgroundColor,
-            selectedTextColor: selectedTextColor
+            selectedTextColor: selectedTextColor,
+            onSelectTier: onSelectTier
         )
     }
 
@@ -60,7 +63,8 @@ struct TierSelectorView: View {
         backgroundColor: Color,
         textColor: Color,
         selectedBackgroundColor: Color,
-        selectedTextColor: Color
+        selectedTextColor: Color,
+        onSelectTier: ((PaywallData.Tier) -> Void)? = nil
     ) {
         precondition(!tiers.isEmpty)
 
@@ -72,6 +76,7 @@ struct TierSelectorView: View {
         self.textColor = textColor
         self.selectedBackgroundColor = selectedBackgroundColor
         self.selectedTextColor = selectedTextColor
+        self.onSelectTier = onSelectTier
 
         self.indexesByTier = .init(
             uniqueKeysWithValues: tiers
@@ -103,6 +108,7 @@ struct TierSelectorView: View {
                     withAnimation(Constants.tierChangeAnimation) {
                         self.selectedTier.wrappedValue = tier
                     }
+                    self.onSelectTier?(tier)
                 } label: {
                     self.buttonLabel(for: tier, selected: selected)
                 }
@@ -211,7 +217,8 @@ extension TierSelectorView {
         backgroundColor: Color,
         textColor: Color,
         selectedBackgroundColor: Color,
-        selectedTextColor: Color
+        selectedTextColor: Color,
+        onSelectTier: ((PaywallData.Tier) -> Void)? = nil
     ) {
         self.init(
             tiers: tiers,
@@ -223,7 +230,8 @@ extension TierSelectorView {
             backgroundColor: backgroundColor,
             textColor: textColor,
             selectedBackgroundColor: selectedBackgroundColor,
-            selectedTextColor: selectedTextColor
+            selectedTextColor: selectedTextColor,
+            onSelectTier: onSelectTier
         )
     }
 

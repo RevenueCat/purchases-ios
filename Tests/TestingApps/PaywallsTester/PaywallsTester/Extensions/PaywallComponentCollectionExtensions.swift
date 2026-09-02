@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 
 #if !os(tvOS) // For Paywalls V2
 

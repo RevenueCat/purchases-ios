@@ -40,6 +40,29 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
         expect(products["com.revenuecat.foo_3"]?.entitlements) == ["pro_2"]
     }
 
+    func testDecodesBasePlanId() throws {
+        let data = try XCTUnwrap("""
+        {
+            "product_entitlement_mapping": {
+                "com.revenuecat.foo_1:monthly": {
+                    "product_identifier": "com.revenuecat.foo_1",
+                    "base_plan_id": "monthly",
+                    "entitlements": [
+                        "pro_1"
+                    ]
+                }
+            }
+        }
+        """.data(using: .utf8))
+
+        let response = try JSONDecoder.default.decode(ProductEntitlementMappingResponse.self, from: data)
+        let product = response.products["com.revenuecat.foo_1:monthly"]
+
+        expect(product?.identifier) == "com.revenuecat.foo_1"
+        expect(product?.basePlanId) == "monthly"
+        expect(product?.entitlements) == ["pro_1"]
+    }
+
     func testConversionToMapping() {
         let mapping = self.response.toMapping()
 
@@ -52,6 +75,62 @@ class ProductEntitlementMappingDecodingTests: BaseHTTPResponseTest {
                 "pro_2"
             ],
             "com.revenuecat.foo_3": [
+                "pro_2"
+            ]
+        ]
+    }
+
+    func testConversionToMappingUsesBasePlanId() throws {
+        let data = try XCTUnwrap("""
+        {
+            "product_entitlement_mapping": {
+                "com.revenuecat.foo_1:monthly": {
+                    "product_identifier": "com.revenuecat.foo_1",
+                    "base_plan_id": "monthly",
+                    "entitlements": [
+                        "pro_1"
+                    ]
+                }
+            }
+        }
+        """.data(using: .utf8))
+
+        let response = try JSONDecoder.default.decode(ProductEntitlementMappingResponse.self, from: data)
+        let mapping = response.toMapping()
+
+        expect(mapping.entitlementsByProduct) == [
+            "com.revenuecat.foo_1:monthly": [
+                "pro_1"
+            ]
+        ]
+    }
+
+    func testDecodesFixtureWithBasePlanIdAndConvertsToCompoundMapping() throws {
+        let response: ProductEntitlementMappingResponse = try Self.decodeFixture("ProductsEntitlementsWithBasePlanId")
+
+        let monthlyCommitmentProduct = response.products["com.revenuecat.foo_1:monthly"]
+        expect(monthlyCommitmentProduct?.identifier) == "com.revenuecat.foo_1"
+        expect(monthlyCommitmentProduct?.basePlanId) == "monthly"
+        expect(monthlyCommitmentProduct?.entitlements) == ["pro_1_monthly"]
+
+        let upFrontProduct = response.products["com.revenuecat.foo_1"]
+        expect(upFrontProduct?.identifier) == "com.revenuecat.foo_1"
+        expect(upFrontProduct?.basePlanId) == nil
+        expect(upFrontProduct?.entitlements) == ["pro_1"]
+
+        let product2 = response.products["com.revenuecat.foo_2"]
+        expect(product2?.identifier) == "com.revenuecat.foo_2"
+        expect(product2?.basePlanId) == nil
+        expect(product2?.entitlements) == ["pro_2"]
+
+        expect(response.toMapping().entitlementsByProduct) == [
+            "com.revenuecat.foo_1:monthly": [
+                "pro_1_monthly"
+            ],
+            "com.revenuecat.foo_1": [
+                "pro_1"
+            ],
+            "com.revenuecat.foo_2": [
                 "pro_2"
             ]
         ]

@@ -13,6 +13,14 @@
 
 import Foundation
 
+#if canImport(UIKit)
+import UIKit
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#endif
+
 /**
  * ``PurchaseParams`` can be used to add configuration options when making a purchase.
  * This class follows the builder pattern.
@@ -33,6 +41,7 @@ import Foundation
     let product: StoreProduct?
     let promotionalOffer: PromotionalOffer?
     let quantity: Int?
+    let introductoryOfferEligibilityJWS: String?
 
     #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -43,16 +52,19 @@ import Foundation
 
     #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-    let introductoryOfferEligibilityJWS: String?
     let promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
     #endif
+
+    /// Options for the confirmIn: parameter of the `purchase(confirmIn:options:)` SK2 APIs.
+    let storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
     private init(with builder: Builder) {
         self.promotionalOffer = builder.promotionalOffer
         self.product = builder.product
         self.package = builder.package
         self.quantity = builder.quantity
+        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -62,9 +74,10 @@ import Foundation
         #endif
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-        self.introductoryOfferEligibilityJWS = builder.introductoryOfferEligibilityJWS
         self.promotionalOfferOptions = builder.promotionalOfferOptions
         #endif
+
+        self.storeKit2ConfirmInOptions = builder.storeKit2ConfirmInOptions
     }
 
     /// The Builder for ```PurchaseParams```.
@@ -73,6 +86,7 @@ import Foundation
         private(set) var package: Package?
         private(set) var product: StoreProduct?
         private(set) var quantity: Int?
+        private(set) var introductoryOfferEligibilityJWS: String?
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
@@ -83,10 +97,11 @@ import Foundation
 
         #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
-        private(set) var introductoryOfferEligibilityJWS: String?
         private(set) var promotionalOfferOptions: StoreKit2PromotionalOfferPurchaseOptions?
 
         #endif
+
+        private(set) var storeKit2ConfirmInOptions: StoreKit2ConfirmInOptions?
 
         /**
          * Create a new builder with a ``Package``.
@@ -142,6 +157,48 @@ import Foundation
         }
         #endif
 
+        #if canImport(UIKit) && !os(watchOS)
+        // Note: This API is intentionally not marked as @objc, because it takes in a platform-specific
+        // parameter. If we mark this as @objc, then the auto-generated RevenueCat-Swift.h file will contain
+        // references to platform-specific APIs and will not be able to build on all platforms.
+        //
+        // In this case, UIScene is unavailable on native macOS.
+        /**
+         * Set `confirmInScene`.
+         *
+         * - Parameter confirmInScene: The scene the system uses to show the purchase confirmation UI.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: iOS 17.0+, macCatalyst 17.0+, tvOS 17.0+, visionOS 1.0+
+         */
+        @available(iOS 17.0, macCatalyst 17.0, tvOS 17.0, visionOS 1.0, *)
+        public func with(confirmInScene: UIScene) -> Self {
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInScene: confirmInScene)
+            return self
+        }
+        #endif
+
+        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+        // Note: This API is intentionally not marked as @objc, because it takes in a platform-specific
+        // parameter. If we mark this as @objc, then the auto-generated RevenueCat-Swift.h file will contain
+        // references to platform-specific APIs and will not be able to build on all platforms.
+        //
+        // In this case, NSWindow is unavailable on iOS/visionOS/watchOS.
+        /**
+         * Set `confirmInWindow`.
+         *
+         * - Parameter confirmInWindow: The window to show the purchase confirmation UI in proximity to.
+         * - Note: This value is only used when StoreKit 2 is in use.
+         *
+         * Availability: macOS 15.2+
+         */
+        @available(macOS 15.2, *)
+        public func with(confirmInWindow: NSWindow) -> Self {
+            self.storeKit2ConfirmInOptions = StoreKit2ConfirmInOptions(confirmInWindow: confirmInWindow)
+            return self
+        }
+        #endif
+
         /**
          * Sets a win-back offer for the purchase.
          * - Parameter winBackOffer: The ``WinBackOffer`` to apply to the purchase.
@@ -159,8 +216,6 @@ import Foundation
 
         #endif
 
-        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
-
         // swiftlint:disable line_length
         /**
          * Sets an introductoryOfferEligibility JWS to be included with the purchase. StoreKit 2 only.
@@ -176,6 +231,8 @@ import Foundation
             self.introductoryOfferEligibilityJWS = introductoryOfferEligibilityJWS
             return self
         }
+
+        #if ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
         // swiftlint:disable line_length
         /**

@@ -36,6 +36,8 @@ struct FooterView: View {
 
     let localizedBundle: Bundle
 
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+
     init(
         configuration: TemplateViewConfiguration,
         locale: Locale,
@@ -77,7 +79,7 @@ struct FooterView: View {
     var body: some View {
         HStack {
             if self.mode.displayAllPlansButton, let binding = self.displayingAllPlans {
-                Self.allPlansButton(binding, bundle: self.localizedBundle)
+                self.allPlansButton(binding)
 
                 if self.configuration.displayRestorePurchases || self.tosURL != nil || self.privacyURL != nil {
                     self.separator
@@ -99,7 +101,10 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
-                    titles: "Terms and conditions", "Terms"
+                    titles: "Terms and conditions", "Terms",
+                    onTap: {
+                        self.componentInteractionLogger(.paywallFooterTermsLink(url: url))
+                    }
                 )
 
                 if self.privacyURL != nil {
@@ -111,7 +116,10 @@ struct FooterView: View {
                 LinkButton(
                     localizedBundle: self.localizedBundle,
                     url: url,
-                    titles: "Privacy policy", "Privacy"
+                    titles: "Privacy policy", "Privacy",
+                    onTap: {
+                        self.componentInteractionLogger(.paywallFooterPrivacyLink(url: url))
+                    }
                 )
             }
         }
@@ -125,13 +133,14 @@ struct FooterView: View {
         #endif
     }
 
-    private static func allPlansButton(_ binding: Binding<Bool>, bundle: Bundle) -> some View {
+    private func allPlansButton(_ binding: Binding<Bool>) -> some View {
         Button {
+            self.componentInteractionLogger(.paywallFooterToggleAllPlans())
             withAnimation(Constants.toggleAllPlansAnimation) {
                 binding.wrappedValue.toggle()
             }
         } label: {
-            Text("All subscriptions", bundle: bundle)
+            Text("All subscriptions", bundle: self.localizedBundle)
         }
         .frame(minHeight: Constants.minimumButtonHeight)
     }
@@ -196,6 +205,8 @@ private struct RestorePurchasesButton: View {
     @Environment(\.restoreInitiatedAction)
     private var restoreInitiatedAction: RestoreInitiatedAction?
 
+    @Environment(\.componentInteractionLogger) var componentInteractionLogger
+
     @State
     private var restoredCustomerInfo: CustomerInfo?
 
@@ -205,6 +216,8 @@ private struct RestorePurchasesButton: View {
     var body: some View {
         AsyncButton {
             guard !self.purchaseHandler.actionInProgress else { return }
+
+            self.componentInteractionLogger(.paywallFooterRestorePurchases())
 
             if let interceptor = self.restoreInitiatedAction {
                 Logger.debug(Strings.restore_purchases_gate_start)
@@ -272,6 +285,9 @@ private struct LinkButton: View {
 
     private let localizedBundle: Bundle
 
+    @Environment(\.openURL)
+    private var openURL
+
     @Namespace
     private var namespace
 
@@ -280,16 +296,19 @@ private struct LinkButton: View {
 
     let url: URL
     let titles: [String]
+    let onTap: (() -> Void)?
 
-    init(localizedBundle: Bundle, url: URL, titles: String...) {
+    init(localizedBundle: Bundle, url: URL, titles: String..., onTap: (() -> Void)? = nil) {
         self.localizedBundle = localizedBundle
         self.url = url
         self.titles = titles
+        self.onTap = onTap
     }
 
     var body: some View {
         #if canImport(WebKit) && !os(macOS) && !targetEnvironment(macCatalyst)
         Button {
+            self.onTap?()
             self.displayLink = true
         } label: {
             self.content
@@ -317,6 +336,20 @@ private struct LinkButton: View {
         Link(destination: self.url) {
             self.content
         }
+        .environment(
+            \.openURL,
+            OpenURLAction { url in
+                if url == self.url {
+                    self.onTap?()
+                }
+                #if os(watchOS)
+                self.openURL(url)
+                #else
+                self.openURL(url) { _ in }
+                #endif
+                return .handled
+            }
+        )
         #endif
     }
 

@@ -33,12 +33,14 @@ extension Image {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 extension View {
     func fitToAspectRatio(
+        maxWidth: CGFloat? = nil,
         aspectRatio: Double,
         contentMode: SwiftUI.ContentMode,
         containerContentMode: SwiftUI.ContentMode? = nil
     ) -> some View {
         modifier(
             FitToAspectRatio(
+                maxWidth: maxWidth,
                 aspectRatio: aspectRatio,
                 contentMode: contentMode,
                 containerContentMode: containerContentMode
@@ -50,6 +52,7 @@ extension View {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, *)
 private struct FitToAspectRatio: ViewModifier {
 
+    let maxWidth: CGFloat?
     let aspectRatio: Double
     let contentMode: SwiftUI.ContentMode
     let containerContentMode: SwiftUI.ContentMode?
@@ -61,6 +64,7 @@ private struct FitToAspectRatio: ViewModifier {
             .aspectRatio(
                 self.aspectRatio,
                 contentMode: self.containerContentMode ?? self.paywallsV1ContainerContentMode)
+            .frame(maxWidth: maxWidth)
             .overlay(
                 content.aspectRatio(nil, contentMode: self.contentMode)
             )

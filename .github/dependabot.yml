@@ -9,3 +9,7 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 3
+      exclude:
+        - "fastlane-plugin-revenuecat_internal"

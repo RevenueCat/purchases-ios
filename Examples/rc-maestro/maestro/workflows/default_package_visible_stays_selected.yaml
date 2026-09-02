@@ -1,0 +1,44 @@
+# Companion to default_package_hidden_by_visibility_rule.yaml: the same paywall with the rule not
+# matching. `can_trial=true` leaves the trial group visible, so the card marked "selected by default"
+# is on screen and must stay selected. This is the case that already worked, and it guards against the
+# fallback firing when there is nothing to fall back from.
+#
+# Expected: `$rc_annual`, the authored default.
+#
+# Run locally against the test store:
+#   maestro test -e MAESTRO_STORE=test_store \
+#     Examples/rc-maestro/maestro/workflows/default_package_visible_stays_selected.yaml
+
+appId: com.revenuecat.maestro.ios
+name: Visible default-selected package stays selected
+env:
+  MAESTRO_STORE: ${MAESTRO_STORE || 'test_store'}
+
+---
+- clearState
+# Dismiss any leftover system alerts from previous test runs.
+- pressKey: home
+- launchApp:
+    arguments:
+        e2e_test_flow: open_default_package_visibility
+        can_trial: "true"
+- assertVisible: "entitlement (pro): nil"
+- extendedWaitUntil:
+    visible: "Present Paywall"
+    timeout: 15000
+- tapOn:
+    text: "Present Paywall"
+
+# The trial group is on screen this time.
+- extendedWaitUntil:
+    visible: "(New members only) Start 2-week free trial"
+    timeout: 15000
+- takeScreenshot: "default_package_visible_stays_selected - paywall"
+
+- tapOn:
+    text: "(New members only) Start 2-week free trial"
+
+- extendedWaitUntil:
+    visible: "selected package: \\$rc_annual"
+    timeout: 15000
+- takeScreenshot: "default_package_visible_stays_selected - selected package"

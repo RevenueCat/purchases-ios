@@ -13,7 +13,7 @@
 
 import Foundation
 import Nimble
-@_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
 import XCTest
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -261,7 +261,8 @@ extension AdEvent.CreationData {
     static func random() -> Self {
         return .init(
             id: .init(),
-            date: .now.removingMilliseconds
+            date: .now.removingMilliseconds,
+            captureMethod: .manual
         )
     }
 

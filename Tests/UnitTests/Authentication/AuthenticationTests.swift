@@ -1,0 +1,584 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  AuthenticationTests.swift
+//
+//  Created by RevenueCat on 8/13/26.
+
+import Nimble
+import XCTest
+
+@testable @_spi(Internal) import RevenueCat
+
+class AuthenticationTests: TestCase {
+
+    private static let appUserID = "test-app-user-id"
+
+    private var backend: MockBackend!
+    private var identityManager: MockIdentityManager!
+    private var operationDispatcher: MockOperationDispatcher!
+    private var internalDelegate: MockInternalAuthenticatorDelegate!
+    private var authenticationDelegate: MockAuthenticationDelegate!
+    private var secureItemStorage: MockSecureItemStorage!
+    private var tokenManager: TokenManager!
+    // `Authentication` only holds a *weak* reference to itself inside the closure it hands to
+    // `tokenManager.reportTokenUpdate`, so tests that don't otherwise keep the `Authentication` returned by
+    // `makeAuthentication()` alive would see it deallocated immediately, silently turning that closure
+    // into a no-op. Stashing it here keeps it alive for the lifetime of the test regardless of whether
+    // the caller captures the return value.
+    private var authentication: Authentication!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.backend = MockBackend()
+        self.identityManager = MockIdentityManager(mockAppUserID: Self.appUserID,
+                                                   mockDeviceCache: MockDeviceCache())
+        self.operationDispatcher = MockOperationDispatcher()
+        self.internalDelegate = MockInternalAuthenticatorDelegate()
+        self.authenticationDelegate = MockAuthenticationDelegate()
+        self.secureItemStorage = MockSecureItemStorage()
+    }
+
+    /// - Parameters:
+    ///   - tokenManagerEnabled: mirrors whether IAM identities are enabled; when `true`,
+    ///   `identifyCurrentUser` should refuse to provide an alias for the current user.
+    private func makeAuthentication(
+        tokenManagerEnabled: Bool = false,
+        customEntitlementComputation: Bool = false
+    ) -> Authentication {
+        let tokenManager = TokenManager(enabled: tokenManagerEnabled, storage: self.secureItemStorage)
+        self.tokenManager = tokenManager
+        let systemInfo = MockSystemInfo(finishTransactions: false,
+                                        customEntitlementsComputation: customEntitlementComputation)
+
+        let authentication = Authentication(backend: self.backend,
+                                            identityManager: self.identityManager,
+                                            tokenManager: tokenManager,
+                                            operationDispatcher: self.operationDispatcher,
+                                            systemInfo: systemInfo,
+                                            internalDelegate: self.internalDelegate)
+        authentication.delegate = self.authenticationDelegate
+        self.authentication = authentication
+        return authentication
+    }
+
+    // MARK: - identifyCurrentUser(as: String, completion:)
+
+    func testIdentifyCurrentUserWithStringSucceedsAndNotifiesInternalDelegate() throws {
+        let authentication = self.makeAuthentication()
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInResult = .success((expectedInfo, true))
+
+        var receivedInfo: CustomerInfo?
+        var receivedCreated: Bool?
+        var receivedError: PublicError?
+
+        authentication.identifyCurrentUser(as: Self.appUserID) { info, created, error in
+            receivedInfo = info
+            receivedCreated = created
+            receivedError = error
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(receivedCreated) == true
+        expect(receivedError).to(beNil())
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .identified
+    }
+
+    func testIdentifyCurrentUserWithStringFailureDoesNotNotifyInternalDelegate() {
+        let authentication = self.makeAuthentication()
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInResult = .failure(backendError)
+
+        var receivedInfo: CustomerInfo?
+        var receivedCreated: Bool?
+        var receivedError: PublicError?
+
+        authentication.identifyCurrentUser(as: Self.appUserID) { info, created, error in
+            receivedInfo = info
+            receivedCreated = created
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedCreated) == false
+        expect(receivedError).to(matchError(backendError.asPurchasesError))
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
+    }
+
+    func testIdentifyCurrentUserWithStringTrimsWhitespaceBeforeLoggingIn() throws {
+        let authentication = self.makeAuthentication()
+        let info = try XCTUnwrap(CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")))
+        self.identityManager.mockLogInResult = .success((info, true))
+        let untrimmedAppUserID = "  \(Self.appUserID)  "
+
+        authentication.identifyCurrentUser(as: untrimmedAppUserID) { _, _, _ in }
+
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+    }
+
+    func testIdentifyCurrentUserWithStringReturnsUnsupportedErrorWhenTokenManagerIsEnabled() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+
+        var receivedError: PublicError?
+        authentication.identifyCurrentUser(as: Self.appUserID) { _, _, error in
+            receivedError = error
+        }
+
+        expect(receivedError).to(matchError(ErrorCode.unsupportedError))
+        expect(self.identityManager.invokedLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
+    }
+
+    // MARK: - identifyCurrentUser(as: StaticString, completion:) [deprecated]
+
+    @available(*, deprecated)
+    func testIdentifyCurrentUserWithStaticStringLogsDeprecationWarningAndDelegatesToStringOverload() throws {
+        let authentication = self.makeAuthentication()
+        let info = try XCTUnwrap(CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")))
+        self.identityManager.mockLogInResult = .success((info, true))
+
+        authentication.identifyCurrentUser(as: "static-user-id") { _, _, _ in }
+
+        self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+        expect(self.identityManager.invokedLogInParametersList) == ["static-user-id"]
+    }
+
+    // MARK: - identifyCurrentUser(as: String) async
+
+    func testIdentifyCurrentUserAsyncReturnsCustomerInfoAndCreated() async throws {
+        let authentication = self.makeAuthentication()
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInResult = .success((expectedInfo, true))
+        let appUserID = Self.appUserID
+
+        let result = try await authentication.identifyCurrentUser(as: appUserID)
+
+        expect(result.customerInfo) == expectedInfo
+        expect(result.created) == true
+    }
+
+    func testIdentifyCurrentUserAsyncPropagatesFailure() async {
+        let authentication = self.makeAuthentication()
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInResult = .failure(backendError)
+        let appUserID = Self.appUserID
+
+        do {
+            _ = try await authentication.identifyCurrentUser(as: appUserID)
+            fail("Expected identifyCurrentUser to throw")
+        } catch {
+            expect(error).to(matchError(backendError.asPurchasesError))
+        }
+    }
+
+    @available(*, deprecated)
+    func testIdentifyCurrentUserAsyncWithStaticStringLogsDeprecationWarning() async throws {
+        let authentication = self.makeAuthentication()
+        self.identityManager.mockLogInResult = .success(
+            (try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")), true)
+        )
+
+        _ = try await authentication.identifyCurrentUser(as: "static-user-id")
+
+        self.logger.verifyMessageWasLogged(Strings.identity.logging_in_with_static_string, level: .warn)
+    }
+
+    // MARK: - logIn(using:completion:)
+
+    func testLogInUsingIdentityReturnsUnsupportedErrorWhenTokenManagerIsDisabled() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: false)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedError).to(matchError(ErrorCode.unsupportedError))
+        expect(self.identityManager.invokedLogInWithIdentity) == false
+    }
+
+    func testLogInUsingIdentitySucceedsAndNotifiesInternalDelegate() throws {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(receivedError).to(beNil())
+        expect(self.identityManager.invokedLogInWithIdentityCount) == 1
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logIn
+    }
+
+    func testLogInUsingIdentityFailureDoesNotNotifyInternalDelegate() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInWithIdentityResult = .failure(backendError)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logIn(using: .anonymous) { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedError).to(matchError(backendError.asPurchasesError))
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
+    }
+
+    func testLogInUsingIdentityPassesTheProvidedIdentityToTheIdentityManager() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockLogInWithIdentityResult = .failure(.missingAppUserID())
+
+        authentication.logIn(using: .signInWithApple(Data("identity-token".utf8))) { _, _ in }
+
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource)
+            == .signInWithApple
+    }
+
+    // MARK: - logOut(completion:)
+
+    func testLogOutCallsLogOutWithUserInitiatedTrueAndForwardsResult() throws {
+        let authentication = self.makeAuthentication()
+        self.identityManager.mockLogOutError = nil
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-out-user"))
+        self.internalDelegate.stubbedAuthenticatorDidChangeIdentityResult = .success(expectedInfo)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+
+        authentication.logOut { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo) == expectedInfo
+        expect(receivedError).to(beNil())
+        expect(self.identityManager.invokedLogOutCount) == 1
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logOut
+    }
+
+    func testLogOutForwardsIdentityManagerErrorToCompletionAndDoesNotChangeIdentity() {
+        let authentication = self.makeAuthentication()
+        let logOutError = BackendError.networkError(.offlineConnection()).asPurchasesError
+        self.identityManager.mockLogOutError = logOutError
+
+        var receivedError: PublicError?
+        authentication.logOut { _, error in
+            receivedError = error
+        }
+
+        expect(receivedError).to(matchError(logOutError))
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
+    }
+
+    // MARK: - logOut(userInitiated:completion:) - custom entitlement computation
+
+    func testLogOutReturnsFeatureNotAvailableErrorWhenCustomEntitlementComputationIsEnabled() {
+        let authentication = self.makeAuthentication(customEntitlementComputation: true)
+
+        var receivedInfo: CustomerInfo?
+        var receivedError: PublicError?
+        authentication.logOut { info, error in
+            receivedInfo = info
+            receivedError = error
+        }
+
+        expect(receivedInfo).to(beNil())
+        expect(receivedError).to(matchError(ErrorCode.featureNotAvailableInCustomEntitlementsComputationMode))
+        expect(self.identityManager.invokedLogOut) == false
+    }
+
+    func testLogOutReportsErrorToDelegateWhenCustomEntitlementComputationIsEnabledAndNotUserInitiated() {
+        let authentication = self.makeAuthentication(customEntitlementComputation: true)
+
+        authentication.logOut(userInitiated: false, completion: nil)
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
+            matchError(ErrorCode.featureNotAvailableInCustomEntitlementsComputationMode)
+        )
+    }
+
+    func testLogOutDoesNotReportErrorToDelegateWhenCustomEntitlementComputationIsEnabledAndUserInitiated() {
+        let authentication = self.makeAuthentication(customEntitlementComputation: true)
+
+        authentication.logOut(userInitiated: true, completion: nil)
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    // MARK: - logOut(userInitiated:completion:) - identityManager failure
+
+    func testLogOutReportsErrorToDelegateWhenIdentityManagerFailsAndNotUserInitiated() {
+        let authentication = self.makeAuthentication()
+        self.identityManager.mockLogOutError = BackendError.networkError(.offlineConnection()).asPurchasesError
+
+        authentication.logOut(userInitiated: false, completion: nil)
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+    }
+
+    func testLogOutDoesNotReportErrorToDelegateWhenIdentityManagerFailsAndUserInitiated() {
+        let authentication = self.makeAuthentication()
+        self.identityManager.mockLogOutError = BackendError.networkError(.offlineConnection()).asPurchasesError
+
+        authentication.logOut(userInitiated: true, completion: nil)
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    // MARK: - logOut() async
+
+    func testLogOutAsyncReturnsCustomerInfo() async throws {
+        let authentication = self.makeAuthentication()
+        self.identityManager.mockLogOutError = nil
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-out-user"))
+        self.internalDelegate.stubbedAuthenticatorDidChangeIdentityResult = .success(expectedInfo)
+
+        let result = try await authentication.logOut()
+
+        expect(result) == expectedInfo
+    }
+
+    func testLogOutAsyncPropagatesFailure() async {
+        let authentication = self.makeAuthentication()
+        let logOutError = BackendError.networkError(.offlineConnection()).asPurchasesError
+        self.identityManager.mockLogOutError = logOutError
+
+        do {
+            _ = try await authentication.logOut()
+            fail("Expected logOut to throw")
+        } catch {
+            expect(error).to(matchError(logOutError))
+        }
+    }
+
+    // MARK: - reportAuthenticationResult(_:)
+
+    func testReportAuthenticationResultDoesNothingForAFailureWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication()
+        authentication.delegate = nil
+
+        authentication.reportAuthenticationResult(.failure(NSError(domain: "AuthenticationTests", code: 1)))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testReportAuthenticationResultNotifiesTheDelegateOfAFailureOnTheMainThread() {
+        let authentication = self.makeAuthentication()
+        let error = NSError(domain: "AuthenticationTests", code: 1)
+
+        authentication.reportAuthenticationResult(.failure(error))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList) == [error]
+        // a failure is never accompanied by a new access token
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
+    }
+
+    func testReportAuthenticationResultDoesNothingForANewAccessTokenWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication()
+        authentication.delegate = nil
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
+    }
+
+    func testReportAuthenticationResultNotifiesTheDelegateOfANewAccessTokenOnTheMainThread() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessTokenParametersList) ==
+            ["new-access-token"]
+        // a new access token is never accompanied by an authentication error
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testReportAuthenticationResultDoesNotCrashWhenTheDelegateDoesNotImplementAccessTokenUpdates() {
+        // `authenticatorDidUpdateAccessToken` is an `@objc optional` requirement, so delegates written
+        // before it existed (or that simply don't care about it) won't implement it. Reporting a new
+        // access token to one of those delegates should be a silent no-op rather than a crash.
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let minimalDelegate = MinimalAuthenticationDelegate()
+        authentication.delegate = minimalDelegate
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
+        expect(minimalDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    // MARK: - logInIfNeeded(completion:)
+
+    func testLogInIfNeededDoesNothingWhenIdentityManagerDoesNotNeedIAMLogin() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = false
+
+        var completionCalled = false
+        authentication.logInIfNeeded { _, _ in completionCalled = true }
+
+        expect(completionCalled) == false
+        expect(self.identityManager.invokedLogInWithIdentity) == false
+    }
+
+    func testLogInIfNeededLogsInAnonymouslyWhenIdentityManagerNeedsIAMLogin() throws {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = true
+        let expectedInfo = try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user"))
+        self.identityManager.mockLogInWithIdentityResult = .success((expectedInfo, false))
+
+        authentication.logInIfNeeded()
+
+        expect(self.identityManager.invokedLogInWithIdentityCount) == 1
+        expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
+    }
+
+    func testLogInIfNeededReportsErrorToDelegateWhenTheBackgroundLoginFails() {
+        // `logInIfNeeded` always performs a non-user-initiated login, so a failure needs to be
+        // surfaced through the delegate rather than only through a completion handler (which callers
+        // of this internal API may not even provide, since it's invoked from app lifecycle hooks).
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        self.identityManager.mockNeedsIAMLogin = true
+        let backendError = BackendError.networkError(.offlineConnection())
+        self.identityManager.mockLogInWithIdentityResult = .failure(backendError)
+
+        authentication.logInIfNeeded()
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
+            matchError(backendError.asPurchasesError)
+        )
+    }
+
+    // MARK: - Token refresh reporting
+
+    /// These tests exercise the wiring set up in `Authentication.init`, where `tokenManager.reportTokenUpdate`
+    /// is connected to `reportAuthenticationResult(_:)`. This is how both a failed and a successful attempt
+    /// to refresh the session's access token (which happens deep inside `HTTPClient`, well outside of any
+    /// explicit, user-initiated call) makes its way to the `AuthenticationDelegate`.
+    func testAuthenticationDelegateIsInvokedWhenTokenRefreshFails() {
+        _ = self.makeAuthentication(tokenManagerEnabled: true)
+        let networkError = NetworkError.networkError(NSError(domain: "AuthenticationTests", code: 401))
+
+        let didHandle = self.tokenManager.handleTokenRefreshResponse(.failure(networkError))
+
+        expect(didHandle) == false
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
+            matchError(networkError.asPublicError)
+        )
+        // a failed refresh never has a new access token to report
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
+    }
+
+    func testAuthenticationDelegateReceivesTheNewAccessTokenWhenTokenRefreshSucceeds() {
+        _ = self.makeAuthentication(tokenManagerEnabled: true)
+        let response = Self.makeTokenRefreshResponse(accessToken: "new-access-token")
+
+        let didHandle = self.tokenManager.handleTokenRefreshResponse(.success(response))
+
+        expect(didHandle) == true
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessTokenParametersList) ==
+            ["new-access-token"]
+        // a successful refresh never reports an authentication error
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testAuthenticationDelegateIsNotInvokedForTokenRefreshFailureWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        authentication.delegate = nil
+        let networkError = NetworkError.networkError(NSError(domain: "AuthenticationTests", code: 401))
+
+        _ = self.tokenManager.handleTokenRefreshResponse(.failure(networkError))
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testAuthenticationDelegateIsNotInvokedForANewAccessTokenWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        authentication.delegate = nil
+
+        _ = self.tokenManager.handleTokenRefreshResponse(.success(Self.makeTokenRefreshResponse()))
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
+    }
+
+}
+
+/// A minimal stand-in for a delegate implementation that predates (or simply doesn't implement)
+/// the optional `authenticatorDidUpdateAccessToken(_:)` requirement.
+private final class MinimalAuthenticationDelegate: NSObject, AuthenticationDelegate {
+
+    private(set) var invokedAuthenticatorDidEncounterError = false
+
+    func authenticatorDidEncounterError(_ error: PublicError) {
+        self.invokedAuthenticatorDidEncounterError = true
+    }
+
+}
+
+private extension AuthenticationTests {
+
+    static func customerInfoData(originalAppUserId: String) -> [String: Any] {
+        return [
+            "request_date": "2019-08-16T10:30:42Z",
+            "subscriber": [
+                "first_seen": "2019-07-17T00:05:54Z",
+                "original_app_user_id": originalAppUserId,
+                "subscriptions": [:] as [String: Any],
+                "other_purchases": [:] as [String: Any],
+                "original_application_version": NSNull()
+            ] as [String: Any]
+        ]
+    }
+
+    static func makeTokenRefreshResponse(
+        accessToken: String = "new-access-token"
+    ) -> VerifiedHTTPResponse<TokenResponse> {
+        return VerifiedHTTPResponse<TokenResponse>(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: TokenResponse(accessToken: accessToken,
+                                idToken: "new-id-token",
+                                refreshToken: "new-refresh-token",
+                                scope: "openid",
+                                expiresIn: 3600),
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
+    }
+
+}

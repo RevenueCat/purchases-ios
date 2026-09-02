@@ -38,7 +38,6 @@ extension PaywallData {
             config: .init(
                 packages: packageIdentifiers,
                 images: .init(
-                    background: Self.backgroundImage,
                     icon: Self.appIconPlaceholder
                 ),
                 colors: Self.colors,
@@ -112,8 +111,10 @@ private extension PaywallData {
                 )
         )
     }
+}
 
-    static let backgroundImage = "background.jpg"
+internal extension PaywallData {
+
     static let defaultTemplateBaseURL = Bundle.revenueCatUI.resourceURL ?? Bundle.revenueCatUI.bundleURL
     static let revisionID: Int = -1
 

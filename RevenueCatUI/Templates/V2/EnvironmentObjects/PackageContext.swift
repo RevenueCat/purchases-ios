@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 11/14/24.
 
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -60,6 +60,14 @@ class PackageContext: ObservableObject {
     @Published var package: Package?
     @Published var variableContext: VariableContext
 
+    /// Whether the last update came from a reconcile rather than a user tap. `TabsComponentView` reads
+    /// it so a reconcile isn't recorded as a choice, which would outrank a tab's own default.
+    ///
+    /// Fragile: it only describes the most recent `update`, so any other write to this context resets
+    /// it. Two same-context writes used to, and are now skipped by identity checks. A new write to the
+    /// parent context has to pass `isReconcile` deliberately.
+    private(set) var lastUpdateWasReconcile: Bool = false
+
     init(
         package: Package?,
         variableContext: VariableContext
@@ -68,8 +76,12 @@ class PackageContext: ObservableObject {
         self.variableContext = variableContext
     }
 
+    /// - Parameter isReconcile: `true` when the SDK moved the selection off a package that wasn't
+    ///   rendering, rather than the user tapping. See `lastUpdateWasReconcile`.
     @MainActor
-    func update(package: Package?, variableContext: VariableContext) {
+    func update(package: Package?, variableContext: VariableContext, isReconcile: Bool = false) {
+        // Set before the published properties so observers see it while handling the change.
+        self.lastUpdateWasReconcile = isReconcile
         self.package = package
         self.variableContext = variableContext
     }

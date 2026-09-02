@@ -13,7 +13,7 @@
 // swiftlint:disable file_length
 
 import Foundation
-import RevenueCat
+@_spi(Internal) import RevenueCat
 import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
@@ -117,7 +117,7 @@ private enum FamilySharingTogglePreview {
                     text: nameTextLid,
                     fontWeight: .bold,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
@@ -125,14 +125,14 @@ private enum FamilySharingTogglePreview {
                 .text(.init(
                     text: detailTextLid,
                     color: .init(light: .hex("#000000")),
-                    size: .init(width: .fill, height: .fit),
+                    size: .init(width: .fill, height: .fit(nil)),
                     padding: .zero,
                     margin: .zero,
                     horizontalAlignment: .leading
                 ))
             ],
             dimension: .vertical(.leading, .start),
-            size: .init(width: .fill, height: .fit),
+            size: .init(width: .fill, height: .fit(nil)),
             spacing: 0,
             backgroundColor: nil,
             padding: PaywallComponent.Padding(top: 10,
@@ -205,7 +205,7 @@ private enum FamilySharingTogglePreview {
                         .text(.init(
                             text: "toggle_text",
                             color: .init(light: .hex("#000000")),
-                            size: .init(width: .fit, height: .fit),
+                            size: .init(width: .fit(nil), height: .fit(nil)),
                             overrides: [
                                 .init(conditions: [
                                     .selected
@@ -223,7 +223,7 @@ private enum FamilySharingTogglePreview {
                         ))
                     ],
                     dimension: .horizontal(.center, .start),
-                    size: .init(width: .fit, height: .fit)
+                    size: .init(width: .fit(nil), height: .fit(nil))
                 )
             ),
             tabs: [
@@ -304,7 +304,8 @@ private enum FamilySharingTogglePreview {
                                     bottomTrailing: 16))
         ),
         action: .inAppCheckout,
-        method: .inAppCheckout
+        method: .inAppCheckout,
+        name: nil
     )
 
     static let purchaseButtonStack = PaywallComponent.StackComponent(
@@ -397,7 +398,6 @@ struct FamilySharingTogglePreview_Previews: PreviewProvider {
             introEligibilityChecker: .default(),
             showZeroDecimalPlacePrices: true,
             onDismiss: { },
-            fallbackContent: .customView(AnyView(Text("Fallback paywall"))),
             failedToLoadFont: { _ in },
             colorScheme: .light
         )
