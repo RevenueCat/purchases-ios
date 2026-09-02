@@ -175,9 +175,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             return .noAction(.configurationUnavailable)
         }
 
-        guard rulesSnapshot.configGeneration == audienceConfiguration.configGeneration,
-              self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
-              self.audiencesConfigProvider.isCurrent(audienceConfiguration) else {
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
 
@@ -187,25 +185,33 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             audienceConfiguration: audienceConfiguration,
             checkpointIdentifier: identifier
         )
-        guard case let .completed(rule) = ruleEvaluation else {
-            return .noAction(.configurationUnavailable)
+
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
+            return nil
         }
 
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
-              self.audiencesConfigProvider.isCurrent(audienceConfiguration) else {
-            return nil
+        guard case let .completed(rule) = ruleEvaluation else {
+            return .noAction(.configurationUnavailable)
         }
 
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
         let resolution = await self.resolve(rule)
-        guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot),
-              self.audiencesConfigProvider.isCurrent(audienceConfiguration) else {
+        guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
 
         return resolution
+    }
+
+    private func isCurrent(
+        _ rulesSnapshot: CheckpointRulesSnapshot,
+        _ audienceConfiguration: AudienceConfigurationSnapshot
+    ) -> Bool {
+        return rulesSnapshot.configGeneration == audienceConfiguration.configGeneration
+            && self.checkpointsConfigProvider.isCurrent(rulesSnapshot)
+            && self.audiencesConfigProvider.isCurrent(audienceConfiguration)
     }
 
     private func evaluateRules(

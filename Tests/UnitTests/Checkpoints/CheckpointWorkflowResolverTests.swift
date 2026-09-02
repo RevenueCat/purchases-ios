@@ -524,6 +524,24 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testStaleConfigurationAfterUnevaluatablePredicateRetriesBeforeReturningUnavailable() async throws {
+        let dimensionEvaluationCount = Atomic<Int>(0)
+        let evaluator = LocalRulesEvaluator(dimensionProviders: [CallbackDimensionProvider {
+            let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+        }])
+        self.audiencesProvider.defaultRules = "{not-json"
+        let resolver = self.makeResolver(localRulesEvaluator: evaluator)
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(dimensionEvaluationCount.value, 2)
+    }
+
     // MARK: - Served audience payloads
 
     /// Empty rules are a documented payload shape. The engine only dispatches single-key objects, and every
@@ -937,6 +955,22 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         throw CancellationError()
+    }
+
+}
+
+private final class CallbackDimensionProvider: DimensionProvider, @unchecked Sendable {
+
+    let namespace = DimensionNamespace.device
+    let callback: () -> Void
+
+    init(callback: @escaping () -> Void) {
+        self.callback = callback
+    }
+
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        self.callback()
+        return [:]
     }
 
 }

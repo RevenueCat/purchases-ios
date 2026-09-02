@@ -93,23 +93,21 @@ extension RemoteConfiguration {
         init(from decoder: Decoder) throws {
             // String-keyed dictionaries bypass the decoder's key strategy. Topic metadata is a dynamic wire
             // contract, so snake_case keys and opaque identifiers must not be converted to Swift-style names.
-            let item = try decoder.singleValueContainer().decode([String: AnyDecodable].self)
+            var item = try decoder.singleValueContainer().decode([String: AnyDecodable].self)
 
-            if case let .string(blobRef)? = item[Self.blobRefKey] {
+            if case let .string(blobRef)? = item.removeValue(forKey: Self.blobRefKey) {
                 self.blobRef = blobRef
             } else {
                 self.blobRef = nil
             }
 
-            if case let .bool(prefetch)? = item[Self.prefetchKey] {
+            if case let .bool(prefetch)? = item.removeValue(forKey: Self.prefetchKey) {
                 self.prefetch = prefetch
             } else {
                 self.prefetch = false
             }
 
-            self.content = item.filter { key, _ in
-                key != Self.blobRefKey && key != Self.prefetchKey
-            }
+            self.content = item
         }
 
         func encode(to encoder: Encoder) throws {

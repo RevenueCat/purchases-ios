@@ -25,6 +25,19 @@ import Testing
 struct DimensionValueTests {
 
     @Test
+    func anyDecodableConvertsSupportedDimensionValues() throws {
+        let values = try JSONDecoder.default.decode(
+            [String: AnyDecodable].self,
+            from: #"{"null":null,"nested":{"kept":true,"unsupported":[1,2]},"records":[{"id":"one","unsupported":[1,2]}],"mixed":[{"id":"one"},"invalid"]}"#.asData
+        )
+
+        #expect(values["null"]?.dimensionValue == .null)
+        #expect(values["nested"]?.dimensionValue == .object(["kept": .bool(true)]))
+        #expect(values["records"]?.dimensionValue == .objectList([["id": .string("one")]]))
+        #expect(values["mixed"]?.dimensionValue == nil)
+    }
+
+    @Test
     func dateAndObjectListConvertToRulesEngineValues() async throws {
         let date = Date(timeIntervalSince1970: 1_700_000_000)
         let snapshot = try await Self.snapshot([

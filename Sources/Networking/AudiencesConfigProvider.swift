@@ -64,7 +64,6 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
                     for: .audiences,
                     itemKey: Self.audiencesBlobItemKey
                   ) else {
-                guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
                 return nil
             }
 
