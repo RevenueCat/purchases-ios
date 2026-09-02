@@ -39,6 +39,38 @@ final class VideoComponentViewTests: TestCase {
     }
 #endif
 
+    /// The view re-resolves when the asset it observes changes, so that value has to differ
+    /// between appearances. Without this the theme switch leaves the previous video playing.
+    func testViewDataDiffersBetweenAppearances() {
+        let style = Self.makeStyle(
+            darkUrl: URL(string: "https://assets.revenuecat.com/video-dark.mp4")!
+        )
+
+        XCTAssertNotEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
+    }
+
+    /// Light and dark can point at the same file while carrying different checksums. The file
+    /// cache keys on url and checksum together, so these are two different cached assets and the
+    /// appearance switch still has to register as a change.
+    func testViewDataDiffersWhenOnlyTheChecksumChanges() {
+        let sharedUrl = URL(string: "https://assets.revenuecat.com/video.mp4")!
+        let style = Self.makeStyle(
+            url: sharedUrl,
+            darkUrl: sharedUrl,
+            checksum: .init(algorithm: .md5, value: "light"),
+            darkChecksum: .init(algorithm: .md5, value: "dark")
+        )
+
+        XCTAssertNotEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
+    }
+
+    /// A paywall with no dark variant resolves to the same asset, so the view must not churn.
+    func testViewDataIsUnchangedWithoutADarkVariant() {
+        let style = Self.makeStyle()
+
+        XCTAssertEqual(style.viewData(forDarkMode: false), style.viewData(forDarkMode: true))
+    }
+
     func testCalculateMaxWidthClampsNegativeInitialFullscreenFillWidth() {
         let style = Self.makeStyle(
             size: .init(width: .fill, height: .fit(nil)),
@@ -116,14 +148,19 @@ private extension VideoComponentViewTests {
         fitMode: PaywallComponent.FitMode = .fit,
         padding: PaywallComponent.Padding? = nil,
         margin: PaywallComponent.Padding? = nil,
-        border: PaywallComponent.Border? = nil
+        border: PaywallComponent.Border? = nil,
+        url: URL = URL(string: "https://assets.revenuecat.com/video.mp4")!,
+        darkUrl: URL? = nil,
+        checksum: Checksum? = nil,
+        darkChecksum: Checksum? = nil
     ) -> VideoComponentStyle {
         VideoComponentStyle(
             showControls: false,
             autoPlay: true,
             loop: true,
-            url: URL(string: "https://assets.revenuecat.com/video.mp4")!,
+            url: url,
             lowResUrl: nil,
+            darkUrl: darkUrl,
             size: size,
             widthLight: 1920,
             heightLight: 1080,
@@ -134,6 +171,8 @@ private extension VideoComponentViewTests {
             padding: padding,
             margin: margin,
             border: border,
+            checksum: checksum,
+            darkChecksum: darkChecksum,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             colorScheme: .light
         )

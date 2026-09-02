@@ -27,4 +27,14 @@ final class MockAuthenticationDelegate: NSObject, AuthenticationDelegate {
         self.invokedAuthenticatorDidEncounterErrorParametersList.append(error)
     }
 
+    private(set) var invokedAuthenticatorDidUpdateAccessToken = false
+    private(set) var invokedAuthenticatorDidUpdateAccessTokenCount = 0
+    private(set) var invokedAuthenticatorDidUpdateAccessTokenParametersList: [String?] = []
+
+    func authenticatorDidUpdateAccessToken(_ newAccessToken: String?) {
+        self.invokedAuthenticatorDidUpdateAccessToken = true
+        self.invokedAuthenticatorDidUpdateAccessTokenCount += 1
+        self.invokedAuthenticatorDidUpdateAccessTokenParametersList.append(newAccessToken)
+    }
+
 }

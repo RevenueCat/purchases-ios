@@ -24,6 +24,8 @@
     [auth identifyCurrentUserAsID:@"" completion:^(RCCustomerInfo *i, BOOL created, NSError *error) { }];
     [auth logOutWithCompletion:^(RCCustomerInfo *i, NSError *error) { }];
 
+    NSString *__unused token = auth.currentAccessToken;
+
     RCIdentity *siwa = [RCIdentity identityWithSignInWithAppleToken:[NSData data]];
     RCIdentitySource *__unused source = siwa.identitySource;
 
@@ -39,5 +41,7 @@
 }
 
 - (void)authenticatorDidEncounterError:(NSError *)error { }
+
+- (void)authenticatorDidUpdateAccessToken:(NSString *)newAccessToken { }
 
 @end

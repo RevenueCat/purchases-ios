@@ -132,46 +132,14 @@ struct VideoComponentView: View {
                     }
                     .allowsHitTesting(style.showControls)
                     .onAppear {
-                        let fileRepository = FileRepository.shared
-
-                        // 1. High-res cached → use immediately
-                        if let fullResCachedURL = fileRepository.getCachedFileURL(
-                            for: viewData.url,
-                            withChecksum: viewData.checksum
-                        ) {
-                            self.cachedURL = fullResCachedURL
-                            self.imageSource = nil
-                            return
-                        }
-
-                        // 2. Low-res cached → use immediately, cache high-res in background
-                        if let lowResUrl = viewData.lowResUrl,
-                           lowResUrl != viewData.url,
-                           let lowResCachedURL = fileRepository.getCachedFileURL(
-                               for: lowResUrl,
-                               withChecksum: viewData.lowResChecksum
-                           ) {
-                            self.cachedURL = lowResCachedURL
-                            self.imageSource = nil
-                            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
-                            return
-                        }
-
-                        // 3. Nothing cached → stream remote URL, cache in background
-                        self.cachedURL = viewData.url
-                        self.imageSource = viewModel.imageSource
-
-                        // Cache both resolutions as a failsafe: if the high-res
-                        // download fails or is canceled, the low-res version is
-                        // available as a fallback on next open.
-                        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
-                        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
-                            cacheVideo(
-                                fileRepository: fileRepository,
-                                url: lowResUrl,
-                                checksum: viewData.lowResChecksum
-                            )
-                        }
+                        self.resolveSource(viewData: viewData)
+                    }
+                    // The player only swaps when its identity changes, and `cachedURL` is
+                    // deliberately not part of it so a low-res to high-res swap cannot restart
+                    // playback (#6254).
+                    .onChangeOf(viewData) { newViewData in
+                        self.resolveSource(viewData: newViewData)
+                        self.playerRefreshToggle.toggle()
                     }
                     .applyMediaWidth(size: style.size)
                     .applyMediaHeight(size: style.size, aspectRatio: self.aspectRatio(style: style))
@@ -196,6 +164,50 @@ struct VideoComponentView: View {
                 updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
             }
 
+    }
+
+    /// Picks the best available source for the current appearance and hands it to the player.
+    private func resolveSource(viewData: VideoComponentStyle.ViewData) {
+        let fileRepository = FileRepository.shared
+
+        // 1. High-res cached → use immediately
+        if let fullResCachedURL = fileRepository.getCachedFileURL(
+            for: viewData.url,
+            withChecksum: viewData.checksum
+        ) {
+            self.cachedURL = fullResCachedURL
+            self.imageSource = nil
+            return
+        }
+
+        // 2. Low-res cached → use immediately, cache high-res in background
+        if let lowResUrl = viewData.lowResUrl,
+           lowResUrl != viewData.url,
+           let lowResCachedURL = fileRepository.getCachedFileURL(
+               for: lowResUrl,
+               withChecksum: viewData.lowResChecksum
+           ) {
+            self.cachedURL = lowResCachedURL
+            self.imageSource = nil
+            cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+            return
+        }
+
+        // 3. Nothing cached → stream remote URL, cache in background
+        self.cachedURL = viewData.url
+        self.imageSource = viewModel.imageSource
+
+        // Cache both resolutions as a failsafe: if the high-res
+        // download fails or is canceled, the low-res version is
+        // available as a fallback on next open.
+        cacheVideo(fileRepository: fileRepository, url: viewData.url, checksum: viewData.checksum)
+        if let lowResUrl = viewData.lowResUrl, lowResUrl != viewData.url {
+            cacheVideo(
+                fileRepository: fileRepository,
+                url: lowResUrl,
+                checksum: viewData.lowResChecksum
+            )
+        }
     }
 
     private func aspectRatio(style: VideoComponentStyle) -> Double {

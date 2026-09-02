@@ -76,16 +76,14 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
-        let checkpoint = CheckpointInfo(identifier: identifier, params: params)
-        self.listener?.onCheckpointHit(checkpoint)
+        self.listener?.onCheckpointHit(CheckpointHitContext(identifier: identifier, params: params))
 
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointNoActionResult(
-                checkpoint: checkpoint,
-                reason: .invalidCheckpointIdentifier
+            let result = CheckpointNoActionResult(reason: .invalidCheckpointIdentifier)
+            self.listener?.onCheckpointCompleted(
+                CheckpointCompletedContext(identifier: identifier, params: params, result: result)
             )
-            self.listener?.onCheckpointCompleted(checkpoint, result: result)
             return result
         }
 
@@ -97,24 +95,17 @@ final class CheckpointsManager {
                 customVariables: params.customVariables
             )
             let outcome = try await self.executor.execute(presentation)
-            result = CheckpointPaywallPresentedResult(
-                checkpoint: checkpoint,
-                paywallOutcome: outcome
-            )
+            result = CheckpointPaywallPresentedResult(paywallOutcome: outcome)
         case let .matchedOffering(offering):
             // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointReceivedOfferingResult(
-                checkpoint: checkpoint,
-                offering: offering
-            )
+            result = CheckpointReceivedOfferingResult(offering: offering)
         case let .noAction(reason):
-            result = CheckpointNoActionResult(
-                checkpoint: checkpoint,
-                reason: reason.noActionReason
-            )
+            result = CheckpointNoActionResult(reason: reason.noActionReason)
         }
 
-        self.listener?.onCheckpointCompleted(checkpoint, result: result)
+        self.listener?.onCheckpointCompleted(
+            CheckpointCompletedContext(identifier: identifier, params: params, result: result)
+        )
         return result
     }
 
@@ -128,8 +119,6 @@ private extension CheckpointResolutionReason {
         case .noMatch:
             return .noMatch
         case .configurationUnavailable:
-            return .configurationUnavailable
-        case .disabled:
             return .configurationUnavailable
         case .unknownCheckpoint:
             return .unknownCheckpoint
