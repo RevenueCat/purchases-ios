@@ -85,6 +85,27 @@ protocol RemoteConfigManagerType: AnyObject {
 
 extension RemoteConfigManagerType {
 
+    /// Performs a read against one config generation and retries once if a successful read was
+    /// superseded while suspended. Errors and cancellation are propagated immediately.
+    func readConsistent<Value>(
+        _ operation: () async throws -> Value?
+    ) async throws -> Value? {
+        for attempt in 0...1 {
+            let generation = self.configGeneration
+            let value = try await operation()
+
+            guard self.configGeneration == generation else {
+                guard attempt == 0 else { return nil }
+                Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+                continue
+            }
+
+            return value
+        }
+
+        return nil
+    }
+
     func withCurrentConfigGeneration<T>(_ operation: (Int) -> T?) -> T? {
         let generation = self.configGeneration
         guard let value = operation(generation),
@@ -134,6 +155,7 @@ extension RemoteConfigManagerType {
             committed = latest
         }
     }
+
 
     func mergeItemsBlobData<T: Decodable>(
         for topic: RemoteConfigTopic,
