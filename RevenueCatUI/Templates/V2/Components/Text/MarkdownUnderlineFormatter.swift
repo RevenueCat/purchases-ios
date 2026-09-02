@@ -23,7 +23,10 @@ enum MarkdownUnderlineFormatter {
         let tagPairs = Self.matchedTagPairs(in: tags)
 
         for pair in tagPairs {
-            let contentRange = pair.opening.range.upperBound..<pair.closing.range.lowerBound
+            let contentRange = Self.range(
+                pair.opening.range.upperBound..<pair.closing.range.lowerBound,
+                in: result
+            )
             var content = result[contentRange]
             content.underlineStyle = .single
             result[contentRange] = content
@@ -32,7 +35,7 @@ enum MarkdownUnderlineFormatter {
         // Match Android by stripping recognized inline HTML tags even when they are unmatched.
         // Process in reverse order so earlier tag offsets remain valid as tags are removed.
         for tag in tags.sorted(by: { $0.range.lowerBound > $1.range.lowerBound }) {
-            result.replaceSubrange(tag.range, with: AttributedString())
+            result.replaceSubrange(Self.range(tag.range, in: result), with: AttributedString())
         }
 
         return result
@@ -44,6 +47,10 @@ enum MarkdownUnderlineFormatter {
         for run in attributedString.runs
         where run.inlinePresentationIntent?.contains(.inlineHTML) == true {
             let runText = String(attributedString[run.range].characters)
+            let runLowerOffset = attributedString.characters.distance(
+                from: attributedString.startIndex,
+                to: run.range.lowerBound
+            )
             var index = runText.startIndex
 
             while index < runText.endIndex {
@@ -67,18 +74,34 @@ enum MarkdownUnderlineFormatter {
                 let upperBound = runText.index(index, offsetBy: tagLength)
                 let lowerOffset = runText.distance(from: runText.startIndex, to: index)
                 let upperOffset = runText.distance(from: runText.startIndex, to: upperBound)
-                let lowerBound = attributedString.index(run.range.lowerBound, offsetByCharacters: lowerOffset)
-                let attributedUpperBound = attributedString.index(
-                    run.range.lowerBound,
-                    offsetByCharacters: upperOffset
-                )
 
-                tags.append(Tag(kind: kind, range: lowerBound..<attributedUpperBound))
+                tags.append(
+                    Tag(
+                        kind: kind,
+                        range: (runLowerOffset + lowerOffset)..<(runLowerOffset + upperOffset)
+                    )
+                )
                 index = upperBound
             }
         }
 
         return tags
+    }
+
+    private static func range(
+        _ offsets: Range<Int>,
+        in attributedString: AttributedString
+    ) -> Range<AttributedString.Index> {
+        let lowerBound = attributedString.index(
+            attributedString.startIndex,
+            offsetByCharacters: offsets.lowerBound
+        )
+        let upperBound = attributedString.index(
+            attributedString.startIndex,
+            offsetByCharacters: offsets.upperBound
+        )
+
+        return lowerBound..<upperBound
     }
 
     private static func matchedTagPairs(in tags: [Tag]) -> [TagPair] {
@@ -101,7 +124,7 @@ enum MarkdownUnderlineFormatter {
 
     private struct Tag {
         let kind: TagKind
-        let range: Range<AttributedString.Index>
+        let range: Range<Int>
     }
 
     private enum TagKind {
