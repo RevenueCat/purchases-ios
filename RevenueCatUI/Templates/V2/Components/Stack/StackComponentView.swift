@@ -844,6 +844,18 @@ struct StackComponentFillConstraints_Previews: PreviewProvider {
     }
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentMarginConstraint_Previews: PreviewProvider {
+    static var previews: some View {
+        stackMarginConstraintPreview(
+            title: "Fixed(32) with 16pt horizontal margin",
+            constraint: .fixed(32)
+        )
+        .previewLayout(.fixed(width: 320, height: 130))
+        .previewDisplayName("Stack · Margin outside size constraint")
+    }
+}
+
 private let stackSizingPreviewBackground = Color(
     red: 226.0 / 255.0,
     green: 232.0 / 255.0,
@@ -967,6 +979,56 @@ private func stackFillConstraintLabel(_ constraint: PaywallComponent.SizeConstra
     }
 
     return "Fill"
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func stackMarginConstraintPreview(
+    title: String,
+    constraint: PaywallComponent.SizeConstraint
+) -> some View {
+    let component = PaywallComponent.StackComponent(
+        components: [
+            .text(.init(
+                text: "stack_margin_content",
+                color: .init(light: .hex("#FFFFFF")),
+                size: .init(width: .fixed(100), height: .fixed(32))
+            ))
+        ],
+        size: .init(width: constraint, height: .fixed(32)),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#2563EB")),
+        padding: .zero,
+        margin: .init(top: 0, bottom: 0, leading: 16, trailing: 16),
+        shape: .rectangle(nil)
+    )
+
+    return VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+        HStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: component,
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: ["stack_margin_content": .string("32")]
+                    ),
+                    colorScheme: .light
+                ),
+                onDismiss: {}
+            )
+            .previewRequiredPaywallsV2Properties()
+
+            Color.pink
+                .frame(width: 4, height: 32)
+        }
+        .background(stackSizingPreviewContainer)
+
+        Text("32pt content + 32pt margin; marker starts at 64pt")
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(stackSizingPreviewBackground)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
