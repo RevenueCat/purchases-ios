@@ -80,8 +80,8 @@
       "id": "regex_replace_feeds_another_operator",
       "predicate": {
         "===": [
-          {"rc.length": {"rc.regexReplace": ["a1b2c3", "[0-9]", ""]}},
-          3
+          {"rc.upper": {"rc.regexReplace": ["a1b2c3", "[0-9]", ""]}},
+          "ABC"
         ]
       },
       "variables": {},
