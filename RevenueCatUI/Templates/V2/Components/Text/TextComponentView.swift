@@ -34,6 +34,11 @@ struct TextComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -74,6 +79,7 @@ struct TextComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.isHovered || self.componentHoverState,
             selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -101,6 +107,7 @@ struct TextComponentView: View {
                     .padding(style.margin)
             }
         }
+        .componentHoverState(self.$isHovered, trackingEnabled: self.viewModel.hasHoverOverride)
     }
 
 }
