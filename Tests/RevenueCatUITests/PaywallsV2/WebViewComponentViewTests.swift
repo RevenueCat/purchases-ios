@@ -40,14 +40,12 @@ final class WebViewComponentViewTests: TestCase {
     }
 
     func testResolvedFitDimensionClampsToMinAndMax() {
-        let minimum = MinMax(min: 20, max: nil)
-        XCTAssertEqual(minimum.min, 20)
         XCTAssertEqual(
             WebViewSizing.resolvedDimension(
                 measured: 10,
                 defaultSize: nil,
                 fallback: 300,
-                minMax: minimum
+                minMax: .init(min: 20, max: nil)
             ),
             20
         )
