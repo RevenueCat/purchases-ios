@@ -34,6 +34,13 @@ extension RulesEngine {
             case "rc.upper":
                 return try CaseOperators.opUpper(args: args, vars: vars)
 
+            case "rc.regexExtract":
+                return try RegexOperators.opRegexExtract(args: args, vars: vars)
+            case "rc.regexMatch":
+                return try RegexOperators.opRegexMatch(args: args, vars: vars)
+            case "rc.regexReplace":
+                return try RegexOperators.opRegexReplace(args: args, vars: vars)
+
             case "rc.rootVar":
                 return try RootVarOperator.opRootVar(args: args, vars: vars)
 

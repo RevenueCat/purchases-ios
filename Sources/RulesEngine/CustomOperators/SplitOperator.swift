@@ -37,11 +37,7 @@ extension RulesEngine {
         static func opSplit(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
 
-            guard evaluated.count == 2 else {
-                throw EvaluationError.typeMismatch(
-                    message: "operator 'rc.split' expects 2 arguments, got \(evaluated.count)"
-                )
-            }
+            try Operators.checkArity(evaluated.count, allowed: [2], operatorName: "rc.split")
 
             guard case .string(let input) = evaluated[0] else {
                 throw EvaluationError.typeMismatch(
