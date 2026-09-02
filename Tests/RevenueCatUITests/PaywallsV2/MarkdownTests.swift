@@ -100,6 +100,29 @@ final class MarkdownTests: TestCase {
         XCTAssertTrue(underlinedRuns.isEmpty)
     }
 
+    func testApplyUnderlines_withStrayClosingTag() throws {
+        let input = try AttributedString(markdown: "Hello </u>world")
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        XCTAssertEqual(String(result.characters), "Hello </u>world")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertTrue(underlinedRuns.isEmpty)
+    }
+
+    func testApplyUnderlines_withNestedUnderlineTags() throws {
+        let input = try AttributedString(
+            markdown: "<u>a <u>b</u> c</u>",
+            options: .init(interpretedSyntax: .inlineOnly)
+        )
+        let result = MarkdownUnderlineFormatter.apply(to: input)
+
+        XCTAssertEqual(String(result.characters), "a b c")
+
+        let underlinedRuns = result.runs.filter { $0.underlineStyle == .single }
+        XCTAssertEqual(underlinedRuns.map { String(result[$0.range].characters) }, ["a b c"])
+    }
+
     func testApplyUnderlines_withBoldInsideUnderline() throws {
         let input = try AttributedString(
             markdown: "<u>**bold text**</u>",

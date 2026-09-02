@@ -20,19 +20,9 @@ enum MarkdownUnderlineFormatter {
     static func apply(to attributedString: AttributedString) -> AttributedString {
         var result = attributedString
         let plainString = String(result.characters)
+        let tagPairs = Self.matchedTagPairs(in: plainString)
 
-        guard let regex = NSRegularExpression.underlineHTML else {
-            return result
-        }
-
-        let nsRange = NSRange(plainString.startIndex..., in: plainString)
-        let matches = regex.matches(in: plainString, options: [], range: nsRange)
-
-        func attributedRange(for nsRange: NSRange) -> Range<AttributedString.Index>? {
-            guard let range = Range(nsRange, in: plainString) else {
-                return nil
-            }
-
+        func attributedRange(for range: Range<String.Index>) -> Range<AttributedString.Index> {
             let lowerOffset = plainString.distance(from: plainString.startIndex, to: range.lowerBound)
             let upperOffset = plainString.distance(from: plainString.startIndex, to: range.upperBound)
             let lowerBound = result.index(result.startIndex, offsetByCharacters: lowerOffset)
@@ -41,32 +31,62 @@ enum MarkdownUnderlineFormatter {
             return lowerBound..<upperBound
         }
 
-        // Process in reverse order so earlier match offsets remain valid as tags are removed.
-        for match in matches.reversed() {
-            guard let fullRange = attributedRange(for: match.range),
-                  let contentRange = attributedRange(for: match.range(at: 1)) else {
-                continue
-            }
+        for pair in tagPairs {
+            let contentRange = attributedRange(for: pair.opening.range.upperBound..<pair.closing.range.lowerBound)
+            var content = result[contentRange]
+            content.underlineStyle = .single
+            result[contentRange] = content
+        }
 
-            var content = AttributedString(result[contentRange])
-            if !content.characters.isEmpty {
-                content.underlineStyle = .single
-            }
-
-            result.replaceSubrange(fullRange, with: content)
+        // Process in reverse order so earlier tag offsets remain valid as tags are removed.
+        let matchedTags = tagPairs
+            .flatMap { [$0.opening, $0.closing] }
+            .sorted { $0.range.lowerBound > $1.range.lowerBound }
+        for tag in matchedTags {
+            result.replaceSubrange(attributedRange(for: tag.range), with: AttributedString())
         }
 
         return result
     }
 
-}
+    private static func matchedTagPairs(in string: String) -> [TagPair] {
+        var pairs: [TagPair] = []
+        var unmatchedOpeningTags: [Tag] = []
+        var index = string.startIndex
 
-private extension NSRegularExpression {
+        while index < string.endIndex {
+            let remainingText = string[index...]
 
-    static let underlineHTML = try? NSRegularExpression(
-        pattern: "<u>(.*?)</u>",
-        options: [.dotMatchesLineSeparators]
-    )
+            if remainingText.hasPrefix(Self.openingTag) {
+                let upperBound = string.index(index, offsetBy: Self.openingTag.count)
+                let tag = Tag(range: index..<upperBound)
+                unmatchedOpeningTags.append(tag)
+                index = upperBound
+            } else if remainingText.hasPrefix(Self.closingTag) {
+                let upperBound = string.index(index, offsetBy: Self.closingTag.count)
+                if let openingTag = unmatchedOpeningTags.popLast() {
+                    pairs.append(TagPair(opening: openingTag, closing: Tag(range: index..<upperBound)))
+                }
+                index = upperBound
+            } else {
+                index = string.index(after: index)
+            }
+        }
+
+        return pairs
+    }
+
+    private struct Tag {
+        let range: Range<String.Index>
+    }
+
+    private struct TagPair {
+        let opening: Tag
+        let closing: Tag
+    }
+
+    private static let openingTag = "<u>"
+    private static let closingTag = "</u>"
 
 }
 
