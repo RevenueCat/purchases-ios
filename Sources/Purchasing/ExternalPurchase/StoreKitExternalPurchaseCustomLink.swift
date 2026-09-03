@@ -21,6 +21,12 @@ import StoreKit
 /// permanently unavailable.
 internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
+    private let paymentAuthorizationProvider: PaymentAuthorizationProvider
+
+    init(paymentAuthorizationProvider: PaymentAuthorizationProvider = .storeKit) {
+        self.paymentAuthorizationProvider = paymentAuthorizationProvider
+    }
+
     var isAPIAvailable: Bool {
         #if compiler(>=6.0.2)
         guard #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) else {
@@ -33,9 +39,13 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
         #endif
     }
 
-    func isEligible() async -> Bool {
+    func canMakeExternalPurchases() async -> Bool {
         #if compiler(>=6.0.2)
         guard #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) else {
+            return false
+        }
+
+        guard self.paymentAuthorizationProvider.isAuthorized() else {
             return false
         }
 

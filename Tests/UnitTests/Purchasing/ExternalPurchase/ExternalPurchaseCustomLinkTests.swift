@@ -86,8 +86,17 @@ class ExternalPurchaseCustomLinkTests: TestCase {
             expect(error).to(matchError(ExternalPurchaseError.apiUnavailable))
         }
 
-        let isEligible = await customLink.isEligible()
-        expect(isEligible) == false
+        let canMakeExternalPurchases = await customLink.canMakeExternalPurchases()
+        expect(canMakeExternalPurchases) == false
+    }
+
+    func testCannotMakeExternalPurchasesWhenTheDeviceDoesNotAuthorizePayments() async {
+        let customLink = StoreKitExternalPurchaseCustomLink(
+            paymentAuthorizationProvider: .init(isAuthorized: { false })
+        )
+
+        let canMakeExternalPurchases = await customLink.canMakeExternalPurchases()
+        expect(canMakeExternalPurchases) == false
     }
 
 }

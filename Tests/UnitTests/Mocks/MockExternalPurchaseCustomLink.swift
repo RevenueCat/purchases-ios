@@ -17,11 +17,11 @@ import Foundation
 final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     var stubbedIsAPIAvailable: Bool = true
-    var stubbedIsEligible: Bool = true
+    var stubbedCanMakeExternalPurchases: Bool = true
     var stubbedTokenResult: Result<String?, Error> = .success("test-external-purchase-token")
     var stubbedNoticeResult: Result<ExternalPurchaseNoticeResult, Error> = .success(.continued)
 
-    private(set) var invokedIsEligibleCount: Int = 0
+    private(set) var invokedCanMakeExternalPurchasesCount: Int = 0
     private(set) var invokedTokenTypes: [ExternalPurchaseTokenType] = []
     private(set) var invokedNoticeTypes: [ExternalPurchaseNoticeType] = []
 
@@ -29,9 +29,9 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
         return self.stubbedIsAPIAvailable
     }
 
-    func isEligible() async -> Bool {
-        self.invokedIsEligibleCount += 1
-        return self.stubbedIsEligible
+    func canMakeExternalPurchases() async -> Bool {
+        self.invokedCanMakeExternalPurchasesCount += 1
+        return self.stubbedCanMakeExternalPurchases
     }
 
     func token(for tokenType: ExternalPurchaseTokenType) async throws -> String? {
