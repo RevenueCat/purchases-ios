@@ -603,6 +603,13 @@
 		53A8DCC12E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A8DCC02E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift */; };
 		53A8DCC32E0EA4FF00FEABEA /* HealthReportAvailabilityResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53A8DCC22E0EA4F600FEABEA /* HealthReportAvailabilityResponse.swift */; };
 		53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */; };
+		EF0100000000000000000002 /* ExternalPurchaseTokenType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */; };
+		EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000011 /* ExternalPurchaseNotice.swift */; };
+		EF0100000000000000000022 /* ExternalPurchaseCustomLinkType.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */; };
+		EF0100000000000000000032 /* StoreKitExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */; };
+		EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
+		EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
+		EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */; };
 		53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E33BBA2E095B8900287158 /* SDKHealthManager.swift */; };
 		551800702FF46C720055FD1B /* SecureItemStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */; };
 		551800772FF46C8A0055FD1B /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551800762FF46C8A0055FD1B /* KeychainTests.swift */; };
@@ -2355,6 +2362,12 @@
 		53A8DCC02E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportAvailabilityOperation.swift; sourceTree = "<group>"; };
 		53A8DCC22E0EA4F600FEABEA /* HealthReportAvailabilityResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthReportAvailabilityResponse.swift; sourceTree = "<group>"; };
 		53AAD34E2E09856400605F51 /* PaymentAuthorizationProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentAuthorizationProvider.swift; sourceTree = "<group>"; };
+		EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenType.swift; sourceTree = "<group>"; };
+		EF0100000000000000000011 /* ExternalPurchaseNotice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseNotice.swift; sourceTree = "<group>"; };
+		EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkType.swift; sourceTree = "<group>"; };
+		EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreKitExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
+		EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
+		EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkTests.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureItemStorageTests.swift; sourceTree = "<group>"; };
 		551800762FF46C8A0055FD1B /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
@@ -4644,6 +4657,7 @@
 				2A3DB72A2707F75F2BDC90D7 /* MockTokenAPI.swift */,
 				1E3084A330178A6E00236A34 /* MockSourceHealthChecker.swift */,
 				900D27022F96929800D32EDF /* MockAdsAPI.swift */,
+				EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */,
 				1699BC6C2EEC6EAF002001FB /* MockUnderlyingSynchronizedFileCache.swift */,
 				903A065F2EB4B728009B9CE4 /* MockEventsManager.swift */,
 				16BCA3782E4D9C0400B39E7F /* MockSimpleNetworkService.swift */,
@@ -4885,6 +4899,7 @@
 				006E105DDA8D0D0FA32D690C /* StoreKit2 */,
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
 				75BB99002E3381BF0001DD1A /* SimulatedStore */,
+				EF0100000000000000000041 /* ExternalPurchase */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -4918,6 +4933,25 @@
 			path = Purchasing;
 			sourceTree = "<group>";
 		};
+		EF0100000000000000000041 /* ExternalPurchase */ = {
+			isa = PBXGroup;
+			children = (
+				EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */,
+				EF0100000000000000000011 /* ExternalPurchaseNotice.swift */,
+				EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */,
+				EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */,
+			);
+			path = ExternalPurchase;
+			sourceTree = "<group>";
+		};
+		EF0100000000000000000071 /* ExternalPurchase */ = {
+			isa = PBXGroup;
+			children = (
+				EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */,
+			);
+			path = ExternalPurchase;
+			sourceTree = "<group>";
+		};
 		354235D624C11160008C84EE /* Purchasing */ = {
 			isa = PBXGroup;
 			children = (
@@ -4926,6 +4960,7 @@
 				2D1015DF275A67560086173F /* StoreKitAbstractions */,
 				5766AABB283E809D00FA6091 /* Purchases */,
 				7581A92B2E2EB25400D0C3DE /* SimulatedStoreUnitTests */,
+				EF0100000000000000000071 /* ExternalPurchase */,
 				FD2472EF2F4CBAF50074D28A /* CustomerInfoActiveDatesTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
@@ -7520,6 +7555,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				1E3084A430178A6E00236A34 /* MockSourceHealthChecker.swift in Sources */,
+				EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				2D9C5ECA26F2805C0057FC45 /* ProductsManagerTests.swift in Sources */,
 				55DACF333034FA93005EE017 /* MockTokenAPI.swift in Sources */,
 				75A3B2B22F16B458001C4CA7 /* MockLargeItemCache.swift in Sources */,
@@ -8146,6 +8182,10 @@
 				55DACDF5302BC31E005EE017 /* IAMResponses.swift in Sources */,
 				FDA6F96F2E035544008BF232 /* VirtualCurrencyStrings.swift in Sources */,
 				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
+				EF0100000000000000000022 /* ExternalPurchaseCustomLinkType.swift in Sources */,
+				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,
+				EF0100000000000000000002 /* ExternalPurchaseTokenType.swift in Sources */,
+				EF0100000000000000000032 /* StoreKitExternalPurchaseCustomLink.swift in Sources */,
 				53A8DCC12E0EA49400FEABEA /* HealthReportAvailabilityOperation.swift in Sources */,
 				903A059A2EB3AE9C009B9CE4 /* AdEventsRequest.swift in Sources */,
 				901DE80E2EA0E097007EAA86 /* AdTracker.swift in Sources */,
@@ -8214,6 +8254,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1197332D6E6485002718E3 /* MockNSWindow.swift in Sources */,
+				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
+				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,
 				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
