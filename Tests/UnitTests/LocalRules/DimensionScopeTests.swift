@@ -60,8 +60,7 @@ struct DimensionScopeTests {
             currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot(
-            customVariables: ["attempt": .int(3)],
-            backendValues: ["condition_hash": .bool(true)]
+            customVariables: ["attempt": .int(3)]
         )
 
         #expect(snapshot.values == Self.expectedValues)
@@ -139,8 +138,7 @@ private extension DimensionScopeTests {
                 "value": .string("make_more_money")
             ])
         ]),
-        "custom": .object(["attempt": .int(3)]),
-        "backend": .object(["condition_hash": .bool(true)])
+        "custom": .object(["attempt": .int(3)])
     ]
 
     static let customerInfoData: [String: Any] = [

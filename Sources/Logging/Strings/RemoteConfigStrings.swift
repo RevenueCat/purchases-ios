@@ -11,7 +11,6 @@ enum RemoteConfigStrings {
 
     case audienceConfigurationDecodeFailed(Error)
     case audienceDecodeFailed(identifier: String, error: Error)
-    case backendPredicateResultUnsupported(String)
     case cacheURLNotAvailable
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
@@ -56,8 +55,6 @@ extension RemoteConfigStrings: LogMessage {
         case let .audienceDecodeFailed(identifier, error):
             return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
                 "\(error.localizedDescription)"
-        case let .backendPredicateResultUnsupported(identifier):
-            return "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule."
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .failedToClearBlobStore(error):
