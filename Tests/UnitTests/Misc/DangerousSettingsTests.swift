@@ -50,6 +50,11 @@ final class DangerousSettingsTests: TestCase {
             != DangerousSettings(uiPreviewMode: false)
     }
 
+    func testDifferentForceAllowTestStoreInReleaseBuildsIsNotEqual() {
+        expect(DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true))
+            != DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: false)
+    }
+
     func testInternalSettingsAreExcludedFromEquality() {
         let defaultInternal: InternalDangerousSettingsType = DangerousSettings.Internal.default
         let customInternal: InternalDangerousSettingsType = DangerousSettings.Internal(enableReceiptFetchRetry: true)
@@ -59,6 +64,23 @@ final class DangerousSettingsTests: TestCase {
 
         expect(lhs) == rhs
         expect(lhs.hashValue) == rhs.hashValue
+    }
+
+    // MARK: - forceAllowTestStoreInReleaseBuilds
+
+    func testForceAllowTestStoreInReleaseBuildsIsDisabledByDefault() {
+        expect(DangerousSettings().forceAllowTestStoreInReleaseBuilds) == false
+        expect(DangerousSettings(autoSyncPurchases: false).forceAllowTestStoreInReleaseBuilds) == false
+        expect(DangerousSettings(uiPreviewMode: true).forceAllowTestStoreInReleaseBuilds) == false
+    }
+
+    func testForceAllowTestStoreInReleaseBuildsCanBeEnabled() {
+        let settings = DangerousSettings(autoSyncPurchases: false, forceAllowTestStoreInReleaseBuilds: true)
+
+        expect(settings.forceAllowTestStoreInReleaseBuilds) == true
+        expect(settings.autoSyncPurchases) == false
+        expect(settings.uiPreviewMode) == false
+        expect(settings.customEntitlementComputation) == false
     }
 
     // MARK: - Internal settings
