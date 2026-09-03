@@ -12,6 +12,10 @@
 //  Created by Rick van der Linden on 8/31/26.
 //
 
+// Swift Testing is only available with the Xcode 16+ toolchain
+#if compiler(>=5.9)
+#if canImport(Testing)
+
 import Foundation
 import Testing
 
@@ -674,3 +678,6 @@ private extension CustomerInfoDimensionProviderTests {
     }
 
 }
+
+#endif
+#endif
