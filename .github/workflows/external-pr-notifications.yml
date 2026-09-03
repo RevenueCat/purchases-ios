@@ -8,6 +8,6 @@ permissions: {}
 
 jobs:
   notify:
-    uses: revenuecat/sdk-github-workflows/.github/workflows/external-pr-notifications.yml@3765ddb1c650fba52875e793217f737727425bdf # v7
+    uses: revenuecat/sdk-github-workflows/.github/workflows/external-pr-notifications.yml@b679120ce2931ac2e5c02166f84ad1f9b263fb96 # v8
     secrets:
       EXTERNAL_PR_SLACK_WEBHOOK_URL: ${{ secrets.EXTERNAL_PR_SLACK_WEBHOOK_URL }}
