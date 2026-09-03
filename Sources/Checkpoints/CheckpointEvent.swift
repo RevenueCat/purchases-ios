@@ -35,11 +35,11 @@ enum CheckpointType: String {
 
 }
 
-/// What a checkpoint resolved to, reported in the `result` field of a checkpoint hit.
+/// What the SDK did after resolving a checkpoint, reported in the `result` field of a checkpoint hit.
 enum CheckpointHitResult: String {
 
-    case workflow
-    case offering
+    case presentUI = "present_ui"
+    case returnData = "return_data"
     case noMatch = "no_match"
     case configurationUnavailable = "configuration_unavailable"
     case unknownCheckpoint = "unknown_checkpoint"
@@ -120,7 +120,7 @@ extension CheckpointEvent {
             return .hit(.init(identifier: identifier,
                               date: date,
                               checkpointType: .custom,
-                              result: .workflow,
+                              result: .presentUI,
                               workflowID: matched.workflow.id,
                               offeringID: matched.offering.identifier,
                               checkpointRuleID: resolved.checkpointRuleID))
@@ -129,7 +129,7 @@ extension CheckpointEvent {
             return .hit(.init(identifier: identifier,
                               date: date,
                               checkpointType: .custom,
-                              result: .offering,
+                              result: .returnData,
                               offeringID: offering.identifier,
                               checkpointRuleID: resolved.checkpointRuleID))
 

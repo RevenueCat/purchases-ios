@@ -40,7 +40,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(request.appUserID) == Self.userID
         expect(request.appSessionID) == Self.appSessionID.uuidString
         expect(request.timestamp) == self.date.millisecondsSince1970
-        expect(request.result) == .workflow
+        expect(request.result) == .presentUI
         expect(request.workflowID) == "wf_123"
         expect(request.offeringID) == "offering_id"
         expect(request.checkpointRuleID) == "rule_123"
@@ -57,7 +57,7 @@ class CheckpointEventsRequestTests: TestCase {
         expect(json).to(contain("\"app_user_id\":\"\(Self.userID)\""))
         expect(json).to(contain("\"app_session_id\":\"\(Self.appSessionID.uuidString)\""))
         expect(json).to(contain("\"timestamp\":\(self.date.millisecondsSince1970)"))
-        expect(json).to(contain("\"result\":\"workflow\""))
+        expect(json).to(contain("\"result\":\"present_ui\""))
         expect(json).to(contain("\"workflow_id\":\"wf_123\""))
         expect(json).to(contain("\"offering_id\":\"offering_id\""))
         expect(json).to(contain("\"checkpoint_rule_id\":\"rule_123\""))
@@ -65,8 +65,8 @@ class CheckpointEventsRequestTests: TestCase {
 
     func testEachResultIsEncodedWithItsWireValue() throws {
         let expectedValues: [CheckpointHitResult: String] = [
-            .workflow: "workflow",
-            .offering: "offering",
+            .presentUI: "present_ui",
+            .returnData: "return_data",
             .noMatch: "no_match",
             .configurationUnavailable: "configuration_unavailable",
             .unknownCheckpoint: "unknown_checkpoint"
@@ -151,7 +151,7 @@ class CheckpointEventsRequestTests: TestCase {
 
     private func storedEvent(
         appSessionID: UUID? = CheckpointEventsRequestTests.appSessionID,
-        result: CheckpointHitResult? = .workflow,
+        result: CheckpointHitResult? = .presentUI,
         workflowID: String? = "wf_123",
         offeringID: String? = "offering_id",
         checkpointRuleID: String? = "rule_123",
@@ -176,7 +176,7 @@ class CheckpointEventsRequestTests: TestCase {
     }
 
     private func encodedJSON(
-        result: CheckpointHitResult? = .workflow,
+        result: CheckpointHitResult? = .presentUI,
         workflowID: String? = "wf_123",
         offeringID: String? = "offering_id",
         checkpointRuleID: String? = "rule_123"

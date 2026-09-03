@@ -89,7 +89,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
 
         let event = try await self.singleTrackedCheckpointEvent()
-        expect(event.data.result) == .offering
+        expect(event.data.result) == .returnData
         expect(event.data.offeringID) == offering.identifier
         expect(event.data.checkpointRuleID) == "rule_123"
         expect(event.data.workflowID).to(beNil())
@@ -113,7 +113,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
         _ = try await self.purchases.resolveCheckpoint(identifier: "onboarding_complete", params: .init())
 
         let event = try await self.singleTrackedCheckpointEvent()
-        expect(event.data.result) == .workflow
+        expect(event.data.result) == .presentUI
         expect(event.data.workflowID) == workflow.id
         expect(event.data.offeringID) == offering.identifier
         expect(event.data.checkpointRuleID) == "rule_123"

@@ -161,7 +161,7 @@ class EventsManagerTests: TestCase {
             .init(identifier: "onboarding_complete",
                   date: Date(timeIntervalSince1970: 1_699_270_688.995),
                   checkpointType: .custom,
-                  result: .workflow,
+                  result: .presentUI,
                   workflowID: "wf_123",
                   offeringID: "offering_id")
         )
@@ -169,7 +169,7 @@ class EventsManagerTests: TestCase {
         let map = event.toMap()
 
         expect(map["checkpoint_type"] as? String) == "custom"
-        expect(map["result"] as? String) == "workflow"
+        expect(map["result"] as? String) == "present_ui"
         expect(map["workflow_id"] as? String) == "wf_123"
         expect(map["offering_id"] as? String) == "offering_id"
     }
