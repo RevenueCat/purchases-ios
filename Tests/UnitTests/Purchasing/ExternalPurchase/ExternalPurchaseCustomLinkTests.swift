@@ -58,22 +58,8 @@ class ExternalPurchaseCustomLinkTests: TestCase {
 
     // MARK: - StoreKit implementation
 
-    func testCanMakePaymentsReflectsPaymentAuthorization() {
-        let authorized = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorization: .init(isAuthorized: { true })
-        )
-        let unauthorized = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorization: .init(isAuthorized: { false })
-        )
-
-        expect(authorized.canMakePayments) == true
-        expect(unauthorized.canMakePayments) == false
-    }
-
     func testIsAPIAvailableMatchesTheBuildAndRuntimeEnvironment() {
-        let customLink = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorization: .init(isAuthorized: { true })
-        )
+        let customLink = StoreKitExternalPurchaseCustomLink()
 
         #if compiler(>=6.0.2)
         if #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) {
@@ -87,9 +73,7 @@ class ExternalPurchaseCustomLinkTests: TestCase {
     }
 
     func testUnavailableAPIThrowsWhenRequestingAToken() async throws {
-        let customLink = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorization: .init(isAuthorized: { true })
-        )
+        let customLink = StoreKitExternalPurchaseCustomLink()
 
         guard !customLink.isAPIAvailable else {
             throw XCTSkip("Only reachable when the external purchase custom link API is unavailable")
