@@ -23,11 +23,11 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
 
     var isAPIAvailable: Bool {
         #if compiler(>=6.0.2)
-        if #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) {
-            return true
-        } else {
+        guard #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) else {
             return false
         }
+
+        return true
         #else
         return false
         #endif
