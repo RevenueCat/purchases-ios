@@ -78,6 +78,20 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         expect(result?.value?.tokenSource) == "APPLE_SDK"
     }
 
+    /// Storing a token is idempotent on Apple's purchase identifier: the first registration answers `201`
+    /// and re-submitting the same token answers `200`, so both have to be read as success.
+    func testAcceptsTheCreatedStatusOfAFirstRegistration() {
+        self.httpClient.mock(
+            requestPath: .postExternalPurchaseToken,
+            response: .init(statusCode: .createdSuccess, response: Self.response)
+        )
+
+        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
+    }
+
     /// Only the identifier is needed to open checkout, so an otherwise sparse response must still decode.
     func testDecodesAResponseThatOnlyCarriesAnIdentifier() {
         self.httpClient.mock(
