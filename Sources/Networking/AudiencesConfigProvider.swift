@@ -51,10 +51,11 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
     private func loadConfiguration() async throws -> AudienceConfigurationSnapshot? {
         try Task.checkCancellation()
-        guard let topicSnapshot = await self.manager.topicCacheSnapshot(.audiences) else { return nil }
-
-        let prefetchRefs = topicSnapshot.key.values.compactMap { $0.prefetch ? $0.blobRef : nil }
-        await self.manager.ensureBlobsDownloaded(prefetchRefs)
+        guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences) else { return nil }
+        let topicSnapshot = GenerationGuardedCacheSnapshot(
+            generation: self.manager.configGeneration,
+            key: topic
+        )
         guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
         if let cached = self.cachedConfiguration.value(for: topicSnapshot) { return cached }
 
