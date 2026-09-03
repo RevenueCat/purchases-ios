@@ -613,10 +613,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// No dimension provider supplies `last_seen.*`, so the lookup fails and the audience cannot be
-    /// answered at all. That is not the same answer as a customer who falls outside it, so it is reported
-    /// as unavailable rather than as `noMatch`.
-    func testAudienceOnAnUnsuppliedVariableIsNotReportedAsNoMatch() async throws {
+    /// No dimension provider supplies `last_seen.*`, so the audience rule is treated as a non-match.
+    func testAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "in": [{ "var": "last_seen.country" }, ["ES"]] } }"#
@@ -625,13 +623,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await self.resolve()
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// Negation used to invert an unsupplied variable into a match: `null == "NL"` was false, so `!` made it
-    /// true and the audience matched *everyone*, including the customers it was meant to exclude. The lookup
-    /// fails ahead of the negation now, so an unresolvable path can no longer manufacture a match.
-    func testNegatedAudienceOnAnUnsuppliedVariableDoesNotMatch() async throws {
+    /// An unresolved variable must not be converted into a match by negation.
+    func testNegatedAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "!": [{ "==": [{ "var": "last_seen.country" }, "NL"] }] } }"#
@@ -641,7 +637,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let resolution = try await self.resolve()
 
         XCTAssertNil(Self.resolvedWorkflow(resolution))
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    func testAudienceOnAnUnsuppliedVariableDoesNotBlockALaterMatch() async throws {
+        let secondWorkflowID = "wf5678"
+        self.stubTwoRules(secondWorkflowID: secondWorkflowID)
+        self.audiencesProvider.rulesByAudienceID["audience_\(self.workflowID)"] =
+            #"{ "in": [{ "var": "last_seen.country" }, ["ES"]] }"#
+        self.audiencesProvider.rulesByAudienceID["audience_\(secondWorkflowID)"] = "true"
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
     /// Decodes with the real `Audience` decoder, so what gets evaluated is the string a served payload
