@@ -15,6 +15,8 @@ import Foundation
 import Nimble
 import XCTest
 
+// swiftlint:disable type_body_length
+
 @_spi(Internal) @testable import RevenueCat
 
 class UiConfigProviderTests: TestCase {
