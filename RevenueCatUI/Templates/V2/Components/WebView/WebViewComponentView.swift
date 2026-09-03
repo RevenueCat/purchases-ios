@@ -444,7 +444,7 @@ private extension View {
         measuredWidth: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize):
+        case .fit(let defaultSize, _):
             self.frame(
                 width: WebViewSizing.resolvedDimension(
                     measured: measuredWidth,
@@ -467,7 +467,7 @@ private extension View {
         measuredHeight: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize):
+        case .fit(let defaultSize, _):
             self.frame(
                 height: WebViewSizing.resolvedDimension(
                     measured: measuredHeight,
