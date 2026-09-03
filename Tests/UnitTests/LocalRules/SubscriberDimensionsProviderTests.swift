@@ -60,6 +60,7 @@ struct SubscriberDimensionsProviderTests {
         ).dimensions(at: Date())
 
         #expect(dimensions == ["gone": .null, "plan": .string("annual")])
+        #expect(dimensions["missing"] == nil)
     }
 
     @Test
