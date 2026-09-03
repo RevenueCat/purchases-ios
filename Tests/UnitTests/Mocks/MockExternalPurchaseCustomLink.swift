@@ -17,7 +17,6 @@ import Foundation
 final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     var stubbedIsAPIAvailable: Bool = true
-    var stubbedCanMakePayments: Bool = true
     var stubbedIsEligible: Bool = true
     var stubbedTokenResult: Result<String?, Error> = .success("test-external-purchase-token")
     var stubbedNoticeResult: Result<ExternalPurchaseNoticeResult, Error> = .success(.continued)
@@ -28,10 +27,6 @@ final class MockExternalPurchaseCustomLink: ExternalPurchaseCustomLinkType {
 
     var isAPIAvailable: Bool {
         return self.stubbedIsAPIAvailable
-    }
-
-    var canMakePayments: Bool {
-        return self.stubbedCanMakePayments
     }
 
     func isEligible() async -> Bool {

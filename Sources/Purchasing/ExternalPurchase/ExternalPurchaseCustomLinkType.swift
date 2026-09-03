@@ -23,11 +23,8 @@ internal enum ExternalPurchaseError: Error, Hashable {
 
 /// The part of StoreKit's `ExternalPurchaseCustomLink` that the SDK uses.
 ///
-/// Exists so that callers can be unit tested without StoreKit, and so that the OS availability check lives in one
-/// place instead of at every call site.
-///
-/// The calls are meant to be made in order: ``canMakePayments``, then ``isEligible()``, and the notice only in
-/// response to a deliberate customer interaction.
+/// ``isEligible()`` is a precondition for the rest, and the notice must only be shown in response to a deliberate
+/// customer interaction, such as tapping a button.
 internal protocol ExternalPurchaseCustomLinkType {
 
     /// Whether StoreKit's external purchase custom link API exists on the current OS version.
@@ -36,13 +33,11 @@ internal protocol ExternalPurchaseCustomLinkType {
     /// caller can tell an old OS apart from an app that is genuinely not eligible.
     var isAPIAvailable: Bool { get }
 
-    /// Whether the customer is allowed to make payments at all.
-    var canMakePayments: Bool { get }
-
     /// Whether the app can use the external purchase API at runtime.
     ///
-    /// This accounts for the customer's storefront, so the SDK does not determine the region itself. Returns
-    /// `false` when the API is unavailable. When this is `false`, the remaining calls throw.
+    /// This accounts for the customer's storefront, so the SDK does not determine the region itself. Also returns
+    /// `false` when the API is unavailable, in which case ``token(for:)`` and ``showNotice(type:)`` throw
+    /// ``ExternalPurchaseError/apiUnavailable``.
     func isEligible() async -> Bool
 
     /// Requests an external purchase token of the given type.
