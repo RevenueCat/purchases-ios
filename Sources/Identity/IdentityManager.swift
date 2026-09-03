@@ -84,11 +84,24 @@ class IdentityManager: CurrentUserProvider {
     var currentUserIsAnonymous: Bool {
         let userID = self.currentAppUserID
 
-        lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
-        lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
+        if Self.userIsAnonymous(userID) {
+            return true
+        }
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+        if self.deviceCache.cachedLegacyAppUserID == userID {
+            return true
+        }
+
+        if let info = try? self.customerInfoManager.cachedCustomerInfo(appUserID: userID),
+           info.allIdentitiesAreAnonymous {
+            return true
+        }
+
+        if tokenManager.isCurrentIdentityAnonymous {
+            return true
+        }
+
+        return false
     }
 
     var needsIAMLogin: Bool {
