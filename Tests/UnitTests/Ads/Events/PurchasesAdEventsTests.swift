@@ -52,7 +52,7 @@ class PurchasesAdEventsTests: BasePurchasesTests {
         expect(eventData.adFormat) == .banner
         expect(eventData.placement) == "home_screen"
         expect(eventData.adUnitId) == "ca-app-pub-123"
-        expect(eventData.mediatorErrorCode?.intValue) == 3
+        expect(eventData.mediatorErrorCode) == 3
     }
 
     func testTrackAdLoadedStoresEvent() async throws {
