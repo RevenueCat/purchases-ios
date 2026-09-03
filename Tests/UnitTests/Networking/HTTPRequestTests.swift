@@ -37,14 +37,16 @@ class HTTPRequestTests: TestCase {
         .health,
         .getProductEntitlementMapping,
         .rewardVerificationStatus(appUserID: userID, clientTransactionID: clientTransactionID),
-        .remoteConfig(domain: "app")
+        .remoteConfig(domain: "app"),
+        .postExternalPurchaseToken
     ]
     private static let unauthenticatedPaths: Set<HTTPRequest.Path> = [
         .health
     ]
     private static let pathsWithoutETags: Set<HTTPRequest.Path> = [
         .health,
-        .remoteConfig(domain: "app")
+        .remoteConfig(domain: "app"),
+        .postExternalPurchaseToken
     ]
     private static let pathsWithSignatureVerification: Set<HTTPRequest.Path> = [
         .getCustomerInfo(appUserID: userID),

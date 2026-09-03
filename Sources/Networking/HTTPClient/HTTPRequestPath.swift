@@ -316,7 +316,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postSubscriberAttributes,
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
-                .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
@@ -331,7 +330,10 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return true
         case .remoteConfig,
              .health,
-             .appHealthReportAvailability:
+             .appHealthReportAvailability,
+             // Responses are cached by URL only, and every registration posts a different
+             // body to the same URL, so a cached response must never be reused here.
+             .postExternalPurchaseToken:
             return false
         }
     }
