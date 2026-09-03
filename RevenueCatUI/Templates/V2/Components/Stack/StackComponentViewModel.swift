@@ -116,13 +116,15 @@ class StackComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme
     ) -> StackComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
 
         let partial = PresentedStackPartial.buildPartial(
@@ -165,6 +167,7 @@ class StackComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (StackComponentStyle) -> some View
     ) -> some View {
@@ -177,6 +180,7 @@ class StackComponentViewModel {
             customVariables: customVariables,
             stateValues: stateValues,
             stateDefaults: stateDefaults,
+            windowSize: windowSize,
             colorScheme: colorScheme
         )
         apply(style)

@@ -79,14 +79,16 @@ final class UIConfigProvider {
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
-        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil
     ) -> ConditionContext {
         ConditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             defaultCustomVariables: self.defaultCustomVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
     }
 

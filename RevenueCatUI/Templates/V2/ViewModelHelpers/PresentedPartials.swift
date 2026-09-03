@@ -56,6 +56,11 @@ struct ConditionContext {
     /// Declared defaults for state keys, used when a key has no value in the store snapshot.
     let stateDefaults: [String: PaywallComponent.ConditionValue]
 
+    /// Size of the window the paywall is rendered in, for window size condition
+    /// evaluation (adaptive layouts on foldables/tablets). `nil` when unknown,
+    /// in which case window size conditions never match.
+    let windowSize: CGSize?
+
     /// Creates a context with the given parameters.
     /// Developer-provided `customVariables` take priority over `defaultCustomVariables` from the dashboard.
     init(
@@ -63,12 +68,14 @@ struct ConditionContext {
         customVariables: [String: CustomVariableValue] = [:],
         defaultCustomVariables: [String: CustomVariableValue] = [:],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
-        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil
     ) {
         self.selectedPackageId = selectedPackageId
         self.customVariables = defaultCustomVariables.merging(customVariables) { _, developer in developer }
         self.stateValues = stateValues
         self.stateDefaults = stateDefaults
+        self.windowSize = windowSize
     }
 
 }
@@ -207,9 +214,45 @@ extension PresentedPartial {
                 stateDefaults: conditionContext.stateDefaults
             )
 
+        // Window size conditions (adaptive layouts: foldables, tablets)
+        case .windowWidth(let conditionOperator, let value):
+            guard let windowSize = conditionContext.windowSize else { return false }
+            return evaluateComparison(
+                actual: windowSize.width,
+                expected: value,
+                operator: conditionOperator
+            )
+        case .windowHeight(let conditionOperator, let value):
+            guard let windowSize = conditionContext.windowSize else { return false }
+            return evaluateComparison(
+                actual: windowSize.height,
+                expected: value,
+                operator: conditionOperator
+            )
+
         // Unknown/unsupported conditions never match
         case .unsupported:
             return false
+        }
+    }
+
+    private static func evaluateComparison(
+        actual: CGFloat,
+        expected: Double,
+        operator conditionOperator: PaywallComponent.ComparisonOperator
+    ) -> Bool {
+        let actualValue = Double(actual)
+        switch conditionOperator {
+        case .greaterThanOrEqual:
+            return actualValue >= expected
+        case .greaterThan:
+            return actualValue > expected
+        case .lessThanOrEqual:
+            return actualValue <= expected
+        case .lessThan:
+            return actualValue < expected
+        case .equal:
+            return doublesMatch(actualValue, expected)
         }
     }
 
