@@ -25,7 +25,9 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .startCheckout,
+             .getCheckoutStatus:
             return true
         }
     }
@@ -35,13 +37,18 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts:
             return true
+        case .startCheckout,
+             .getCheckoutStatus:
+            return false
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .startCheckout,
+             .getCheckoutStatus:
             return false
         }
     }
@@ -49,7 +56,9 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var needsNonceForSigning: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .startCheckout,
+             .getCheckoutStatus:
             return false
         }
     }
@@ -64,6 +73,10 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
+        case .startCheckout:
+            return "/rcbilling/v1/hosted-checkout"
+        case let .getCheckoutStatus(operationSessionID):
+            return "/rcbilling/v1/hosted-checkout/\(operationSessionID.trimmedAndEscaped)"
         }
     }
 
@@ -73,6 +86,10 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "get_web_offering_products"
         case .getWebBillingProducts:
             return "get_web_products"
+        case .startCheckout:
+            return "start_web_checkout"
+        case .getCheckoutStatus:
+            return "get_web_checkout_status"
         }
     }
 

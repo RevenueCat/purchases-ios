@@ -427,7 +427,7 @@ struct PaywallsV2View: View {
                         value: self.purchaseHandler.webCheckoutOpened)
             .preference(key: URLOpenedPreferenceKey.self,
                         value: self.purchaseHandler.urlOpened)
-            .disabled(self.purchaseHandler.actionInProgress)
+            .disabled(self.purchaseHandler.shouldDisablePaywallControls)
             .onDisappear {
                 // Standalone closes on disappear. A workflow page closes here only if it is still the
                 // current step at teardown (the step the user dismissed from); pages left earlier are

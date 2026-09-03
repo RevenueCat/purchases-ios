@@ -39,6 +39,7 @@ struct PurchaseButtonComponentView: View {
     private var componentInteractionLogger
 
     @State private var inAppBrowserURL: URL?
+    @State private var hostedCheckoutSession: HostedCheckoutSheetSession?
 
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -62,9 +63,11 @@ struct PurchaseButtonComponentView: View {
         }
     }
 
-    /// Disable for any type of purchase handler action
+    /// Disable for an in-flight purchase/restore. Do not include the hosted
+    /// checkout sheet — this view presents that sheet, and `.disabled` would
+    /// make the sheet ignore taps.
     var shouldBeDisabled: Bool {
-        return self.purchaseHandler.actionInProgress
+        return self.purchaseHandler.shouldDisablePaywallControls
     }
 
     var body: some View {
@@ -80,9 +83,16 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-        #if canImport(SafariServices) && canImport(UIKit)
+        #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
         .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
+            WebCheckoutView(url: self.inAppBrowserURL!)
+        }
+        .sheet(item: self.$hostedCheckoutSession, onDismiss: {
+            self.purchaseHandler.endHostedCheckoutSheet()
+        }) { session in
+            WebCheckoutView(viewModel: session.viewModel) { result in
+                Task { await self.handleHostedCheckoutFinished(result, session: session) }
+            }
         }
         #endif
     }
@@ -96,8 +106,10 @@ struct PurchaseButtonComponentView: View {
         switch method {
         case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
-        case .webCheckout, .webProductSelection, .customWebCheckout:
-            try await self.purchaseInWeb()
+        case .webCheckout:
+            try await self.purchaseInWeb(tryHostedStripe: true)
+        case .webProductSelection, .customWebCheckout:
+            try await self.purchaseInWeb(tryHostedStripe: false)
         }
     }
 
@@ -132,7 +144,7 @@ struct PurchaseButtonComponentView: View {
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
     }
 
-    private func purchaseInWeb() async throws {
+    private func purchaseInWeb(tryHostedStripe: Bool) async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
         guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
@@ -152,8 +164,85 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
+        #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
+        if tryHostedStripe, await self.openHostedStripeCheckoutIfAvailable() {
+            return
+        }
+        #else
+        _ = tryHostedStripe
+        #endif
         self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
     }
+
+    #if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
+    private func openHostedStripeCheckoutIfAvailable() async -> Bool {
+        guard Purchases.isConfigured else {
+            return false
+        }
+
+        guard !self.purchaseHandler.actionInProgress else {
+            return true
+        }
+
+        guard let selectedPackage = self.packageContext.package else {
+            return false
+        }
+
+        do {
+            let session = try await self.purchaseHandler.withPurchaseAction {
+                // Create the web view first so WebKit can start while we wait on the backend.
+                let viewModel = WebCheckoutViewModel()
+                let startResult = try await Purchases.shared.startHostedWebCheckout(
+                    packageID: selectedPackage.identifier,
+                    offeringIdentifier: selectedPackage.offeringIdentifier,
+                    email: nil
+                )
+                viewModel.load(startResult.checkoutURL)
+                await viewModel.waitUntilReady()
+                return HostedCheckoutSheetSession(
+                    operationSessionID: startResult.operationSessionID,
+                    viewModel: viewModel
+                )
+            }
+
+            self.purchaseHandler.beginHostedCheckoutSheet()
+            self.hostedCheckoutSession = session
+            self.purchaseHandler.signalWebCheckoutOpened()
+            return true
+        } catch {
+            Logger.error(Strings.hosted_web_checkout_start_failed(error))
+            return false
+        }
+    }
+
+    private func handleHostedCheckoutFinished(
+        _ result: WebCheckoutSheetResult,
+        session: HostedCheckoutSheetSession
+    ) async {
+        guard result == .success, Purchases.isConfigured else {
+            self.hostedCheckoutSession = nil
+            self.purchaseHandler.endHostedCheckoutSheet()
+            return
+        }
+
+        do {
+            let customerInfo = try await Purchases.shared.finishHostedWebCheckout(
+                operationSessionID: session.operationSessionID
+            )
+            await MainActor.run {
+                self.purchaseHandler.completeHostedWebCheckout(customerInfo: customerInfo)
+                self.purchaseHandler.endHostedCheckoutSheet()
+                self.hostedCheckoutSession = nil
+            }
+        } catch {
+            Logger.error(Strings.hosted_web_checkout_finish_failed(error))
+            await MainActor.run {
+                self.purchaseHandler.endHostedCheckoutSheet()
+                self.hostedCheckoutSession = nil
+            }
+        }
+    }
+    #endif
 
     private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
         let componentValue: String
@@ -232,6 +321,21 @@ struct PurchaseButtonComponentView: View {
     }
 
 }
+
+#if canImport(WebKit) && canImport(UIKit) && !os(tvOS)
+@available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
+@MainActor
+private final class HostedCheckoutSheetSession: Identifiable {
+    let id = UUID()
+    let operationSessionID: String
+    let viewModel: WebCheckoutViewModel
+
+    init(operationSessionID: String, viewModel: WebCheckoutViewModel) {
+        self.operationSessionID = operationSessionID
+        self.viewModel = viewModel
+    }
+}
+#endif
 
 #if DEBUG
 

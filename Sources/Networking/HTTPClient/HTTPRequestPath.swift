@@ -217,6 +217,8 @@ extension HTTPRequest {
 
         case getWebOfferingProducts(appUserID: String)
         case getWebBillingProducts(userId: String, productIds: Set<String>)
+        case startCheckout
+        case getCheckoutStatus(operationSessionID: String)
 
     }
 

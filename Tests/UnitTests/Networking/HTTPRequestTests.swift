@@ -293,7 +293,9 @@ class HTTPRequestTests: TestCase {
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            HTTPRequest.WebBillingPath.startCheckout,
+            HTTPRequest.WebBillingPath.getCheckoutStatus(operationSessionID: "opsess_123")
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
