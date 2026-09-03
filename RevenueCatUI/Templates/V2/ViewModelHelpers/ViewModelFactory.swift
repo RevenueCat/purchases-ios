@@ -594,11 +594,11 @@ struct ViewModelFactory {
     ) -> FirstMediaType? {
         switch component {
         case .image(let image):
-            return image.size.width == .fill ? .image : nil
+            return image.size.width.isFill ? .image : nil
         case .video(let video):
-            return video.size.width == .fill ? .video : nil
+            return video.size.width.isFill ? .video : nil
         case .webView(let webView):
-            return webView.size.width == .fill ? .webView : nil
+            return webView.size.width.isFill ? .webView : nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }
