@@ -346,7 +346,10 @@ final class RemoteConfigIntegrationTests: TestCase {
             "string": .string("value"),
             "int": .int(42),
             "double": .double(4.2),
-            "object": .object(["nested": .string("value")]),
+            "object": .object([
+                "nested": .string("value"),
+                "ignored": .null
+            ]),
             "object_list": .objectList([
                 ["id": .string("first"), "enabled": .bool(true)],
                 ["id": .string("second"), "enabled": .bool(false)]
