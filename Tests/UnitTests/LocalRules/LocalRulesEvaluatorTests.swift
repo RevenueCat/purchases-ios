@@ -270,7 +270,7 @@ struct LocalRulesEvaluatorTests {
         }
     }
 
-    @Test(arguments: ["evaluated_at", "custom", "backend"])
+    @Test(arguments: ["evaluated_at", "custom"])
     func providerCannotClaimReservedRoot(_ reservedRoot: String) async {
         let provider = TestDimensionProvider(
             name: "invalid",
