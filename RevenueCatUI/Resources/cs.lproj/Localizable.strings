@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Začněte {{ sub_offer_duration }} zkušební období, poté {{ total_price_and_per_month }}.";
 "Something went wrong" = "Něco se pokazilo";
 "Purchase" = "Koupit";
+"Selected" = "Vybráno";
+"Not selected" = "Nevybráno";

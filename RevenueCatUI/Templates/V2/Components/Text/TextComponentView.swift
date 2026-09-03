@@ -60,6 +60,9 @@ struct TextComponentView: View {
     @Environment(\.isPaywallLoading)
     private var isPaywallLoading
 
+    @Environment(\.packageSelectionAnnouncement)
+    private var packageSelectionAnnouncement
+
     private let viewModel: TextComponentViewModel
 
     internal init(viewModel: TextComponentViewModel) {
@@ -86,6 +89,10 @@ struct TextComponentView: View {
             if style.visible {
                 NonLocalizedMarkdownText(
                     text: style.text,
+                    accessibilityText: style.accessibilityText,
+                    selectionAnnouncement: self.viewModel.announcesPackageSelection
+                        ? self.packageSelectionAnnouncement
+                        : nil,
                     font: style.font,
                     fontWeight: style.fontWeight,
                     componentName: style.name
@@ -119,6 +126,11 @@ struct NonLocalizedMarkdownText: View {
     private var urlOpenedNotifier
 
     let text: String
+    /// Spoken replacement for `text` when the displayed form reads poorly (e.g. "$1.24/mo").
+    var accessibilityText: String?
+    /// "Selected" / "Not selected", spoken straight after this text when it is the name of a
+    /// package card. Set only on that one text, so the state is heard before the pricing detail.
+    var selectionAnnouncement: String?
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
@@ -180,31 +192,124 @@ struct NonLocalizedMarkdownText: View {
                 // Use markdown if we can successfully parse it
                 Text(markdownText)
                     .environment(\.openURL, OpenURLAction { url in
-                        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
-                            componentName: self.componentName,
-                            url: url
-                        ))
-#if os(watchOS)
-                        // watchOS doesn't report whether opening succeeded, so we notify right away.
-                        self.parentOpenURL(url)
-                        self.urlOpenedNotifier(url)
-#else
-                        self.parentOpenURL(url) { success in
-                            if success {
-                                self.urlOpenedNotifier(url)
-                            }
-                        }
-#endif
+                        self.openLink(url)
                         return .handled
                     })
+                    // Label and link actions are applied to the same view on purpose. Applied to
+                    // the enclosing Group instead, the label makes the wrapper the focused
+                    // element while the actions stay on the Text inside it, and a paragraph that
+                    // both holds a link and needs a spoken label loses its links.
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
+                    .markdownLinkAccessibilityActions(
+                        Self.markdownLinks(in: markdownText),
+                        openLink: self.openLink
+                    )
             } else {
                 // Display text as is because markdown is priority
                 Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
             }
         }
     }
+
+    private func openLink(_ url: URL) {
+        _ = self.componentInteractionLogger(.paywallTextMarkdownLinkTap(
+            componentName: self.componentName,
+            url: url
+        ))
+#if os(watchOS)
+        // watchOS doesn't report whether opening succeeded, so we notify right away.
+        self.parentOpenURL(url)
+        self.urlOpenedNotifier(url)
+#else
+        self.parentOpenURL(url) { success in
+            if success {
+                self.urlOpenedNotifier(url)
+            }
+        }
+#endif
+    }
+
+    /// What VoiceOver should say instead of the rendered text, or `nil` to leave it alone.
+    ///
+    /// Combines the two reasons the spoken form differs from the displayed one: a spoken
+    /// variant of the text itself (e.g. "$1.24 monthly" for "$1.24/mo"), and the package
+    /// selection state appended after the offer's name.
+    private var spokenAccessibilityLabel: String? {
+        let spokenText = self.accessibilityText.map(Self.strippingMarkdown)
+
+        guard let selectionAnnouncement = self.selectionAnnouncement else {
+            return spokenText
+        }
+
+        return "\(spokenText ?? Self.strippingMarkdown(self.text)), \(selectionAnnouncement)"
+    }
+
+    /// Markdown syntax removed, so VoiceOver does not read a literal `[title](url)` when a
+    /// spoken label replaces the rendered text.
+    private static func strippingMarkdown(_ text: String) -> String {
+        guard let attrString = try? AttributedString(
+            markdown: text,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return text
+        }
+
+        return String(attrString.characters)
+    }
+
+    static func markdownLinks(in attrString: AttributedString) -> [MarkdownLink] {
+        attrString.runs.compactMap { run in
+            guard let url = run.link else {
+                return nil
+            }
+
+            return MarkdownLink(
+                title: String(attrString[run.range].characters),
+                url: url
+            )
+        }
+    }
+}
+
+struct MarkdownLink {
+    let title: String
+    let url: URL
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    /// Exposes each embedded markdown link as a VoiceOver custom action. SwiftUI `Text` links
+    /// are reachable only through the Links rotor, where focus can fall back to the enclosing
+    /// paragraph before the link can be activated; custom actions give an always-available way
+    /// to open them (swipe up/down on the text, then double-tap).
+    @ViewBuilder
+    func markdownLinkAccessibilityActions(
+        _ links: [MarkdownLink],
+        openLink: @escaping (URL) -> Void
+    ) -> some View {
+        if links.isEmpty {
+            self
+        } else if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.accessibilityActions {
+                ForEach(Array(links.enumerated()), id: \.offset) { _, link in
+                    Button(link.title) {
+                        openLink(link.url)
+                    }
+                }
+            }
+        } else {
+            self
+        }
+    }
+
 }
 
 private extension Font.Weight {

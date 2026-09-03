@@ -59,7 +59,8 @@ struct VariableHandlerV2 {
         localizations: [String: String],
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
-        countdownTime: CountdownTime? = nil
+        countdownTime: CountdownTime? = nil,
+        forAccessibility: Bool = false
     ) -> String {
         let context = VariablesV2.ProcessContext(
             package: package,
@@ -70,7 +71,8 @@ struct VariableHandlerV2 {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             date: self.dateProvider(),
             promoOffer: promoOffer,
-            countdownTime: countdownTime
+            countdownTime: countdownTime,
+            forAccessibility: forAccessibility
         )
 
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
@@ -89,7 +91,55 @@ struct VariableHandlerV2 {
             return function?.process(processedVariable) ?? processedVariable
         }
 
-        return whisker.render()
+        let rendered = whisker.render()
+
+        guard forAccessibility else {
+            return rendered
+        }
+
+        return Self.expandPeriodAbbreviations(in: rendered, localizations: localizations)
+    }
+
+    /// Period abbreviations paired with the word they are spoken as. Both sides come from the
+    /// paywall's own localizations, so the expansion stays in the paywall's language.
+    private static let periodAbbreviationKeys: [(short: String, spoken: String)] = [
+        ("day_short", "daily"),
+        ("week_short", "weekly"),
+        ("month_short", "monthly"),
+        ("year_short", "yearly"),
+        ("annual_short", "annually")
+    ]
+
+    /// Rewrites "$5.83/mo" as "$5.83 monthly" for spoken text.
+    ///
+    /// Variables resolved for accessibility already avoid the separator, but paywall copy
+    /// routinely types it and the abbreviation literally — "{{ product.price_per_month }}/mo" —
+    /// and no variable substitution can reach that. A screen reader reads it as "slash mo".
+    static func expandPeriodAbbreviations(in text: String, localizations: [String: String]) -> String {
+        let replacements = self.periodAbbreviationKeys.compactMap { keys -> (String, String)? in
+            guard let short = localizations[keys.short], !short.isEmpty,
+                  let spoken = localizations[keys.spoken], !spoken.isEmpty else {
+                return nil
+            }
+
+            return (short, spoken)
+        }
+
+        // Longest abbreviation first: shorter ones can be a prefix of longer ones, and the
+        // short match would otherwise consume the text before the longer one is tried.
+        return replacements
+            .sorted { $0.0.count > $1.0.count }
+            .reduce(text) { partial, replacement in
+                let (short, spoken) = replacement
+                // Trailing guard so "/mo" does not match inside a spelled-out "/month".
+                let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: short) + "(?![\\p{L}])"
+
+                return partial.replacingOccurrences(
+                    of: pattern,
+                    with: " " + spoken,
+                    options: [.regularExpression, .caseInsensitive]
+                )
+            }
     }
 
     /// Process a custom variable, returning the resolved value.
@@ -295,6 +345,10 @@ extension VariablesV2 {
         let date: Date
         let promoOffer: PromotionalOffer?
         let countdownTime: CountdownTime?
+        /// When true, resolves to text meant to be spoken rather than displayed: abbreviated
+        /// period units become full words and "price/period" becomes "price periodly", so a
+        /// screen reader says "$1.24 monthly" instead of "$1.24 slash mo".
+        var forAccessibility: Bool = false
     }
 
     struct OfferContext {
@@ -338,6 +392,13 @@ extension VariablesV2 {
             }
         case .productPricePerPeriod:
             if let package {
+                if context.forAccessibility {
+                    return self.productPricePerPeriodSpoken(
+                        package: package,
+                        localizations: localizations,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    )
+                }
                 return self.productPricePerPeriod(
                     package: package,
                     localizations: localizations,
@@ -346,6 +407,13 @@ extension VariablesV2 {
             }
         case .productPricePerPeriodAbbreviated:
             if let package {
+                if context.forAccessibility {
+                    return self.productPricePerPeriodSpoken(
+                        package: package,
+                        localizations: localizations,
+                        showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
+                    )
+                }
                 return self.productPricePerPeriodAbbreviated(
                     package: package,
                     localizations: localizations,
@@ -386,6 +454,9 @@ extension VariablesV2 {
             }
         case .productPeriodAbbreviated:
             if let package {
+                if context.forAccessibility {
+                    return self.productPeriod(package: package, localizations: localizations)
+                }
                 return self.productPeriodAbbreviated(package: package, localizations: localizations)
             }
         case .productPeriodInDays:
@@ -458,6 +529,13 @@ extension VariablesV2 {
             }
         case .productOfferPeriodAbbreviated:
             if let package {
+                if context.forAccessibility {
+                    return self.productOfferPeriod(
+                        package: package,
+                        localizations: localizations,
+                        offerContext: offerContext
+                    )
+                }
                 return self.productOfferPeriodAbbreviated(
                     package: package,
                     localizations: localizations,
@@ -519,6 +597,9 @@ extension VariablesV2 {
             }
         case .productSecondaryOfferPeriodAbbreviated:
             if let package {
+                if context.forAccessibility {
+                    return self.productSecondaryOfferPeriod(package: package)
+                }
                 return self.productSecondaryOfferPeriodAbbreviated(package: package)
             }
         case .productRelativeDiscount:
@@ -597,6 +678,28 @@ extension VariablesV2 {
 
         let periodAbbreviated = self.productPeriodAbbreviated(package: package, localizations: localizations)
         return "\(price)/\(periodAbbreviated)"
+    }
+
+    /// Spoken counterpart of `productPricePerPeriod`/`productPricePerPeriodAbbreviated`:
+    /// "$1.24 monthly" rather than "$1.24/mo", since screen readers announce "/" as "slash"
+    /// and abbreviations like "mo" literally.
+    func productPricePerPeriodSpoken(
+        package: Package,
+        localizations: [String: String],
+        showZeroDecimalPlacePrices: Bool
+    ) -> String {
+        let price = package.localizedPrice(showZeroDecimalPlacePrices: showZeroDecimalPlacePrices)
+
+        guard package.storeProduct.subscriptionPeriod != nil else {
+            return price
+        }
+
+        let periodly = self.productPeriodly(package: package, localizations: localizations)
+        guard !periodly.isEmpty else {
+            return price
+        }
+
+        return "\(price) \(periodly)"
     }
 
     func productPeriodly(package: Package, localizations: [String: String]) -> String {

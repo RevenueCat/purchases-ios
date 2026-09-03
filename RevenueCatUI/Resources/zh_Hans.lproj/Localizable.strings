@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "试用期{{ sub_offer_duration }}，届满后{{ total_price_and_per_month }}。";
 "Something went wrong" = "出现错误";
 "Purchase" = "购买";
+"Selected" = "已选择";
+"Not selected" = "未选择";

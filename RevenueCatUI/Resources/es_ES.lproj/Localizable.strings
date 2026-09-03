@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "{{ sub_offer_duration }} gratis y luego {{ total_price_and_per_month }}.";
 "Something went wrong" = "Algo salió mal";
 "Purchase" = "Comprar";
+"Selected" = "Seleccionado";
+"Not selected" = "No seleccionado";

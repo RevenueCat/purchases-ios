@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Starta din provperiod på {{ sub_offer_duration }} och sedan {{ total_price_and_per_month }}.";
 "Something went wrong" = "Något gick fel";
 "Purchase" = "Köp";
+"Selected" = "Vald";
+"Not selected" = "Inte vald";

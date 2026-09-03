@@ -31,11 +31,11 @@ final class PackageSelectionUITests: XCTestCase {
         let app = self.launchMixedTabs()
 
         XCTAssertTrue(
-            app.buttons["Weekly selected"].waitForExistence(timeout: 10),
+            Self.card(in: app, named: "Weekly selected").waitForExistence(timeout: 10),
             "The showing tab's own package should be selected. \(Self.visibleLabels(in: app))"
         )
         XCTAssertFalse(
-            app.buttons["Annual selected"].exists,
+            Self.card(in: app, named: "Annual selected").exists,
             "The hidden authored default must never be the selection."
         )
     }
@@ -43,12 +43,12 @@ final class PackageSelectionUITests: XCTestCase {
     /// Switching tabs hands the selection to the tab now showing.
     func testSwitchingTabsSelectsThatTabsOwnDefault() throws {
         let app = self.launchMixedTabs()
-        XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
+        XCTAssertTrue(Self.card(in: app, named: "Weekly selected").waitForExistence(timeout: 10))
 
         app.buttons["Lifetime tab"].tap()
 
         XCTAssertTrue(
-            app.buttons["Lifetime selected"].waitForExistence(timeout: 5),
+            Self.card(in: app, named: "Lifetime selected").waitForExistence(timeout: 5),
             "Tab 2's own default should be selected. \(Self.visibleLabels(in: app))"
         )
     }
@@ -56,32 +56,40 @@ final class PackageSelectionUITests: XCTestCase {
     /// A real tap on a page card takes the selection off the tab.
     func testTappingAPageCardTakesTheSelection() throws {
         let app = self.launchMixedTabs()
-        XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
+        XCTAssertTrue(Self.card(in: app, named: "Weekly selected").waitForExistence(timeout: 10))
 
-        app.buttons["Monthly"].tap()
+        Self.card(in: app, named: "Monthly").tap()
 
         XCTAssertTrue(
-            app.buttons["Monthly selected"].waitForExistence(timeout: 5),
+            Self.card(in: app, named: "Monthly selected").waitForExistence(timeout: 5),
             "Tapping the page card should select it. \(Self.visibleLabels(in: app))"
         )
-        XCTAssertFalse(app.buttons["Weekly selected"].exists)
+        XCTAssertFalse(Self.card(in: app, named: "Weekly selected").exists)
     }
 
     /// After that tap, opening a tab still uses the tab's own default: the page package it replaces
     /// is not on offer there, so it cannot follow the user across.
     func testATappedPageCardDoesNotOutrankATabsOwnDefault() throws {
         let app = self.launchMixedTabs()
-        XCTAssertTrue(app.buttons["Weekly selected"].waitForExistence(timeout: 10))
+        XCTAssertTrue(Self.card(in: app, named: "Weekly selected").waitForExistence(timeout: 10))
 
-        app.buttons["Monthly"].tap()
-        XCTAssertTrue(app.buttons["Monthly selected"].waitForExistence(timeout: 5))
+        Self.card(in: app, named: "Monthly").tap()
+        XCTAssertTrue(Self.card(in: app, named: "Monthly selected").waitForExistence(timeout: 5))
 
         app.buttons["Lifetime tab"].tap()
 
         XCTAssertTrue(
-            app.buttons["Lifetime selected"].waitForExistence(timeout: 5),
+            Self.card(in: app, named: "Lifetime selected").waitForExistence(timeout: 5),
             "The tab's own default should win over the tapped page card. \(Self.visibleLabels(in: app))"
         )
+    }
+
+    /// Package cards append their selection state to the label ("Monthly, Not selected"), so
+    /// they are matched by the text they start with rather than by an exact label.
+    private static func card(in app: XCUIApplication, named name: String) -> XCUIElement {
+        return app.buttons
+            .matching(NSPredicate(format: "label == %@ OR label BEGINSWITH %@", name, name + ","))
+            .firstMatch
     }
 
     private func launchMixedTabs() -> XCUIApplication {

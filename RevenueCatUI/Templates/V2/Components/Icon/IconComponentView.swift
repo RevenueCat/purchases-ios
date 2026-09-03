@@ -48,6 +48,9 @@ struct IconComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallIconsAccessibilityHidden)
+    private var iconsAccessibilityHidden
+
     let viewModel: IconComponentViewModel
 
     var body: some View {
@@ -84,6 +87,10 @@ struct IconComponentView: View {
                         shape: style.iconBackgroundShape?.toInsettableShape())
                 .size(style.size)
                 .padding(style.margin)
+                // Icons carry no accessibility metadata, so an app whose icons only decorate
+                // adjacent text (checkmarks, feature glyphs) can silence them all with
+                // `paywallIconsAccessibilityHidden`. Announced by default.
+                .paywallDecorativeMedia(hidden: self.iconsAccessibilityHidden)
             }
         }
     }

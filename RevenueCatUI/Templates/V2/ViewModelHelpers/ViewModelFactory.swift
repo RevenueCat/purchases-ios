@@ -233,8 +233,10 @@ struct ViewModelFactory {
                 stackViewModel: stackViewModel,
                 hasPurchaseButton: hasPurchaseButton,
                 uiConfigProvider: uiConfigProvider,
+                locale: localizationProvider.locale,
                 discardRules: discardRules
             )
+            viewModel.markFirstTextForSelectionAnnouncement()
 
             return .package(viewModel)
         case .purchaseButton(let component):

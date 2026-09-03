@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Ξεκινήστε τη δοκιμή {{ sub_offer_duration }} και μετά {{ total_price_and_per_month }}.";
 "Something went wrong" = "Κάτι πήγε στραβά";
 "Purchase" = "Αγορά";
+"Selected" = "Επιλεγμένο";
+"Not selected" = "Μη επιλεγμένο";
