@@ -326,8 +326,8 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     #endif
 
     private func load(_ webView: PlatformWebView) {
-        // Cross-origin isolation is delegated to the server-provided CSP (see WebViewNavigationPolicy),
-        // so no WKContentRuleList is installed here.
+        // Cross-origin isolation is delegated to the server-provided CSP (see
+        // WebViewComponentNavigationPolicy), so no WKContentRuleList is installed here.
         webView.load(URLRequest(url: url))
     }
 
@@ -351,7 +351,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             decidePolicyFor navigationAction: WKNavigationAction,
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
-            let policy = WebViewNavigationPolicy.policy(
+            let policy = WebViewComponentNavigationPolicy.policy(
                 for: navigationAction.request.url,
                 isMainFrame: navigationAction.targetFrame?.isMainFrame ?? true,
                 expectedOrigin: expectedOrigin
@@ -374,7 +374,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
         ) {
             if let httpResponse = navigationResponse.response as? HTTPURLResponse,
-               WebViewNavigationPolicy.isTerminalHTTPError(
+               WebViewHTTPStatus.isTerminalError(
                 statusCode: httpResponse.statusCode,
                 isMainFrame: navigationResponse.isForMainFrame
                ) {
