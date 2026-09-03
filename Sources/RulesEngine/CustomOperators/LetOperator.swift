@@ -39,11 +39,7 @@ extension RulesEngine {
         static func opLet(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
 
-            guard raw.count == 2 else {
-                throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects 2 arguments, got \(raw.count)"
-                )
-            }
+            try Operators.checkArity(raw.count, allowed: [2], operatorName: operatorName)
 
             guard case .object(let declarations) = raw[0] else {
                 throw EvaluationError.typeMismatch(

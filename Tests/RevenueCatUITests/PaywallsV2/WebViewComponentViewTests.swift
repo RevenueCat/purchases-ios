@@ -488,10 +488,11 @@ final class WebViewCoordinatorLifecycleTests: TestCase {
         XCTAssertEqual(calls, 0)
     }
 
-    // Note: the coordinator's `decidePolicyFor` methods are thin delegations to `WebViewNavigationPolicy`
-    // (`policy(for:isMainFrame:expectedOrigin:)` for navigation actions, `isTerminalHTTPError(...)` for
-    // navigation responses), both exhaustively covered in WebViewNavigationPolicyTests. `WKNavigationAction`
-    // and `WKNavigationResponse` cannot be constructed or safely subclassed for a unit test, so the
+    // Note: the coordinator's `decidePolicyFor` methods are thin delegations to
+    // `WebViewComponentNavigationPolicy.policy(for:isMainFrame:expectedOrigin:)` for navigation actions and
+    // `WebViewHTTPStatus.isTerminalError(...)` for navigation responses, both exhaustively covered in
+    // WebViewComponentNavigationPolicyTests and WebViewHTTPStatusTests. `WKNavigationAction` and
+    // `WKNavigationResponse` cannot be constructed or safely subclassed for a unit test, so the
     // delegation itself is not re-tested here.
 
 }

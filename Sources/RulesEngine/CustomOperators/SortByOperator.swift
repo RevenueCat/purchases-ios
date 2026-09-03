@@ -27,11 +27,7 @@ extension RulesEngine {
         static func opSortBy(args: Value, vars: Scope) throws -> Value {
             let raw = Operators.argsAsList(args)
 
-            guard raw.count == 2 else {
-                throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects 2 arguments, got \(raw.count)"
-                )
-            }
+            try Operators.checkArity(raw.count, allowed: [2], operatorName: operatorName)
 
             let source = try Evaluator.evaluateValue(raw[0], vars: vars)
             guard case .array(let items) = source else {
