@@ -1512,7 +1512,7 @@ jobs:
           when: always
 
   run-paywall-accessibility-ui-tests:
-    description: "Assert paywall accessibility labels against the real accessibility tree"
+    description: "Assert what paywall fixtures render: accessibility labels, package selection and price variables"
     executor:
       name: macos-executor
       xcode_version: "26.5"
@@ -1526,7 +1526,7 @@ jobs:
       - tuist-generate-workspace:
           query: "PaywallFixturesUITests"
       - run:
-          name: Run paywall accessibility UI tests
+          name: Run paywall fixtures UI tests
           command: |
             bundle exec fastlane paywall_accessibility_ui_tests
           no_output_timeout: 15m
@@ -2357,9 +2357,9 @@ workflows:
           context:
             - slack-secrets
       # Needs no context: the paywall under test is a local sample, so no API key is involved.
-      - run-paywall-accessibility-ui-tests:
-          requires:
-            - approve-full-tests
+      # Not gated behind approve-full-tests: this scheme asserts what a paywall actually renders,
+      # which is cheap to run and easy to break without noticing.
+      - run-paywall-accessibility-ui-tests
       - record-and-upload-paywalls-v1-snapshots:
           requires:
             - approve-full-tests

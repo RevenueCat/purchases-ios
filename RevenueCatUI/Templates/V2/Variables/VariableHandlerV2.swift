@@ -560,9 +560,31 @@ extension VariablesV2 {
         // Derive the currency token from the displayed price string rather than
         // `NumberFormatter.currencySymbol`, because formatter metadata can reflect
         // the formatter locale instead of the product's displayed currency token.
-        return package.storeProduct.localizedPriceString.currencySymbolFromPriceString
-            ?? package.storeProduct.priceFormatter?.currencySymbol
-            ?? ""
+        let product = package.storeProduct
+        let displayedToken = product.localizedPriceString.currencySymbolFromPriceString
+            ?? product.priceFormatter?.currencySymbol
+
+        // The displayed token can be the ISO code rather than a symbol (e.g. "24,99 USD"),
+        // so fall back to the currency's narrow symbol, which is never a code.
+        if let displayedToken, let currencyCode = product.currencyCode,
+           displayedToken.caseInsensitiveCompare(currencyCode) == .orderedSame {
+            return self.narrowCurrencySymbol(currencyCode: currencyCode,
+                                             locale: product.priceFormatter?.locale) ?? displayedToken
+        }
+
+        return displayedToken ?? ""
+    }
+
+    /// The currency's narrow symbol (e.g. "$" for USD), which unlike the localized
+    /// currency name is never an ISO code.
+    private func narrowCurrencySymbol(currencyCode: String, locale: Locale?) -> String? {
+        return Decimal(0)
+            .formatted(
+                .currency(code: currencyCode)
+                .presentation(.narrow)
+                .locale(locale ?? .autoupdatingCurrent)
+            )
+            .currencySymbolFromPriceString
     }
 
     func productPrice(package: Package, showZeroDecimalPlacePrices: Bool) -> String {
@@ -1110,6 +1132,13 @@ private extension VariablesV2 {
 
 }
 
+private extension CharacterSet {
+
+    /// Spacing and the bidirectional marks right-to-left locales wrap a price in.
+    static let currencyTokenPadding = CharacterSet.whitespacesAndNewlines.union(.controlCharacters)
+
+}
+
 private extension String {
 
     var currencySymbolFromPriceString: String? {
@@ -1119,7 +1148,7 @@ private extension String {
         }
 
         let symbol = "\(self[..<firstDigit])\(self[self.index(after: lastDigit)...])"
-            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .trimmingCharacters(in: .currencyTokenPadding)
 
         return symbol.isEmpty ? nil : symbol
     }

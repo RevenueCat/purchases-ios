@@ -262,6 +262,204 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$"))
     }
 
+    // MARK: - Displayed price uses the ISO code (Readdle, Aug 2026)
+
+    private func isoCodeDisplayPricePackage() -> Package {
+        return Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: "USD",
+                localizedPriceString: "24,99 USD",
+                productIdentifier: "com.revenuecat.product.currency_symbol_iso_code",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: "en_UA")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    func testFormatterRenderedPricesKeepTheGlyphToken() {
+        let package = self.isoCodeDisplayPricePackage()
+
+        let perYear = variableHandler.processVariables(
+            in: "{{ product.price_per_year }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        let perMonth = variableHandler.processVariables(
+            in: "{{ product.price_per_month }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(perYear).to(equal("24,99\u{00A0}US$"))
+        expect(perMonth).to(equal("2,08\u{00A0}US$"))
+    }
+
+    func testProductCurrencySymbolOnUSStorefrontIsUnaffected() {
+        let package = Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: "USD",
+                localizedPriceString: "$24.99",
+                productIdentifier: "com.revenuecat.product.currency_symbol_us_store",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: "en_US")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let symbol = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        let perYear = variableHandler.processVariables(
+            in: "{{ product.price_per_year }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(symbol).to(equal("$"))
+        expect(perYear).to(equal("$24.99"))
+    }
+
+    /// A right-to-left locale wraps the price in bidirectional marks even when the currency has a
+    /// real symbol, so the token comes back padded with a mark and a space rather than as `US$`.
+    /// This is what `ar_SO` actually returns for a USD product.
+    func testProductCurrencySymbolStripsPaddingFromASymbolToken() {
+        let package = Self.package(
+            currencyCode: "USD",
+            localizedPriceString: "\u{200E}\u{0662}\u{0664}\u{066B}\u{0669}\u{0669}\u{00A0}US$",
+            identifier: "com.revenuecat.product.currency_symbol_rtl_symbol",
+            locale: "ar_SO"
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("US$"))
+    }
+
+    /// Hebrew puts a mark on both sides of the symbol.
+    func testProductCurrencySymbolStripsPaddingAroundASymbolToken() {
+        let package = Self.package(
+            currencyCode: "USD",
+            localizedPriceString: "\u{200E}24.99\u{00A0}\u{200E}$",
+            identifier: "com.revenuecat.product.currency_symbol_rtl_wrapped",
+            locale: "he_IL"
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
+    private static func package(
+        currencyCode: String,
+        localizedPriceString: String,
+        identifier: String,
+        locale: String
+    ) -> Package {
+        return Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: currencyCode,
+                localizedPriceString: localizedPriceString,
+                productIdentifier: identifier,
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: locale)
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+    }
+
+    /// Right-to-left locales wrap the displayed price in bidirectional marks, so the extracted
+    /// token arrives as `<LRM>RUB` rather than `RUB`. The ISO code has to be recognized through
+    /// them, otherwise the variable renders the code.
+    func testProductCurrencySymbolWhenDisplayedISOCodeHasBidirectionalMark() {
+        let package = Package(
+            identifier: PackageType.annual.identifier,
+            packageType: .annual,
+            storeProduct: TestStoreProduct(
+                localizedTitle: "Yearly",
+                price: 24.99,
+                currencyCode: "RUB",
+                localizedPriceString: "\u{200E}RUB\u{00A0}\u{06F2}\u{06F4}\u{066B}\u{06F9}\u{06F9}",
+                productIdentifier: "com.revenuecat.product.currency_symbol_iso_code_rtl",
+                productType: .autoRenewableSubscription,
+                localizedDescription: "PRO yearly",
+                subscriptionGroupIdentifier: "group",
+                subscriptionPeriod: .init(value: 1, unit: .year),
+                locale: Locale(identifier: "fa")
+            ).toStoreProduct(),
+            offeringIdentifier: "offering",
+            webCheckoutUrl: nil
+        )
+
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: package,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("\u{20BD}"))
+    }
+
+    func testProductCurrencySymbolWhenDisplayedPriceUsesISOCode() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.currency_symbol }}",
+            with: self.isoCodeDisplayPricePackage(),
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+
+        expect(result).to(equal("$"))
+    }
+
     func testProductPeriodly() {
         let result = variableHandler.processVariables(
             in: "{{ product.periodly }}",
