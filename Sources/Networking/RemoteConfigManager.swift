@@ -151,7 +151,6 @@ extension RemoteConfigManagerType {
         }
     }
 
-
     func mergeItemsBlobData<T: Decodable>(
         for topic: RemoteConfigTopic,
         itemKeys: [String],
