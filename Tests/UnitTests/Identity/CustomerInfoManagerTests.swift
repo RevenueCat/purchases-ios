@@ -621,12 +621,14 @@ class CustomerInfoManagerTests: BaseCustomerInfoManagerTests {
             "score": .double(0.75),
             "profile": .object([
                 "tier": .string("gold"),
+                "ignored_null": .null,
                 "age": .int(42)
             ]),
             "teams": .objectList([
                 ["id": .string("a"), "active": .bool(true)],
                 ["id": .string("b"), "active": .bool(false)]
-            ])
+            ]),
+            "ignored_null": .null
         ]
     }
 
