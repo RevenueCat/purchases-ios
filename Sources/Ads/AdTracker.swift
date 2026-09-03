@@ -53,7 +53,6 @@ import Foundation
  ```
  */
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-@objc(RCAdTracker)
 public final class AdTracker: NSObject {
 
     private let eventsManager: EventsManagerType?
@@ -82,7 +81,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @objc public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
+    public func trackAdFailedToLoad(_ data: AdFailedToLoad) {
         self.trackAdFailedToLoad(data, captureMethod: .manual)
     }
 
@@ -113,7 +112,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @objc public func trackAdLoaded(_ data: AdLoaded) {
+    public func trackAdLoaded(_ data: AdLoaded) {
         self.trackAdLoaded(data, captureMethod: .manual)
     }
 
@@ -144,7 +143,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @objc public func trackAdDisplayed(_ data: AdDisplayed) {
+    public func trackAdDisplayed(_ data: AdDisplayed) {
         self.trackAdDisplayed(data, captureMethod: .manual)
     }
 
@@ -174,7 +173,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @objc public func trackAdOpened(_ data: AdOpened) {
+    public func trackAdOpened(_ data: AdOpened) {
         self.trackAdOpened(data, captureMethod: .manual)
     }
 
@@ -208,7 +207,7 @@ public final class AdTracker: NSObject {
      ))
      ```
      */
-    @objc public func trackAdRevenue(_ data: AdRevenue) {
+    public func trackAdRevenue(_ data: AdRevenue) {
         self.trackAdRevenue(data, captureMethod: .manual)
     }
 
