@@ -514,6 +514,7 @@ extension BasePurchasesTests {
             let internalAPI = InternalAPI(backendConfig: backendConfig)
             let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
             let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+            let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
             let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
             let remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
 
@@ -527,6 +528,7 @@ extension BasePurchasesTests {
                       internalAPI: internalAPI,
                       customerCenterConfig: customerCenterConfig,
                       redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                      externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                       virtualCurrenciesAPI: virtualCurrenciesAPI,
                       adsAPI: mockAdsAPI,
                       remoteConfigAPI: remoteConfigAPI)
