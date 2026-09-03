@@ -65,14 +65,14 @@ struct RulesEngineEvaluateTests {
 
     @Test
     func transformWithIdentityPredicateReturnsVariablesUnchanged() throws {
-        let variables: [String: RulesEngine.Value] = ["x": .int(1)]
+        let variables: RulesEngine.ObjectValue = ["x": .int(1)]
         let result = RulesEngine.transform(predicate: #"{"var":""}"#, variables: variables)
         #expect(try result.get() == variables)
     }
 
     @Test
     func transformAndEvaluateUseIndependentPredicates() throws {
-        let raw: [String: RulesEngine.Value] = ["x": .int(1)]
+        let raw: RulesEngine.ObjectValue = ["x": .int(1)]
         let transformed = try RulesEngine.transform(
             predicate: #"{"var":""}"#,
             variables: raw

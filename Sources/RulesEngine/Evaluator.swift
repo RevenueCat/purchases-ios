@@ -26,7 +26,7 @@ extension RulesEngine {
         ///     etc.).
         /// - Returns: The value the predicate evaluates to. Callers that need a
         ///   boolean apply JSON Logic truthiness via `Value.isTruthy`.
-        static func evaluate(predicate: Value, variables: [String: Value]) throws -> Value {
+        static func evaluate(predicate: Value, variables: ObjectValue) throws -> Value {
             let scope = Scope(root: .object(variables))
             return try evaluateValue(predicate, vars: scope)
         }

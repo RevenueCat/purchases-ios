@@ -48,7 +48,7 @@ extension RulesEngine {
                 )
             }
 
-            var bindings: [String: Value] = [:]
+            var bindings = ObjectValue()
             // Sorted so that a predicate with two invalid names fails the same
             // way on both engines.
             for name in declarations.keys.sorted() {

@@ -53,10 +53,15 @@ extension RulesEngine.Value {
         if let array = object as? [Any] {
             return .array(try array.map(Self.fromJSONObject))
         }
-        if let dict = object as? [String: Any] {
-            var result: [String: RulesEngine.Value] = [:]
-            result.reserveCapacity(dict.count)
+        // Iterated as an `NSDictionary` because casting to `[String: Any]`
+        // bridges into a Swift dictionary, which merges keys that differ only
+        // in how the same character is spelled.
+        if let dict = object as? NSDictionary {
+            var result = RulesEngine.ObjectValue()
             for (key, value) in dict {
+                guard let key = key as? String else {
+                    throw RulesEngine.EvaluationError.parse(message: "object key is not a string")
+                }
                 result[key] = try Self.fromJSONObject(value)
             }
             return .object(result)
