@@ -60,6 +60,7 @@ import Foundation
         let autoSyncPurchases: Bool
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
+        let forceAllowTestStoreInReleaseBuilds: Bool
     }
 
     internal let storage: Storage
@@ -95,6 +96,16 @@ import Foundation
      */
     @objc public var customEntitlementComputation: Bool { self.storage.customEntitlementComputation }
 
+    /**
+     * Forces the SDK to allow using a Test Store API key in Release builds.
+     * By default, configuring the SDK with a Test Store API key in a Release build crashes the app to prevent
+     * uploading it to the App Store.
+     *
+     * - Important: Avoid enabling this except when necessary (e.g. internal builds compiled in Release that are
+     * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
+     */
+    @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
+
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
     }
@@ -110,6 +121,24 @@ import Foundation
         self.init(autoSyncPurchases: autoSyncPurchases,
                   customEntitlementComputation: false)
 
+    }
+
+    /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter forceAllowTestStoreInReleaseBuilds: Forces the SDK to allow using a Test Store API key in
+     * Release builds. Avoid enabling this except when necessary, to make sure no builds using the Test Store
+     * reach the stores.
+     */
+    @objc public convenience init(autoSyncPurchases: Bool,
+                                  forceAllowTestStoreInReleaseBuilds: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds)
     }
 
     /// - Note: this is `internal` only so the only `public` way to enable `customEntitlementComputation`
@@ -136,11 +165,13 @@ import Foundation
     internal init(autoSyncPurchases: Bool,
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
-                  uiPreviewMode: Bool = false) {
+                  uiPreviewMode: Bool = false,
+                  forceAllowTestStoreInReleaseBuilds: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
-            customEntitlementComputation: customEntitlementComputation
+            customEntitlementComputation: customEntitlementComputation,
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds
         )
         self.internalSettings = internalSettings
     }

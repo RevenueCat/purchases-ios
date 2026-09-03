@@ -39,6 +39,33 @@ class ConfigurationTests: TestCase {
         expect(Configuration.validateAndLog(apiKey: "test_eg2t9g3098bgqqn")) == .simulatedStore
     }
 
+    func testTestStoreKeyIsBlockedInReleaseByDefault() {
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings())) == true
+    }
+
+    func testTestStoreKeyIsNotBlockedInReleaseWhenForceAllowTestStoreInReleaseBuilds() {
+        let settings = DangerousSettings(autoSyncPurchases: true, forceAllowTestStoreInReleaseBuilds: true)
+
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: settings)) == false
+    }
+
+    func testTestStoreKeyIsNotBlockedInReleaseWhenUIPreviewMode() {
+        let settings = DangerousSettings(uiPreviewMode: true)
+
+        expect(Configuration.APIKeyValidationResult.simulatedStore
+            .shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: settings)) == false
+    }
+
+    func testNonTestStoreKeysAreNotBlockedInRelease() {
+        let results: [Configuration.APIKeyValidationResult] = [.validApplePlatform, .otherPlatforms, .legacy]
+
+        for result in results {
+            expect(result.shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings())) == false
+        }
+    }
+
     func testNoObserverModeWithStoreKit1() {
         let configuration = Configuration.Builder(withAPIKey: "test")
             .with(storeKitVersion: .storeKit1)
