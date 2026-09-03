@@ -389,9 +389,9 @@ extension CustomerInfo {
 
     var allIdentitiesAreAnonymous: Bool {
         guard let user = self.data.response.user else { return false }
-        let amrs = user.amr.compactMap { IdentitySource.source(with: $0) }
-        if amrs.isEmpty { return false }
-        return amrs.allSatisfy { $0 == .anonymous }
+        if user.amr.isEmpty { return false }
+        // comparing the string directly allows for unknown-but-not-anonymous identity sources
+        return user.amr.allSatisfy { $0 == IdentitySource.anonymous.rawValue }
     }
 }
 

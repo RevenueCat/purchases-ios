@@ -224,7 +224,12 @@ extension CustomerInfoResponse.User.Identity: Codable, Hashable {
 
     init(from decoder: any Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        self.id = try container.decode(String?.self, forKey: .id)
+        // the "?? .none" is needed because using "decodeIfPresent" with String? type
+        // means you get back a "String??". These combined mean we support:
+        // - having a "nil" id if the field is entirely missing
+        // - having a "nil" id if the field is present with with a null value
+        // - having a non-nil id if the field is present with a string value
+        self.id = try container.decodeIfPresent(String?.self, forKey: .id) ?? .none
         self.method = try container.decode(String.self, forKey: .method)
         self.rawData = decoder.decodeRawData()
     }
