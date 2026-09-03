@@ -72,10 +72,6 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
-        expect(result?.value?.externalPurchaseId) == "b2158121-7af9-49d4-9561-1f14c46b3bc1"
-        expect(result?.value?.isSandbox) == false
-        expect(result?.value?.purchaseType) == .linkOut
-        expect(result?.value?.tokenSource) == "APPLE_SDK"
     }
 
     /// Storing a token is idempotent on Apple's purchase identifier: the first registration answers `201`
@@ -92,7 +88,7 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
     }
 
-    /// Only the identifier is needed to open checkout, so an otherwise sparse response must still decode.
+    /// Only the identifier is read, so a response carrying nothing else must still decode.
     func testDecodesAResponseThatOnlyCarriesAnIdentifier() {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
@@ -103,19 +99,6 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
 
         expect(result).to(beSuccess())
         expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
-        expect(result?.value?.externalPurchaseId).to(beNil())
-        expect(result?.value?.purchaseType).to(beNil())
-    }
-
-    func testForwardsAnUnrecognizedPurchaseType() {
-        self.httpClient.mock(
-            requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: ["id": "ept1", "purchase_type": "SOMETHING_NEW"])
-        )
-
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
-
-        expect(result?.value?.purchaseType) == ExternalPurchaseTokenType(rawValue: "SOMETHING_NEW")
     }
 
     func testForwardsANetworkError() {

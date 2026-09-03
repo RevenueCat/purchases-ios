@@ -331,8 +331,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .remoteConfig,
              .health,
              .appHealthReportAvailability,
-             // Responses are cached by URL only, and every registration posts a different
-             // body to the same URL, so a cached response must never be reused here.
              .postExternalPurchaseToken:
             return false
         }

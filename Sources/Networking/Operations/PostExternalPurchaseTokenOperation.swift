@@ -24,8 +24,6 @@ final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
         postData: PostData,
         externalPurchaseTokenCallbackCache: CallbackCache<ExternalPurchaseTokenCallback>
     ) -> CacheableNetworkOperationFactory<PostExternalPurchaseTokenOperation> {
-        // Two registrations that agree on all three only collapse into one while the first is still in flight,
-        // which is what a double tap on the same button looks like.
         let cacheKey = "\(configuration.appUserID)-\(postData.purchaseType.rawValue)-\(postData.token ?? "")"
 
         return CacheableNetworkOperationFactory({ cacheKey in
@@ -122,26 +120,8 @@ extension PostExternalPurchaseTokenOperation.PostData: Encodable {
 
     }
 
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-
-        try container.encode(self.appUserID, forKey: .appUserID)
-        try container.encode(self.purchaseType, forKey: .purchaseType)
-        try container.encodeIfPresent(self.token, forKey: .token)
-    }
-
 }
 
 // MARK: - HTTPRequestBody
 
-extension PostExternalPurchaseTokenOperation.PostData: HTTPRequestBody {
-
-    var contentForSignature: [(key: String, value: String?)] {
-        return [
-            (CodingKeys.appUserID.stringValue, self.appUserID),
-            (CodingKeys.purchaseType.stringValue, self.purchaseType.rawValue),
-            (CodingKeys.token.stringValue, self.token)
-        ]
-    }
-
-}
+extension PostExternalPurchaseTokenOperation.PostData: HTTPRequestBody {}
