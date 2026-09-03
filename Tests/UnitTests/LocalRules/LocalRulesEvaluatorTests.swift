@@ -417,7 +417,6 @@ struct LocalRulesEvaluatorTests {
         let previousLogLevel = Purchases.logLevel
         Purchases.logLevel = .verbose
         defer { Purchases.logLevel = previousLogLevel }
-
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 name: "device",
