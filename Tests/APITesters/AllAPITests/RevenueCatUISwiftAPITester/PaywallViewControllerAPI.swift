@@ -208,6 +208,9 @@ final class Delegate: PaywallViewControllerDelegate {
     func paywallViewController(_ controller: PaywallViewController, didOpenURL url: URL) {}
 
     func paywallViewController(_ controller: PaywallViewController,
+                               didTrackInteraction event: PaywallInteractionEvent) {}
+
+    func paywallViewController(_ controller: PaywallViewController,
                                didFailPurchasingWith error: NSError) {}
 
     func paywallViewControllerDidStartRestore(_ controller: PaywallViewController) {}

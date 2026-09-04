@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.onPaywallInteraction)
+    private var onPaywallInteraction: PaywallInteractionHandler?
+
     /// Non-`nil` when an ancestor (i.e. `WorkflowPaywallView`) already injected the presentation
     /// session's state store; in that case this view must not shadow it with its own.
     @Environment(\.paywallStateStore)
@@ -441,7 +444,8 @@ struct PaywallsV2View: View {
                 // instead of one bound to this page's session. Otherwise component interactions would be
                 // the one paywall event still emitted on a non-paywall step.
                 Self.componentInteractionLogger(tracksPaywallEvents: self.tracksPaywallEvents) {
-                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                    onInteraction: self.onPaywallInteraction)
                 }
             )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
