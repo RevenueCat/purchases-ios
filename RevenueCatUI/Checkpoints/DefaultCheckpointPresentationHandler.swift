@@ -22,7 +22,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
     private let executor: CheckpointExecutor
     private let fetchCustomerInfo: () async throws -> CustomerInfo
-    var offeringPresenter: CheckpointOfferingPresenter?
+    var paywallPresenter: CheckpointPaywallPresenter?
 
     init(
         executor: CheckpointExecutor,
@@ -34,7 +34,8 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
     func present(
         _ presentation: CheckpointPresentation,
-        session: CheckpointPresentationCoordinator.Session
+        session: CheckpointPresentationCoordinator.Session,
+        paywallPresenter: CheckpointPaywallPresenter?
     ) async throws -> CheckpointPaywallOutcome {
         switch presentation {
         case .workflow:
@@ -43,7 +44,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             }
             return try await self.executor.execute(presentation)
         case let .offering(offering, _):
-            if let presenter = self.offeringPresenter {
+            if let presenter = paywallPresenter {
                 return try await OfferingPresentation(
                     session: session,
                     fetchCustomerInfo: self.fetchCustomerInfo
@@ -74,7 +75,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
         func present(
             offering: Offering,
-            presenter: CheckpointOfferingPresenter
+            presenter: CheckpointPaywallPresenter
         ) async throws -> CheckpointPaywallOutcome {
             self.session.setCancellationHandler { [weak self] in
                 self?.fail(error: CancellationError(), force: true)
@@ -143,7 +144,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             return self.pendingContinuation
         }
 
-        private final class Completion: CheckpointOfferingCompletion {
+        private final class Completion: CheckpointPaywallCompletion {
 
             private weak var presentation: OfferingPresentation?
 
@@ -161,7 +162,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                         domain: ErrorCode.errorDomain,
                         code: ErrorCode.unknownError.rawValue,
                         userInfo: [
-                            NSLocalizedDescriptionKey: "The checkpoint offering presenter reported a failure."
+                            NSLocalizedDescriptionKey: "The checkpoint paywall presenter reported a failure."
                         ]
                     )
                 )
