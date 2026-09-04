@@ -204,11 +204,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
            cache.containsPrefetchedWorkflowBodyData(includingOfferingId: includingOfferingId) {
             return cache.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
         }
-        guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return [] }
-        let snapshot = GenerationGuardedCacheSnapshot(
-            generation: self.manager.configGeneration,
-            key: topic
-        )
+        guard let snapshot = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return [] }
+        let topic = snapshot.key
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
         let prefetchedWorkflowIds = topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
