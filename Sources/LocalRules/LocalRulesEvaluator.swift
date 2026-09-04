@@ -97,7 +97,8 @@ final class LocalRulesEvaluator: Sendable {
                 continue
             case .failure(let error):
                 switch error {
-                case .unresolvedVariable:
+                case .unresolvedVariable(let path):
+                    Logger.debug(Strings.localRules.ruleUnresolvedVariable(ruleIndex: index, path: path))
                     continue
                 default:
                     if firstEvaluationError == nil {
