@@ -40,7 +40,7 @@ public final class CheckpointGateResult: CustomStringConvertible, @unchecked Sen
     /// Entitlements that became active while completing the checkpoint.
     public let entitlements: [EntitlementGrant]
 
-    /// Why no workflow was presented, if applicable.
+    /// Why no action was taken, if applicable.
     public let noActionReason: CheckpointNoActionReason?
 
     /// An error that prevented the checkpoint from completing normally.
