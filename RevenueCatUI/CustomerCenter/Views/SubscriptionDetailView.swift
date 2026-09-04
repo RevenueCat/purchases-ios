@@ -67,7 +67,8 @@ struct SubscriptionDetailView: View {
                 allowsMissingPurchaseAction: allowsMissingPurchaseAction,
                 actionWrapper: actionWrapper,
                 purchaseInformation: purchaseInformation,
-                purchasesProvider: purchasesProvider)
+                purchasesProvider: purchasesProvider,
+                localization: customerInfoViewModel.configuration?.localization ?? .default)
 
             self.init(
                 customerInfoViewModel: customerInfoViewModel,
