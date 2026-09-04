@@ -24,11 +24,12 @@ extension RulesEngine {
         ///   - variables: The resolved variable map — typically a nested object
         ///     mirroring the namespace hierarchy (`subscriber.*`, `session.*`,
         ///     etc.).
-        /// - Returns: The value the predicate evaluates to. Callers that need a
-        ///   boolean apply JSON Logic truthiness via `Value.isTruthy`.
-        static func evaluate(predicate: Value, variables: [String: Value]) throws -> Value {
+        /// - Returns: `true` when the predicate evaluates to a truthy value per
+        ///   JSON Logic rules.
+        static func evaluate(predicate: Value, variables: [String: Value]) throws -> Bool {
             let scope = Scope(root: .object(variables))
-            return try evaluateValue(predicate, vars: scope)
+            let result = try evaluateValue(predicate, vars: scope)
+            return result.isTruthy
         }
 
         /// Recursive evaluator. Module-internal so operator implementations can

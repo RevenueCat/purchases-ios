@@ -30,12 +30,7 @@ extension RulesEngine {
         static func opSemverCompare(args: Value, vars: Scope) throws -> Value {
             let evaluated = try Operators.evalArgs(args, vars: vars)
 
-            guard evaluated.count == 2 else {
-                throw EvaluationError.typeMismatch(
-                    message: "operator '\(operatorName)' expects 2 arguments, "
-                        + "got \(evaluated.count)"
-                )
-            }
+            try Operators.checkArity(evaluated.count, allowed: [2], operatorName: operatorName)
 
             let left = try SemanticVersion(parsing: evaluated[0])
             let right = try SemanticVersion(parsing: evaluated[1])

@@ -161,6 +161,11 @@ private final class LoadingPaywallPurchases: PaywallPurchasesType {
 
     var cachedOfferings: Offerings? { nil }
 
+    let configuredStoreEnvironment = ConfiguredStoreEnvironment(
+        apiKey: "test_",
+        storeFrontCountryCode: nil
+    )
+
 #if !os(tvOS)
     func workflow(forOfferingIdentifier offeringID: String) async throws -> WorkflowDataResult {
         throw ErrorCode.configurationError

@@ -11,7 +11,7 @@
 //
 //  Created by Nacho Soto on 10/10/22.
 
-@testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 import StoreKit
 
 final class MockPurchases {
@@ -487,6 +487,12 @@ extension MockPurchases: PurchasesType {
     }
 
     func getVirtualCurrencies(completion: @escaping (RevenueCat.VirtualCurrencies?, RevenueCat.PublicError?) -> Void) {
+        self.unimplemented()
+    }
+
+    func spendVirtualCurrencies(amounts: [String: Int],
+                                reference: String?,
+                                completion: @escaping (VirtualCurrencies?, PublicError?) -> Void) {
         self.unimplemented()
     }
 

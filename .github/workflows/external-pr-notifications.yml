@@ -1,0 +1,13 @@
+name: External PR Notifications
+
+on:
+  pull_request_target:
+    types: [opened]
+
+permissions: {}
+
+jobs:
+  notify:
+    uses: revenuecat/sdk-github-workflows/.github/workflows/external-pr-notifications.yml@b679120ce2931ac2e5c02166f84ad1f9b263fb96 # v8
+    secrets:
+      EXTERNAL_PR_SLACK_WEBHOOK_URL: ${{ secrets.EXTERNAL_PR_SLACK_WEBHOOK_URL }}

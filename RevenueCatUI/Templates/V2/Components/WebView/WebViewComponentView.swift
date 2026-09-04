@@ -32,8 +32,17 @@ struct WebViewComponentView: View {
     @Environment(\.customPaywallVariables)
     private var customVariables
 
+    @Environment(\.locale)
+    private var locale
+
+    @Environment(\.colorScheme)
+    private var colorScheme
+
     @Environment(\.selectedPackageId)
     private var selectedPackageId
+
+    @Environment(\.paywallWebViewStaticContext)
+    private var webViewStaticContext
 
     @Environment(\.paywallStateValues)
     private var paywallStateValues
@@ -57,6 +66,16 @@ struct WebViewComponentView: View {
         )
     }
 
+    private var webViewContext: PaywallWebViewContext? {
+        return self.webViewStaticContext?.snapshot(
+            package: self.packageContext.package,
+            selectedPackageID: self.selectedPackageId,
+            customVariables: self.viewModel.resolvedCustomVariables(overridingWith: self.customVariables),
+            locale: self.locale,
+            isDarkMode: self.colorScheme == .dark
+        )
+    }
+
     var body: some View {
         #if os(watchOS) || !canImport(WebKit)
         EmptyView()
@@ -65,7 +84,9 @@ struct WebViewComponentView: View {
         // Gating here (rather than deep in the session) keeps the whole web view unrendered when it
         // can't work — no usable origin, or an empty component id the bridge would only reject on —
         // instead of mounting an inert bridge. See `WebViewComponentStyle.isRenderable`.
-        if style.isRenderable, let url = style.url, let instance = self.viewModel.webViewInstance() {
+        if style.isRenderable,
+           let url = style.url,
+           let instance = self.viewModel.webViewInstance(context: self.webViewContext) {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,
@@ -305,8 +326,8 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     #endif
 
     private func load(_ webView: PlatformWebView) {
-        // Cross-origin isolation is delegated to the server-provided CSP (see WebViewNavigationPolicy),
-        // so no WKContentRuleList is installed here.
+        // Cross-origin isolation is delegated to the server-provided CSP (see
+        // WebViewComponentNavigationPolicy), so no WKContentRuleList is installed here.
         webView.load(URLRequest(url: url))
     }
 
@@ -330,7 +351,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             decidePolicyFor navigationAction: WKNavigationAction,
             decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
         ) {
-            let policy = WebViewNavigationPolicy.policy(
+            let policy = WebViewComponentNavigationPolicy.policy(
                 for: navigationAction.request.url,
                 isMainFrame: navigationAction.targetFrame?.isMainFrame ?? true,
                 expectedOrigin: expectedOrigin
@@ -353,7 +374,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
             decisionHandler: @escaping (WKNavigationResponsePolicy) -> Void
         ) {
             if let httpResponse = navigationResponse.response as? HTTPURLResponse,
-               WebViewNavigationPolicy.isTerminalHTTPError(
+               WebViewHTTPStatus.isTerminalError(
                 statusCode: httpResponse.statusCode,
                 isMainFrame: navigationResponse.isForMainFrame
                ) {
@@ -423,7 +444,7 @@ private extension View {
         measuredWidth: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize):
+        case .fit(let defaultSize, _):
             self.frame(
                 width: WebViewSizing.resolvedDimension(
                     measured: measuredWidth,
@@ -446,7 +467,7 @@ private extension View {
         measuredHeight: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize):
+        case .fit(let defaultSize, _):
             self.frame(
                 height: WebViewSizing.resolvedDimension(
                     measured: measuredHeight,

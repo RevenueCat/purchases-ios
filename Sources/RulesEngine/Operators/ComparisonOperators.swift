@@ -58,6 +58,17 @@ extension RulesEngine {
                 case .greaterOrEqual: return lhs >= rhs
                 }
             }
+
+            /// Strings order by UTF-16 code unit rather than through Swift's
+            /// `Comparable`; see `jsStringEquals`.
+            func apply(strings lhs: String, _ rhs: String) -> Bool {
+                switch self {
+                case .less: return jsStringPrecedes(lhs, rhs)
+                case .lessOrEqual: return !jsStringPrecedes(rhs, lhs)
+                case .greater: return jsStringPrecedes(rhs, lhs)
+                case .greaterOrEqual: return !jsStringPrecedes(lhs, rhs)
+                }
+            }
         }
 
         /// Mirrors JS `<`: `ToPrimitive` (number hint), lex when both are
@@ -70,7 +81,7 @@ extension RulesEngine {
             let left = toPrimitiveForComparison(lhs)
             let right = toPrimitiveForComparison(rhs)
             if case .string(let leftString) = left, case .string(let rightString) = right {
-                return cmp.apply(leftString, rightString)
+                return cmp.apply(strings: leftString, rightString)
             }
             return cmp.apply(asDouble(left), asDouble(right))
         }

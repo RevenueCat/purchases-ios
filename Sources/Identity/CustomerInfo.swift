@@ -387,6 +387,12 @@ extension CustomerInfo {
         CustomerInfo.currentSchemaVersion
     ]
 
+    var allIdentitiesAreAnonymous: Bool {
+        guard let user = self.data.response.user else { return false }
+        if user.amr.isEmpty { return false }
+        // comparing the string directly allows for unknown-but-not-anonymous identity sources
+        return user.amr.allSatisfy { $0 == IdentitySource.anonymous.rawValue }
+    }
 }
 
 extension CustomerInfo {

@@ -70,19 +70,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
     #endif
 
-    func testDisabledResolverResolvesDisabled() async throws {
+    func testDisabledResolverResolvesConfigurationUnavailable() async throws {
         let resolver = DisabledCheckpointWorkflowResolver()
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .disabled)
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
-    func testRemoteConfigDisabledResolvesDisabled() async throws {
+    func testRemoteConfigDisabledResolvesConfigurationUnavailable() async throws {
         self.checkpointsProvider.result = .failure(.remoteConfigDisabled)
 
         let resolution = try await self.resolve()
-        XCTAssertEqual(Self.noActionReason(resolution), .disabled)
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
     func testUnconfiguredCheckpointResolvesUnknownCheckpoint() async throws {

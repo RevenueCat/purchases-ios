@@ -49,11 +49,11 @@ class StackComponentViewModel {
         }) else { return false }
         switch first {
         case .image(let image):
-            return image.size.width == .fill
+            return image.size.width.isFill
         case .video(let video):
-            return video.size.width == .fill
+            return video.size.width.isFill
         case .webView(let webView):
-            return webView.size.width == .fill
+            return webView.size.width.isFill
         default:
             return false
         }
