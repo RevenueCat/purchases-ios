@@ -215,7 +215,7 @@ class UiConfigProviderTests: TestCase {
         expect(self.provider.cachedUiConfig()).toNot(beNil())
     }
 
-    func testRetriesAndCachesUiConfigWhenGenerationChangesDuringDecode() async throws {
+    func testReturnsNilAndDoesNotCacheUiConfigWhenGenerationChangesDuringDecode() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
             localizations: #"{"en_US": {"day": "Day"}}"#,
@@ -230,8 +230,8 @@ class UiConfigProviderTests: TestCase {
         self.mockManager.completeStoredBlobReads()
 
         let resolvedUiConfig = await uiConfig
-        expect(resolvedUiConfig).toNot(beNil())
-        expect(self.provider.cachedUiConfig()).toNot(beNil())
+        expect(resolvedUiConfig).to(beNil())
+        expect(self.provider.cachedUiConfig()).to(beNil())
     }
 
     func testCachedUiConfigReturnsNilWhenGenerationChangesWithoutRewarming() async throws {
