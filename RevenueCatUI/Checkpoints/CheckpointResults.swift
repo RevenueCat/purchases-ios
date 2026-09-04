@@ -158,6 +158,8 @@ public class CheckpointResult: CustomStringConvertible {
 ///     handlePurchase(outcome.transaction, outcome.customerInfo)
 /// case let outcome as CheckpointPaywallOutcome.Restored:
 ///     handleRestore(outcome.customerInfo)
+/// case let outcome as CheckpointPaywallOutcome.Finished:
+///     handleFinished(outcome.customerInfo)
 /// case is CheckpointPaywallOutcome.Dismissed:
 ///     handleDismissal()
 /// case is CheckpointPaywallOutcome.WebCheckoutOpened:
@@ -233,6 +235,21 @@ public class CheckpointPaywallOutcome: CustomStringConvertible {
         }
 
         public override var description: String { return "Restored" }
+
+    }
+
+    /// An app-owned offering presentation finished. Customer information was fetched afterward.
+    public final class Finished: CheckpointPaywallOutcome {
+
+        /// Customer information after the app-owned presentation finished.
+        public let customerInfo: CustomerInfo
+
+        init(customerInfo: CustomerInfo) {
+            self.customerInfo = customerInfo
+            super.init()
+        }
+
+        public override var description: String { return "Finished" }
 
     }
 

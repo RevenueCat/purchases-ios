@@ -37,6 +37,8 @@ private final class CheckpointListenerAPITester: CheckpointListener {
                 let _: CustomerInfo = purchased.customerInfo
             } else if let restored = outcome as? CheckpointPaywallOutcome.Restored {
                 let _: CustomerInfo = restored.customerInfo
+            } else if let finished = outcome as? CheckpointPaywallOutcome.Finished {
+                let _: CustomerInfo = finished.customerInfo
             } else if let failed = outcome as? CheckpointPaywallOutcome.Error {
                 let _: PublicError = failed.error
             } else if outcome is CheckpointPaywallOutcome.WebCheckoutOpened {
@@ -58,9 +60,38 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 
 private final class CheckpointListenerDefaultsAPITester: CheckpointListener {}
 
+@MainActor
+private final class CheckpointPaywallPresenterAPITester: CheckpointPaywallPresenter {
+
+    func present(offering: Offering, completion: CheckpointPaywallCompletion) throws {
+        let _: Offering = offering
+        let _: CheckpointPaywallCompletion = completion
+        completion.finished()
+        completion.failed()
+    }
+
+}
+
+@MainActor
 func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
+
+    purchases.checkpointPaywallPresenter = CheckpointPaywallPresenterAPITester()
+    let _: CheckpointPaywallPresenter? = purchases.checkpointPaywallPresenter
+    purchases.checkpointPaywallPresenter = nil
+
+    purchases.checkpoint(
+        "test_checkpoint",
+        paywallPresenter: CheckpointPaywallPresenterAPITester()
+    ) { (_: CheckpointGateResult) in }
+
+    Task {
+        let _: CheckpointGateResult = await purchases.checkpoint(
+            "test_checkpoint",
+            paywallPresenter: CheckpointPaywallPresenterAPITester()
+        )
+    }
 
     let literalCustomVariables: [String: CustomVariableValue] = [
         "name": "Rick",

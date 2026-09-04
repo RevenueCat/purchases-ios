@@ -36,25 +36,60 @@ final class CheckpointsManager {
     private var storedListener: CheckpointListener?
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfo: @MainActor () -> CustomerInfo?
+    private let fetchCustomerInfo: @MainActor () async throws -> CustomerInfo
+    @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
+        executor: self.executor,
+        fetchCustomerInfo: self.fetchCustomerInfo
+    )
+    @MainActor lazy var presentationCoordinator = CheckpointPresentationCoordinator(
+        handler: self.presentationHandler
+    )
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil },
+        fetchCustomerInfo: @escaping @MainActor () async throws -> CustomerInfo = {
+            throw NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.unknownError.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "Customer information fetch is unavailable."]
+            )
+        }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfo = cachedCustomerInfo
+        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
-        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil },
+        fetchCustomerInfo: @escaping @MainActor () async throws -> CustomerInfo = {
+            throw NSError(
+                domain: ErrorCode.errorDomain,
+                code: ErrorCode.unknownError.rawValue,
+                userInfo: [NSLocalizedDescriptionKey: "Customer information fetch is unavailable."]
+            )
+        }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfo = cachedCustomerInfo
+        self.fetchCustomerInfo = fetchCustomerInfo
         self.executor = executor
+    }
+
+    @MainActor
+    func setPaywallPresenter(_ presenter: CheckpointPaywallPresenter?) {
+        self.presentationHandler.paywallPresenter = presenter
+    }
+
+    @MainActor
+    var paywallPresenter: CheckpointPaywallPresenter? {
+        get { return self.presentationHandler.paywallPresenter }
+        set { self.setPaywallPresenter(newValue) }
     }
 
     func checkpointGate(
@@ -103,12 +138,16 @@ final class CheckpointsManager {
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = CheckpointPresentation.workflow(workflow, customVariables: params.customVariables)
-            let outcome = try await self.executor.execute(presentation)
+            let outcome = try await self.presentationCoordinator.present(
+                presentation,
+                paywallPresenter: nil
+            )
             result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .matchedOffering(offering):
-            let outcome = try await self.executor.execute(
-                offering: offering,
-                customVariables: params.customVariables
+            let presentation = CheckpointPresentation.offering(offering, customVariables: params.customVariables)
+            let outcome = try await self.presentationCoordinator.present(
+                presentation,
+                paywallPresenter: params.paywallPresenter ?? self.paywallPresenter
             )
             result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .noAction(reason):
@@ -136,6 +175,8 @@ final class CheckpointsManager {
                 finalEntitlements = Set(purchased.customerInfo.entitlements.active.keys)
             case let restored as CheckpointPaywallOutcome.Restored:
                 finalEntitlements = Set(restored.customerInfo.entitlements.active.keys)
+            case let finished as CheckpointPaywallOutcome.Finished:
+                finalEntitlements = Set(finished.customerInfo.entitlements.active.keys)
             case let outcome as CheckpointPaywallOutcome.Error:
                 return CheckpointGateResult(noActionReason: .error, error: outcome.error)
             default:
