@@ -137,7 +137,7 @@ private enum DimensionValueConverter {
         return dimensions.reduce(into: [:]) { result, dimension in
             let (name, value) = dimension
             guard Self.isValidName(name) else {
-                Logger.warn(Strings.remoteConfig.invalidDimensionName(name, parentPath: parentPath))
+                Logger.warn(Strings.localRules.invalidDimensionName(name, parentPath: parentPath))
                 return
             }
 
