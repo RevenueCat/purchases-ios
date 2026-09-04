@@ -78,12 +78,16 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpoint(
         "test_checkpoint",
         customVariables: literalCustomVariables
-    ) { (_: Result<CheckpointResult, PublicError>) in }
+    ) { (result: CheckpointGateResult) in
+        let _: [EntitlementGrant] = result.entitlements
+        let _: CheckpointNoActionReason? = result.noActionReason
+        let _: PublicError? = result.error
+    }
 
-    purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
+    purchases.checkpoint("test_checkpoint") { (_: CheckpointGateResult) in }
 
     Task {
-        let _: CheckpointResult = try await purchases.checkpoint(
+        let _: CheckpointGateResult = await purchases.checkpoint(
             "test_checkpoint",
             customVariables: explicitCustomVariables
         )

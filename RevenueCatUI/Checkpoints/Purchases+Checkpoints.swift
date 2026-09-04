@@ -29,45 +29,45 @@ public extension Purchases {
         set { self.checkpointsManager.listener = newValue }
     }
 
-    /// Evaluates a checkpoint and calls `completion` with its result.
+    /// Evaluates a checkpoint and calls `completion` with its gate result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
-    /// ``CheckpointResult/NoAction`` without presenting UI. If an experience is presented, `completion` is called
-    /// after the experience finishes.
+    /// ``CheckpointGateResult`` reports what happened. The callback always runs; if an experience is presented,
+    /// it runs after the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
-    ///   - completion: Called with the checkpoint result, or with an error if evaluation or presentation fails.
+    ///   - completion: Called with the gate result. Evaluation and presentation failures are represented in the result.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+        completion: @escaping (CheckpointGateResult) -> Void
     ) {
-        self.checkpointsManager.checkpoint(
+        self.checkpointsManager.checkpointGate(
             identifier: identifier,
             params: .init(customVariables: customVariables),
             completion: completion
         )
     }
 
-    /// Evaluates a checkpoint and returns its result.
+    /// Evaluates a checkpoint and returns its gate result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
-    /// ``CheckpointResult/NoAction`` without presenting UI. If an experience is presented, this method returns
-    /// after the experience finishes.
+    /// ``CheckpointGateResult`` reports what happened. If an experience is presented, this method returns after
+    /// the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
-    /// - Returns: The result for this checkpoint.
-    /// - Throws: An error if checkpoint evaluation or presentation fails.
+    /// - Returns: The gate result for this checkpoint. Evaluation and presentation failures are represented in
+    ///   the result rather than thrown.
     @discardableResult
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:]
-    ) async throws -> CheckpointResult {
-        return try await self.checkpointsManager.checkpoint(
+    ) async -> CheckpointGateResult {
+        return await self.checkpointsManager.checkpointGate(
             identifier: identifier,
             params: .init(customVariables: customVariables)
         )
@@ -85,13 +85,16 @@ private extension Purchases {
     }
 
     func createCheckpointsManager() -> CheckpointsManager {
-        return CheckpointsManager(resolveCheckpoint: { [weak self] identifier, params in
-            guard let self else {
-                throw CancellationError()
-            }
+        return CheckpointsManager(
+            resolveCheckpoint: { [weak self] identifier, params in
+                guard let self else {
+                    throw CancellationError()
+                }
 
-            return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
-        })
+                return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
+            },
+            cachedCustomerInfo: { [weak self] in self?.cachedCustomerInfo }
+        )
     }
 
 }

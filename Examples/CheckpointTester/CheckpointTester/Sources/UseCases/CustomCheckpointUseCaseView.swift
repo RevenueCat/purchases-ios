@@ -55,15 +55,11 @@ struct CustomCheckpointUseCaseView: View {
         self.isRunning = true
         defer { self.isRunning = false }
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                self.trimmedIdentifier,
-                customVariables: self.customVariables.checkpointCustomVariables
-            )
-            self.model.showOutcome(result, checkpointIdentifier: self.trimmedIdentifier)
-        } catch {
-            self.model.showError(error)
-        }
+        let result = await Purchases.shared.checkpoint(
+            self.trimmedIdentifier,
+            customVariables: self.customVariables.checkpointCustomVariables
+        )
+        self.model.showOutcome(result, checkpointIdentifier: self.trimmedIdentifier)
     }
 
 }

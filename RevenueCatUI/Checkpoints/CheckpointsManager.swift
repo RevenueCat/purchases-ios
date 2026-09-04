@@ -35,39 +35,51 @@ final class CheckpointsManager {
     private let listenerLock = NSLock()
     private var storedListener: CheckpointListener?
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
+    private let cachedCustomerInfo: @MainActor () -> CustomerInfo?
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
-    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
+    init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
+    ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfo = cachedCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor
+        executor: CheckpointExecutor,
+        cachedCustomerInfo: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.cachedCustomerInfo = cachedCustomerInfo
         self.executor = executor
     }
 
-    func checkpoint(
+    func checkpointGate(
         identifier: String,
         params: CheckpointCallParams,
-        completion: @escaping (Result<CheckpointResult, PublicError>) -> Void
+        completion: @escaping (CheckpointGateResult) -> Void
     ) {
         Task { @MainActor in
-            do {
-                completion(
-                    .success(
-                        try await self.checkpoint(
-                            identifier: identifier,
-                            params: params
-                        )
-                    )
-                )
-            } catch {
-                completion(.failure(error as NSError))
-            }
+            completion(await self.checkpointGate(identifier: identifier, params: params))
+        }
+    }
+
+    @MainActor
+    func checkpointGate(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async -> CheckpointGateResult {
+        let initialEntitlements = Set((self.cachedCustomerInfo()?.entitlements.active ?? [:]).keys)
+        do {
+            let result = try await self.checkpoint(identifier: identifier, params: params)
+            return self.gateResult(for: result, initialEntitlements: initialEntitlements)
+        } catch is CancellationError {
+            return CheckpointGateResult(noActionReason: .error, error: CancellationError() as NSError)
+        } catch {
+            return CheckpointGateResult(noActionReason: .error, error: error as NSError)
         }
     }
 
@@ -90,15 +102,15 @@ final class CheckpointsManager {
         let result: CheckpointResult
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
-            let presentation = CheckpointPresentation(
-                workflow: workflow,
-                customVariables: params.customVariables
-            )
+            let presentation = CheckpointPresentation.workflow(workflow, customVariables: params.customVariables)
             let outcome = try await self.executor.execute(presentation)
             result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .matchedOffering(offering):
-            // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointResult.ReceivedOffering(offering: offering)
+            let outcome = try await self.executor.execute(
+                offering: offering,
+                customVariables: params.customVariables
+            )
+            result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .noAction(reason):
             result = CheckpointResult.NoAction(reason: reason.noActionReason)
         }
@@ -107,6 +119,41 @@ final class CheckpointsManager {
             CheckpointContext.Completed(identifier: identifier, params: params, result: result)
         )
         return result
+    }
+
+    @MainActor
+    private func gateResult(
+        for result: CheckpointResult,
+        initialEntitlements: Set<String>
+    ) -> CheckpointGateResult {
+        switch result {
+        case let noAction as CheckpointResult.NoAction:
+            return CheckpointGateResult(noActionReason: noAction.reason)
+        case let presented as CheckpointResult.PaywallPresented:
+            let finalEntitlements: Set<String>
+            switch presented.paywallOutcome {
+            case let purchased as CheckpointPaywallOutcome.Purchased:
+                finalEntitlements = Set(purchased.customerInfo.entitlements.active.keys)
+            case let restored as CheckpointPaywallOutcome.Restored:
+                finalEntitlements = Set(restored.customerInfo.entitlements.active.keys)
+            case let outcome as CheckpointPaywallOutcome.Error:
+                return CheckpointGateResult(noActionReason: .error, error: outcome.error)
+            default:
+                finalEntitlements = Set((self.cachedCustomerInfo()?.entitlements.active ?? [:]).keys)
+            }
+            return CheckpointGateResult(
+                entitlements: finalEntitlements.subtracting(initialEntitlements).sorted().map(EntitlementGrant.init)
+            )
+        case is CheckpointResult.ReceivedOffering:
+            return CheckpointGateResult()
+        default:
+            let error = NSError(
+                domain: "RevenueCat.Checkpoints",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Unknown checkpoint result."]
+            )
+            return CheckpointGateResult(noActionReason: .error, error: error)
+        }
     }
 
 }

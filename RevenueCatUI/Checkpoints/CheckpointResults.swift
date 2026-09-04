@@ -15,12 +15,61 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// An entitlement obtained while completing a checkpoint.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class EntitlementGrant: CustomStringConvertible, @unchecked Sendable {
+
+    /// The identifier of the obtained entitlement.
+    public let identifier: String
+
+    init(identifier: String) {
+        self.identifier = identifier
+    }
+
+    /// A debug description of the entitlement grant.
+    public var description: String { return "EntitlementGrant(identifier='\(self.identifier)')" }
+
+}
+
+/// The result of evaluating a checkpoint as a gate.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public final class CheckpointGateResult: CustomStringConvertible, @unchecked Sendable {
+
+    /// Entitlements that became active while completing the checkpoint.
+    public let entitlements: [EntitlementGrant]
+
+    /// Why no action was taken, if applicable.
+    public let noActionReason: CheckpointNoActionReason?
+
+    /// An error that prevented the checkpoint from completing normally.
+    public let error: PublicError?
+
+    init(
+        entitlements: [EntitlementGrant] = [],
+        noActionReason: CheckpointNoActionReason? = nil,
+        error: PublicError? = nil
+    ) {
+        self.entitlements = entitlements
+        self.noActionReason = noActionReason
+        self.error = error
+    }
+
+    /// A debug description of the gate result.
+    public var description: String {
+        return "CheckpointGateResult(entitlements=\(self.entitlements), " +
+            "noActionReason=\(String(describing: self.noActionReason)), error=\(String(describing: self.error)))"
+    }
+
+}
+
 /// Base class for the result of evaluating a checkpoint.
 ///
 /// Inspect the concrete result type to determine what happened:
 ///
 /// ```swift
-/// let result = try await Purchases.shared.checkpoint("onboarding_complete")
+/// let result = await Purchases.shared.checkpoint("onboarding_complete")
 ///
 /// switch result {
 /// case let result as CheckpointResult.PaywallPresented:

@@ -124,15 +124,18 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
     func makePaywallViewController(
         for presentation: CheckpointPresentation
     ) throws -> PaywallViewController {
-        let workflowContext = try WorkflowPreview.makeContext(
-            workflow: presentation.workflow.workflow,
-            offerings: presentation.workflow.offerings,
-            uiConfig: presentation.workflow.uiConfig
-        )
-        let viewController = PaywallViewController(
-            workflowContext: workflowContext,
-            displayCloseButton: true
-        )
+        let viewController: PaywallViewController
+        switch presentation {
+        case let .workflow(workflow, _):
+            let workflowContext = try WorkflowPreview.makeContext(
+                workflow: workflow.workflow,
+                offerings: workflow.offerings,
+                uiConfig: workflow.uiConfig
+            )
+            viewController = PaywallViewController(workflowContext: workflowContext, displayCloseButton: true)
+        case let .offering(offering, _):
+            viewController = PaywallViewController(offering: offering, displayCloseButton: true)
+        }
         viewController.customVariables = presentation.customVariables
         return viewController
     }

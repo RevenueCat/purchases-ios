@@ -116,6 +116,8 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
     public static let unknownCheckpoint = CheckpointNoActionReason(value: "UNKNOWN_CHECKPOINT")
     /// The checkpoint identifier is invalid.
     public static let invalidCheckpointIdentifier = CheckpointNoActionReason(value: "INVALID_CHECKPOINT_IDENTIFIER")
+    /// An error prevented the checkpoint from completing normally.
+    public static let error = CheckpointNoActionReason(value: "ERROR")
 
     init(value: String) {
         self.value = value

@@ -128,18 +128,11 @@ struct ContentView: View {
                         systemImage: "arrow.forward"
                     ) {
                         Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "this-checkpoint-does-not-exist",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(
-                                    result,
-                                    checkpointIdentifier: "this-checkpoint-does-not-exist"
-                                )
-                            } catch {
-                                self.model.showError(error)
-                            }
+                            let result = await Purchases.shared.checkpoint(
+                                "this-checkpoint-does-not-exist",
+                                customVariables: self.customVariables.checkpointCustomVariables
+                            )
+                            self.model.showOutcome(result, checkpointIdentifier: "this-checkpoint-does-not-exist")
                         }
                     }
 
@@ -149,15 +142,11 @@ struct ContentView: View {
                         systemImage: "exclamationmark.triangle"
                     ) {
                         Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "error_checkpoint",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
-                            } catch {
-                                self.model.showError(error)
-                            }
+                            let result = await Purchases.shared.checkpoint(
+                                "error_checkpoint",
+                                customVariables: self.customVariables.checkpointCustomVariables
+                            )
+                            self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
                         }
                     }
                 }

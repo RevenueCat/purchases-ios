@@ -110,48 +110,23 @@ struct OnboardingUseCaseView: View {
         guard !self.isRunning else { return }
         self.isRunning = true
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "onboarding_complete",
-                customVariables: self.personalizationCheckpointCustomVariables
-            )
-            self.checkpointResult = Self.describe(result)
-        } catch {
-            self.checkpointResult = "Checkpoint failed: \(error.localizedDescription)"
-        }
-
-        self.isRunning = false
+        let result = await Purchases.shared.checkpoint(
+            "onboarding_complete",
+            customVariables: self.personalizationCheckpointCustomVariables
+        )
+        self.checkpointResult = Self.describe(result)
         self.step = .done
+        self.isRunning = false
     }
 
-    private static func describe(_ result: CheckpointResult) -> String {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            return Self.describe(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            return "Received offering '\(received.offering.identifier)'."
-        case let noAction as CheckpointResult.NoAction:
-            return "No paywall shown (\(noAction.reason))."
-        default:
-            return "Unknown checkpoint result."
+    private static func describe(_ result: CheckpointGateResult) -> String {
+        if let reason = result.noActionReason {
+            return "No paywall shown (\(reason))."
         }
-    }
-
-    private static func describe(_ outcome: CheckpointPaywallOutcome) -> String {
-        switch outcome {
-        case is CheckpointPaywallOutcome.Purchased:
-            return "Purchased during onboarding."
-        case is CheckpointPaywallOutcome.Restored:
-            return "Restored during onboarding."
-        case is CheckpointPaywallOutcome.Dismissed:
-            return "Paywall dismissed."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            return "Web checkout opened."
-        case let failed as CheckpointPaywallOutcome.Error:
-            return "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            return "Unknown paywall outcome."
+        if !result.entitlements.isEmpty {
+            return "Access granted: \(result.entitlements.map(\.identifier).joined(separator: ", "))."
         }
+        return "Paywall completed without granting a new entitlement."
     }
 
     private var personalizationCheckpointCustomVariables: [String: CustomVariableValue] {
