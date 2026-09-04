@@ -34,6 +34,11 @@ struct TimelineComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -55,6 +60,7 @@ struct TimelineComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.isHovered || self.componentHoverState,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
@@ -68,6 +74,7 @@ struct TimelineComponentView: View {
                 timeline(style: style)
             }
         }
+        .componentHoverState(self.$isHovered, trackingEnabled: self.viewModel.hasHoverOverride)
     }
 
     @ViewBuilder
@@ -79,6 +86,7 @@ struct TimelineComponentView: View {
                 item.styles(
                     state: self.componentViewState,
                     condition: self.screenCondition,
+                    isHovered: self.isHovered || self.componentHoverState,
                     isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                         package: self.packageContext.package
                     ),
@@ -106,6 +114,7 @@ struct TimelineComponentView: View {
                     item.styles(
                         state: self.componentViewState,
                         condition: self.screenCondition,
+                        isHovered: self.isHovered || self.componentHoverState,
                         isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                             package: self.packageContext.package
                         ),

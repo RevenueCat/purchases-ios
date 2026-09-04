@@ -102,6 +102,9 @@ struct LoadedTabsComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -308,6 +311,7 @@ struct LoadedTabsComponentView: View {
         let style = viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.componentHoverState,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
