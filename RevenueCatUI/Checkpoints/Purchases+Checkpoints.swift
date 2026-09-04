@@ -29,14 +29,14 @@ public extension Purchases {
         set { self.checkpointsManager.listener = newValue }
     }
 
-    /// Presents offerings selected by checkpoints using app-owned UI.
+    /// Presents paywalls selected by checkpoints using app-owned UI.
     ///
     /// When `nil`, RevenueCat presents the offering's configured paywall, falling back to the default paywall.
     /// The presenter is held by this ``Purchases`` instance and is cleared when the SDK is reconfigured.
     @MainActor
-    var checkpointOfferingPresenter: CheckpointOfferingPresenter? {
-        get { return self.checkpointsManager.offeringPresenter }
-        set { self.checkpointsManager.setOfferingPresenter(newValue) }
+    var checkpointPaywallPresenter: CheckpointPaywallPresenter? {
+        get { return self.checkpointsManager.paywallPresenter }
+        set { self.checkpointsManager.setPaywallPresenter(newValue) }
     }
 
     /// Evaluates a checkpoint and calls `completion` with its gate result.
@@ -48,15 +48,17 @@ public extension Purchases {
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
+    ///   - paywallPresenter: An optional presenter that overrides the globally configured presenter for this call.
     ///   - completion: Called with the gate result. Evaluation and presentation failures are represented in the result.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
+        paywallPresenter: CheckpointPaywallPresenter? = nil,
         completion: @escaping (CheckpointGateResult) -> Void
     ) {
         self.checkpointsManager.checkpointGate(
             identifier: identifier,
-            params: .init(customVariables: customVariables),
+            params: .init(customVariables: customVariables, paywallPresenter: paywallPresenter),
             completion: completion
         )
     }
@@ -70,16 +72,18 @@ public extension Purchases {
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented paywall.
+    ///   - paywallPresenter: An optional presenter that overrides the globally configured presenter for this call.
     /// - Returns: The gate result for this checkpoint. Evaluation and presentation failures are represented in
     ///   the result rather than thrown.
     @discardableResult
     func checkpoint(
         _ identifier: String,
-        customVariables: [String: CustomVariableValue] = [:]
+        customVariables: [String: CustomVariableValue] = [:],
+        paywallPresenter: CheckpointPaywallPresenter? = nil
     ) async -> CheckpointGateResult {
         return await self.checkpointsManager.checkpointGate(
             identifier: identifier,
-            params: .init(customVariables: customVariables)
+            params: .init(customVariables: customVariables, paywallPresenter: paywallPresenter)
         )
     }
 

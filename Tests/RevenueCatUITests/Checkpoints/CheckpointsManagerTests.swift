@@ -221,16 +221,21 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertTrue(result.entitlements.isEmpty)
     }
 
-    func testOfferingPresenterReceivesOfferingAndResolvesCheckpoint() async throws {
-        let presenter = MockCheckpointOfferingPresenter()
+    func testPaywallPresenterReceivesOfferingAndResolvesCheckpoint() async throws {
+        let presenter = MockCheckpointPaywallPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             executor: MockCheckpointWorkflowExecutor(),
             fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
         )
-        manager.setOfferingPresenter(presenter)
+        manager.setPaywallPresenter(presenter)
 
-        let checkpoint = Task { try await manager.checkpoint(identifier: "presenter", params: .init()) }
+        let checkpoint = Task {
+            try await manager.checkpoint(
+                identifier: "presenter",
+                params: .init(paywallPresenter: presenter)
+            )
+        }
         await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
 
         XCTAssertEqual(presenter.offering?.identifier, "offering-id")
@@ -242,13 +247,13 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    func testOnlyTheFirstOfferingPresenterCompletionCounts() async throws {
-        let presenter = MockCheckpointOfferingPresenter()
+    func testOnlyTheFirstPaywallPresenterCompletionCounts() async throws {
+        let presenter = MockCheckpointPaywallPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
         )
-        manager.setOfferingPresenter(presenter)
+        manager.setPaywallPresenter(presenter)
 
         let checkpoint = Task { try await manager.checkpoint(identifier: "presenter", params: .init()) }
         await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
@@ -262,13 +267,13 @@ final class CheckpointsManagerTests: TestCase {
         )
     }
 
-    func testOfferingPresenterSharesPresentationSlotWithSDKPresenter() async throws {
-        let presenter = MockCheckpointOfferingPresenter()
+    func testPaywallPresenterSharesPresentationSlotWithSDKPresenter() async throws {
+        let presenter = MockCheckpointPaywallPresenter()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
         )
-        manager.setOfferingPresenter(presenter)
+        manager.setPaywallPresenter(presenter)
 
         let firstCheckpoint = Task { try await manager.checkpoint(identifier: "first", params: .init()) }
         await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
@@ -285,15 +290,15 @@ final class CheckpointsManagerTests: TestCase {
         _ = try await firstCheckpoint.value
     }
 
-    func testThrowingOfferingPresenterReleasesPresentationSlot() async throws {
-        let presenter = MockCheckpointOfferingPresenter()
+    func testThrowingPaywallPresenterReleasesPresentationSlot() async throws {
+        let presenter = MockCheckpointPaywallPresenter()
         presenter.error = NSError(domain: "test", code: 42)
         let executor = MockCheckpointWorkflowExecutor()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             executor: executor
         )
-        manager.setOfferingPresenter(presenter)
+        manager.setPaywallPresenter(presenter)
 
         do {
             _ = try await manager.checkpoint(identifier: "presenter", params: .init())
@@ -304,7 +309,7 @@ final class CheckpointsManagerTests: TestCase {
             XCTAssertEqual(nsError.code, 42)
         }
 
-        manager.setOfferingPresenter(nil)
+        manager.setPaywallPresenter(nil)
         _ = try await manager.checkpoint(identifier: "fallback", params: .init())
         XCTAssertEqual(executor.presentations.count, 1)
     }
@@ -711,14 +716,14 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class MockCheckpointOfferingPresenter: CheckpointOfferingPresenter {
+private final class MockCheckpointPaywallPresenter: CheckpointPaywallPresenter {
 
     let presentationStarted = XCTestExpectation(description: "Offering presentation starts")
     var offering: Offering?
-    var completion: CheckpointOfferingCompletion?
+    var completion: CheckpointPaywallCompletion?
     var error: Error?
 
-    func present(offering: Offering, completion: CheckpointOfferingCompletion) throws {
+    func present(offering: Offering, completion: CheckpointPaywallCompletion) throws {
         if let error {
             throw error
         }

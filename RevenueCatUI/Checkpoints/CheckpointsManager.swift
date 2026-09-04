@@ -82,14 +82,14 @@ final class CheckpointsManager {
     }
 
     @MainActor
-    func setOfferingPresenter(_ presenter: CheckpointOfferingPresenter?) {
-        self.presentationHandler.offeringPresenter = presenter
+    func setPaywallPresenter(_ presenter: CheckpointPaywallPresenter?) {
+        self.presentationHandler.paywallPresenter = presenter
     }
 
     @MainActor
-    var offeringPresenter: CheckpointOfferingPresenter? {
-        get { return self.presentationHandler.offeringPresenter }
-        set { self.setOfferingPresenter(newValue) }
+    var paywallPresenter: CheckpointPaywallPresenter? {
+        get { return self.presentationHandler.paywallPresenter }
+        set { self.setPaywallPresenter(newValue) }
     }
 
     func checkpointGate(
@@ -138,11 +138,17 @@ final class CheckpointsManager {
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = CheckpointPresentation.workflow(workflow, customVariables: params.customVariables)
-            let outcome = try await self.presentationCoordinator.present(presentation)
+            let outcome = try await self.presentationCoordinator.present(
+                presentation,
+                paywallPresenter: nil
+            )
             result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .matchedOffering(offering):
             let presentation = CheckpointPresentation.offering(offering, customVariables: params.customVariables)
-            let outcome = try await self.presentationCoordinator.present(presentation)
+            let outcome = try await self.presentationCoordinator.present(
+                presentation,
+                paywallPresenter: params.paywallPresenter ?? self.paywallPresenter
+            )
             result = CheckpointResult.PaywallPresented(paywallOutcome: outcome)
         case let .noAction(reason):
             result = CheckpointResult.NoAction(reason: reason.noActionReason)

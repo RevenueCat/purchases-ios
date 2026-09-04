@@ -61,11 +61,11 @@ private final class CheckpointListenerAPITester: CheckpointListener {
 private final class CheckpointListenerDefaultsAPITester: CheckpointListener {}
 
 @MainActor
-private final class CheckpointOfferingPresenterAPITester: CheckpointOfferingPresenter {
+private final class CheckpointPaywallPresenterAPITester: CheckpointPaywallPresenter {
 
-    func present(offering: Offering, completion: CheckpointOfferingCompletion) throws {
+    func present(offering: Offering, completion: CheckpointPaywallCompletion) throws {
         let _: Offering = offering
-        let _: CheckpointOfferingCompletion = completion
+        let _: CheckpointPaywallCompletion = completion
         completion.finished()
         completion.failed()
     }
@@ -77,9 +77,21 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpointListener = CheckpointListenerAPITester()
     let _: CheckpointListener? = purchases.checkpointListener
 
-    purchases.checkpointOfferingPresenter = CheckpointOfferingPresenterAPITester()
-    let _: CheckpointOfferingPresenter? = purchases.checkpointOfferingPresenter
-    purchases.checkpointOfferingPresenter = nil
+    purchases.checkpointPaywallPresenter = CheckpointPaywallPresenterAPITester()
+    let _: CheckpointPaywallPresenter? = purchases.checkpointPaywallPresenter
+    purchases.checkpointPaywallPresenter = nil
+
+    purchases.checkpoint(
+        "test_checkpoint",
+        paywallPresenter: CheckpointPaywallPresenterAPITester()
+    ) { (_: CheckpointGateResult) in }
+
+    Task {
+        let _: CheckpointGateResult = await purchases.checkpoint(
+            "test_checkpoint",
+            paywallPresenter: CheckpointPaywallPresenterAPITester()
+        )
+    }
 
     let literalCustomVariables: [String: CustomVariableValue] = [
         "name": "Rick",
