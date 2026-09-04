@@ -37,6 +37,8 @@ protocol CheckpointExecutor: AnyObject {
 
     func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome
 
+    func cancel()
+
     func execute(offering: Offering, customVariables: [String: CustomVariableValue]) async throws
     -> CheckpointPaywallOutcome
 
@@ -44,6 +46,8 @@ protocol CheckpointExecutor: AnyObject {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension CheckpointExecutor {
+
+    func cancel() {}
 
     func execute(
         offering: Offering,
@@ -145,6 +149,10 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         self.finish(outcome: outcome)
     }
 
+    func cancel() {
+        self.cancelPendingPresentation()
+    }
+
     private func store(continuation: Continuation) {
         self.pendingContinuation = continuation
     }
@@ -161,7 +169,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         continuation.resume(throwing: error)
     }
 
-    private func cancel() {
+    private func cancelPendingPresentation() {
         guard self.pendingContinuation != nil,
               let presenter = self.activePresenter else { return }
 

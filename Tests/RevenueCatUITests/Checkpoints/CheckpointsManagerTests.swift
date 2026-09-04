@@ -194,7 +194,8 @@ final class CheckpointsManagerTests: TestCase {
     func testCheckpointGateReturnsNoEntitlementsWhenPaywallIsDismissed() async {
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor()
+            executor: MockCheckpointWorkflowExecutor(),
+            fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
         )
 
         let result = await manager.checkpointGate(identifier: "dismissed", params: .init())
@@ -218,6 +219,94 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(result.noActionReason, .error)
         XCTAssertEqual(result.error as NSError?, expectedError)
         XCTAssertTrue(result.entitlements.isEmpty)
+    }
+
+    func testOfferingPresenterReceivesOfferingAndResolvesCheckpoint() async throws {
+        let presenter = MockCheckpointOfferingPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor(),
+            fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        manager.setOfferingPresenter(presenter)
+
+        let checkpoint = Task { try await manager.checkpoint(identifier: "presenter", params: .init()) }
+        await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
+
+        XCTAssertEqual(presenter.offering?.identifier, "offering-id")
+        presenter.completion?.finished()
+
+        let result = try await checkpoint.value
+        XCTAssertTrue(
+            (result as? CheckpointResult.PaywallPresented)?.paywallOutcome is CheckpointPaywallOutcome.Finished
+        )
+    }
+
+    func testOnlyTheFirstOfferingPresenterCompletionCounts() async throws {
+        let presenter = MockCheckpointOfferingPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        manager.setOfferingPresenter(presenter)
+
+        let checkpoint = Task { try await manager.checkpoint(identifier: "presenter", params: .init()) }
+        await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
+
+        presenter.completion?.finished()
+        presenter.completion?.failed()
+
+        let result = try await checkpoint.value
+        XCTAssertTrue(
+            (result as? CheckpointResult.PaywallPresented)?.paywallOutcome is CheckpointPaywallOutcome.Finished
+        )
+    }
+
+    func testOfferingPresenterSharesPresentationSlotWithSDKPresenter() async throws {
+        let presenter = MockCheckpointOfferingPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            fetchCustomerInfo: { try Self.customerInfo(activeEntitlements: ["pro"]) }
+        )
+        manager.setOfferingPresenter(presenter)
+
+        let firstCheckpoint = Task { try await manager.checkpoint(identifier: "first", params: .init()) }
+        await self.fulfillment(of: [presenter.presentationStarted], timeout: 1)
+
+        let secondCheckpoint = Task { try await manager.checkpoint(identifier: "second", params: .init()) }
+        do {
+            _ = try await secondCheckpoint.value
+            XCTFail("Expected the second checkpoint to fail while the presenter is active")
+        } catch {
+            XCTAssertEqual((error as NSError).code, ErrorCode.operationAlreadyInProgressForProductError.rawValue)
+        }
+
+        presenter.completion?.finished()
+        _ = try await firstCheckpoint.value
+    }
+
+    func testThrowingOfferingPresenterReleasesPresentationSlot() async throws {
+        let presenter = MockCheckpointOfferingPresenter()
+        presenter.error = NSError(domain: "test", code: 42)
+        let executor = MockCheckpointWorkflowExecutor()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: executor
+        )
+        manager.setOfferingPresenter(presenter)
+
+        do {
+            _ = try await manager.checkpoint(identifier: "presenter", params: .init())
+            XCTFail("Expected the presenter to throw")
+        } catch {
+            let nsError = error as NSError
+            XCTAssertEqual(nsError.domain, "test")
+            XCTAssertEqual(nsError.code, 42)
+        }
+
+        manager.setOfferingPresenter(nil)
+        _ = try await manager.checkpoint(identifier: "fallback", params: .init())
+        XCTAssertEqual(executor.presentations.count, 1)
     }
 
     func testResolutionErrorIsForwardedWithoutCompletedListenerEvent() async {
@@ -607,7 +696,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallOutcome.Dismissed.shared
-    var error: Error?
+    var error: NSError?
     private(set) var presentations: [CheckpointPresentation] = []
 
     func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
@@ -616,6 +705,26 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
             throw error
         }
         return self.outcome
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockCheckpointOfferingPresenter: CheckpointOfferingPresenter {
+
+    let presentationStarted = XCTestExpectation(description: "Offering presentation starts")
+    var offering: Offering?
+    var completion: CheckpointOfferingCompletion?
+    var error: Error?
+
+    func present(offering: Offering, completion: CheckpointOfferingCompletion) throws {
+        if let error {
+            throw error
+        }
+        self.offering = offering
+        self.completion = completion
+        self.presentationStarted.fulfill()
     }
 
 }

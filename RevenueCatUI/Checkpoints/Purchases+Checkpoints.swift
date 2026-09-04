@@ -29,6 +29,16 @@ public extension Purchases {
         set { self.checkpointsManager.listener = newValue }
     }
 
+    /// Presents offerings selected by checkpoints using app-owned UI.
+    ///
+    /// When `nil`, RevenueCat presents the offering's configured paywall, falling back to the default paywall.
+    /// The presenter is held by this ``Purchases`` instance and is cleared when the SDK is reconfigured.
+    @MainActor
+    var checkpointOfferingPresenter: CheckpointOfferingPresenter? {
+        get { return self.checkpointsManager.offeringPresenter }
+        set { self.checkpointsManager.setOfferingPresenter(newValue) }
+    }
+
     /// Evaluates a checkpoint and calls `completion` with its gate result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
@@ -93,7 +103,11 @@ private extension Purchases {
 
                 return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
             },
-            cachedCustomerInfo: { [weak self] in self?.cachedCustomerInfo }
+            cachedCustomerInfo: { [weak self] in self?.cachedCustomerInfo },
+            fetchCustomerInfo: { [weak self] in
+                guard let self else { throw CancellationError() }
+                return try await self.customerInfo(fetchPolicy: .fetchCurrent)
+            }
         )
     }
 
