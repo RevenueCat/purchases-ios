@@ -996,7 +996,11 @@
 		7559DF072E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7559DF062E38B05F0050C5B4 /* WebProductToStoreProductConversionTests.swift */; };
 		755C26A22E310AA4006DD0AE /* WebBillingProductsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A12E310AA4006DD0AE /* WebBillingProductsCallback.swift */; };
 		755C26A42E310B19006DD0AE /* WebBillingProductsResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */; };
+		4487A0112E90000000000001 /* HostedCheckoutResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0102E90000000000001 /* HostedCheckoutResponse.swift */; };
+		4487A0212E90000000000002 /* HostedCheckoutCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0202E90000000000002 /* HostedCheckoutCallback.swift */; };
+		4487A0312E90000000000003 /* PostHostedCheckoutOperation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */; };
 		755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */; };
+		4487A0412E90000000000004 /* BackendPostHostedCheckoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */; };
 		756AE8352D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */; };
 		7571BE9F2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */; };
 		757E73CE2F0FE2410066DCDC /* LocalTransactionMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = 757E73CC2F0FE2410066DCDC /* LocalTransactionMetadata.swift */; };
@@ -2723,7 +2727,11 @@
 		755B63E42E7438D500919833 /* TestLogHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestLogHandler.swift; sourceTree = "<group>"; };
 		755C26A12E310AA4006DD0AE /* WebBillingProductsCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingProductsCallback.swift; sourceTree = "<group>"; };
 		755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingProductsResponse.swift; sourceTree = "<group>"; };
+		4487A0102E90000000000001 /* HostedCheckoutResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutResponse.swift; sourceTree = "<group>"; };
+		4487A0202E90000000000002 /* HostedCheckoutCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutCallback.swift; sourceTree = "<group>"; };
+		4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostHostedCheckoutOperation.swift; sourceTree = "<group>"; };
 		755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetWebBillingProductsTests.swift; sourceTree = "<group>"; };
+		4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendPostHostedCheckoutTests.swift; sourceTree = "<group>"; };
 		756AE8342D8816CD00BA2E39 /* PurchasesDiagnosticsTrackingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchasesDiagnosticsTrackingTests.swift; sourceTree = "<group>"; };
 		7571BE9E2D672B2C00A2C8B6 /* TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrialOrIntroPriceEligibilityCheckerUIPreviewModeTests.swift; sourceTree = "<group>"; };
 		757E73CC2F0FE2410066DCDC /* LocalTransactionMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalTransactionMetadata.swift; sourceTree = "<group>"; };
@@ -5616,6 +5624,7 @@
 				5796A39327D6BD6900653165 /* BackendGetOfferingsTests.swift */,
 				1EDB6C932DDDC39C00C771A4 /* BackendGetWebOfferingProductsTests.swift */,
 				755C26A52E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift */,
+				4487A0402E90000000000004 /* BackendPostHostedCheckoutTests.swift */,
 				579D2E3928F0BF5A0094B36F /* BackendInternalTests.swift */,
 				5796A38B27D6BA1600653165 /* BackendLoginTests.swift */,
 				64FEF3704AAACD669F3BF4E0 /* BackendTokenLoginTests.swift */,
@@ -5832,6 +5841,7 @@
 				FDE57A9F2DF8785000101CE2 /* VirtualCurrenciesResponse.swift */,
 				DB3395D42F840A570079250C /* WorkflowsResponse.swift */,
 				755C26A32E310B19006DD0AE /* WebBillingProductsResponse.swift */,
+				4487A0102E90000000000001 /* HostedCheckoutResponse.swift */,
 				E35BAD07C46D469D8CC7C396 /* RemoteConfiguration.swift */,
 			);
 			path = Responses;
@@ -6771,6 +6781,7 @@
 				B34605A5279A6E380031CA74 /* OfferingsCallback.swift */,
 				1EDB6AA52DC9517300C771A4 /* WebOfferingProductsCallback.swift */,
 				755C26A12E310AA4006DD0AE /* WebBillingProductsCallback.swift */,
+				4487A0202E90000000000002 /* HostedCheckoutCallback.swift */,
 				FDED7EC42F33DF0A00827E54 /* IsPurchaseAllowedByRestoreBehaviorCallback.swift */,
 				57045B3B29C51AF7001A5417 /* ProductEntitlementMappingCallback.swift */,
 				FDE57A9D2DF8783000101CE2 /* VirtualCurrenciesCallback.swift */,
@@ -6794,6 +6805,7 @@
 				55DAD04730377F20005EE017 /* SpendVirtualCurrenciesOperation.swift */,
 				75B6DFFA2E30EC86009F0A99 /* GetWebOfferingProductsOperation.swift */,
 				75A9F25B2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift */,
+				4487A0302E90000000000003 /* PostHostedCheckoutOperation.swift */,
 				57045B3929C51751001A5417 /* GetProductEntitlementMappingOperation.swift */,
 				4F5F47072AA91F8A005649D8 /* HealthOperation.swift */,
 				537B4B2F2DA9742500CEFF4C /* HealthReportOperation.swift */,
@@ -7894,6 +7906,7 @@
 				1622D40E2E90189F00C20E3C /* URLWithValidation.swift in Sources */,
 				1EB697862CD0ED0B003000FC /* WebPurchaseRedemptionResult.swift in Sources */,
 				75A9F25C2E38DE57005D1AB1 /* GetWebBillingProductsOperation.swift in Sources */,
+				4487A0312E90000000000003 /* PostHostedCheckoutOperation.swift in Sources */,
 				A525BF4B26C320D100C354C4 /* SubscriberAttributesManager.swift in Sources */,
 				2D1015DA275959840086173F /* StoreTransaction.swift in Sources */,
 				FD11970A2D6E48A5002718E3 /* StoreKit2ProductPurchaser.swift in Sources */,
@@ -7925,6 +7938,7 @@
 				57A0FBF02749C0C2009E2FC3 /* Atomic.swift in Sources */,
 				AC17E0A7E0000000000000B1 /* DeferredTask.swift in Sources */,
 				755C26A22E310AA4006DD0AE /* WebBillingProductsCallback.swift in Sources */,
+				4487A0212E90000000000002 /* HostedCheckoutCallback.swift in Sources */,
 				4F98E9D32A465A4400DB6EAB /* TestStoreProduct.swift in Sources */,
 				3592E8902C2ED5C100D7F91D /* CustomerCenterConfigAPI.swift in Sources */,
 				2DC5623224EC63730031F69B /* TransactionsFactory.swift in Sources */,
@@ -8124,6 +8138,7 @@
 				57FD7B1528DA4037009CA4E4 /* PurchasesType.swift in Sources */,
 				57C381DA2796153D009E3940 /* SK1StoreProductDiscount.swift in Sources */,
 				755C26A42E310B19006DD0AE /* WebBillingProductsResponse.swift in Sources */,
+				4487A0112E90000000000001 /* HostedCheckoutResponse.swift in Sources */,
 				4DBC30962B1DFA97001D33C7 /* StoreKitVersion.swift in Sources */,
 				57DE807328074C76008D6C6F /* SK2Storefront.swift in Sources */,
 				57A17727276A721D0052D3A8 /* Set+Extensions.swift in Sources */,
@@ -8593,6 +8608,7 @@
 				35C05DC82BC8510000109308 /* DiagnosticsTrackerTests.swift in Sources */,
 				35C272A12BC4084C005A0CE8 /* MockDiagnosticsTracker.swift in Sources */,
 				755C26A62E310B7B006DD0AE /* BackendGetWebBillingProductsTests.swift in Sources */,
+				4487A0412E90000000000004 /* BackendPostHostedCheckoutTests.swift in Sources */,
 				2C7F0AD62B8EEF7B00381179 /* RateLimiterTests.swift in Sources */,
 				FDAADFCB2BE2A5BF00BD1659 /* MockAllTransactionsProvider.swift in Sources */,
 				356E2DE82CD3CF930055AABB /* StoredEventTests.swift in Sources */,
