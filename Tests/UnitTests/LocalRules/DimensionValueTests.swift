@@ -39,7 +39,7 @@ struct DimensionValueTests {
             from: json.asData
         )
 
-        #expect(values["null"]?.dimensionValue == nil)
+        #expect(values["null"]?.dimensionValue == .null)
         #expect(values["nested"]?.dimensionValue == .object(["kept": .bool(true)]))
         #expect(values["records"]?.dimensionValue == .objectList([["id": .string("one")]]))
         #expect(values["mixed"]?.dimensionValue == nil)
@@ -50,13 +50,16 @@ struct DimensionValueTests {
         let date = Date(timeIntervalSince1970: 1_700_000_000)
         let snapshot = try await Self.snapshot([
             "date": .date(date),
+            "missing": .null,
             "record": .object([
                 "id": .string("one"),
+                "missing": .null,
                 "created_at": .date(date)
             ]),
             "records": .objectList([
                 [
                     "id": .string("one"),
+                    "missing": .null,
                     "created_at": .date(date)
                 ]
             ])
@@ -65,13 +68,16 @@ struct DimensionValueTests {
         #expect(snapshot.values == [
             "evaluated_at": .int(123_000),
             "date": .int(1_700_000_000_000),
+            "missing": .null,
             "record": .object([
                 "id": .string("one"),
+                "missing": .null,
                 "created_at": .int(1_700_000_000_000)
             ]),
             "records": .array([
                 .object([
                     "id": .string("one"),
+                    "missing": .null,
                     "created_at": .int(1_700_000_000_000)
                 ])
             ])
@@ -95,6 +101,24 @@ struct DimensionValueTests {
             """#
 
         #expect(try RulesEngine.evaluate(predicate: predicate, variables: snapshot.values).get())
+    }
+
+    @Test
+    func explicitNullIsResolvedAndFalsyWhileMissingUsesItsDefault() async throws {
+        let snapshot = try await Self.snapshot(["present": .null])
+
+        #expect(try RulesEngine.evaluate(
+            predicate: #"{"==":[{"var":"present"},null]}"#,
+            variables: snapshot.values
+        ).get())
+        #expect(try !RulesEngine.evaluate(
+            predicate: #"{"!!":{"var":"present"}}"#,
+            variables: snapshot.values
+        ).get())
+        #expect(try RulesEngine.evaluate(
+            predicate: #"{"var":["missing",true]}"#,
+            variables: snapshot.values
+        ).get())
     }
 
     @Test

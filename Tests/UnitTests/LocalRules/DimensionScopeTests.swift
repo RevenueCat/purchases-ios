@@ -46,7 +46,13 @@ struct DimensionScopeTests {
                 currentAppUserIDProvider: { "current_user" },
                 customerInfoProvider: { _ in try CustomerInfo(data: Self.customerInfoData) }
             ),
-            SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] })
+            SubscriberAttributesDimensionProvider(attributesProvider: { ["goal": attribute] }),
+            SubscriberDimensionsProvider(
+                deviceCache: Self.deviceCache(
+                    with: #"{"acquisition_channel":"paid_search","predicted_ltv_band":3}"#
+                ),
+                currentUserProvider: MockCurrentUserProvider(mockAppUserID: "current_user")
+            )
         ]
 
         let snapshot = try await DimensionResolver(
@@ -63,6 +69,19 @@ struct DimensionScopeTests {
 
 private extension DimensionScopeTests {
 
+    static func deviceCache(with json: String) -> MockDeviceCache {
+        let deviceCache = MockDeviceCache()
+        deviceCache.cache(
+            subscriberDimensions: Data(json.utf8),
+            appUserID: "current_user"
+        )
+        return deviceCache
+    }
+
+}
+
+private extension DimensionScopeTests {
+
     static let expectedValues: [String: RulesEngine.Value] = [
         "evaluated_at": .int(1_700_000_000_000),
         "app_version": .string("1.2.3"),
@@ -71,6 +90,8 @@ private extension DimensionScopeTests {
         "locale": .string("en_gb"),
         "sdk_version": .string("10.1.1"),
         "storefront": .string("GBR"),
+        "acquisition_channel": .string("paid_search"),
+        "predicted_ltv_band": .int(3),
         "app_user_id": .string("current_user"),
         "original_app_user_id": .string("original_user"),
         "first_seen_at": .int(1_672_531_200_000),
