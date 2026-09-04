@@ -116,7 +116,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
             productType: .autoRenewableSubscription,
-            isCancelled: true
+            isCancelled: true,
+            renewalDate: nil
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -133,7 +134,8 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
             productType: .autoRenewableSubscription,
-            isCancelled: true
+            isCancelled: true,
+            renewalDate: nil
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -152,7 +154,46 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             isSubscription: true,
             productType: .autoRenewableSubscription,
             isCancelled: true,
-            isExpired: true
+            isExpired: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testResubscribeUsesConfiguredLocalizedString() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases(),
+            localization: .init(locale: "en_US", localizedStrings: ["resubscribe": "Come back"]))
+
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Come back"
+    }
+
+    func testExpiredRenewingSubscriptionDoesNotShowCancel() {
+        // willRenew hasn't flipped yet but the entitlement already lapsed
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            isExpired: true,
+            renewalDate: Date().addingTimeInterval(86400)
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
