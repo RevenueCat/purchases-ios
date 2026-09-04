@@ -63,7 +63,8 @@ struct StoreDimensionProviderTests {
         let evaluator = LocalRulesEvaluator(
             dimensionProviders: [
                 StoreDimensionProvider(storefrontCountryCodeProvider: { "NLD" })
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [

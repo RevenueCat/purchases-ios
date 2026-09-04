@@ -693,7 +693,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                         deviceCache: deviceCache,
                         currentUserProvider: identityManager
                     )
-                ]
+                ],
+                currentAppUserIDProvider: { identityManager.currentAppUserID }
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,

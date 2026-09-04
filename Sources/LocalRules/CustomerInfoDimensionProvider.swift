@@ -30,6 +30,10 @@ struct CustomerInfoDimensionProvider: DimensionProvider {
         self.customerInfoProvider = customerInfoProvider
     }
 
+    /// The app user ID is captured once for this provider invocation.
+    ///
+    /// The enclosing ``DimensionResolver`` verifies it again after all providers finish, because the app user can
+    /// change while CustomerInfo is being fetched or while another provider is suspended.
     func dimensions(at date: Date) async throws -> [String: DimensionValue] {
         let appUserID = self.currentAppUserIDProvider()
 

@@ -24,20 +24,29 @@ enum DimensionResolutionError: Error, Equatable, Sendable {
 
     case providerFailed(providerName: String, message: String)
     case conflictingValue(path: String)
+    case appUserChanged
 }
 
 /// Builds an immutable, point-in-time root scope for local rule evaluation.
+///
+/// Providers can suspend while collecting values. The current app user ID is therefore read before collection and
+/// verified after every provider finishes, preventing a snapshot from combining values belonging to two app users.
+/// Identity changes also advance the remote-config generation, allowing checkpoint resolution to retry against the
+/// new app user instead of evaluating the invalid snapshot.
 struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
+    private let currentAppUserIDProvider: @Sendable () -> String
     private let dateProvider: DateProvider
 
-    /// Creates a resolver from injected providers and a clock.
+    /// Creates a resolver from injected providers, the current app user, and a clock.
     init(
         dimensionProviders: [any DimensionProvider],
+        currentAppUserIDProvider: @escaping @Sendable () -> String,
         dateProvider: DateProvider = DateProvider()
     ) {
         self.dimensionProviders = dimensionProviders
+        self.currentAppUserIDProvider = currentAppUserIDProvider
         self.dateProvider = dateProvider
     }
 
@@ -48,6 +57,7 @@ struct DimensionResolver: Sendable {
         customVariables: [String: DimensionValue] = [:],
         backendValues: [String: DimensionValue] = [:]
     ) async throws -> DimensionSnapshot {
+        let appUserID = self.currentAppUserIDProvider()
         let date = self.dateProvider.now()
         var values: [String: RulesEngine.Value] = [
             Self.evaluatedAtKey: .int(Int64(date.timeIntervalSince1970 * 1_000))
@@ -94,6 +104,9 @@ struct DimensionResolver: Sendable {
         )
 
         try Task.checkCancellation()
+        guard self.currentAppUserIDProvider() == appUserID else {
+            throw DimensionResolutionError.appUserChanged
+        }
 
         return DimensionSnapshot(values: values, evaluationDate: date)
     }
