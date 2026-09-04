@@ -164,6 +164,65 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == false
     }
 
+    // MARK: - resolvedExits
+
+    func testResolvedExitsIsPopulatedOnLandingForStepActions() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits) == ["btn_abc": "step_2"]
+    }
+
+    func testResolvedExitsIsRecomputedAfterNavigating() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2", triggers: [("btn_def", "btn_def")], triggerActions: [("btn_def", "step_3")]),
+                makeStep(id: "step_3")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        navigator.triggerAction(componentId: "btn_abc")
+
+        expect(navigator.resolvedExits) == ["btn_def": "step_3"]
+    }
+
+    func testResolvedExitsIsRecomputedAfterNavigatingBack() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        navigator.triggerAction(componentId: "btn_abc")
+        navigator.navigateBack()
+
+        expect(navigator.resolvedExits) == ["btn_abc": "step_2"]
+    }
+
+    func testResolvedExitsOmitsExitsPointingAtAMissingStep() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "nope")])
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        expect(navigator.resolvedExits).to(beEmpty())
+    }
+
     func testTriggerActionWithConditionsTypeReturnsNil() throws {
         // A "conditions" trigger action has no step_id. The navigator must not crash
         // and must return nil (no navigation), leaving the current step unchanged.
