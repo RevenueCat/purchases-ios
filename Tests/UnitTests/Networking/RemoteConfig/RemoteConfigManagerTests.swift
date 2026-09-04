@@ -5,8 +5,6 @@
 //  Created by Rick van der Linden.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
-// swiftlint:disable file_length type_body_length function_body_length force_unwrapping
-
 import Foundation
 import Nimble
 @testable import RevenueCat
@@ -3241,7 +3239,7 @@ private extension RemoteConfigManagerTests {
             }
         }
 
-        let result = try await manager.readConsistent { _ in "value" }
+        let result = try await manager.readConsistent { "value" }
 
         expect(result) == "value"
         expect(generationReads) == 4
@@ -3257,7 +3255,7 @@ private extension RemoteConfigManagerTests {
             }
         }
 
-        let result = try await manager.readConsistent { _ in "value" }
+        let result = try await manager.readConsistent { "value" }
 
         expect(result).to(beNil())
         expect(generationReads) == 4
@@ -3268,7 +3266,7 @@ private extension RemoteConfigManagerTests {
         var invocationCount = 0
 
         do {
-            _ = try await manager.readConsistent { _ in
+            _ = try await manager.readConsistent {
                 invocationCount += 1
                 throw NSError(domain: "test", code: 1)
             }

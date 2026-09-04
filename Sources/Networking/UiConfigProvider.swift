@@ -23,7 +23,7 @@ final class UiConfigProvider {
     /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when any part is unavailable
     /// or fails to decode, so callers never render with a partially assembled configuration.
     func getUiConfig() async -> UIConfig? {
-        return try? await self.manager.readConsistent { _ in await self.getUiConfigOnce() }
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
     }
 
     private func getUiConfigOnce() async -> UIConfig? {
@@ -83,7 +83,7 @@ final class UiConfigProvider {
 #else
     // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
     func getUiConfig() async -> UIConfig? {
-        return try? await self.manager.readConsistent { _ in await self.getUiConfigOnce() }
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
     }
 
     private func getUiConfigOnce() async -> UIConfig? {

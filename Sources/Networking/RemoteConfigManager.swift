@@ -88,11 +88,11 @@ extension RemoteConfigManagerType {
     /// Performs a read against one config generation and retries once if a successful read was
     /// superseded while suspended. Errors and cancellation are propagated immediately.
     func readConsistent<Value>(
-        _ operation: (Int) async throws -> Value?
+        _ operation: () async throws -> Value?
     ) async throws -> Value? {
         for attempt in 0...1 {
             let generation = self.configGeneration
-            let value = try await operation(generation)
+            let value = try await operation()
 
             guard self.configGeneration == generation else {
                 guard attempt == 0 else { return nil }
