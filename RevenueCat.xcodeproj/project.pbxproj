@@ -3273,6 +3273,8 @@
 		FA6ABC7B2A81673F00353AF8 /* SystemFontRegistryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemFontRegistryTests.swift; sourceTree = "<group>"; };
 		FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextComponentLocalizationTests.swift; sourceTree = "<group>"; };
 		FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModelFactoryBadgeTests.swift; sourceTree = "<group>"; };
+		FACD00052F61A1230073D2DE /* StackBadgeRuleFixtureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackBadgeRuleFixtureTests.swift; sourceTree = "<group>"; };
+		FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StackBadgeOverrideTests.swift; sourceTree = "<group>"; };
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		DB04A6C4304033760087EFC5 /* PurchaseButtonComponentViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentViewModelTests.swift; sourceTree = "<group>"; };
@@ -3509,6 +3511,8 @@
 				A9D45E4EAFAD4C0385BEDFB3 /* VideoPlayerViewTests.swift */,
 				FACD00012F61A1230073D2DE /* TextComponentLocalizationTests.swift */,
 				FACD00032F61A1230073D2DE /* ViewModelFactoryBadgeTests.swift */,
+				FACD00052F61A1230073D2DE /* StackBadgeRuleFixtureTests.swift */,
+				FACD00042F61A1230073D2DE /* StackBadgeOverrideTests.swift */,
 				FB5A72012F65F5B9005C64A1 /* ViewModelFactoryTests.swift */,
 				FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */,
 				0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */,

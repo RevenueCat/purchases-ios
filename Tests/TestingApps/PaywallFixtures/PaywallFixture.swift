@@ -28,12 +28,17 @@ enum PaywallFixture: String, CaseIterable {
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
 
+    /// One badge rule per offer type, each with its own rule for its copy.
+    case badgeRulesPerOffer = "badge_rules_per_offer"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
             return "Icon-only button"
         case .mixedTabsPageDefault:
             return "Mixed page and tab packages"
+        case .badgeRulesPerOffer:
+            return "Badge rules per offer type"
         }
     }
 
@@ -43,6 +48,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
             return Self.mixedTabsPageDefaultComponentsData()
+        case .badgeRulesPerOffer:
+            return Self.badgeRulesPerOfferComponentsData()
         }
     }
 
@@ -51,6 +58,8 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .iconOnlyButton:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
+        case .badgeRulesPerOffer:
+            return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .mixedTabsPageDefault:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
@@ -95,6 +104,38 @@ private extension PaywallFixture {
         ],
         variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
     )
+
+    /// Carries the `.promotional` discount the simulated promo cache looks for.
+    static func annualPackageWithPromoOffer(offeringIdentifier: String) -> Package {
+        let promo = TestStoreProductDiscount(
+            identifier: Self.promoOfferCode,
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            numberOfPeriods: 1,
+            type: .promotional
+        )
+        let product = TestStoreProduct(
+            localizedTitle: "Annual",
+            price: 39.99,
+            localizedPriceString: "$39.99",
+            productIdentifier: "com.revenuecat.fixtures.annual.promo",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Annual subscription",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            discounts: [promo]
+        )
+
+        return Package(
+            identifier: "$rc_annual",
+            packageType: .annual,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: offeringIdentifier,
+            webCheckoutUrl: nil
+        )
+    }
 
     static func monthlyPackage(offeringIdentifier: String) -> Package {
         let product = TestStoreProduct(
@@ -282,6 +323,95 @@ private extension PaywallFixture {
                     "lifetime_selected": .string("Lifetime selected"),
                     "tab_weekly_button": .string("Weekly tab"),
                     "tab_lifetime_button": .string("Lifetime tab")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static let promoOfferCode = "fixture_promo_offer"
+
+    /// A row with no badge of its own, gaining one from each offer rule.
+    static func badgeRulesPerOfferComponentsData() -> PaywallComponentsData {
+        func badge(baseLid: String, resolvedLid: String, condition: PaywallComponent.Condition)
+        -> PaywallComponent.Badge {
+            return .init(
+                style: .overlaid,
+                alignment: .topTrailing,
+                stack: .init(
+                    components: [
+                        .text(.init(
+                            text: baseLid,
+                            color: .init(light: .hex("#ffffff")),
+                            overrides: [
+                                .init(conditions: [condition], properties: .init(text: resolvedLid))
+                            ]
+                        ))
+                    ],
+                    size: .init(width: .fit(nil), height: .fit(nil)),
+                    backgroundColor: .init(light: .hex("#aa00ff")),
+                    padding: .init(top: 4, bottom: 4, leading: 8, trailing: 8)
+                )
+            )
+        }
+
+        return .init(
+            templateName: "fixture-badge-rules-per-offer",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .package(.init(
+                            packageID: "$rc_annual",
+                            isSelectedByDefault: true,
+                            applePromoOfferProductCode: Self.promoOfferCode,
+                            stack: .init(
+                                components: [
+                                    .text(.init(
+                                        text: "annual",
+                                        color: .init(light: .hex("#000000"))
+                                    ))
+                                ],
+                                size: .init(width: .fill, height: .fit(nil)),
+                                backgroundColor: .init(light: .hex("#eeeeee")),
+                                padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16),
+                                overrides: [
+                                    .init(
+                                        conditions: [.introOffer],
+                                        properties: .init(badge: badge(
+                                            baseLid: "badge_placeholder",
+                                            resolvedLid: "badge_trial",
+                                            condition: .introOffer
+                                        ))
+                                    ),
+                                    .init(
+                                        conditions: [.promoOffer],
+                                        properties: .init(badge: badge(
+                                            baseLid: "badge_placeholder",
+                                            resolvedLid: "badge_promo",
+                                            condition: .promoOffer
+                                        ))
+                                    )
+                                ]
+                            )
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "annual": .string("Annual"),
+                    "badge_placeholder": .string("Badge"),
+                    "badge_trial": .string("TRIAL BADGE"),
+                    "badge_promo": .string("PROMO BADGE")
                 ]
             ],
             revision: 1,

@@ -285,10 +285,15 @@ final class ButtonComponentAccessibilityLabelTests: TestCase {
         badges: [PaywallComponentViewModel] = [],
         visible: Bool? = nil
     ) -> StackComponentViewModel {
+        let badge = PaywallComponent.Badge(
+            style: .overlaid,
+            alignment: .topTrailing,
+            stack: .init(components: [])
+        )
         return StackComponentViewModel(
             component: .init(visible: visible, components: []),
             viewModels: children,
-            badgeViewModels: badges,
+            badgeViewModels: badges.isEmpty ? [] : [BadgeContents(badge: badge, viewModels: badges)],
             uiConfigProvider: self.uiConfigProvider
         )
     }
