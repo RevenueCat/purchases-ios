@@ -55,7 +55,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         try presenter.present(presentation: presentation, delegate: delegate)
         presenter.paywallViewController(
-            PaywallViewController(offering: presentation.workflow.offering),
+            PaywallViewController(offering: presentation.workflow!.offering),
             didFinishPurchasingWith: TestData.customerInfo,
             transaction: transaction
         )
@@ -83,7 +83,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         try presenter.present(presentation: presentation, delegate: delegate)
         presenter.paywallViewControllerDidOpenWebCheckout(
-            PaywallViewController(offering: presentation.workflow.offering)
+            PaywallViewController(offering: presentation.workflow!.offering)
         )
 
         XCTAssertTrue(store.call?.stagedOutcome is CheckpointPaywallOutcome.WebCheckoutOpened)
@@ -100,7 +100,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let delegate = MockCheckpointPresenterDelegate()
         let presentation = Self.presentation()
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
-        let controller = PaywallViewController(offering: presentation.workflow.offering)
+        let controller = PaywallViewController(offering: presentation.workflow!.offering)
         let transaction = StoreTransaction(MockStoreTransaction())
 
         try presenter.present(presentation: presentation, delegate: delegate)
@@ -156,9 +156,9 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let presentation = Self.presentation()
         let presenter = CheckpointWorkflowPresenter { _ in true }
         try presenter.present(presentation: presentation, delegate: MockCheckpointPresenterDelegate())
-        let originalController = PaywallViewController(offering: presentation.workflow.offering)
+        let originalController = PaywallViewController(offering: presentation.workflow!.offering)
         let exitOfferController = DismissRecordingPaywallController(
-            offering: presentation.workflow.offering
+            offering: presentation.workflow!.offering
         )
 
         presenter.paywallViewController(

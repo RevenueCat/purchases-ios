@@ -19,8 +19,21 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CheckpointPresentation {
 
-    let workflow: ResolvedCheckpointWorkflow
+    let workflow: ResolvedCheckpointWorkflow?
+    let offering: Offering?
     let customVariables: [String: CustomVariableValue]
+
+    init(workflow: ResolvedCheckpointWorkflow, customVariables: [String: CustomVariableValue]) {
+        self.workflow = workflow
+        self.offering = nil
+        self.customVariables = customVariables
+    }
+
+    init(offering: Offering, customVariables: [String: CustomVariableValue]) {
+        self.workflow = nil
+        self.offering = offering
+        self.customVariables = customVariables
+    }
 
 }
 
@@ -30,6 +43,23 @@ struct CheckpointPresentation {
 protocol CheckpointExecutor: AnyObject {
 
     func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome
+
+    func execute(offering: Offering, customVariables: [String: CustomVariableValue]) async throws
+    -> CheckpointPaywallOutcome
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CheckpointExecutor {
+
+    func execute(
+        offering: Offering,
+        customVariables: [String: CustomVariableValue]
+    ) async throws -> CheckpointPaywallOutcome {
+        return try await self.execute(
+            CheckpointPresentation(offering: offering, customVariables: customVariables)
+        )
+    }
 
 }
 
@@ -107,6 +137,15 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
                 self?.cancel()
             }
         }
+    }
+
+    func execute(
+        offering: Offering,
+        customVariables: [String: CustomVariableValue]
+    ) async throws -> CheckpointPaywallOutcome {
+        return try await self.execute(
+            CheckpointPresentation(offering: offering, customVariables: customVariables)
+        )
     }
 
     func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome) {
