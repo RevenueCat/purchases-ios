@@ -727,7 +727,6 @@ import Foundation
         @_spi(Internal) public let displayPurchaseHistoryLink: Bool
         @_spi(Internal) public let displayUserDetailsSection: Bool
         @_spi(Internal) public let displayVirtualCurrencies: Bool
-        @_spi(Internal) public let shouldWarnCustomersAboutMultipleSubscriptions: Bool
         @_spi(Internal) public let supportTickets: SupportTickets?
 
         @_spi(Internal) public init(
@@ -736,7 +735,6 @@ import Foundation
             displayPurchaseHistoryLink: Bool,
             displayUserDetailsSection: Bool,
             displayVirtualCurrencies: Bool,
-            shouldWarnCustomersAboutMultipleSubscriptions: Bool,
             supportTickets: SupportTickets? = nil
         ) {
             self.email = email
@@ -744,7 +742,6 @@ import Foundation
             self.displayPurchaseHistoryLink = displayPurchaseHistoryLink
             self.displayUserDetailsSection = displayUserDetailsSection
             self.displayVirtualCurrencies = displayVirtualCurrencies
-            self.shouldWarnCustomersAboutMultipleSubscriptions = shouldWarnCustomersAboutMultipleSubscriptions
             self.supportTickets = supportTickets
         }
 
@@ -1048,8 +1045,6 @@ extension CustomerCenterConfigData.Support {
         self.displayPurchaseHistoryLink = response.displayPurchaseHistoryLink ?? false
         self.displayUserDetailsSection = response.displayUserDetailsSection ?? true
         self.displayVirtualCurrencies = response.displayVirtualCurrencies ?? false
-        self.shouldWarnCustomersAboutMultipleSubscriptions = response.shouldWarnCustomersAboutMultipleSubscriptions
-            ?? false
         self.supportTickets = response.supportTickets.map { SupportTickets(from: $0) }
     }
 

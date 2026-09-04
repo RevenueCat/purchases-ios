@@ -153,7 +153,6 @@ struct CustomerCenterConfigResponse {
         let displayPurchaseHistoryLink: Bool?
         let displayUserDetailsSection: Bool?
         let displayVirtualCurrencies: Bool?
-        let shouldWarnCustomersAboutMultipleSubscriptions: Bool?
         let supportTickets: SupportTickets?
 
         struct SupportTickets {
