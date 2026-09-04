@@ -409,10 +409,10 @@ struct LocalRulesEvaluatorTests {
     }
 
     @Test
-    func omittedVariableSurfacesAsAnErrorRatherThanMatching() async throws {
-        // A dimension this SDK version cannot resolve makes the rule
-        // unanswerable. Reporting that is what lets the caller tell it apart
-        // from a rule that was evaluated and did not match.
+    func omittedVariableIsTreatedAsNoMatch() async throws {
+        // A missing local value means this audience does not match. It should
+        // not make the complete rules configuration unavailable.
+        let logger = TestLogHandler(testIdentifier: #function)
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 name: "device",
@@ -420,22 +420,18 @@ struct LocalRulesEvaluatorTests {
             )
         ])
 
-        do {
-            _ = try await evaluator.match(in: [
-                TestLocalRule(
-                    id: "reads-unknown-dimension",
-                    predicate: #"{"==":[{"var":"unknown"},null]}"#
-                )
-            ])
-            Issue.record("Expected predicate failure to be thrown")
-        } catch let error as LocalRulesEvaluationError {
-            #expect(error == .predicateEvaluation(
-                ruleIndex: 0,
-                error: .unresolvedVariable(path: "unknown")
-            ))
-        } catch {
-            Issue.record("Unexpected error: \(error)")
-        }
+        let rule = try await evaluator.match(in: [
+            TestLocalRule(
+                id: "reads-unknown-dimension",
+                predicate: #"{"==":[{"var":"unknown"},null]}"#
+            )
+        ])
+
+        #expect(rule == nil)
+        let expectedMessage = Strings.localRules.ruleUnresolvedVariable(ruleIndex: 0, path: "unknown")
+        #expect(logger.messages.contains {
+            $0.level == .debug && $0.message.contains(expectedMessage.description)
+        })
     }
 
     @Test

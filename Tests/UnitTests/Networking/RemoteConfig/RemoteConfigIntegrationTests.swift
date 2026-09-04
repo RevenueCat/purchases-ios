@@ -117,7 +117,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         await self.downloader.setResponse(.success(opaquePayload), for: source, ref: ref)
 
         await self.refresh(with: container)
-        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences)
+        let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences)?.topic
         let prefetchedData = self.blobStore.read(ref: ref)
         let defaultData = await self.manager.blobData(for: .audiences, itemKey: "default")
 

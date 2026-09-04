@@ -891,10 +891,12 @@ final class RemoteConfigManagerTests: TestCase {
         )
 
         let maybeTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
-        let topic = try XCTUnwrap(maybeTopic)
+        let snapshot = try XCTUnwrap(maybeTopic)
+        let topic = snapshot.topic
 
         expect(topic["wf-1"]?.blobRef) == prefetchRef
         expect(topic["wf-2"]?.blobRef) == onDemandRef
+        expect(snapshot.generation) == self.manager.configGeneration
         expect(self.blobFetcher.invokedEnsureAllDownloadedRefs) == [prefetchRef]
     }
 
@@ -918,7 +920,7 @@ final class RemoteConfigManagerTests: TestCase {
         }
 
         let maybeTopic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows)
-        let topic = try XCTUnwrap(maybeTopic)
+        let topic = try XCTUnwrap(maybeTopic?.topic)
 
         expect(topic["wf-2"]?.blobRef) == secondRef
         expect(topic["wf-1"]).to(beNil())

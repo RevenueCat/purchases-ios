@@ -67,15 +67,18 @@ protocol RemoteConfigManagerType: AnyObject {
         as type: T.Type
     ) async throws -> T?
 
-    /// Returns `topic`'s committed item index once every item flagged for prefetch has also finished
-    /// downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an in-flight
-    /// refresh or triggers one foreground refresh before reading, and returns `nil` when the endpoint
-    /// is disabled or the topic is still unavailable after refresh.
+    /// Returns a generation-bound snapshot of `topic` once every item flagged for prefetch has also
+    /// finished downloading its blob (or failed). Behaves like `topic(_:)` otherwise: waits for an
+    /// in-flight refresh or triggers one foreground refresh before reading, and returns `nil` when the
+    /// endpoint is disabled or the topic is still unavailable after refresh.
     ///
     /// If the topic is invalidated (e.g. an identity change) while waiting on its blobs, this re-reads
     /// and waits again on the new snapshot's own prefetch refs rather than returning one paired with
-    /// stale blob-wait results.
-    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic?
+    /// stale blob-wait results. The returned snapshot is the same topic/generation pair whose prefetch
+    /// wait completed.
+    @discardableResult
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>?
 
     func clearCache()
     func clearCache(forAppUserID appUserID: String)
@@ -117,30 +120,32 @@ extension RemoteConfigManagerType {
     }
 
     func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.topic(topic) else { return nil }
-        return .init(generation: self.configGeneration, key: configTopic)
+        return .init(generation: self.configGeneration, topic: configTopic)
     }
 
     func committedTopicCacheSnapshotAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.committedTopicAfterInFlightRefresh(topic) else { return nil }
-        return .init(generation: self.configGeneration, key: configTopic)
+        return .init(generation: self.configGeneration, topic: configTopic)
     }
 
     func isCurrent(
-        _ snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>,
+        _ snapshot: GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>,
         for topic: RemoteConfigTopic
     ) async -> Bool {
         guard self.configGeneration == snapshot.generation,
-              await self.topic(topic) == snapshot.key else {
+              await self.topic(topic) == snapshot.topic else {
             return false
         }
 
         return true
     }
 
-    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async -> RemoteConfiguration.ConfigTopic? {
+    @discardableResult
+    func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard var committed = await self.topic(topic) else { return nil }
 
         while true {
@@ -151,7 +156,9 @@ extension RemoteConfigManagerType {
             // waiting on its blobs. Re-reading and comparing catches that without needing this
             // generic extension to see RemoteConfigManager's private epoch tracking.
             guard let latest = await self.topic(topic) else { return nil }
-            guard latest != committed else { return committed }
+            guard latest != committed else {
+                return .init(generation: self.configGeneration, topic: committed)
+            }
             committed = latest
         }
     }

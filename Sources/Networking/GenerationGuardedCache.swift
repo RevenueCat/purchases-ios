@@ -29,11 +29,11 @@ final class GenerationGuardedCache<Key: Equatable, Value> {
         }
     }
 
-    func value(for snapshot: GenerationGuardedCacheSnapshot<Key>) -> Value? {
+    func value(for snapshot: GenerationGuardedTopicSnapshot<Key>) -> Value? {
         return self.lock.perform {
             guard let cached = self.cached else { return nil }
             guard cached.generation == snapshot.generation,
-                  cached.key == snapshot.key else {
+                  cached.key == snapshot.topic else {
                 if cached.generation <= snapshot.generation {
                     self.cached = nil
                 }
@@ -43,10 +43,10 @@ final class GenerationGuardedCache<Key: Equatable, Value> {
         }
     }
 
-    func store(_ value: Value, for snapshot: GenerationGuardedCacheSnapshot<Key>) {
+    func store(_ value: Value, for snapshot: GenerationGuardedTopicSnapshot<Key>) {
         self.lock.perform {
             guard snapshot.generation >= (self.cached?.generation ?? Int.min) else { return }
-            self.cached = .init(generation: snapshot.generation, key: snapshot.key, value: value)
+            self.cached = .init(generation: snapshot.generation, key: snapshot.topic, value: value)
         }
     }
 
@@ -60,9 +60,9 @@ final class GenerationGuardedCache<Key: Equatable, Value> {
 
 }
 
-struct GenerationGuardedCacheSnapshot<Key: Equatable> {
+struct GenerationGuardedTopicSnapshot<Topic: Equatable> {
     let generation: Int
-    let key: Key
+    let topic: Topic
 }
 
 private extension GenerationGuardedCache {

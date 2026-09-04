@@ -89,7 +89,7 @@ final class RemoteConfigBlobHealthTests: TestCase {
         defer { manager.close() }
 
         let maybeTopic = await manager.awaitTopicAndPrefetchBlobsReady(.workflows)
-        let topic = try XCTUnwrap(maybeTopic, "No workflows topic returned from the live backend.")
+        let topic = try XCTUnwrap(maybeTopic?.topic, "No workflows topic returned from the live backend.")
 
         let blobRefs = Set(topic.values.compactMap(\.blobRef))
         let blobItemKeys = topic.compactMap { key, item in item.blobRef == nil ? nil : key }

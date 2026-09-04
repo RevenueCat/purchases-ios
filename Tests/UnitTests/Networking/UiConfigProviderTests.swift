@@ -232,6 +232,7 @@ class UiConfigProviderTests: TestCase {
         let resolvedUiConfig = await uiConfig
         expect(resolvedUiConfig).toNot(beNil())
         expect(self.provider.cachedUiConfig()).toNot(beNil())
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
     }
 
     func testCachedUiConfigReturnsNilWhenGenerationChangesWithoutRewarming() async throws {

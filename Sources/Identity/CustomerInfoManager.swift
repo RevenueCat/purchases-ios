@@ -294,7 +294,7 @@ class CustomerInfoManager {
             let data = try JSONSerialization.data(withJSONObject: dimensions)
             self.deviceCache.cache(subscriberDimensions: data, appUserID: appUserID)
         } catch {
-            Logger.warn(Strings.remoteConfig.subscriberDimensionsUnavailable(error))
+            Logger.warn(Strings.localRules.subscriberDimensionsUnavailable(error))
         }
     }
 

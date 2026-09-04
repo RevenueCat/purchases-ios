@@ -123,14 +123,14 @@ final class UiConfigProvider {
 #endif
 
     private func topicSnapshotWithUiConfigParts() async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard var snapshot = await self.manager.topicCacheSnapshot(.uiConfig) else { return nil }
-        guard !Self.itemKeys.contains(where: snapshot.key.keys.contains) else { return snapshot }
+        guard !Self.itemKeys.contains(where: snapshot.topic.keys.contains) else { return snapshot }
 
         guard let refreshedSnapshot = await self.manager
             .committedTopicCacheSnapshotAfterInFlightRefresh(.uiConfig) else { return nil }
         snapshot = refreshedSnapshot
-        return Self.itemKeys.contains(where: snapshot.key.keys.contains) ? snapshot : nil
+        return Self.itemKeys.contains(where: snapshot.topic.keys.contains) ? snapshot : nil
     }
 
     private static let appKey = "app"
