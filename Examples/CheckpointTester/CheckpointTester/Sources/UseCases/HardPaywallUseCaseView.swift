@@ -78,48 +78,22 @@ struct HardPaywallUseCaseView: View {
         self.isRunning = true
         defer { self.isRunning = false }
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "hard_paywall",
-                customVariables: self.customVariablesForNextAttempt()
-            )
-            self.handle(result)
-        } catch {
-            self.status = "Failed: \(error.localizedDescription)"
-        }
+        let result = await Purchases.shared.checkpoint(
+            "hard_paywall",
+            customVariables: self.customVariablesForNextAttempt()
+        )
+        self.handle(result)
     }
 
     @MainActor
-    private func handle(_ result: CheckpointResult) {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            self.handle(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointResult.NoAction:
-            self.status = "No paywall shown (\(noAction.reason)). Content remains locked."
-        default:
-            self.status = "Unknown checkpoint result. Content remains locked."
-        }
-    }
-
-    @MainActor
-    private func handle(_ outcome: CheckpointPaywallOutcome) {
-        switch outcome {
-        case is CheckpointPaywallOutcome.Purchased:
+    private func handle(_ result: CheckpointGateResult) {
+        if !result.entitlements.isEmpty {
             self.hasAccess = true
-            self.status = "Purchase completed. Access granted."
-        case is CheckpointPaywallOutcome.Restored:
-            self.hasAccess = true
-            self.status = "Restore completed. Access granted."
-        case is CheckpointPaywallOutcome.Dismissed:
+            self.status = "Access granted: \(result.entitlements.map(\.identifier).joined(separator: ", "))."
+        } else if let reason = result.noActionReason {
+            self.status = "No paywall shown (\(reason)). Content remains locked."
+        } else {
             self.status = "Paywall dismissed. Content remains locked."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            self.status = "Web checkout opened. Complete the purchase to unlock content."
-        case let failed as CheckpointPaywallOutcome.Error:
-            self.status = "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            self.status = "Unknown paywall outcome. Content remains locked."
         }
     }
 

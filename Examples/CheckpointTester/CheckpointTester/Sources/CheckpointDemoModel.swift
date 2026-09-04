@@ -36,6 +36,13 @@ final class CheckpointDemoModel: ObservableObject {
         )
     }
 
+    func showOutcome(_ result: CheckpointGateResult, checkpointIdentifier: String) {
+        self.showOutcomeAlert(
+            title: "Checkpoint gate result",
+            message: Self.describe(result, checkpointIdentifier: checkpointIdentifier)
+        )
+    }
+
     func showError(_ error: Error) {
         self.showOutcomeAlert(
             title: "Checkpoint failed",
@@ -85,6 +92,20 @@ final class CheckpointDemoModel: ObservableObject {
         default:
             return "Unknown checkpoint result · \(checkpointIdentifier)"
         }
+    }
+
+    private static func describe(_ result: CheckpointGateResult, checkpointIdentifier: String) -> String {
+        var details = ["Checkpoint · \(checkpointIdentifier)"]
+        if !result.entitlements.isEmpty {
+            details.append("Granted entitlements: \(result.entitlements.map(\.identifier).joined(separator: ", "))")
+        }
+        if let reason = result.noActionReason {
+            details.append("No workflow: \(reason)")
+        }
+        if result.entitlements.isEmpty && result.noActionReason == nil {
+            details.append("Workflow completed without granting a new entitlement")
+        }
+        return details.joined(separator: "\n")
     }
 
     private static func describe(_ result: CheckpointPaywallOutcome) -> String {
