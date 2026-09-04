@@ -63,39 +63,36 @@ public class CheckpointContext: CustomStringConvertible, @unchecked Sendable {
         return "CheckpointContext(identifier='\(self.identifier)', customVariables=\(self.customVariables))"
     }
 
-}
+    /// Context delivered when a checkpoint is hit, before evaluation starts.
+    public final class Hit: CheckpointContext, @unchecked Sendable {
 
-/// Context delivered when a checkpoint is hit, before evaluation starts.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointHitContext: CheckpointContext, @unchecked Sendable {
+        override init(identifier: String, params: CheckpointCallParams) {
+            super.init(identifier: identifier, params: params)
+        }
 
-    override init(identifier: String, params: CheckpointCallParams) {
-        super.init(identifier: identifier, params: params)
+        public override var description: String {
+            return "CheckpointContext.Hit(identifier='\(self.identifier)', " +
+                "customVariables=\(self.customVariables))"
+        }
+
     }
 
-    public override var description: String {
-        return "CheckpointHitContext(identifier='\(self.identifier)', customVariables=\(self.customVariables))"
-    }
+    /// Context delivered when a checkpoint completes.
+    public final class Completed: CheckpointContext, @unchecked Sendable {
 
-}
+        /// What the checkpoint resolved to.
+        public let result: CheckpointResult
 
-/// Context delivered when a checkpoint completes.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public final class CheckpointCompletedContext: CheckpointContext, @unchecked Sendable {
+        init(identifier: String, params: CheckpointCallParams, result: CheckpointResult) {
+            self.result = result
+            super.init(identifier: identifier, params: params)
+        }
 
-    /// What the checkpoint resolved to.
-    public let result: CheckpointResult
+        public override var description: String {
+            return "CheckpointContext.Completed(identifier='\(self.identifier)', " +
+                "customVariables=\(self.customVariables), result=\(self.result))"
+        }
 
-    init(identifier: String, params: CheckpointCallParams, result: CheckpointResult) {
-        self.result = result
-        super.init(identifier: identifier, params: params)
-    }
-
-    public override var description: String {
-        return "CheckpointCompletedContext(identifier='\(self.identifier)', " +
-            "customVariables=\(self.customVariables), result=\(self.result))"
     }
 
 }
@@ -149,11 +146,11 @@ public protocol CheckpointListener: AnyObject {
     /// A checkpoint was hit and evaluation is about to start.
     ///
     /// This does not indicate that a targeting rule matched or that UI will be presented.
-    func onCheckpointHit(_ context: CheckpointHitContext)
+    func onCheckpointHit(_ context: CheckpointContext.Hit)
     /// Checkpoint evaluation and any presented UI finished.
     ///
     /// This is called before the per-call checkpoint API delivers its result.
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext)
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed)
 
 }
 
@@ -162,8 +159,8 @@ public protocol CheckpointListener: AnyObject {
 public extension CheckpointListener {
 
     /// Default no-op implementation.
-    func onCheckpointHit(_ context: CheckpointHitContext) {}
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {}
     /// Default no-op implementation.
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {}
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {}
 
 }

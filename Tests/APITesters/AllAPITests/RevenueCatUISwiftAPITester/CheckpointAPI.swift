@@ -17,19 +17,19 @@ import RevenueCat
 
 private final class CheckpointListenerAPITester: CheckpointListener {
 
-    func onCheckpointHit(_ context: CheckpointHitContext) {
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {
         let _: CheckpointContext = context
         let _: String = context.identifier
         let _: [String: CustomVariableValue] = context.customVariables
     }
 
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
         let _: CheckpointContext = context
         let _: String = context.identifier
         let _: [String: CustomVariableValue] = context.customVariables
         let result: CheckpointResult = context.result
 
-        if let presented = result as? CheckpointPaywallPresentedResult {
+        if let presented = result as? CheckpointResult.PaywallPresented {
             let outcome: CheckpointPaywallOutcome = presented.paywallOutcome
 
             if let purchased = outcome as? CheckpointPaywallOutcome.Purchased {
@@ -46,9 +46,9 @@ private final class CheckpointListenerAPITester: CheckpointListener {
             }
 
             let _: String = outcome.description
-        } else if let receivedOffering = result as? CheckpointReceivedOfferingResult {
+        } else if let receivedOffering = result as? CheckpointResult.ReceivedOffering {
             let _: Offering = receivedOffering.offering
-        } else if let noAction = result as? CheckpointNoActionResult {
+        } else if let noAction = result as? CheckpointResult.NoAction {
             let _: CheckpointNoActionReason = noAction.reason
             let _: String = noAction.reason.description
         }

@@ -32,7 +32,7 @@ public extension Purchases {
     /// Evaluates a checkpoint and calls `completion` with its result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
-    /// ``CheckpointNoActionResult`` without presenting UI. If an experience is presented, `completion` is called
+    /// ``CheckpointResult/NoAction`` without presenting UI. If an experience is presented, `completion` is called
     /// after the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
@@ -54,7 +54,7 @@ public extension Purchases {
     /// Evaluates a checkpoint and returns its result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
-    /// ``CheckpointNoActionResult`` without presenting UI. If an experience is presented, this method returns
+    /// ``CheckpointResult/NoAction`` without presenting UI. If an experience is presented, this method returns
     /// after the experience finishes.
     /// - Parameters:
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
