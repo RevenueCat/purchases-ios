@@ -22,22 +22,22 @@ class GenerationGuardedCacheTests: TestCase {
         let cache = GenerationGuardedCache<String, String>()
 
         expect(cache.value(currentGeneration: 0)).to(beNil())
-        expect(cache.value(for: .init(generation: 0, key: "key"))).to(beNil())
+        expect(cache.value(for: .init(generation: 0, topic: "key"))).to(beNil())
     }
 
     func testReturnsStoredValueForMatchingGenerationAndKey() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("value", for: .init(generation: 2, key: "key"))
+        cache.store("value", for: .init(generation: 2, topic: "key"))
 
         expect(cache.value(currentGeneration: 2)) == "value"
-        expect(cache.value(for: .init(generation: 2, key: "key"))) == "value"
+        expect(cache.value(for: .init(generation: 2, topic: "key"))) == "value"
     }
 
     func testCurrentGenerationReadClearsOlderValue() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("value", for: .init(generation: 2, key: "key"))
+        cache.store("value", for: .init(generation: 2, topic: "key"))
 
         expect(cache.value(currentGeneration: 3)).to(beNil())
         expect(cache.value(currentGeneration: 2)).to(beNil())
@@ -46,26 +46,26 @@ class GenerationGuardedCacheTests: TestCase {
     func testSnapshotReadClearsOlderOrSameGenerationMismatch() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("value", for: .init(generation: 2, key: "old"))
+        cache.store("value", for: .init(generation: 2, topic: "old"))
 
-        expect(cache.value(for: .init(generation: 2, key: "new"))).to(beNil())
+        expect(cache.value(for: .init(generation: 2, topic: "new"))).to(beNil())
         expect(cache.value(currentGeneration: 2)).to(beNil())
     }
 
     func testStaleSnapshotReadDoesNotClearNewerValue() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("new", for: .init(generation: 3, key: "new"))
+        cache.store("new", for: .init(generation: 3, topic: "new"))
 
-        expect(cache.value(for: .init(generation: 2, key: "old"))).to(beNil())
+        expect(cache.value(for: .init(generation: 2, topic: "old"))).to(beNil())
         expect(cache.value(currentGeneration: 3)) == "new"
     }
 
     func testLowerGenerationStoreDoesNotOverwriteNewerValue() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("new", for: .init(generation: 3, key: "key"))
-        cache.store("old", for: .init(generation: 2, key: "key"))
+        cache.store("new", for: .init(generation: 3, topic: "key"))
+        cache.store("old", for: .init(generation: 2, topic: "key"))
 
         expect(cache.value(currentGeneration: 3)) == "new"
     }
@@ -73,7 +73,7 @@ class GenerationGuardedCacheTests: TestCase {
     func testClearIfStaleDoesNotClearSameOrNewerGeneration() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("new", for: .init(generation: 3, key: "key"))
+        cache.store("new", for: .init(generation: 3, topic: "key"))
 
         cache.clearIfStale(currentGeneration: 2)
         expect(cache.value(currentGeneration: 3)) == "new"
@@ -85,7 +85,7 @@ class GenerationGuardedCacheTests: TestCase {
     func testClearIfStaleClearsOlderGeneration() {
         let cache = GenerationGuardedCache<String, String>()
 
-        cache.store("old", for: .init(generation: 2, key: "key"))
+        cache.store("old", for: .init(generation: 2, topic: "key"))
 
         cache.clearIfStale(currentGeneration: 3)
 

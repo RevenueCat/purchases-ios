@@ -78,7 +78,7 @@ protocol RemoteConfigManagerType: AnyObject {
     /// wait completed.
     @discardableResult
     func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>?
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>?
 
     func clearCache()
     func clearCache(forAppUserID appUserID: String)
@@ -120,23 +120,23 @@ extension RemoteConfigManagerType {
     }
 
     func topicCacheSnapshot(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.topic(topic) else { return nil }
-        return .init(generation: self.configGeneration, key: configTopic)
+        return .init(generation: self.configGeneration, topic: configTopic)
     }
 
     func committedTopicCacheSnapshotAfterInFlightRefresh(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard let configTopic = await self.committedTopicAfterInFlightRefresh(topic) else { return nil }
-        return .init(generation: self.configGeneration, key: configTopic)
+        return .init(generation: self.configGeneration, topic: configTopic)
     }
 
     func isCurrent(
-        _ snapshot: GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>,
+        _ snapshot: GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>,
         for topic: RemoteConfigTopic
     ) async -> Bool {
         guard self.configGeneration == snapshot.generation,
-              await self.topic(topic) == snapshot.key else {
+              await self.topic(topic) == snapshot.topic else {
             return false
         }
 
@@ -145,7 +145,7 @@ extension RemoteConfigManagerType {
 
     @discardableResult
     func awaitTopicAndPrefetchBlobsReady(_ topic: RemoteConfigTopic) async
-    -> GenerationGuardedCacheSnapshot<RemoteConfiguration.ConfigTopic>? {
+    -> GenerationGuardedTopicSnapshot<RemoteConfiguration.ConfigTopic>? {
         guard var committed = await self.topic(topic) else { return nil }
 
         while true {
@@ -157,7 +157,7 @@ extension RemoteConfigManagerType {
             // generic extension to see RemoteConfigManager's private epoch tracking.
             guard let latest = await self.topic(topic) else { return nil }
             guard latest != committed else {
-                return .init(generation: self.configGeneration, key: committed)
+                return .init(generation: self.configGeneration, topic: committed)
             }
             committed = latest
         }

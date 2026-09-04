@@ -58,7 +58,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         if let cached = self.cachedConfiguration.value(for: topicSnapshot) { return cached }
 
         do {
-            guard topicSnapshot.key[Self.audiencesBlobItemKey] != nil,
+            guard topicSnapshot.topic[Self.audiencesBlobItemKey] != nil,
                   let blob = await self.manager.blobData(
                     for: .audiences,
                     itemKey: Self.audiencesBlobItemKey
@@ -67,7 +67,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
             }
             let configuration = AudienceConfigurationSnapshot(
                 audiences: try Self.decodeAudiences(from: blob),
-                backendPredicateResults: Self.decodeBackendPredicateResults(from: topicSnapshot.key),
+                backendPredicateResults: Self.decodeBackendPredicateResults(from: topicSnapshot.topic),
                 configGeneration: topicSnapshot.generation
             )
             guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }

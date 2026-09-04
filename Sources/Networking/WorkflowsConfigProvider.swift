@@ -153,7 +153,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
 
         guard let snapshot = await self.manager.topicCacheSnapshot(.workflows),
-              snapshot.key[workflowId] != nil else {
+              snapshot.topic[workflowId] != nil else {
             return .failure(.notFound)
         }
 
@@ -205,7 +205,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return cache.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
         }
         guard let snapshot = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return [] }
-        let topic = snapshot.key
+        let topic = snapshot.topic
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
         let prefetchedWorkflowIds = topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
