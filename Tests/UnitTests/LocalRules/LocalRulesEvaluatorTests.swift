@@ -59,7 +59,7 @@ struct LocalRulesEvaluatorTests {
     @Test
     func subsequentEvaluationPullsProviderAgain() async throws {
         let provider = TestDimensionProvider(
-            namespace: .session,
+            namespace: .store,
             snapshots: [
                 ["count": .int(1)],
                 ["count": .int(2)]
@@ -68,10 +68,10 @@ struct LocalRulesEvaluatorTests {
         let evaluator = Self.evaluator(dimensionProviders: [provider])
 
         let first = try await evaluator.match(in: [
-            TestLocalRule(id: "first", predicate: #"{"==":[{"var":"session.count"},1]}"#)
+            TestLocalRule(id: "first", predicate: #"{"==":[{"var":"store.count"},1]}"#)
         ])
         let second = try await evaluator.match(in: [
-            TestLocalRule(id: "second", predicate: #"{"==":[{"var":"session.count"},2]}"#)
+            TestLocalRule(id: "second", predicate: #"{"==":[{"var":"store.count"},2]}"#)
         ])
 
         #expect(first?.id == "first")
@@ -86,18 +86,18 @@ struct LocalRulesEvaluatorTests {
             namespace: .device,
             snapshots: [["ready": .bool(true)]]
         )
-        let session = TestDimensionProvider(
-            namespace: .session,
+        let store = TestDimensionProvider(
+            namespace: .store,
             snapshots: [["ready": .bool(true)]]
         )
-        let evaluator = Self.evaluator(dimensionProviders: [device, session], date: date)
+        let evaluator = Self.evaluator(dimensionProviders: [device, store], date: date)
 
         _ = try await evaluator.match(in: [
             TestLocalRule(id: "test", predicate: "true")
         ])
 
         #expect(await device.receivedDates == [date])
-        #expect(await session.receivedDates == [date])
+        #expect(await store.receivedDates == [date])
     }
 
     @Test
@@ -115,13 +115,13 @@ struct LocalRulesEvaluatorTests {
             namespace: .device,
             snapshots: [["trackingEnabled": .bool(false)]]
         )
-        let client = TestDimensionProvider(
-            namespace: .client,
+        let store = TestDimensionProvider(
+            namespace: .store,
             snapshots: [["shoeSize": .int(42)]]
         )
 
         let snapshot = try await DimensionResolver(
-            dimensionProviders: [identity, environment, client],
+            dimensionProviders: [identity, environment, store],
             dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot()
 
@@ -133,7 +133,7 @@ struct LocalRulesEvaluatorTests {
                 "screenScale": .float(3),
                 "trackingEnabled": .bool(false)
             ]),
-            "client": .object(["shoeSize": .int(42)])
+            "store": .object(["shoeSize": .int(42)])
         ])
     }
 
@@ -271,7 +271,7 @@ struct LocalRulesEvaluatorTests {
     @Test
     func providerFailureIsThrown() async {
         let evaluator = Self.evaluator(dimensionProviders: [
-            FailingDimensionProvider(namespace: .session)
+            FailingDimensionProvider(namespace: .store)
         ])
 
         do {
@@ -284,7 +284,7 @@ struct LocalRulesEvaluatorTests {
                 Issue.record("Unexpected resolution error: \(error)")
                 return
             }
-            #expect(namespace == .session)
+            #expect(namespace == .store)
         } catch {
             Issue.record("Unexpected error: \(error)")
         }
@@ -504,7 +504,7 @@ struct LocalRulesEvaluatorTests {
     @Test
     func cancellationIsThrownByMatch() async {
         let evaluator = Self.evaluator(dimensionProviders: [
-            CancellingDimensionProvider(namespace: .session)
+            CancellingDimensionProvider(namespace: .store)
         ])
 
         do {

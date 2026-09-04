@@ -9,9 +9,13 @@ import Foundation
 
 enum RemoteConfigStrings {
 
-    case audienceMetadataBeforeDecoding(identifier: String, metadata: String)
+    case audienceConfigurationDecodeFailed(Error)
+    case audienceDecodeFailed(identifier: String, error: Error)
+    case backendPredicateResultUnsupported(String)
     case cacheURLNotAvailable
     case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
+    case checkpointResolutionRepeatedlyStale(identifier: String)
+    case checkpointResolutionRetry(identifier: String)
     case checkpointRuleSkipped(reason: String)
     case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
     case failedToClearBlobStore(Error)
@@ -53,12 +57,21 @@ extension RemoteConfigStrings: LogMessage {
 
     var description: String {
         switch self {
-        case let .audienceMetadataBeforeDecoding(identifier, metadata):
-            return "Raw audience remote config metadata for '\(identifier)' before decoding: \(metadata)"
+        case let .audienceConfigurationDecodeFailed(error):
+            return "Failed to decode canonical audience configuration: \(error.localizedDescription)"
+        case let .audienceDecodeFailed(identifier, error):
+            return "Ignoring audience '\(identifier)' in the canonical audience configuration: " +
+                "\(error.localizedDescription)"
+        case let .backendPredicateResultUnsupported(identifier):
+            return "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule."
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
         case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
             return "The audiences for checkpoint '\(checkpointID)' could not be evaluated: \(reason)."
+        case let .checkpointResolutionRepeatedlyStale(identifier):
+            return "Remote configuration kept changing while resolving checkpoint '\(identifier)'."
+        case let .checkpointResolutionRetry(identifier):
+            return "Remote configuration changed while resolving checkpoint '\(identifier)'; resolving it again."
         case let .checkpointRuleSkipped(reason):
             return "Skipping malformed checkpoint rule: \(reason)."
         case let .checkpointWorkflowRuleSkipped(workflowID, reason):

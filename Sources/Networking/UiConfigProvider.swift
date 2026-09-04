@@ -9,7 +9,7 @@ import Foundation
 
 /// Assembles a ``UIConfig`` from the `ui_config` topic's four blob items (`app`, `localizations`,
 /// `variable_config`, `custom_variables`). Item keys are literal wire names, not camelCased: unlike
-/// `ConfigItem.content`, they're raw dictionary keys and aren't run through `.convertFromSnakeCase`.
+/// `ConfigItem.content`, they are raw dictionary keys and aren't run through `.convertFromSnakeCase`.
 final class UiConfigProvider {
 
     private let manager: RemoteConfigManagerType
