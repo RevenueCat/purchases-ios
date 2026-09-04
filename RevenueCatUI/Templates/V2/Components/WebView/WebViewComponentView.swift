@@ -124,9 +124,10 @@ enum WebViewSizing {
     static func resolvedDimension(
         measured: CGFloat?,
         defaultSize: UInt?,
-        fallback: CGFloat
+        fallback: CGFloat,
+        minMax: MinMax = .null
     ) -> CGFloat {
-        measured ?? defaultSize.map { CGFloat($0) } ?? fallback
+        minMax.clamped(measured ?? defaultSize.map { CGFloat($0) } ?? fallback)
     }
 
 }
@@ -444,20 +445,23 @@ private extension View {
         measuredWidth: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize, _):
+        case let .fit(defaultSize, minMax):
             self.frame(
                 width: WebViewSizing.resolvedDimension(
                     measured: measuredWidth,
                     defaultSize: defaultSize,
-                    fallback: WebViewEnvelope.fallbackFitWidth
+                    fallback: WebViewEnvelope.fallbackFitWidth,
+                    minMax: minMax
                 )
             )
-        case .fill:
-            self.frame(maxWidth: .infinity)
+        case let .fill(minMax):
+            self
+                .frame(maxWidth: .infinity)
+                .applyWidthLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(width: CGFloat(value))
-        case .relative:
-            self
+        case let .relative(_, minMax):
+            self.applyWidthLimits(minMax, alignment: .center)
         }
     }
 
@@ -467,20 +471,23 @@ private extension View {
         measuredHeight: CGFloat?
     ) -> some View {
         switch constraint {
-        case .fit(let defaultSize, _):
+        case let .fit(defaultSize, minMax):
             self.frame(
                 height: WebViewSizing.resolvedDimension(
                     measured: measuredHeight,
                     defaultSize: defaultSize,
-                    fallback: WebViewEnvelope.fallbackFitHeight
+                    fallback: WebViewEnvelope.fallbackFitHeight,
+                    minMax: minMax
                 )
             )
-        case .fill:
-            self.frame(maxHeight: .infinity)
+        case let .fill(minMax):
+            self
+                .frame(maxHeight: .infinity)
+                .applyHeightLimits(minMax, alignment: .center)
         case .fixed(let value):
             self.frame(height: CGFloat(value))
-        case .relative:
-            self
+        case let .relative(_, minMax):
+            self.applyHeightLimits(minMax, alignment: .center)
         }
     }
 

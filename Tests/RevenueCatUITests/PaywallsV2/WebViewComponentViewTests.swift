@@ -39,6 +39,36 @@ final class WebViewComponentViewTests: TestCase {
         )
     }
 
+    func testResolvedFitDimensionClampsToMinAndMax() {
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(
+                measured: 10,
+                defaultSize: nil,
+                fallback: 300,
+                minMax: .init(min: 20, max: nil)
+            ),
+            20
+        )
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(
+                measured: 80,
+                defaultSize: nil,
+                fallback: 300,
+                minMax: .init(min: nil, max: 20)
+            ),
+            20
+        )
+        XCTAssertEqual(
+            WebViewSizing.resolvedDimension(
+                measured: 80,
+                defaultSize: nil,
+                fallback: 300,
+                minMax: .init(min: 40, max: 20)
+            ),
+            40
+        )
+    }
+
     // MARK: - View model
 
     func testStyleURLValidation() {

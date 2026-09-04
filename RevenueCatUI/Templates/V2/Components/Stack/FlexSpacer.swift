@@ -21,10 +21,46 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 internal struct FlexSpacer: View {
     let weight: Int
+    let axis: Axis?
+    let lengthPerWeight: CGFloat?
 
+    init(weight: Int, axis: Axis? = nil, lengthPerWeight: CGFloat? = nil) {
+        self.weight = weight
+        self.axis = axis
+        self.lengthPerWeight = lengthPerWeight
+    }
+
+    /// Fit stacks use fixed weighted spacers so a larger parent proposal cannot turn them into fill.
+    static func lengthPerWeight(
+        fitMinimum: CGFloat?,
+        contentLength: CGFloat,
+        spacing: CGFloat?,
+        componentCount: Int,
+        totalWeight: Int
+    ) -> CGFloat? {
+        guard let fitMinimum else {
+            return nil
+        }
+
+        let totalSpacing = (spacing ?? 0) * CGFloat(max(componentCount - 1, 0))
+        let availableSpace = max(fitMinimum - contentLength - totalSpacing, 0)
+
+        return totalWeight > 0 ? availableSpace / CGFloat(totalWeight) : 0
+    }
+
+    @ViewBuilder
     var body: some View {
-        ForEach(0..<weight, id: \.self) { _ in
-            Spacer(minLength: 0)
+        if let axis, let lengthPerWeight {
+            switch axis {
+            case .horizontal:
+                Spacer(minLength: 0).frame(width: lengthPerWeight * CGFloat(weight))
+            case .vertical:
+                Spacer(minLength: 0).frame(height: lengthPerWeight * CGFloat(weight))
+            }
+        } else {
+            ForEach(0..<weight, id: \.self) { _ in
+                Spacer(minLength: 0)
+            }
         }
     }
 }

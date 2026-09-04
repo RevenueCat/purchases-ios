@@ -181,6 +181,20 @@ private extension Axis {
 
 }
 
+private extension PaywallComponent.SizeConstraint {
+
+    var positiveFitMinimum: CGFloat? {
+        guard case let .fit(_, minMax) = self,
+              let minimum = minMax.min,
+              minimum > 0 else {
+            return nil
+        }
+
+        return CGFloat(minimum)
+    }
+
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
 
@@ -305,6 +319,7 @@ struct VerticalStack: View {
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
+                fitMinimum: style.size.height.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )
@@ -341,6 +356,7 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
+                fitMinimum: style.size.width.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )
@@ -733,6 +749,394 @@ struct StackComponentViewVertical_Previews: PreviewProvider {
         ])
     }
 }
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentSizeConstraints_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            stackSizeConstraintGallery(cases: [
+                ("Fill()", .fill),
+                ("Fill(min: 180)", .fill(.init(min: 180, max: nil))),
+                ("Fill(max: 120)", .fill(.init(min: nil, max: 120))),
+                ("Fill(min: 100, max: 180)", .fill(.init(min: 100, max: 180)))
+            ])
+            .previewLayout(.fixed(width: 320, height: 430))
+            .previewDisplayName("Size · Fill constraints")
+
+            stackSizeConstraintGallery(cases: [
+                ("Fit()", .fit(nil)),
+                ("Fit(min: 180)", .fit(nil, .init(min: 180, max: nil))),
+                ("Fit(max: 120)", .fit(nil, .init(min: nil, max: 120))),
+                ("Fit(min: 100, max: 180)", .fit(nil, .init(min: 100, max: 180)))
+            ])
+            .previewLayout(.fixed(width: 320, height: 430))
+            .previewDisplayName("Size · Fit constraints")
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentFillConstraints_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            stackFillConstraintPreview(
+                title: "240pt: Fill() + Fill()",
+                horizontal: true,
+                constraints: [.fill, .fill]
+            )
+            .previewLayout(.fixed(width: 320, height: 150))
+            .previewDisplayName("Stack · Horizontal equal Fill")
+
+            stackFillConstraintPreview(
+                title: "240pt: Fill(min: 180) + Fill()",
+                horizontal: true,
+                constraints: [.fill(.init(min: 180, max: nil)), .fill]
+            )
+            .previewLayout(.fixed(width: 320, height: 150))
+            .previewDisplayName("Stack · Horizontal minimum")
+
+            stackFillConstraintPreview(
+                title: "240pt: Fill(max: 60) + Fill()",
+                horizontal: true,
+                constraints: [.fill(.init(min: nil, max: 60)), .fill]
+            )
+            .previewLayout(.fixed(width: 320, height: 150))
+            .previewDisplayName("Stack · Horizontal maximum")
+
+            stackFillConstraintPreview(
+                title: "Fit(max=240): Fixed(160) + Fixed(160)",
+                horizontal: true,
+                constraints: [.fixed(160), .fixed(160)],
+                mainAxisSize: .fit(nil, .init(min: nil, max: 240))
+            )
+            .previewLayout(.fixed(width: 380, height: 150))
+            .previewDisplayName("Stack · Horizontal fixed children overflow maximum")
+
+            VStack(spacing: 0) {
+                stackFillConstraintPreview(
+                    title: "240pt: min 140, max 40, Fill()",
+                    horizontal: true,
+                    constraints: [
+                        .fill(.init(min: 140, max: nil)),
+                        .fill(.init(min: nil, max: 40)),
+                        .fill
+                    ]
+                )
+                stackFillConstraintPreview(
+                    title: "240pt: min 160 + min 160 (overflow)",
+                    horizontal: true,
+                    constraints: [
+                        .fill(.init(min: 160, max: nil)),
+                        .fill(.init(min: 160, max: nil))
+                    ]
+                )
+            }
+            .previewLayout(.fixed(width: 360, height: 300))
+            .previewDisplayName("Stack · Horizontal mixed and overflow")
+
+            stackFillConstraintPreview(
+                title: "240pt: Fill(min: 180) + Fill()",
+                horizontal: false,
+                constraints: [.fill(.init(min: 180, max: nil)), .fill]
+            )
+            .previewLayout(.fixed(width: 320, height: 330))
+            .previewDisplayName("Stack · Vertical minimum")
+
+            stackFillConstraintPreview(
+                title: "240pt: Fill(max: 60) + Fill()",
+                horizontal: false,
+                constraints: [.fill(.init(min: nil, max: 60)), .fill]
+            )
+            .previewLayout(.fixed(width: 320, height: 330))
+            .previewDisplayName("Stack · Vertical maximum")
+
+            stackFillConstraintPreview(
+                title: "Fit(max=240): Fixed(160) + Fixed(160)",
+                horizontal: false,
+                constraints: [.fixed(160), .fixed(160)],
+                mainAxisSize: .fit(nil, .init(min: nil, max: 240))
+            )
+            .previewLayout(.fixed(width: 320, height: 430))
+            .previewDisplayName("Stack · Vertical fixed children overflow maximum")
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentCappedFillDistributions_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            VStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): Fill(max: 50) × 2",
+                        horizontal: true,
+                        constraints: [
+                            .fill(.init(min: nil, max: 50)),
+                            .fill(.init(min: nil, max: 50))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 320, height: 450))
+            .previewDisplayName("Stack · Horizontal capped Fill distributions")
+
+            VStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): max 30 + max 70",
+                        horizontal: true,
+                        constraints: [
+                            .fill(.init(min: nil, max: 30)),
+                            .fill(.init(min: nil, max: 70))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 320, height: 450))
+            .previewDisplayName("Stack · Horizontal nonuniform Fill distributions")
+
+            HStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): Fill(max: 50) × 2",
+                        horizontal: false,
+                        constraints: [
+                            .fill(.init(min: nil, max: 50)),
+                            .fill(.init(min: nil, max: 50))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 840, height: 330))
+            .previewDisplayName("Stack · Vertical capped Fill distributions")
+
+            HStack(spacing: 0) {
+                ForEach(stackSizingSpaceDistributions, id: \.self) { distribution in
+                    stackFillConstraintPreview(
+                        title: "\(distribution): max 30 + max 70",
+                        horizontal: false,
+                        constraints: [
+                            .fill(.init(min: nil, max: 30)),
+                            .fill(.init(min: nil, max: 70))
+                        ],
+                        distribution: distribution
+                    )
+                }
+            }
+            .previewLayout(.fixed(width: 840, height: 330))
+            .previewDisplayName("Stack · Vertical nonuniform Fill distributions")
+        }
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentMarginConstraint_Previews: PreviewProvider {
+    static var previews: some View {
+        stackMarginConstraintPreview(
+            title: "Fixed(32) with 16pt horizontal margin",
+            constraint: .fixed(32)
+        )
+        .previewLayout(.fixed(width: 320, height: 130))
+        .previewDisplayName("Stack · Margin outside size constraint")
+    }
+}
+
+private let stackSizingPreviewBackground = Color(
+    red: 226.0 / 255.0,
+    green: 232.0 / 255.0,
+    blue: 240.0 / 255.0
+)
+private let stackSizingPreviewContainer = Color(
+    red: 203.0 / 255.0,
+    green: 213.0 / 255.0,
+    blue: 225.0 / 255.0
+)
+private let stackSizingPreviewContent = Color(
+    red: 37.0 / 255.0,
+    green: 99.0 / 255.0,
+    blue: 235.0 / 255.0
+)
+private let stackSizingPreviewChildColors = ["#DC2626", "#2563EB", "#16A34A"]
+private let stackSizingSpaceDistributions: [PaywallComponent.FlexDistribution] = [
+    .spaceBetween,
+    .spaceAround,
+    .spaceEvenly
+]
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func stackSizeConstraintGallery(
+    cases: [(String, PaywallComponent.SizeConstraint)]
+) -> some View {
+    VStack(alignment: .leading, spacing: 12) {
+        ForEach(cases.indices, id: \.self) { index in
+            VStack(alignment: .leading, spacing: 4) {
+                Text(cases[index].0)
+                ZStack(alignment: .leading) {
+                    stackSizingPreviewContainer
+                    Text("Intrinsic content wider than 120pt")
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .padding(.horizontal, 8)
+                        .size(
+                            .init(width: cases[index].1, height: .fixed(40)),
+                            horizontalAlignment: .leading
+                        )
+                        .background(stackSizingPreviewContent)
+                }
+                .frame(width: 280, height: 64)
+            }
+        }
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(stackSizingPreviewBackground)
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func stackFillConstraintPreview(
+    title: String,
+    horizontal: Bool,
+    constraints: [PaywallComponent.SizeConstraint],
+    distribution: PaywallComponent.FlexDistribution = .start,
+    mainAxisSize: PaywallComponent.SizeConstraint = .fixed(240)
+) -> some View {
+    let labels = constraints.map(stackSizeConstraintLabel)
+    let components: [PaywallComponent] = constraints.enumerated().map { index, constraint in
+        .text(.init(
+            text: "stack_sizing_\(index)",
+            color: .init(light: .hex("#FFFFFF")),
+            backgroundColor: .init(
+                light: .hex(stackSizingPreviewChildColors[index % stackSizingPreviewChildColors.count])
+            ),
+            size: horizontal
+                ? .init(width: constraint, height: .fill)
+                : .init(width: .fill, height: constraint),
+            padding: .init(top: 8, bottom: 8, leading: 4, trailing: 4)
+        ))
+    }
+    let dimension: PaywallComponent.Dimension = horizontal
+        ? .horizontal(.center, distribution)
+        : .vertical(.center, distribution)
+    let size: PaywallComponent.Size = horizontal
+        ? .init(width: mainAxisSize, height: .fixed(72))
+        : .init(width: .fixed(240), height: mainAxisSize)
+
+    return VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: .init(
+                    components: components,
+                    dimension: dimension,
+                    size: size,
+                    spacing: 0,
+                    backgroundColor: .init(light: .hex("#CBD5E1")),
+                    padding: .zero
+                ),
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: Dictionary(
+                        uniqueKeysWithValues: labels.enumerated().map {
+                            ("stack_sizing_\($0.offset)", .string($0.element))
+                        }
+                    )
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
+        .overlay {
+            Rectangle()
+                .stroke(style: .init(lineWidth: 1))
+                .foregroundColor(.pink)
+        }
+        .previewRequiredPaywallsV2Properties()
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(stackSizingPreviewBackground)
+}
+
+private func stackSizeConstraintLabel(_ constraint: PaywallComponent.SizeConstraint) -> String {
+    switch constraint {
+    case let .fill(minMax):
+        if let minimum = minMax.min {
+            return "min \(minimum)"
+        }
+        if let maximum = minMax.max {
+            return "max \(maximum)"
+        }
+        return "Fill"
+    case let .fit(_, minMax):
+        if let minimum = minMax.min {
+            return "Fit min \(minimum)"
+        }
+        if let maximum = minMax.max {
+            return "Fit max \(maximum)"
+        }
+        return "Fit"
+    case let .fixed(value):
+        return "Fixed \(value)"
+    default:
+        return "Unknown"
+    }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func stackMarginConstraintPreview(
+    title: String,
+    constraint: PaywallComponent.SizeConstraint
+) -> some View {
+    let component = PaywallComponent.StackComponent(
+        components: [
+            .text(.init(
+                text: "stack_margin_content",
+                color: .init(light: .hex("#FFFFFF")),
+                size: .init(width: .fixed(100), height: .fixed(32))
+            ))
+        ],
+        size: .init(width: constraint, height: .fixed(32)),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#2563EB")),
+        padding: .zero,
+        margin: .init(top: 0, bottom: 0, leading: 16, trailing: 16),
+        shape: .rectangle(nil)
+    )
+
+    return VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+        HStack(spacing: 0) {
+            StackComponentView(
+                // swiftlint:disable:next force_try
+                viewModel: try! .init(
+                    component: component,
+                    localizationProvider: .init(
+                        locale: Locale.current,
+                        localizedStrings: ["stack_margin_content": .string("32")]
+                    ),
+                    colorScheme: .light
+                ),
+                onDismiss: {}
+            )
+            .previewRequiredPaywallsV2Properties()
+
+            Color.pink
+                .frame(width: 4, height: 32)
+        }
+        .background(stackSizingPreviewContainer)
+
+        Text("32pt content + 32pt margin; marker starts at 64pt")
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(stackSizingPreviewBackground)
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @ViewBuilder
 func stackAlignmentAndDistributionPreviews(dimensions: [PaywallComponent.Dimension]) -> some View {

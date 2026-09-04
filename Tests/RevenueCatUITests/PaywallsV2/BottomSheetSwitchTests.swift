@@ -22,6 +22,33 @@ import XCTest
 @MainActor
 final class BottomSheetSwitchTests: TestCase {
 
+    func testRelativeHeightRespectsMinimumAndMaximum() {
+        XCTAssertEqual(
+            BottomSheetOverlayModifier.resolvedHeight(
+                for: .relative(0.8, .init(min: 700, max: nil)),
+                parentHeight: 600
+            ),
+            700
+        )
+        XCTAssertEqual(
+            BottomSheetOverlayModifier.resolvedHeight(
+                for: .relative(0.8, .init(min: nil, max: 300)),
+                parentHeight: 600
+            ),
+            300
+        )
+    }
+
+    func testRelativeHeightGivesMinimumPrecedenceOverMaximum() {
+        XCTAssertEqual(
+            BottomSheetOverlayModifier.resolvedHeight(
+                for: .relative(0.8, .init(min: 400, max: 300)),
+                parentHeight: 600
+            ),
+            400
+        )
+    }
+
     /// Regression test for a bug where switching from one bottom sheet to another before the
     /// dismiss animation finished kept the previous sheet's content alive (most visibly, a video
     /// from the previous sheet kept playing in the newly-opened sheet).

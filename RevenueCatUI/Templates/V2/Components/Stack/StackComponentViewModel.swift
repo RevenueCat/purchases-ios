@@ -242,7 +242,7 @@ extension PresentedStackPartial: PresentedPartial {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentStyle {
 
-    enum StackStrategy {
+    enum StackStrategy: Equatable {
         case normal, flex
     }
 
@@ -309,19 +309,7 @@ struct StackComponentStyle {
             return .normal
         }
 
-        switch distribution {
-        case .start, .center, .end:
-            return .normal
-        case .spaceBetween, .spaceAround, .spaceEvenly:
-            // We dont want to use a flex stack if its axis is set to fit.
-            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            switch self.size.height {
-            case .fit:
-                return .normal
-            default:
-                return .flex
-            }
-        }
+        return Self.strategy(for: distribution, sizeConstraint: self.size.height)
     }
 
     var hstackStrategy: StackStrategy {
@@ -330,15 +318,20 @@ struct StackComponentStyle {
             return .normal
         }
 
+        return Self.strategy(for: distribution, sizeConstraint: self.size.width)
+    }
+
+    static func strategy(
+        for distribution: PaywallComponent.FlexDistribution,
+        sizeConstraint: PaywallComponent.SizeConstraint
+    ) -> StackStrategy {
         switch distribution {
         case .start, .center, .end:
             return .normal
         case .spaceBetween, .spaceAround, .spaceEvenly:
-            // We dont want to use a flex stack if its axis is set to fit.
-            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            switch self.size.width {
-            case .fit:
-                return .normal
+            switch sizeConstraint {
+            case let .fit(_, minMax):
+                return minMax.min.map { $0 > 0 } == true ? .flex : .normal
             default:
                 return .flex
             }
