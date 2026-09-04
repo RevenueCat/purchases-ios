@@ -121,6 +121,13 @@ enum Strings {
     case web_view_data_store_removal_failed(UUID, Error)
     case web_view_context_encoding_failed(Error)
 
+    // Web checkout
+    case web_checkout_unusable_return_urls(success: URL, cancel: URL)
+    case web_checkout_return_status_missing
+    case web_checkout_load_failed(String)
+    case web_checkout_http_error(statusCode: Int)
+    case web_checkout_content_process_terminated
+
     // Exit Offers
     case errorFetchingOfferings(Error)
     case exitOfferNotFound(String)
@@ -398,6 +405,18 @@ extension Strings: CustomStringConvertible {
                 "The server responded with HTTP status code \(statusCode)."
         case let .web_view_data_store_removal_failed(identifier, error):
             return "Failed to remove web view website data store '\(identifier)': \(error)"
+
+        case .web_checkout_unusable_return_urls(let success, let cancel):
+            return "Web checkout return URLs '\(success.absoluteString)' and '\(cancel.absoluteString)' " +
+                "must both have a resolvable origin. The end of the checkout will not be detected."
+        case .web_checkout_return_status_missing:
+            return "Web checkout returned without a recognizable status. Treating it as a cancellation."
+        case .web_checkout_load_failed(let error):
+            return "Web checkout failed to load. Error: \(error)"
+        case .web_checkout_http_error(let statusCode):
+            return "Web checkout failed to load. The server responded with HTTP status code \(statusCode)."
+        case .web_checkout_content_process_terminated:
+            return "Web checkout content process terminated."
 
         case .errorFetchingOfferings(let error):
             return "Error fetching offerings: \(error)"
