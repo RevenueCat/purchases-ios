@@ -803,6 +803,15 @@ struct StackComponentFillConstraints_Previews: PreviewProvider {
             .previewLayout(.fixed(width: 320, height: 150))
             .previewDisplayName("Stack · Horizontal maximum")
 
+            stackFillConstraintPreview(
+                title: "Fit(max=240): Fixed(160) + Fixed(160)",
+                horizontal: true,
+                constraints: [.fixed(160), .fixed(160)],
+                mainAxisSize: .fit(nil, .init(min: nil, max: 240))
+            )
+            .previewLayout(.fixed(width: 380, height: 150))
+            .previewDisplayName("Stack · Horizontal fixed children overflow maximum")
+
             VStack(spacing: 0) {
                 stackFillConstraintPreview(
                     title: "240pt: min 140, max 40, Fill()",
@@ -840,6 +849,15 @@ struct StackComponentFillConstraints_Previews: PreviewProvider {
             )
             .previewLayout(.fixed(width: 320, height: 330))
             .previewDisplayName("Stack · Vertical maximum")
+
+            stackFillConstraintPreview(
+                title: "Fit(max=240): Fixed(160) + Fixed(160)",
+                horizontal: false,
+                constraints: [.fixed(160), .fixed(160)],
+                mainAxisSize: .fit(nil, .init(min: nil, max: 240))
+            )
+            .previewLayout(.fixed(width: 320, height: 430))
+            .previewDisplayName("Stack · Vertical fixed children overflow maximum")
         }
     }
 }
@@ -983,9 +1001,10 @@ private func stackFillConstraintPreview(
     title: String,
     horizontal: Bool,
     constraints: [PaywallComponent.SizeConstraint],
-    distribution: PaywallComponent.FlexDistribution = .start
+    distribution: PaywallComponent.FlexDistribution = .start,
+    mainAxisSize: PaywallComponent.SizeConstraint = .fixed(240)
 ) -> some View {
-    let labels = constraints.map(stackFillConstraintLabel)
+    let labels = constraints.map(stackSizeConstraintLabel)
     let components: [PaywallComponent] = constraints.enumerated().map { index, constraint in
         .text(.init(
             text: "stack_sizing_\(index)",
@@ -1003,8 +1022,8 @@ private func stackFillConstraintPreview(
         ? .horizontal(.center, distribution)
         : .vertical(.center, distribution)
     let size: PaywallComponent.Size = horizontal
-        ? .init(width: .fixed(240), height: .fixed(72))
-        : .init(width: .fixed(240), height: .fixed(240))
+        ? .init(width: mainAxisSize, height: .fixed(72))
+        : .init(width: .fixed(240), height: mainAxisSize)
 
     return VStack(alignment: .leading, spacing: 8) {
         Text(title)
@@ -1043,19 +1062,29 @@ private func stackFillConstraintPreview(
     .background(stackSizingPreviewBackground)
 }
 
-private func stackFillConstraintLabel(_ constraint: PaywallComponent.SizeConstraint) -> String {
-    guard case let .fill(minMax) = constraint else {
+private func stackSizeConstraintLabel(_ constraint: PaywallComponent.SizeConstraint) -> String {
+    switch constraint {
+    case let .fill(minMax):
+        if let minimum = minMax.min {
+            return "min \(minimum)"
+        }
+        if let maximum = minMax.max {
+            return "max \(maximum)"
+        }
         return "Fill"
+    case let .fit(_, minMax):
+        if let minimum = minMax.min {
+            return "Fit min \(minimum)"
+        }
+        if let maximum = minMax.max {
+            return "Fit max \(maximum)"
+        }
+        return "Fit"
+    case let .fixed(value):
+        return "Fixed \(value)"
+    default:
+        return "Unknown"
     }
-
-    if let minimum = minMax.min {
-        return "min \(minimum)"
-    }
-    if let maximum = minMax.max {
-        return "max \(maximum)"
-    }
-
-    return "Fill"
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
