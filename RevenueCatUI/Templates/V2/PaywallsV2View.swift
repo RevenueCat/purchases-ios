@@ -308,6 +308,7 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .measurePaywallWindowSize()
         .environment(\.paywallWebViewStaticContext, webViewContext)
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)

@@ -11,7 +11,7 @@
 //
 //  Created by Josh Holtz on 10/26/24.
 //
-// swiftlint:disable missing_docs
+// swiftlint:disable missing_docs file_length
 
 import Foundation
 
@@ -155,6 +155,17 @@ extension PaywallComponent {
 
     }
 
+    /// Numeric comparison operators for layout condition evaluation (window size).
+    @_spi(Internal) public enum ComparisonOperator: String, Codable, Sendable, Hashable, Equatable {
+
+        case greaterThanOrEqual = ">="
+        case greaterThan = ">"
+        case lessThanOrEqual = "<="
+        case lessThan = "<"
+        case equal = "="
+
+    }
+
     /// Internal condition type that preserves full type information including associated values.
     /// This is used internally for condition evaluation while the public `Condition` type
     /// maintains API stability.
@@ -186,6 +197,10 @@ extension PaywallComponent {
         // MARK: - Paywall component state (state-driven paywalls)
         case state(operator: EqualityOperator, name: String, value: ConditionValue)
 
+        // MARK: - Window size conditions (adaptive layouts: foldables, tablets)
+        case windowWidth(operator: ComparisonOperator, value: Double)
+        case windowHeight(operator: ComparisonOperator, value: Double)
+
         // MARK: - Fallback for unknown conditions
         case unsupported
 
@@ -200,7 +215,8 @@ extension PaywallComponent {
             case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
                  .multipleIntroOffers, .unsupported:
                 return false
-            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state:
+            case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state,
+                 .windowWidth, .windowHeight:
                 return true
             }
         }
@@ -215,7 +231,8 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
-            case .multipleIntroOffers, .variable, .selectedPackage, .state, .unsupported: return .unsupported
+            case .multipleIntroOffers, .variable, .selectedPackage, .state,
+                 .windowWidth, .windowHeight, .unsupported: return .unsupported
             }
         }
 
@@ -274,6 +291,14 @@ extension PaywallComponent {
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(name, forKey: .name)
                 try container.encode(value, forKey: .value)
+            case .windowWidth(let condOp, let value):
+                try container.encode(ConditionType.windowWidthCondition.rawValue, forKey: .type)
+                try container.encode(condOp, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case .windowHeight(let condOp, let value):
+                try container.encode(ConditionType.windowHeightCondition.rawValue, forKey: .type)
+                try container.encode(condOp, forKey: .operator)
+                try container.encode(value, forKey: .value)
             case .unsupported:
                 try container.encode("unsupported", forKey: .type)
             }
@@ -290,7 +315,7 @@ extension PaywallComponent {
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
+        // swiftlint:disable:next cyclomatic_complexity function_body_length
         private static func decodeCondition(from decoder: Decoder) throws -> Self {
             let container = try decoder.container(keyedBy: CodingKeys.self)
             let rawValue = try container.decode(String.self, forKey: .type)
@@ -337,6 +362,14 @@ extension PaywallComponent {
                 let name = try container.decode(String.self, forKey: .name)
                 let value = try container.decode(ConditionValue.self, forKey: .value)
                 return .state(operator: condOp, name: name, value: value)
+            case .windowWidthCondition:
+                let condOp = try container.decode(ComparisonOperator.self, forKey: .operator)
+                let value = try container.decode(Double.self, forKey: .value)
+                return .windowWidth(operator: condOp, value: value)
+            case .windowHeightCondition:
+                let condOp = try container.decode(ComparisonOperator.self, forKey: .operator)
+                let value = try container.decode(Double.self, forKey: .value)
+                return .windowHeight(operator: condOp, value: value)
             }
         }
 
@@ -367,6 +400,8 @@ extension PaywallComponent {
             case variableCondition = "variable_condition"
             case selectedPackageCondition = "selected_package_condition"
             case stateCondition = "state_condition"
+            case windowWidthCondition = "window_width_condition"
+            case windowHeightCondition = "window_height_condition"
 
         }
 
