@@ -293,7 +293,8 @@ class HTTPRequestTests: TestCase {
     func testWebBillingPathsUseAPISources() {
         let paths: [any HTTPRequestPath] = [
             HTTPRequest.WebBillingPath.getWebOfferingProducts(appUserID: Self.userID),
-            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"])
+            HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: ["product_1"]),
+            HTTPRequest.WebBillingPath.postHostedCheckout
         ]
         for path in paths {
             expect(path.usesAPISources).to(beTrue(), description: "Path '\(path)' should use API sources")
@@ -361,6 +362,35 @@ class HTTPRequestTests: TestCase {
         let path = HTTPRequest.WebBillingPath.getWebBillingProducts(userId: Self.userID, productIds: [])
 
         expect(path.relativeIAMPath) == "/rcbilling/v1/customer/products?"
+    }
+
+    func testHostedCheckoutRelativePathNamesTheEndpoint() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.relativePath) == "/rcbilling/v1/hosted-checkout"
+    }
+
+    /// The customer is named in the body, so there is nothing for the IAM path to leave out.
+    func testHostedCheckoutRelativeIAMPathIsTheSameAsTheRelativePath() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.relativeIAMPath) == path.relativePath
+    }
+
+    func testHostedCheckoutIsAuthenticatedAndSendsNoEtag() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.authenticated).to(beTrue())
+        expect(path.shouldSendEtag).to(beFalse())
+    }
+
+    func testHostedCheckoutURL() {
+        let path = HTTPRequest.WebBillingPath.postHostedCheckout
+
+        expect(path.url(preferIAMPath: false)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
+        expect(path.url(preferIAMPath: true)?.absoluteString)
+            == "https://api.revenuecat.com/rcbilling/v1/hosted-checkout"
     }
 
     func testWebBillingPathsURLPreferringIAMPathUsesIAMRelativePath() {

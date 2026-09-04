@@ -25,7 +25,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var authenticated: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return true
         }
     }
@@ -35,13 +36,17 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         case .getWebOfferingProducts,
              .getWebBillingProducts:
             return true
+        case .postHostedCheckout:
+            // Every call creates a new checkout session, so there is never a cached response to revalidate.
+            return false
         }
     }
 
     var supportsSignatureVerification: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return false
         }
     }
@@ -49,7 +54,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
     var needsNonceForSigning: Bool {
         switch self {
         case .getWebOfferingProducts,
-             .getWebBillingProducts:
+             .getWebBillingProducts,
+             .postHostedCheckout:
             return false
         }
     }
@@ -64,6 +70,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/subscribers/\(encodedUserId)/products?\(encodedProductIds)"
+        case .postHostedCheckout:
+            return "/rcbilling/v1/hosted-checkout"
         }
     }
 
@@ -76,6 +84,9 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
                 "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
             }.joined(separator: "&")
             return "/rcbilling/v1/customer/products?\(encodedProductIds)"
+        case .postHostedCheckout:
+            // The customer is named in the body rather than the path, so there is nothing to leave out.
+            return self.relativePath
         }
     }
 
@@ -85,6 +96,8 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             return "get_web_offering_products"
         case .getWebBillingProducts:
             return "get_web_products"
+        case .postHostedCheckout:
+            return "post_hosted_checkout"
         }
     }
 
