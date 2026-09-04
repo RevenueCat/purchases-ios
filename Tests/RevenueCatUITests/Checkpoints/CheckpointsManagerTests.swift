@@ -126,7 +126,10 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a presented-paywall result")
         }
         XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallOutcome.Dismissed)
-        XCTAssertEqual(executor.presentations.compactMap { $0.workflow?.workflow.id }, ["workflow-id"])
+        guard case let .workflow(workflow, _) = executor.presentations.first else {
+            return XCTFail("Expected a workflow presentation")
+        }
+        XCTAssertEqual(workflow.workflow.id, "workflow-id")
         XCTAssertEqual(executor.presentations.first?.customVariables, [
             "name": "Rick",
             "attempt": 2,
@@ -149,7 +152,10 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a presented-paywall result")
         }
         XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallOutcome.Dismissed)
-        XCTAssertEqual(executor.presentations.first?.offering?.identifier, "offering-id")
+        guard case let .offering(offering, _) = executor.presentations.first else {
+            return XCTFail("Expected an offering presentation")
+        }
+        XCTAssertEqual(offering.identifier, "offering-id")
         XCTAssertEqual(listener.events, [.hit("onboarding"), .completed("onboarding")])
     }
 
