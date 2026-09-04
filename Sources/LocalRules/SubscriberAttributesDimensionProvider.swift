@@ -17,7 +17,7 @@ import Foundation
 /// Supplies the subscriber attributes stored for the current customer to the local rules engine.
 struct SubscriberAttributesDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.subscriberAttributes
+    let name = "subscriber_attributes"
 
     private let attributesProvider: @Sendable () throws -> SubscriberAttribute.Dictionary
 
@@ -40,7 +40,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
     ///
     /// A failed read contributes no dimensions rather than preventing the other
     /// dimensions from being evaluated.
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         let attributes: SubscriberAttribute.Dictionary
         do {
             attributes = try self.attributesProvider()
@@ -49,20 +49,21 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
             return [:]
         }
 
-        return attributes.values.reduce(into: [:]) { dimensions, attribute in
+        let records = attributes.values.reduce(into: [String: DimensionValue]()) { dimensions, attribute in
             // An empty value represents a deleted attribute, whether or not its tombstone has been synced.
             guard !attribute.value.isEmpty else { return }
 
             dimensions[attribute.key] = .object([
                 Self.valueKey: .string(attribute.value),
-                Self.updatedAtKey: .date(attribute.setTime),
-                Self.evaluatedAtKey: .date(date)
+                Self.updatedAtKey: .date(attribute.setTime)
             ])
         }
+
+        return records.isEmpty ? [:] : [Self.subscriberAttributesKey: .object(records)]
     }
 
-    private static let evaluatedAtKey = "evaluatedAt"
-    private static let updatedAtKey = "updatedAt"
+    private static let subscriberAttributesKey = "subscriber_attributes"
+    private static let updatedAtKey = "updated_at"
     private static let valueKey = "value"
 
 }

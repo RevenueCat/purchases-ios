@@ -25,12 +25,12 @@ import Testing
 struct StoreDimensionProviderTests {
 
     @Test
-    func providesStoreCountryInStoreNamespace() async throws {
+    func providesCanonicalStorefrontAtTheRoot() async throws {
         let provider = StoreDimensionProvider(storefrontCountryCodeProvider: { "USA" })
 
-        #expect(provider.namespace == .store)
+        #expect(provider.name == "store")
         #expect(try await provider.dimensions(at: Date()) == [
-            "country": .string("USA")
+            "storefront": .string("USA")
         ])
     }
 
@@ -54,12 +54,12 @@ struct StoreDimensionProviderTests {
         storefrontCountryCode.value = "NLD"
         let second = try await provider.dimensions(at: Date())
 
-        #expect(first["country"] == .string("USA"))
-        #expect(second["country"] == .string("NLD"))
+        #expect(first["storefront"] == .string("USA"))
+        #expect(second["storefront"] == .string("NLD"))
     }
 
     @Test
-    func countryCanBeEvaluatedUsingSDKDimensionPath() async throws {
+    func storefrontCanBeEvaluatedUsingCanonicalPath() async throws {
         let evaluator = LocalRulesEvaluator(
             dimensionProviders: [
                 StoreDimensionProvider(storefrontCountryCodeProvider: { "NLD" })
@@ -68,7 +68,7 @@ struct StoreDimensionProviderTests {
 
         let match = try await evaluator.match(in: [
             TestStoreRule(
-                predicate: #"{"==":[{"var":"store.country"},"NLD"]}"#
+                predicate: #"{"==":[{"var":"storefront"},"NLD"]}"#
             )
         ])
 
