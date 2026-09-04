@@ -33,6 +33,11 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                 return false
             }
 
+            // family members can't refund or change a subscription they don't own
+            if purchaseInformation.ownershipType == .familyShared && $0.type.requiresPurchaseOwnership {
+                return false
+            }
+
             let isNonAppStorePurchase = purchaseInformation.store != .appStore
             let isAppStoreOnlyPath = $0.type.isAppStoreOnly
 
@@ -75,6 +80,20 @@ extension Array<CustomerCenterConfigData.HelpPath> {
 }
 
 private extension CustomerCenterConfigData.HelpPath.PathType {
+
+    /// Whether the App Store rejects this action unless the customer owns the purchase.
+    var requiresPurchaseOwnership: Bool {
+        switch self {
+        case .refundRequest, .changePlans:
+            return true
+
+        case .cancel, .customUrl, .customAction, .missingPurchase, .unknown:
+            return false
+
+        @unknown default:
+            return false
+        }
+    }
 
     var isAppStoreOnly: Bool {
         switch self {
