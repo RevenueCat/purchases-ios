@@ -41,20 +41,10 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
-        while true {
-            try Task.checkCancellation()
-            let configGeneration = self.manager.configGeneration
-
-            do {
-                let rules = try await self.loadRules(for: identifier)
-                guard self.manager.configGeneration == configGeneration else { continue }
-
-                return rules.map {
-                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: configGeneration)
-                }
-            } catch {
-                guard self.manager.configGeneration == configGeneration else { continue }
-                throw error
+        return try await self.manager.readConsistent {
+            let rules = try await self.loadRules(for: identifier)
+            return rules.map {
+                CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.manager.configGeneration)
             }
         }
     }

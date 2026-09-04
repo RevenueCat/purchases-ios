@@ -3229,6 +3229,56 @@ private extension RemoteConfigManagerTests {
         let defaultValue: String
     }
 
+    func testReadConsistentlyRetriesOnceWhenSuccessfulReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 {
+                manager.configGeneration = 1
+            }
+        }
+
+        let result = try await manager.readConsistent { "value" }
+
+        expect(result) == "value"
+        expect(generationReads) == 4
+    }
+
+    func testReadConsistentlyReturnsSupersededAfterTwoStaleReads() async throws {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 || generationReads == 4 {
+                manager.configGeneration += 1
+            }
+        }
+
+        let result = try await manager.readConsistent { "value" }
+
+        expect(result).to(beNil())
+        expect(generationReads) == 4
+    }
+
+    func testReadConsistentlyPropagatesErrorsWithoutRetrying() async {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        do {
+            _ = try await manager.readConsistent {
+                invocationCount += 1
+                throw NSError(domain: "test", code: 1)
+            }
+            XCTFail("Expected the read error to be propagated")
+        } catch let error as NSError {
+            expect(error.domain) == "test"
+            expect(invocationCount) == 1
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
 }
 
 private extension RemoteConfigFetchResult {

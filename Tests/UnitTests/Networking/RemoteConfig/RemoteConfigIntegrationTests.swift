@@ -226,7 +226,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         expect(configuration).to(beNil())
     }
 
-    func testAudiencesProviderLeavesStaleSnapshotRetryToCaller() async throws {
+    func testAudiencesProviderRetriesStaleSnapshotBeforeReturningConfiguration() async throws {
         let manager = MockRemoteConfigManager()
         let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
         manager.stubbedTopics[.audiences] = [
@@ -243,8 +243,8 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         let configuration = try await AudiencesConfigProvider(manager: manager).configuration()
 
-        expect(configuration).to(beNil())
-        expect(manager.invokedTopicCount) == 1
+        expect(configuration).toNot(beNil())
+        expect(manager.invokedTopicCount).to(beGreaterThan(1))
     }
 
     func testAudiencesProviderReturnsEmptyBackendResultsWhenItemIsAbsent() async throws {
