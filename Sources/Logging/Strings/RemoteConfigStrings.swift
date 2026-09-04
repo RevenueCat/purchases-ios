@@ -13,12 +13,6 @@ enum RemoteConfigStrings {
     case audienceDecodeFailed(identifier: String, error: Error)
     case backendPredicateResultUnsupported(String)
     case cacheURLNotAvailable
-    case checkpointAudiencesNotEvaluated(checkpointID: String, reason: String)
-    case checkpointResolutionRepeatedlyStale(identifier: String)
-    case checkpointResolutionRetry(identifier: String)
-    case checkpointRuleSkipped(reason: String)
-    case checkpointWorkflowRuleSkipped(workflowID: String, reason: String)
-    case customerInfoUnavailable(Error)
     case failedToClearBlobStore(Error)
     case failedToDeleteBlob(String, Error)
     case failedToReadBlob(String, Error)
@@ -48,9 +42,6 @@ enum RemoteConfigStrings {
     case sourceUnhealthy(ref: String, hasNextSource: Bool)
     case storedBlob(String, byteCount: Int, URL)
     case storedInlineBlob(String, byteCount: Int)
-    case subscriberAttributesUnavailable(Error)
-    case subscriberDimensionsUnavailable(Error)
-    case invalidDimensionName(String, parentPath: String)
     case uiConfigDecodeFailed(Error)
     case uiConfigMissingRequiredPart
 
@@ -69,18 +60,6 @@ extension RemoteConfigStrings: LogMessage {
             return "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule."
         case .cacheURLNotAvailable:
             return "Remote config cache URL is not available."
-        case let .checkpointAudiencesNotEvaluated(checkpointID, reason):
-            return "The audiences for checkpoint '\(checkpointID)' could not be evaluated: \(reason)."
-        case let .checkpointResolutionRepeatedlyStale(identifier):
-            return "Remote configuration kept changing while resolving checkpoint '\(identifier)'."
-        case let .checkpointResolutionRetry(identifier):
-            return "Remote configuration changed while resolving checkpoint '\(identifier)'; resolving it again."
-        case let .checkpointRuleSkipped(reason):
-            return "Skipping malformed checkpoint rule: \(reason)."
-        case let .checkpointWorkflowRuleSkipped(workflowID, reason):
-            return "Skipping checkpoint rule for workflow '\(workflowID)': \(reason)."
-        case let .customerInfoUnavailable(error):
-            return "The customer info is unavailable, so its checkpoint dimensions cannot be evaluated: \(error)."
         case let .failedToClearBlobStore(error):
             return "Failed to clear remote config blob store: \(error.localizedDescription)"
         case let .failedToDeleteBlob(ref, error):
@@ -149,13 +128,6 @@ extension RemoteConfigStrings: LogMessage {
             return "Stored remote config blob '\(ref)' with \(byteCount) bytes downloaded from \(url.absoluteString)."
         case let .storedInlineBlob(ref, byteCount):
             return "Stored inline remote config blob '\(ref)' with \(byteCount) bytes."
-        case let .subscriberAttributesUnavailable(error):
-            return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
-        case let .subscriberDimensionsUnavailable(error):
-            return "The subscriber dimensions are unavailable, so they cannot be evaluated: \(error)."
-        case let .invalidDimensionName(name, parentPath):
-            return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
-                "a dimension name cannot be empty, whitespace-only, or contain '.'."
         case let .uiConfigDecodeFailed(error):
             return "Failed to decode merged ui_config: \(error.localizedDescription)"
         case .uiConfigMissingRequiredPart:

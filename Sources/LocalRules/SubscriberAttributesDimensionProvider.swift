@@ -45,7 +45,7 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
         do {
             attributes = try self.attributesProvider()
         } catch {
-            Logger.warn(Strings.remoteConfig.subscriberAttributesUnavailable(error))
+            Logger.warn(Strings.localRules.subscriberAttributesUnavailable(error))
             return [:]
         }
 
