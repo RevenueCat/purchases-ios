@@ -55,16 +55,18 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     private var hasFinished = false
 
     /// - Parameter checkoutURL: The provider-hosted page to present.
-    /// - Parameter returnURL: Where the provider sends the customer once checkout ends.
+    /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
+    /// - Parameter cancelURL: Where the provider sends the customer once checkout is abandoned.
     /// - Parameter dataStoreIdentifierStore: Supplies the website data store shared with RevenueCat's
     /// other web views.
     init(
         checkoutURL: URL,
-        returnURL: URL,
+        successURL: URL,
+        cancelURL: URL,
         dataStoreIdentifierStore: WebViewDataStoreIdentifierStore
     ) {
         self.checkoutURL = checkoutURL
-        self.returnURL = WebCheckoutReturnURL(url: returnURL)
+        self.returnURL = WebCheckoutReturnURL(successURL: successURL, cancelURL: cancelURL)
         self.webView = Self.makeWebView(dataStoreID: dataStoreIdentifierStore.identifier())
 
         super.init()
@@ -73,7 +75,7 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         self.webView.uiDelegate = self
 
         if self.returnURL == nil {
-            Logger.error(Strings.web_checkout_unusable_return_url(returnURL))
+            Logger.error(Strings.web_checkout_unusable_return_urls(success: successURL, cancel: cancelURL))
         }
     }
 

@@ -122,7 +122,7 @@ enum Strings {
     case web_view_context_encoding_failed(Error)
 
     // Web checkout
-    case web_checkout_unusable_return_url(URL)
+    case web_checkout_unusable_return_urls(success: URL, cancel: URL)
     case web_checkout_return_status_missing
     case web_checkout_load_failed(String)
     case web_checkout_http_error(statusCode: Int)
@@ -406,9 +406,9 @@ extension Strings: CustomStringConvertible {
         case let .web_view_data_store_removal_failed(identifier, error):
             return "Failed to remove web view website data store '\(identifier)': \(error)"
 
-        case .web_checkout_unusable_return_url(let url):
-            return "Web checkout return URL '\(url.absoluteString)' has no resolvable origin. " +
-                "The end of the checkout will not be detected."
+        case .web_checkout_unusable_return_urls(let success, let cancel):
+            return "Web checkout return URLs '\(success.absoluteString)' and '\(cancel.absoluteString)' " +
+                "must both have a resolvable origin. The end of the checkout will not be detected."
         case .web_checkout_return_status_missing:
             return "Web checkout returned without a recognizable status. Treating it as a cancellation."
         case .web_checkout_load_failed(let error):

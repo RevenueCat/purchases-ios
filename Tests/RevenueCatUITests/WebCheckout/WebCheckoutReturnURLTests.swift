@@ -19,67 +19,77 @@ import XCTest
 
 final class WebCheckoutReturnURLTests: TestCase {
 
+    private static let endpoint = "https://api.example.com/rcbilling/v1/hosted-checkout-return"
+
     private let returnURL = WebCheckoutReturnURL(
-        url: URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return")!
+        successURL: URL(string: "\(WebCheckoutReturnURLTests.endpoint)?status=success")!,
+        cancelURL: URL(string: "\(WebCheckoutReturnURLTests.endpoint)?status=cancel")!
     )!
 
     // MARK: - Construction
 
-    func testCannotBeBuiltFromAURLWithoutAnOrigin() {
-        XCTAssertNil(WebCheckoutReturnURL(url: URL(string: "/hosted-checkout-return")!))
+    func testCannotBeBuiltWhenTheSuccessURLHasNoOrigin() {
+        XCTAssertNil(
+            WebCheckoutReturnURL(
+                successURL: URL(string: "/hosted-checkout-return?status=success")!,
+                cancelURL: URL(string: "\(Self.endpoint)?status=cancel")!
+            )
+        )
+    }
+
+    func testCannotBeBuiltWhenTheCancelURLHasNoOrigin() {
+        XCTAssertNil(
+            WebCheckoutReturnURL(
+                successURL: URL(string: "\(Self.endpoint)?status=success")!,
+                cancelURL: URL(string: "/hosted-checkout-return?status=cancel")!
+            )
+        )
     }
 
     // MARK: - Matching
 
-    func testMatchesTheExactURL() {
-        XCTAssertTrue(
-            self.returnURL.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return")!)
-        )
+    func testMatchesTheEndpointWithoutAnyQuery() {
+        XCTAssertTrue(self.returnURL.matches(URL(string: Self.endpoint)!))
     }
 
-    /// The outcome arrives in the query, and providers append parameters of their own beside it.
-    func testMatchesRegardlessOfTheQuery() {
-        XCTAssertTrue(
-            self.returnURL.matches(
-                URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return?status=success&x=1")!
-            )
-        )
+    func testMatchesEitherReturnURL() {
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)?status=success")!))
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)?status=cancel")!))
+    }
+
+    /// Providers append parameters of their own beside the ones the backend configured.
+    func testMatchesRegardlessOfExtraParameters() {
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)?status=success&session_id=abc")!))
+    }
+
+    /// The checkout still has to end, even when we cannot tell which way it went.
+    func testMatchesAnUnrecognizedStatus() {
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)?status=maybe")!))
     }
 
     func testMatchesRegardlessOfAFragment() {
-        XCTAssertTrue(
-            self.returnURL.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return#done")!)
-        )
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)#done")!))
     }
 
     func testMatchesRegardlessOfATrailingSlash() {
-        XCTAssertTrue(
-            self.returnURL.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return/")!)
-        )
+        XCTAssertTrue(self.returnURL.matches(URL(string: "\(Self.endpoint)/")!))
     }
 
     func testATrailingSlashInTheConfiguredURLStillMatchesOneWithout() {
         let withSlash = WebCheckoutReturnURL(
-            url: URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return/")!
+            successURL: URL(string: "\(Self.endpoint)/?status=success")!,
+            cancelURL: URL(string: "\(Self.endpoint)/?status=cancel")!
         )!
 
-        XCTAssertTrue(
-            withSlash.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return")!)
-        )
+        XCTAssertTrue(withSlash.matches(URL(string: Self.endpoint)!))
     }
 
     func testDoesNotMatchADifferentPath() {
-        XCTAssertFalse(
-            self.returnURL.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout")!)
-        )
+        XCTAssertFalse(self.returnURL.matches(URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout")!))
     }
 
     func testDoesNotMatchAPathThatMerelyContainsIt() {
-        XCTAssertFalse(
-            self.returnURL.matches(
-                URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return/extra")!
-            )
-        )
+        XCTAssertFalse(self.returnURL.matches(URL(string: "\(Self.endpoint)/extra")!))
     }
 
     func testDoesNotMatchADifferentHost() {
@@ -107,46 +117,72 @@ final class WebCheckoutReturnURLTests: TestCase {
     // MARK: - Status
 
     func testReadsASuccessStatus() {
-        XCTAssertEqual(
-            self.returnURL.status(
-                of: URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return?status=success")!
-            ),
-            .success
-        )
+        XCTAssertEqual(self.returnURL.status(of: URL(string: "\(Self.endpoint)?status=success")!), .success)
     }
 
     func testReadsACancelStatus() {
-        XCTAssertEqual(
-            self.returnURL.status(
-                of: URL(string: "https://api.example.com/rcbilling/v1/hosted-checkout-return?status=cancel")!
-            ),
-            .cancel
-        )
+        XCTAssertEqual(self.returnURL.status(of: URL(string: "\(Self.endpoint)?status=cancel")!), .cancel)
     }
 
     func testReadsTheStatusAlongsideOtherParameters() {
         XCTAssertEqual(
-            self.returnURL.status(
-                of: URL(string: "https://api.example.com/x?session=abc&status=success&locale=en")!
-            ),
+            self.returnURL.status(of: URL(string: "\(Self.endpoint)?session=abc&status=success&locale=en")!),
             .success
         )
     }
 
     func testHasNoStatusWhenTheParameterIsAbsent() {
-        XCTAssertNil(self.returnURL.status(of: URL(string: "https://api.example.com/x?session=abc")!))
+        XCTAssertNil(self.returnURL.status(of: URL(string: "\(Self.endpoint)?session=abc")!))
     }
 
     func testHasNoStatusWhenTheValueIsNotRecognized() {
-        XCTAssertNil(self.returnURL.status(of: URL(string: "https://api.example.com/x?status=maybe")!))
+        XCTAssertNil(self.returnURL.status(of: URL(string: "\(Self.endpoint)?status=maybe")!))
     }
 
     func testHasNoStatusWhenTheValueIsEmpty() {
-        XCTAssertNil(self.returnURL.status(of: URL(string: "https://api.example.com/x?status=")!))
+        XCTAssertNil(self.returnURL.status(of: URL(string: "\(Self.endpoint)?status=")!))
+    }
+
+    func testHasNoStatusForAnEndpointItDoesNotRecognize() {
+        XCTAssertNil(self.returnURL.status(of: URL(string: "https://api.example.com/elsewhere?status=success")!))
     }
 
     func testHasNoStatusForNil() {
         XCTAssertNil(self.returnURL.status(of: nil))
+    }
+
+    // MARK: - Status, told apart by something other than a `status` parameter
+
+    /// Nothing assumes the parameter is named `status`, only that the backend configured the two URLs
+    /// with something that tells them apart.
+    func testTellsTheURLsApartByAnyParameter() {
+        let returnURL = WebCheckoutReturnURL(
+            successURL: URL(string: "\(Self.endpoint)?outcome=paid")!,
+            cancelURL: URL(string: "\(Self.endpoint)?outcome=abandoned")!
+        )!
+
+        XCTAssertEqual(returnURL.status(of: URL(string: "\(Self.endpoint)?outcome=paid")!), .success)
+        XCTAssertEqual(returnURL.status(of: URL(string: "\(Self.endpoint)?outcome=abandoned")!), .cancel)
+    }
+
+    func testTellsTheURLsApartByPathWhenTheyCarryNoQuery() {
+        let returnURL = WebCheckoutReturnURL(
+            successURL: URL(string: "\(Self.endpoint)/success")!,
+            cancelURL: URL(string: "\(Self.endpoint)/cancel")!
+        )!
+
+        XCTAssertEqual(returnURL.status(of: URL(string: "\(Self.endpoint)/success")!), .success)
+        XCTAssertEqual(returnURL.status(of: URL(string: "\(Self.endpoint)/cancel")!), .cancel)
+    }
+
+    /// A misconfiguration, reported the safe way round rather than as a purchase that may not exist.
+    func testReportsACancelWhenTheTwoURLsCannotBeToldApart() {
+        let returnURL = WebCheckoutReturnURL(
+            successURL: URL(string: Self.endpoint)!,
+            cancelURL: URL(string: Self.endpoint)!
+        )!
+
+        XCTAssertEqual(returnURL.status(of: URL(string: Self.endpoint)!), .cancel)
     }
 
 }
