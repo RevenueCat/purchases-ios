@@ -412,6 +412,7 @@ struct LocalRulesEvaluatorTests {
     func omittedVariableIsTreatedAsNoMatch() async throws {
         // A missing local value means this audience does not match. It should
         // not make the complete rules configuration unavailable.
+        let logger = TestLogHandler(testIdentifier: #function)
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 name: "device",
@@ -427,6 +428,10 @@ struct LocalRulesEvaluatorTests {
         ])
 
         #expect(rule == nil)
+        let expectedMessage = Strings.localRules.ruleUnresolvedVariable(ruleIndex: 0, path: "unknown")
+        #expect(logger.messages.contains {
+            $0.level == .debug && $0.message.contains(expectedMessage.description)
+        })
     }
 
     @Test
