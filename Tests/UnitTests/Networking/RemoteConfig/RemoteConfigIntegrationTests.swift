@@ -107,8 +107,7 @@ final class RemoteConfigIntegrationTests: TestCase {
         let ref = RCContainerTestData.blobRef(for: opaquePayload)
         let source = Self.blobSource("primary")
         let audiences: RemoteConfiguration.ConfigTopic = [
-            "default": .init(blobRef: ref, prefetch: true),
-            "backend_predicate_results": .init(content: ["condition_hash": true])
+            "default": .init(blobRef: ref, prefetch: true)
         ]
         let container = try Self.containerData(topics: .init(entries: [
             RemoteConfigTopic.sources.wireName: Self.sourcesTopic(blobSources: [source]),
@@ -121,13 +120,13 @@ final class RemoteConfigIntegrationTests: TestCase {
         let prefetchedData = self.blobStore.read(ref: ref)
         let defaultData = await self.manager.blobData(for: .audiences, itemKey: "default")
 
-        expect(topic?.keys.sorted()) == ["backend_predicate_results", "default"]
+        expect(topic?.keys.sorted()) == ["default"]
         expect(topic?["default"]?.prefetch) == true
         expect(prefetchedData) == opaquePayload
         expect(defaultData) == opaquePayload
     }
 
-    func testAudiencesProviderLoadsCanonicalRFCFixtures() async throws {
+    func testAudiencesProviderLoadsAudienceConfiguration() async throws {
         let configData = #"""
         {
           "domain": "app",
@@ -139,19 +138,6 @@ final class RemoteConfigIntegrationTests: TestCase {
               "default": {
                 "blob_ref": "S_uSSVFaiTCvj2BIpm59ccs1aBHsJNGH",
                 "prefetch": true
-              },
-              "backend_predicate_results": {
-                "349OzehoTyCAdiZblj9w0J0yD-Uow8X3": false,
-                "5Ycn7VItkR0DTZfStFMgDwp-TaW6Iz_v": false,
-                "PROg2cJoAVWa3sWx-6djaRxQQbDPpWwW": false,
-                "X0_JjigFEYQ7KH7t7wU-F2A2v1p2Lp7S": false,
-                "XqFWYkTPQ8nar-o5bNAOsLftD3bfrj1F": false,
-                "avK8u8K5UAZ5oKubPAqXeNH2iNp30sDZ": false,
-                "gjqkac4Vg2300MezDymaMcjvMjeT_5Jb": false,
-                "oKtDH_RDdJrpIygtn60hvZ-06iK9W0WP": false,
-                "tUsHN1KxMmy8y80xuBnAnpoEAGd4ipTk": false,
-                "vMJD7UOr50TLaRj06GisbcrR5R0Gptsx": false,
-                "vfcKkz9ze13J_lVBwkaiRbsmbfe84mD9": false
               }
             }
           }
@@ -170,22 +156,17 @@ final class RemoteConfigIntegrationTests: TestCase {
           },
           "aud063b1964fd804276": {
             "id": "aud063b1964fd804276",
-            "rules": {
-              "or": [
-                { "var": ["backend.PROg2cJoAVWa3sWx-6djaRxQQbDPpWwW", false] },
-                { "==": [{ "var": "country" }, "PL"] }
-              ]
-            }
+            "rules": { "==": [{ "var": "country" }, "PL"] }
           }
         }
         """#.asData
         let remoteConfiguration = try JSONDecoder.default.decode(RemoteConfiguration.self, from: configData)
-        let rfcTopic = try XCTUnwrap(remoteConfiguration.topics.entries[RemoteConfigTopic.audiences.wireName])
-        let defaultItem = try XCTUnwrap(rfcTopic["default"])
+        let audiencesTopic = try XCTUnwrap(
+            remoteConfiguration.topics.entries[RemoteConfigTopic.audiences.wireName]
+        )
+        let defaultItem = try XCTUnwrap(audiencesTopic["default"])
         let ref = RCContainerTestData.blobRef(for: payload)
-        var topic = rfcTopic
-        // The RFC's blob ref points to the complete canary artifact, while its readable example shows a subset.
-        // Address that example by its own content hash so the production checksum path remains in the test.
+        var topic = audiencesTopic
         topic["default"] = .init(blobRef: ref, prefetch: defaultItem.prefetch)
         let container = try Self.containerData(
             topics: .init(entries: [
@@ -207,16 +188,11 @@ final class RemoteConfigIntegrationTests: TestCase {
             #"{"==":[{"var":"latest_auto_renew_intent"},false]}]}"#
         expect(configuration?.audiences["audf98ea481c76049a3"]?.rules)
             == expectedRules
-        expect(configuration?.backendPredicateResults).to(haveCount(11))
-        expect(configuration?.backendPredicateResults["5Ycn7VItkR0DTZfStFMgDwp-TaW6Iz_v"]) == .bool(false)
-        expect(configuration?.backendPredicateResults["PROg2cJoAVWa3sWx-6djaRxQQbDPpWwW"]) == .bool(false)
     }
 
     func testAudiencesProviderReturnsNilWithoutDefaultBlob() async throws {
         let container = try Self.containerData(topics: .init(entries: [
-            RemoteConfigTopic.audiences.wireName: [
-                "backend_predicate_results": .init(content: ["condition_hash": true])
-            ]
+            RemoteConfigTopic.audiences.wireName: [:]
         ]))
 
         await self.refresh(with: container)
@@ -245,25 +221,6 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         expect(configuration).toNot(beNil())
         expect(manager.invokedTopicCount).to(beGreaterThan(1))
-    }
-
-    func testAudiencesProviderReturnsEmptyBackendResultsWhenItemIsAbsent() async throws {
-        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "default": .init(blobRef: ref, prefetch: true)
-                ]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-
-        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
-
-        expect(configuration?.backendPredicateResults).to(beEmpty())
     }
 
     func testAudiencesProviderDropsMalformedAudienceWithoutDroppingValidSiblings() async throws {
@@ -309,153 +266,6 @@ final class RemoteConfigIntegrationTests: TestCase {
         let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
 
         expect(configuration?.audiences["map_key"]) == Audience(id: "different_id", rules: "{}")
-    }
-
-    func testAudiencesProviderAcceptsRuleDimensionBackendValues() async throws {
-        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "default": .init(blobRef: ref, prefetch: true),
-                    "backend_predicate_results": .init(content: [
-                        "bool": true,
-                        "string": "value",
-                        "int": 42,
-                        "double": 4.2,
-                        "object": [
-                            "nested": "value",
-                            "ignored": nil
-                        ],
-                        "object_list": [
-                            ["id": "first", "enabled": true],
-                            ["id": "second", "enabled": false]
-                        ]
-                    ])
-                ]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-
-        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
-
-        expect(configuration?.backendPredicateResults) == [
-            "bool": .bool(true),
-            "string": .string("value"),
-            "int": .int(42),
-            "double": .double(4.2),
-            "object": .object([
-                "nested": .string("value"),
-                "ignored": .null
-            ]),
-            "object_list": .objectList([
-                ["id": .string("first"), "enabled": .bool(true)],
-                ["id": .string("second"), "enabled": .bool(false)]
-            ])
-        ]
-    }
-
-    func testAudiencesProviderOmitsUnsupportedBackendValuesIndividually() async throws {
-        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "default": .init(blobRef: ref, prefetch: true),
-                    "backend_predicate_results": .init(content: [
-                        "valid": true,
-                        "null": nil,
-                        "scalar_array": [1, 2],
-                        "mixed_array": [["id": "first"], "second"]
-                    ])
-                ]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-        self.logger.clearMessages()
-
-        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
-
-        expect(configuration?.backendPredicateResults) == ["valid": .bool(true), "null": .null]
-        for identifier in ["scalar_array", "mixed_array"] {
-            self.logger.verifyMessageWasLogged(
-                "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule.",
-                level: .warn,
-                expectedCount: 1
-            )
-        }
-        expect(self.logger.messages.filter { $0.level == .warn }).to(haveCount(2))
-    }
-
-    func testAudiencesProviderRecursivelyOmitsUnsupportedNestedBackendValues() async throws {
-        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "default": .init(blobRef: ref, prefetch: true),
-                    "backend_predicate_results": .init(content: [
-                        "nested": [
-                            "level_one": [
-                                "level_two": [
-                                    "valid": "value",
-                                    "null": nil,
-                                    "unsupported_array": [1, 2]
-                                ]
-                            ]
-                        ]
-                    ])
-                ]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-
-        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
-
-        expect(configuration?.backendPredicateResults) == [
-            "nested": .object([
-                "level_one": .object([
-                    "level_two": .object([
-                        "valid": .string("value"),
-                        "null": .null
-                    ])
-                ])
-            ])
-        ]
-    }
-
-    func testAudiencesProviderPreservesEmptyBackendObjectsAndObjectLists() async throws {
-        let payload = #"{ "aud_123": { "id": "aud_123", "rules": {} } }"#.asData
-        let ref = RCContainerTestData.blobRef(for: payload)
-        let container = try Self.containerData(
-            topics: .init(entries: [
-                RemoteConfigTopic.audiences.wireName: [
-                    "default": .init(blobRef: ref, prefetch: true),
-                    "backend_predicate_results": .init(content: [
-                        "empty_object": [:],
-                        "empty_object_list": [],
-                        "list_with_empty_object": [[:]]
-                    ])
-                ]
-            ]),
-            contentElements: [(payload, .none)]
-        )
-
-        await self.refresh(with: container)
-
-        let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
-
-        expect(configuration?.backendPredicateResults) == [
-            "empty_object": .object([:]),
-            "empty_object_list": .objectList([]),
-            "list_with_empty_object": .objectList([[:]])
-        ]
     }
 
     func testUncompressedConfigAndInlineBlobCanBeReadThroughFacade() async throws {

@@ -478,68 +478,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(missed), .noMatch)
     }
 
-    func testTrueBackendPredicateResultMatchesAudience() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
-    func testFalseBackendPredicateResultDoesNotMatchAudience() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",true]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(false)]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
-    }
-
-    func testMissingBackendPredicateResultUsesAuthoredDefault() async throws {
-        self.audiencesProvider.defaultRules = #"{"var":["backend.missing_hash",true]}"#
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
-    func testBackendPredicateResultsAreScopedToOneEvaluation() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
-
-        let matched = try await self.resolve()
-        self.audiencesProvider.backendPredicateResults = [:]
-        let missed = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(matched)?.workflow.id, self.workflowID)
-        XCTAssertEqual(Self.noActionReason(missed), .noMatch)
-    }
-
-    func testNonBooleanBackendPredicateResultsAreAvailableToAudiencePredicates() async throws {
-        self.audiencesProvider.defaultRules = #"""
-        {"and":[
-            {"==":[{"var":"backend.variant"},"variant_b"]},
-            {"==":[{"var":"backend.count"},3]},
-            {"==":[{"var":"backend.score"},1.5]},
-            {"==":[{"var":"backend.profile.tier"},"pro"]}
-        ]}
-        """#
-        self.audiencesProvider.backendPredicateResults = [
-            "variant": .string("variant_b"),
-            "count": .int(3),
-            "score": .double(1.5),
-            "profile": .object(["tier": .string("pro")])
-        ]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
     /// A malformed predicate is an evaluation failure, not a lookup failure: the audience was read, the engine
     /// just couldn't run it. That doesn't block a lower-priority rule from winning on its own merits.
     func testMalformedAudienceBeforeAMatchDoesNotPreventALaterWorkflow() async throws {
@@ -954,7 +892,6 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
         }
     }
     var configGeneration = 0
-    var backendPredicateResults: [String: DimensionValue] = [:]
     var configurationUnavailable = false
     var onConfiguration: (() -> Void)?
     private(set) var configurationRequestCount = 0
@@ -981,7 +918,6 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
             audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
                 (identifier, Audience(id: identifier, rules: rules))
             }),
-            backendPredicateResults: self.backendPredicateResults,
             configGeneration: self.configGeneration
         )
     }
