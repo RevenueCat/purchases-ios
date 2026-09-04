@@ -569,10 +569,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:]
     ) -> CheckpointPresentation {
-        return CheckpointPresentation(
-            workflow: self.workflow(),
-            customVariables: customVariables
-        )
+        return .workflow(self.workflow(), customVariables: customVariables)
     }
 
     private static func workflow() -> ResolvedCheckpointWorkflow {

@@ -15,24 +15,17 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Everything needed to present a checkpoint workflow.
+/// Everything needed to present a checkpoint experience.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-struct CheckpointPresentation {
+enum CheckpointPresentation {
+    case workflow(ResolvedCheckpointWorkflow, customVariables: [String: CustomVariableValue])
+    case offering(Offering, customVariables: [String: CustomVariableValue])
 
-    let workflow: ResolvedCheckpointWorkflow?
-    let offering: Offering?
-    let customVariables: [String: CustomVariableValue]
-
-    init(workflow: ResolvedCheckpointWorkflow, customVariables: [String: CustomVariableValue]) {
-        self.workflow = workflow
-        self.offering = nil
-        self.customVariables = customVariables
-    }
-
-    init(offering: Offering, customVariables: [String: CustomVariableValue]) {
-        self.workflow = nil
-        self.offering = offering
-        self.customVariables = customVariables
+    var customVariables: [String: CustomVariableValue] {
+        switch self {
+        case let .workflow(_, customVariables), let .offering(_, customVariables):
+            return customVariables
+        }
     }
 
 }
@@ -57,7 +50,7 @@ extension CheckpointExecutor {
         customVariables: [String: CustomVariableValue]
     ) async throws -> CheckpointPaywallOutcome {
         return try await self.execute(
-            CheckpointPresentation(offering: offering, customVariables: customVariables)
+            .offering(offering, customVariables: customVariables)
         )
     }
 
@@ -144,7 +137,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         customVariables: [String: CustomVariableValue]
     ) async throws -> CheckpointPaywallOutcome {
         return try await self.execute(
-            CheckpointPresentation(offering: offering, customVariables: customVariables)
+            .offering(offering, customVariables: customVariables)
         )
     }
 

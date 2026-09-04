@@ -125,17 +125,16 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         for presentation: CheckpointPresentation
     ) throws -> PaywallViewController {
         let viewController: PaywallViewController
-        if let workflow = presentation.workflow {
+        switch presentation {
+        case let .workflow(workflow, _):
             let workflowContext = try WorkflowPreview.makeContext(
                 workflow: workflow.workflow,
                 offerings: workflow.offerings,
                 uiConfig: workflow.uiConfig
             )
             viewController = PaywallViewController(workflowContext: workflowContext, displayCloseButton: true)
-        } else if let offering = presentation.offering {
+        case let .offering(offering, _):
             viewController = PaywallViewController(offering: offering, displayCloseButton: true)
-        } else {
-            throw CheckpointError.presentationFailed
         }
         viewController.customVariables = presentation.customVariables
         return viewController

@@ -55,7 +55,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         try presenter.present(presentation: presentation, delegate: delegate)
         presenter.paywallViewController(
-            PaywallViewController(offering: presentation.workflow!.offering),
+            PaywallViewController(offering: Self.workflow().offering),
             didFinishPurchasingWith: TestData.customerInfo,
             transaction: transaction
         )
@@ -83,7 +83,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         try presenter.present(presentation: presentation, delegate: delegate)
         presenter.paywallViewControllerDidOpenWebCheckout(
-            PaywallViewController(offering: presentation.workflow!.offering)
+            PaywallViewController(offering: Self.workflow().offering)
         )
 
         XCTAssertTrue(store.call?.stagedOutcome is CheckpointPaywallOutcome.WebCheckoutOpened)
@@ -100,7 +100,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let delegate = MockCheckpointPresenterDelegate()
         let presentation = Self.presentation()
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
-        let controller = PaywallViewController(offering: presentation.workflow!.offering)
+        let controller = PaywallViewController(offering: Self.workflow().offering)
         let transaction = StoreTransaction(MockStoreTransaction())
 
         try presenter.present(presentation: presentation, delegate: delegate)
@@ -156,9 +156,9 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let presentation = Self.presentation()
         let presenter = CheckpointWorkflowPresenter { _ in true }
         try presenter.present(presentation: presentation, delegate: MockCheckpointPresenterDelegate())
-        let originalController = PaywallViewController(offering: presentation.workflow!.offering)
+        let originalController = PaywallViewController(offering: Self.workflow().offering)
         let exitOfferController = DismissRecordingPaywallController(
-            offering: presentation.workflow!.offering
+            offering: Self.workflow().offering
         )
 
         presenter.paywallViewController(
@@ -245,10 +245,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
     private static func presentation(
         customVariables: [String: CustomVariableValue] = [:]
     ) -> CheckpointPresentation {
-        return CheckpointPresentation(
-            workflow: self.workflow(),
-            customVariables: customVariables
-        )
+        return .workflow(self.workflow(), customVariables: customVariables)
     }
 
     private static func renderablePresentation(
@@ -272,15 +269,12 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             steps: ["step-id": WorkflowStep(id: "step-id", type: "screen", screenId: "screen-id")],
             screens: ["screen-id": screen]
         )
-        return CheckpointPresentation(
-            workflow: ResolvedCheckpointWorkflow(
+        return .workflow(ResolvedCheckpointWorkflow(
                 workflow: workflow,
                 uiConfig: resolvedWorkflow.uiConfig,
                 offering: resolvedWorkflow.offering,
                 offerings: resolvedWorkflow.offerings
-            ),
-            customVariables: customVariables
-        )
+            ), customVariables: customVariables)
     }
 
     private static func componentsConfig() throws -> PaywallComponentsData.ComponentsConfig {
