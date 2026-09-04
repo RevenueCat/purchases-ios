@@ -138,7 +138,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         return await self.readConsistent(
-            { _ in await self.getWorkflowOnce(workflowId: workflowId) },
+            { await self.getWorkflowOnce(workflowId: workflowId) },
             fallback: .failure(.notFound)
         )
     }
@@ -169,7 +169,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         workflowId: String
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         return await self.readConsistent(
-            { _ in await self.decodeCachedWorkflowForAssetPrewarmingOnce(workflowId: workflowId) },
+            { await self.decodeCachedWorkflowForAssetPrewarmingOnce(workflowId: workflowId) },
             fallback: .failure(.notFound)
         )
     }
@@ -194,7 +194,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// proceeding.
     func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
         return await self.readConsistent(
-            { _ in await self.cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: includingOfferingId) },
+            { await self.cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: includingOfferingId) },
             fallback: []
         )
     }
@@ -251,14 +251,10 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     }
 
     private func readConsistent<Value>(
-        _ operation: (Int) async -> Value?,
+        _ operation: () async -> Value?,
         fallback: @autoclosure () -> Value
     ) async -> Value {
-        do {
-            return try await self.manager.readConsistent(operation) ?? fallback()
-        } catch {
-            return fallback()
-        }
+        return (try? await self.manager.readConsistent(operation)) ?? fallback()
     }
 
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {

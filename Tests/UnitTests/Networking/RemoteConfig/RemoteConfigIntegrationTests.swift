@@ -5,8 +5,6 @@
 //  Created by Rick van der Linden.
 //  Copyright © 2026 RevenueCat, Inc. All rights reserved.
 
-// swiftlint:disable file_length type_body_length function_body_length
-
 import Foundation
 import Nimble
 @preconcurrency @testable import RevenueCat
