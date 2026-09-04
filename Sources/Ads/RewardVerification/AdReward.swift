@@ -71,7 +71,6 @@ public struct AdReward: Sendable, Equatable {
         return payload
     }
 
-    /// Stable raw value used for wire encoding and ObjC interop.
     internal var kindRawValue: String {
         switch self.storage {
         case .virtualCurrency: return Self.Kind.virtualCurrency
