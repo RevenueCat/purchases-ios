@@ -147,6 +147,46 @@ class PurchasesGetProductsTests: BasePurchasesTests {
         ) == true
     }
 
+    func testGetEligibilityForPackage() throws {
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+
+        self.trialOrIntroPriceEligibilityChecker
+            .stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = [
+            "product1": .init(eligibilityStatus: .eligible)
+        ]
+
+        let status = try XCTUnwrap(waitUntilValue { completed in
+            self.purchases.checkTrialOrIntroDiscountEligibility(package: package, completion: completed)
+        })
+
+        expect(status) == .eligible
+        expect(self.trialOrIntroPriceEligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == ["product1"]
+    }
+
+    func testGetEligibilityForPackageAsync() async {
+        let package = Package(identifier: "package",
+                              packageType: .monthly,
+                              storeProduct: .init(sk1Product: MockSK1Product(mockProductIdentifier: "product1")),
+                              offeringIdentifier: "offering",
+                              webCheckoutUrl: nil)
+
+        self.trialOrIntroPriceEligibilityChecker
+            .stubbedCheckTrialOrIntroPriceEligibilityFromOptimalStoreReceiveEligibilityResult = [
+            "product1": .init(eligibilityStatus: .ineligible)
+        ]
+
+        let status = await self.purchases.checkTrialOrIntroDiscountEligibility(package: package)
+
+        expect(status) == .ineligible
+        expect(self.trialOrIntroPriceEligibilityChecker
+            .invokedCheckTrialOrIntroPriceEligibilityFromOptimalStoreParameters) == ["product1"]
+    }
+
     func testGetEligibilityForPackages() async throws {
         let packages: [Package] = [
             .init(identifier: "package1",

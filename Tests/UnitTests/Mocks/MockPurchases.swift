@@ -306,6 +306,17 @@ extension MockPurchases: PurchasesType {
         self.unimplemented()
     }
 
+    func checkTrialOrIntroDiscountEligibility(
+        package: Package,
+        completion: @escaping (IntroEligibilityStatus) -> Void
+    ) {
+        self.unimplemented()
+    }
+
+    func checkTrialOrIntroDiscountEligibility(package: Package) async -> IntroEligibilityStatus {
+        self.unimplemented()
+    }
+
     func getPromotionalOffer(
         forProductDiscount discount: StoreProductDiscount,
         product: StoreProduct,
