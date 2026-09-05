@@ -58,4 +58,36 @@ class WebBillingProductsDecodingTests: BaseHTTPResponseTest {
         let response: WebBillingProductsResponse = try Self.decodeFixture("WebBillingProductsEmpty")
         expect(response.productDetails).to(beEmpty())
     }
+
+    func testStartHostedCheckoutResponseDecodesCheckoutURL() throws {
+        let json = """
+        {
+          "operation_session_id": "opsess_123",
+          "checkout_url": "https://checkout.stripe.com/c/pay/cs_test"
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder.default.decode(StartWebCheckoutResponse.self, from: json)
+        expect(response.operationSessionID) == "opsess_123"
+        expect(response.hostedCheckoutURL?.absoluteString) == "https://checkout.stripe.com/c/pay/cs_test"
+    }
+
+    func testCheckoutStatusResponseDecodesSucceededWithRedeemURL() throws {
+        let json = """
+        {
+          "operation": {
+            "status": "succeeded",
+            "is_expired": false,
+            "redemption_info": {
+              "redeem_url": "rc-app://redeem_web_purchase?redemption_token=tok_123"
+            }
+          }
+        }
+        """.data(using: .utf8)!
+
+        let response = try JSONDecoder.default.decode(WebCheckoutStatusResponse.self, from: json)
+        expect(response.operation.status) == .succeeded
+        expect(response.operation.redemptionInfo?.redeemURL)
+            == "rc-app://redeem_web_purchase?redemption_token=tok_123"
+    }
 }

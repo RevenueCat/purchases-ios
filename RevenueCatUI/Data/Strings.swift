@@ -72,6 +72,10 @@ enum Strings {
     case successfully_opened_url_deep_link(String)
     case no_selected_package_found
     case no_web_checkout_url_found
+    case hosted_web_checkout_start_failed(Error)
+    case hosted_web_checkout_finish_failed(Error)
+    case hosted_web_checkout_opened(URL)
+    case hosted_web_checkout_using_wpl_fallback(URL)
     case variable_requires_package(variableName: String)
 
     // Customer Center
@@ -344,6 +348,18 @@ extension Strings: CustomStringConvertible {
 
         case .no_web_checkout_url_found:
             return "No web checkout url found."
+
+        case let .hosted_web_checkout_start_failed(error):
+            return "Could not start hosted Stripe Checkout. Falling back to web checkout. \(error)"
+
+        case let .hosted_web_checkout_finish_failed(error):
+            return "Could not finish hosted Stripe Checkout. \(error)"
+
+        case let .hosted_web_checkout_opened(url):
+            return "Opening hosted Stripe Checkout: \(url.absoluteString)"
+
+        case let .hosted_web_checkout_using_wpl_fallback(url):
+            return "Opening web paywall link (not hosted Stripe): \(url.absoluteString)"
 
         case let .variable_requires_package(variableName):
             return "Paywall variable '\(variableName)' requires a package but none was provided."

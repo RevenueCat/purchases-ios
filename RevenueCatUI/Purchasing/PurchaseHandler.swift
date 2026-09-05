@@ -79,10 +79,24 @@ final class PurchaseHandler: ObservableObject {
     @Published
     var actionTypeInProgress: ActionType?
 
-    /// Whether a purchase or restore is currently in progress
+    /// Whether a purchase, restore, or hosted checkout sheet is in progress.
+    ///
+    /// Do not use this for `.disabled` on a view that presents the hosted checkout
+    /// sheet. SwiftUI would disable the sheet too, and nothing inside it would be tappable.
+    /// Use ``shouldDisablePaywallControls`` for that.
     var actionInProgress: Bool {
+        return actionTypeInProgress != nil || self.hostedCheckoutSheetOpen
+    }
+
+    /// True during an in-flight purchase or restore, but not while the hosted
+    /// checkout sheet is just sitting on screen.
+    var shouldDisablePaywallControls: Bool {
         return actionTypeInProgress != nil
     }
+
+    /// True while the hosted Stripe sheet is on screen (and while we finish after it).
+    @Published
+    private(set) var hostedCheckoutSheetOpen = false
 
     var configuredStoreEnvironment: ConfiguredStoreEnvironment {
         return purchases.configuredStoreEnvironment
@@ -736,6 +750,40 @@ private extension Error {
 extension PurchaseHandler {
 
     // MARK: - Purchase
+
+    @MainActor
+    func withPurchaseAction<T>(_ work: () async throws -> T) async throws -> T {
+        guard !self.actionInProgress else {
+            throw CancellationError()
+        }
+
+        self.startAction(.purchase)
+        defer { self.actionTypeInProgress = nil }
+        return try await work()
+    }
+
+    @MainActor
+    func beginHostedCheckoutSheet() {
+        self.hostedCheckoutSheetOpen = true
+    }
+
+    @MainActor
+    func endHostedCheckoutSheet() {
+        self.hostedCheckoutSheetOpen = false
+    }
+
+    @MainActor
+    func completeHostedWebCheckout(customerInfo: CustomerInfo) {
+        let result: PurchaseResultData = (
+            transaction: nil,
+            customerInfo: customerInfo,
+            userCancelled: false
+        )
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = result
+        }
+        self.setResult(result)
+    }
 
     @MainActor
     func purchase(package: Package) async throws {

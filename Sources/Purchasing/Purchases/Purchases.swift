@@ -1831,6 +1831,17 @@ public extension Purchases {
 
 // swiftlint:enable missing_docs
 
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+/// Result of starting hosted Stripe Checkout from an in-app paywall.
+@_spi(Internal)
+public struct HostedWebCheckoutStartResult: Sendable {
+
+    public let operationSessionID: String
+    public let checkoutURL: URL
+
+}
+#endif
+
 // MARK: - Paywalls & Customer Center
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
@@ -1881,6 +1892,89 @@ public extension Purchases {
 
         return response.sent
     }
+
+#if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+    /// Starts a hosted Stripe Checkout session for in-app web checkout.
+    /// Returns a Stripe Checkout URL when the backend created a hosted session.
+    @_spi(Internal)
+    func startHostedWebCheckout(
+        packageID: String,
+        offeringIdentifier: String,
+        email: String?
+    ) async throws -> HostedWebCheckoutStartResult {
+        let response = try await Async.call { completion in
+            self.backend.webBilling.startCheckout(
+                appUserID: self.appUserID,
+                packageID: packageID,
+                offeringIdentifier: offeringIdentifier,
+                email: email
+            ) { result in
+                completion(result.mapError(\.asPublicError))
+            }
+        }
+
+        guard let checkoutURL = response.hostedCheckoutURL else {
+            throw NewErrorUtils.unknownError(
+                message: "Hosted checkout start did not return a checkout URL"
+            ).asPublicError
+        }
+
+        return HostedWebCheckoutStartResult(
+            operationSessionID: response.operationSessionID,
+            checkoutURL: checkoutURL
+        )
+    }
+
+    /// Polls checkout status after Stripe redirects back to the app, then redeems
+    /// or refreshes ``CustomerInfo``.
+    @_spi(Internal)
+    func finishHostedWebCheckout(operationSessionID: String) async throws -> CustomerInfo {
+        let deadline = Date().addingTimeInterval(30)
+
+        while Date() < deadline {
+            let status = try await Async.call { completion in
+                self.backend.webBilling.getCheckoutStatus(
+                    operationSessionID: operationSessionID,
+                    appUserID: self.appUserID
+                ) { result in
+                    completion(result.mapError(\.asPublicError))
+                }
+            }
+
+            switch status.operation.status {
+            case .succeeded:
+                if let redeemURLString = status.operation.redemptionInfo?.redeemURL,
+                   let redeemURL = URL(string: redeemURLString),
+                   let redemption = DeepLinkParser.parseAsWebPurchaseRedemption(redeemURL) {
+                    let redemptionResult = await self.redeemWebPurchase(redemption)
+                    switch redemptionResult {
+                    case let .success(customerInfo):
+                        return customerInfo
+                    case .error, .invalidToken, .purchaseBelongsToOtherUser, .expired:
+                        throw NewErrorUtils.unknownError(
+                            message: "Hosted web checkout redemption failed"
+                        ).asPublicError
+                    }
+                }
+
+                #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+                self.invalidateCustomerInfoCache()
+                #endif
+                return try await self.customerInfo(fetchPolicy: .fetchCurrent)
+            case .failed:
+                throw NewErrorUtils.unknownError(
+                    message: "Hosted web checkout failed"
+                ).asPublicError
+            case .started, .inProgress, .unknown:
+                try await Task.sleep(nanoseconds: 1_000_000_000)
+            }
+        }
+
+        throw NewErrorUtils.unknownError(
+            message: "Hosted web checkout timed out"
+        ).asPublicError
+    }
+#endif
 
 #if !os(tvOS)
 
