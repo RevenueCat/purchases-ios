@@ -31,7 +31,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     func testLogInWithSuccess() {
         let created: Bool = .random()
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, created))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, created, nil))
 
         let result = waitUntilValue { completed in
             self.purchases.logIn(Self.appUserID) { customerInfo, created, error in
@@ -43,13 +43,35 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
         expect(result?.value) == (Self.mockLoggedInInfo, created)
         expect(self.identityManager.invokedLogInCount) == 1
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.identityManager.invokedLogInAttributesList) == [[:]]
+    }
+
+    func testLogInForwardsAttributes() {
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
+
+        waitUntil { completed in
+            self.purchases.logIn(Self.appUserID, attributes: ["plan": "annual"]) { _, _, _ in
+                completed()
+            }
+        }
+
+        expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
+        expect(self.identityManager.invokedLogInAttributesList) == [["plan": "annual"]]
+    }
+
+    func testLogInWithAttributesAsyncForwardsAttributes() async throws {
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
+
+        _ = try await self.purchases.logIn(Self.appUserID, attributes: ["plan": "annual"])
+
+        expect(self.identityManager.invokedLogInAttributesList) == [["plan": "annual"]]
     }
 
     func testLogInTrimsAppUserIDForIdentityAndRemoteConfigRefresh() {
         self.systemInfo.stubbedRemoteConfigEnabled = true
         Purchases.clearSingleton()
         self.initializePurchasesInstance(appUserId: nil)
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
         let baselineRefreshCount = self.mockRemoteConfigManager.invokedRefreshRemoteConfigCount
 
         waitUntil { completed in
@@ -219,7 +241,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
         self.identityManager.mockAppUserID = Self.mockLoggedInInfo.originalAppUserId
         self.identityManager.mockIsAnonymous = false
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         let baselineOfferingsCallCount = self.mockOfferingsManager.invokedUpdateOfferingsCacheCount
 
@@ -262,7 +284,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     func testLogInWithStringDoesNotLogMessage() async throws {
         let appUserID = "user ID"
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         _ = try await self.purchases.logIn(appUserID)
 
@@ -271,7 +293,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     }
 
     func testLogInWithStaticStringLogsMessage() async throws {
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         _ = try await self.purchases.logIn("Static string")
 
@@ -281,7 +303,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
     func testCompletionBlockLogInWithStringDoesNotLogMessage() {
         let appUserID = "user ID"
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         waitUntil { completed in
             self.purchases.logIn(appUserID) { _, _, _ in
@@ -294,7 +316,7 @@ class PurchasesLogInTests: BasePurchasesLogInTests {
 
     @available(*, deprecated)
     func testCompletionBlockLogInWithStaticStringLogsMessage() {
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
 
         waitUntil { completed in
             self.purchases.logIn("Static string") { _, _, _ in
@@ -322,7 +344,7 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
         expect(self.cachingTrialOrIntroPriceEligibilityChecker.invokedClearCacheCount).toEventually(equal(1))
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
         let newAppUserID = "newAppUserID"
 
         waitUntil { completed in
@@ -342,7 +364,7 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
         expect(self.mockPurchasedProductsFetcher.invokedClearCacheCount).toEventually(equal(1))
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
         let newAppUserID = "newAppUserID"
 
         waitUntil { completed in
@@ -364,7 +386,7 @@ class ExistingUserPurchasesLogInTests: BasePurchasesLogInTests {
         // set up updates customer info, which clears cache once. wait until it's done before checking the rest.
         expect(self.paywallCache.invokedClearEligibilityCacheCount).toEventually(equal(1))
 
-        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true))
+        self.identityManager.mockLogInResult = .success((Self.mockLoggedInInfo, true, nil))
         let newAppUserID = "newAppUserID"
 
         waitUntil { completed in

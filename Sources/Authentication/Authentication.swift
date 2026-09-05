@@ -126,6 +126,19 @@ public final class Authentication: NSObject {
     @objc(identifyCurrentUserAsID:completion:)
     public func identifyCurrentUser(as appUserID: String,
                                     completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
+        self.identifyCurrentUser(as: appUserID, attributes: [:], completion: completion)
+    }
+
+    /// Provide an app-specific alias for the current user, setting `attributes` on them as part of the
+    /// same request.
+    /// - Parameters:
+    ///   - appUserID: The user's alias
+    ///   - attributes: Subscriber attributes to set on the user being identified
+    ///   - completion: A completion handler that is invoked with the updated ``CustomerInfo`` (if any),
+    ///   a boolean indicating whether the user was created or restored, and an optional ``PublicError``
+    internal func identifyCurrentUser(as appUserID: String,
+                                      attributes: [String: String],
+                                      completion: @escaping (CustomerInfo?, Bool, PublicError?) -> Void) {
         guard tokenManager.enabled == false else {
             self.operationDispatcher.dispatchOnMainThread {
                 let error = NewErrorUtils.unsupportedError(message:
@@ -139,7 +152,7 @@ public final class Authentication: NSObject {
         let normalizedAppUserID = appUserID.trimmingWhitespacesAndNewLines
 
         self.ongoingUserInitiatedRequestCount.increment()
-        self.identityManager.logIn(appUserID: normalizedAppUserID) { result in
+        self.identityManager.logIn(appUserID: normalizedAppUserID, attributes: attributes) { result in
             self.ongoingUserInitiatedRequestCount.decrement()
 
             self.operationDispatcher.dispatchOnMainThread {
@@ -205,8 +218,24 @@ public final class Authentication: NSObject {
     /// - Throws: an error if the alias could not be applied to the current user
     @_disfavoredOverload
     public func identifyCurrentUser(as appUserID: String) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        return try await self.identifyCurrentUser(as: appUserID, attributes: [:])
+    }
+
+    /// Provide an app-specific alias for the current user, setting `attributes` on them as part of the
+    /// same request.
+    /// - Parameters:
+    ///   - appUserID: The user's alias
+    ///   - attributes: Subscriber attributes to set on the user being identified
+    /// - Returns: A tuple of the new ``CustomerInfo`` and a boolean indicating whether it was created or restored
+    /// - Throws: an error if the alias could not be applied to the current user
+    internal func identifyCurrentUser(
+        as appUserID: String,
+        attributes: [String: String]
+    ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         return try await withUnsafeThrowingContinuation { continuation in
-            self.identifyCurrentUser(as: appUserID, completion: { customerInfo, created, error in
+            self.identifyCurrentUser(as: appUserID,
+                                     attributes: attributes,
+                                     completion: { customerInfo, created, error in
                 continuation.resume(with: Result(customerInfo, error)
                     .map { ($0, created) })
             })

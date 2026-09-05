@@ -175,7 +175,24 @@ extension MockPurchases: PurchasesType {
     }
 
     func logIn(
+        _ appUserID: String,
+        attributes: [String: String],
+        completion: @escaping (CustomerInfo?,
+        Bool,
+        PublicError?
+    ) -> Void) {
+        self.unimplemented()
+    }
+
+    func logIn(
         _ appUserID: String
+    ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
+        self.unimplemented()
+    }
+
+    func logIn(
+        _ appUserID: String,
+        attributes: [String: String]
     ) async throws -> (customerInfo: CustomerInfo, created: Bool) {
         self.unimplemented()
     }
