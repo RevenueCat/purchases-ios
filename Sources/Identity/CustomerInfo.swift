@@ -425,6 +425,15 @@ extension CustomerInfo {
 
 }
 
+extension CustomerInfo {
+
+    /// What the backend worked out about this customer for rule evaluation, if it sent any.
+    var backendDimensions: [String: AnyDecodable]? {
+        return self.data.response.subscriber.dimensions
+    }
+
+}
+
 extension CustomerInfo: RawDataContainer {
 
     // Docs inherited from protocol

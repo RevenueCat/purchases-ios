@@ -17,10 +17,11 @@ import Foundation
 /// Roots containing dimensions that may be evaluated locally by the rules engine.
 enum DimensionNamespace: String, CaseIterable, Sendable {
 
+    case clientSnapshot
     case custom
     case device
+    case serverSnapshot
     case store
-    case subscriberAttributes
     case session
     case client
 }
@@ -55,6 +56,24 @@ enum DimensionValue: Equatable, Sendable {
     case objectList([[String: DimensionValue]])
 }
 
+/// The common context for one evaluation.
+///
+/// Every provider in a snapshot is handed the same one, so two providers cannot describe
+/// different customers as if they described one.
+struct DimensionContext: Equatable, Sendable {
+
+    /// The common reference date for the evaluation. It does not indicate when the underlying
+    /// values were observed.
+    let date: Date
+
+    /// The customer the whole snapshot describes.
+    ///
+    /// Read once by ``DimensionResolver`` rather than by each provider, because a provider that
+    /// suspends gives the app time to log in, log out, or switch user, and a snapshot mixing two
+    /// customers can resolve a rule for neither.
+    let appUserID: String
+}
+
 /// Supplies one current subtree of dimensions.
 ///
 /// Implementations may observe or persist state internally, but values are
@@ -74,5 +93,16 @@ protocol DimensionProvider: Sendable {
     ///
     /// `date` is the common reference date for the evaluation. It does not
     /// indicate when the underlying values were observed.
-    func dimensions(at date: Date) async throws -> [String: DimensionValue]
+    /// A customer-scoped provider describes ``DimensionContext/appUserID`` and must not read the
+    /// current user itself, or the snapshot can mix two customers.
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue]
+}
+
+extension DimensionProvider {
+
+    /// Convenience for callers with no customer to describe, such as tests of a provider that
+    /// reads none of it.
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+        return try await self.dimensions(in: DimensionContext(date: date, appUserID: ""))
+    }
 }

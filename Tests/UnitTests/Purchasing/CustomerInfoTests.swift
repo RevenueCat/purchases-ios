@@ -1147,3 +1147,32 @@ private extension BasicCustomerInfoTests {
     ]
 
 }
+
+class CustomerInfoDimensionsEqualityTests: TestCase {
+
+    func testDimensionsDoNotAffectEquality() throws {
+        // The backend's targeting metadata is not something an app sees, so two customers who
+        // differ only in it are the same customer and must not trigger an update callback.
+        let withDimensions = try CustomerInfo(data: Self.responseData(dimensions: ["churnRisk": 0.25]))
+        let withoutDimensions = try CustomerInfo(data: Self.responseData(dimensions: nil))
+
+        expect(withDimensions) == withoutDimensions
+        expect(withDimensions.hashValue) == withoutDimensions.hashValue
+    }
+
+    private static func responseData(dimensions: [String: Any]?) -> [String: Any] {
+        var subscriber: [String: Any] = [
+            "first_seen": "2019-07-17T00:05:54Z",
+            "original_app_user_id": "app_user_id",
+            "subscriptions": [:] as [String: Any],
+            "non_subscriptions": [:] as [String: Any],
+            "entitlements": [:] as [String: Any],
+            "original_application_version": "1.0"
+        ]
+        if let dimensions {
+            subscriber["dimensions"] = dimensions
+        }
+        return ["request_date": "2019-08-16T10:30:42Z", "subscriber": subscriber]
+    }
+
+}

@@ -672,11 +672,11 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 dimensionProviders: [
                     DeviceDimensionProvider(),
                     StoreDimensionProvider(),
-                    SubscriberAttributesDimensionProvider(
-                        deviceCache: deviceCache,
-                        currentUserProvider: identityManager
-                    )
-                ]
+                    ServerSnapshotDimensionProvider(customerInfoProvider: customerInfoManager),
+                    ActiveEntitlementsDimensionProvider(customerInfoProvider: customerInfoManager),
+                    SubscriberAttributesDimensionProvider(deviceCache: deviceCache)
+                ],
+                currentUserProvider: identityManager
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,

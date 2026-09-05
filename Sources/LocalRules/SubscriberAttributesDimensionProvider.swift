@@ -17,21 +17,18 @@ import Foundation
 /// Supplies the subscriber attributes stored for the current customer to the local rules engine.
 struct SubscriberAttributesDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.subscriberAttributes
+    let namespace = DimensionNamespace.clientSnapshot
 
-    private let attributesProvider: @Sendable () throws -> SubscriberAttribute.Dictionary
+    private let attributesProvider: @Sendable (String) throws -> SubscriberAttribute.Dictionary
 
-    init(
-        deviceCache: DeviceCache,
-        currentUserProvider: any CurrentUserProvider
-    ) {
-        self.init {
-            deviceCache.subscriberAttributes(appUserID: currentUserProvider.currentAppUserID)
+    init(deviceCache: DeviceCache) {
+        self.init { appUserID in
+            deviceCache.subscriberAttributes(appUserID: appUserID)
         }
     }
 
     init(
-        attributesProvider: @escaping @Sendable () throws -> SubscriberAttribute.Dictionary
+        attributesProvider: @escaping @Sendable (String) throws -> SubscriberAttribute.Dictionary
     ) {
         self.attributesProvider = attributesProvider
     }
@@ -40,28 +37,31 @@ struct SubscriberAttributesDimensionProvider: DimensionProvider {
     ///
     /// A failed read contributes no dimensions rather than preventing the other
     /// dimensions from being evaluated.
-    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in context: DimensionContext) async throws -> [String: DimensionValue] {
         let attributes: SubscriberAttribute.Dictionary
         do {
-            attributes = try self.attributesProvider()
+            attributes = try self.attributesProvider(context.appUserID)
         } catch {
             Logger.warn(Strings.remoteConfig.subscriberAttributesUnavailable(error))
             return [:]
         }
 
-        return attributes.values.reduce(into: [:]) { dimensions, attribute in
+        let dimensions: [String: DimensionValue] = attributes.values.reduce(into: [:]) { dimensions, attribute in
             // An empty value represents a deleted attribute, whether or not its tombstone has been synced.
             guard !attribute.value.isEmpty else { return }
 
             dimensions[attribute.key] = .object([
                 Self.valueKey: .string(attribute.value),
                 Self.updatedAtKey: .date(attribute.setTime),
-                Self.evaluatedAtKey: .date(date)
+                Self.evaluatedAtKey: .date(context.date)
             ])
         }
+
+        return [Self.subscriberAttributesKey: .object(dimensions)]
     }
 
     private static let evaluatedAtKey = "evaluatedAt"
+    private static let subscriberAttributesKey = "subscriberAttributes"
     private static let updatedAtKey = "updatedAt"
     private static let valueKey = "value"
 

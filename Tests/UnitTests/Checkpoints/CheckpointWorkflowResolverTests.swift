@@ -766,7 +766,7 @@ private struct FailingDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.device
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         throw FailingDimensionProviderError()
     }
 
@@ -778,7 +778,7 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
     let namespace = DimensionNamespace.device
 
-    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+    func dimensions(in _: DimensionContext) async throws -> [String: DimensionValue] {
         throw CancellationError()
     }
 
