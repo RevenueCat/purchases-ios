@@ -210,38 +210,34 @@ final class PurchaseButtonComponentViewModelTests: TestCase {
         }.to(throwError())
     }
 
-    // MARK: - RC Billing methods
+    // MARK: - Bundled checkout (no WPL fallback)
 
-    func testWebCheckoutUrlIsUnchanged() throws {
+    func testWebCheckoutDoesNotUseWebPurchaseLink() throws {
         let checkoutUrl = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout?foo=bar"))
         let viewModel = try self.makeViewModel(
             method: .webCheckout(.init()),
             webCheckoutUrl: checkoutUrl
         )
 
-        let launch = try XCTUnwrap(viewModel.urlForWebCheckout(
+        expect(viewModel.urlForWebCheckout(
             packageContext: nil,
             appUserID: "user_1",
             isSandbox: true
-        ))
-
-        expect(launch.url) == checkoutUrl
+        )).to(beNil())
     }
 
-    func testWebProductSelectionUrlIsUnchanged() throws {
+    func testWebProductSelectionDoesNotUseWebPurchaseLink() throws {
         let checkoutUrl = try XCTUnwrap(URL(string: "https://pay.rev.cat/checkout?foo=bar"))
         let viewModel = try self.makeViewModel(
             method: .webProductSelection(.init()),
             webCheckoutUrl: checkoutUrl
         )
 
-        let launch = try XCTUnwrap(viewModel.urlForWebCheckout(
+        expect(viewModel.urlForWebCheckout(
             packageContext: nil,
             appUserID: "user_1",
             isSandbox: true
-        ))
-
-        expect(launch.url) == checkoutUrl
+        )).to(beNil())
     }
 
     // MARK: - Helpers

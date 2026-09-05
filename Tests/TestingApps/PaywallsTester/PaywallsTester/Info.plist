@@ -50,6 +50,8 @@
 	<string>$(REVENUECAT_PROXY_URL_SCHEME)</string>
 	<key>SANDBOX_PAYWALL_SEARCH</key>
 	<string>$(SANDBOX_PAYWALL_SEARCH)</string>
+	<key>WEB_BILLING_API_KEY</key>
+	<string>$(WEB_BILLING_API_KEY)</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

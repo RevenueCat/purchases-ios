@@ -202,6 +202,9 @@
 		1ED4CA532CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */; };
 		1ED4CA552CC157A20021AB8F /* RedeemWebPurchaseAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */; };
 		1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */; };
+		ECBUNDLED0000002 /* EmbeddedCheckoutConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBUNDLED0000001 /* EmbeddedCheckoutConfig.swift */; };
+		ECBUNDLED0000004 /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECBUNDLED0000003 /* WebCheckoutView.swift */; };
+		ECBUNDLED0000006 /* EmbeddedCheckout in Resources */ = {isa = PBXBuildFile; fileRef = ECBUNDLED0000005 /* EmbeddedCheckout */; };
 		1EDB6AA62DC9517300C771A4 /* WebOfferingProductsCallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDB6AA52DC9517300C771A4 /* WebOfferingProductsCallback.swift */; };
 		1EDB6AAA2DC95AB400C771A4 /* WebBillingHTTPRequestPath.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDB6AA92DC95AB400C771A4 /* WebBillingHTTPRequestPath.swift */; };
 		1EDB6C942DDDC39C00C771A4 /* BackendGetWebOfferingProductsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1EDB6C932DDDC39C00C771A4 /* BackendGetWebOfferingProductsTests.swift */; };
@@ -1876,6 +1879,9 @@
 		1ED4CA522CC154E00021AB8F /* WebPurchaseRedemptionHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebPurchaseRedemptionHelper.swift; sourceTree = "<group>"; };
 		1ED4CA542CC157A20021AB8F /* RedeemWebPurchaseAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RedeemWebPurchaseAPI.swift; sourceTree = "<group>"; };
 		1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SafariView.swift; sourceTree = "<group>"; };
+		ECBUNDLED0000001 /* EmbeddedCheckoutConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedCheckoutConfig.swift; sourceTree = "<group>"; };
+		ECBUNDLED0000003 /* WebCheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutView.swift; sourceTree = "<group>"; };
+		ECBUNDLED0000005 /* EmbeddedCheckout */ = {isa = PBXFileReference; lastKnownFileType = folder; path = EmbeddedCheckout; sourceTree = "<group>"; };
 		1EDB6AA52DC9517300C771A4 /* WebOfferingProductsCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebOfferingProductsCallback.swift; sourceTree = "<group>"; };
 		1EDB6AA92DC95AB400C771A4 /* WebBillingHTTPRequestPath.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebBillingHTTPRequestPath.swift; sourceTree = "<group>"; };
 		1EDB6C932DDDC39C00C771A4 /* BackendGetWebOfferingProductsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendGetWebOfferingProductsTests.swift; sourceTree = "<group>"; };
@@ -3278,6 +3284,7 @@
 		FACD00072F61A1230073D2DE /* PackageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageComponentViewTests.swift; sourceTree = "<group>"; };
 		FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageValidatorTests.swift; sourceTree = "<group>"; };
 		DB04A6C4304033760087EFC5 /* PurchaseButtonComponentViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PurchaseButtonComponentViewModelTests.swift; sourceTree = "<group>"; };
+		ECBUNDLED0000007 /* EmbeddedCheckoutConfigTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EmbeddedCheckoutConfigTests.swift; sourceTree = "<group>"; };
 		FACD000B2F61A1230073D2DE /* PackageVisibilityPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PackageVisibilityPreview.swift; sourceTree = "<group>"; };
 		FACE0000000000000000A002 /* BackendRemoteConfigLaneTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackendRemoteConfigLaneTests.swift; sourceTree = "<group>"; };
 		FACE0000000000000000F001 /* PaywallViewControllerExitOfferTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallViewControllerExitOfferTests.swift; sourceTree = "<group>"; };
@@ -3518,6 +3525,7 @@
 				0DD50FFC7C0F48B6A0FDE360 /* PaywallPromoOfferCacheTests.swift */,
 				FACD00092F61A1230073D2DE /* PackageValidatorTests.swift */,
 				DB04A6C4304033760087EFC5 /* PurchaseButtonComponentViewModelTests.swift */,
+				ECBUNDLED0000007 /* EmbeddedCheckoutConfigTests.swift */,
 				FD4253DD2F1DBD7E0073D2DE /* FileImageLoaderTests.swift */,
 				57BFCD0F2EEB1234009E5844 /* TabsPackageSelectionResolverTests.swift */,
 				57BFCD0A2EEB0E56009E5844 /* TabsPackageInheritanceTests.swift */,
@@ -6163,6 +6171,7 @@
 		887A60462C1D037000E1A461 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				ECBUNDLED0000005 /* EmbeddedCheckout */,
 				161627FD2F50987800DEEDEB /* Media.xcassets */,
 				887A5FF32C1D037000E1A461 /* icons.xcassets */,
 				887A5FF52C1D037000E1A461 /* Localizable.strings */,
@@ -6264,6 +6273,8 @@
 				887A605E2C1D037000E1A461 /* TemplateBackgroundImageView.swift */,
 				88A543E62C37A4C40039C6A5 /* TierSelectorView.swift */,
 				1ED4CA9E2CC25A5F0021AB8F /* SafariView.swift */,
+				ECBUNDLED0000001 /* EmbeddedCheckoutConfig.swift */,
+				ECBUNDLED0000003 /* WebCheckoutView.swift */,
 				5798C9232DF1985700F44400 /* ErrorView.swift */,
 				5798C91C2DF1985700F44400 /* CompatibilityContentUnavailableView.swift */,
 			);
@@ -7481,6 +7492,7 @@
 				887A60A02C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60992C1D037000E1A461 /* Localizable.strings in Resources */,
 				161627FE2F50987800DEEDEB /* Media.xcassets in Resources */,
+				ECBUNDLED0000006 /* EmbeddedCheckout in Resources */,
 				887A60972C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60B42C1D037000E1A461 /* Localizable.strings in Resources */,
 				887A60A72C1D037000E1A461 /* Localizable.strings in Resources */,
@@ -8735,6 +8747,8 @@
 				88B1BB042C813A3C001B7EE5 /* StackComponentViewModel.swift in Sources */,
 				1D76F25A2F921CA100863AF8 /* PlanSelectionDefaultPackage.swift in Sources */,
 				1ED4CA9F2CC25A5F0021AB8F /* SafariView.swift in Sources */,
+				ECBUNDLED0000002 /* EmbeddedCheckoutConfig.swift in Sources */,
+				ECBUNDLED0000004 /* WebCheckoutView.swift in Sources */,
 				887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */,
 				2C91068E2CE2481A00189565 /* SizeModifier.swift in Sources */,
 				887A60B82C1D037000E1A461 /* Template1View.swift in Sources */,

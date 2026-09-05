@@ -38,7 +38,7 @@ struct PurchaseButtonComponentView: View {
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
 
-    @State private var inAppBrowserURL: URL?
+    @State private var webSheet: WebSheet?
 
     private let viewModel: PurchaseButtonComponentViewModel
     private let onDismiss: () -> Void
@@ -80,9 +80,24 @@ struct PurchaseButtonComponentView: View {
         }
         .disabled(self.shouldBeDisabled)
         .opacity(self.shouldBeDisabled ? 0.35 : 1.0)
-        #if canImport(SafariServices) && canImport(UIKit)
-        .sheet(isPresented: .isNotNil(self.$inAppBrowserURL)) {
-            SafariView(url: self.inAppBrowserURL!)
+        #if canImport(UIKit) && !os(tvOS)
+        .sheet(item: self.$webSheet) { sheet in
+            switch sheet {
+            case .remote(let url):
+                #if canImport(SafariServices)
+                SafariView(url: url)
+                #else
+                EmptyView()
+                #endif
+            case .bundled(let config):
+                #if canImport(WebKit)
+                WebCheckoutView(config: config) {
+                    self.onDismiss()
+                }
+                #else
+                EmptyView()
+                #endif
+            }
         }
         #endif
     }
@@ -96,7 +111,9 @@ struct PurchaseButtonComponentView: View {
         switch method {
         case .inAppCheckout, .unknown:
             try await self.purchaseInApp()
-        case .webCheckout, .webProductSelection, .customWebCheckout:
+        case .webCheckout, .webProductSelection:
+            self.purchaseEmbedded()
+        case .customWebCheckout:
             try await self.purchaseInWeb()
         }
     }
@@ -130,6 +147,35 @@ struct PurchaseButtonComponentView: View {
         let promoOffer = self.paywallPromoOfferCache.purchasableOffer(for: selectedPackage)
 
         _ = try await self.purchaseHandler.purchase(package: selectedPackage, promotionalOffer: promoOffer)
+    }
+
+    private func purchaseEmbedded() {
+        self.logIfInPreview(package: self.packageContext.package)
+
+        guard let config = self.viewModel.embeddedCheckout(
+            packageId: self.packageContext.package?.identifier
+        ) else {
+            Logger.error(Strings.no_web_checkout_url_found)
+            return
+        }
+
+        self.componentInteractionLogger(.paywallPurchaseButtonAction(
+            componentName: self.viewModel.componentName,
+            componentValue: self.viewModel.method?.description ?? "",
+            componentURL: nil,
+            currentPackageIdentifier: self.packageContext.package?.identifier,
+            currentProductIdentifier: self.packageContext.package?.storeProduct.productIdentifier
+        ))
+
+        self.logIfInPreview("Embedded checkout: \(config.offeringId)")
+
+        guard !self.isInPreview else {
+            return
+        }
+
+        Purchases.shared.invalidateCustomerInfoCache()
+        self.purchaseHandler.signalWebCheckoutOpened()
+        self.webSheet = .bundled(config)
     }
 
     private func purchaseInWeb() async throws {
@@ -190,15 +236,33 @@ struct PurchaseButtonComponentView: View {
         let method = launchWebCheckout.method
         let url = launchWebCheckout.url
 
-        Browser.navigateTo(url: url,
-                           method: method,
-                           openURL: self.openURL,
-                           inAppBrowserURL: self.$inAppBrowserURL)
+        if method == .inAppBrowser {
+            self.webSheet = .remote(url)
+        } else {
+            Browser.navigateTo(url: url,
+                               method: method,
+                               openURL: self.openURL,
+                               inAppBrowserURL: .constant(nil))
+        }
 
         self.purchaseHandler.signalWebCheckoutOpened()
 
         if launchWebCheckout.autoDismiss {
             self.onDismiss()
+        }
+    }
+
+    private enum WebSheet: Identifiable {
+        case remote(URL)
+        case bundled(EmbeddedCheckoutConfig)
+
+        var id: String {
+            switch self {
+            case .remote(let url):
+                return url.absoluteString
+            case .bundled(let config):
+                return "\(config.appUserID)|\(config.offeringId)|\(config.packageId ?? "")"
+            }
         }
     }
 
