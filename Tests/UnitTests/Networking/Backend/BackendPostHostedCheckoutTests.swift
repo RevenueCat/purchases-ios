@@ -73,6 +73,21 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         expect(response.cancelUrl) == URL(string: "\(Self.returnEndpoint)?status=cancel")
     }
 
+    /// Creating a checkout session answers `201`, so that is the status the flow actually has to read.
+    func testAcceptsTheCreatedStatus() {
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .createdSuccess, response: Self.response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(completion: completed)
+        }
+
+        expect(result).to(beSuccess())
+        expect(result?.value?.operationSessionId) == "op_session_id"
+    }
+
     /// A second tap while the first request is still running must not open a second checkout session.
     func testIdenticalRequestsInFlightAreReusedForASingleCall() {
         self.httpClient.mock(
