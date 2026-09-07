@@ -17,7 +17,7 @@ import Foundation
 /// Supplies current App Store information to the local rules engine.
 struct StoreDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.store
+    let name = "store"
 
     private let storefrontCountryCodeProvider: @Sendable () async -> String?
 
@@ -36,7 +36,7 @@ struct StoreDimensionProvider: DimensionProvider {
         }
 
         // Storefront country codes use ISO 3166-1 alpha-3 format, such as "USA".
-        return ["country": .string(storefrontCountryCode)]
+        return ["storefront": .string(storefrontCountryCode)]
     }
 
 }

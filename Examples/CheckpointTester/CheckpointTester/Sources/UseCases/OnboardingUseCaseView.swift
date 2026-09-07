@@ -126,11 +126,11 @@ struct OnboardingUseCaseView: View {
 
     private static func describe(_ result: CheckpointResult) -> String {
         switch result {
-        case let presented as CheckpointPaywallPresentedResult:
+        case let presented as CheckpointResult.PaywallPresented:
             return Self.describe(presented.paywallOutcome)
-        case let received as CheckpointReceivedOfferingResult:
+        case let received as CheckpointResult.ReceivedOffering:
             return "Received offering '\(received.offering.identifier)'."
-        case let noAction as CheckpointNoActionResult:
+        case let noAction as CheckpointResult.NoAction:
             return "No paywall shown (\(noAction.reason))."
         default:
             return "Unknown checkpoint result."
