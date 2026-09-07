@@ -398,6 +398,28 @@ struct SubscriptionDetailView_Previews: PreviewProvider {
             CompatibilityNavigationStack {
                 SubscriptionDetailView(
                     customerInfoViewModel: CustomerCenterViewModel(
+                        activeSubscriptionPurchases: [.cancelled],
+                        activeNonSubscriptionPurchases: [],
+                        configuration: .default
+                    ),
+                    viewModel: SubscriptionDetailViewModel(
+                        customerInfoViewModel: CustomerCenterViewModel(
+                            uiPreviewPurchaseProvider: MockCustomerCenterPurchases()
+                        ),
+                        screen: CustomerCenterConfigData.default.screens[.management]!,
+                        showPurchaseHistory: true,
+                        showVirtualCurrencies: false,
+                        allowsMissingPurchaseAction: false,
+                        purchaseInformation: .cancelled
+                    )
+                )
+            }
+            .preferredColorScheme(colorScheme)
+            .previewDisplayName("Cancelled, resubscribe - \(colorScheme)")
+
+            CompatibilityNavigationStack {
+                SubscriptionDetailView(
+                    customerInfoViewModel: CustomerCenterViewModel(
                         activeSubscriptionPurchases: [.consumable],
                         activeNonSubscriptionPurchases: [],
                         configuration: .default
