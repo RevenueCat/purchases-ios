@@ -145,7 +145,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testDimensionProviderFailureResolvesConfigurationUnavailableWithoutFetchingOfferings() async throws {
         let fetchCount = Atomic<Int>(0)
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [FailingDimensionProvider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [FailingDimensionProvider()],
+            currentAppUserIDProvider: { "user" }
+        )
         let resolver = self.makeResolver(
             offeringsProvider: {
                 fetchCount.modify { $0 += 1 }
@@ -159,10 +162,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
         XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+        self.logger.verifyMessageWasLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error
+        )
     }
 
     func testCancellationWhileCollectingDimensionsPropagates() async {
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [CancellingDimensionProvider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [CancellingDimensionProvider()],
+            currentAppUserIDProvider: { "user" }
+        )
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
 
         do {
@@ -353,6 +363,37 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(rulesRequestCount.value, 2)
     }
 
+    func testAppUserChangeDuringAudienceEvaluationRetriesAgainstTheNewGeneration() async throws {
+        let currentAppUserID = Atomic("user-a")
+        let evaluationCount = Atomic(0)
+        let provider = CheckpointTestDimensionProvider(name: "identity_flipper") { _ in
+            let count = evaluationCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                currentAppUserID.value = "user-b"
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return [:]
+        }
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        let resolution = try await self.makeResolver(localRulesEvaluator: evaluator).resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        )
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(evaluationCount.value, 2)
+        self.logger.verifyMessageWasNotLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error,
+            allowNoMessages: true
+        )
+    }
+
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
         let secondWorkflowID = "wf5678"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
@@ -526,13 +567,16 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testStaleConfigurationAfterUnevaluatablePredicateRetriesBeforeReturningUnavailable() async throws {
         let dimensionEvaluationCount = Atomic<Int>(0)
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [CallbackDimensionProvider {
-            let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
-            if count == 1 {
-                self.checkpointsProvider.configGeneration += 1
-                self.audiencesProvider.configGeneration += 1
-            }
-        }])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [CallbackDimensionProvider {
+                let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
+                if count == 1 {
+                    self.checkpointsProvider.configGeneration += 1
+                    self.audiencesProvider.configGeneration += 1
+                }
+            }],
+            currentAppUserIDProvider: { "user" }
+        )
         self.audiencesProvider.defaultRules = "{not-json"
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
 
@@ -812,7 +856,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     private func makeResolver(
         offeringsProvider: (() async throws -> Offerings)? = nil,
-        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: [])
+        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(
+            dimensionProviders: [],
+            currentAppUserIDProvider: { "user" }
+        )
     ) -> DefaultCheckpointWorkflowResolver {
         return DefaultCheckpointWorkflowResolver(
             checkpointsConfigProvider: self.checkpointsProvider,
@@ -973,6 +1020,16 @@ private final class CallbackDimensionProvider: DimensionProvider, @unchecked Sen
         return [:]
     }
 
+}
+
+private struct CheckpointTestDimensionProvider: DimensionProvider {
+
+    let name: String
+    let dimensionsProvider: @MainActor @Sendable (Date) async throws -> [String: DimensionValue]
+
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+        return try await self.dimensionsProvider(date)
+    }
 }
 
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {

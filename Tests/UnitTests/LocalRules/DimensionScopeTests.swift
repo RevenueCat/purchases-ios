@@ -57,6 +57,7 @@ struct DimensionScopeTests {
 
         let snapshot = try await DimensionResolver(
             dimensionProviders: providers,
+            currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: date)
         ).snapshot(
             customVariables: ["attempt": .int(3)],

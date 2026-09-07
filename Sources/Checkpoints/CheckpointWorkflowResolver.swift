@@ -182,15 +182,24 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         let ruleEvaluation = try await self.evaluateRules(
             in: rulesSnapshot.ruleSet.rules,
             params: params,
-            audienceConfiguration: audienceConfiguration,
-            checkpointIdentifier: identifier
+            audienceConfiguration: audienceConfiguration
         )
-
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
 
-        guard case let .completed(rule) = ruleEvaluation else {
+        let rule: CheckpointRule?
+        switch ruleEvaluation {
+        case let .completed(matchedRule):
+            rule = matchedRule
+        case let .unavailable(error):
+            // Only return `noMatch` when audience evaluation succeeds and no rule matches. If evaluation fails,
+            // the SDK can't determine whether the app user matches, so treat the checkpoint configuration as
+            // unavailable.
+            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+                checkpointID: identifier,
+                reason: "\(error)"
+            ))
             return .noAction(.configurationUnavailable)
         }
 
@@ -217,8 +226,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private func evaluateRules(
         in rules: [CheckpointRule],
         params: CheckpointParams,
-        audienceConfiguration: AudienceConfigurationSnapshot,
-        checkpointIdentifier: String
+        audienceConfiguration: AudienceConfigurationSnapshot
     ) async throws -> AudienceRuleEvaluation {
         do {
             return .completed(try await self.matchingRule(
@@ -229,13 +237,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         } catch let error as CancellationError {
             throw error
         } catch {
-            // An audience the SDK failed to evaluate is not the same answer as an audience the customer is
-            // outside of, so this can't report `noMatch`.
-            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
-                checkpointID: checkpointIdentifier,
-                reason: "\(error)"
-            ))
-            return .unavailable
+            return .unavailable(error)
         }
     }
 
@@ -388,5 +390,5 @@ private struct AudienceUnavailableError: Error, CustomStringConvertible {
 }
 private enum AudienceRuleEvaluation {
     case completed(CheckpointRule?)
-    case unavailable
+    case unavailable(any Error)
 }

@@ -87,7 +87,8 @@ struct DeviceDimensionProviderTests {
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [
@@ -110,7 +111,8 @@ struct DeviceDimensionProviderTests {
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [
@@ -133,7 +135,8 @@ struct DeviceDimensionProviderTests {
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [
@@ -167,7 +170,8 @@ struct DeviceDimensionProviderTests {
                     platform: "iOS",
                     platformVersion: Self.platformVersion
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [
@@ -191,7 +195,8 @@ struct DeviceDimensionProviderTests {
                     platformVersion: Self.platformVersion,
                     sdkVersion: "5.84.0-SNAPSHOT"
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         )
 
         let match = try await evaluator.match(in: [

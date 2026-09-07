@@ -87,7 +87,8 @@ struct SubscriberAttributesProviderTests {
                     Self.attribute("", value: "anything"),
                     Self.attribute("tier", value: "gold")
                 )
-            ]
+            ],
+            currentAppUserIDProvider: { "user" }
         ).snapshot()
 
         guard case .object(let attributes) = snapshot.values["subscriber_attributes"] else {
@@ -100,7 +101,8 @@ struct SubscriberAttributesProviderTests {
     @Test
     func omitsNamespaceWhenThereAreNoAttributes() async throws {
         let snapshot = try await DimensionResolver(
-            dimensionProviders: [Self.provider()]
+            dimensionProviders: [Self.provider()],
+            currentAppUserIDProvider: { "user" }
         ).snapshot()
 
         #expect(snapshot.values["subscriber_attributes"] == nil)
@@ -116,6 +118,7 @@ struct SubscriberAttributesProviderTests {
                 SubscriberAttributesTestDeviceProvider(),
                 provider
             ],
+            currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
         ).snapshot()
 
@@ -182,6 +185,7 @@ struct SubscriberAttributesProviderTests {
                     Self.attribute("tier", value: "gold", setTime: recentSetDate)
                 )
             ],
+            currentAppUserIDProvider: { "user" },
             dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
         )
 
