@@ -67,10 +67,10 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
 
         let response = try XCTUnwrap(result?.value)
 
-        expect(response.operationSessionId) == "op_session_id"
-        expect(response.checkoutUrl) == URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")
-        expect(response.successUrl) == URL(string: "\(Self.returnEndpoint)?status=success")
-        expect(response.cancelUrl) == URL(string: "\(Self.returnEndpoint)?status=cancel")
+        expect(response.operationSessionID) == "op_session_id"
+        expect(response.checkoutURL) == URL(string: "https://checkout.stripe.com/c/pay/cs_test_123")
+        expect(response.successURL) == URL(string: "\(Self.returnEndpoint)?status=success")
+        expect(response.cancelURL) == URL(string: "\(Self.returnEndpoint)?status=cancel")
     }
 
     /// Creating a checkout session answers `201`, so that is the status the flow actually has to read.
@@ -85,7 +85,7 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         }
 
         expect(result).to(beSuccess())
-        expect(result?.value?.operationSessionId) == "op_session_id"
+        expect(result?.value?.operationSessionID) == "op_session_id"
     }
 
     /// A second tap while the first request is still running must not open a second checkout session.
