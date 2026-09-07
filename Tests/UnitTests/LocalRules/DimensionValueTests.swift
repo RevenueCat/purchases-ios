@@ -25,34 +25,70 @@ import Testing
 struct DimensionValueTests {
 
     @Test
+    func priceAmountMicrosRoundsFloatingPointArtifacts() {
+        let price = ProductPaidPrice(currency: "USD", amount: 1.99 - Double.ulpOfOne)
+        var values: [String: DimensionValue] = [:]
+
+        values.set(price: price)
+
+        #expect(values["price_amount_micros"] == .int(1_990_000))
+    }
+
+    @Test
+    func anyDecodableConvertsSupportedDimensionValues() throws {
+        let json = #"""
+        {
+            "null": null,
+            "nested": {"kept": true, "unsupported": [1, 2]},
+            "records": [{"id": "one", "unsupported": [1, 2]}],
+            "mixed": [{"id": "one"}, "invalid"]
+        }
+        """#
+        let values = try JSONDecoder.default.decode(
+            [String: AnyDecodable].self,
+            from: json.asData
+        )
+
+        #expect(values["null"]?.dimensionValue == .null)
+        #expect(values["nested"]?.dimensionValue == .object(["kept": .bool(true)]))
+        #expect(values["records"]?.dimensionValue == .objectList([["id": .string("one")]]))
+        #expect(values["mixed"]?.dimensionValue == nil)
+    }
+
+    @Test
     func dateAndObjectListConvertToRulesEngineValues() async throws {
         let date = Date(timeIntervalSince1970: 1_700_000_000)
         let snapshot = try await Self.snapshot([
             "date": .date(date),
+            "missing": .null,
             "record": .object([
                 "id": .string("one"),
-                "createdAt": .date(date)
+                "missing": .null,
+                "created_at": .date(date)
             ]),
             "records": .objectList([
                 [
                     "id": .string("one"),
-                    "createdAt": .date(date)
+                    "missing": .null,
+                    "created_at": .date(date)
                 ]
             ])
         ])
 
         #expect(snapshot.values == [
-            "device": .object([
-                "date": .int(1_700_000_000_000),
-                "record": .object([
+            "evaluated_at": .int(123_000),
+            "date": .int(1_700_000_000_000),
+            "missing": .null,
+            "record": .object([
+                "id": .string("one"),
+                "missing": .null,
+                "created_at": .int(1_700_000_000_000)
+            ]),
+            "records": .array([
+                .object([
                     "id": .string("one"),
-                    "createdAt": .int(1_700_000_000_000)
-                ]),
-                "records": .array([
-                    .object([
-                        "id": .string("one"),
-                        "createdAt": .int(1_700_000_000_000)
-                    ])
+                    "missing": .null,
+                    "created_at": .int(1_700_000_000_000)
                 ])
             ])
         ])
@@ -63,14 +99,14 @@ struct DimensionValueTests {
         let snapshot = try await Self.snapshot([
             "goal": .object([
                 "value": .string("lose_weight"),
-                "updatedAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
+                "updated_at": .date(Date(timeIntervalSince1970: 1_700_000_000))
             ])
         ])
 
         let predicate = #"""
             {"and":[
-                {"==":[{"var":"device.goal.value"},"lose_weight"]},
-                {">":[{"var":"device.goal.updatedAt"},1699999999999]}
+                {"==":[{"var":"goal.value"},"lose_weight"]},
+                {">":[{"var":"goal.updated_at"},1699999999999]}
             ]}
             """#
 
@@ -78,17 +114,35 @@ struct DimensionValueTests {
     }
 
     @Test
-    func dateDimensionIsOrderedByPredicate() async throws {
-        let snapshot = try await Self.snapshot([
-            "expiresAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
-        ])
+    func explicitNullIsResolvedAndFalsyWhileMissingUsesItsDefault() async throws {
+        let snapshot = try await Self.snapshot(["present": .null])
 
         #expect(try RulesEngine.evaluate(
-            predicate: #"{">":[{"var":"device.expiresAt"},1699999999999]}"#,
+            predicate: #"{"==":[{"var":"present"},null]}"#,
             variables: snapshot.values
         ).get())
         #expect(try !RulesEngine.evaluate(
-            predicate: #"{">":[{"var":"device.expiresAt"},1700000000001]}"#,
+            predicate: #"{"!!":{"var":"present"}}"#,
+            variables: snapshot.values
+        ).get())
+        #expect(try RulesEngine.evaluate(
+            predicate: #"{"var":["missing",true]}"#,
+            variables: snapshot.values
+        ).get())
+    }
+
+    @Test
+    func dateDimensionIsOrderedByPredicate() async throws {
+        let snapshot = try await Self.snapshot([
+            "expires_at": .date(Date(timeIntervalSince1970: 1_700_000_000))
+        ])
+
+        #expect(try RulesEngine.evaluate(
+            predicate: #"{">":[{"var":"expires_at"},1699999999999]}"#,
+            variables: snapshot.values
+        ).get())
+        #expect(try !RulesEngine.evaluate(
+            predicate: #"{">":[{"var":"expires_at"},1700000000001]}"#,
             variables: snapshot.values
         ).get())
     }
@@ -98,25 +152,25 @@ struct DimensionValueTests {
         let snapshot = try await Self.snapshot([
             "purchases": .objectList([
                 [
-                    "productId": .string("plus"),
-                    "isActive": .bool(false)
+                    "product_id": .string("plus"),
+                    "is_active": .bool(false)
                 ],
                 [
-                    "productId": .string("pro"),
-                    "isActive": .bool(true)
+                    "product_id": .string("pro"),
+                    "is_active": .bool(true)
                 ]
             ])
         ])
 
         let active =
-            #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"pro"]},{"var":"isActive"}]}]}"#
+            #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"product_id"},"pro"]},{"var":"is_active"}]}]}"#
         #expect(try RulesEngine.evaluate(predicate: active, variables: snapshot.values).get())
 
         let inactive =
-            #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"plus"]},{"var":"isActive"}]}]}"#
+            #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"product_id"},"plus"]},{"var":"is_active"}]}]}"#
         #expect(try !RulesEngine.evaluate(predicate: inactive, variables: snapshot.values).get())
 
-        let byIndex = #"{"==":[{"var":"device.purchases.1.productId"},"pro"]}"#
+        let byIndex = #"{"==":[{"var":"purchases.1.product_id"},"pro"]}"#
         #expect(try RulesEngine.evaluate(predicate: byIndex, variables: snapshot.values).get())
     }
 
@@ -127,10 +181,11 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
-            "device": .object(["purchases": .array([])])
+            "evaluated_at": .int(123_000),
+            "purchases": .array([])
         ])
 
-        let none = #"{"none":[{"var":"device.purchases"},{"var":"isActive"}]}"#
+        let none = #"{"none":[{"var":"purchases"},{"var":"is_active"}]}"#
         #expect(try RulesEngine.evaluate(predicate: none, variables: snapshot.values).get())
     }
 
@@ -138,7 +193,9 @@ struct DimensionValueTests {
         _ values: [String: DimensionValue]
     ) async throws -> DimensionSnapshot {
         return try await DimensionResolver(
-            dimensionProviders: [StaticDimensionProvider(values: values)]
+            dimensionProviders: [StaticDimensionProvider(values: values)],
+            currentAppUserIDProvider: { "user" },
+            dateProvider: MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 123))
         ).snapshot()
     }
 
@@ -146,7 +203,7 @@ struct DimensionValueTests {
 
 private struct StaticDimensionProvider: DimensionProvider {
 
-    let namespace: DimensionNamespace = .device
+    let name = "test"
     let values: [String: DimensionValue]
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
