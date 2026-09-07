@@ -36,6 +36,35 @@ struct SheetViewModel: Equatable {
     }
 }
 
+/// Decides whether a sheet's content should be visible yet.
+///
+/// Content is added hidden and only slides in after one layout pass, so components that measure
+/// themselves on first layout (the carousel) are not resized mid-animation. Pure so it can be
+/// unit tested, like ``ImageRenderPlan``.
+struct SheetPresentationPlan: Equatable {
+
+    /// True once the requested sheet has completed its first layout pass.
+    let isPresented: Bool
+
+    /// Presented only when the requested sheet is the one that has settled.
+    static func make(requestedSheetID: String?, settledSheetID: String?) -> SheetPresentationPlan {
+        guard let requestedSheetID else {
+            return SheetPresentationPlan(isPresented: false)
+        }
+
+        return SheetPresentationPlan(isPresented: requestedSheetID == settledSheetID)
+    }
+
+    /// Dismissing or switching sheets clears the settled id; re-requesting the settled sheet keeps it.
+    static func settledSheetID(afterRequesting requestedSheetID: String?, previous: String?) -> String? {
+        guard let requestedSheetID else {
+            return nil
+        }
+
+        return requestedSheetID == previous ? previous : nil
+    }
+}
+
 /// A view modifier that presents content in a sheet-like interface.
 ///
 /// This modifier handles the presentation and dismissal of a sheet view, including
@@ -49,6 +78,18 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     @State private var parentHeight: CGFloat?
+
+    /// Sheet whose content has completed its first layout pass. See ``SheetPresentationPlan``.
+    @State private var settledSheetID: String?
+
+    private static let presentationAnimation = Animation.spring(response: 0.35, dampingFraction: 1)
+
+    private func presentationPlan(for sheetViewModel: SheetViewModel) -> SheetPresentationPlan {
+        SheetPresentationPlan.make(
+            requestedSheetID: sheetViewModel.sheet.id,
+            settledSheetID: self.settledSheetID
+        )
+    }
 
     var sheetHeight: CGFloat? {
         guard let size = self.sheetViewModel?.sheet.size else {
@@ -108,9 +149,23 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    // Hidden until the first layout pass has settled, then animated in.
+                    .offset(y: self.presentationPlan(for: sheetViewModel).isPresented ? 0 : (self.parentHeight ?? 2000))
+                    .opacity(self.presentationPlan(for: sheetViewModel).isPresented ? 1 : 0)
+                    .transition(.asymmetric(
+                        insertion: .identity,
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
                     .onAppear {
                         self.onSheetContentAppear?()
+                        let id = sheetViewModel.sheet.id
+                        // One hop so the content's own measurements land before anything moves.
+                        DispatchQueue.main.async {
+                            guard self.sheetViewModel?.sheet.id == id else { return }
+                            withAnimation(Self.presentationAnimation) {
+                                self.settledSheetID = id
+                            }
+                        }
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
                     // switching to a different sheet disposes the previous sheet's
@@ -130,7 +185,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         }
                 }
             )
-            .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
+            .animation(Self.presentationAnimation, value: sheetViewModel)
+            .onChangeOf(self.sheetViewModel?.sheet.id) { newID in
+                self.settledSheetID = SheetPresentationPlan.settledSheetID(
+                    afterRequesting: newID,
+                    previous: self.settledSheetID
+                )
+            }
         }
     }
 }
