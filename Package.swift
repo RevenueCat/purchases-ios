@@ -10,9 +10,15 @@ import PackageDescription
 let packageDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
 let isFullRepositoryCheckout = packageDirectory.lastPathComponent == "purchases-ios"
 let isSwiftPMCheckout = packageDirectory.deletingLastPathComponent().lastPathComponent == "checkouts"
-let repositoryWarningDependencies: [Target.Dependency] = isFullRepositoryCheckout && isSwiftPMCheckout
-    ? ["RevenueCatSwiftPMRepositoryWarning"]
-    : []
+
+if isFullRepositoryCheckout && isSwiftPMCheckout {
+    print(
+        "warning: RevenueCat: For faster Swift Package Manager downloads, use "
+        + "https://github.com/RevenueCat/purchases-ios-spm instead."
+    )
+} else {
+    print("warning: RevenueCat SPM repository warning skipped for: \(packageDirectory.path)")
+}
 
 /// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
 /// `TUIST_SWIFT_CONDITIONS`.
@@ -105,7 +111,6 @@ let package = Package(
     dependencies: dependencies,
     targets: [
         .target(name: "RevenueCat",
-                dependencies: repositoryWarningDependencies,
                 path: "Sources",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
@@ -113,7 +118,6 @@ let package = Package(
                 ],
                 swiftSettings: [visionOSSetting] + ciCompilerFlags + additionalCompilerFlags),
         .target(name: "RevenueCat_CustomEntitlementComputation",
-                dependencies: repositoryWarningDependencies,
                 path: "CustomEntitlementComputation",
                 exclude: ["Info.plist", "LocalReceiptParsing/ReceiptParser-only-files"],
                 resources: [
@@ -123,8 +127,6 @@ let package = Package(
                     .define("ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION"),
                     visionOSSetting
                 ] + ciCompilerFlags + additionalCompilerFlags),
-        .target(name: "RevenueCatSwiftPMRepositoryWarning",
-                path: "SwiftPMRepositoryWarning"),
         // Receipt Parser
         .target(name: "ReceiptParser",
                 path: "LocalReceiptParsing"),

@@ -1,6 +1,0 @@
-#ifndef REVENUECAT_SWIFTPM_REPOSITORY_WARNING_H
-#define REVENUECAT_SWIFTPM_REPOSITORY_WARNING_H
-
-typedef char RevenueCatSwiftPMRepositoryWarning;
-
-#endif
