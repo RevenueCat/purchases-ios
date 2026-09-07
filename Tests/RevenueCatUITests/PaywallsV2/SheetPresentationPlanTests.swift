@@ -66,6 +66,32 @@ final class SheetPresentationPlanTests: TestCase {
         XCTAssertNil(SheetPresentationPlan.settledSheetID(afterRequesting: "sheet-a", previous: nil))
     }
 
+    // MARK: - Reopening while dismissal is in flight
+
+    func testReopeningTheMountedSheetReusesItsContent() {
+        XCTAssertTrue(
+            SheetPresentationPlan.reusesMountedContent(requestedSheetID: "sheet-a", mountedSheetID: "sheet-a")
+        )
+    }
+
+    func testOpeningADifferentSheetDoesNotReuseTheMountedContent() {
+        XCTAssertFalse(
+            SheetPresentationPlan.reusesMountedContent(requestedSheetID: "sheet-b", mountedSheetID: "sheet-a")
+        )
+    }
+
+    func testOpeningWithNothingMountedDoesNotReuseContent() {
+        XCTAssertFalse(
+            SheetPresentationPlan.reusesMountedContent(requestedSheetID: "sheet-a", mountedSheetID: nil)
+        )
+    }
+
+    func testDismissingDoesNotReuseContent() {
+        XCTAssertFalse(
+            SheetPresentationPlan.reusesMountedContent(requestedSheetID: nil, mountedSheetID: "sheet-a")
+        )
+    }
+
 }
 
 #endif

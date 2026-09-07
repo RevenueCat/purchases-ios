@@ -63,6 +63,16 @@ struct SheetPresentationPlan: Equatable {
 
         return requestedSheetID == previous ? previous : nil
     }
+
+    /// A sheet re-requested while its content is still mounted (dismissal in flight) keeps the same
+    /// view identity, so `onAppear` does not fire again and the settle must be scheduled elsewhere.
+    static func reusesMountedContent(requestedSheetID: String?, mountedSheetID: String?) -> Bool {
+        guard let requestedSheetID else {
+            return false
+        }
+
+        return requestedSheetID == mountedSheetID
+    }
 }
 
 /// A view modifier that presents content in a sheet-like interface.
@@ -82,6 +92,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
     /// Sheet whose content has completed its first layout pass. See ``SheetPresentationPlan``.
     @State private var settledSheetID: String?
 
+    /// Sheet whose content is currently in the hierarchy, including while its removal animates out.
+    @State private var mountedSheetID: String?
+
     private static let presentationAnimation = Animation.spring(response: 0.35, dampingFraction: 1)
 
     private func presentationPlan(for sheetViewModel: SheetViewModel) -> SheetPresentationPlan {
@@ -89,6 +102,16 @@ struct BottomSheetOverlayModifier: ViewModifier {
             requestedSheetID: sheetViewModel.sheet.id,
             settledSheetID: self.settledSheetID
         )
+    }
+
+    /// One hop so the content's own measurements land before anything moves.
+    private func settleAfterLayout(sheetID: String) {
+        DispatchQueue.main.async {
+            guard self.sheetViewModel?.sheet.id == sheetID else { return }
+            withAnimation(Self.presentationAnimation) {
+                self.settledSheetID = sheetID
+            }
+        }
     }
 
     var sheetHeight: CGFloat? {
@@ -158,13 +181,12 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     ))
                     .onAppear {
                         self.onSheetContentAppear?()
-                        let id = sheetViewModel.sheet.id
-                        // One hop so the content's own measurements land before anything moves.
-                        DispatchQueue.main.async {
-                            guard self.sheetViewModel?.sheet.id == id else { return }
-                            withAnimation(Self.presentationAnimation) {
-                                self.settledSheetID = id
-                            }
+                        self.mountedSheetID = sheetViewModel.sheet.id
+                        self.settleAfterLayout(sheetID: sheetViewModel.sheet.id)
+                    }
+                    .onDisappear {
+                        if self.mountedSheetID == sheetViewModel.sheet.id {
+                            self.mountedSheetID = nil
                         }
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
@@ -191,6 +213,13 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     afterRequesting: newID,
                     previous: self.settledSheetID
                 )
+                // Reopened mid-dismissal: the same content is reused, so `onAppear` won't run again.
+                if let newID,
+                   self.settledSheetID == nil,
+                   SheetPresentationPlan.reusesMountedContent(requestedSheetID: newID,
+                                                              mountedSheetID: self.mountedSheetID) {
+                    self.settleAfterLayout(sheetID: newID)
+                }
             }
         }
     }
