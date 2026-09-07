@@ -164,8 +164,13 @@ class BaseManageSubscriptionViewModel: ObservableObject {
         }
     }
 
+    /// Whether the browser we just closed could have changed the subscription.
+    /// A custom URL can't, so we don't pay for a sync on every one of those.
+    private(set) var browserMayHaveChangedSubscription = false
+
     func onDismissInAppBrowser() {
         self.inAppBrowserURL = nil
+        self.browserMayHaveChangedSubscription = false
     }
 
     func displayAllInAppCurrenciesScreen() {
@@ -238,6 +243,7 @@ private extension BaseManageSubscriptionViewModel {
 
     private func handleNonAppStoreCancel() {
         if let url = purchaseInformation?.managementURL {
+            self.browserMayHaveChangedSubscription = true
             self.inAppBrowserURL = IdentifiableURL(url: url)
         }
     }
