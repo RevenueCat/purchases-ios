@@ -55,6 +55,7 @@ struct FixturePaywallView: View {
         PaywallView(
             offering: self.fixture.offering,
             introEligibility: Self.eligibility,
+            simulatePromoEligible: true,
             performPurchase: { _ in (userCancelled: true, error: nil) },
             performRestore: { (success: false, error: nil) }
         )
