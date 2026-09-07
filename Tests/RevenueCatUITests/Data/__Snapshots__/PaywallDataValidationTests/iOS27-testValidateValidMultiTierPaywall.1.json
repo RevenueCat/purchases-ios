@@ -1,0 +1,233 @@
+{
+  "asset_base_url" : "https://assets.pawwalls.com",
+  "config" : {
+    "blurred_background_image" : false,
+    "colors" : {
+      "dark" : {
+
+      },
+      "light" : {
+
+      }
+    },
+    "colors_by_tier" : {
+      "basic" : {
+        "light" : {
+          "accent1" : "#2D7FC1",
+          "accent2" : "#100031",
+          "accent3" : "#7676801F",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#42C1F7",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
+        }
+      },
+      "premium" : {
+        "light" : {
+          "accent1" : "#77C344",
+          "accent2" : "#7676801F",
+          "accent3" : "#213711",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#95D26B",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
+        }
+      },
+      "standard" : {
+        "light" : {
+          "accent1" : "#CE0755",
+          "accent2" : "#7676801F",
+          "accent3" : "#310217",
+          "background" : "#ffffff",
+          "call_to_action_background" : "#DA407A",
+          "call_to_action_foreground" : "#ffffff",
+          "text1" : "#000000",
+          "text2" : "#adf5c5",
+          "text3" : "#b15d5d",
+          "tier_control_background" : "#dcdcdc",
+          "tier_control_foreground" : "#000000",
+          "tier_control_selected_background" : "#100031",
+          "tier_control_selected_foreground" : "#ffffff"
+        }
+      }
+    },
+    "display_restore_purchases" : true,
+    "images_by_tier" : {
+      "basic" : {
+        "background" : null,
+        "header" : "954459_1703109702.png",
+        "icon" : null
+      },
+      "premium" : {
+        "background" : null,
+        "header" : "954459_1701267532.jpeg",
+        "icon" : null
+      }
+    },
+    "images_heic" : {
+      "background" : null,
+      "header" : "954459_1692992845.png",
+      "icon" : null
+    },
+    "packages" : [
+
+    ],
+    "privacy_url" : null,
+    "tiers" : [
+      {
+        "default_package" : "$rc_three_month",
+        "id" : "basic",
+        "packages" : [
+          "$rc_annual",
+          "$rc_monthly"
+        ]
+      },
+      {
+        "default_package" : "$rc_weekly",
+        "id" : "standard",
+        "packages" : [
+          "$rc_weekly",
+          "$rc_three_month"
+        ]
+      },
+      {
+        "default_package" : "$rc_annual",
+        "id" : "premium",
+        "packages" : [
+          "$rc_six_month",
+          "$rc_lifetime"
+        ]
+      }
+    ],
+    "tos_url" : "https://revenuecat.com/tos"
+  },
+  "localized_strings" : {
+
+  },
+  "localized_strings_by_tier" : {
+    "en_US" : {
+      "basic" : {
+        "call_to_action" : "{{ price_per_period }}",
+        "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} free trial",
+        "features" : [
+          {
+            "icon_id" : "tick",
+            "title" : "Access to 10 cinematic LUTs"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "Standard fonts"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "2 templates"
+          }
+        ],
+        "offer_details" : "{{ total_price_and_per_month }}",
+        "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+        "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_lifetime" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Lifetime"
+          },
+          "$rc_three_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Three Month"
+          }
+        },
+        "subtitle" : null,
+        "tier_name" : "Basic",
+        "title" : "Get started with our Basic plan"
+      },
+      "premium" : {
+        "call_to_action" : "{{ price_per_period }}",
+        "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} free trial",
+        "features" : [
+          {
+            "icon_id" : "tick",
+            "title" : "Access to all 150 of our cinematic LUTs"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "Custom design tools and transition effects"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "100+ exclusive templates"
+          }
+        ],
+        "offer_details" : "{{ total_price_and_per_month }}",
+        "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+        "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_annual" : {
+            "offer_details" : "Details",
+            "offer_details_with_intro_offer" : "",
+            "offer_name" : "OVERRIDE Annual"
+          },
+          "$rc_six_month" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Six Month"
+          }
+        },
+        "subtitle" : null,
+        "tier_name" : "Premium",
+        "title" : "Master the art of video editing"
+      },
+      "standard" : {
+        "call_to_action" : "{{ price_per_period }}",
+        "call_to_action_with_intro_offer" : "Start your {{ sub_offer_duration }} free trial",
+        "features" : [
+          {
+            "icon_id" : "tick",
+            "title" : "Access to 30 cinematic LUTs"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "Pro fonts and transition effects"
+          },
+          {
+            "icon_id" : "tick",
+            "title" : "10+ templates"
+          }
+        ],
+        "offer_details" : "{{ total_price_and_per_month }}",
+        "offer_details_with_intro_offer" : "Free for {{ sub_offer_duration }}, then {{ total_price_and_per_month }}",
+        "offer_name" : null,
+        "offer_overrides" : {
+          "$rc_monthly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Month"
+          },
+          "$rc_weekly" : {
+            "offer_details" : "Details",
+            "offer_name" : "OVERRIDE Week"
+          }
+        },
+        "subtitle" : null,
+        "tier_name" : "Standard",
+        "title" : "Get started with our Standard plan"
+      }
+    }
+  },
+  "revision" : 0,
+  "template_name" : "7",
+  "zero_decimal_place_countries" : {
+    "apple" : [
+
+    ]
+  }
+}
