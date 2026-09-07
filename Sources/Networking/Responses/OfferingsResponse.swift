@@ -35,7 +35,7 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
         var paywallComponents: PaywallComponentsData?
-        var hasPaywallComponents: Bool
+        var hasPaywallComponents: Bool = false
         let webCheckoutUrl: URL?
     }
 
