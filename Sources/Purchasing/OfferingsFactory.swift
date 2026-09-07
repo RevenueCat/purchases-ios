@@ -71,7 +71,7 @@ class OfferingsFactory {
             return nil
         }
 
-        let hasPaywallComponents = offering.hasPaywallComponents == true
+        let hasPaywallComponents = offering.hasPaywallComponents
             || (uiConfig != nil && offering.paywallComponents != nil)
         let paywallComponents: Offering.PaywallComponents? = {
             if let uiConfig, let paywallComponents = offering.paywallComponents {

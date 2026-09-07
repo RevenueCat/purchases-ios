@@ -837,46 +837,14 @@ class OfferingsTests: TestCase {
         expect(offering.hasPaywall) == true
     }
 
-    func testCreateOfferingUsingWithPaywallComponentsDecodingModeIncludesPayload() throws {
+    func testCreateOfferingWithoutEmbeddedPaywallComponentsKeepsPaywallMarker() throws {
         let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
         let products = [
             "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
         ]
 
         let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
-        let offeringResp = try OfferingsResponse.create(
-            with: fixtureData,
-            decodingMode: .withPaywallComponents
-        )
-        let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 0])
-
-        expect(offeringResponse0.identifier) == "paywall_components"
-        expect(offeringResponse0.description) == "Offering with paywall components"
-
-        let uiConfig: UIConfig = try XCTUnwrap(BaseHTTPResponseTest.decodeFixture("UIConfig"))
-
-        let offering = try XCTUnwrap(
-            self.offeringsFactory.createOffering(from: products,
-                                                 offering: offeringResponse0,
-                                                 uiConfig: uiConfig)
-            )
-
-        expect(offering.paywall).to(beNil())
-        expect(offering.internalPaywallComponents).toNot(beNil())
-        expect(offering.hasPaywall) == true
-    }
-
-    func testCreateOfferingUsingWithoutPaywallComponentsDecodingModeOmitsPayload() throws {
-        let monthlyProduct = MockSK1Product(mockProductIdentifier: "com.revenuecat.monthly_4.99.1_week_intro")
-        let products = [
-            "com.revenuecat.monthly_4.99.1_week_intro": StoreProduct(sk1Product: monthlyProduct)
-        ]
-
-        let fixtureData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
-        let offeringResp = try OfferingsResponse.create(
-            with: fixtureData,
-            decodingMode: .withoutPaywallComponents
-        )
+        let offeringResp = try OfferingsResponse.create(with: fixtureData)
         let offeringResponse0 = try XCTUnwrap(offeringResp.offerings[safe: 0])
 
         expect(offeringResponse0.identifier) == "paywall_components"

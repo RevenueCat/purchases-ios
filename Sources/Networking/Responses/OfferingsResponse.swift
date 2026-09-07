@@ -15,20 +15,6 @@ import Foundation
 
 struct OfferingsResponse {
 
-    enum DecodingMode: Hashable, Sendable {
-#if DEBUG
-        case withPaywallComponents
-#endif
-        case withoutPaywallComponents
-    }
-
-    // The non-empty static key cannot fail construction.
-    // swiftlint:disable force_unwrapping
-    fileprivate static let decodingModeUserInfoKey = CodingUserInfoKey(
-        rawValue: "com.revenuecat.offerings-response-decoding-mode"
-    )!
-    // swiftlint:enable force_unwrapping
-
     struct Offering {
 
         // swiftlint:disable:next nesting
@@ -49,7 +35,7 @@ struct OfferingsResponse {
         @DefaultDecodable.EmptyDictionary
         var metadata: [String: AnyDecodable]
         var paywallComponents: PaywallComponentsData?
-        var hasPaywallComponents: Bool?
+        var hasPaywallComponents: Bool
         let webCheckoutUrl: URL?
     }
 
@@ -73,16 +59,6 @@ struct OfferingsResponse {
 }
 
 extension OfferingsResponse {
-
-    static func create(with data: Data, decodingMode: DecodingMode) throws -> Self {
-        return try self.makeDecoder(decodingMode: decodingMode).decode(jsonData: data)
-    }
-
-    static func makeDecoder(decodingMode: DecodingMode) -> JSONDecoder {
-        let decoder = JSONDecoder.makeDefault()
-        decoder.userInfo[Self.decodingModeUserInfoKey] = decodingMode
-        return decoder
-    }
 
     var productIdentifiers: Set<String> {
         return Set(
@@ -148,26 +124,10 @@ extension OfferingsResponse.Offering: Codable, Equatable {
             Bool.self,
             forKey: .hasPaywallComponents
         )
-        let decodingMode = decoder.userInfo[OfferingsResponse.decodingModeUserInfoKey]
-            as? OfferingsResponse.DecodingMode ?? Self.defaultDecodingMode
-        let inferredHasPaywallComponents = decodingMode == .withoutPaywallComponents
-            ? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
-            : nil
-
-        switch decodingMode {
-#if DEBUG
-        case .withPaywallComponents:
-            self.paywallComponents = try container.decodeIfPresent(
-                PaywallComponentsData.self,
-                forKey: .paywallComponents
-            )
-#endif
-
-        case .withoutPaywallComponents:
-            self.paywallComponents = nil
-        }
-
-        self.hasPaywallComponents = explicitHasPaywallComponents ?? inferredHasPaywallComponents
+        self.paywallComponents = nil
+        self.hasPaywallComponents = explicitHasPaywallComponents
+            ?? Self.hasNonNullValue(in: container, forKey: .paywallComponents)
+            ?? false
     }
 
     private static func hasNonNullValue(
@@ -176,14 +136,6 @@ extension OfferingsResponse.Offering: Codable, Equatable {
     ) -> Bool? {
         guard container.contains(key) else { return nil }
         return (try? container.decodeNil(forKey: key)) == false
-    }
-
-    private static var defaultDecodingMode: OfferingsResponse.DecodingMode {
-#if DEBUG
-        return .withPaywallComponents
-#else
-        return .withoutPaywallComponents
-#endif
     }
 
 }

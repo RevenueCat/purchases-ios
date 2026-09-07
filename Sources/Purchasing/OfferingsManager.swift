@@ -119,11 +119,9 @@ class OfferingsManager {
     ) {
         // We keep track of preferred locales at the time of launching the request
         let preferredLocales = systemInfo.preferredLocales
-        let decodingMode = self.offeringsResponseDecodingMode
         self.backend.offerings.getOfferings(
             appUserID: appUserID,
-            isAppBackgrounded: isAppBackgrounded,
-            decodingMode: decodingMode
+            isAppBackgrounded: isAppBackgrounded
         ) { result in
             switch result {
             case let .success(fetchResult):
@@ -233,8 +231,7 @@ private extension OfferingsManager {
         completion: (@escaping @Sendable (OfferingsResultData?) -> Void)
     ) {
         guard let contents = self.deviceCache.cachedOfferingsContents(
-            appUserID: appUserID,
-            decodingMode: self.offeringsResponseDecodingMode
+            appUserID: appUserID
         ) else {
             completion(nil)
             return
@@ -468,10 +465,6 @@ private extension OfferingsManager {
         } else {
             _ = await remoteConfigManager.awaitTopicAndPrefetchBlobsReady(.workflows)
         }
-    }
-
-    var offeringsResponseDecodingMode: OfferingsResponse.DecodingMode {
-        return .withoutPaywallComponents
     }
 
     private func fetchProducts(

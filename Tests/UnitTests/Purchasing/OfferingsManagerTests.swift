@@ -1041,7 +1041,7 @@ extension OfferingsManagerTests {
         expect(result).to(beSuccess())
     }
 
-    func testGetOfferingsAlwaysSkipsPaywallComponents() {
+    func testGetOfferingsUsesLightweightResponse() {
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(MockData.anyBackendOfferingsContents)
 
         let result = waitUntilValue { completed in
@@ -1049,8 +1049,6 @@ extension OfferingsManagerTests {
         }
 
         expect(result).to(beSuccess())
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
-            == .withoutPaywallComponents
     }
 
     func testGetOfferingsUsesPrunedMemoryCacheWhenRemoteConfigManagerIsEnabled() {
@@ -1085,10 +1083,7 @@ extension OfferingsManagerTests {
             uiConfig: uiConfig
         )
         let rawResponseData = try decodedOfferingResponse.jsonEncodedData
-        let offeringResp = try OfferingsResponse.create(
-            with: rawResponseData,
-            decodingMode: .withoutPaywallComponents
-        )
+        let offeringResp = try OfferingsResponse.create(with: rawResponseData)
         self.mockOfferings.stubbedGetOfferingsCompletionResult = .success(
             Offerings.Contents(
                 response: offeringResp,
@@ -1108,8 +1103,6 @@ extension OfferingsManagerTests {
         expect(self.mockDeviceCache.latestCachedOfferingsContents?.response.offerings.first?.hasPaywallComponents)
             == true
         expect(self.mockDeviceCache.latestCachedOfferingsFetchResult?.rawResponseData).toNot(beNil())
-        expect(self.mockOfferings.invokedGetOfferingsForAppUserIDParameters?.decodingMode)
-            == .withoutPaywallComponents
     }
 
     func testGetOfferingsDoesNotDeliverUntilConfigReady() {

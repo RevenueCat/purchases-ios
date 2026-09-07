@@ -26,10 +26,7 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
     }
 
     func testDecodingWithoutPaywallComponentsSkipsPublishedBody() throws {
-        let response = try OfferingsResponse.create(
-            with: Self.data(for: "OfferingsWithPaywallComponents"),
-            decodingMode: .withoutPaywallComponents
-        )
+        let response = try OfferingsResponse.create(with: Self.data(for: "OfferingsWithPaywallComponents"))
 
         expect(response.offerings).to(haveCount(self.response.offerings.count))
         expect(response.offerings.first?.identifier) == self.response.offerings.first?.identifier
@@ -65,11 +62,11 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         expect(offering.hasPaywallComponents) == false
     }
 
-    func testDecodingWithoutPaywallComponentsPreservesMissingMarkerWhenPayloadIsMissing() throws {
+    func testDecodingWithoutPaywallComponentsDefaultsMissingMarkerToFalse() throws {
         let offering = try self.decodeOffering(paywallComponents: nil, hasPaywallComponents: nil)
 
         expect(offering.paywallComponents).to(beNil())
-        expect(offering.hasPaywallComponents).to(beNil())
+        expect(offering.hasPaywallComponents) == false
     }
 
     func testDecodingWithoutPaywallComponentsPreservesExplicitTrueMarkerWhenPayloadIsMissing() throws {
@@ -115,17 +112,14 @@ class PaywallComponentsDecodingTests: BaseHTTPResponseTest {
         offering["packages"] = packages
 
         let data = try JSONSerialization.data(withJSONObject: ["offerings": [offering]])
-        let full = try XCTUnwrap(
-            OfferingsResponse.create(with: data, decodingMode: .withPaywallComponents).offerings.first
-        )
         let pruned = try XCTUnwrap(
-            OfferingsResponse.create(with: data, decodingMode: .withoutPaywallComponents).offerings.first
+            OfferingsResponse.create(with: data).offerings.first
         )
 
-        var expectedPruned = full
-        expectedPruned.paywallComponents = nil
-
-        expect(pruned) == expectedPruned
+        expect(pruned.identifier) == offering["identifier"] as? String
+        expect(pruned.description) == offering["description"] as? String
+        expect(pruned.paywallComponents).to(beNil())
+        expect(pruned.hasPaywallComponents) == true
         expect(pruned.paywall).toNot(beNil())
         expect(pruned.metadata) == ["string": "value", "number": 5, "boolean": true]
         expect(pruned.webCheckoutUrl) == URL(string: "https://example.com/offering")
@@ -239,7 +233,7 @@ private extension PaywallComponentsDecodingTests {
         offering["has_paywall_components"] = hasPaywallComponents
 
         let data = try JSONSerialization.data(withJSONObject: ["offerings": [offering]])
-        let response = try OfferingsResponse.create(with: data, decodingMode: .withoutPaywallComponents)
+        let response = try OfferingsResponse.create(with: data)
         return try XCTUnwrap(response.offerings.first)
     }
 

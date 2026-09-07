@@ -66,7 +66,7 @@ class BackendGetOfferingsTests: BaseBackendTests {
         expect(self.httpClient.calls).toEventually(haveCount(1))
     }
 
-    func testGetOfferingsCoalescesDifferentDecodingModesAndDecodesForEachCallback() throws {
+    func testGetOfferingsCoalescesConcurrentRequestsAndPreservesPaywallMarker() throws {
         self.httpClient.disableSnapshotTesting()
         let responseData = try BaseHTTPResponseTest.data(for: "OfferingsWithPaywallComponents")
         self.httpClient.mock(
@@ -79,60 +79,53 @@ class BackendGetOfferingsTests: BaseBackendTests {
             )
         )
 
-        let fullResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
-        let prunedResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let firstResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let secondResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .withPaywallComponents
-        ) { fullResult.value = $0 }
+        ) { firstResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .withoutPaywallComponents
-        ) { prunedResult.value = $0 }
+        ) { secondResult.value = $0 }
 
-        expect(fullResult.value).toEventuallyNot(beNil())
-        expect(prunedResult.value).toEventuallyNot(beNil())
+        expect(firstResult.value).toEventuallyNot(beNil())
+        expect(secondResult.value).toEventuallyNot(beNil())
         expect(self.httpClient.calls).to(haveCount(1))
 
-        let fullFetchResult = try XCTUnwrap(fullResult.value?.value)
-        let prunedFetchResult = try XCTUnwrap(prunedResult.value?.value)
-        let fullContents = fullFetchResult.contents
-        let prunedContents = prunedFetchResult.contents
-        expect(fullContents.response.offerings.first?.paywallComponents).toNot(beNil())
-        expect(prunedContents.response.offerings.first?.paywallComponents).to(beNil())
-        expect(prunedContents.response.offerings.first?.hasPaywallComponents) == true
-        expect(fullFetchResult.rawResponseData) == responseData
-        expect(prunedFetchResult.rawResponseData) == responseData
-        expect(fullContents.originalSource) == .fallbackUrl
-        expect(prunedContents.originalSource) == .fallbackUrl
+        let firstFetchResult = try XCTUnwrap(firstResult.value?.value)
+        let secondFetchResult = try XCTUnwrap(secondResult.value?.value)
+        expect(firstFetchResult.contents.response.offerings.first?.paywallComponents).to(beNil())
+        expect(firstFetchResult.contents.response.offerings.first?.hasPaywallComponents) == true
+        expect(firstFetchResult.rawResponseData) == responseData
+        expect(secondFetchResult.rawResponseData) == responseData
+        expect(firstFetchResult.contents.originalSource) == .fallbackUrl
+        expect(secondFetchResult.contents.originalSource) == .fallbackUrl
     }
 
-    func testGetOfferingsDeliversMalformedResponseErrorToCallbacksWithDifferentModes() {
+    func testGetOfferingsDeliversMalformedResponseErrorToConcurrentCallbacks() {
         self.httpClient.disableSnapshotTesting()
         self.httpClient.mock(
             requestPath: .getOfferings(appUserID: Self.userID),
             response: .init(statusCode: .success, body: Data("{".utf8), delay: .milliseconds(10))
         )
 
-        let fullResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
-        let prunedResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let firstResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
+        let secondResult: Atomic<Result<OfferingsFetchResult, BackendError>?> = nil
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .withPaywallComponents
-        ) { fullResult.value = $0 }
+        ) { firstResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
             isAppBackgrounded: false,
-            decodingMode: .withoutPaywallComponents
-        ) { prunedResult.value = $0 }
+        ) { secondResult.value = $0 }
 
-        expect(fullResult.value).toEventually(beFailure())
-        expect(prunedResult.value).toEventually(beFailure())
+        expect(firstResult.value).toEventually(beFailure())
+        expect(secondResult.value).toEventually(beFailure())
         expect(self.httpClient.calls).to(haveCount(1))
 
         let subsequentResult = waitUntilValue { completed in
