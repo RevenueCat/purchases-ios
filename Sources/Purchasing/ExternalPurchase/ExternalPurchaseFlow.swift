@@ -23,6 +23,12 @@ internal struct ExternalPurchaseFlow: Hashable, Sendable {
     let tokenType: ExternalPurchaseTokenType
     let noticeType: ExternalPurchaseNoticeType
 
+    /// Private so the only flows that exist are the valid pairings declared below.
+    private init(tokenType: ExternalPurchaseTokenType, noticeType: ExternalPurchaseNoticeType) {
+        self.tokenType = tokenType
+        self.noticeType = noticeType
+    }
+
 }
 
 extension ExternalPurchaseFlow {
