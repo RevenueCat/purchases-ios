@@ -24,6 +24,7 @@ class Backend {
     let internalAPI: InternalAPI
     let customerCenterConfig: CustomerCenterConfigAPI
     let redeemWebPurchaseAPI: RedeemWebPurchaseAPI
+    let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     let virtualCurrenciesAPI: VirtualCurrenciesAPI
     let adsAPI: AdsAPI
     let remoteConfigAPI: RemoteConfigAPI
@@ -101,6 +102,7 @@ class Backend {
         let internalAPI = InternalAPI(backendConfig: backendConfig)
         let customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         let redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        let externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
         let virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         let adsAPI = AdsAPI(backendConfig: backendConfig)
         let remoteConfigAPI = RemoteConfigAPI(backendConfig: remoteConfigBackendConfig ?? backendConfig)
@@ -115,6 +117,7 @@ class Backend {
                   internalAPI: internalAPI,
                   customerCenterConfig: customerCenterConfig,
                   redeemWebPurchaseAPI: redeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: externalPurchaseTokenAPI,
                   virtualCurrenciesAPI: virtualCurrenciesAPI,
                   adsAPI: adsAPI,
                   remoteConfigAPI: remoteConfigAPI)
@@ -130,6 +133,7 @@ class Backend {
                   internalAPI: InternalAPI,
                   customerCenterConfig: CustomerCenterConfigAPI,
                   redeemWebPurchaseAPI: RedeemWebPurchaseAPI,
+                  externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
                   virtualCurrenciesAPI: VirtualCurrenciesAPI,
                   adsAPI: AdsAPI,
                   remoteConfigAPI: RemoteConfigAPI) {
@@ -144,6 +148,7 @@ class Backend {
         self.internalAPI = internalAPI
         self.customerCenterConfig = customerCenterConfig
         self.redeemWebPurchaseAPI = redeemWebPurchaseAPI
+        self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.virtualCurrenciesAPI = virtualCurrenciesAPI
         self.adsAPI = adsAPI
         self.remoteConfigAPI = remoteConfigAPI
