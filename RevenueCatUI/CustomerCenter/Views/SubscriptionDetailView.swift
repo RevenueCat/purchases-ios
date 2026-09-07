@@ -161,11 +161,7 @@ struct SubscriptionDetailView: View {
             }
             .sheet(item: self.$viewModel.inAppBrowserURL,
                    onDismiss: {
-                let shouldRefresh = self.viewModel.browserMayHaveChangedSubscription
                 self.viewModel.onDismissInAppBrowser()
-                if shouldRefresh {
-                    self.viewModel.refreshPurchase()
-                }
             }, content: { inAppBrowserURL in
                 SafariView(url: inAppBrowserURL.url)
             })
