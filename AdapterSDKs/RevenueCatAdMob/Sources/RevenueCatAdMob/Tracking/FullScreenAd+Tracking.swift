@@ -8,7 +8,7 @@ import Foundation
 
 #if os(iOS) && canImport(GoogleMobileAds)
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCat
+import RevenueCat
 
 // MARK: - InterstitialAd
 
@@ -38,7 +38,7 @@ internal extension GoogleMobileAds.InterstitialAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+public extension GoogleMobileAds.InterstitialAd {
 
     /// Loads an interstitial ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -105,7 +105,7 @@ internal extension GoogleMobileAds.AppOpenAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
+public extension GoogleMobileAds.AppOpenAd {
 
     /// Loads an app open ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -172,7 +172,7 @@ internal extension GoogleMobileAds.RewardedAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+public extension GoogleMobileAds.RewardedAd {
 
     /// Loads a rewarded ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -243,7 +243,7 @@ internal extension GoogleMobileAds.RewardedInterstitialAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+public extension GoogleMobileAds.RewardedInterstitialAd {
 
     /// Loads a rewarded interstitial ad, reports to RevenueCat, and forwards callbacks.
     ///
@@ -341,7 +341,7 @@ internal extension Tracking.FullScreenAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.InterstitialAd {
+public extension GoogleMobileAds.InterstitialAd {
 
     /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
     ///
@@ -355,7 +355,7 @@ internal extension Tracking.FullScreenAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.AppOpenAd {
+public extension GoogleMobileAds.AppOpenAd {
 
     /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
     ///
@@ -369,7 +369,7 @@ internal extension Tracking.FullScreenAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedAd {
+public extension GoogleMobileAds.RewardedAd {
 
     /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
     ///
@@ -383,7 +383,7 @@ internal extension Tracking.FullScreenAd {
 }
 
 @available(iOS 15.0, *)
-@_spi(Experimental) public extension GoogleMobileAds.RewardedInterstitialAd {
+public extension GoogleMobileAds.RewardedInterstitialAd {
 
     /// Safely sets your ``FullScreenContentDelegate`` without removing RevenueCat's tracking wrapper.
     ///
