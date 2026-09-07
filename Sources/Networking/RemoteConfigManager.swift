@@ -94,17 +94,27 @@ extension RemoteConfigManagerType {
     ) async throws -> Value? {
         for attempt in 0...1 {
             let generation = self.configGeneration
-            let value = try await operation()
+            do {
+                let value = try await operation()
 
-            guard self.configGeneration == generation else {
+                guard self.configGeneration == generation else {
+                    guard attempt == 0 else {
+                        throw RemoteConfigConsistencyError.stale
+                    }
+                    Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+                    continue
+                }
+
+                return value
+            } catch let error as CancellationError {
+                throw error
+            } catch {
+                guard self.configGeneration != generation else { throw error }
                 guard attempt == 0 else {
                     throw RemoteConfigConsistencyError.stale
                 }
                 Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
-                continue
             }
-
-            return value
         }
 
         return nil

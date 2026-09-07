@@ -3202,6 +3202,23 @@ private extension RemoteConfigManagerTests {
         }
     }
 
+    func testReadConsistentlyRetriesWhenThrowingReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        let result = try await manager.readConsistent {
+            invocationCount += 1
+            if invocationCount == 1 {
+                manager.configGeneration += 1
+                throw CheckpointRulesProviderError.payloadUnavailable
+            }
+            return "value"
+        }
+
+        expect(result) == "value"
+        expect(invocationCount) == 2
+    }
+
     func testReadConsistentlyPropagatesErrorsWithoutRetrying() async {
         let manager = MockRemoteConfigManager()
         var invocationCount = 0
