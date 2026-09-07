@@ -3181,7 +3181,7 @@ private extension RemoteConfigManagerTests {
         expect(generationReads) == 4
     }
 
-    func testReadConsistentlyReturnsSupersededAfterTwoStaleReads() async throws {
+    func testReadConsistentlyThrowsStaleAfterTwoStaleReads() async {
         let manager = MockRemoteConfigManager()
         var generationReads = 0
         manager.onConfigGenerationRead = {
@@ -3191,10 +3191,15 @@ private extension RemoteConfigManagerTests {
             }
         }
 
-        let result = try await manager.readConsistent { "value" }
-
-        expect(result).to(beNil())
-        expect(generationReads) == 4
+        do {
+            _ = try await manager.readConsistent { "value" }
+            XCTFail("Expected the stale-read error to be thrown")
+        } catch let error as RemoteConfigConsistencyError {
+            expect(error) == .stale
+            expect(generationReads) == 4
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
     func testReadConsistentlyPropagatesErrorsWithoutRetrying() async {

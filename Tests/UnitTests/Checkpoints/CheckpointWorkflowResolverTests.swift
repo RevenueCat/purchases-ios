@@ -85,6 +85,21 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .unknownCheckpoint)
     }
 
+    func testStaleRulesReadRetriesBeforeReportingUnknownCheckpoint() async throws {
+        self.checkpointsProvider.results = [
+            .failure(.stale),
+            .success(CheckpointRuleSet(rules: [Self.rule(workflowID: self.workflowID)]))
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(self.checkpointsProvider.requestedIdentifiers, [
+            self.checkpointIdentifier,
+            self.checkpointIdentifier
+        ])
+    }
+
     func testUnavailableRulesResolveConfigurationUnavailable() async throws {
         self.checkpointsProvider.result = .failure(.payloadUnavailable)
 
@@ -1028,6 +1043,7 @@ private struct CheckpointTestDimensionProvider: DimensionProvider {
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
+    var results: [Result<CheckpointRuleSet?, CheckpointRulesProviderError>] = []
     var error: Error?
     var configGeneration = 0
     var onRules: (() -> Void)?
@@ -1038,7 +1054,8 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         if let error = self.error {
             throw error
         }
-        let snapshot = try self.result.get().map {
+        let result = self.results.isEmpty ? self.result : self.results.removeFirst()
+        let snapshot = try result.get().map {
             CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
         }
         self.onRules?()
