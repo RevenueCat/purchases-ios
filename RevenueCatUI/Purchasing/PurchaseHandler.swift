@@ -1417,16 +1417,19 @@ extension EnvironmentValues {
 }
 
 /// Lightweight wrapper so views can report opened URLs without depending on the full `PurchaseHandler`.
-struct URLOpenedNotifier {
+struct URLOpenedNotifier: Sendable {
 
-    private let action: (URL) -> Void
+    private let action: @MainActor @Sendable (URL) -> Void
 
-    init(action: @escaping (URL) -> Void = { _ in }) {
+    init(action: @escaping @MainActor @Sendable (URL) -> Void = { _ in }) {
         self.action = action
     }
 
     func callAsFunction(_ url: URL) {
-        self.action(url)
+        let action = self.action
+        Task { @MainActor in
+            action(url)
+        }
     }
 
 }

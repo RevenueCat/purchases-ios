@@ -237,6 +237,27 @@ class DeviceCacheTests: TestCase {
         expect(self.deviceCache.isCustomerInfoCacheStale(appUserID: "cesar", isAppBackgrounded: false)) == false
     }
 
+    func testSubscriberDimensionsAreCachedPerAppUserID() {
+        let data = Data(#"{"plan":"annual"}"#.utf8)
+
+        self.deviceCache.cache(subscriberDimensions: data, appUserID: "cesar")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "cesar")) == data
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: "other")).to(beNil())
+    }
+
+    func testClearCachesRemovesSubscriberDimensionsForOldAppUserID() {
+        let appUserID = "cesar"
+        self.deviceCache.cache(
+            subscriberDimensions: Data(#"{"plan":"annual"}"#.utf8),
+            appUserID: appUserID
+        )
+
+        self.deviceCache.clearCaches(oldAppUserID: appUserID, andSaveWithNewUserID: "newUser")
+
+        expect(self.deviceCache.cachedSubscriberDimensionsData(appUserID: appUserID)).to(beNil())
+    }
+
     func testOfferingsAreProperlyCached() throws {
         let expectedOfferings = try Self.createSampleOfferings()
 
