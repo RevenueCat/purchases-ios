@@ -41,15 +41,13 @@ extension ExternalPurchaseStrings: LogMessage {
         case let .error_showing_notice(error):
             return "Error showing the external purchase notice: \(error.localizedDescription)"
         case .no_token_available:
-            return "No external purchase token available. The purchase will not be reported."
+            return "No external purchase token available."
         case let .error_requesting_token(error):
-            return "Error requesting the external purchase token: \(error.localizedDescription). " +
-            "The purchase will not be reported."
+            return "Error requesting the external purchase token: \(error.localizedDescription)"
         case let .token_registered(tokenID):
             return "Registered external purchase token \(tokenID)."
         case let .error_registering_token(error):
-            return "Error registering the external purchase token: \(error.localizedDescription). " +
-            "The purchase will not be reported."
+            return "Error registering the external purchase token: \(error.localizedDescription)"
         }
     }
 
