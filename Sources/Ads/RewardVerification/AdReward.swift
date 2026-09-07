@@ -29,7 +29,7 @@ import Foundation
 ///     // Verification succeeded with a reward shape the SDK does not currently model.
 /// }
 /// ```
-@_spi(Experimental) public struct AdReward: Sendable, Equatable {
+public struct AdReward: Sendable, Equatable {
 
     private enum Storage: Sendable, Equatable {
         case virtualCurrency(VirtualCurrencyReward)
@@ -71,7 +71,6 @@ import Foundation
         return payload
     }
 
-    /// Stable raw value used for wire encoding and ObjC interop.
     internal var kindRawValue: String {
         switch self.storage {
         case .virtualCurrency: return Self.Kind.virtualCurrency
