@@ -84,6 +84,10 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
         /// The storefront is not eligible, or the device does not authorize payments. The two are not
         /// distinguishable, see ``ExternalPurchaseCustomLinkType/canMakeExternalPurchases()``.
+        ///
+        /// The customer saw nothing of the external purchase, so the caller is expected to buy through StoreKit
+        /// instead rather than leave them without a way to buy. Unlike the other reasons, this one does not change
+        /// while the customer stays where they are.
         case cannotMakeExternalPurchases
 
         /// The customer declined at the disclosure notice.
