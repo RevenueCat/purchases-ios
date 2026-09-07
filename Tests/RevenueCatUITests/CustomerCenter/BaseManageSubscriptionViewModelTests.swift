@@ -130,6 +130,64 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
+    // MARK: - In-app browser refresh
+
+    func testManagementURLBrowserFlagsSubscriptionMayHaveChanged() async {
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true,
+            managementURL: URL(string: "https://play.google.com/store/account/subscriptions")!
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        let cancelPath = CustomerCenterConfigData.HelpPath(
+            id: "cancel",
+            title: "Cancel subscription",
+            type: .cancel,
+            detail: nil
+        )
+        await viewModel.handleHelpPath(cancelPath)
+
+        expect(viewModel.inAppBrowserURL).toNot(beNil())
+        expect(viewModel.browserMayHaveChangedSubscription) == true
+
+        viewModel.onDismissInAppBrowser()
+        expect(viewModel.browserMayHaveChangedSubscription) == false
+    }
+
+    func testCustomURLBrowserDoesNotFlagSubscriptionMayHaveChanged() async {
+        let purchase = PurchaseInformation.mock(
+            store: .playStore,
+            isSubscription: true,
+            managementURL: URL(string: "https://play.google.com/store/account/subscriptions")!
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        let customURLPath = CustomerCenterConfigData.HelpPath(
+            id: "custom",
+            title: "Help center",
+            url: URL(string: "https://revenuecat.com/help")!,
+            openMethod: .inApp,
+            type: .customUrl,
+            detail: nil
+        )
+        await viewModel.handleHelpPath(customURLPath)
+
+        expect(viewModel.inAppBrowserURL).toNot(beNil())
+        // a custom link can't change the subscription, so no sync on dismiss
+        expect(viewModel.browserMayHaveChangedSubscription) == false
+    }
+
     func testShowsRefundIfRefundWindowIsForever() {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
