@@ -17,7 +17,7 @@ import Foundation
 /// Supplies app and device information to the local rules engine.
 struct DeviceDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "device"
 
     private let appVersion: String
     private let localeProvider: @Sendable () -> String?
@@ -43,7 +43,7 @@ struct DeviceDimensionProvider: DimensionProvider {
         var variables: [String: DimensionValue] = [:]
 
         if !self.appVersion.isEmpty {
-            variables["appVersion"] = .string(self.appVersion)
+            variables["app_version"] = .string(self.appVersion)
         }
 
         if let locale = self.localeProvider(), !locale.isEmpty {
@@ -54,10 +54,10 @@ struct DeviceDimensionProvider: DimensionProvider {
             variables["platform"] = .string(self.platform.lowercased())
         }
 
-        variables["platformVersion"] = .string(Self.semanticVersion(self.platformVersion))
+        variables["platform_version"] = .string(Self.semanticVersion(self.platformVersion))
 
         if let sdkVersion = Self.semanticVersion(self.sdkVersion) {
-            variables["sdkVersion"] = .string(sdkVersion)
+            variables["sdk_version"] = .string(sdkVersion)
         }
 
         return variables

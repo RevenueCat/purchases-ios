@@ -53,7 +53,7 @@ class WorkflowsConfigProviderTests: TestCase {
         self.commit(workflows: [
             "workflow-with-offering": .init(
                 blobRef: "offering-ref",
-                content: ["offeringIdentifier": "premium_annual"]
+                content: ["offering_identifier": "premium_annual"]
             ),
             "workflow-without-offering": .init(blobRef: "no-offering-ref", content: [:])
         ])
@@ -66,7 +66,7 @@ class WorkflowsConfigProviderTests: TestCase {
     func testResolvesAWorkflowAlreadyCommittedToTheWorkflowsTopic() async throws {
         let workflowJSON = try Self.workflowJSON(id: "wf-1")
         self.commit(
-            workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium_annual"])],
+            workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offering_identifier": "premium_annual"])],
             uiConfig: [
                 "app": .init(blobRef: "app-ref", content: [:]),
                 "localizations": .init(blobRef: "loc-ref", content: [:]),
@@ -212,7 +212,7 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testReturnsNilOfferingMappingWhenNoItemMatches() async {
-        self.commit(workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "other"])])
+        self.commit(workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offering_identifier": "other"])])
 
         let workflowId = await self.provider.workflowId(forOfferingId: "premium_annual")
 
@@ -221,8 +221,8 @@ class WorkflowsConfigProviderTests: TestCase {
 
     func testResolvesOfferingIdFromARealWireDecodedTopic() async throws {
         // Decodes literal snake_case JSON through RemoteConfiguration.Topics' real Codable conformance,
-        // proving `offering_identifier` survives into `content["offeringIdentifier"]` end to end,
-        // rather than seeding the mock topic with an already-camelCased key.
+        // proving `offering_identifier` survives into `content["offering_identifier"]` end to end,
+        // rather than seeding the mock topic with a key that has already been transformed.
         let topicsJSON = """
         {
           "workflows": {
@@ -280,11 +280,11 @@ class WorkflowsConfigProviderTests: TestCase {
         // topic snapshot it was built from, to avoid rescanning content on every call. This proves a
         // changed topic (e.g. a resync remapping an offering to a new workflow) invalidates that cache
         // instead of serving the map built from the previous snapshot.
-        self.commit(workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offeringIdentifier": "premium"])])
+        self.commit(workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: ["offering_identifier": "premium"])])
         let firstWorkflowId = await self.provider.workflowId(forOfferingId: "premium")
         expect(firstWorkflowId) == "wf-1"
 
-        self.commit(workflows: ["wf-2": .init(blobRef: "wf-2-ref", content: ["offeringIdentifier": "premium"])])
+        self.commit(workflows: ["wf-2": .init(blobRef: "wf-2-ref", content: ["offering_identifier": "premium"])])
         let secondWorkflowId = await self.provider.workflowId(forOfferingId: "premium")
         expect(secondWorkflowId) == "wf-2"
     }
@@ -298,17 +298,17 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 ),
                 "wf-current": .init(
                     blobRef: "wf-current-ref",
                     prefetch: false,
-                    content: ["offeringIdentifier": "basic"]
+                    content: ["offering_identifier": "basic"]
                 ),
                 "wf-other": .init(
                     blobRef: "wf-other-ref",
                     prefetch: false,
-                    content: ["offeringIdentifier": "other"]
+                    content: ["offering_identifier": "other"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -346,7 +346,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -374,7 +374,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -405,7 +405,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -436,7 +436,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -464,12 +464,12 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-first": .init(
                     blobRef: "wf-first-ref",
                     prefetch: false,
-                    content: ["offeringIdentifier": "first"]
+                    content: ["offering_identifier": "first"]
                 ),
                 "wf-second": .init(
                     blobRef: "wf-second-ref",
                     prefetch: false,
-                    content: ["offeringIdentifier": "second"]
+                    content: ["offering_identifier": "second"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -498,7 +498,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-current": .init(
                     blobRef: "wf-current-ref",
                     prefetch: false,
-                    content: ["offeringIdentifier": "current"]
+                    content: ["offering_identifier": "current"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -526,7 +526,7 @@ class WorkflowsConfigProviderTests: TestCase {
                 "wf-prefetch": .init(
                     blobRef: "wf-prefetch-ref",
                     prefetch: true,
-                    content: ["offeringIdentifier": "premium"]
+                    content: ["offering_identifier": "premium"]
                 )
             ],
             uiConfig: Self.uiConfigTopic,
@@ -552,7 +552,7 @@ class WorkflowsConfigProviderTests: TestCase {
             "wf-prefetch": .init(
                 blobRef: "wf-prefetch-ref",
                 prefetch: true,
-                content: ["offeringIdentifier": "premium"]
+                content: ["offering_identifier": "premium"]
             )
         ]
         mockManager.stubbedTopics[.workflows] = workflowsTopic
