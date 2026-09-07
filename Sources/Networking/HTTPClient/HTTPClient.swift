@@ -129,7 +129,7 @@ class HTTPClient {
             "X-StoreKit-Version": "\(self.systemInfo.storeKitVersion.effectiveVersion)",
             "X-Observer-Mode-Enabled": "\(self.systemInfo.observerMode)",
             RequestHeader.retryCount.rawValue: "0",
-            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox)",
+            RequestHeader.sandbox.rawValue: "\(self.systemInfo.isSandbox || self.systemInfo.isSimulatedStoreAPIKey)",
             "X-Is-Backgrounded": "\(self.systemInfo.isAppBackgroundedState)",
             "X-Is-Debug-Build": "\(self.systemInfo.isDebugBuild)",
             "X-Installation-Method": SystemInfo.installationMethod
