@@ -18,7 +18,7 @@ import Foundation
 /// StoreKit takes this as a plain `String`, and which values apply depends on the storefront and on the flow the
 /// customer is about to enter. Modelled as a `RawRepresentable` struct rather than an enum so that a value the SDK
 /// does not know about can still be forwarded to StoreKit.
-internal struct ExternalPurchaseTokenType: RawRepresentable, Hashable, Sendable {
+internal struct ExternalPurchaseTokenType: RawRepresentable, Hashable, Sendable, Encodable {
 
     let rawValue: String
 
