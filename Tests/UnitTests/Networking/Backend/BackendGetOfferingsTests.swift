@@ -84,11 +84,11 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
-            isAppBackgrounded: false,
+            isAppBackgrounded: false
         ) { firstResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
-            isAppBackgrounded: false,
+            isAppBackgrounded: false
         ) { secondResult.value = $0 }
 
         expect(firstResult.value).toEventuallyNot(beNil())
@@ -117,11 +117,11 @@ class BackendGetOfferingsTests: BaseBackendTests {
 
         self.offerings.getOfferings(
             appUserID: Self.userID,
-            isAppBackgrounded: false,
+            isAppBackgrounded: false
         ) { firstResult.value = $0 }
         self.offerings.getOfferings(
             appUserID: Self.userID,
-            isAppBackgrounded: false,
+            isAppBackgrounded: false
         ) { secondResult.value = $0 }
 
         expect(firstResult.value).toEventually(beFailure())

@@ -77,7 +77,9 @@ extension OfferingsResponse {
                           platformProductIdentifier: "monthly_freetrial",
                           platformProductPlanIdentifier: nil,
                           webCheckoutUrl: nil)
-                  ], webCheckoutUrl: nil)
+                  ],
+                  webCheckoutUrl: nil,
+                  hasPaywallComponents: false)
         ],
         placements: nil,
         targeting: nil,
