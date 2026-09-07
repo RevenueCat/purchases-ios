@@ -68,6 +68,8 @@ extension View {
     /// conditions evaluate synchronously on first layout and re-evaluate live
     /// on rotation and window resize. Apply at the paywall root: the
     /// `GeometryReader` fills its container, so the content must too.
+    /// (`WorkflowPaywallView` sets the key directly from its own proxy instead,
+    /// so its header — rendered outside `PaywallsV2View` — is covered too.)
     func measurePaywallWindowSize() -> some View {
         GeometryReader { proxy in
             self.environment(\.paywallWindowSize, proxy.size)

@@ -30,7 +30,8 @@ import Foundation
         }
         public let properties: T
 
-        /// Internal storage for extended conditions with full type information
+        /// Internal storage for extended conditions with full type information.
+        /// The override applies only when every condition matches (AND semantics).
         @_spi(Internal) public let extendedConditions: [ExtendedCondition]
 
         public init(conditions: [Condition], properties: T) {
@@ -156,9 +157,9 @@ extension PaywallComponent {
     }
 
     /// Numeric comparison operators for layout condition evaluation (window size).
-    /// `equal` compares with an epsilon tolerance (1e-10) to absorb JSON round-trip
-    /// noise; it is still fragile against measured fractional sizes and is intended
-    /// for authored integer breakpoints.
+    /// `equal` compares with a small epsilon tolerance (see condition evaluation) but
+    /// remains fragile against measured fractional sizes; it is intended for authored
+    /// integer breakpoints.
     @_spi(Internal) public enum ComparisonOperator: String, Codable, Sendable, Hashable, Equatable {
 
         case greaterThanOrEqual = ">="
@@ -205,9 +206,9 @@ extension PaywallComponent {
         /// Match against the paywall's rendered bounds — not the device screen, so a
         /// Split View pane or sheet reports its own size. `value` is density-independent
         /// (iOS points / Android dp). Evaluates to false until the first layout pass and
-        /// re-evaluates live as the window resizes. Conditions within one override AND
-        /// together, so `windowWidth >= 700` plus `windowHeight >= 480` targets large
-        /// windows while excluding landscape phones.
+        /// re-evaluates live as the window resizes. Combining `windowWidth >= 700` with
+        /// `windowHeight >= 480` in one override targets large windows while excluding
+        /// landscape phones.
         case windowWidth(operator: ComparisonOperator, value: Double)
         case windowHeight(operator: ComparisonOperator, value: Double)
 
