@@ -79,6 +79,11 @@ class WindowSizeConditionTests: TestCase {
         {"type": "window_width_condition", "operator": ">=", "value": "wide"}
         """)
         expect(nonNumericValue).to(equal(.unsupported))
+
+        let malformedRatio = try decode("""
+        {"type": "window_aspect_ratio_condition", "operator": "~=", "value": 1.2}
+        """)
+        expect(malformedRatio).to(equal(.unsupported))
     }
 
     func testWindowConditionsConvertToUnsupportedPublicCondition() {
@@ -88,6 +93,9 @@ class WindowSizeConditionTests: TestCase {
         expect(PaywallComponent.ExtendedCondition
             .windowHeight(operator: .greaterThanOrEqual, value: 480)
             .toCondition()) == .unsupported
+        expect(PaywallComponent.ExtendedCondition
+            .windowAspectRatio(operator: .greaterThanOrEqual, value: 1.2)
+            .toCondition()) == .unsupported
     }
 
     func testWindowConditionsAreRules() {
@@ -95,6 +103,8 @@ class WindowSizeConditionTests: TestCase {
             .windowWidth(operator: .greaterThanOrEqual, value: 700).isRule) == true
         expect(PaywallComponent.ExtendedCondition
             .windowHeight(operator: .greaterThanOrEqual, value: 480).isRule) == true
+        expect(PaywallComponent.ExtendedCondition
+            .windowAspectRatio(operator: .greaterThanOrEqual, value: 1.2).isRule) == true
     }
 
     // MARK: - Evaluation

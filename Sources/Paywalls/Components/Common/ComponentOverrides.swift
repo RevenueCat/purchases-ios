@@ -215,7 +215,7 @@ extension PaywallComponent {
         /// below 1 is portrait) satisfies the comparison. Computed from the live oriented
         /// window size, so rotation flips it. Pair with a width floor (e.g. `windowWidth
         /// >= 600`) so small multi-window sizes don't match; never matches while the
-        /// window size is unknown.
+        /// window size is unknown or its height is zero.
         case windowAspectRatio(operator: ComparisonOperator, value: Double)
 
         // MARK: - Fallback for unknown conditions
