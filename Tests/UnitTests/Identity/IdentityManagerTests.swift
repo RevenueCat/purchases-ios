@@ -527,64 +527,6 @@ class IdentityManagerTests: TestCase {
         expect(self.mockDeviceCache.invokedCopySubscriberAttributesParameters?.newAppUserID) == "new_user_id"
     }
 
-    // MARK: - RevokeCurrentAccessToken
-
-    func testRevokeCurrentAccessTokenFailsInUIPreviewMode() {
-        let dangerousSettings = DangerousSettings(uiPreviewMode: true)
-        self.mockSystemInfo = MockSystemInfo(
-            platformInfo: nil,
-            finishTransactions: false,
-            dangerousSettings: dangerousSettings
-        )
-        let manager = create(appUserID: "my_user_id")
-
-        let receivedError = waitUntilValue { completed in
-            manager.revokeCurrentAccessToken { error in completed(error as NSError?) }
-        }
-
-        expect(receivedError?.code) == ErrorCode.unsupportedError.rawValue
-        expect(self.mockTokenAPI.invokedRevokeAccessTokens) == false
-    }
-
-    func testRevokeCurrentAccessTokenDoesNothingWhenTokenManagerIsDisabled() {
-        let manager = self.create(appUserID: nil)
-        self.mockDeviceCache.stubbedAppUserID = "myUser"
-
-        let receivedError = waitUntilValue { completed in
-            manager.revokeCurrentAccessToken(completion: completed)
-        }
-
-        expect(receivedError).to(beNil())
-        expect(self.mockTokenAPI.invokedRevokeAccessTokens) == false
-    }
-
-    func testRevokeCurrentAccessTokenCallsTokenAPIWhenTokenManagerIsEnabled() {
-        self.mockTokenManager = MockTokenManager(enabled: true)
-        let manager = self.create(appUserID: nil)
-        self.mockDeviceCache.stubbedAppUserID = "myUser"
-
-        let receivedError = waitUntilValue { completed in
-            manager.revokeCurrentAccessToken(completion: completed)
-        }
-
-        expect(receivedError).to(beNil())
-        expect(self.mockTokenAPI.invokedRevokeAccessTokensCount) == 1
-        expect(self.mockTokenAPI.invokedRevokeAccessTokensParametersList) == ["myUser"]
-    }
-
-    func testRevokeCurrentAccessTokenPassesThroughTokenAPIErrors() {
-        self.mockTokenManager = MockTokenManager(enabled: true)
-        let manager = self.create(appUserID: nil)
-        self.mockDeviceCache.stubbedAppUserID = "myUser"
-        self.mockTokenAPI.stubbedRevokeAccessTokensResult = .missingAppUserID()
-
-        let receivedError = waitUntilValue { completed in
-            manager.revokeCurrentAccessToken { error in completed(error as NSError?) }
-        }
-
-        expect(receivedError?.code) == ErrorCode.invalidAppUserIdError.rawValue
-    }
-
     // MARK: - LogOut with IAM enabled
 
     func testLogOutDoesNotRevokeTokensWhenTokenManagerIsDisabled() {

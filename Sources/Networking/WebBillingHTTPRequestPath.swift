@@ -67,6 +67,18 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
         }
     }
 
+    var relativeIAMPath: String {
+        switch self {
+        case .getWebOfferingProducts:
+            return "/rcbilling/v1/customer/offering_products"
+        case let .getWebBillingProducts(userId: _, productIds: productIds):
+            let encodedProductIds = productIds.map { productId in
+                "id=\(productId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? productId)"
+            }.joined(separator: "&")
+            return "/rcbilling/v1/customer/products?\(encodedProductIds)"
+        }
+    }
+
     var name: String {
         switch self {
         case .getWebOfferingProducts:

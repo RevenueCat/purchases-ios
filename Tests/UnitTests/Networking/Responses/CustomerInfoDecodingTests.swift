@@ -139,6 +139,13 @@ class CustomerInfoDecodingTests: BaseHTTPResponseTest {
         expect(try CustomerInfo.decode("[]")).to(throwError(ErrorCode.customerInfoError))
     }
 
+    func testUserIsNilWhenNotPresentInResponse() throws {
+        // The base `CustomerInfo` fixture predates the `user` field and never transmits it.
+        let response: CustomerInfoResponse = try Self.decodeFixture("CustomerInfo")
+
+        expect(response.user).to(beNil())
+    }
+
 }
 
 class CustomerInfoNoOriginalSourceDecodeTests: CustomerInfoDecodingTests {
@@ -303,6 +310,50 @@ class CustomerInfoEncodingTests: BaseHTTPResponseTest {
         assertSnapshot(of: self.customerInfo.copy(with: .failed,
                                                   httpResponseOriginalSource: .loadShedder),
                        as: .backwardsCompatibleFormattedJson)
+    }
+
+}
+
+class CustomerInfoResponseUserDecodingTests: BaseHTTPResponseTest {
+
+    fileprivate var response: CustomerInfoResponse!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+
+        self.response = try Self.decodeFixture("CustomerInfoWithUser")
+    }
+
+    func testUserIsDecoded() throws {
+        let user = try XCTUnwrap(self.response.user)
+
+        expect(user.id) == "user-123"
+        expect(user.amr) == ["pwd"]
+    }
+
+    func testUserIdentitiesAreDecoded() throws {
+        let user = try XCTUnwrap(self.response.user)
+
+        expect(user.identities).to(haveCount(2))
+
+        let first = user.identities[0]
+        expect(first.id) == "user-123"
+        expect(first.method) == "email"
+
+        let second = user.identities[1]
+        expect(second.id).to(beNil())
+        expect(second.method) == "anonymous"
+    }
+
+    func testUserIdentityRawDataIsPreserved() throws {
+        let user = try XCTUnwrap(self.response.user)
+        let first = try XCTUnwrap(user.identities.first)
+
+        expect(first.rawData["provider_id"] as? String) == "email-provider-1"
+    }
+
+    func testUserReencoding() throws {
+        expect(try self.response.encodeAndDecode()) == self.response
     }
 
 }

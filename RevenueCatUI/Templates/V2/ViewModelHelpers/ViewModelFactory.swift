@@ -557,20 +557,33 @@ struct ViewModelFactory {
             )
         }
 
-        let badgeSource = component.badge
-            ?? component.overrides?.lazy.compactMap(\.properties.badge).first
-        let badgeViewModels = try badgeSource?.stack.components.map { component in
-            try self.toViewModel(
-                component: component,
-                packageValidator: packageValidator,
-                // Explicitly not looking for purchase button in badge
-                purchaseButtonCollector: nil,
-                offering: offering,
-                localizationProvider: localizationProvider,
-                uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
-            )
-        } ?? []
+        // Every badge the stack could present, so the one a rule presents has its own contents.
+        var badgeViewModels: [BadgeContents] = []
+
+        func appendBadge(_ badge: PaywallComponent.Badge?) throws {
+            guard let badge, !badgeViewModels.contains(where: { $0.badge === badge }) else { return }
+
+            badgeViewModels.append(BadgeContents(
+                badge: badge,
+                viewModels: try badge.stack.components.map { component in
+                    try self.toViewModel(
+                        component: component,
+                        packageValidator: packageValidator,
+                        // Explicitly not looking for purchase button in badge
+                        purchaseButtonCollector: nil,
+                        offering: offering,
+                        localizationProvider: localizationProvider,
+                        uiConfigProvider: uiConfigProvider,
+                        colorScheme: colorScheme
+                    )
+                }
+            ))
+        }
+
+        try appendBadge(component.badge)
+        for override in component.overrides ?? [] {
+            try appendBadge(override.properties.badge)
+        }
 
         return StackComponentViewModel(
             component: component,
@@ -594,11 +607,11 @@ struct ViewModelFactory {
     ) -> FirstMediaType? {
         switch component {
         case .image(let image):
-            return image.size.width == .fill ? .image : nil
+            return image.size.width.isFill ? .image : nil
         case .video(let video):
-            return video.size.width == .fill ? .video : nil
+            return video.size.width.isFill ? .video : nil
         case .webView(let webView):
-            return webView.size.width == .fill ? .webView : nil
+            return webView.size.width.isFill ? .webView : nil
         case .stack(let stack):
             guard let first = stack.components.first(where: {
                 if case .fallbackHeader = $0 { return false }

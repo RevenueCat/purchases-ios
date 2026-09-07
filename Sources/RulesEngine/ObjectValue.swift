@@ -46,6 +46,20 @@ extension RulesEngine {
         var first: (key: String, value: Value)? {
             self.storage.first.map { ($0.key.string, $0.value) }
         }
+
+        /// Shadows the `Sequence` overload, which would hand back an array of
+        /// pairs rather than an object, the way `Dictionary.filter` does.
+        func filter(
+            _ isIncluded: ((key: String, value: Value)) throws -> Bool
+        ) rethrows -> Self {
+            var result = Self()
+            for element in self {
+                if try isIncluded(element) {
+                    result[element.key] = element.value
+                }
+            }
+            return result
+        }
     }
 }
 

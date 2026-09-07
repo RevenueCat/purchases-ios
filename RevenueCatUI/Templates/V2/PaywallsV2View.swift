@@ -715,7 +715,7 @@ struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height == .fill, apply: { view in
+            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })
             .backgroundStyle(

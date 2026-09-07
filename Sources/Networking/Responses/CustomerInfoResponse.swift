@@ -18,6 +18,7 @@ import Foundation
 struct CustomerInfoResponse {
 
     var subscriber: Subscriber
+    var user: User?
 
     @IgnoreHashable
     var requestDate: Date
@@ -111,6 +112,21 @@ extension CustomerInfoResponse {
         var attributes: [SubscriberAttribute]
     }
 
+    struct User {
+
+        // swiftlint:disable:next nesting
+        struct Identity {
+            var id: String?
+            var method: String
+            @IgnoreEncodable @IgnoreHashable
+            var rawData: [String: Any]
+        }
+
+        var amr: [String]
+        var id: String
+        var identities: [Identity]
+    }
+
 }
 
 // MARK: - Codable
@@ -197,6 +213,33 @@ extension CustomerInfoResponse.Transaction: Codable, Hashable {
 
 }
 
+extension CustomerInfoResponse.User: Codable, Hashable { }
+
+extension CustomerInfoResponse.User.Identity: Codable, Hashable {
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case method
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        // the "?? .none" is needed because using "decodeIfPresent" with String? type
+        // means you get back a "String??". These combined mean we support:
+        // - having a "nil" id if the field is entirely missing
+        // - having a "nil" id if the field is present with with a null value
+        // - having a non-nil id if the field is present with a string value
+        self.id = try container.decodeIfPresent(String?.self, forKey: .id) ?? .none
+        self.method = try container.decode(String.self, forKey: .method)
+        self.rawData = decoder.decodeRawData()
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        encoder.encodeRawData(rawData)
+    }
+
+}
+
 extension CustomerInfoResponse: Codable {
 
     // Note: this must be manually implemented because of the custom call to `decodeRawData`
@@ -206,6 +249,7 @@ extension CustomerInfoResponse: Codable {
 
         self.requestDate = try container.decode(Date.self, forKey: .requestDate)
         self.subscriber = try container.decode(Subscriber.self, forKey: .subscriber)
+        self.user = try container.decodeIfPresent(User.self, forKey: .user)
 
         self.rawData = decoder.decodeRawData()
     }

@@ -419,8 +419,12 @@ public protocol RawDataContainer {
   @objc final public var customEntitlementComputation: Swift.Bool {
     @objc get
   }
+  @objc final public var forceAllowTestStoreInReleaseBuilds: Swift.Bool {
+    @objc get
+  }
   @objc override convenience dynamic public init()
   @objc convenience public init(autoSyncPurchases: Swift.Bool = true)
+  @objc convenience public init(autoSyncPurchases: Swift.Bool, forceAllowTestStoreInReleaseBuilds: Swift.Bool)
   @objc override final public func isEqual(_ object: Any?) -> Swift.Bool
   @objc override final public var hash: Swift.Int {
     @objc get

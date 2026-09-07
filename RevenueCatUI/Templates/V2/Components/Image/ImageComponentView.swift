@@ -398,7 +398,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             case .relative:
                 estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
             }
-        case .relative(let value):
+        case .relative(let value, _):
             estimatedContentWidth = max(0, availableContentWidth * CGFloat(value))
         }
 

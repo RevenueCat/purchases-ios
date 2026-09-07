@@ -197,7 +197,7 @@ fileprivate extension View {
             if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .horizontal,
-                    fillContent: size.width == .fill,
+                    fillContent: size.width.isFill,
                     alignment: Alignment(
                         horizontal: distribution.horizontalFrameAlignment.horizontal,
                         vertical: verticalAlignment.frameAlignment.vertical
@@ -210,7 +210,7 @@ fileprivate extension View {
             if enabled {
                 self.scrollableIfNecessaryWhenAvailable(
                     .vertical,
-                    fillContent: size.height == .fill,
+                    fillContent: size.height.isFill,
                     alignment: Alignment(
                         horizontal: horizontalAlignment.frameAlignment.horizontal,
                         vertical: distribution.verticalFrameAlignment.vertical
@@ -848,10 +848,15 @@ extension StackComponentViewModel {
             )
         }
 
+        var badgeViewModelPairs: [BadgeContents] = []
+        if let badge = component.badge, let badgeViewModels {
+            badgeViewModelPairs.append(BadgeContents(badge: badge, viewModels: badgeViewModels))
+        }
+
         self.init(
             component: component,
             viewModels: viewModels,
-            badgeViewModels: badgeViewModels ?? [],
+            badgeViewModels: badgeViewModelPairs,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
         )
     }
