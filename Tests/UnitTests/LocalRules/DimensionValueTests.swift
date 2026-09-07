@@ -25,6 +25,16 @@ import Testing
 struct DimensionValueTests {
 
     @Test
+    func priceAmountMicrosRoundsFloatingPointArtifacts() {
+        let price = ProductPaidPrice(currency: "USD", amount: 1.99 - Double.ulpOfOne)
+        var values: [String: DimensionValue] = [:]
+
+        values.set(price: price)
+
+        #expect(values["price_amount_micros"] == .int(1_990_000))
+    }
+
+    @Test
     func anyDecodableConvertsSupportedDimensionValues() throws {
         let json = #"""
         {
