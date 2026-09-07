@@ -14,7 +14,7 @@
 import Foundation
 
 /// A virtual-currency reward granted by an ad network after a successful reward verification.
-@_spi(Experimental) public struct VirtualCurrencyReward: Sendable, Equatable {
+public struct VirtualCurrencyReward: Sendable, Equatable {
 
     /// The reward type identifier (e.g. `"coins"`, `"gems"`).
     public let code: String

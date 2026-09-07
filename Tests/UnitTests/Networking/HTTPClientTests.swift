@@ -797,6 +797,27 @@ final class HTTPClientTests: BaseHTTPClientTests<MockETagManager, HTTPRequestTim
         expect(header.value) == "false"
     }
 
+    func testPassesIsSandboxTrueForSimulatedStoreAPIKeyEvenIfNotSandbox() {
+        let headerName = "X-Is-Sandbox"
+        self.systemInfo.stubbedIsSandbox = false
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let header: Atomic<String?> = nil
+
+        stub(condition: hasHeaderNamed(headerName)) { request in
+            header.value = request.value(forHTTPHeaderField: headerName)
+            return .emptySuccessResponse()
+        }
+
+        let request = HTTPRequest(method: .post([:]), path: .mockPath)
+
+        waitUntil { completion in
+            self.client.perform(request) { (_: EmptyResponse) in completion() }
+        }
+
+        expect(header.value) == "true"
+    }
+
     func testAlwaysPassesIsDebugBuildHeaderInReleaseMode() {
         let headerName = "X-Is-Debug-Build"
         self.systemInfo.stubbedIsDebugBuild = false // "release" mode
