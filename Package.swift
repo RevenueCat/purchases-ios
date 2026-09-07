@@ -5,15 +5,7 @@ import class Foundation.ProcessInfo
 import struct Foundation.URL
 import PackageDescription
 
-let packageDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
-let isFullRepositoryCheckout = packageDirectory.lastPathComponent == "purchases-ios"
-let isSwiftPMCheckout = packageDirectory.deletingLastPathComponent().lastPathComponent == "checkouts"
-
-if isFullRepositoryCheckout && isSwiftPMCheckout {
-    #warning("RevenueCat manifest diagnostic: IF branch")
-} else {
-    #warning("RevenueCat manifest diagnostic: ELSE branch")
-}
+#warning("RevenueCat: For faster SwiftPM downloads, use https://github.com/RevenueCat/purchases-ios-spm instead.")
 
 /// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
 /// `TUIST_SWIFT_CONDITIONS`.
