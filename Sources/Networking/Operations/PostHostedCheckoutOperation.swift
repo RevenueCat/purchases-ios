@@ -109,10 +109,35 @@ extension PostHostedCheckoutOperation {
         let appUserID: String
         let packageID: String
         let presentedOfferingIdentifier: String
+        let presentedPlacementIdentifier: String?
+        let appliedTargetingRule: AppliedTargetingRule?
+
+        /// The paywall the checkout was started from, so that the purchase is attributed to it the same
+        /// way a StoreKit purchase from that paywall would be.
+        let paywall: Paywall?
 
         /// Identifies the Apple external purchase token registered for this purchase, so the backend can
         /// tie the checkout session to it. Omitted where no token applies (e.g. Test Store).
         let externalPurchaseTokenID: String?
+
+    }
+
+    struct AppliedTargetingRule {
+
+        let revision: Int
+        let ruleID: String
+
+    }
+
+    struct Paywall {
+
+        let paywallID: String
+        let sessionID: String
+
+        // Sent at the top level of the body as `presented_workflow_id`/`presented_step_id`, not inside
+        // the nested `paywall` object — excluded from Codable via the CodingKeys enum below.
+        let workflowID: String?
+        let stepID: String?
 
     }
 
@@ -127,7 +152,48 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         case appUserID = "app_user_id"
         case packageID = "package_id"
         case presentedOfferingIdentifier = "presented_offering_identifier"
+        case presentedPlacementIdentifier = "presented_placement_identifier"
+        case presentedWorkflowID = "presented_workflow_id"
+        case presentedStepID = "presented_step_id"
+        case appliedTargetingRule = "applied_targeting_rule"
+        case paywall
         case externalPurchaseTokenID = "external_purchase_token_id"
+
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+
+        try container.encode(self.appUserID, forKey: .appUserID)
+        try container.encode(self.packageID, forKey: .packageID)
+        try container.encode(self.presentedOfferingIdentifier, forKey: .presentedOfferingIdentifier)
+        try container.encodeIfPresent(self.presentedPlacementIdentifier, forKey: .presentedPlacementIdentifier)
+        try container.encodeIfPresent(self.appliedTargetingRule, forKey: .appliedTargetingRule)
+        try container.encodeIfPresent(self.paywall, forKey: .paywall)
+        try container.encodeIfPresent(self.paywall?.workflowID, forKey: .presentedWorkflowID)
+        try container.encodeIfPresent(self.paywall?.stepID, forKey: .presentedStepID)
+        try container.encodeIfPresent(self.externalPurchaseTokenID, forKey: .externalPurchaseTokenID)
+    }
+
+}
+
+extension PostHostedCheckoutOperation.AppliedTargetingRule: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case revision
+        case ruleID = "rule_id"
+
+    }
+
+}
+
+extension PostHostedCheckoutOperation.Paywall: Encodable {
+
+    private enum CodingKeys: String, CodingKey {
+
+        case paywallID = "paywall_id"
+        case sessionID = "paywall_session_id"
 
     }
 

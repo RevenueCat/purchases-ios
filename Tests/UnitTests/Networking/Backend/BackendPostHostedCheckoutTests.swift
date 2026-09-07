@@ -41,6 +41,34 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
         expect(self.httpClient.calls).to(haveCount(1))
     }
 
+    /// The purchase has to reach the backend with the same attribution a StoreKit purchase from the same
+    /// paywall would carry, so placement, targeting rule and paywall all travel with it.
+    func testSendsThePresentedOfferingContext() {
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: Self.response)
+        )
+
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(
+                appUserID: Self.userID,
+                packageID: Self.packageID,
+                presentedOfferingContext: .init(offeringIdentifier: Self.offeringID,
+                                                placementIdentifier: "onboarding",
+                                                targetingContext: .init(revision: 3, ruleId: "rule_abc")),
+                paywall: .init(paywallID: "pw_789",
+                               sessionID: "pws_012",
+                               workflowID: "wf_123",
+                               stepID: "step_456"),
+                tokenID: Self.tokenID,
+                completion: completed
+            )
+        }
+
+        expect(result).to(beSuccess())
+        expect(self.httpClient.calls).to(haveCount(1))
+    }
+
     func testIsNotDelayed() {
         self.httpClient.mock(
             requestPath: .postHostedCheckout,
@@ -228,10 +256,30 @@ private extension BackendPostHostedCheckoutTests {
         tokenID: String?,
         completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler
     ) {
+        self.postHostedCheckout(
+            appUserID: appUserID,
+            packageID: packageID,
+            presentedOfferingContext: .init(offeringIdentifier: offeringID),
+            paywall: nil,
+            tokenID: tokenID,
+            completion: completion
+        )
+    }
+
+    // swiftlint:disable:next function_parameter_count
+    func postHostedCheckout(
+        appUserID: String,
+        packageID: String,
+        presentedOfferingContext: PresentedOfferingContext,
+        paywall: PostHostedCheckoutOperation.Paywall?,
+        tokenID: String?,
+        completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler
+    ) {
         self.webBilling.postHostedCheckout(
             appUserID: appUserID,
             packageID: packageID,
-            presentedOfferingIdentifier: offeringID,
+            presentedOfferingContext: presentedOfferingContext,
+            paywall: paywall,
             externalPurchaseTokenID: tokenID,
             completion: completion
         )

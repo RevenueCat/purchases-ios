@@ -51,12 +51,15 @@ class WebBillingAPI {
 
     /// Creates a checkout session with the payment provider and returns the page to present for it.
     ///
+    /// - Parameter paywall: The paywall the checkout was started from, where it was started from one.
     /// - Parameter externalPurchaseTokenID: Identifies the Apple external purchase token registered for
     /// this purchase. Pass `nil` where no token applies.
+    // swiftlint:disable:next function_parameter_count
     func postHostedCheckout(
         appUserID: String,
         packageID: String,
-        presentedOfferingIdentifier: String,
+        presentedOfferingContext: PresentedOfferingContext,
+        paywall: PostHostedCheckoutOperation.Paywall?,
         externalPurchaseTokenID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
@@ -66,7 +69,12 @@ class WebBillingAPI {
             configuration: config,
             postData: .init(appUserID: appUserID,
                             packageID: packageID,
-                            presentedOfferingIdentifier: presentedOfferingIdentifier,
+                            presentedOfferingIdentifier: presentedOfferingContext.offeringIdentifier,
+                            presentedPlacementIdentifier: presentedOfferingContext.placementIdentifier,
+                            appliedTargetingRule: presentedOfferingContext.targetingContext.map {
+                                .init(revision: $0.revision, ruleID: $0.ruleId)
+                            },
+                            paywall: paywall,
                             externalPurchaseTokenID: externalPurchaseTokenID),
             hostedCheckoutCallbackCache: self.hostedCheckoutCallbackCache
         )
