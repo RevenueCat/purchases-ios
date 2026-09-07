@@ -13,6 +13,10 @@
 
 import Foundation
 
+/// Creates a checkout session for in-app web checkout, where a payment provider's page is presented
+/// inside the app instead of the purchase being handed off to the browser.
+///
+/// The response carries the page to present and the two return URLs that mark the end of the checkout.
 final class PostHostedCheckoutOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
@@ -24,10 +28,6 @@ final class PostHostedCheckoutOperation: CacheableNetworkOperation {
         postData: PostData,
         hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
     ) -> CacheableNetworkOperationFactory<PostHostedCheckoutOperation> {
-        // Each call creates a checkout session, so repeated taps of the same button while one is in
-        // flight join the request already running rather than opening a second session. The token id is
-        // part of the key so that two taps carrying different tokens never share one session, which
-        // would attribute the purchase to the wrong token.
         let cacheKey = [
             configuration.appUserID,
             postData.packageID,
