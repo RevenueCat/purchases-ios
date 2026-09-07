@@ -13,8 +13,6 @@
 
 import Foundation
 
-/// The response is only read for the identifier the checkout page needs. The endpoint returns more
-/// fields, which are ignored.
 struct ExternalPurchaseTokenResponse: Decodable {
 
     /// The identifier of the token registration, to be handed to the checkout page.
