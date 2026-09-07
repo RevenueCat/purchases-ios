@@ -5,6 +5,19 @@ import class Foundation.ProcessInfo
 import struct Foundation.URL
 import PackageDescription
 
+// SwiftPM names source-control working copies after their package identity. This lets the
+// byte-identical SPM mirror avoid showing the warning while keeping it visible for this repository.
+let packageDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+let isFullRepositoryCheckout = packageDirectory.lastPathComponent == "purchases-ios"
+let isSwiftPMCheckout = packageDirectory.deletingLastPathComponent().lastPathComponent == "checkouts"
+
+if isFullRepositoryCheckout && isSwiftPMCheckout {
+    print(
+        "warning: RevenueCat: For faster Swift Package Manager downloads, use "
+        + "https://github.com/RevenueCat/purchases-ios-spm instead."
+    )
+}
+
 /// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
 /// `TUIST_SWIFT_CONDITIONS`.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
