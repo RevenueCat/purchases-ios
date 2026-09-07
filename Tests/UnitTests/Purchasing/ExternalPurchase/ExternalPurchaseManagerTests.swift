@@ -108,32 +108,36 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
-    // MARK: - Proceeding without an identifier
+    // MARK: - Registering without a StoreKit token
 
-    func testProceedsWithoutRegisteringWhenStoreKitHasNoToken() async {
+    /// StoreKit has no token to give where its API is not available yet, and the backend generates one instead,
+    /// so the registration still happens and the checkout still gets an identifier.
+    func testRegistersWithoutATokenWhenStoreKitHasNone() async {
         self.customLink.stubbedTokenResult = .success(nil)
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .unreportable(.noTokenAvailable)
+        expect(result) == .registered(tokenID: Self.tokenID)
         expect(result.shouldProceed) == true
-        expect(result.tokenID).to(beNil())
-        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters?.token).to(beNil())
     }
+
+    // MARK: - Proceeding without an identifier
 
     func testProceedsWithoutRegisteringWhenTheTokenRequestFails() async {
         self.customLink.stubbedTokenResult = .failure(ErrorUtils.storeProblemError())
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .unreportable(.tokenRequestFailed)
+        expect(result) == .unregistered(.tokenRequestFailed)
         expect(result.shouldProceed) == true
         expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
-    /// A failed registration means the purchase is not reportable, which is knowingly accepted rather than
-    /// getting in the way of the customer buying.
+    /// A failed registration leaves the checkout with nothing to tie the purchase to, which is knowingly accepted
+    /// rather than getting in the way of the customer buying.
     func testProceedsWhenRegistrationFails() async {
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .failure(
             .networkError(.offlineConnection())
@@ -141,7 +145,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .unreportable(.registrationFailed)
+        expect(result) == .unregistered(.registrationFailed)
         expect(result.shouldProceed) == true
         expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
