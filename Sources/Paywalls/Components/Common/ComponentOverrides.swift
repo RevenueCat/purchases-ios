@@ -211,6 +211,13 @@ extension PaywallComponent {
         case windowWidth(operator: ComparisonOperator, value: Double)
         case windowHeight(operator: ComparisonOperator, value: Double)
 
+        /// Matches when the window's aspect ratio (width ÷ height: above 1 is landscape,
+        /// below 1 is portrait) satisfies the comparison. Computed from the live oriented
+        /// window size, so rotation flips it. Pair with a width floor (e.g. `windowWidth
+        /// >= 600`) so small multi-window sizes don't match; never matches while the
+        /// window size is unknown.
+        case windowAspectRatio(operator: ComparisonOperator, value: Double)
+
         // MARK: - Fallback for unknown conditions
         case unsupported
 
@@ -226,7 +233,7 @@ extension PaywallComponent {
                  .multipleIntroOffers, .unsupported:
                 return false
             case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state,
-                 .windowWidth, .windowHeight:
+                 .windowWidth, .windowHeight, .windowAspectRatio:
                 return true
             }
         }
@@ -242,7 +249,7 @@ extension PaywallComponent {
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
             case .multipleIntroOffers, .variable, .selectedPackage, .state,
-                 .windowWidth, .windowHeight, .unsupported: return .unsupported
+                 .windowWidth, .windowHeight, .windowAspectRatio, .unsupported: return .unsupported
             }
         }
 
@@ -260,7 +267,7 @@ extension PaywallComponent {
             }
         }
 
-        // swiftlint:disable:next cyclomatic_complexity
+        // swiftlint:disable:next cyclomatic_complexity function_body_length
         public func encode(to encoder: any Encoder) throws {
             var container = encoder.container(keyedBy: CodingKeys.self)
 
@@ -307,6 +314,10 @@ extension PaywallComponent {
                 try container.encode(value, forKey: .value)
             case .windowHeight(let condOp, let value):
                 try container.encode(ConditionType.windowHeightCondition.rawValue, forKey: .type)
+                try container.encode(condOp, forKey: .operator)
+                try container.encode(value, forKey: .value)
+            case .windowAspectRatio(let condOp, let value):
+                try container.encode(ConditionType.windowAspectRatioCondition.rawValue, forKey: .type)
                 try container.encode(condOp, forKey: .operator)
                 try container.encode(value, forKey: .value)
             case .unsupported:
@@ -380,6 +391,10 @@ extension PaywallComponent {
                 let condOp = try container.decode(ComparisonOperator.self, forKey: .operator)
                 let value = try container.decode(Double.self, forKey: .value)
                 return .windowHeight(operator: condOp, value: value)
+            case .windowAspectRatioCondition:
+                let condOp = try container.decode(ComparisonOperator.self, forKey: .operator)
+                let value = try container.decode(Double.self, forKey: .value)
+                return .windowAspectRatio(operator: condOp, value: value)
             }
         }
 
@@ -412,6 +427,7 @@ extension PaywallComponent {
             case stateCondition = "state_condition"
             case windowWidthCondition = "window_width_condition"
             case windowHeightCondition = "window_height_condition"
+            case windowAspectRatioCondition = "window_aspect_ratio_condition"
 
         }
 

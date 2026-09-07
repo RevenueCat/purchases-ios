@@ -228,6 +228,13 @@ extension PresentedPartial {
                 expected: value,
                 operator: conditionOperator
             )
+        case .windowAspectRatio(let conditionOperator, let value):
+            guard let windowSize = conditionContext.windowSize, windowSize.height > 0 else { return false }
+            return evaluateComparison(
+                actual: windowSize.width / windowSize.height,
+                expected: value,
+                operator: conditionOperator
+            )
 
         // Unknown/unsupported conditions never match
         case .unsupported:

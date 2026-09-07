@@ -40,10 +40,19 @@ class WindowSizeConditionTests: TestCase {
         expect(condition).to(equal(.windowHeight(operator: .greaterThanOrEqual, value: 480)))
     }
 
+    func testDecodeWindowAspectRatioCondition() throws {
+        let json = """
+        {"type": "window_aspect_ratio_condition", "operator": ">=", "value": 1.2}
+        """
+        let condition = try decode(json)
+        expect(condition).to(equal(.windowAspectRatio(operator: .greaterThanOrEqual, value: 1.2)))
+    }
+
     func testWindowConditionsRoundTripThroughEncoding() throws {
         let conditions: [PaywallComponent.ExtendedCondition] = [
             .windowWidth(operator: .greaterThanOrEqual, value: 700),
-            .windowHeight(operator: .lessThan, value: 480)
+            .windowHeight(operator: .lessThan, value: 480),
+            .windowAspectRatio(operator: .greaterThan, value: 1)
         ]
 
         let encoded = try JSONEncoder().encode(conditions)
@@ -129,6 +138,33 @@ class WindowSizeConditionTests: TestCase {
             conditions: [.windowHeight(operator: .greaterThanOrEqual, value: 480)],
             windowSize: nil
         )).to(beNil())
+    }
+
+    func testAspectRatioConditionFollowsOrientation() {
+        let landscapeIsWide: [PaywallComponent.ExtendedCondition] = [
+            .windowAspectRatio(operator: .greaterThanOrEqual, value: 1.2)
+        ]
+
+        // iPad landscape: 1024/768 = 1.33.
+        expect(self.buildPartial(
+            conditions: landscapeIsWide,
+            windowSize: CGSize(width: 1024, height: 768)
+        )).toNot(beNil())
+
+        // Same iPad rotated to portrait: 768/1024 = 0.75.
+        expect(self.buildPartial(
+            conditions: landscapeIsWide,
+            windowSize: CGSize(width: 768, height: 1024)
+        )).to(beNil())
+
+        // Zero height never matches (no division).
+        expect(self.buildPartial(
+            conditions: landscapeIsWide,
+            windowSize: CGSize(width: 1024, height: 0)
+        )).to(beNil())
+
+        // Unknown size never matches.
+        expect(self.buildPartial(conditions: landscapeIsWide, windowSize: nil)).to(beNil())
     }
 
     func testEqualOperatorUsesEpsilonTolerance() {
