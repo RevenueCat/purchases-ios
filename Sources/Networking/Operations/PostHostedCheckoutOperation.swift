@@ -71,11 +71,9 @@ final class PostHostedCheckoutOperation: CacheableNetworkOperation {
             return
         }
 
-        // Not retried: a request the server may have already handled would leave behind a checkout
-        // session nobody goes on to use.
         let request = HTTPRequest(method: .post(self.postData),
                                   path: .postHostedCheckout,
-                                  isRetryable: false)
+                                  isRetryable: true)
 
         self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HostedCheckoutResponse>.Result) in
             let result = response
