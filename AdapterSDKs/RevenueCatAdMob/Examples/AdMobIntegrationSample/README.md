@@ -36,21 +36,11 @@ This sample uses **Google Mobile Ads SDK v13** Swift API (no `GAD` prefix):
 
 ---
 
-## Experimental API notice
-
-This sample uses RevenueCatAdMob APIs exposed as experimental Swift SPI (`@_spi(Experimental)`), and behavior may evolve before full stabilization.
-
-- Adapter APIs shown in this sample are available on iOS 15.0+.
-- Swift imports must use `@_spi(Experimental) import RevenueCatAdMob`.
-- Review release notes when upgrading `RevenueCatAdMob`.
-- Prefer pinning a known-good adapter version during rollout.
-
----
-
 ## Requirements
 
 - Xcode 16+ recommended
 - iOS Simulator or device (iOS 15+)
+- Adapter APIs shown in this sample are available on iOS 15.0+.
 - A valid RevenueCat API key
 - AdMob test ad unit IDs (included in this sample)
 - **Google Mobile Ads SDK v13** (Swift API; this sample uses v13 naming)
