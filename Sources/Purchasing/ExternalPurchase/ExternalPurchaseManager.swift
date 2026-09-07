@@ -76,7 +76,7 @@ final class ExternalPurchaseManager {
 /// What the caller should do once ``ExternalPurchaseManager`` has prepared an external purchase.
 internal enum ExternalPurchasePreparationResult: Equatable {
 
-    /// Do not route the customer to the checkout. Nothing was minted, so there is nothing to report.
+    /// Do not route the customer to the checkout.
     case stopped(StopReason)
 
     /// Route the customer to the checkout, handing this identifier to the checkout page.
@@ -84,9 +84,9 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
     /// Route the customer to the checkout with no identifier to hand over.
     ///
-    /// The purchase cannot be tied back to a token, so it will not be reportable to Apple. That is deliberately
-    /// not treated as a failure for the customer, who is still allowed to buy.
-    case unreportable(UnreportableReason)
+    /// Registration did not complete, so the checkout has nothing to tie the purchase back to. That is
+    /// deliberately not treated as a failure for the customer, who is still allowed to buy.
+    case unregistered(FailureReason)
 
     enum StopReason: Equatable {
 
@@ -107,15 +107,12 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
     }
 
-    enum UnreportableReason: Equatable {
-
-        /// StoreKit had no token of the requested type to give.
-        case noTokenAvailable
+    enum FailureReason: Equatable {
 
         /// Requesting the token from StoreKit failed.
         case tokenRequestFailed
 
-        /// The token exists but the backend did not accept it.
+        /// The backend did not accept the registration.
         case registrationFailed
 
     }
@@ -129,7 +126,7 @@ extension ExternalPurchasePreparationResult {
         switch self {
         case .stopped:
             return false
-        case .registered, .unreportable:
+        case .registered, .unregistered:
             return true
         }
     }
@@ -139,7 +136,7 @@ extension ExternalPurchasePreparationResult {
         switch self {
         case let .registered(tokenID):
             return tokenID
-        case .stopped, .unreportable:
+        case .stopped, .unregistered:
             return nil
         }
     }
@@ -176,12 +173,11 @@ private extension ExternalPurchaseManager {
             token = try await self.customLink.token(for: tokenType)
         } catch {
             Logger.error(Strings.externalPurchase.error_requesting_token(error))
-            return .unreportable(.tokenRequestFailed)
+            return .unregistered(.tokenRequestFailed)
         }
 
-        guard let token else {
-            Logger.warn(Strings.externalPurchase.no_token_available)
-            return .unreportable(.noTokenAvailable)
+        if token == nil {
+            Logger.debug(Strings.externalPurchase.no_token_available)
         }
 
         let result: Result<ExternalPurchaseTokenResponse, BackendError> = await Async.call { completion in
@@ -199,7 +195,7 @@ private extension ExternalPurchaseManager {
             return .registered(tokenID: response.id)
         case let .failure(error):
             Logger.error(Strings.externalPurchase.error_registering_token(error))
-            return .unreportable(.registrationFailed)
+            return .unregistered(.registrationFailed)
         }
     }
 

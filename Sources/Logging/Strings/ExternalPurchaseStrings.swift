@@ -44,7 +44,7 @@ extension ExternalPurchaseStrings: LogMessage {
         case let .error_showing_notice(error):
             return "Error showing the external purchase notice: \(error.localizedDescription)"
         case .no_token_available:
-            return "No external purchase token available."
+            return "StoreKit provided no external purchase token. Registering without one."
         case let .error_requesting_token(error):
             return "Error requesting the external purchase token: \(error.localizedDescription)"
         case let .token_registered(tokenID):
