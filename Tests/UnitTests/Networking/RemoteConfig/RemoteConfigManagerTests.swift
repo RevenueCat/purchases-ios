@@ -2983,6 +2983,32 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedClearCount) == 1
     }
 
+    func testReadConsistentlyStopsWhenTaskIsCanceledBeforeTheRead() async {
+        let manager = MockRemoteConfigManager()
+        let readStarted = XCTestExpectation(description: "Read started")
+        let gate = AsyncStream<Void>.makeStream()
+        let task = Task {
+            try await manager.readConsistent {
+                readStarted.fulfill()
+                for await _ in gate.stream { break }
+                return "value"
+            }
+        }
+        await fulfillment(of: [readStarted], timeout: 1)
+        task.cancel()
+        gate.continuation.yield(())
+        gate.continuation.finish()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation to stop the read")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
 }
 
 private extension RemoteConfigManagerTests {

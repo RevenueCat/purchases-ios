@@ -93,9 +93,11 @@ extension RemoteConfigManagerType {
         _ operation: () async throws -> Value?
     ) async throws -> Value? {
         for attempt in 0...1 {
+            try Task.checkCancellation()
             let generation = self.configGeneration
             do {
                 let value = try await operation()
+                try Task.checkCancellation()
 
                 guard self.configGeneration == generation else {
                     guard attempt == 0 else {
