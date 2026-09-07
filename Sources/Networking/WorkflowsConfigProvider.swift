@@ -30,6 +30,9 @@ enum WorkflowResolutionError: Error, Equatable {
     /// No item for this `workflowId` exists in the synced `workflows` topic.
     case notFound
 
+    /// The read was superseded by remote-config changes before it could complete consistently.
+    case configurationUnavailable
+
     /// An item exists, but its body couldn't be decoded as a ``PublishedWorkflow``.
     case decodingFailed(NSError)
 
@@ -137,10 +140,15 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// Cache misses validate the workflow topic's generation after `ui_config` resolves, so an in-flight
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
-        return await self.readConsistent(
-            { await self.getWorkflowOnce(workflowId: workflowId) },
-            fallback: .failure(.notFound)
-        )
+        do {
+            return try await self.manager.readConsistent {
+                await self.getWorkflowOnce(workflowId: workflowId)
+            } ?? .failure(.notFound)
+        } catch RemoteConfigConsistencyError.stale {
+            return .failure(.configurationUnavailable)
+        } catch {
+            return .failure(.notFound)
+        }
     }
 
     private func getWorkflowOnce(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {

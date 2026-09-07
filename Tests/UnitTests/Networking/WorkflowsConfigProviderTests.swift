@@ -174,6 +174,32 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(result.error) == .notFound
     }
 
+    func testExhaustedStaleReadsDoNotReportAnExistingWorkflowAsNotFound() async throws {
+        let manager = MockRemoteConfigManager()
+        let provider = WorkflowsConfigProvider(
+            manager: manager,
+            uiConfigProvider: UiConfigProvider(manager: manager)
+        )
+        manager.stubbedTopics[.workflows] = [
+            "wf-1": .init(blobRef: "wf-1-ref", content: [:])
+        ]
+        manager.stubbedBlobData[.workflows] = [
+            "wf-1": Data(#"{"not": "a workflow"}"#.utf8)
+        ]
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            manager.configGeneration = generationReads
+        }
+
+        let result = await provider.getWorkflow(workflowId: "wf-1")
+
+        guard result.error == .configurationUnavailable else {
+            XCTFail("Expected stale workflow resolution to report unavailable configuration")
+            return
+        }
+    }
+
     func testFailsWithDecodingFailedForAMalformedWorkflowBody() async {
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],

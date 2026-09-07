@@ -80,6 +80,8 @@ class WorkflowManager: WorkflowAssetPrewarmingType {
             return result
         case .failure(.notFound):
             throw BackendError.workflowNotFound(workflowId: workflowId)
+        case .failure(.configurationUnavailable):
+            throw WorkflowError.uiConfigUnavailable(workflowId: workflowId)
         case let .failure(.decodingFailed(error)):
             throw BackendError.workflowDecodingFailed(workflowId: workflowId, error: error)
         case .failure(.uiConfigUnavailable):
