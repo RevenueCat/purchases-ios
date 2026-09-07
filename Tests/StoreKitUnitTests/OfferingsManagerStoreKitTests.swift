@@ -111,8 +111,8 @@ private extension OfferingsManagerStoreKitTests {
                               platformProductPlanIdentifier: nil,
                               webCheckoutUrl: nil)
                       ],
-                      webCheckoutUrl: nil,
-                      hasPaywallComponents: false)
+                      hasPaywallComponents: false,
+                      webCheckoutUrl: nil)
             ],
             placements: nil,
             targeting: nil,
