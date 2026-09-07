@@ -97,6 +97,21 @@ final class BrowserNavigateToTests: TestCase {
         expect(result.inAppBrowserURL).to(beNil())
     }
 
+    func testURLOpenedNotifierDispatchesToTheMainActorWhenCalledFromBackground() async {
+        let actionExpectation = expectation(description: "URL opened action")
+        let url = Self.url
+        let notifier = URLOpenedNotifier { _ in
+            XCTAssertTrue(Thread.isMainThread)
+            actionExpectation.fulfill()
+        }
+
+        await Task.detached {
+            notifier(url)
+        }.value
+
+        await fulfillment(of: [actionExpectation], timeout: 1)
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
