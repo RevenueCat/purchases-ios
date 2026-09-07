@@ -20,6 +20,7 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
+    private let systemInfo: SystemInfo
 
     /// Resolved on first use and reused afterwards, so a tap does not pay for the check.
     ///
@@ -29,10 +30,12 @@ final class ExternalPurchaseManager {
 
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
-         currentUserProvider: CurrentUserProvider) {
+         currentUserProvider: CurrentUserProvider,
+         systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
+        self.systemInfo = systemInfo
     }
 
     /// Whether the app can offer an external purchase to this customer.
@@ -45,9 +48,8 @@ final class ExternalPurchaseManager {
             return cached
         }
 
-        let canMakeExternalPurchases = await self.customLink.canMakeExternalPurchases()
+        let canMakeExternalPurchases = await self.resolveEligibility()
         self.cachedEligibility.value = canMakeExternalPurchases
-        Logger.debug(Strings.externalPurchase.eligibility_resolved(canMakeExternalPurchases))
 
         return canMakeExternalPurchases
     }
@@ -154,6 +156,20 @@ private extension ExternalPurchaseManager {
         case continued
         case cancelled
         case failed
+    }
+
+    func resolveEligibility() async -> Bool {
+        // A Test Store key has no App Store behind it, so there is no storefront to be eligible in, no token to
+        // mint and nothing to disclose. Reporting no eligibility keeps the whole StoreKit sequence out of the way.
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
+            return false
+        }
+
+        let canMakeExternalPurchases = await self.customLink.canMakeExternalPurchases()
+        Logger.debug(Strings.externalPurchase.eligibility_resolved(canMakeExternalPurchases))
+
+        return canMakeExternalPurchases
     }
 
     func showNotice(type: ExternalPurchaseNoticeType) async -> NoticeOutcome {
