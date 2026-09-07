@@ -37,7 +37,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
              .getWebBillingProducts:
             return true
         case .postHostedCheckout:
-            // Every call creates a new checkout session, so there is never a cached response to revalidate.
             return false
         }
     }
@@ -85,7 +84,6 @@ extension HTTPRequest.WebBillingPath: HTTPRequestPath {
             }.joined(separator: "&")
             return "/rcbilling/v1/customer/products?\(encodedProductIds)"
         case .postHostedCheckout:
-            // The customer is named in the body rather than the path, so there is nothing to leave out.
             return self.relativePath
         }
     }
