@@ -437,10 +437,14 @@ extension CustomerInfoDimensionProviderTests {
     }
 
     @Test
-    func convertsPricesToMicrosByTruncatingFractionalMicros() async throws {
+    func convertsPricesToMicros() async throws {
         let cases: [(amount: Double, expectedMicros: Int64)] = [
             (1.234567, 1_234_567),
-            (0.0000005, 0)
+            (0.0000005, 0),
+            (0.0000006, 1),
+            // A price that is one representable step below 1.99 still represents 1.99
+            // at micros precision, but multiplying it as a Double produces 1_989_999.999...
+            (1.99.nextDown, 1_990_000)
         ]
 
         for (index, testCase) in cases.enumerated() {

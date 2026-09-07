@@ -29,7 +29,7 @@ extension Dictionary where Key == String, Value == DimensionValue {
     mutating func set(price: ProductPaidPrice?) {
         guard let price else { return }
 
-        let amountMicros = price.amount * 1_000_000
+        let amountMicros = (price.amount * 1_000_000).rounded(.toNearestOrEven)
         if amountMicros.isFinite,
            amountMicros >= Double(Int64.min),
            amountMicros < Double(Int64.max) {
