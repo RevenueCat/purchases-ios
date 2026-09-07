@@ -688,6 +688,10 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                     SubscriberAttributesDimensionProvider(
                         deviceCache: deviceCache,
                         currentUserProvider: identityManager
+                    ),
+                    SubscriberDimensionsProvider(
+                        deviceCache: deviceCache,
+                        currentUserProvider: identityManager
                     )
                 ]
             )

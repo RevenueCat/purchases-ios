@@ -16,6 +16,8 @@
 		D19A00000000000000000003 /* SubscriberAttributesDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */; };
 		D20A00000000000000000003 /* CustomerInfoDimensionProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20A00000000000000000004 /* CustomerInfoDimensionProviderTests.swift */; };
 		D21A00000000000000000003 /* DimensionScopeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D21A00000000000000000004 /* DimensionScopeTests.swift */; };
+		D22A00000000000000000003 /* SubscriberDimensionsProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22A00000000000000000004 /* SubscriberDimensionsProvider.swift */; };
+		D22A00000000000000000005 /* SubscriberDimensionsProviderTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D22A00000000000000000006 /* SubscriberDimensionsProviderTests.swift */; };
 		D20A00000000000000000001 /* CustomerInfoDimensionProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20A00000000000000000002 /* CustomerInfoDimensionProvider.swift */; };
 		C05A00000000000000000001 /* CustomVariableKeyValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000002 /* CustomVariableKeyValidator.swift */; };
 		C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */; };
@@ -1689,6 +1691,8 @@
 		D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberAttributesDimensionProviderTests.swift; sourceTree = "<group>"; };
 		D20A00000000000000000004 /* CustomerInfoDimensionProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDimensionProviderTests.swift; sourceTree = "<group>"; };
 		D21A00000000000000000004 /* DimensionScopeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionScopeTests.swift; sourceTree = "<group>"; };
+		D22A00000000000000000004 /* SubscriberDimensionsProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsProvider.swift; sourceTree = "<group>"; };
+		D22A00000000000000000006 /* SubscriberDimensionsProviderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SubscriberDimensionsProviderTests.swift; sourceTree = "<group>"; };
 		D20A00000000000000000002 /* CustomerInfoDimensionProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomerInfoDimensionProvider.swift; sourceTree = "<group>"; };
 		C05A00000000000000000002 /* CustomVariableKeyValidator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidator.swift; sourceTree = "<group>"; };
 		C05A00000000000000000004 /* CustomVariableKeyValidatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomVariableKeyValidatorTests.swift; sourceTree = "<group>"; };
@@ -3457,6 +3461,7 @@
 				D17A00000000000000000002 /* StoreDimensionProvider.swift */,
 				D20A00000000000000000002 /* CustomerInfoDimensionProvider.swift */,
 				D19A00000000000000000002 /* SubscriberAttributesDimensionProvider.swift */,
+				D22A00000000000000000004 /* SubscriberDimensionsProvider.swift */,
 				D22A00000000000000000002 /* AnyDecodable+DimensionValue.swift */,
 				D23A00000000000000000002 /* Dictionary+DimensionValue.swift */,
 				A0D200000000000000000002 /* DimensionProvider.swift */,
@@ -3476,6 +3481,7 @@
 				D19A00000000000000000004 /* SubscriberAttributesDimensionProviderTests.swift */,
 				D20A00000000000000000004 /* CustomerInfoDimensionProviderTests.swift */,
 				D21A00000000000000000004 /* DimensionScopeTests.swift */,
+				D22A00000000000000000006 /* SubscriberDimensionsProviderTests.swift */,
 			);
 			path = LocalRules;
 			sourceTree = "<group>";
@@ -8221,6 +8227,7 @@
 				D17A00000000000000000001 /* StoreDimensionProvider.swift in Sources */,
 				D20A00000000000000000001 /* CustomerInfoDimensionProvider.swift in Sources */,
 				D19A00000000000000000001 /* SubscriberAttributesDimensionProvider.swift in Sources */,
+				D22A00000000000000000003 /* SubscriberDimensionsProvider.swift in Sources */,
 				D22A00000000000000000001 /* AnyDecodable+DimensionValue.swift in Sources */,
 				D23A00000000000000000001 /* Dictionary+DimensionValue.swift in Sources */,
 				A0D100000000000000000002 /* DimensionProvider.swift in Sources */,
@@ -8687,6 +8694,7 @@
 				D19A00000000000000000003 /* SubscriberAttributesDimensionProviderTests.swift in Sources */,
 				D20A00000000000000000003 /* CustomerInfoDimensionProviderTests.swift in Sources */,
 				D21A00000000000000000003 /* DimensionScopeTests.swift in Sources */,
+				D22A00000000000000000005 /* SubscriberDimensionsProviderTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

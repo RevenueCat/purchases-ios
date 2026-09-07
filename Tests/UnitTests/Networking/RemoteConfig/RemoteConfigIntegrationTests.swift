@@ -346,7 +346,10 @@ final class RemoteConfigIntegrationTests: TestCase {
             "string": .string("value"),
             "int": .int(42),
             "double": .double(4.2),
-            "object": .object(["nested": .string("value")]),
+            "object": .object([
+                "nested": .string("value"),
+                "ignored": .null
+            ]),
             "object_list": .objectList([
                 ["id": .string("first"), "enabled": .bool(true)],
                 ["id": .string("second"), "enabled": .bool(false)]
@@ -377,15 +380,15 @@ final class RemoteConfigIntegrationTests: TestCase {
 
         let configuration = try await AudiencesConfigProvider(manager: self.manager).configuration()
 
-        expect(configuration?.backendPredicateResults) == ["valid": .bool(true)]
-        for identifier in ["null", "scalar_array", "mixed_array"] {
+        expect(configuration?.backendPredicateResults) == ["valid": .bool(true), "null": .null]
+        for identifier in ["scalar_array", "mixed_array"] {
             self.logger.verifyMessageWasLogged(
                 "Ignoring backend predicate result '\(identifier)': its value can't be read by a rule.",
                 level: .warn,
                 expectedCount: 1
             )
         }
-        expect(self.logger.messages.filter { $0.level == .warn }).to(haveCount(3))
+        expect(self.logger.messages.filter { $0.level == .warn }).to(haveCount(2))
     }
 
     func testAudiencesProviderRecursivelyOmitsUnsupportedNestedBackendValues() async throws {
@@ -419,7 +422,8 @@ final class RemoteConfigIntegrationTests: TestCase {
             "nested": .object([
                 "level_one": .object([
                     "level_two": .object([
-                        "valid": .string("value")
+                        "valid": .string("value"),
+                        "null": .null
                     ])
                 ])
             ])

@@ -30,7 +30,7 @@ extension AnyDecodable {
                 return object.compactMapValues(\AnyDecodable.dimensionValue)
             }
             return objects.count == value.count ? .objectList(objects) : nil
-        case .null: return nil
+        case .null: return .null
         }
     }
 
