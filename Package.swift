@@ -16,6 +16,8 @@ if isFullRepositoryCheckout && isSwiftPMCheckout {
         "warning: RevenueCat: For faster Swift Package Manager downloads, use "
         + "https://github.com/RevenueCat/purchases-ios-spm instead."
     )
+} else {
+    print("warning: RevenueCat SPM repository warning skipped for: \(packageDirectory.path)")
 }
 
 /// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
