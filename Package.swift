@@ -5,6 +5,8 @@ import class Foundation.ProcessInfo
 import struct Foundation.URL
 import PackageDescription
 
+#warning("RevenueCat manifest diagnostic test")
+
 // SwiftPM names source-control working copies after their package identity. This lets the
 // byte-identical SPM mirror avoid showing the warning while keeping it visible for this repository.
 let packageDirectory = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
