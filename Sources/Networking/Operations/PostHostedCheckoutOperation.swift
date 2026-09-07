@@ -25,11 +25,14 @@ final class PostHostedCheckoutOperation: CacheableNetworkOperation {
         hostedCheckoutCallbackCache: CallbackCache<HostedCheckoutCallback>
     ) -> CacheableNetworkOperationFactory<PostHostedCheckoutOperation> {
         // Each call creates a checkout session, so repeated taps of the same button while one is in
-        // flight join the request already running rather than opening a second session.
+        // flight join the request already running rather than opening a second session. The token id is
+        // part of the key so that two taps carrying different tokens never share one session, which
+        // would attribute the purchase to the wrong token.
         let cacheKey = [
             configuration.appUserID,
             postData.packageID,
-            postData.presentedOfferingIdentifier
+            postData.presentedOfferingIdentifier,
+            postData.externalPurchaseTokenID ?? ""
         ].joined(separator: "\n")
 
         return CacheableNetworkOperationFactory({ cacheKey in
@@ -109,6 +112,10 @@ extension PostHostedCheckoutOperation {
         let packageID: String
         let presentedOfferingIdentifier: String
 
+        /// Identifies the Apple external purchase token registered for this purchase, so the backend can
+        /// tie the checkout session to it. Omitted where no token applies.
+        let externalPurchaseTokenID: String?
+
     }
 
 }
@@ -122,6 +129,7 @@ extension PostHostedCheckoutOperation.PostData: Encodable {
         case appUserID = "app_user_id"
         case packageID = "package_id"
         case presentedOfferingIdentifier = "presented_offering_identifier"
+        case externalPurchaseTokenID = "external_purchase_token_id"
 
     }
 

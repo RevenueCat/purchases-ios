@@ -50,10 +50,14 @@ class WebBillingAPI {
     }
 
     /// Creates a checkout session with the payment provider and returns the page to present for it.
+    ///
+    /// - Parameter externalPurchaseTokenID: Identifies the Apple external purchase token registered for
+    /// this purchase. Pass `nil` where no token applies.
     func postHostedCheckout(
         appUserID: String,
         packageID: String,
         presentedOfferingIdentifier: String,
+        externalPurchaseTokenID: String?,
         completion: @escaping HostedCheckoutResponseHandler
     ) {
         let config = NetworkOperation.UserSpecificConfiguration(httpClient: self.backendConfig.httpClient,
@@ -62,7 +66,8 @@ class WebBillingAPI {
             configuration: config,
             postData: .init(appUserID: appUserID,
                             packageID: packageID,
-                            presentedOfferingIdentifier: presentedOfferingIdentifier),
+                            presentedOfferingIdentifier: presentedOfferingIdentifier,
+                            externalPurchaseTokenID: externalPurchaseTokenID),
             hostedCheckoutCallbackCache: self.hostedCheckoutCallbackCache
         )
 

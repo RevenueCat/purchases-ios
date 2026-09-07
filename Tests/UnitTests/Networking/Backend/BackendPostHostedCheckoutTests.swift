@@ -21,6 +21,7 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
 
     private static let packageID = "$rc_monthly"
     private static let offeringID = "default"
+    private static let tokenID = "eptoken_123"
 
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
@@ -87,41 +88,57 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
     }
 
     func testRequestsForDifferentPackagesAreNotReused() {
-        self.httpClient.mock(
-            requestPath: .postHostedCheckout,
-            response: .init(statusCode: .success, response: Self.response)
-        )
-
-        self.postHostedCheckout(appUserID: Self.userID, packageID: Self.packageID, offeringID: Self.offeringID) { _ in }
-        self.postHostedCheckout(appUserID: Self.userID, packageID: "$rc_annual", offeringID: Self.offeringID) { _ in }
-
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        self.expectTwoCalls(varying: { packageID in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: Self.tokenID) { _ in }
+        }, from: Self.packageID, to: "$rc_annual")
     }
 
     func testRequestsForDifferentOfferingsAreNotReused() {
-        self.httpClient.mock(
-            requestPath: .postHostedCheckout,
-            response: .init(statusCode: .success, response: Self.response)
-        )
-
-        self.postHostedCheckout(appUserID: Self.userID, packageID: Self.packageID, offeringID: Self.offeringID) { _ in }
-        self.postHostedCheckout(appUserID: Self.userID, packageID: Self.packageID, offeringID: "promo") { _ in }
-
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        self.expectTwoCalls(varying: { offeringID in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: Self.packageID,
+                                    offeringID: offeringID,
+                                    tokenID: Self.tokenID) { _ in }
+        }, from: Self.offeringID, to: "promo")
     }
 
     func testRequestsForDifferentUsersAreNotReused() {
+        self.expectTwoCalls(varying: { appUserID in
+            self.postHostedCheckout(appUserID: appUserID,
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: Self.tokenID) { _ in }
+        }, from: Self.userID, to: "another_user")
+    }
+
+    /// Sharing these would attribute one purchase to the other's Apple token.
+    func testRequestsForDifferentTokensAreNotReused() {
+        self.expectTwoCalls(varying: { tokenID in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: tokenID) { _ in }
+        }, from: Self.tokenID, to: "eptoken_456")
+    }
+
+    func testSendsNoTokenWhenThereIsNone() {
         self.httpClient.mock(
             requestPath: .postHostedCheckout,
             response: .init(statusCode: .success, response: Self.response)
         )
 
-        self.postHostedCheckout(appUserID: Self.userID, packageID: Self.packageID, offeringID: Self.offeringID) { _ in }
-        self.postHostedCheckout(appUserID: "another_user",
-                                packageID: Self.packageID,
-                                offeringID: Self.offeringID) { _ in }
+        let result = waitUntilValue { completed in
+            self.postHostedCheckout(appUserID: Self.userID,
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: nil,
+                                    completion: completed)
+        }
 
-        expect(self.httpClient.calls).toEventually(haveCount(2))
+        expect(result).to(beSuccess())
     }
 
     func testForwardsANetworkError() {
@@ -139,7 +156,10 @@ class BackendPostHostedCheckoutTests: BaseBackendTests {
 
     func testSkipsTheCallWhenTheAppUserIDIsEmpty() {
         let receivedError = waitUntilValue { completed in
-            self.postHostedCheckout(appUserID: "", packageID: Self.packageID, offeringID: Self.offeringID) {
+            self.postHostedCheckout(appUserID: "",
+                                    packageID: Self.packageID,
+                                    offeringID: Self.offeringID,
+                                    tokenID: Self.tokenID) {
                 completed($0.error)
             }
         }
@@ -161,12 +181,27 @@ private extension BackendPostHostedCheckoutTests {
         "cancel_url": "\(returnEndpoint)?status=cancel"
     ]
 
+    /// Fires `request` twice, changing one input, and expects both to reach the network rather than
+    /// being coalesced into one.
+    func expectTwoCalls(varying request: (String) -> Void, from first: String, to second: String) {
+        self.httpClient.mock(
+            requestPath: .postHostedCheckout,
+            response: .init(statusCode: .success, response: BackendPostHostedCheckoutTests.response)
+        )
+
+        request(first)
+        request(second)
+
+        expect(self.httpClient.calls).toEventually(haveCount(2))
+    }
+
     /// The same request throughout, so that a test only spells out what it is varying.
     func postHostedCheckout(completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler) {
         self.postHostedCheckout(
             appUserID: BackendPostHostedCheckoutTests.userID,
             packageID: BackendPostHostedCheckoutTests.packageID,
             offeringID: BackendPostHostedCheckoutTests.offeringID,
+            tokenID: BackendPostHostedCheckoutTests.tokenID,
             completion: completion
         )
     }
@@ -175,12 +210,14 @@ private extension BackendPostHostedCheckoutTests {
         appUserID: String,
         packageID: String,
         offeringID: String,
+        tokenID: String?,
         completion: @escaping WebBillingAPI.HostedCheckoutResponseHandler
     ) {
         self.webBilling.postHostedCheckout(
             appUserID: appUserID,
             packageID: packageID,
             presentedOfferingIdentifier: offeringID,
+            externalPurchaseTokenID: tokenID,
             completion: completion
         )
     }
