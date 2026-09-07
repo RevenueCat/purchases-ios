@@ -21,12 +21,6 @@ final class ExternalPurchaseManager {
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
 
-    /// Resolved on first use and reused afterwards, so a tap does not pay for the check.
-    ///
-    /// A storefront change within the same session is therefore not picked up, which is an accepted trade for
-    /// keeping the check off the tap.
-    private let cachedEligibility: Atomic<Bool?> = nil
-
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider) {
@@ -37,16 +31,10 @@ final class ExternalPurchaseManager {
 
     /// Whether the app can offer an external purchase to this customer.
     ///
-    /// Safe to call before the customer intends to buy, and worth doing so: it mints nothing, so it creates no
-    /// obligation to report anything to Apple, and resolving it while the paywall loads keeps it off the tap.
-    @discardableResult
+    /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
+    /// anything to Apple.
     func canMakeExternalPurchases() async -> Bool {
-        if let cached = self.cachedEligibility.value {
-            return cached
-        }
-
         let canMakeExternalPurchases = await self.customLink.canMakeExternalPurchases()
-        self.cachedEligibility.value = canMakeExternalPurchases
         Logger.debug(Strings.externalPurchase.eligibility_resolved(canMakeExternalPurchases))
 
         return canMakeExternalPurchases
