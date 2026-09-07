@@ -111,7 +111,7 @@ extension PostHostedCheckoutOperation {
         let presentedOfferingIdentifier: String
 
         /// Identifies the Apple external purchase token registered for this purchase, so the backend can
-        /// tie the checkout session to it. Omitted where no token applies.
+        /// tie the checkout session to it. Omitted where no token applies (e.g. Test Store).
         let externalPurchaseTokenID: String?
 
     }
