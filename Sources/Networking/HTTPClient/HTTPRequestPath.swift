@@ -185,6 +185,7 @@ extension HTTPRequest {
         case getVirtualCurrencies(appUserID: String)
         case spendVirtualCurrencies
         case postRedeemWebPurchase
+        case postExternalPurchaseToken
         case postCreateTicket
         case isPurchaseAllowedByRestoreBehavior(appUserID: String)
         case rewardVerificationStatus(appUserID: String, clientTransactionID: String)
@@ -283,6 +284,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postSubscriberAttributes,
                 .postAdServicesToken,
                 .postRedeemWebPurchase,
+                .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .getVirtualCurrencies,
@@ -329,7 +331,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return true
         case .remoteConfig,
              .health,
-             .appHealthReportAvailability:
+             .appHealthReportAvailability,
+             .postExternalPurchaseToken:
             return false
         }
     }
@@ -356,6 +359,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
+                .postExternalPurchaseToken,
                 .getCustomerCenterConfig,
                 .postCreateTicket,
                 .tokenLogin,
@@ -388,6 +392,7 @@ extension HTTPRequest.Path: HTTPRequestPath {
                 .postAdServicesToken,
                 .postOfferForSigning,
                 .postRedeemWebPurchase,
+                .postExternalPurchaseToken,
                 .getProductEntitlementMapping,
                 .getCustomerCenterConfig,
                 .appHealthReport,
@@ -464,6 +469,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
         case .postRedeemWebPurchase:
             return "subscribers/redeem_purchase"
 
+        case .postExternalPurchaseToken:
+            return "external_purchase_tokens"
+
         case let .getVirtualCurrencies(appUserID):
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
@@ -535,6 +543,8 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "customer/virtual_currencies/spend"
         case .postRedeemWebPurchase:
             return self.pathComponent
+        case .postExternalPurchaseToken:
+            return self.pathComponent
         case .postCreateTicket:
             return self.pathComponent
         case .isPurchaseAllowedByRestoreBehavior:
@@ -592,6 +602,9 @@ extension HTTPRequest.Path: HTTPRequestPath {
 
         case .postRedeemWebPurchase:
             return "post_redeem_web_purchase"
+
+        case .postExternalPurchaseToken:
+            return "post_external_purchase_token"
 
         case .appHealthReport:
             return "get_app_health_report"
