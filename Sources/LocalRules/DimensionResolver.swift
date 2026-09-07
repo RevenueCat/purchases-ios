@@ -22,11 +22,11 @@ struct DimensionSnapshot: Equatable, Sendable {
 
 enum DimensionResolutionError: Error, Equatable, Sendable {
 
-    case providerFailed(namespace: DimensionNamespace, message: String)
+    case providerFailed(providerName: String, message: String)
     case conflictingValue(path: String)
 }
 
-/// Builds immutable, point-in-time dimension scopes for local rule evaluation.
+/// Builds an immutable, point-in-time root scope for local rule evaluation.
 struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
@@ -41,16 +41,17 @@ struct DimensionResolver: Sendable {
         self.dateProvider = dateProvider
     }
 
-    /// Collects each provider once and merges its values under its namespace.
+    /// Collects each provider once and merges its values into the canonical root scope.
     ///
-    /// For example, device `appVersion: "1.2.3"` becomes
-    /// `device.appVersion: "1.2.3"` in the RulesEngine input.
+    /// `custom` and `backend` remain nested reserved objects. Every other value is flat.
     func snapshot(
         customVariables: [String: DimensionValue] = [:],
         backendValues: [String: DimensionValue] = [:]
     ) async throws -> DimensionSnapshot {
         let date = self.dateProvider.now()
-        var values: [String: RulesEngine.Value] = [:]
+        var values: [String: RulesEngine.Value] = [
+            Self.evaluatedAtKey: .int(Int64(date.timeIntervalSince1970 * 1_000))
+        ]
 
         for provider in self.dimensionProviders {
             try Task.checkCancellation()
@@ -62,43 +63,33 @@ struct DimensionResolver: Sendable {
                 throw error
             } catch {
                 throw DimensionResolutionError.providerFailed(
-                    namespace: provider.namespace,
+                    providerName: provider.name,
                     message: String(describing: error)
                 )
             }
 
-            let namespace = provider.namespace.rawValue
-            var namespaceValues: [String: RulesEngine.Value] = [:]
-            if case .object(let existing) = values[namespace] {
-                namespaceValues = existing
-            }
-
             for (name, value) in DimensionValueConverter.convert(
                 providerValues,
-                parentPath: namespace
+                parentPath: provider.name
             ) {
-                guard namespaceValues[name] == nil else {
+                guard !Self.reservedRootKeys.contains(name), values[name] == nil else {
                     throw DimensionResolutionError.conflictingValue(
-                        path: "\(namespace).\(name)"
+                        path: name
                     )
                 }
 
-                namespaceValues[name] = value
-            }
-
-            if !namespaceValues.isEmpty {
-                values[namespace] = .object(namespaceValues)
+                values[name] = value
             }
         }
 
         Self.addPerEvaluationValues(
             CustomVariableKeyValidator.validateAndFilter(customVariables),
-            namespace: .custom,
+            root: Self.customKey,
             to: &values
         )
         Self.addPerEvaluationValues(
             backendValues,
-            namespace: .backend,
+            root: Self.backendKey,
             to: &values
         )
 
@@ -109,14 +100,19 @@ struct DimensionResolver: Sendable {
 
     private static func addPerEvaluationValues(
         _ dimensions: [String: DimensionValue],
-        namespace: DimensionNamespace,
+        root: String,
         to values: inout [String: RulesEngine.Value]
     ) {
-        let converted = DimensionValueConverter.convert(dimensions, parentPath: namespace.rawValue)
+        let converted = DimensionValueConverter.convert(dimensions, parentPath: root)
         if !converted.isEmpty {
-            values[namespace.rawValue] = .object(converted)
+            values[root] = .object(converted)
         }
     }
+
+    private static let evaluatedAtKey = "evaluated_at"
+    private static let customKey = "custom"
+    private static let backendKey = "backend"
+    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey, Self.backendKey]
 }
 
 private enum DimensionValueConverter {

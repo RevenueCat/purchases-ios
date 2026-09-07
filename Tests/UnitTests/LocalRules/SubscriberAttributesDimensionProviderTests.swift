@@ -32,22 +32,24 @@ struct SubscriberAttributesProviderTests {
         )
 
         let dimensions = try await provider.dimensions(at: Self.evaluationDate)
+        let attributes = Self.attributes(in: dimensions)
 
-        #expect(provider.namespace == .subscriberAttributes)
-        #expect(Set(dimensions.keys) == ["$email", "goal"])
+        #expect(provider.name == "subscriber_attributes")
+        #expect(Set(attributes.keys) == ["$email", "goal"])
     }
 
     @Test
-    func exposesValueUpdatedAtAndEvaluatedAt() async throws {
+    func exposesValueAndUpdatedAtUnderCanonicalRoot() async throws {
         let provider = Self.provider(Self.attribute("goal", value: "lose_weight"))
 
         let dimensions = try await provider.dimensions(at: Self.evaluationDate)
 
         #expect(dimensions == [
-            "goal": .object([
-                "value": .string("lose_weight"),
-                "updatedAt": .date(Self.setDate),
-                "evaluatedAt": .date(Self.evaluationDate)
+            "subscriber_attributes": .object([
+                "goal": .object([
+                    "value": .string("lose_weight"),
+                    "updated_at": .date(Self.setDate)
+                ])
             ])
         ])
     }
@@ -73,7 +75,7 @@ struct SubscriberAttributesProviderTests {
             Self.attribute("goal", value: "lose_weight")
         ).dimensions(at: Self.evaluationDate)
 
-        #expect(Set(dimensions.keys) == ["goal"])
+        #expect(Set(Self.attributes(in: dimensions).keys) == ["goal"])
     }
 
     @Test
@@ -88,7 +90,7 @@ struct SubscriberAttributesProviderTests {
             ]
         ).snapshot()
 
-        guard case .object(let attributes) = snapshot.values["subscriberAttributes"] else {
+        guard case .object(let attributes) = snapshot.values["subscriber_attributes"] else {
             Issue.record("Expected subscriber attribute dimensions")
             return
         }
@@ -101,7 +103,7 @@ struct SubscriberAttributesProviderTests {
             dimensionProviders: [Self.provider()]
         ).snapshot()
 
-        #expect(snapshot.values[DimensionNamespace.subscriberAttributes.rawValue] == nil)
+        #expect(snapshot.values["subscriber_attributes"] == nil)
     }
 
     @Test
@@ -113,11 +115,13 @@ struct SubscriberAttributesProviderTests {
             dimensionProviders: [
                 SubscriberAttributesTestDeviceProvider(),
                 provider
-            ]
+            ],
+            dateProvider: MockDateProvider(stubbedNow: Self.evaluationDate)
         ).snapshot()
 
         #expect(snapshot.values == [
-            "device": .object(["platform": .string("ios")])
+            "evaluated_at": .int(1_718_452_800_000),
+            "platform": .string("ios")
         ])
     }
 
@@ -182,27 +186,27 @@ struct SubscriberAttributesProviderTests {
         )
 
         let matchingPredicates = [
-            #"{"==":[{"var":"subscriberAttributes.$email.value"},"jane@example.com"]}"#,
-            #"{"==":[{"var":"subscriberAttributes.seats.value"},3]}"#,
-            #"{">":[{"var":"subscriberAttributes.seats.value"},2]}"#,
+            #"{"==":[{"var":"subscriber_attributes.$email.value"},"jane@example.com"]}"#,
+            #"{"==":[{"var":"subscriber_attributes.seats.value"},3]}"#,
+            #"{">":[{"var":"subscriber_attributes.seats.value"},2]}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.tier.evaluatedAt"},
-                      {"var":"subscriberAttributes.tier.updatedAt"}]},
+                {"-":[{"var":"evaluated_at"},
+                      {"var":"subscriber_attributes.tier.updated_at"}]},
                 604800000
             ]}
             """#
         ]
         let nonMatchingPredicates = [
-            #"{"==":[{"var":"subscriberAttributes.goal.value"},"gain_muscle"]}"#,
+            #"{"==":[{"var":"subscriber_attributes.goal.value"},"gain_muscle"]}"#,
             // An attribute the app never set on this device, and one the SDK does not expose. Both
             // need a default, since reading a name that resolves to nothing is now an error.
-            #"{"!!":{"var":["subscriberAttributes.favoriteColor.value",false]}}"#,
-            #"{"!!":{"var":["subscriberAttributes.goal.isSynced",false]}}"#,
+            #"{"!!":{"var":["subscriber_attributes.favoriteColor.value",false]}}"#,
+            #"{"!!":{"var":["subscriber_attributes.goal.is_synced",false]}}"#,
             #"""
             {"<":[
-                {"-":[{"var":"subscriberAttributes.goal.evaluatedAt"},
-                      {"var":"subscriberAttributes.goal.updatedAt"}]},
+                {"-":[{"var":"evaluated_at"},
+                      {"var":"subscriber_attributes.goal.updated_at"}]},
                 604800000
             ]}
             """#
@@ -245,8 +249,15 @@ struct SubscriberAttributesProviderTests {
         of name: String,
         in dimensions: [String: DimensionValue]
     ) -> DimensionValue? {
-        guard case .object(let attribute) = dimensions[name] else { return nil }
+        guard case .object(let attribute) = Self.attributes(in: dimensions)[name] else { return nil }
         return attribute["value"]
+    }
+
+    private static func attributes(
+        in dimensions: [String: DimensionValue]
+    ) -> [String: DimensionValue] {
+        guard case .object(let attributes) = dimensions["subscriber_attributes"] else { return [:] }
+        return attributes
     }
 
 }
@@ -259,7 +270,7 @@ private struct TestSubscriberAttributeRule: LocalRule {
 
 private struct SubscriberAttributesTestDeviceProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "device"
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         return ["platform": .string("ios")]

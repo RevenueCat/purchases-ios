@@ -52,28 +52,27 @@ struct DimensionValueTests {
             "date": .date(date),
             "record": .object([
                 "id": .string("one"),
-                "createdAt": .date(date)
+                "created_at": .date(date)
             ]),
             "records": .objectList([
                 [
                     "id": .string("one"),
-                    "createdAt": .date(date)
+                    "created_at": .date(date)
                 ]
             ])
         ])
 
         #expect(snapshot.values == [
-            "device": .object([
-                "date": .int(1_700_000_000_000),
-                "record": .object([
+            "evaluated_at": .int(123_000),
+            "date": .int(1_700_000_000_000),
+            "record": .object([
+                "id": .string("one"),
+                "created_at": .int(1_700_000_000_000)
+            ]),
+            "records": .array([
+                .object([
                     "id": .string("one"),
-                    "createdAt": .int(1_700_000_000_000)
-                ]),
-                "records": .array([
-                    .object([
-                        "id": .string("one"),
-                        "createdAt": .int(1_700_000_000_000)
-                    ])
+                    "created_at": .int(1_700_000_000_000)
                 ])
             ])
         ])
@@ -84,14 +83,14 @@ struct DimensionValueTests {
         let snapshot = try await Self.snapshot([
             "goal": .object([
                 "value": .string("lose_weight"),
-                "updatedAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
+                "updated_at": .date(Date(timeIntervalSince1970: 1_700_000_000))
             ])
         ])
 
         let predicate = #"""
             {"and":[
-                {"==":[{"var":"device.goal.value"},"lose_weight"]},
-                {">":[{"var":"device.goal.updatedAt"},1699999999999]}
+                {"==":[{"var":"goal.value"},"lose_weight"]},
+                {">":[{"var":"goal.updated_at"},1699999999999]}
             ]}
             """#
 
@@ -101,15 +100,15 @@ struct DimensionValueTests {
     @Test
     func dateDimensionIsOrderedByPredicate() async throws {
         let snapshot = try await Self.snapshot([
-            "expiresAt": .date(Date(timeIntervalSince1970: 1_700_000_000))
+            "expires_at": .date(Date(timeIntervalSince1970: 1_700_000_000))
         ])
 
         #expect(try RulesEngine.evaluate(
-            predicate: #"{">":[{"var":"device.expiresAt"},1699999999999]}"#,
+            predicate: #"{">":[{"var":"expires_at"},1699999999999]}"#,
             variables: snapshot.values
         ).get())
         #expect(try !RulesEngine.evaluate(
-            predicate: #"{">":[{"var":"device.expiresAt"},1700000000001]}"#,
+            predicate: #"{">":[{"var":"expires_at"},1700000000001]}"#,
             variables: snapshot.values
         ).get())
     }
@@ -119,25 +118,25 @@ struct DimensionValueTests {
         let snapshot = try await Self.snapshot([
             "purchases": .objectList([
                 [
-                    "productId": .string("plus"),
-                    "isActive": .bool(false)
+                    "product_id": .string("plus"),
+                    "is_active": .bool(false)
                 ],
                 [
-                    "productId": .string("pro"),
-                    "isActive": .bool(true)
+                    "product_id": .string("pro"),
+                    "is_active": .bool(true)
                 ]
             ])
         ])
 
         let active =
-            #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"pro"]},{"var":"isActive"}]}]}"#
+            #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"product_id"},"pro"]},{"var":"is_active"}]}]}"#
         #expect(try RulesEngine.evaluate(predicate: active, variables: snapshot.values).get())
 
         let inactive =
-            #"{"some":[{"var":"device.purchases"},{"and":[{"==":[{"var":"productId"},"plus"]},{"var":"isActive"}]}]}"#
+            #"{"some":[{"var":"purchases"},{"and":[{"==":[{"var":"product_id"},"plus"]},{"var":"is_active"}]}]}"#
         #expect(try !RulesEngine.evaluate(predicate: inactive, variables: snapshot.values).get())
 
-        let byIndex = #"{"==":[{"var":"device.purchases.1.productId"},"pro"]}"#
+        let byIndex = #"{"==":[{"var":"purchases.1.product_id"},"pro"]}"#
         #expect(try RulesEngine.evaluate(predicate: byIndex, variables: snapshot.values).get())
     }
 
@@ -148,10 +147,11 @@ struct DimensionValueTests {
         ])
 
         #expect(snapshot.values == [
-            "device": .object(["purchases": .array([])])
+            "evaluated_at": .int(123_000),
+            "purchases": .array([])
         ])
 
-        let none = #"{"none":[{"var":"device.purchases"},{"var":"isActive"}]}"#
+        let none = #"{"none":[{"var":"purchases"},{"var":"is_active"}]}"#
         #expect(try RulesEngine.evaluate(predicate: none, variables: snapshot.values).get())
     }
 
@@ -159,7 +159,8 @@ struct DimensionValueTests {
         _ values: [String: DimensionValue]
     ) async throws -> DimensionSnapshot {
         return try await DimensionResolver(
-            dimensionProviders: [StaticDimensionProvider(values: values)]
+            dimensionProviders: [StaticDimensionProvider(values: values)],
+            dateProvider: MockDateProvider(stubbedNow: Date(timeIntervalSince1970: 123))
         ).snapshot()
     }
 
@@ -167,7 +168,7 @@ struct DimensionValueTests {
 
 private struct StaticDimensionProvider: DimensionProvider {
 
-    let namespace: DimensionNamespace = .device
+    let name = "test"
     let values: [String: DimensionValue]
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {

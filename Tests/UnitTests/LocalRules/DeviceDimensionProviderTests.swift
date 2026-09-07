@@ -25,7 +25,7 @@ import Testing
 struct DeviceDimensionProviderTests {
 
     @Test
-    func providesDeviceDimensionsInDeviceNamespace() async throws {
+    func providesCanonicalDeviceDimensionsAtTheRoot() async throws {
         let provider = DeviceDimensionProvider(
             appVersion: "1.2.3",
             localeProvider: { "NL-nl" },
@@ -34,13 +34,13 @@ struct DeviceDimensionProviderTests {
             sdkVersion: "5.84.0-SNAPSHOT"
         )
 
-        #expect(provider.namespace == .device)
+        #expect(provider.name == "device")
         #expect(try await provider.dimensions(at: Date()) == [
-            "appVersion": .string("1.2.3"),
+            "app_version": .string("1.2.3"),
             "locale": .string("nl_nl"),
             "platform": .string("ios"),
-            "platformVersion": .string("26.3.0"),
-            "sdkVersion": .string("5.84.0")
+            "platform_version": .string("26.3.0"),
+            "sdk_version": .string("5.84.0")
         ])
     }
 
@@ -55,7 +55,7 @@ struct DeviceDimensionProviderTests {
         )
 
         #expect(try await provider.dimensions(at: Date()) == [
-            "platformVersion": .string("26.3.0")
+            "platform_version": .string("26.3.0")
         ])
     }
 
@@ -93,7 +93,7 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.appVersion"},"1.2.3"]}"#
+                predicate: #"{"==":[{"var":"app_version"},"1.2.3"]}"#
             )
         ])
 
@@ -116,7 +116,7 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.locale"},"nl_nl"]}"#
+                predicate: #"{"==":[{"var":"locale"},"nl_nl"]}"#
             )
         ])
 
@@ -139,7 +139,7 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.platform"},"ios"]}"#
+                predicate: #"{"==":[{"var":"platform"},"ios"]}"#
             )
         ])
 
@@ -173,7 +173,7 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.platformVersion"},"26.3.0"]}"#
+                predicate: #"{"==":[{"var":"platform_version"},"26.3.0"]}"#
             )
         ])
 
@@ -197,7 +197,7 @@ struct DeviceDimensionProviderTests {
         let match = try await evaluator.match(in: [
             TestRule(
                 id: "matching-rule",
-                predicate: #"{"==":[{"var":"device.sdkVersion"},"5.84.0"]}"#
+                predicate: #"{"==":[{"var":"sdk_version"},"5.84.0"]}"#
             )
         ])
 

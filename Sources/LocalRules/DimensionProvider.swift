@@ -14,16 +14,6 @@
 
 import Foundation
 
-/// Roots containing dimensions that may be evaluated locally by the rules engine.
-enum DimensionNamespace: String, CaseIterable, Sendable {
-
-    case backend
-    case custom
-    case device
-    case store
-    case subscriberAttributes
-}
-
 /// A dimension exposed to the local rules engine.
 ///
 /// This keeps providers independent from the RulesEngine representation.
@@ -54,19 +44,19 @@ enum DimensionValue: Equatable, Sendable {
     case objectList([[String: DimensionValue]])
 }
 
-/// Supplies one current subtree of dimensions.
+/// Supplies part of the root scope of dimensions.
 ///
 /// Implementations may observe or persist state internally, but values are
 /// pulled only when a rules evaluation requests a new snapshot.
 protocol DimensionProvider: Sendable {
 
-    /// Root namespace containing the returned dimensions.
-    var namespace: DimensionNamespace { get }
+    /// Identifies this provider in diagnostics. It is not part of the evaluated scope.
+    var name: String { get }
 
-    /// Returns the complete current set of dimensions relative to ``namespace``.
+    /// Returns the complete current set of root dimensions owned by this provider.
     ///
-    /// Keys are lower camel-case names such as `appVersion`. The resolver
-    /// adds the provider's namespace and recursively ignores empty,
+    /// Keys are snake-case names such as `app_version`. The resolver merges
+    /// every provider into one root and recursively ignores empty,
     /// whitespace-only, or `.`-containing keys. Missing individual values must
     /// be omitted. Throwing is reserved for a systemic failure to produce the
     /// provider's dimensions.
