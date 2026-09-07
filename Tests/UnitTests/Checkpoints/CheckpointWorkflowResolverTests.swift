@@ -262,33 +262,95 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Set(resolved.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
     }
 
-    func testConfigGenerationChangeDuringResolutionReturnsConfigurationUnavailable() async throws {
+    func testConfigGenerationChangeDuringResolutionRetriesOnce() async throws {
+        let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            if fetchCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return self.offerings
+        }
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(fetchCount.value, 2)
+    }
+
+    func testConfigChangingDuringBothResolutionAttemptsReturnsConfigurationUnavailable() async throws {
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
             self.checkpointsProvider.configGeneration += 1
+            self.audiencesProvider.configGeneration += 1
             return self.offerings
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 2)
     }
 
-    func testConfigGenerationChangeDuringAudienceEvaluationSkipsResolution() async throws {
+    func testConfigGenerationChangeDuringAudienceEvaluationRetriesBeforeResolving() async throws {
+        let configurationCount = Atomic<Int>(0)
         let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
             fetchCount.modify { $0 += 1 }
             return self.offerings
         }
-        // Audiences are read live, outside the rule snapshot's generation guard, so a refresh landing mid-walk
-        // leaves the match itself built from config that is already gone.
-        self.audiencesProvider.onLookup = { _ in
-            self.checkpointsProvider.configGeneration += 1
+        self.audiencesProvider.onConfiguration = {
+            configurationCount.modify { $0 += 1 }
+            if configurationCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertEqual(fetchCount.value, 0, "A rule matched against stale config should not be resolved")
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+        XCTAssertEqual(fetchCount.value, 1, "The stale attempt should not resolve its matched rule")
+    }
+
+    func testStaleUnavailableAudienceConfigurationRetries() async throws {
+        let configurationCount = Atomic<Int>(0)
+        self.audiencesProvider.onConfiguration = {
+            let count = configurationCount.modify { $0 += 1; return $0 }
+            self.audiencesProvider.configurationUnavailable = count == 1
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+    }
+
+    func testStaleEmptyRulesRetry() async throws {
+        let rulesRequestCount = Atomic<Int>(0)
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
+        self.checkpointsProvider.onRules = {
+            let count = rulesRequestCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+                self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+                    Self.rule(workflowID: self.workflowID)
+                ]))
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(rulesRequestCount.value, 2)
     }
 
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
@@ -327,13 +389,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
-    func testAudiencesAfterTheFirstMatchAreNotLoaded() async throws {
+    func testAudienceConfigurationLoadsOnceForAllRules() async throws {
         let secondWorkflowID = "wf5678"
         self.stubTwoRules(secondWorkflowID: secondWorkflowID)
 
         _ = try await self.resolve()
 
-        XCTAssertEqual(self.audiencesProvider.requestedIdentifiers, ["audience_\(self.workflowID)"])
+        XCTAssertEqual(self.audiencesProvider.configurationRequestCount, 1)
     }
 
     func testCheckpointWhoseAudiencesAllMissMatchesResolvesNoMatch() async throws {
@@ -375,6 +437,68 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(missed), .noMatch)
     }
 
+    func testTrueBackendPredicateResultMatchesAudience() async throws {
+        let hash = "condition_hash"
+        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
+        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+    }
+
+    func testFalseBackendPredicateResultDoesNotMatchAudience() async throws {
+        let hash = "condition_hash"
+        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",true]}"#
+        self.audiencesProvider.backendPredicateResults = [hash: .bool(false)]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    func testMissingBackendPredicateResultUsesAuthoredDefault() async throws {
+        self.audiencesProvider.defaultRules = #"{"var":["backend.missing_hash",true]}"#
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+    }
+
+    func testBackendPredicateResultsAreScopedToOneEvaluation() async throws {
+        let hash = "condition_hash"
+        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
+        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
+
+        let matched = try await self.resolve()
+        self.audiencesProvider.backendPredicateResults = [:]
+        let missed = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(matched)?.workflow.id, self.workflowID)
+        XCTAssertEqual(Self.noActionReason(missed), .noMatch)
+    }
+
+    func testNonBooleanBackendPredicateResultsAreAvailableToAudiencePredicates() async throws {
+        self.audiencesProvider.defaultRules = #"""
+        {"and":[
+            {"==":[{"var":"backend.variant"},"variant_b"]},
+            {"==":[{"var":"backend.count"},3]},
+            {"==":[{"var":"backend.score"},1.5]},
+            {"==":[{"var":"backend.profile.tier"},"pro"]}
+        ]}
+        """#
+        self.audiencesProvider.backendPredicateResults = [
+            "variant": .string("variant_b"),
+            "count": .int(3),
+            "score": .double(1.5),
+            "profile": .object(["tier": .string("pro")])
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+    }
+
     /// A malformed predicate is an evaluation failure, not a lookup failure: the audience was read, the engine
     /// just couldn't run it. That doesn't block a lower-priority rule from winning on its own merits.
     func testMalformedAudienceBeforeAMatchDoesNotPreventALaterWorkflow() async throws {
@@ -398,6 +522,24 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let resolution = try await self.resolve()
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+    }
+
+    func testStaleConfigurationAfterUnevaluatablePredicateRetriesBeforeReturningUnavailable() async throws {
+        let dimensionEvaluationCount = Atomic<Int>(0)
+        let evaluator = LocalRulesEvaluator(dimensionProviders: [CallbackDimensionProvider {
+            let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+        }])
+        self.audiencesProvider.defaultRules = "{not-json"
+        let resolver = self.makeResolver(localRulesEvaluator: evaluator)
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(dimensionEvaluationCount.value, 2)
     }
 
     // MARK: - Served audience payloads
@@ -497,10 +639,12 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func stubTwoRules(secondWorkflowID: String) {
+        let audienceIDs = ["audience_\(self.workflowID)", "audience_\(secondWorkflowID)"]
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: self.workflowID, audienceID: "audience_\(self.workflowID)"),
-            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_\(secondWorkflowID)")
+            Self.rule(workflowID: self.workflowID, audienceID: audienceIDs[0]),
+            Self.rule(workflowID: secondWorkflowID, audienceID: audienceIDs[1])
         ]))
+        self.audiencesProvider.registerDefaultAudienceIdentifiers(audienceIDs)
         self.workflowsProvider.stubbedOfferingIdByWorkflowId[secondWorkflowID] = self.offeringID
         self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
             id: secondWorkflowID
@@ -747,17 +891,48 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     /// Every audience matches unless a test says otherwise, so rule ordering stays the subject of the
     /// tests that predate audience evaluation.
     var rulesByAudienceID: [String: String] = [:]
-    var defaultRules: String? = "true"
-    var onLookup: ((String) -> Void)?
-    private(set) var requestedIdentifiers: [String] = []
+    var defaultRules: String? = "true" {
+        didSet {
+            for identifier in self.defaultAudienceIdentifiers {
+                self.rulesByAudienceID[identifier] = self.defaultRules
+            }
+        }
+    }
+    var configGeneration = 0
+    var backendPredicateResults: [String: DimensionValue] = [:]
+    var configurationUnavailable = false
+    var onConfiguration: (() -> Void)?
+    private(set) var configurationRequestCount = 0
+    private var defaultAudienceIdentifiers: Set<String> = ["audience"]
 
-    func getAudience(_ identifier: String) async -> Audience? {
-        self.requestedIdentifiers.append(identifier)
-        self.onLookup?(identifier)
+    init() {
+        self.rulesByAudienceID["audience"] = "true"
+    }
 
-        guard let rules = self.rulesByAudienceID[identifier] ?? self.defaultRules else { return nil }
+    func registerDefaultAudienceIdentifiers(_ identifiers: [String]) {
+        self.defaultAudienceIdentifiers.formUnion(identifiers)
+        for identifier in identifiers {
+            self.rulesByAudienceID[identifier] = self.defaultRules
+        }
+    }
 
-        return Audience(id: identifier, rules: rules)
+    func configuration() async throws -> AudienceConfigurationSnapshot? {
+        self.configurationRequestCount += 1
+        self.onConfiguration?()
+
+        guard !self.configurationUnavailable else { return nil }
+
+        return AudienceConfigurationSnapshot(
+            audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
+                (identifier, Audience(id: identifier, rules: rules))
+            }),
+            backendPredicateResults: self.backendPredicateResults,
+            configGeneration: self.configGeneration
+        )
+    }
+
+    func isCurrent(_ snapshot: AudienceConfigurationSnapshot) -> Bool {
+        return snapshot.configGeneration == self.configGeneration
     }
 
 }
@@ -784,11 +959,28 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
 }
 
+private final class CallbackDimensionProvider: DimensionProvider, @unchecked Sendable {
+
+    let namespace = DimensionNamespace.device
+    let callback: () -> Void
+
+    init(callback: @escaping () -> Void) {
+        self.callback = callback
+    }
+
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        self.callback()
+        return [:]
+    }
+
+}
+
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
     var error: Error?
     var configGeneration = 0
+    var onRules: (() -> Void)?
     private(set) var requestedIdentifiers: [String] = []
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
@@ -796,9 +988,11 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         if let error = self.error {
             throw error
         }
-        return try self.result.get().map {
+        let snapshot = try self.result.get().map {
             CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
         }
+        self.onRules?()
+        return snapshot
     }
 
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {
