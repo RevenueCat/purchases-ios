@@ -26,6 +26,44 @@ import XCTest
 @MainActor
 final class SubscriptionDetailViewModelTests: TestCase {
 
+    func testBrowserDismissRefreshesWithoutSyncingPurchases() async throws {
+        let purchases = MockCustomerCenterPurchases()
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                actionWrapper: CustomerCenterActionWrapper(),
+                purchasesProvider: purchases
+            ),
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: .mock(
+                store: .playStore,
+                isSubscription: true,
+                managementURL: URL(string: "https://play.google.com/store/account/subscriptions")!
+            ),
+            purchasesProvider: purchases
+        )
+
+        let cancelPath = CustomerCenterConfigData.HelpPath(
+            id: "cancel",
+            title: "Cancel subscription",
+            type: .cancel,
+            detail: nil
+        )
+        await viewModel.handleHelpPath(cancelPath)
+        expect(viewModel.browserMayHaveChangedSubscription) == true
+
+        viewModel.onDismissInAppBrowser()
+        try await Task.sleep(nanoseconds: 200_000_000)
+
+        // syncPurchases posts the Apple receipt and returns cached info when there are
+        // no Apple transactions, which is this exact case
+        expect(purchases.syncPurchasesCount) == 0
+        expect(purchases.customerInfoFetchPolicy) == .fetchCurrent
+    }
+
     func testShouldShowContactSupport() {
         let viewModelAppStore = SubscriptionDetailViewModel(
             customerInfoViewModel: CustomerCenterViewModel(

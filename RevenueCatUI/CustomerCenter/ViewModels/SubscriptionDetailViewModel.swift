@@ -115,7 +115,18 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
             .store(in: &cancellables)
     }
 
-    func refreshPurchase() {
+    override func onDismissInAppBrowser() {
+        let subscriptionMayHaveChanged = browserMayHaveChangedSubscription
+        super.onDismissInAppBrowser()
+
+        if subscriptionMayHaveChanged {
+            // syncPurchases posts the local App Store receipt and hands back cached CustomerInfo
+            // when there are no Apple transactions, which is exactly the case here, so fetch instead.
+            refreshPurchase(shouldSync: false)
+        }
+    }
+
+    func refreshPurchase(shouldSync: Bool = true) {
         refreshingCancellable = customerInfoViewModel.publisher(for: purchaseInformation)?
             .dropFirst() // skip current value
             .sink(receiveValue: { @MainActor [weak self] in
@@ -126,7 +137,7 @@ final class SubscriptionDetailViewModel: BaseManageSubscriptionViewModel {
         isRefreshing = true
 
         Task {
-            await customerInfoViewModel.loadScreen(shouldSync: true)
+            await customerInfoViewModel.loadScreen(shouldSync: shouldSync)
             // In case loadScreen does not trigger a new update (error)
             isRefreshing = false
         }
