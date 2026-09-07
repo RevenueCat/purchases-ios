@@ -176,16 +176,19 @@ class ExternalPurchaseManagerTests: TestCase {
 
     // MARK: - Eligibility
 
-    func testResolvesEligibilityOnlyOnce() async {
-        let firstCheck = await self.manager.canMakeExternalPurchases()
-        let secondCheck = await self.manager.canMakeExternalPurchases()
+    /// Eligibility can change while the app is running, so every purchase asks for it again.
+    func testResolvesEligibilityOnEveryPurchase() async {
+        self.customLink.stubbedCanMakeExternalPurchases = false
 
-        expect(firstCheck) == true
-        expect(secondCheck) == true
+        let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(whileIneligible) == .stopped(.cannotMakeExternalPurchases)
 
-        _ = await self.manager.prepareExternalPurchase(flow: .inApp)
+        self.customLink.stubbedCanMakeExternalPurchases = true
 
-        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 1
+        let onceEligible = await self.manager.prepareExternalPurchase(flow: .inApp)
+        expect(onceEligible) == .registered(tokenID: Self.tokenID)
+
+        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 2
     }
 
 }

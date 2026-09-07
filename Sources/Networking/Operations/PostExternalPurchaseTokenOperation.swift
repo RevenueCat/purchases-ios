@@ -13,6 +13,10 @@
 
 import Foundation
 
+/// Registers a StoreKit external purchase token with RevenueCat, for a purchase made outside of
+/// Apple's in-app purchase system.
+///
+/// The response carries the identifier that the checkout is then started with.
 final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
