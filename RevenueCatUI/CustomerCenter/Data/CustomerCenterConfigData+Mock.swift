@@ -26,8 +26,7 @@ extension CustomerCenterConfigData {
         displayPurchaseHistoryLink: Bool = false,
         displayUserDetailsSection: Bool = true,
         displayVirtualCurrencies: Bool = false,
-        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever,
-        shouldWarnCustomersAboutMultipleSubscriptions: Bool = false
+        refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration = .forever
     ) -> CustomerCenterConfigData {
         CustomerCenterConfigData(
             screens: [
@@ -132,8 +131,7 @@ extension CustomerCenterConfigData {
                 shouldWarnCustomerToUpdate: shouldWarnCustomerToUpdate,
                 displayPurchaseHistoryLink: displayPurchaseHistoryLink,
                 displayUserDetailsSection: displayUserDetailsSection,
-                displayVirtualCurrencies: displayVirtualCurrencies,
-                shouldWarnCustomersAboutMultipleSubscriptions: shouldWarnCustomersAboutMultipleSubscriptions
+                displayVirtualCurrencies: displayVirtualCurrencies
             ),
             changePlans: [],
             lastPublishedAppVersion: lastPublishedAppVersion,
