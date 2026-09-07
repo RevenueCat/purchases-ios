@@ -159,8 +159,6 @@ private extension ExternalPurchaseManager {
     }
 
     func resolveEligibility() async -> Bool {
-        // A Test Store key has no App Store behind it, so there is no storefront to be eligible in, no token to
-        // mint and nothing to disclose. Reporting no eligibility keeps the whole StoreKit sequence out of the way.
         guard !self.systemInfo.isSimulatedStoreAPIKey else {
             Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
             return false
