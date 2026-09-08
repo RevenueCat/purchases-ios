@@ -13,7 +13,7 @@
 import Foundation
 
 /// Ties a loaded rewarded ad to its server-side reward verification
-@_spi(Experimental) public struct RewardVerificationToken: Sendable, Equatable {
+public struct RewardVerificationToken: Sendable, Equatable {
 
     /// Set as the ad network's server-side verification custom data.
     public let customData: String

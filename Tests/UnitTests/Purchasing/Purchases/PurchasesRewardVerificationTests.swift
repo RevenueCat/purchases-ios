@@ -15,7 +15,7 @@
 import Nimble
 import XCTest
 
-@_spi(Internal) @_spi(Experimental) @testable import RevenueCat
+@_spi(Internal) @testable import RevenueCat
 
 @MainActor
 final class PurchasesRewardVerificationTests: BasePurchasesTests {
@@ -445,6 +445,7 @@ extension PurchasesRewardVerificationTests {
 
 // MARK: - generateRewardVerificationToken
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 extension PurchasesRewardVerificationTests {
 
     func testGenerateRewardVerificationTokenReturnsValidUUID() {

@@ -69,7 +69,7 @@ final class CheckpointsManagerTests: TestCase {
             params: CheckpointCallParams(customVariables: ["name": "Rick"])
         )
 
-        guard let noAction = result as? CheckpointNoActionResult else {
+        guard let noAction = result as? CheckpointResult.NoAction else {
             return XCTFail("Expected a no-action result")
         }
         XCTAssertEqual(noAction.reason, .unknownCheckpoint)
@@ -80,7 +80,7 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(listener.hitContexts.first?.customVariables["name"], "Rick")
         XCTAssertEqual(listener.completedContexts.first?.customVariables["name"], "Rick")
         XCTAssertEqual(
-            (listener.completedContexts.first?.result as? CheckpointNoActionResult)?.reason,
+            (listener.completedContexts.first?.result as? CheckpointResult.NoAction)?.reason,
             noAction.reason
         )
     }
@@ -122,7 +122,7 @@ final class CheckpointsManagerTests: TestCase {
             params: .init(customVariables: customVariables)
         )
 
-        guard let presented = result as? CheckpointPaywallPresentedResult else {
+        guard let presented = result as? CheckpointResult.PaywallPresented else {
             return XCTFail("Expected a presented-paywall result")
         }
         XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallOutcome.Dismissed)
@@ -145,7 +145,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = try await manager.checkpoint(identifier: "onboarding", params: .init())
 
-        guard let received = result as? CheckpointReceivedOfferingResult else {
+        guard let received = result as? CheckpointResult.ReceivedOffering else {
             return XCTFail("Expected a received-offering result")
         }
         XCTAssertEqual(received.offering.identifier, "offering-id")
@@ -196,7 +196,7 @@ final class CheckpointsManagerTests: TestCase {
         let manager = CheckpointsManager { _, _ in .noAction(.configurationUnavailable) }
 
         manager.checkpoint(identifier: "disabled", params: .init()) { result in
-            guard case let .success(noAction as CheckpointNoActionResult) = result else {
+            guard case let .success(noAction as CheckpointResult.NoAction) = result else {
                 return XCTFail("Expected a no-action result")
             }
             XCTAssertEqual(noAction.reason, .configurationUnavailable)
@@ -233,7 +233,7 @@ final class CheckpointsManagerTests: TestCase {
 
         let result = try await manager.checkpoint(identifier: invalidIdentifier, params: .init())
 
-        guard let noActionResult = result as? CheckpointNoActionResult else {
+        guard let noActionResult = result as? CheckpointResult.NoAction else {
             return XCTFail("Expected a no-action result")
         }
 
@@ -255,7 +255,7 @@ final class CheckpointsManagerTests: TestCase {
         }
 
         manager.checkpoint(identifier: "invalid checkpoint", params: .init()) { result in
-            guard case let .success(noAction as CheckpointNoActionResult) = result else {
+            guard case let .success(noAction as CheckpointResult.NoAction) = result else {
                 return XCTFail("Expected an invalid-identifier no-action result")
             }
 
@@ -584,15 +584,15 @@ private final class ListenerRecorder: CheckpointListener {
     }
 
     private(set) var events: [Event] = []
-    private(set) var hitContexts: [CheckpointHitContext] = []
-    private(set) var completedContexts: [CheckpointCompletedContext] = []
+    private(set) var hitContexts: [CheckpointContext.Hit] = []
+    private(set) var completedContexts: [CheckpointContext.Completed] = []
 
-    func onCheckpointHit(_ context: CheckpointHitContext) {
+    func onCheckpointHit(_ context: CheckpointContext.Hit) {
         self.hitContexts.append(context)
         self.events.append(.hit(context.identifier))
     }
 
-    func onCheckpointCompleted(_ context: CheckpointCompletedContext) {
+    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
         self.completedContexts.append(context)
         self.events.append(.completed(context.identifier))
     }

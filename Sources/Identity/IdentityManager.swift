@@ -84,11 +84,24 @@ class IdentityManager: CurrentUserProvider {
     var currentUserIsAnonymous: Bool {
         let userID = self.currentAppUserID
 
-        lazy var currentAppUserIDLooksAnonymous = Self.userIsAnonymous(userID)
-        lazy var isLegacyAnonymousAppUserID = userID == self.deviceCache.cachedLegacyAppUserID
-        lazy var isAnonymousIdentity = tokenManager.isCurrentIdentityAnonymous
+        if Self.userIsAnonymous(userID) {
+            return true
+        }
 
-        return currentAppUserIDLooksAnonymous || isLegacyAnonymousAppUserID || isAnonymousIdentity
+        if self.deviceCache.cachedLegacyAppUserID == userID {
+            return true
+        }
+
+        if let info = try? self.customerInfoManager.cachedCustomerInfo(appUserID: userID),
+           info.allIdentitiesAreAnonymous {
+            return true
+        }
+
+        if tokenManager.isCurrentIdentityAnonymous {
+            return true
+        }
+
+        return false
     }
 
     var needsIAMLogin: Bool {
@@ -132,19 +145,6 @@ class IdentityManager: CurrentUserProvider {
             } else {
                 self.performLogOut(completion: completion)
             }
-        }
-    }
-
-    func revokeCurrentAccessToken(completion: @escaping (PurchasesError?) -> Void) {
-        guard self.currentAppUserID != Self.uiPreviewModeAppUserID else {
-            completion(ErrorUtils.unsupportedInUIPreviewModeError())
-            return
-        }
-
-        if self.tokenManager.enabled {
-            self.performAccessTokenRevocation(for: self.currentAppUserID, completion: completion)
-        } else {
-            completion(nil)
         }
     }
 
@@ -231,12 +231,6 @@ private extension IdentityManager {
             case .failure(let error):
                 completion(.failure(error))
             }
-        }
-    }
-
-    func performAccessTokenRevocation(for appUserID: String, completion: @escaping (PurchasesError?) -> Void) {
-        self.backend.token.revokeAccessTokens(for: appUserID) { error in
-            completion(error?.asPurchasesError)
         }
     }
 

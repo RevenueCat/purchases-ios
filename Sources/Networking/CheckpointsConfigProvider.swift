@@ -23,8 +23,8 @@ struct CheckpointRulesSnapshot {
 
 enum CheckpointRulesProviderError: Error, Equatable {
 
-    case remoteConfigDisabled
     case payloadUnavailable
+    case stale
 
 }
 
@@ -41,21 +41,16 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
-        while true {
-            try Task.checkCancellation()
-            let configGeneration = self.manager.configGeneration
-
-            do {
+        do {
+            return try await self.manager.readConsistent {
+                let generation = self.manager.configGeneration
                 let rules = try await self.loadRules(for: identifier)
-                guard self.manager.configGeneration == configGeneration else { continue }
-
                 return rules.map {
-                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: configGeneration)
+                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: generation)
                 }
-            } catch {
-                guard self.manager.configGeneration == configGeneration else { continue }
-                throw error
             }
+        } catch RemoteConfigConsistencyError.stale {
+            throw CheckpointRulesProviderError.stale
         }
     }
 
@@ -76,17 +71,7 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
             Logger.error(Strings.codable.decoding_error(error, CheckpointRuleSet.self))
         }
 
-        // The blob read above self-primes remote config on a cold cache. Classifying afterwards prevents an
-        // existing checkpoint from briefly looking unconfigured while that initial refresh is still in flight.
-        if self.manager.isDisabled {
-            throw CheckpointRulesProviderError.remoteConfigDisabled
-        }
-
         let topic = await self.manager.topic(.checkpointRules)
-        if self.manager.isDisabled {
-            throw CheckpointRulesProviderError.remoteConfigDisabled
-        }
-
         guard let topic else {
             guard await self.manager.hasCommittedConfig() else {
                 throw CheckpointRulesProviderError.payloadUnavailable

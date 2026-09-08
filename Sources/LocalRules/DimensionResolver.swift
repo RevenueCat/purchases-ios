@@ -22,32 +22,45 @@ struct DimensionSnapshot: Equatable, Sendable {
 
 enum DimensionResolutionError: Error, Equatable, Sendable {
 
-    case providerFailed(namespace: DimensionNamespace, message: String)
+    case providerFailed(providerName: String, message: String)
     case conflictingValue(path: String)
+    case appUserChanged
 }
 
-/// Builds immutable, point-in-time dimension scopes for local rule evaluation.
+/// Builds an immutable, point-in-time root scope for local rule evaluation.
+///
+/// Providers can suspend while collecting values. The current app user ID is therefore read before collection and
+/// verified after every provider finishes, preventing a snapshot from combining values belonging to two app users.
+/// Identity changes also advance the remote-config generation, allowing checkpoint resolution to retry against the
+/// new app user instead of evaluating the invalid snapshot.
 struct DimensionResolver: Sendable {
 
     private let dimensionProviders: [any DimensionProvider]
+    private let currentAppUserIDProvider: @Sendable () -> String
     private let dateProvider: DateProvider
 
-    /// Creates a resolver from injected providers and a clock.
+    /// Creates a resolver from injected providers, the current app user, and a clock.
     init(
         dimensionProviders: [any DimensionProvider],
+        currentAppUserIDProvider: @escaping @Sendable () -> String,
         dateProvider: DateProvider = DateProvider()
     ) {
         self.dimensionProviders = dimensionProviders
+        self.currentAppUserIDProvider = currentAppUserIDProvider
         self.dateProvider = dateProvider
     }
 
-    /// Collects each provider once and merges its values under its namespace.
+    /// Collects each provider once and merges its values into the canonical root scope.
     ///
-    /// For example, device `appVersion: "1.2.3"` becomes
-    /// `device.appVersion: "1.2.3"` in the RulesEngine input.
-    func snapshot(customVariables: [String: DimensionValue] = [:]) async throws -> DimensionSnapshot {
+    /// `custom` remains a nested reserved object. Every other value is flat.
+    func snapshot(
+        customVariables: [String: DimensionValue] = [:]
+    ) async throws -> DimensionSnapshot {
+        let appUserID = self.currentAppUserIDProvider()
         let date = self.dateProvider.now()
-        var values: [String: RulesEngine.Value] = [:]
+        var values: [String: RulesEngine.Value] = [
+            Self.evaluatedAtKey: .int(Int64(date.timeIntervalSince1970 * 1_000))
+        ]
 
         for provider in self.dimensionProviders {
             try Task.checkCancellation()
@@ -59,48 +72,52 @@ struct DimensionResolver: Sendable {
                 throw error
             } catch {
                 throw DimensionResolutionError.providerFailed(
-                    namespace: provider.namespace,
+                    providerName: provider.name,
                     message: String(describing: error)
                 )
             }
 
-            let namespace = provider.namespace.rawValue
-            var namespaceValues: [String: RulesEngine.Value] = [:]
-            if case .object(let existing) = values[namespace] {
-                namespaceValues = existing
-            }
-
             for (name, value) in DimensionValueConverter.convert(
                 providerValues,
-                parentPath: namespace
+                parentPath: provider.name
             ) {
-                guard namespaceValues[name] == nil else {
+                guard !Self.reservedRootKeys.contains(name), values[name] == nil else {
                     throw DimensionResolutionError.conflictingValue(
-                        path: "\(namespace).\(name)"
+                        path: name
                     )
                 }
 
-                namespaceValues[name] = value
-            }
-
-            if !namespaceValues.isEmpty {
-                values[namespace] = .object(namespaceValues)
+                values[name] = value
             }
         }
 
-        let validCustomVariables = CustomVariableKeyValidator.validateAndFilter(customVariables)
-        let customVariables = DimensionValueConverter.convert(
-            validCustomVariables,
-            parentPath: DimensionNamespace.custom.rawValue
+        Self.addPerEvaluationValues(
+            CustomVariableKeyValidator.validateAndFilter(customVariables),
+            root: Self.customKey,
+            to: &values
         )
-        if !customVariables.isEmpty {
-            values[DimensionNamespace.custom.rawValue] = .object(customVariables)
-        }
-
         try Task.checkCancellation()
+        guard self.currentAppUserIDProvider() == appUserID else {
+            throw DimensionResolutionError.appUserChanged
+        }
 
         return DimensionSnapshot(values: values, evaluationDate: date)
     }
+
+    private static func addPerEvaluationValues(
+        _ dimensions: [String: DimensionValue],
+        root: String,
+        to values: inout [String: RulesEngine.Value]
+    ) {
+        let converted = DimensionValueConverter.convert(dimensions, parentPath: root)
+        if !converted.isEmpty {
+            values[root] = .object(converted)
+        }
+    }
+
+    private static let evaluatedAtKey = "evaluated_at"
+    private static let customKey = "custom"
+    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey]
 }
 
 private enum DimensionValueConverter {
@@ -112,7 +129,7 @@ private enum DimensionValueConverter {
         return dimensions.reduce(into: [:]) { result, dimension in
             let (name, value) = dimension
             guard Self.isValidName(name) else {
-                Logger.warn(Strings.remoteConfig.invalidDimensionName(name, parentPath: parentPath))
+                Logger.warn(Strings.localRules.invalidDimensionName(name, parentPath: parentPath))
                 return
             }
 
@@ -127,6 +144,7 @@ private enum DimensionValueConverter {
     /// Converts a provider value into its RulesEngine equivalent while filtering invalid nested names.
     private static func convert(_ dimension: DimensionValue, path: String) -> RulesEngine.Value? {
         switch dimension {
+        case .null: return .null
         case .string(let value): return .string(value)
         case .bool(let value): return .bool(value)
         case .int(let value): return .int(value)

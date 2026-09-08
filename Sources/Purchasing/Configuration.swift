@@ -535,6 +535,15 @@ extension Configuration {
 
 extension Configuration.APIKeyValidationResult {
 
+    /// Whether configuring the SDK with this API key must be blocked in Release builds.
+    /// `uiPreviewMode` and `forceAllowTestStoreInReleaseBuilds` are opt-ins that intentionally bypass the guard.
+    // Visible for testing
+    func shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: DangerousSettings) -> Bool {
+        return self == .simulatedStore
+            && !dangerousSettings.uiPreviewMode
+            && !dangerousSettings.forceAllowTestStoreInReleaseBuilds
+    }
+
     func checkForSimulatedStoreAPIKeyInRelease(systemInfo: SystemInfo, apiKey: String) {
         // The `BYPASS_SIMULATED_STORE_RELEASE_CHECK` compilation flag opts out of the Release-build
         // safeguard. It exists for SDK consumers (e.g. purchases-kmp) that ship the SDK as a
@@ -542,7 +551,7 @@ extension Configuration.APIKeyValidationResult {
         // otherwise crash apps that use a Test Store API key during development. Setting this flag
         // means apps shipped to production with a Test Store API key won't be caught at runtime.
         #if !DEBUG && !BYPASS_SIMULATED_STORE_RELEASE_CHECK
-        guard self == .simulatedStore, !systemInfo.dangerousSettings.uiPreviewMode else {
+        guard self.shouldBlockSimulatedStoreAPIKeyInRelease(dangerousSettings: systemInfo.dangerousSettings) else {
             return
         }
 
