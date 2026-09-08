@@ -20,7 +20,7 @@ protocol LocalRule: Sendable {
     var predicate: String { get }
 }
 
-/// A predicate failure that prevented local rules from producing a definitive non-match.
+/// A predicate failure encountered while evaluating local rules.
 enum LocalRulesEvaluationError: Error, Equatable, Sendable {
 
     case predicateEvaluation(ruleIndex: Int, error: RulesEngine.EvaluationError)
@@ -63,8 +63,9 @@ final class LocalRulesEvaluator: Sendable {
     /// Same, for rules that don't carry their own predicate and have to look it up.
     ///
     /// The predicate is resolved one rule at a time, so a rule after the match never pays for a lookup. A
-    /// lookup that throws ends the call: a predicate the SDK couldn't obtain is not the same answer as one
-    /// that evaluated to false, so the remaining rules can't be walked as if it hadn't matched.
+    /// predicate that references an unavailable local value is treated as a non-match, allowing evaluation
+    /// to continue with the remaining rules. Other evaluation errors are retained and thrown if no rule
+    /// matches.
     func match<Rule: Sendable>(
         in rules: [Rule],
         customVariables: [String: DimensionValue] = [:],
@@ -95,8 +96,14 @@ final class LocalRulesEvaluator: Sendable {
             case .success(false):
                 continue
             case .failure(let error):
-                if firstEvaluationError == nil {
-                    firstEvaluationError = .predicateEvaluation(ruleIndex: index, error: error)
+                switch error {
+                case .unresolvedVariable(let path):
+                    Logger.debug(Strings.localRules.ruleUnresolvedVariable(ruleIndex: index, path: path))
+                    continue
+                default:
+                    if firstEvaluationError == nil {
+                        firstEvaluationError = .predicateEvaluation(ruleIndex: index, error: error)
+                    }
                 }
             }
         }
