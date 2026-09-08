@@ -255,7 +255,7 @@ fileprivate extension View {
     }
 
     /// A `ScrollView` takes all the space proposed along its axis, which would override a fixed size.
-    /// Hug the content instead so the stack keeps its fixed dimension (see #7646).
+    /// Hug the content instead so the stack keeps its fixed dimension.
     @ViewBuilder
     func keepFixedSize(along axis: Axis, size: PaywallComponent.Size) -> some View {
         switch axis {
@@ -751,7 +751,6 @@ struct StackComponentViewHorizontal_Previews: PreviewProvider {
     }
 }
 
-/// https://github.com/RevenueCat/purchases-ios/issues/7646
 /// A fixed 22x22 pill stack must stay a circle even with `overflow: scroll`. Before the fix the
 /// ScrollView wrapper took the row height and the ring rendered as a vertical capsule.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -813,7 +812,7 @@ struct StackComponentViewFixedPillOverflow_Previews: PreviewProvider {
         .padding()
         .previewRequiredPaywallsV2Properties()
         .previewLayout(.sizeThatFits)
-        .previewDisplayName("Fixed pill + overflow (#7646)")
+        .previewDisplayName("Fixed pill + overflow scroll")
     }
 
 }
