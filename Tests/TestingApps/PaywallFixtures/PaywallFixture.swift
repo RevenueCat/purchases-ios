@@ -35,6 +35,10 @@ enum PaywallFixture: String, CaseIterable {
     /// the height of its row.
     case fixedPillOverflowScroll = "fixed_pill_overflow_scroll"
 
+    /// A Fit x Fit image between two texts in an equal-spacing stack. Fit means the image's own
+    /// size in points, not the width of the stack.
+    case fitImageInEqualSpacingStack = "fit_image_in_equal_spacing_stack"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
@@ -45,6 +49,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Badge rules per offer type"
         case .fixedPillOverflowScroll:
             return "Fixed pill with overflow scroll"
+        case .fitImageInEqualSpacingStack:
+            return "Fit image in equal-spacing stack"
         }
     }
 
@@ -58,13 +64,15 @@ enum PaywallFixture: String, CaseIterable {
             return Self.badgeRulesPerOfferComponentsData()
         case .fixedPillOverflowScroll:
             return Self.fixedPillOverflowScrollComponentsData()
+        case .fitImageInEqualSpacingStack:
+            return Self.fitImageInEqualSpacingStackComponentsData()
         }
     }
 
     /// A component referencing a package the offering lacks renders with no product.
     var packages: [Package] {
         switch self {
-        case .iconOnlyButton, .fixedPillOverflowScroll:
+        case .iconOnlyButton, .fixedPillOverflowScroll, .fitImageInEqualSpacingStack:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
@@ -490,6 +498,53 @@ private extension PaywallFixture {
             componentsLocalizations: [
                 "en_US": [
                     "monthly": .string("Monthly plan\nBilled every month, cancel anytime")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    /// Pixel size of the fixture image, a 300x200 solid green PNG embedded as a `data:` URL so no
+    /// network is involved and the color is known to a test.
+    static let fitImagePixelSize = (width: 300, height: 200)
+    static let fitImageURL = URL(string: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAADICAIAAADdvUsCAAABsUlEQVR42u3TQQ0AAAjEsJOBWGzhDxk8aFIFS5aeAg5FAjAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQMCGYEDAhmBAwIZgQTKgCmBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAiYEEwImBBMCJgQTAgmVAFMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBEwIJgRMCCYETAgmBBMCJgQTAiaEnxbXgEcEWgIiIAAAAABJRU5ErkJggg==")!
+
+    static func fitImageInEqualSpacingStackComponentsData() -> PaywallComponentsData {
+        let image: PaywallComponent = .image(.init(
+            source: .init(light: .init(
+                width: Self.fitImagePixelSize.width,
+                height: Self.fitImagePixelSize.height,
+                original: Self.fitImageURL,
+                heic: Self.fitImageURL,
+                heicLowRes: Self.fitImageURL
+            )),
+            size: .init(width: .fit(nil), height: .fit(nil)),
+            fitMode: .fit
+        ))
+
+        return .init(
+            templateName: "fixture-fit-image-in-equal-spacing-stack",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(text: "top", color: .init(light: .hex("#000000")))),
+                        image,
+                        .text(.init(text: "bottom", color: .init(light: .hex("#000000"))))
+                    ],
+                    dimension: .vertical(.center, .spaceBetween),
+                    size: .init(width: .fill, height: .fill),
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "top": .string("Top button"),
+                    "bottom": .string("Bottom button")
                 ]
             ],
             revision: 1,
