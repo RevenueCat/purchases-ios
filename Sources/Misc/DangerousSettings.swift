@@ -113,7 +113,7 @@ import Foundation
      * purchase is reported to Apple.
      *
      * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
-     * corresponding entitlement, so only enable it if RevenueCat has asked you to.
+     * corresponding entitlement.
      */
     @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
         self.storage.useExternalPurchaseCustomLinks
@@ -165,8 +165,6 @@ import Foundation
     }
 
     /**
-     * Only use a Dangerous Setting if suggested by RevenueCat support team.
-     *
      * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
      * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
      * automatically.
