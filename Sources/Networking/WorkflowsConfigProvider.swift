@@ -33,6 +33,9 @@ enum WorkflowResolutionError: Error, Equatable {
     /// The read was superseded by remote-config changes before it could complete consistently.
     case configurationUnavailable
 
+    /// The read was cancelled before it could complete.
+    case cancelled
+
     /// An item exists, but its body couldn't be decoded as a ``PublishedWorkflow``.
     case decodingFailed(NSError)
 
@@ -144,6 +147,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return try await self.manager.readConsistent {
                 await self.getWorkflowOnce(workflowId: workflowId)
             } ?? .failure(.notFound)
+        } catch is CancellationError {
+            return .failure(.cancelled)
         } catch RemoteConfigConsistencyError.stale {
             return .failure(.configurationUnavailable)
         } catch {
@@ -291,6 +296,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 return .failure(.notFound)
             }
             return .success(workflow)
+        } catch is CancellationError {
+            return .failure(.cancelled)
         } catch {
             Logger.error(Strings.codable.decoding_error(error, PublishedWorkflow.self))
             return .failure(.decodingFailed(error as NSError))

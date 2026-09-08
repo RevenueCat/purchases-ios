@@ -200,6 +200,51 @@ class WorkflowsConfigProviderTests: TestCase {
         }
     }
 
+    func testPreservesCancellationWhenWorkflowReadIsCancelled() async throws {
+        let manager = MockRemoteConfigManager()
+        let provider = WorkflowsConfigProvider(
+            manager: manager,
+            uiConfigProvider: UiConfigProvider(manager: manager)
+        )
+
+        let task = Task {
+            await provider.getWorkflow(workflowId: "wf-1")
+        }
+        task.cancel()
+
+        let result = await task.value
+
+        expect(result.error) == .cancelled
+    }
+
+    func testPreservesCancellationWhenWorkflowReadIsCancelledAfterTheBodyRead() async throws {
+        let manager = MockRemoteConfigManager()
+        let provider = WorkflowsConfigProvider(
+            manager: manager,
+            uiConfigProvider: UiConfigProvider(manager: manager)
+        )
+        manager.stubbedTopics[.workflows] = [
+            "wf-1": .init(blobRef: "wf-1-ref", content: [:])
+        ]
+        manager.stubbedBlobData[.workflows] = [
+            "wf-1": try Self.workflowJSON(id: "wf-1")
+        ]
+        manager.shouldStoreBlobDataCompletion = true
+
+        let task = Task {
+            await provider.getWorkflow(workflowId: "wf-1")
+        }
+        while manager.invokedBlobDataParameters.isEmpty {
+            await Task.yield()
+        }
+        task.cancel()
+        manager.completeStoredBlobReads()
+
+        let result = await task.value
+
+        expect(result.error) == .cancelled
+    }
+
     func testFailsWithDecodingFailedForAMalformedWorkflowBody() async {
         self.commit(
             workflows: ["wf-1": .init(blobRef: "wf-1-ref", content: [:])],
