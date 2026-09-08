@@ -35,7 +35,7 @@ struct WebCheckoutView: View {
                 WebCheckoutWebView(webView: self.viewModel.webView)
             }
 
-            if self.viewModel.loadState == .loading {
+            if self.viewModel.loadState.isWaitingForFirstPaint {
                 ProgressView()
             }
         }
