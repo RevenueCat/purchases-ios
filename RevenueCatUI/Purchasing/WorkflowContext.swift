@@ -149,7 +149,7 @@ import Foundation
         guard let step = self.workflow.steps[stepId],
               let screenId = step.screenId,
               let screen = self.workflow.screens[screenId],
-              let offering = self.offering(for: screen.offeringIdentifier) else {
+              let offering = self.offering(for: step) else {
             return nil
         }
 
@@ -174,8 +174,9 @@ import Foundation
               let step = workflow.steps[singleWorkflowStepFallbackId],
               let screenId = step.screenId,
               let screen = workflow.screens[screenId],
+              let offeringIdentifier = workflow.offeringIdentifier(for: step),
               let offering = Self.offering(
-                  for: screen.offeringIdentifier,
+                  for: offeringIdentifier,
                   allOfferings: allOfferings,
                   initialOffering: initialOffering,
                   presentedOfferingContext: presentedOfferingContext
@@ -235,6 +236,13 @@ import Foundation
         }
 
         return offering.withPresentedOfferingContext(presentedOfferingContext)
+    }
+
+    func offering(for step: WorkflowStep) -> Offering? {
+        guard let offeringIdentifier = self.workflow.offeringIdentifier(for: step) else {
+            return nil
+        }
+        return self.offering(for: offeringIdentifier)
     }
 
     private static func collectPackages(

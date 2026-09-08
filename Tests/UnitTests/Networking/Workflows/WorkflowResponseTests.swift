@@ -392,6 +392,33 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepOfferingIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{ "id": "step_1", "param_values": { "offering": { "identifier": "default" } } }"#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testWorkflowOfferingIdentifierPrefersTheStepAndFallsBackToItsScreen() throws {
+        let screen = try Self.decodeWorkflowScreen(offeringIdentifier: "screen-offering")
+        var step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
+        let workflow = PublishedWorkflow(
+            id: "workflow",
+            displayName: "Workflow",
+            initialStepId: step.id,
+            singleStepFallbackId: nil,
+            steps: [step.id: step],
+            screens: ["screen_1": screen]
+        )
+
+        expect(workflow.offeringIdentifier(for: step)) == "screen-offering"
+
+        step.paramValues = ["offering": .object(["identifier": .string("step-offering")])]
+        expect(workflow.offeringIdentifier(for: step)) == "step-offering"
+    }
+
     func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
         let json = """
         {
@@ -598,7 +625,8 @@ private extension WorkflowResponseTests {
     static func decodeWorkflowScreen(
         defaultLocaleJSON: String? = "\"en_US\"",
         automaticallyScaleFontSize: Bool? = nil,
-        zeroDecimalPlaceCountriesJSON: String? = nil
+        zeroDecimalPlaceCountriesJSON: String? = nil,
+        offeringIdentifier: String? = nil
     ) throws -> WorkflowScreen {
         var defaultLocaleFragment = ""
         if let defaultLocaleJSON {
@@ -618,6 +646,7 @@ private extension WorkflowResponseTests {
             , "zero_decimal_place_countries": \(zeroDecimalPlaceCountriesJSON)
             """
         }
+        let offeringIdentifierFragment = offeringIdentifier.map { ", \"offering_identifier\": \"\($0)\"" } ?? ""
         let json = """
         {
           "template_name": "tmpl",
@@ -635,7 +664,7 @@ private extension WorkflowResponseTests {
               },
               "background": { "type": "color", "value": { "light": { "type": "hex", "value": "#FFFFFF" } } }
             }
-          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)
+          }\(automaticallyScaleFontSizeFragment)\(zeroDecimalFragment)\(offeringIdentifierFragment)
         }
         """.data(using: .utf8)!
 

@@ -777,7 +777,7 @@ struct WorkflowPaywallView: View {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
               let screen = context.workflow.screens[screenId],
-              let offering = context.offering(for: screen.offeringIdentifier) else {
+              let offering = context.offering(for: step) else {
             return nil
         }
 
