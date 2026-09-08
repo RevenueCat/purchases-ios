@@ -114,6 +114,72 @@ final class CountdownComponentViewTests: TestCase {
         XCTAssertFalse(Self.resolvedVisible(viewModel, condition: .expanded))
     }
 
+    func testVisibleLaterMatchingOverrideWins() {
+        let viewModel = Self.makeViewModel(
+            visible: true,
+            overrides: [
+                .init(conditions: [.selected], properties: .init(visible: true)),
+                .init(conditions: [.selected], properties: .init(visible: false))
+            ]
+        )
+
+        // Both overrides match the selected state; combine ordering means the later one wins.
+        XCTAssertFalse(Self.resolvedVisible(viewModel, state: .selected))
+    }
+
+    // MARK: - Rule discarding
+
+    func testDiscardRulesStripsRuleBasedCountdownOverrides() {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialCountdownComponent> = [
+            .init(
+                extendedConditions: [.selectedPackage(operator: .in, packages: ["monthly"])],
+                properties: .init(visible: false)
+            )
+        ]
+
+        func visibleWhenMonthlySelected(discardRules: Bool) -> Bool {
+            Self.makeViewModel(
+                visible: true,
+                overrides: overrides,
+                discardRules: discardRules
+            ).visible(
+                state: .default,
+                condition: .compact,
+                isEligibleForIntroOffer: false,
+                isEligibleForPromoOffer: false,
+                selectedPackageId: "monthly",
+                customVariables: [:]
+            )
+        }
+
+        // Honored: selecting the package hides the countdown.
+        XCTAssertFalse(visibleWhenMonthlySelected(discardRules: false))
+        // Discarded: the rule is stripped, so the base (visible) value stands.
+        XCTAssertTrue(visibleWhenMonthlySelected(discardRules: true))
+    }
+
+    // MARK: - CountdownState
+
+    @MainActor
+    func testStartRefreshesStateAfterDeadlinePassesWhileStopped() async throws {
+        let state = CountdownState(
+            targetDate: Date().addingTimeInterval(0.1),
+            countFrom: .minutes
+        )
+        state.start()
+        XCTAssertFalse(state.hasEnded)
+        state.stop()
+
+        // Let the deadline pass while the countdown is hidden (stopped).
+        try await Task.sleep(nanoseconds: 300_000_000)
+        XCTAssertFalse(state.hasEnded)
+
+        // Re-showing must reflect the current time immediately, without waiting for a timer tick.
+        state.start()
+        XCTAssertTrue(state.hasEnded)
+        XCTAssertEqual(state.countdownTime.seconds, 0)
+    }
+
     // MARK: - Helpers
 
     private static let stackJSON = """

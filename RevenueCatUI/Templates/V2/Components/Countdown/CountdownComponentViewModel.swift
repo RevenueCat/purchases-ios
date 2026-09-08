@@ -124,6 +124,8 @@ final class CountdownState: ObservableObject {
     // MARK: - Public API
 
     func start() {
+        updateCountdown()
+
         guard self.timer == nil, self.targetDate != nil, !self.hasEnded else { return }
 
         let timer = Timer.publish(every: 1.0, on: RunLoop.main, in: .default)
