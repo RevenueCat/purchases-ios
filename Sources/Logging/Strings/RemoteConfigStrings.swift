@@ -38,6 +38,7 @@ enum RemoteConfigStrings {
     case prefetchingBlobCount(Int)
     case receivedConfiguration(activeTopics: [String], changedTopics: [String])
     case refreshing(domain: String, manifestPresent: Bool, isAppBackgrounded: Bool)
+    case remoteConfigReadRetry
     case refreshFailed(BackendError)
     case skippingInvalidBlob(String)
     case persistedConfiguration(domain: String, activeTopicCount: Int, referencedBlobCount: Int)
@@ -122,6 +123,8 @@ extension RemoteConfigStrings: LogMessage {
         case let .refreshing(domain, manifestPresent, isAppBackgrounded):
             return "Refreshing remote config for domain '\(domain)' " +
                 "(manifestPresent: \(manifestPresent), isAppBackgrounded: \(isAppBackgrounded))."
+        case .remoteConfigReadRetry:
+            return "Remote configuration changed during a read; retrying once."
         case let .refreshFailed(error):
             return "Remote config refresh failed. Keeping cached configuration. Error: \(error)"
         case let .skippingInvalidBlob(ref):
