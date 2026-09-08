@@ -218,7 +218,7 @@ fileprivate extension View {
                         vertical: verticalAlignment.frameAlignment.vertical
                     )
                 )
-                .keepFixedSize(along: .horizontal, size: size)
+                .preservingFixedSize(along: .horizontal, size: size)
             } else {
                 self
             }
@@ -232,7 +232,7 @@ fileprivate extension View {
                         vertical: distribution.verticalFrameAlignment.vertical
                     )
                 )
-                .keepFixedSize(along: .vertical, size: size)
+                .preservingFixedSize(along: .vertical, size: size)
             } else {
                 self
             }
@@ -247,7 +247,7 @@ fileprivate extension View {
                     fillContent: true,
                     alignment: alignment.stackAlignment
                 )
-                .keepFixedSize(along: .vertical, size: size)
+                .preservingFixedSize(along: .vertical, size: size)
             } else {
                 self
             }
@@ -257,7 +257,7 @@ fileprivate extension View {
     /// A `ScrollView` takes all the space proposed along its axis, which would override a fixed size.
     /// Hug the content instead so the stack keeps its fixed dimension.
     @ViewBuilder
-    func keepFixedSize(along axis: Axis, size: PaywallComponent.Size) -> some View {
+    private func preservingFixedSize(along axis: Axis, size: PaywallComponent.Size) -> some View {
         switch axis {
         case .horizontal where size.width.isFixed:
             self.fixedSize(horizontal: true, vertical: false)
