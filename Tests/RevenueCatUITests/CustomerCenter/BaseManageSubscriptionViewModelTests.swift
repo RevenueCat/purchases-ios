@@ -904,6 +904,68 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
     }
 
+    // MARK: - Family Sharing Path Filtering Tests
+
+    func testFamilySharedSubscriptionDoesNotShowRefundRequest() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Only the purchaser can request a refund, Apple rejects it for family members
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beFalse())
+    }
+
+    func testFamilySharedSubscriptionDoesNotShowChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // Only the purchaser can change the plan, Apple rejects it for family members
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beFalse())
+    }
+
+    func testFamilySharedSubscriptionStillShowsCancel() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .familyShared),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beTrue())
+    }
+
+    func testPurchasedSubscriptionShowsRefundRequestAndChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .purchased),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
+    }
+
+    func testUnknownOwnershipSubscriptionShowsRefundRequestAndChangePlans() {
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: Self.appStoreSubscription(ownershipType: .unknown),
+            purchasesProvider: MockCustomerCenterPurchases()
+        )
+
+        // We only hide these when we know the purchase is shared
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).to(beTrue())
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).to(beTrue())
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -911,6 +973,17 @@ private extension BaseManageSubscriptionViewModelTests {
 
     static let `default`: CustomerCenterConfigData.Screen =
     CustomerCenterConfigData.default.screens[.management]!
+
+    static func appStoreSubscription(ownershipType: PurchaseOwnershipType) -> PurchaseInformation {
+        PurchaseInformation.mock(
+            store: .appStore,
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400),
+            ownershipType: ownershipType
+        )
+    }
 
     static func managementScreen(
         refundWindowDuration: CustomerCenterConfigData.HelpPath.RefundWindowDuration
