@@ -14,23 +14,17 @@ protocol AudiencesConfigProviderType {
 
 }
 
-/// One immutable view of the audience rules and subscriber-specific protected values served together by
-/// the `audiences` topic.
+/// One immutable view of the audience rules served by the `audiences` topic.
 struct AudienceConfigurationSnapshot: Equatable, Sendable {
 
     let audiences: [String: Audience]
-
-    /// Opaque values keyed by the hashes used as placeholders in the canonical audience rules.
-    let backendPredicateResults: [String: DimensionValue]
     let configGeneration: Int
 
 }
 
 /// The topic-specific front door for canonical audience configuration.
 ///
-/// All published audience rules live in the immutable `default` blob. Subscriber-specific protected values
-/// remain inline under `backend_predicate_results`. Both values are loaded from one committed topic
-/// generation so callers can never evaluate rules with results belonging to a different configuration.
+/// All published audience rules live in the immutable `default` blob.
 final class AudiencesConfigProvider: AudiencesConfigProviderType {
 
     private let manager: RemoteConfigManagerType
@@ -44,19 +38,20 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
     }
 
     func configuration() async throws -> AudienceConfigurationSnapshot? {
+        return try await self.manager.readConsistent {
+            try await self.loadConfiguration()
+        }
+    }
+
+    private func loadConfiguration() async throws -> AudienceConfigurationSnapshot? {
         try Task.checkCancellation()
-
-        guard let topicSnapshot = await self.manager.topicCacheSnapshot(.audiences) else {
-            return nil
-        }
-
-        let prefetchRefs = topicSnapshot.key.values.compactMap { $0.prefetch ? $0.blobRef : nil }
-        await self.manager.ensureBlobsDownloaded(prefetchRefs)
+        guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.audiences) else { return nil }
+        let topicSnapshot = GenerationGuardedCacheSnapshot(
+            generation: self.manager.configGeneration,
+            key: topic
+        )
         guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
-
-        if let cached = self.cachedConfiguration.value(for: topicSnapshot) {
-            return cached
-        }
+        if let cached = self.cachedConfiguration.value(for: topicSnapshot) { return cached }
 
         do {
             guard topicSnapshot.key[Self.audiencesBlobItemKey] != nil,
@@ -66,17 +61,11 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
                   ) else {
                 return nil
             }
-
-            let audiences = try Self.decodeAudiences(from: blob)
-            let backendPredicateResults = Self.decodeBackendPredicateResults(from: topicSnapshot.key)
-
-            guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
-
             let configuration = AudienceConfigurationSnapshot(
-                audiences: audiences,
-                backendPredicateResults: backendPredicateResults,
+                audiences: try Self.decodeAudiences(from: blob),
                 configGeneration: topicSnapshot.generation
             )
+            guard await self.manager.isCurrent(topicSnapshot, for: .audiences) else { return nil }
             self.cachedConfiguration.store(configuration, for: topicSnapshot)
             return configuration
         } catch {
@@ -104,23 +93,7 @@ final class AudiencesConfigProvider: AudiencesConfigProviderType {
         }
     }
 
-    private static func decodeBackendPredicateResults(
-        from topic: RemoteConfiguration.ConfigTopic
-    ) -> [String: DimensionValue] {
-        guard let item = topic[Self.backendPredicateResultsItemKey] else { return [:] }
-
-        return item.content.reduce(into: [:]) { results, entry in
-            let (conditionHash, value) = entry
-            guard let dimensionValue = value.dimensionValue else {
-                Logger.warn(Strings.remoteConfig.backendPredicateResultUnsupported(conditionHash))
-                return
-            }
-            results[conditionHash] = dimensionValue
-        }
-    }
-
     private static let audiencesBlobItemKey = "default"
-    private static let backendPredicateResultsItemKey = "backend_predicate_results"
 
 }
 

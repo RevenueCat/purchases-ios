@@ -18,6 +18,7 @@ enum Strings {
     static let analytics = AnalyticsStrings.self
     static let authentication = AuthenticationStrings.self
     static let cache = CacheStrings.self
+    static let checkpoints = CheckpointsStrings.self
     static let codable = CodableStrings.self
     static let configure = ConfigureStrings.self
     static let backendError = BackendErrorStrings.self
@@ -25,8 +26,10 @@ enum Strings {
     static let diagnostics = DiagnosticsStrings.self
     static let eligibility = EligibilityStrings.self
     static let etag = ETagStrings.self
+    static let externalPurchase = ExternalPurchaseStrings.self
     static let fileRepository = FileRepositoryStrings.self
     static let identity = IdentityStrings.self
+    static let localRules = LocalRulesStrings.self
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self
     static let offlineEntitlements = OfflineEntitlementsStrings.self

@@ -23,6 +23,10 @@ final class UiConfigProvider {
     /// Assembles a ``UIConfig`` from the `ui_config` topic's parts. Returns `nil` when any part is unavailable
     /// or fails to decode, so callers never render with a partially assembled configuration.
     func getUiConfig() async -> UIConfig? {
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
+    }
+
+    private func getUiConfigOnce() async -> UIConfig? {
         guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
             return nil
         }
@@ -63,9 +67,7 @@ final class UiConfigProvider {
                 itemKeys: Self.itemKeys,
                 as: UIConfig.self
             ) else {
-                if !self.manager.isDisabled {
-                    Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
-                }
+                Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
                 return nil
             }
 
@@ -79,6 +81,10 @@ final class UiConfigProvider {
 #else
     // Paywalls V2 (and therefore workflows) aren't supported on tvOS, where `UIConfig` carries no fields.
     func getUiConfig() async -> UIConfig? {
+        return try? await self.manager.readConsistent { await self.getUiConfigOnce() }
+    }
+
+    private func getUiConfigOnce() async -> UIConfig? {
         guard let snapshot = await self.topicSnapshotWithUiConfigParts() else {
             return nil
         }
@@ -87,7 +93,6 @@ final class UiConfigProvider {
             return cached
         }
 
-        guard !self.manager.isDisabled else { return nil }
         guard await self.manager.blobData(for: .uiConfig, itemKey: Self.appKey) != nil,
               await self.manager.blobData(for: .uiConfig, itemKey: Self.localizationsKey) != nil else {
             Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
