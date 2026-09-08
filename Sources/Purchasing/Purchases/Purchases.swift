@@ -282,6 +282,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let _authentication: Authentication
+    private let externalPurchaseManager: ExternalPurchaseManager
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
@@ -961,6 +962,12 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               tokenManager: tokenManager,
                                               operationDispatcher: operationDispatcher,
                                               systemInfo: systemInfo)
+        self.externalPurchaseManager = ExternalPurchaseManager(
+            customLink: StoreKitExternalPurchaseCustomLink(),
+            externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
+            currentUserProvider: identityManager,
+            systemInfo: systemInfo
+        )
 
         super.init()
         self._authentication.internalDelegate = self
@@ -1906,6 +1913,21 @@ public extension Purchases {
     }
 
 #endif
+
+    /// Used by `RevenueCatUI` before it sends the customer out of the app to pay on the web: it runs what
+    /// Apple requires around an external purchase and hands back the token id the checkout page needs.
+    ///
+    /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
+    /// and every token minted is one Apple expects a report for.
+    ///
+    /// Does nothing unless ``DangerousSettings/useExternalPurchaseCustomLinks`` is enabled.
+    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkPreparation {
+        guard self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks else {
+            return .proceed(externalPurchaseTokenID: nil)
+        }
+
+        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
+    }
 
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)

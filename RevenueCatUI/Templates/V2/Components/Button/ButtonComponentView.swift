@@ -180,7 +180,7 @@ struct ButtonComponentView: View {
         case .restorePurchases:
             try await restorePurchases()
         case .navigateTo(let destination):
-            navigateTo(destination: destination)
+            await navigateTo(destination: destination)
         case .navigateBack:
             onDismiss()
         case .closeWorkflow:
@@ -250,7 +250,7 @@ struct ButtonComponentView: View {
         self.purchaseHandler.setRestored(customerInfo, success: success)
     }
 
-    private func navigateTo(destination: ButtonComponentViewModel.Destination) {
+    private func navigateTo(destination: ButtonComponentViewModel.Destination) async {
         switch destination {
         case .customerCenter:
             self.showCustomerCenter = true
@@ -269,7 +269,7 @@ struct ButtonComponentView: View {
         case .unknown:
             break
         case .webPaywallLink(url: let url, method: let method):
-            self.openWebPaywallLink(url: url, method: method)
+            await self.openWebPaywallLink(url: url, method: method)
         }
     }
 
@@ -296,7 +296,11 @@ struct ButtonComponentView: View {
 #endif
     }
 
-    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) {
+    private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
+        guard let url = await ExternalPurchaseLink.urlToOpen(url, method: method) else {
+            return
+        }
+
         self.purchaseHandler.invalidateCustomerInfoCache()
 #if os(watchOS)
         // watchOS doesn't support openURL with a completion handler, so we're just opening the URL.
