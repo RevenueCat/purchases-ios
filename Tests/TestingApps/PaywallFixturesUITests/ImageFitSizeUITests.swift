@@ -41,6 +41,23 @@ final class ImageFitSizeUITests: XCTestCase {
         XCTAssertEqual(image.height, 200, accuracy: 3, "Fit image is not drawn at its own height: \(diagnostics)")
     }
 
+    /// Fit never grows past the parent: a 3000x600 px image stops at the stack's width, 16pt padding on
+    /// each side, and keeps its 5:1 ratio.
+    func testFitImageWiderThanStackStopsAtTheStackWidth() throws {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "fit_image_wider_than_stack"
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Bottom button"].waitForExistence(timeout: 30), "Fixture did not render.")
+
+        let screenshot = XCUIScreen.main.screenshot().image
+        let image = try XCTUnwrap(Self.boundingBoxOfSaturatedPixels(in: screenshot), "No image found on screen.")
+        let screenWidth = CGFloat(try XCTUnwrap(screenshot.cgImage).width)
+        let expectedWidth = screenWidth - 2 * 16 * screenshot.scale
+
+        XCTAssertEqual(image.width, expectedWidth, accuracy: 3, "Fit image did not stop at the stack width: \(image)")
+        XCTAssertEqual(image.height, expectedWidth / 5, accuracy: 3, "Fit image lost its aspect ratio: \(image)")
+    }
+
     /// Bounding box, in pixels, of every clearly colored pixel. Text is black and the page is
     /// white, so only the green fixture image is saturated.
     private static func boundingBoxOfSaturatedPixels(in image: UIImage) -> CGRect? {
