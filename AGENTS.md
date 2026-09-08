@@ -240,3 +240,8 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
+- **No speculative code** — don't add methods, parameters, protocols, or abstractions "for future use." If it has no caller today, don't ship it; it can be added in the PR that needs it.
+- **Trailing-closure safety on public API** — when adding a new optional parameter to a public method, never place it after an existing closure parameter. Doing so changes which closure becomes the trailing closure at call sites, which is a source-breaking change.
+- **Don't silently swallow errors** — if a function can fail, surface the error (throw, return a Result, or log at warning+ level). Never catch and ignore errors with an empty catch block or a `try?` that discards actionable failure info without logging.
+- **Tests must assert outcomes, not just exercise code** — every test must contain meaningful assertions (expect/XCTAssert) on observable outcomes. A test that only calls a function without asserting the result is not a valid test.
+- **Keep code comments minimal** — don't narrate what the code does; the code itself should be clear. Don't reference PR/issue numbers in change-description comments — let `git blame` trace history. Only comment to explain _why_, not _what_.
