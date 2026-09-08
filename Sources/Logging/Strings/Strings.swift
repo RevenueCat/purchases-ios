@@ -27,6 +27,7 @@ enum Strings {
     static let etag = ETagStrings.self
     static let externalPurchase = ExternalPurchaseStrings.self
     static let fileRepository = FileRepositoryStrings.self
+    static let hostedCheckout = HostedCheckoutStrings.self
     static let identity = IdentityStrings.self
     static let network = NetworkStrings.self
     static let offering = OfferingStrings.self

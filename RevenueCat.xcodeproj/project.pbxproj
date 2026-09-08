@@ -624,6 +624,10 @@
 		AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000011 /* ExternalPurchaseManager.swift */; };
 		AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */; };
 		AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */; };
+		AAAA44750000000000000002 /* HostedCheckoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* HostedCheckoutManager.swift */; };
+		AAAA44750000000000000012 /* HostedCheckoutSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000011 /* HostedCheckoutSession.swift */; };
+		AAAA44750000000000000022 /* HostedCheckoutStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000021 /* HostedCheckoutStrings.swift */; };
+		AAAA44750000000000000032 /* HostedCheckoutManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000031 /* HostedCheckoutManagerTests.swift */; };
 		53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E33BBA2E095B8900287158 /* SDKHealthManager.swift */; };
 		551800702FF46C720055FD1B /* SecureItemStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */; };
 		551800772FF46C8A0055FD1B /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551800762FF46C8A0055FD1B /* KeychainTests.swift */; };
@@ -2403,6 +2407,10 @@
 		AAAA44740000000000000011 /* ExternalPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManager.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseStrings.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManagerTests.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000001 /* HostedCheckoutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutManager.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000011 /* HostedCheckoutSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutSession.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000021 /* HostedCheckoutStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutStrings.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000031 /* HostedCheckoutManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutManagerTests.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureItemStorageTests.swift; sourceTree = "<group>"; };
 		551800762FF46C8A0055FD1B /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
@@ -4163,6 +4171,7 @@
 				4F4FF3E02A3B731A0028018C /* ETagStrings.swift */,
 				A1E0F0012F297A0100000001 /* EventsManagerStrings.swift */,
 				AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */,
+				AAAA44750000000000000021 /* HostedCheckoutStrings.swift */,
 				1E2F91712CCFA98C00BDB016 /* WebRedemptionStrings.swift */,
 				9A65E0752591977200DE00B0 /* IdentityStrings.swift */,
 				2D00A41C2767C08300FC3DD8 /* ManageSubscriptionsStrings.swift */,
@@ -4956,6 +4965,7 @@
 				2D1015DC275A57DB0086173F /* StoreKitAbstractions */,
 				75BB99002E3381BF0001DD1A /* SimulatedStore */,
 				EF0100000000000000000041 /* ExternalPurchase */,
+				AAAA44750000000000000041 /* HostedCheckout */,
 				B325543B2825C81800DA62EA /* Configuration.swift */,
 				B32B750026868C1D005647BF /* EntitlementInfo.swift */,
 				B3AA6235268A81C700894871 /* EntitlementInfos.swift */,
@@ -5002,6 +5012,15 @@
 			path = ExternalPurchase;
 			sourceTree = "<group>";
 		};
+		AAAA44750000000000000041 /* HostedCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA44750000000000000001 /* HostedCheckoutManager.swift */,
+				AAAA44750000000000000011 /* HostedCheckoutSession.swift */,
+			);
+			path = HostedCheckout;
+			sourceTree = "<group>";
+		};
 		EF0100000000000000000071 /* ExternalPurchase */ = {
 			isa = PBXGroup;
 			children = (
@@ -5009,6 +5028,14 @@
 				AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */,
 			);
 			path = ExternalPurchase;
+			sourceTree = "<group>";
+		};
+		AAAA44750000000000000071 /* HostedCheckout */ = {
+			isa = PBXGroup;
+			children = (
+				AAAA44750000000000000031 /* HostedCheckoutManagerTests.swift */,
+			);
+			path = HostedCheckout;
 			sourceTree = "<group>";
 		};
 		354235D624C11160008C84EE /* Purchasing */ = {
@@ -5020,6 +5047,7 @@
 				5766AABB283E809D00FA6091 /* Purchases */,
 				7581A92B2E2EB25400D0C3DE /* SimulatedStoreUnitTests */,
 				EF0100000000000000000071 /* ExternalPurchase */,
+				AAAA44750000000000000071 /* HostedCheckout */,
 				FD2472EF2F4CBAF50074D28A /* CustomerInfoActiveDatesTests.swift */,
 				37E3582920E16E065502E5FC /* EntitlementInfosTests.swift */,
 				B3F8418E26F3A93400E560FB /* ErrorCodeTests.swift */,
@@ -8262,6 +8290,9 @@
 				AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */,
 				AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */,
 				AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */,
+				AAAA44750000000000000002 /* HostedCheckoutManager.swift in Sources */,
+				AAAA44750000000000000012 /* HostedCheckoutSession.swift in Sources */,
+				AAAA44750000000000000022 /* HostedCheckoutStrings.swift in Sources */,
 				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,
 				EF0100000000000000000002 /* ExternalPurchaseTokenType.swift in Sources */,
 				EF0100000000000000000032 /* StoreKitExternalPurchaseCustomLink.swift in Sources */,
@@ -8340,6 +8371,7 @@
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */,
+				AAAA44750000000000000032 /* HostedCheckoutManagerTests.swift in Sources */,
 				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,
 				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
