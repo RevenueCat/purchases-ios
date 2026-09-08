@@ -17,7 +17,8 @@ import Foundation
 extension Array<CustomerCenterConfigData.HelpPath> {
     func relevantPaths(
         for purchaseInformation: PurchaseInformation?,
-        allowMissingPurchase: Bool
+        allowMissingPurchase: Bool,
+        localization: CustomerCenterConfigData.Localization = .default
     ) -> [CustomerCenterConfigData.HelpPath] {
         guard let purchaseInformation else {
             return filter {
@@ -30,6 +31,11 @@ extension Array<CustomerCenterConfigData.HelpPath> {
         return filter {
             // we don't show missing purchase when a purchase is selected
             if !allowMissingPurchase && $0.type == .missingPurchase {
+                return false
+            }
+
+            // family members can't refund or change a subscription they don't own
+            if purchaseInformation.ownershipType == .familyShared && $0.type.requiresPurchaseOwnership {
                 return false
             }
 
@@ -47,9 +53,14 @@ extension Array<CustomerCenterConfigData.HelpPath> {
                     return purchaseInformation.managementURL != nil
                 }
 
-                return purchaseInformation.isAppStoreRenewableSubscription
-                    && !purchaseInformation.isCancelled
-                    && purchaseInformation.renewalDate != nil
+                guard purchaseInformation.isAppStoreRenewableSubscription,
+                      !purchaseInformation.isExpired else {
+                    return false
+                }
+
+                // a cancelled subscription that hasn't lapsed yet keeps the path,
+                // relabelled as resubscribe below
+                return purchaseInformation.isCancelled || purchaseInformation.renewalDate != nil
             }
 
             // if it's refundRequest, it cannot be free nor within trial period
@@ -71,10 +82,52 @@ extension Array<CustomerCenterConfigData.HelpPath> {
 
             return true
         }
+        .map { $0.resubscribeVariantIfNeeded(for: purchaseInformation, localization: localization) }
+    }
+}
+
+private extension CustomerCenterConfigData.HelpPath {
+
+    /// Cancelling is meaningless once the customer already cancelled, so the same path becomes
+    /// the way back in. The survey and the offer belong to churn, not to returning.
+    func resubscribeVariantIfNeeded(
+        for purchaseInformation: PurchaseInformation,
+        localization: CustomerCenterConfigData.Localization
+    ) -> CustomerCenterConfigData.HelpPath {
+        guard self.type == .cancel,
+              purchaseInformation.isCancelled,
+              !purchaseInformation.isExpired else {
+            return self
+        }
+
+        return CustomerCenterConfigData.HelpPath(
+            id: self.id,
+            title: localization[.resubscribe],
+            url: self.url,
+            openMethod: self.openMethod,
+            type: self.type,
+            detail: nil,
+            refundWindowDuration: self.refundWindowDuration,
+            customActionIdentifier: self.customActionIdentifier
+        )
     }
 }
 
 private extension CustomerCenterConfigData.HelpPath.PathType {
+
+    /// Whether the App Store rejects this action unless the customer owns the purchase.
+    var requiresPurchaseOwnership: Bool {
+        switch self {
+        case .refundRequest, .changePlans:
+            return true
+
+        case .cancel, .customUrl, .customAction, .missingPurchase, .unknown:
+            return false
+
+        @unknown default:
+            return false
+        }
+    }
 
     var isAppStoreOnly: Bool {
         switch self {
