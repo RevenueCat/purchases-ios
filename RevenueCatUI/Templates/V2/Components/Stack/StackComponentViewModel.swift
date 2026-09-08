@@ -39,6 +39,11 @@ class StackComponentViewModel {
 
     let badgeViewModels: [BadgeContents]
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
     var firstChildIsFullWidthMedia: Bool {
@@ -121,6 +126,7 @@ class StackComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -139,6 +145,7 @@ class StackComponentViewModel {
         let partial = PresentedStackPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,
@@ -174,6 +181,7 @@ class StackComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -186,6 +194,7 @@ class StackComponentViewModel {
         let style = styles(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,

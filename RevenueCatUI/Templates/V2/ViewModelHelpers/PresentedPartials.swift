@@ -424,6 +424,13 @@ extension Array {
         contains { $0.extendedConditions.contains(.unsupported) }
     }
 
+    /// Whether any override is gated on the hover condition. Component views use this to
+    /// decide whether to attach pointer hover tracking at all.
+    func hasHoverCondition<T: PresentedPartial>() -> Bool
+    where Element == PresentedOverride<T> {
+        contains { $0.conditions.contains(.hover) }
+    }
+
 }
 
 // MARK: - Unsupported Condition Validation

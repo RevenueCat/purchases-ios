@@ -30,6 +30,11 @@ class TextComponentViewModel {
     private let text: String
     private let presentedOverrides: PresentedOverrides<LocalizedTextPartial>?
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     /// Whether this component renders anything a screen reader can announce. An empty base string
     /// still counts when overrides exist, since an override can supply text of its own.
     ///
@@ -70,6 +75,7 @@ class TextComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         selectedPackageId: String?,
         packageContext: PackageContext,
         isEligibleForIntroOffer: Bool,
@@ -90,6 +96,7 @@ class TextComponentViewModel {
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,

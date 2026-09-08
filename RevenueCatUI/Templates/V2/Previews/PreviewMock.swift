@@ -85,6 +85,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
 
     let screenCondition: ScreenCondition
     let componentViewState: ComponentViewState
+    let componentHoverState: Bool
     let packageContext: PackageContext?
 
     func body(content: Content) -> some View {
@@ -96,6 +97,7 @@ struct PreviewRequiredPaywallsV2Properties: ViewModifier {
             .environment(\.selectedPackageId, (self.packageContext ?? Self.defaultPackageContext).package?.identifier)
             .environment(\.screenCondition, screenCondition)
             .environment(\.componentViewState, componentViewState)
+            .environment(\.componentHoverState, componentHoverState)
             .environment(\.safeAreaInsets, EdgeInsets())
             .fixMacButtons() // Matches the properties applied in LoadedPaywallsV2View
     }
@@ -107,11 +109,13 @@ extension View {
     func previewRequiredPaywallsV2Properties(
         screenCondition: ScreenCondition = .compact,
         componentViewState: ComponentViewState = .default,
+        componentHoverState: Bool = false,
         packageContext: PackageContext? = nil
     ) -> some View {
         self.modifier(PreviewRequiredPaywallsV2Properties(
             screenCondition: screenCondition,
             componentViewState: componentViewState,
+            componentHoverState: componentHoverState,
             packageContext: packageContext
         ))
     }

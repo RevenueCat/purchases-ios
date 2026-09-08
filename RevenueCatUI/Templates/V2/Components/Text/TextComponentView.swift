@@ -34,6 +34,11 @@ struct TextComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -74,6 +79,7 @@ struct TextComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.isHovered || self.componentHoverState,
             selectedPackageId: self.selectedPackageId,
             packageContext: self.packageContext,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
@@ -101,6 +107,7 @@ struct TextComponentView: View {
                     .padding(style.margin)
             }
         }
+        .componentHoverState(self.$isHovered, trackingEnabled: self.viewModel.hasHoverOverride)
     }
 
 }
@@ -846,6 +853,58 @@ struct TextComponentView_Previews: PreviewProvider {
         .previewLayout(.sizeThatFits)
         .previewDisplayName("Process variable")
 
+    }
+}
+
+// Separate provider: Xcode's canvas shows at most 15 previews per provider,
+// and TextComponentView_Previews is already over that limit.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct TextComponentViewHover_Previews: PreviewProvider {
+
+    private static var hoverPreview: some View {
+        TextComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: [
+                        "id_1": .string("Hello, world")
+                    ]
+                ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+                component: .init(
+                    text: "id_1",
+                    color: .init(light: .hex("#000000")),
+                    overrides: [
+                        .init(extendedConditions: [
+                            .hover
+                        ], properties: .init(
+                            fontWeight: .black,
+                            color: .init(light: .hex("#ffffff")),
+                            backgroundColor: .init(light: .hex("#8000ff")),
+                            fontSize: 34
+                        ))
+                    ]
+                )
+            )
+        )
+    }
+
+    static var previews: some View {
+        // State - Hovered (forced through the environment, always renders the hovered style)
+        hoverPreview
+            .previewRequiredPaywallsV2Properties(
+                componentHoverState: true
+            )
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("State - Hovered")
+
+        // State - Hovered (interactive): run live on a My Mac destination and mouse over the text
+        // to trigger the component's own .onHover tracking. Touch destinations render the base style.
+        hoverPreview
+            .previewRequiredPaywallsV2Properties()
+            .previewLayout(.sizeThatFits)
+            .previewDisplayName("State - Hovered (interactive)")
     }
 }
 

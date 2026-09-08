@@ -33,6 +33,11 @@ struct StackComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -89,6 +94,7 @@ struct StackComponentView: View {
         viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.isHovered || self.componentHoverState,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: self.selectedPackageId,
@@ -101,6 +107,7 @@ struct StackComponentView: View {
                 self.make(style: style)
             }
         }
+        .componentHoverState(self.$isHovered, trackingEnabled: self.viewModel.hasHoverOverride)
     }
 
     @ViewBuilder
