@@ -392,6 +392,12 @@ class WorkflowResponseTests: TestCase {
         expect(step.metadata).to(beNil())
     }
 
+    func testDecodeWorkflowStepWithoutType() throws {
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: Data(#"{ "id": "step_1" }"#.utf8))
+
+        expect(step.type).to(beNil())
+    }
+
     func testDecodeWorkflowStepOfferingIdentifier() throws {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
