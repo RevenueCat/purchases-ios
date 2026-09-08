@@ -66,6 +66,7 @@ enum Strings {
     case paywall_could_not_find_any_packages
     case paywall_invalid_url(String)
     case no_in_app_browser_tvos
+    case no_checkout_sheet_for_in_app_web_checkout
     case failed_to_open_url_external_browser(String)
     case successfully_opened_url_external_browser(String)
     case failed_to_open_url_deep_link(String)
@@ -274,6 +275,9 @@ extension Strings: CustomStringConvertible {
 
         case .no_in_app_browser_tvos:
             return "Opening URL in external browser, as tvOS does not support in-app browsers."
+
+        case .no_checkout_sheet_for_in_app_web_checkout:
+            return "Opening the in-app web checkout in the in-app browser, as no checkout sheet is available here."
 
         case .invalid_color_string(let colorString):
             return "Invalid hex color string: \(colorString)"

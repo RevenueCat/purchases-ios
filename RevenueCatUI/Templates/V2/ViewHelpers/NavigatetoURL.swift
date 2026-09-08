@@ -33,9 +33,12 @@ enum Browser {
         onURLOpened: @escaping (URL) -> Void = { _ in }
     ) {
         switch method {
-        // The checkout sheet is presented by the purchase button, so an in-app web checkout that
-        // reaches here has none to present and takes the in-app browser instead.
-        case .inAppBrowser, .inAppWebCheckout:
+        case .inAppWebCheckout:
+            // The checkout sheet is presented by the purchase button, so reaching here means there is
+            // none to present. The in-app browser needs no custom URL scheme to come back.
+            Logger.debug(Strings.no_checkout_sheet_for_in_app_web_checkout)
+            fallthrough
+        case .inAppBrowser:
 #if os(tvOS)
             // There's no SafariServices on tvOS, so we're falling back to opening in an external browser.
             Logger.warning(Strings.no_in_app_browser_tvos)

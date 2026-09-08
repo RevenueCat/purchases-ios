@@ -272,8 +272,6 @@ import Foundation
             case inAppBrowser = "in_app_browser"
             case externalBrowser = "external_browser"
             case deepLink = "deep_link"
-
-            /// A web checkout hosted in a bottom sheet inside the app.
             case inAppWebCheckout = "in_app_web_checkout"
 
             case unknown = "unknown"
