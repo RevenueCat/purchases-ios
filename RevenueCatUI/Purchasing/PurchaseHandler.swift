@@ -368,6 +368,11 @@ extension PurchaseHandler {
             return .init(offering: offering, workflowContext: nil)
         }
 
+        if case let .offering(offering) = content,
+           offering.internalPaywallComponents != nil {
+            return .init(offering: offering, workflowContext: nil)
+        }
+
         guard let cachedOfferings = self.purchases.cachedOfferings,
               let offering = self.initialOffering(
                 content: content,
@@ -544,17 +549,17 @@ extension PurchaseHandler {
         return try await self.purchases.offerings()
     }
 
-    /// Routes a resolved offering to its own (legacy) paywall or the workflows endpoint.
-    /// `offering.paywall == nil` is the durable marker of a non-legacy paywall: a v1 paywall always
-    /// carries `paywall`, so a legacy offering renders directly without a workflow fetch. When the
-    /// offering simply has no workflow attached, it falls back to the default paywall (matching the
-    /// legacy path). Other failures (e.g. network, malformed workflow) propagate.
+    /// Routes a resolved offering to its attached paywall or the workflows endpoint. Offerings
+    /// decoded from the backend retain only `hasPaywallComponents`, so an actual components payload
+    /// identifies a render-ready offering supplied by a preview client.
     private func resolvePaywallViewData(
         for offering: Offering,
         offerings: Offerings?,
         remoteConfigEnabled: Bool
     ) async throws -> ResolvedPaywallViewData {
-        guard remoteConfigEnabled, offering.paywall == nil else {
+        guard remoteConfigEnabled,
+              offering.paywall == nil,
+              offering.internalPaywallComponents == nil else {
             return .init(offering: offering, workflowContext: nil)
         }
 

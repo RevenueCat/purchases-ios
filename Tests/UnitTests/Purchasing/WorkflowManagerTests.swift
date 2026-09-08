@@ -120,6 +120,32 @@ class WorkflowManagerTests: TestCase {
         }
     }
 
+    func testGetWorkflowFailsWithConfigurationUnavailableWhenProviderReportsAStaleRead() async {
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .configurationUnavailable]
+
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch WorkflowError.configurationUnavailable(let workflowId) {
+            expect(workflowId) == "wf_1"
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
+    func testGetWorkflowPropagatesCancellationWhenProviderReportsCancellation() async {
+        self.mockProvider.stubbedGetWorkflowError = ["wf_1": .cancelled]
+
+        do {
+            _ = try await self.manager.getWorkflow(workflowId: "wf_1")
+            fail("Expected getWorkflow to throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            fail("Unexpected error: \(error)")
+        }
+    }
+
     // MARK: - cachedWorkflow(forOfferingId:)
 
     func testCachedWorkflowSchedulesAssetPrewarmingOnSuccess() async throws {
