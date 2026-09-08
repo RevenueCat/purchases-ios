@@ -2986,18 +2986,19 @@ final class RemoteConfigManagerTests: TestCase {
     func testReadConsistentlyStopsWhenTaskIsCanceledBeforeTheRead() async {
         let manager = MockRemoteConfigManager()
         let readStarted = XCTestExpectation(description: "Read started")
-        let gate = AsyncStream<Void>.makeStream()
+        var gateContinuation: AsyncStream<Void>.Continuation!
+        let gate = AsyncStream<Void> { gateContinuation = $0 }
         let task = Task {
             try await manager.readConsistent {
                 readStarted.fulfill()
-                for await _ in gate.stream { break }
+                for await _ in gate { break }
                 return "value"
             }
         }
         await fulfillment(of: [readStarted], timeout: 1)
         task.cancel()
-        gate.continuation.yield(())
-        gate.continuation.finish()
+        gateContinuation.yield(())
+        gateContinuation.finish()
 
         do {
             _ = try await task.value
