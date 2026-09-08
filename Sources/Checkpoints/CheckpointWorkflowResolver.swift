@@ -146,8 +146,6 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             rulesSnapshot = snapshot
         } catch let error as CancellationError {
             throw error
-        } catch CheckpointRulesProviderError.remoteConfigDisabled {
-            return .noAction(.configurationUnavailable)
         } catch CheckpointRulesProviderError.stale {
             return nil
         } catch {
