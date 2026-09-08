@@ -467,8 +467,6 @@ extension HTTPRequest.Path: HTTPRequestPath {
             return "subscribers/\(Self.escape(appUserID))/virtual_currencies"
 
         case .spendVirtualCurrencies:
-            assertionFailure("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
-            Logger.error("The .spendVirtualCurrencies endpoint is only allowed when IAM is enabled")
             return "customer/virtual_currencies/spend"
 
         case .postCreateTicket:
