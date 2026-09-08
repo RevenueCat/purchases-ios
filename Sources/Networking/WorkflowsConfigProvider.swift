@@ -40,7 +40,7 @@ enum WorkflowResolutionError: Error, Equatable {
 
 /// The topic-specific front door for workflows, reading through `RemoteConfigManager`'s `workflows`
 /// topic instead of a dedicated `/v1/workflows` list+detail fetch. It knows only the `workflows` topic
-/// name, that an item's offering id lives in its inline content under `offeringIdentifier`, and how to
+/// name, that an item's offering id lives in its inline content under `offering_identifier`, and how to
 /// parse a ``PublishedWorkflow``. Everything else is delegated to `RemoteConfigManager`.
 ///
 /// Prefetched workflows—items marked `prefetch` plus the implicitly prefetched current offering's workflow—are
@@ -89,7 +89,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// Resolves `offeringId` to its workflow id via an offeringId → workflowId map built from the
     /// `workflows` topic's inline content, rebuilt only when the topic itself has changed.
     /// `content` keys go through `JSONDecoder`'s `.convertFromSnakeCase`, so the wire field
-    /// `offering_identifier` is read as `offeringIdentifier`.
+    /// Topic metadata keys are kept in their snake_case wire format.
     func workflowId(forOfferingId offeringId: String) async -> String? {
         guard let topic = await self.manager.topic(.workflows) else { return nil }
 
@@ -329,7 +329,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
-    private static let offeringIdentifierKey = "offeringIdentifier"
+    private static let offeringIdentifierKey = "offering_identifier"
 
 }
 

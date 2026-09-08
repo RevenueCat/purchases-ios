@@ -1,6 +1,6 @@
 import Foundation
 import GoogleMobileAds
-@_spi(Experimental) import RevenueCatAdMob
+import RevenueCatAdMob
 
 final class RewardedAdManager: NSObject, ObservableObject {
 

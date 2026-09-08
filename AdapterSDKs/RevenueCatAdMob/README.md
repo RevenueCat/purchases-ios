@@ -26,11 +26,13 @@ The adapter supports **Google Mobile Ads SDK v12.x and v13.x** (Swift API). Use 
 
 ## Usage
 
-Import the adapter with SPI to access the experimental API surface:
+Import the adapter:
 
 ```swift
-@_spi(Experimental) import RevenueCatAdMob
+import RevenueCatAdMob
 ```
+
+- APIs are available on iOS 15.0+ (`@available(iOS 15.0, *)`).
 
 **Placement:** All load-and-track APIs take a `placement` parameter — a string that identifies where the ad is shown in your app (e.g. `"home_banner"`, `"level_complete"`, `"app_launch"`). RevenueCat uses it for reporting and segmentation. Use consistent values across your app.
 
@@ -357,15 +359,6 @@ All formats automatically report these RevenueCat ad events:
 - **Ad Opened** — user clicked/interacted
 - **Ad Revenue** — revenue reported via AdMob's `paidEventHandler`
 - **Ad Failed to Load** — load error
-
-## Experimental API
-
-This adapter currently relies on RevenueCat's experimental surface and exposes its Swift API as experimental via `@_spi(Experimental)`.
-
-- APIs are available on iOS 15.0+ (`@available(iOS 15.0, *)`).
-- Swift usage requires `@_spi(Experimental) import RevenueCatAdMob`.
-- Treat adapter API shape as experimental and review release notes when upgrading.
-- Prefer pinning to a known-good version during initial rollout.
 
 ## Test ad unit IDs
 

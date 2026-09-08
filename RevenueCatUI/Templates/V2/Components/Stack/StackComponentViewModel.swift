@@ -19,6 +19,16 @@ import SwiftUI
 typealias PresentedStackPartial = PaywallComponent.PartialStackComponent
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct BadgeContents {
+
+    let badge: PaywallComponent.Badge
+
+    /// One per component in `badge.stack`.
+    let viewModels: [PaywallComponentViewModel]
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class StackComponentViewModel {
 
     let component: PaywallComponent.StackComponent
@@ -26,7 +36,8 @@ class StackComponentViewModel {
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
-    let badgeViewModels: [PaywallComponentViewModel]
+
+    let badgeViewModels: [BadgeContents]
 
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
@@ -56,7 +67,7 @@ class StackComponentViewModel {
         }
 
         return self.viewModels.contains(where: Self.announces)
-            || self.badgeViewModels.contains(where: Self.announces)
+            || self.badgeViewModels.contains { $0.viewModels.contains(where: Self.announces) }
     }
 
     private static func announces(_ viewModel: PaywallComponentViewModel) -> Bool {
@@ -84,7 +95,7 @@ class StackComponentViewModel {
     init(
         component: PaywallComponent.StackComponent,
         viewModels: [PaywallComponentViewModel],
-        badgeViewModels: [PaywallComponentViewModel],
+        badgeViewModels: [BadgeContents],
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool = false
     ) {
@@ -134,9 +145,13 @@ class StackComponentViewModel {
             with: self.presentedOverrides
         )
 
+        let presentedBadge = partial?.badge ?? self.component.badge
+        let presentedBadgeViewModels = presentedBadge
+            .flatMap { badge in self.badgeViewModels.first { $0.badge === badge }?.viewModels } ?? []
+
         return StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
-            badgeViewModels: self.badgeViewModels,
+            badgeViewModels: presentedBadgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
             dimension: partial?.dimension ?? self.component.dimension,
             size: partial?.size ?? self.component.size,
@@ -148,7 +163,7 @@ class StackComponentViewModel {
             shape: partial?.shape ?? self.component.shape,
             border: partial?.border ?? self.component.border,
             shadow: partial?.shadow ?? self.component.shadow,
-            badge: partial?.badge ?? self.component.badge,
+            badge: presentedBadge,
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )

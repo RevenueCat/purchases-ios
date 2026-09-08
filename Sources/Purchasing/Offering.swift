@@ -316,14 +316,6 @@ public extension Offering {
         return availablePackages.first?.presentedOfferingContext
     }
 
-    /// Whether the backend served paywall components that this offering doesn't carry. Offerings parsed
-    /// while remote config is active keep only the marker, since workflows resolve components from
-    /// `/v1/config`. Such an offering can't render on its own once remote config is disabled, so callers
-    /// must re-resolve it against the offerings cache instead of rendering it as-is.
-    var hasPrunedPaywallComponents: Bool {
-        return hasPaywallComponents && internalPaywallComponents == nil
-    }
-
     /// Copies the Offering and sets the given `presentedOfferingContext` on all `availablePackages`
     func withPresentedOfferingContext(_ presentedOfferingContext: PresentedOfferingContext) -> Self {
         return Self(

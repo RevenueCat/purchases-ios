@@ -9,7 +9,7 @@ import Foundation
 
 /// Assembles a ``UIConfig`` from the `ui_config` topic's four blob items (`app`, `localizations`,
 /// `variable_config`, `custom_variables`). Item keys are literal wire names, not camelCased: unlike
-/// `ConfigItem.content`, they're raw dictionary keys and aren't run through `.convertFromSnakeCase`.
+/// `ConfigItem.content`, they are raw dictionary keys and aren't run through `.convertFromSnakeCase`.
 final class UiConfigProvider {
 
     private let manager: RemoteConfigManagerType
@@ -63,9 +63,7 @@ final class UiConfigProvider {
                 itemKeys: Self.itemKeys,
                 as: UIConfig.self
             ) else {
-                if !self.manager.isDisabled {
-                    Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
-                }
+                Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
                 return nil
             }
 
@@ -87,7 +85,6 @@ final class UiConfigProvider {
             return cached
         }
 
-        guard !self.manager.isDisabled else { return nil }
         guard await self.manager.blobData(for: .uiConfig, itemKey: Self.appKey) != nil,
               await self.manager.blobData(for: .uiConfig, itemKey: Self.localizationsKey) != nil else {
             Logger.warn(Strings.remoteConfig.uiConfigMissingRequiredPart)
