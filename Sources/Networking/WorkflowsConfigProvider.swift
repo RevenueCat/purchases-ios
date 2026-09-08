@@ -108,37 +108,13 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return map[offeringId]
     }
 
-    /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
-    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
-    /// without relying on Swift dictionary iteration order.
-    private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
-        var map: [String: String] = [:]
-        var duplicateOfferingIds: Set<String> = []
-
-        for workflowId in topic.keys.sorted() {
-            guard let item = topic[workflowId] else { continue }
-            guard case let .string(offeringId)? = item.content[Self.offeringIdentifierKey] else { continue }
-
-            if map[offeringId] != nil {
-                duplicateOfferingIds.insert(offeringId)
-            }
-            map[offeringId] = workflowId
-        }
-
-        for offeringId in duplicateOfferingIds.sorted() {
-            Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
-        }
-
-        return map
-    }
-
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
     /// that prevented it: the item is unknown, its body can't be parsed, or `ui_config` isn't available.
     /// A workflow is only rendered with styling resolved from the `ui_config` topic, matching Android's
     /// `PaywallViewModel` failing the whole render when its concurrent `ui_config` fetch fails.
     ///
-    /// `enrolled_variants` is not populated here: per-user A/B enrollment doesn't fit this shared,
-    /// content-addressed read model and is being designed separately.
+    /// `enrolledVariants` comes from the item's `combo_key` metadata, which the backend sets per user after
+    /// picking the pre-pruned experiment combo to serve. It is `nil` for workflows with no experiment.
     ///
     /// Cache misses validate the workflow topic's generation after `ui_config` resolves, so an in-flight
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
@@ -160,17 +136,20 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // Deliberately sequential, not `async let`: a miss or malformed body returns without paying for
         // `ui_config`. A cached-body hit decodes synchronously from in-memory bytes on the caller's thread.
         if let cached = self.cachedWorkflowResult(workflowId: workflowId) {
-            return await self.makeWorkflowResult(cached.result) {
+            return await self.makeWorkflowResult(cached.result, enrolledVariants: cached.enrolledVariants) {
                 self.manager.configGeneration == cached.generation
             }
         }
 
         guard let snapshot = await self.manager.topicCacheSnapshot(.workflows),
-              snapshot.key[workflowId] != nil else {
+              let item = snapshot.key[workflowId] else {
             return .failure(.notFound)
         }
 
-        return await self.makeWorkflowResult(await self.fetchWorkflow(workflowId: workflowId)) {
+        return await self.makeWorkflowResult(
+            await self.fetchWorkflow(workflowId: workflowId),
+            enrolledVariants: Self.enrolledVariants(from: item)
+        ) {
             await self.manager.isCurrent(snapshot, for: .workflows)
         }
     }
@@ -194,7 +173,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return .failure(.notFound)
         }
 
-        return await self.makeWorkflowResult(cached.result) {
+        return await self.makeWorkflowResult(cached.result, enrolledVariants: cached.enrolledVariants) {
             self.manager.configGeneration == cached.generation
         }
     }
@@ -223,6 +202,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             key: topic
         )
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
+        let enrolledVariantsByWorkflowId = topic.compactMapValues(Self.enrolledVariants(from:))
         let prefetchedWorkflowIds = topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
         }
@@ -254,6 +234,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         self.prefetchedWorkflowsCache.store(
             .init(
                 offeringIdMap: offeringIdMap,
+                enrolledVariantsByWorkflowId: enrolledVariantsByWorkflowId,
                 prefetchedWorkflowIds: prefetchedWorkflowIds,
                 workflows: workflows
             ),
@@ -279,7 +260,11 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 return nil
             }
 
-            return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+            return WorkflowDataResult(
+                workflow: workflow,
+                uiConfig: uiConfig,
+                enrolledVariants: cache.enrolledVariantsByWorkflowId[workflowId]
+            )
         }
     }
 
@@ -306,6 +291,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     private func makeWorkflowResult(
         _ workflowResult: Result<PublishedWorkflow, WorkflowResolutionError>,
+        enrolledVariants: [String: String]?,
         isCurrent: () async -> Bool
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         let workflow: PublishedWorkflow
@@ -321,20 +307,28 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
         guard await isCurrent() else { return .failure(.notFound) }
 
-        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil))
+        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: enrolledVariants))
     }
 
     private func cachedWorkflowResult(
         workflowId: String,
         retainDecodedResult: Bool = true
-    ) -> (result: Result<PublishedWorkflow, WorkflowResolutionError>, generation: Int)? {
+    ) -> (
+        result: Result<PublishedWorkflow, WorkflowResolutionError>,
+        enrolledVariants: [String: String]?,
+        generation: Int
+    )? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation),
                   let workflow = cache.workflows[workflowId] else {
                 return nil
             }
             let result = retainDecodedResult ? workflow.value() : workflow.transientValue()
-            return (result: result, generation: generation)
+            return (
+                result: result,
+                enrolledVariants: cache.enrolledVariantsByWorkflowId[workflowId],
+                generation: generation
+            )
         }
     }
 
@@ -373,7 +367,54 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return try JSONDecoder.default.decode(PublishedWorkflow.self, from: data)
     }
 
-    private static let offeringIdentifierKey = "offering_identifier"
+}
+
+extension WorkflowsConfigProvider {
+
+    /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
+    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
+    /// without relying on Swift dictionary iteration order.
+    fileprivate func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
+        var map: [String: String] = [:]
+        var duplicateOfferingIds: Set<String> = []
+
+        for workflowId in topic.keys.sorted() {
+            guard let item = topic[workflowId] else { continue }
+            guard case let .string(offeringId)? = item.content[Self.offeringIdentifierKey] else { continue }
+
+            if map[offeringId] != nil {
+                duplicateOfferingIds.insert(offeringId)
+            }
+            map[offeringId] = workflowId
+        }
+
+        for offeringId in duplicateOfferingIds.sorted() {
+            Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
+        }
+
+        return map
+    }
+
+    /// Parses the item's `combo_key` (`experiment_id=variant_key` pairs joined by `;`) into a map of
+    /// experiment id to variant key. `nil` when the key is absent, `default`, or has no well-formed pair.
+    static func enrolledVariants(from item: RemoteConfiguration.ConfigItem) -> [String: String]? {
+        guard case let .string(comboKey)? = item.content[Self.comboKeyKey],
+              comboKey != Self.defaultComboKey else {
+            return nil
+        }
+
+        var variants: [String: String] = [:]
+        for pair in comboKey.split(separator: ";") {
+            let parts = pair.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: false)
+            guard parts.count == 2, !parts[0].isEmpty, !parts[1].isEmpty else { continue }
+            variants[String(parts[0])] = String(parts[1])
+        }
+        return variants.isEmpty ? nil : variants
+    }
+
+    fileprivate static let offeringIdentifierKey = "offering_identifier"
+    private static let comboKeyKey = "combo_key"
+    private static let defaultComboKey = "default"
 
 }
 
@@ -392,6 +433,7 @@ private func workflowIDsToPrefetch(
 
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
+    let enrolledVariantsByWorkflowId: [String: [String: String]]
     let prefetchedWorkflowIds: [String]
     let workflows: [String: LazyPublishedWorkflow]
 
