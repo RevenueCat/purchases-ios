@@ -1497,7 +1497,7 @@
 		C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */; };
 		C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A008 /* WebCheckoutViewModel.swift */; };
 		C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00A /* WebCheckoutView.swift */; };
-		C4E00000000000000000A00E /* WebCheckoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00D /* WebCheckoutSheet.swift */; };
+		C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00D /* WebCheckoutSheet.swift */; };
 		C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B008 /* WebViewNavigationFailure.swift */; };
 		C4E10000000000000000B002 /* WebViewHTTPStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B001 /* WebViewHTTPStatus.swift */; };
 		C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B003 /* WebViewComponentNavigationPolicy.swift */; };
@@ -9048,7 +9048,7 @@
 				C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */,
 				C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */,
 				C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */,
-				C4E00000000000000000A00E /* WebCheckoutSheet.swift in Sources */,
+				C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */,
 				C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */,
 				C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */,
 				FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */,
