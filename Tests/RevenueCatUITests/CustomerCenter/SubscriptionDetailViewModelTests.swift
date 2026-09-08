@@ -56,12 +56,92 @@ final class SubscriptionDetailViewModelTests: TestCase {
         expect(viewModel.browserMayHaveChangedSubscription) == true
 
         viewModel.onDismissInAppBrowser()
-        try await Task.sleep(nanoseconds: 200_000_000)
 
         // syncPurchases posts the Apple receipt and returns cached info when there are
         // no Apple transactions, which is this exact case
-        expect(purchases.syncPurchasesCount) == 0
+        await expect(purchases.customerInfoFetchCount).toEventually(equal(1))
         expect(purchases.customerInfoFetchPolicy) == .fetchCurrent
+        expect(purchases.syncPurchasesCount) == 0
+    }
+
+    func testCustomURLBrowserDismissDoesNotRefresh() async throws {
+        let purchases = MockCustomerCenterPurchases()
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                actionWrapper: CustomerCenterActionWrapper(),
+                purchasesProvider: purchases
+            ),
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: .mock(
+                store: .playStore,
+                isSubscription: true,
+                managementURL: URL(string: "https://play.google.com/store/account/subscriptions")!
+            ),
+            purchasesProvider: purchases
+        )
+
+        let customURLPath = CustomerCenterConfigData.HelpPath(
+            id: "custom",
+            title: "Help center",
+            url: URL(string: "https://revenuecat.com/help")!,
+            openMethod: .inApp,
+            type: .customUrl,
+            detail: nil
+        )
+        await viewModel.handleHelpPath(customURLPath)
+        viewModel.onDismissInAppBrowser()
+
+        try await Task.sleep(nanoseconds: 200_000_000)
+        expect(purchases.customerInfoFetchCount) == 0
+    }
+
+    func testManagementURLFlagDoesNotLeakIntoALaterCustomURL() async throws {
+        let purchases = MockCustomerCenterPurchases()
+        let viewModel = SubscriptionDetailViewModel(
+            customerInfoViewModel: CustomerCenterViewModel(
+                actionWrapper: CustomerCenterActionWrapper(),
+                purchasesProvider: purchases
+            ),
+            screen: CustomerCenterConfigData.default.screens[.management]!,
+            showPurchaseHistory: false,
+            showVirtualCurrencies: false,
+            allowsMissingPurchaseAction: false,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: .mock(
+                store: .playStore,
+                isSubscription: true,
+                managementURL: URL(string: "https://play.google.com/store/account/subscriptions")!
+            ),
+            purchasesProvider: purchases
+        )
+
+        // management URL opens, but its onDismiss never fires
+        await viewModel.handleHelpPath(CustomerCenterConfigData.HelpPath(
+            id: "cancel",
+            title: "Cancel subscription",
+            type: .cancel,
+            detail: nil
+        ))
+        expect(viewModel.browserMayHaveChangedSubscription) == true
+
+        // a custom URL opens next, dismissing it shouldn't refresh
+        await viewModel.handleHelpPath(CustomerCenterConfigData.HelpPath(
+            id: "custom",
+            title: "Help center",
+            url: URL(string: "https://revenuecat.com/help")!,
+            openMethod: .inApp,
+            type: .customUrl,
+            detail: nil
+        ))
+        expect(viewModel.browserMayHaveChangedSubscription) == false
+
+        viewModel.onDismissInAppBrowser()
+        try await Task.sleep(nanoseconds: 200_000_000)
+        expect(purchases.customerInfoFetchCount) == 0
     }
 
     func testShouldShowContactSupport() {
