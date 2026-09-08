@@ -28,6 +28,11 @@ class IconComponentViewModel {
 
     private let presentedOverrides: PresentedOverrides<PresentedIconPartial>?
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
@@ -91,6 +96,7 @@ class IconComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -109,6 +115,7 @@ class IconComponentViewModel {
         let partial = PresentedIconPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,

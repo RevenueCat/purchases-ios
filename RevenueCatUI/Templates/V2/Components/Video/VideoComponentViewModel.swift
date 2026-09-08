@@ -28,6 +28,11 @@ class VideoComponentViewModel {
 
     private let presentedOverrides: PresentedOverrides<LocalizedVideoPartial>?
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     init(
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
@@ -75,6 +80,7 @@ class VideoComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -89,6 +95,7 @@ class VideoComponentViewModel {
         let localizedPartial = LocalizedVideoPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,

@@ -32,6 +32,11 @@ struct IconComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -54,6 +59,7 @@ struct IconComponentView: View {
         self.viewModel.styles(
             state: self.componentViewState,
             condition: self.screenCondition,
+            isHovered: self.isHovered || self.componentHoverState,
             isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                 package: self.packageContext.package
             ),
@@ -86,6 +92,7 @@ struct IconComponentView: View {
                 .padding(style.margin)
             }
         }
+        .componentHoverState(self.$isHovered, trackingEnabled: self.viewModel.hasHoverOverride)
     }
 
     private func aspectRatio(style: ImageComponentStyle) -> Double {

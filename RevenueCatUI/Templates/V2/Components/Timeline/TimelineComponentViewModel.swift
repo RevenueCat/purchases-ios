@@ -31,6 +31,11 @@ class TimelineComponentViewModel {
 
     private let presentedOverrides: PresentedOverrides<PresentedTimelinePartial>?
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     init(
         component: PaywallComponent.TimelineComponent,
         items: [TimelineItemViewModel],
@@ -49,6 +54,7 @@ class TimelineComponentViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -62,6 +68,7 @@ class TimelineComponentViewModel {
         let partial = PresentedTimelinePartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,
@@ -116,6 +123,7 @@ class TimelineItemViewModel {
     func styles(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -129,6 +137,7 @@ class TimelineItemViewModel {
         let partial = PresentedTimelineItemPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,

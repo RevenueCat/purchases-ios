@@ -32,6 +32,11 @@ struct VideoComponentView: View {
     @Environment(\.componentViewState)
     private var componentViewState
 
+    @Environment(\.componentHoverState)
+    private var componentHoverState
+
+    @State private var isHovered: Bool = false
+
     @Environment(\.screenCondition)
     private var screenCondition
 
@@ -73,6 +78,7 @@ struct VideoComponentView: View {
             .styles(
                 state: componentViewState,
                 condition: screenCondition,
+                isHovered: isHovered || componentHoverState,
                 isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(
                     package: self.packageContext.package
                 ),
@@ -163,6 +169,7 @@ struct VideoComponentView: View {
             .onChangeOf(carouselState) { newState in
                 updatePlayableState(isPlayable: newState?.isActiveOrNeighbor ?? true)
             }
+            .componentHoverState($isHovered, trackingEnabled: viewModel.hasHoverOverride)
 
     }
 

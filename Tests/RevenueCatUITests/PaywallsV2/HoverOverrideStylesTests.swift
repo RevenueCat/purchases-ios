@@ -90,6 +90,18 @@ class HoverOverrideStylesTests: TestCase {
         expect(withoutHover.hasHoverOverride).to(beFalse())
     }
 
+    // MARK: - Icon (representative of the remaining components' shared threading)
+
+    func testIconHoverOverride_AppliedOnlyWhenHovered() throws {
+        let viewModel = try makeIconViewModel(overrides: [
+            .init(extendedConditions: [.hover], properties: .init(visible: false))
+        ])
+
+        expect(viewModel.hasHoverOverride).to(beTrue())
+        expect(try self.capturedIconVisible(from: viewModel, isHovered: false)).to(beTrue())
+        expect(try self.capturedIconVisible(from: viewModel, isHovered: true)).to(beFalse())
+    }
+
     // MARK: - Helpers
 
     private static let black = PaywallComponent.ColorScheme(
@@ -147,6 +159,44 @@ class HoverOverrideStylesTests: TestCase {
                 overrides: overrides
             )
         )
+    }
+
+    private func makeIconViewModel(
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialIconComponent>
+    ) throws -> IconComponentViewModel {
+        IconComponentViewModel(
+            localizationProvider: LocalizationProvider(locale: .current, localizedStrings: [:]),
+            uiConfigProvider: try Self.createUIConfigProvider(),
+            component: PaywallComponent.IconComponent(
+                baseUrl: "https://icons.pawwalls.com",
+                iconName: "star",
+                formats: .init(svg: "star.svg", png: "star.png", heic: "star.heic", webp: "star.webp"),
+                size: .init(width: .fixed(20), height: .fixed(20)),
+                padding: nil,
+                margin: nil,
+                color: Self.black,
+                iconBackground: nil,
+                overrides: overrides
+            )
+        )
+    }
+
+    private func capturedIconVisible(from viewModel: IconComponentViewModel, isHovered: Bool) throws -> Bool {
+        var capturedVisible: Bool?
+        _ = viewModel.styles(
+            state: .default,
+            condition: .compact,
+            isHovered: isHovered,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:],
+            colorScheme: .light
+        ) { style -> EmptyView in
+            capturedVisible = style.visible
+            return EmptyView()
+        }
+        return try XCTUnwrap(capturedVisible)
     }
 
     @MainActor

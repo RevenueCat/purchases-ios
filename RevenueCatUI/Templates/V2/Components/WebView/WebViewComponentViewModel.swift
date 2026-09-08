@@ -17,6 +17,11 @@ final class WebViewComponentViewModel: Hashable {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedWebViewPartial>?
 
+    /// Whether any override is gated on the hover condition, so the view attaches hover tracking.
+    var hasHoverOverride: Bool {
+        self.presentedOverrides?.hasHoverCondition() == true
+    }
+
     #if !os(watchOS) && canImport(WebKit)
     @MainActor
     private var storedWebViewInstance: WebViewInstance?
@@ -84,6 +89,7 @@ final class WebViewComponentViewModel: Hashable {
     func style(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
@@ -101,6 +107,7 @@ final class WebViewComponentViewModel: Hashable {
         let partial = PresentedWebViewPartial.buildPartial(
             state: state,
             condition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext,
