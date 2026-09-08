@@ -104,12 +104,9 @@ private struct WebCheckoutSheetPresentation: ViewModifier {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
                 // Without this a drag anywhere on the page resizes the sheet instead of scrolling the
-                // checkout, which leaves fields below the fold unreachable. Detents are only offered
-                // where it is available for that reason.
+                // checkout, which leaves fields below the fold unreachable.
                 .presentationContentInteraction(.scrolls)
         } else if #available(iOS 16.0, *) {
-            // The grabber is the only hint that the sheet comes down by swiping, which is the only way:
-            // the page has no chrome of its own.
             content.presentationDragIndicator(.visible)
         } else {
             content
