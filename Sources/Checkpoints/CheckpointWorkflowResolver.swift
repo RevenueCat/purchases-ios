@@ -180,6 +180,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         let ruleEvaluation = try await self.evaluateRules(
+            for: identifier,
             in: rulesSnapshot.ruleSet.rules,
             params: params,
             audienceConfiguration: audienceConfiguration
@@ -224,12 +225,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     private func evaluateRules(
+        for identifier: String,
         in rules: [CheckpointRule],
         params: CheckpointParams,
         audienceConfiguration: AudienceConfigurationSnapshot
     ) async throws -> AudienceRuleEvaluation {
         do {
             return .completed(try await self.matchingRule(
+                for: identifier,
                 in: rules,
                 params: params,
                 audienceConfiguration: audienceConfiguration
@@ -243,6 +246,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.
     private func matchingRule(
+        for identifier: String,
         in rules: [CheckpointRule],
         params: CheckpointParams,
         audienceConfiguration: AudienceConfigurationSnapshot
@@ -250,7 +254,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         return try await self.localRulesEvaluator.match(
             in: rules,
             // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
-            customVariables: params.customVariables.mapValues(\.dimensionValue)
+            customVariables: params.customVariables.mapValues(\.dimensionValue),
+            logPrefix: "[Checkpoint '\(identifier)'] "
         ) { rule in
             guard let audience = audienceConfiguration.audiences[rule.audienceId] else {
                 throw AudienceUnavailableError(audienceID: rule.audienceId)

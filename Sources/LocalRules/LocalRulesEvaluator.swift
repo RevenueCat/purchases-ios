@@ -47,13 +47,16 @@ final class LocalRulesEvaluator: Sendable {
     ///
     /// For example, rules `[("a", false), ("b", true)]` return the second rule.
     /// Developer-supplied values are available to predicates under `custom.*`.
+    /// `logPrefix` is prepended to diagnostic messages without logging predicate or dimension values.
     func match<Rule: LocalRule>(
         in rules: [Rule],
-        customVariables: [String: DimensionValue] = [:]
+        customVariables: [String: DimensionValue] = [:],
+        logPrefix: String = ""
     ) async throws -> Rule? {
         return try await self.match(
             in: rules,
-            customVariables: customVariables
+            customVariables: customVariables,
+            logPrefix: logPrefix
         ) { $0.predicate }
     }
 
@@ -66,15 +69,20 @@ final class LocalRulesEvaluator: Sendable {
     func match<Rule: Sendable>(
         in rules: [Rule],
         customVariables: [String: DimensionValue] = [:],
+        logPrefix: String = "",
         predicate resolvePredicate: (Rule) async throws -> String
     ) async throws -> Rule? {
-        guard !rules.isEmpty else {
-            return nil
-        }
+        guard !rules.isEmpty else { return nil }
 
         let snapshot = try await self.dimensionResolver.snapshot(
             customVariables: customVariables
         )
+
+        Logger.verbose(Strings.localRules.evaluatingRules(
+            logPrefix: logPrefix,
+            ruleCount: rules.count,
+            dimensions: snapshot.values.keys.sorted()
+        ))
 
         var firstEvaluationError: LocalRulesEvaluationError?
 
@@ -82,24 +90,20 @@ final class LocalRulesEvaluator: Sendable {
             let predicate = try await resolvePredicate(rule)
             try Task.checkCancellation()
 
-            switch RulesEngine.evaluate(
+            let result = RulesEngine.evaluate(
                 predicate: predicate,
                 variables: snapshot.values
-            ) {
-            case .success(true):
+            )
+            let outcome = self.logEvaluationResult(
+                result,
+                logPrefix: logPrefix,
+                ruleIndex: index + 1
+            )
+            if outcome.matched {
                 return rule
-            case .success(false):
-                continue
-            case .failure(let error):
-                switch error {
-                case .unresolvedVariable(let path):
-                    Logger.debug(Strings.localRules.ruleUnresolvedVariable(ruleIndex: index, path: path))
-                    continue
-                default:
-                    if firstEvaluationError == nil {
-                        firstEvaluationError = .predicateEvaluation(ruleIndex: index, error: error)
-                    }
-                }
+            }
+            if let error = outcome.error, firstEvaluationError == nil {
+                firstEvaluationError = .predicateEvaluation(ruleIndex: index, error: error)
             }
         }
 
@@ -109,4 +113,50 @@ final class LocalRulesEvaluator: Sendable {
 
         return nil
     }
+
+    private func logEvaluationResult(
+        _ result: Result<Bool, RulesEngine.EvaluationError>,
+        logPrefix: String,
+        ruleIndex: Int
+    ) -> (matched: Bool, error: RulesEngine.EvaluationError?) {
+        switch result {
+        case .success(true):
+            Logger.verbose(Strings.localRules.ruleMatched(logPrefix: logPrefix, ruleIndex: ruleIndex))
+            return (true, nil)
+        case .success(false):
+            Logger.verbose(Strings.localRules.ruleDidNotMatch(logPrefix: logPrefix, ruleIndex: ruleIndex))
+            return (false, nil)
+        case .failure(let error):
+            switch error {
+            case .unresolvedVariable(let path):
+                Logger.verbose(Strings.localRules.ruleUnresolvedVariable(
+                    logPrefix: logPrefix,
+                    ruleIndex: ruleIndex,
+                    path: path
+                ))
+                return (false, nil)
+            default:
+                Logger.debug(Strings.localRules.ruleEvaluationFailed(
+                    logPrefix: logPrefix,
+                    ruleIndex: ruleIndex,
+                    errorKind: error.logName
+                ))
+                return (false, error)
+            }
+        }
+    }
+}
+
+private extension RulesEngine.EvaluationError {
+
+    var logName: String {
+        switch self {
+        case .parse: return "Parse"
+        case .unresolvedVariable: return "UnresolvedVariable"
+        case .typeMismatch: return "TypeMismatch"
+        case .unsupportedOperator: return "UnsupportedOperator"
+        case .unknown: return "Unknown"
+        }
+    }
+
 }

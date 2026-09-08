@@ -140,6 +140,45 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
+    func testLogsRuleEvaluationWithCheckpointPrefix() async throws {
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let firstWorkflowID = "wf_first"
+        let secondWorkflowID = "wf_second"
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+            Self.rule(workflowID: firstWorkflowID, audienceID: "audience_false"),
+            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_true")
+        ]))
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience_false": "false",
+            "audience_true": "true"
+        ]
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId = [
+            firstWorkflowID: self.offeringID,
+            secondWorkflowID: self.offeringID
+        ]
+        self.workflowsProvider.stubbedGetWorkflowResult = [
+            firstWorkflowID: Self.workflowDataResult(id: firstWorkflowID),
+            secondWorkflowID: Self.workflowDataResult(id: secondWorkflowID)
+        ]
+
+        _ = try await self.resolve()
+
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 1 did not match.",
+            level: .verbose
+        )
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 2 matched.",
+            level: .verbose
+        )
+        XCTAssertTrue(self.logger.messages.allSatisfy {
+            !$0.message.contains("false") && !$0.message.contains("true")
+        })
+    }
+
     func testCheckpointWithNoWorkflowsResolvesConfigurationUnavailable() async throws {
         self.workflowsProvider.stubbedOfferingIdByWorkflowId = [:]
 

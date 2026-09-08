@@ -17,6 +17,7 @@
 #if canImport(Testing)
 
 import Foundation
+import Nimble
 import Testing
 
 @testable import RevenueCat
@@ -413,6 +414,10 @@ struct LocalRulesEvaluatorTests {
         // A missing local value means this audience does not match. It should
         // not make the complete rules configuration unavailable.
         let logger = TestLogHandler(testIdentifier: #function)
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
         let evaluator = Self.evaluator(dimensionProviders: [
             TestDimensionProvider(
                 name: "device",
@@ -428,9 +433,13 @@ struct LocalRulesEvaluatorTests {
         ])
 
         #expect(rule == nil)
-        let expectedMessage = Strings.localRules.ruleUnresolvedVariable(ruleIndex: 0, path: "unknown")
+        let expectedMessage = Strings.localRules.ruleUnresolvedVariable(
+            logPrefix: "",
+            ruleIndex: 1,
+            path: "unknown"
+        )
         #expect(logger.messages.contains {
-            $0.level == .debug && $0.message.contains(expectedMessage.description)
+            $0.level == .verbose && $0.message.contains(expectedMessage.description)
         })
     }
 
@@ -481,6 +490,70 @@ struct LocalRulesEvaluatorTests {
         ])
 
         #expect(rule?.id == nil)
+    }
+
+    @Test
+    func logsEveryRuleOutcomeWithoutPredicatesOrValues() async throws {
+        let logger = TestLogHandler(testIdentifier: #function)
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let evaluator = Self.evaluator(dimensionProviders: [
+            TestDimensionProvider(name: "device", snapshots: [["platform": .string("iOS")]])
+        ])
+
+        _ = try? await evaluator.match(in: [
+            TestLocalRule(id: "first", predicate: "false"),
+            TestLocalRule(id: "second", predicate: "true")
+        ])
+
+        logger.verifyMessageWasLogged(
+            "Evaluating 2 rules against dimensions [\"evaluated_at\", \"platform\"].",
+            level: .verbose
+        )
+        logger.verifyMessageWasLogged("Rule 1 did not match.", level: .verbose)
+        logger.verifyMessageWasLogged("Rule 2 matched.", level: .verbose)
+        #expect(logger.messages.allSatisfy {
+            !$0.message.contains("false") && !$0.message.contains("true") && !$0.message.contains("iOS")
+        })
+    }
+
+    @Test
+    func logsUnresolvedDimensionsByName() async throws {
+        let logger = TestLogHandler(testIdentifier: #function)
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let evaluator = Self.evaluator(dimensionProviders: [])
+
+        _ = try? await evaluator.match(in: [
+            TestLocalRule(id: "missing", predicate: #"{"var":"unknown_dimension"}"#)
+        ])
+
+        logger.verifyMessageWasLogged(
+            "Rule 1 did not match: it reads 'unknown_dimension', which this SDK does not supply.",
+            level: .verbose
+        )
+        #expect(logger.messages.allSatisfy { !$0.message.contains(#"{"var":"unknown_dimension"}"#) })
+    }
+
+    @Test
+    func logsUnevaluablePredicatesByFailureKind() async throws {
+        let logger = TestLogHandler(testIdentifier: #function)
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let evaluator = Self.evaluator(dimensionProviders: [])
+
+        _ = try? await evaluator.match(in: [
+            TestLocalRule(id: "malformed", predicate: "{not-json")
+        ])
+
+        logger.verifyMessageWasLogged("Rule 1 could not be evaluated (Parse).", level: .debug)
+        #expect(logger.messages.allSatisfy { !$0.message.contains("{not-json") })
     }
 
     @Test
