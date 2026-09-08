@@ -12,7 +12,7 @@
 //  Created by Pol Miro on 30/05/2026.
 
 import Foundation
-@_spi(Experimental) @testable import RevenueCat
+@testable import RevenueCat
 
 extension AdReward {
 

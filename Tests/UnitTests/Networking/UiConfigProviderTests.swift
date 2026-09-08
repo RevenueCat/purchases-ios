@@ -292,19 +292,6 @@ class UiConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
     }
 
-    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
-        self.mockManager.isDisabled = true
-
-        let uiConfig = await self.provider.getUiConfig()
-
-        expect(uiConfig).to(beNil())
-        self.logger.verifyMessageWasNotLogged(
-            Strings.remoteConfig.uiConfigMissingRequiredPart,
-            level: .warn,
-            allowNoMessages: true
-        )
-    }
-
     func testRequestsMergedBlobDataForWireItemKeysNotCamelCased() async throws {
         self.mockManager.stubbedTopics[.uiConfig] = [
             "app": .init(),
@@ -338,19 +325,6 @@ class UiConfigProviderTests: TestCase {
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig) == .empty
-    }
-
-    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
-        self.mockManager.isDisabled = true
-
-        let uiConfig = await self.provider.getUiConfig()
-
-        expect(uiConfig).to(beNil())
-        self.logger.verifyMessageWasNotLogged(
-            Strings.remoteConfig.uiConfigMissingRequiredPart,
-            level: .warn,
-            allowNoMessages: true
-        )
     }
 
 #endif
