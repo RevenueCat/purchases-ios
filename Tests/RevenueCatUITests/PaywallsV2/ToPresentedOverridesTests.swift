@@ -94,6 +94,30 @@ class ToPresentedOverridesTests: TestCase {
         expect(overrides.hasUnsupportedCondition()).to(beFalse())
     }
 
+    // MARK: - Hover Compatibility
+
+    func testHasUnsupportedCondition_WithHover_ReturnsFalse() throws {
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.hover], properties: .init())
+        ]
+
+        expect(overrides.hasUnsupportedCondition()).to(beFalse())
+    }
+
+    func testToPresentedOverrides_WithDiscardRulesTrue_KeepsHoverOverrides() throws {
+        // Hover is not a rule, so it survives default-paywall degradation like other legacy conditions
+        let overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialStackComponent> = [
+            .init(extendedConditions: [.hover], properties: .init()),
+            .init(extendedConditions: [
+                .selectedPackage(operator: .in, packages: ["monthly"])
+            ], properties: .init())
+        ]
+
+        let result = overrides.toPresentedOverrides(discardRules: true) { $0 }
+        expect(result.count).to(equal(1))
+        expect(result[0].conditions).to(equal([PaywallComponent.ExtendedCondition.hover]))
+    }
+
     // MARK: - Recursive containsUnsupportedConditions Tests
 
     func testStackWithUnsupportedCondition_ReturnsTrue() throws {

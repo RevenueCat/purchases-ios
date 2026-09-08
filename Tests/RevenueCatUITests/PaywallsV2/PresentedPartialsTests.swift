@@ -100,6 +100,101 @@ class PresentedPartialsTests: TestCase {
         expect(result).to(beNil())
     }
 
+    // MARK: - Hover Condition Tests
+
+    func testHoverCondition_Hovered_Matches() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.hover]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isHovered: true,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).toNot(beNil())
+    }
+
+    func testHoverCondition_NotHovered_DoesNotMatch() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.hover]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isHovered: false,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testHoverCondition_DefaultsToNotHovered() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.hover]
+
+        let result = TestPartial.buildPartial(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: [PresentedOverride(conditions: conditions, properties: TestPartial())]
+        )
+
+        expect(result).to(beNil())
+    }
+
+    func testHoverCondition_WithSelected_RequiresBothConditions() throws {
+        let conditions: [PaywallComponent.ExtendedCondition] = [.hover, .selected]
+        let overrides = [PresentedOverride(conditions: conditions, properties: TestPartial())]
+
+        let selectedButNotHovered = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isHovered: false,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+        let selectedAndHovered = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isHovered: true,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        expect(selectedButNotHovered).to(beNil())
+        expect(selectedAndHovered).toNot(beNil())
+    }
+
+    func testHoverCondition_LaterMatchingOverrideWins() throws {
+        let overrides = [
+            PresentedOverride(conditions: [.hover], properties: TestPartial(value: "hover")),
+            PresentedOverride(conditions: [.selected], properties: TestPartial(value: "selected"))
+        ]
+
+        let result = TestPartial.buildPartial(
+            state: .selected,
+            condition: .compact,
+            isHovered: true,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            conditionContext: ConditionContext(),
+            with: overrides
+        )
+
+        expect(result?.value).to(equal("selected"))
+    }
+
     // MARK: - Variable Condition Tests
 
     func testVariableCondition_StringEquals_Matches() throws {

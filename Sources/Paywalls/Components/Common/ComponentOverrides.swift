@@ -168,6 +168,9 @@ extension PaywallComponent {
         // MARK: - Selection state
         case selected
 
+        // MARK: - Hover state (pointer devices only; never matches on touch)
+        case hover
+
         // MARK: - Offer eligibility (legacy simple boolean check)
         case introOffer
         case promoOffer
@@ -197,7 +200,7 @@ extension PaywallComponent {
         /// fallback for unrecognized condition types. It always evaluates to `false` at runtime.
         @_spi(Internal) public var isRule: Bool {
             switch self {
-            case .compact, .medium, .expanded, .selected, .introOffer, .promoOffer,
+            case .compact, .medium, .expanded, .selected, .hover, .introOffer, .promoOffer,
                  .multipleIntroOffers, .unsupported:
                 return false
             case .introOfferCondition, .promoOfferCondition, .variable, .selectedPackage, .state:
@@ -215,7 +218,7 @@ extension PaywallComponent {
             case .selected: return .selected
             case .introOffer, .introOfferCondition: return .introOffer
             case .promoOffer, .promoOfferCondition: return .promoOffer
-            case .multipleIntroOffers, .variable, .selectedPackage, .state, .unsupported: return .unsupported
+            case .hover, .multipleIntroOffers, .variable, .selectedPackage, .state, .unsupported: return .unsupported
             }
         }
 
@@ -246,6 +249,8 @@ extension PaywallComponent {
                 try container.encode(ConditionType.expanded.rawValue, forKey: .type)
             case .selected:
                 try container.encode(ConditionType.selected.rawValue, forKey: .type)
+            case .hover:
+                try container.encode(ConditionType.hover.rawValue, forKey: .type)
             case .introOffer:
                 try container.encode(ConditionType.introOffer.rawValue, forKey: .type)
             case .promoOffer:
@@ -309,6 +314,8 @@ extension PaywallComponent {
                 return .expanded
             case .selected:
                 return .selected
+            case .hover:
+                return .hover
             case .introOffer:
                 return .introOffer
             case .introOfferCondition:
@@ -364,6 +371,7 @@ extension PaywallComponent {
             case promoOfferCondition = "promo_offer_condition"
             case multipleIntroOffers = "multiple_intro_offers"
             case selected
+            case hover
             case variableCondition = "variable_condition"
             case selectedPackageCondition = "selected_package_condition"
             case stateCondition = "state_condition"

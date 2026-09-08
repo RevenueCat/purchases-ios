@@ -79,6 +79,7 @@ extension PresentedPartial {
     /// - Parameters:
     ///   - state: Current view state (selected/unselected)
     ///   - condition: Current screen condition (compact/medium/expanded)
+    ///   - isHovered: Whether the component is currently hovered (pointer devices only)
     ///   - isEligibleForIntroOffer: Whether the user is eligible for an intro offer
     ///   - isEligibleForPromoOffer: Whether the user is eligible for a promo offer
     ///   - conditionContext: Additional context for evaluating new condition types
@@ -89,6 +90,7 @@ extension PresentedPartial {
     static func buildPartial(
         state: ComponentViewState,
         condition: ScreenCondition,
+        isHovered: Bool = false,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext,
@@ -104,6 +106,7 @@ extension PresentedPartial {
             for: presentedOverride.conditions,
             state: state,
             activeCondition: condition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext
@@ -120,6 +123,7 @@ extension PresentedPartial {
         for conditions: [PaywallComponent.ExtendedCondition],
         state: ComponentViewState,
         activeCondition: ScreenCondition,
+        isHovered: Bool,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext
@@ -128,6 +132,7 @@ extension PresentedPartial {
             condition,
             state: state,
             activeCondition: activeCondition,
+            isHovered: isHovered,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             conditionContext: conditionContext
@@ -143,6 +148,7 @@ extension PresentedPartial {
         _ condition: PaywallComponent.ExtendedCondition,
         state: ComponentViewState,
         activeCondition: ScreenCondition,
+        isHovered: Bool,
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         conditionContext: ConditionContext
@@ -155,6 +161,10 @@ extension PresentedPartial {
         // Selection state
         case .selected:
             return state == .selected
+
+        // Hover state (pointer devices only; never matches on touch)
+        case .hover:
+            return isHovered
 
         // Offer eligibility (legacy simple boolean check)
         case .introOffer:
