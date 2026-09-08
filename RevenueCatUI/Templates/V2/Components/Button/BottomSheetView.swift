@@ -97,6 +97,18 @@ struct BottomSheetOverlayModifier: ViewModifier {
 
     private static let presentationAnimation = Animation.spring(response: 0.35, dampingFraction: 1)
 
+    init(
+        sheetViewModel: Binding<SheetViewModel?>,
+        safeAreaInsets: EdgeInsets,
+        onSheetContentAppear: (() -> Void)?
+    ) {
+        self._sheetViewModel = sheetViewModel
+        self.safeAreaInsets = safeAreaInsets
+        self.onSheetContentAppear = onSheetContentAppear
+        // A sheet that is already requested when the overlay is created has nothing to slide in from.
+        self._settledSheetID = State(initialValue: sheetViewModel.wrappedValue?.sheet.id)
+    }
+
     private func presentationPlan(for sheetViewModel: SheetViewModel) -> SheetPresentationPlan {
         SheetPresentationPlan.make(
             requestedSheetID: sheetViewModel.sheet.id,
