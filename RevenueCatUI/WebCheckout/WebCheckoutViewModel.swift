@@ -29,14 +29,25 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
     enum LoadState {
 
+        /// Nothing has been asked to load yet.
+        case idle
         case loading
         case loaded
+        /// A page that has painted is navigating to the provider's next step.
+        case navigating
         /// The page could not be shown. The presenting host decides what the customer sees.
         case failed
+        /// The page reached a return URL. Terminal: nothing moves the state after it.
+        case finished
+
+        /// Whether the customer has nothing to look at yet.
+        var isWaitingForFirstPaint: Bool {
+            self == .idle || self == .loading
+        }
 
     }
 
-    @Published private(set) var loadState: LoadState = .loading
+    @Published private(set) var loadState: LoadState = .idle
 
     /// Called once, when the page navigates to the return URL.
     var onFinished: ((WebCheckoutReturnStatus) -> Void)?
@@ -49,9 +60,9 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     private let checkoutURL: URL
     private let returnURL: WebCheckoutReturnURL?
 
-    private var hasStartedLoading = false
-    private var hasLoadedOnce = false
-    private var hasFinished = false
+    private var hasPainted: Bool {
+        self.loadState == .loaded || self.loadState == .navigating
+    }
 
     /// - Parameter checkoutURL: The provider-hosted page to present.
     /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
@@ -80,12 +91,22 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
     /// Begins the first load. Later calls do nothing, so a host can call it on every appearance.
     func loadIfNeeded() {
-        guard !self.hasStartedLoading else {
+        guard self.loadState == .idle else {
             return
         }
 
-        self.hasStartedLoading = true
+        self.transition(to: .loading)
         self.webView.load(URLRequest(url: self.checkoutURL))
+    }
+
+    /// Ignores everything that arrives after the checkout ended, so a navigation still in flight
+    /// cannot blank the page while the host is dismissing.
+    private func transition(to state: LoadState) {
+        guard self.loadState != .finished else {
+            return
+        }
+
+        self.loadState = state
     }
 
     /// Installs no `WKUserScript`: on iOS 15 that disables Apple Pay for every document the web view
@@ -107,15 +128,15 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         }
 
         Logger.error(Strings.web_checkout_load_failed((error as NSError).localizedDescription))
-        self.loadState = .failed
+        self.transition(to: .failed)
     }
 
     private func finish(returnedFrom url: URL?) {
-        guard !self.hasFinished else {
+        guard self.loadState != .finished else {
             return
         }
 
-        self.hasFinished = true
+        self.loadState = .finished
 
         guard let status = self.returnURL?.status(of: url) else {
             Logger.warning(Strings.web_checkout_return_status_missing)
@@ -164,7 +185,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             isMainFrame: navigationResponse.isForMainFrame
            ) {
             Logger.error(Strings.web_checkout_http_error(statusCode: response.statusCode))
-            self.loadState = .failed
+            self.transition(to: .failed)
             decisionHandler(.cancel)
             return
         }
@@ -174,16 +195,11 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         // Only the first load shows a spinner. Later steps are managed by the provider.
-        guard !self.hasLoadedOnce else {
-            return
-        }
-
-        self.loadState = .loading
+        self.transition(to: self.hasPainted ? .navigating : .loading)
     }
 
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        self.hasLoadedOnce = true
-        self.loadState = .loaded
+        self.transition(to: .loaded)
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
@@ -200,7 +216,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
 
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
         Logger.error(Strings.web_checkout_content_process_terminated)
-        self.loadState = .failed
+        self.transition(to: .failed)
     }
 
 }
