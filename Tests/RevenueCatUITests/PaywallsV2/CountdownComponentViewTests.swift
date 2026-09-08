@@ -1,0 +1,194 @@
+//
+//  Copyright RevenueCat Inc. All Rights Reserved.
+//
+//  Licensed under the MIT License (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      https://opensource.org/licenses/MIT
+//
+//  CountdownComponentViewTests.swift
+//
+
+@_spi(Internal) @testable import RevenueCat
+@testable import RevenueCatUI
+import SwiftUI
+import XCTest
+// swiftlint:disable force_try
+
+#if !os(tvOS)
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+final class CountdownComponentViewTests: TestCase {
+
+    // MARK: - Decoding
+
+    func testCodableRoundTripWithVisibleOverride() throws {
+        let jsonData = Data("""
+        {
+          "type": "countdown",
+          "visible": true,
+          "style": { "type": "date", "date": "2035-01-01T00:00:00Z" },
+          "count_from": "days",
+          "countdown_stack": \(Self.stackJSON),
+          "overrides": [
+            {
+              "conditions": [{ "type": "selected" }],
+              "properties": { "visible": false }
+            }
+          ]
+        }
+        """.utf8)
+
+        let countdown = try JSONDecoder.default
+            .decode(PaywallComponent.CountdownComponent.self, from: jsonData)
+
+        XCTAssertEqual(countdown.visible, true)
+        XCTAssertEqual(countdown.overrides?.count, 1)
+        XCTAssertEqual(countdown.overrides?.first?.conditions, [.selected])
+        XCTAssertEqual(countdown.overrides?.first?.properties.visible, false)
+
+        let reencoded = try JSONEncoder.default.encode(countdown)
+        let countdown2 = try JSONDecoder.default
+            .decode(PaywallComponent.CountdownComponent.self, from: reencoded)
+
+        XCTAssertEqual(countdown, countdown2)
+    }
+
+    func testViewModelFactoryPreservesOverrides() throws {
+        let result = try Self.viewModel(decodedFrom: """
+        {
+          "type": "countdown",
+          "style": { "type": "date", "date": "2035-01-01T00:00:00Z" },
+          "count_from": "days",
+          "countdown_stack": \(Self.stackJSON),
+          "overrides": [
+            {
+              "conditions": [{ "type": "selected" }],
+              "properties": { "visible": false }
+            }
+          ]
+        }
+        """)
+
+        guard case .countdown(let built) = result else {
+            return XCTFail("Expected .countdown view model")
+        }
+
+        // Default state keeps the base (visible) value; the selected override only applies when selected.
+        XCTAssertTrue(Self.resolvedVisible(built))
+        XCTAssertFalse(Self.resolvedVisible(built, state: .selected))
+    }
+
+    // MARK: - Visibility resolution
+
+    func testVisibleDefaultsToTrue() {
+        XCTAssertTrue(Self.resolvedVisible(Self.makeViewModel()))
+        XCTAssertFalse(Self.resolvedVisible(Self.makeViewModel(visible: false)))
+    }
+
+    func testVisibleAppliesSelectedVisibilityOverride() {
+        let viewModel = Self.makeViewModel(
+            visible: false,
+            overrides: [
+                .init(conditions: [.selected], properties: .init(visible: true))
+            ]
+        )
+
+        // Default state keeps the base (hidden) value.
+        XCTAssertFalse(Self.resolvedVisible(viewModel))
+        // Selected state applies the override and shows the countdown.
+        XCTAssertTrue(Self.resolvedVisible(viewModel, state: .selected))
+    }
+
+    func testVisibleAppliesSizeClassVisibilityOverride() {
+        let viewModel = Self.makeViewModel(
+            visible: true,
+            overrides: [
+                .init(conditions: [.expanded], properties: .init(visible: false))
+            ]
+        )
+
+        // Compact keeps the base (visible) value; expanded hides it.
+        XCTAssertTrue(Self.resolvedVisible(viewModel, condition: .compact))
+        XCTAssertFalse(Self.resolvedVisible(viewModel, condition: .expanded))
+    }
+
+    // MARK: - Helpers
+
+    private static let stackJSON = """
+    {
+        "type": "stack",
+        "dimension": { "type": "vertical", "alignment": "center", "distribution": "start" },
+        "size": { "width": { "type": "fill" }, "height": { "type": "fit" } },
+        "padding": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "margin": { "top": 0, "bottom": 0, "leading": 0, "trailing": 0 },
+        "components": []
+    }
+    """
+
+    /// Decodes a component from `json` and runs it through the real `ViewModelFactory`, exercising the
+    /// full decode-to-view-model seam.
+    private static func viewModel(decodedFrom json: String) throws -> PaywallComponentViewModel {
+        let component = try JSONDecoder.default.decode(PaywallComponent.self, from: Data(json.utf8))
+
+        return try ViewModelFactory().toViewModel(
+            component: component,
+            packageValidator: PackageValidator(),
+            offering: .init(
+                identifier: "test_offering",
+                serverDescription: "Test Offering",
+                metadata: [:],
+                availablePackages: [],
+                webCheckoutUrl: nil
+            ),
+            localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            colorScheme: .light
+        )
+    }
+
+    private static func makeViewModel(
+        visible: Bool? = nil,
+        overrides: PaywallComponent.ComponentOverrides<PaywallComponent.PartialCountdownComponent>? = nil,
+        discardRules: Bool = false
+    ) -> CountdownComponentViewModel {
+        let stack = PaywallComponent.StackComponent(components: [])
+        return CountdownComponentViewModel(
+            component: .init(
+                visible: visible,
+                style: .date(Date(timeIntervalSince1970: 0)),
+                countFrom: .days,
+                countdownStack: stack,
+                overrides: overrides
+            ),
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            countdownStackViewModel: try! .init(
+                component: stack,
+                localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
+                colorScheme: .light
+            ),
+            endStackViewModel: nil,
+            fallbackStackViewModel: nil,
+            discardRules: discardRules
+        )
+    }
+
+    private static func resolvedVisible(
+        _ viewModel: CountdownComponentViewModel,
+        state: ComponentViewState = .default,
+        condition: ScreenCondition = .compact
+    ) -> Bool {
+        viewModel.visible(
+            state: state,
+            condition: condition,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:]
+        )
+    }
+
+}
+
+#endif

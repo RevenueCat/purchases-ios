@@ -3307,6 +3307,7 @@
 		E78770053AB84EF380CC0C1D /* TextComponentViewLoadingTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = TextComponentViewLoadingTests.swift; sourceTree = "<group>"; };
 		E7D46162A95A4706925EC868 /* TabControlHapticFeedbackTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabControlHapticFeedbackTests.swift; sourceTree = "<group>"; };
 		E7EAAD1DC166ABD68E484EAA /* RootViewSheetDismissalTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootViewSheetDismissalTests.swift; sourceTree = "<group>"; };
+		C0D47E51A9B3F2C4D8E60A17 /* CountdownComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownComponentViewTests.swift; sourceTree = "<group>"; };
 		E7EB64E9D44783DD16A28B05 /* WebViewComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewComponentViewTests.swift; sourceTree = "<group>"; };
 		ECCBB32E1734BAD9232A3001 /* CapturingLogger.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CapturingLogger.swift; sourceTree = "<group>"; };
 		ECEA10EF63BC10F9BE6DB9F5 /* WorkflowPreviewTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkflowPreviewTests.swift; sourceTree = "<group>"; };
@@ -3583,6 +3584,7 @@
 		030890822D2B77DD0069677B /* PaywallsV2 */ = {
 			isa = PBXGroup;
 			children = (
+				C0D47E51A9B3F2C4D8E60A17 /* CountdownComponentViewTests.swift */,
 				E7EB64E9D44783DD16A28B05 /* WebViewComponentViewTests.swift */,
 				C3E609D42BFA15783D609EB2 /* WebViewInstanceTests.swift */,
 				9E7AD021B4580265DFDF6A02 /* WebViewComponentNavigationPolicyTests.swift */,
