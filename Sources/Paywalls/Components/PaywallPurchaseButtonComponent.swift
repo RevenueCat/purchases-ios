@@ -37,6 +37,8 @@ import Foundation
                     return "web_product_selection"
                 case .customWebCheckout:
                     return "custom_web_checkout"
+                case .hostedWebCheckout:
+                    return "hosted_web_checkout"
                 case .unknown:
                     return "unknown"
                 }
@@ -46,6 +48,7 @@ import Foundation
             case webCheckout(WebCheckout)
             case webProductSelection(WebCheckout)
             case customWebCheckout(CustomWebCheckout)
+            case hostedWebCheckout(HostedWebCheckout)
 
             case unknown
 
@@ -70,6 +73,9 @@ import Foundation
                 case .customWebCheckout(let customWebCheckout):
                     try container.encode("custom_web_checkout", forKey: .type)
                     try customWebCheckout.encode(to: encoder)
+                case .hostedWebCheckout(let hostedWebCheckout):
+                    try container.encode("hosted_web_checkout", forKey: .type)
+                    try hostedWebCheckout.encode(to: encoder)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -91,6 +97,9 @@ import Foundation
                 case "custom_web_checkout":
                     let customCheckout = try CustomWebCheckout(from: decoder)
                     self = .customWebCheckout(customCheckout)
+                case "hosted_web_checkout":
+                    let hostedCheckout = try HostedWebCheckout(from: decoder)
+                    self = .hostedWebCheckout(hostedCheckout)
                 case "unknown":
                     self = .unknown
                 default:
@@ -155,6 +164,17 @@ import Foundation
             public let customUrl: CustomURL
             public let autoDismiss: Bool?
             public let openMethod: ButtonComponent.URLMethod?
+
+        }
+
+        public struct HostedWebCheckout: Codable, Sendable, Hashable, Equatable {
+
+            /// Where the checkout is opened. Absent means the in-app checkout sheet.
+            public let openMethod: ButtonComponent.URLMethod?
+
+            public init(openMethod: PaywallComponent.ButtonComponent.URLMethod?) {
+                self.openMethod = openMethod
+            }
 
         }
 
