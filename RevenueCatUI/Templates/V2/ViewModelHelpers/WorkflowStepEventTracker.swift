@@ -107,7 +107,11 @@ struct WorkflowStepEventTracker {
             toStepId: toStepId,
             entryReason: entryReason,
             isFirstStep: step.id == self.workflow.initialStepId,
-            isLastStep: Self.isTerminalStep(step)
+            isLastStep: Self.isTerminalStep(step),
+            // Baked into the enrolled variant's steps by the backend; echoed verbatim so khepri can
+            // enroll on exposure. `isLastVariantStep` stays nil until the backend bakes it too.
+            experimentId: step.experimentId,
+            experimentVariant: step.experimentVariant
         )
     }
 

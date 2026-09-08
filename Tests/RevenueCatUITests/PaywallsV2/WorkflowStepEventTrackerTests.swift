@@ -117,7 +117,7 @@ final class WorkflowStepEventTrackerTests: TestCase {
 
     // MARK: - Experiment fields
 
-    func testExperimentFieldsAreNilToMatchAndroid() throws {
+    func testExperimentFieldsAreNilForStepsOutsideAnExperiment() throws {
         let workflow = try Self.makeWorkflow()
         let tracker = self.makeTracker(workflow: workflow)
         let step = try XCTUnwrap(workflow.steps["step_1"])
@@ -128,6 +128,40 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(data.experimentId).to(beNil())
         expect(data.experimentVariant).to(beNil())
         expect(data.isLastVariantStep).to(beNil())
+    }
+
+    func testStepEventsEchoTheStepExperimentParams() throws {
+        // The backend bakes `experiment_id` / `experiment_variant` into the steps of the enrolled
+        // variant. Every step event echoes them verbatim so khepri can enroll on exposure.
+        let workflow = try Self.makeWorkflow(
+            step1ParamValuesJSON: #"{ "experiment_id": "exp_abc", "experiment_variant": "b" }"#
+        )
+        let tracker = self.makeTracker(workflow: workflow)
+        let step1 = try XCTUnwrap(workflow.steps["step_1"])
+        let step2 = try XCTUnwrap(workflow.steps["step_2"])
+
+        tracker.trackInitialStep(step1)
+        tracker.trackNavigation(from: step1, to: step2, entryReason: .forward)
+        tracker.trackClose(step1)
+
+        expect(self.recorded).to(haveCount(4))
+        let started = try XCTUnwrap(Self.startedData(self.recorded[0]))
+        expect(started.experimentId) == "exp_abc"
+        expect(started.experimentVariant) == "b"
+        expect(started.isLastVariantStep).to(beNil())
+
+        let completed = try XCTUnwrap(Self.completedData(self.recorded[1]))
+        expect(completed.experimentId) == "exp_abc"
+        expect(completed.experimentVariant) == "b"
+
+        // step_2 is outside the variant: nothing to echo.
+        let startedStep2 = try XCTUnwrap(Self.startedData(self.recorded[2]))
+        expect(startedStep2.experimentId).to(beNil())
+        expect(startedStep2.experimentVariant).to(beNil())
+
+        let closed = self.recorded[3].data
+        expect(closed.experimentId) == "exp_abc"
+        expect(closed.experimentVariant) == "b"
     }
 
 }
@@ -149,7 +183,7 @@ private extension WorkflowStepEventTrackerTests {
     }
 
     /// step_1 navigates to step_2 (a terminal step with no further `.step` action).
-    static func makeWorkflow() throws -> PublishedWorkflow {
+    static func makeWorkflow(step1ParamValuesJSON: String = "{}") throws -> PublishedWorkflow {
         let json = """
         {
           "id": "wf_test",
@@ -159,6 +193,7 @@ private extension WorkflowStepEventTrackerTests {
             "step_1": {
               "id": "step_1",
               "type": "screen",
+              "param_values": \(step1ParamValuesJSON),
               "triggers": [
                 {"name":"Button","type":"on_press","action_id":"btn","component_id":"btn"}
               ],

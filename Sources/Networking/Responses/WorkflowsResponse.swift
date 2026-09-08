@@ -101,9 +101,24 @@ import Foundation
         }
     }
 
+    /// The experiment this step belongs to, baked into `param_values` by the backend for the steps of the
+    /// enrolled variant only. Echoed verbatim on step events; `nil` for steps outside an experiment.
+    public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
+
+    /// The enrolled variant key, alongside ``experimentId``.
+    public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
+
+    private func stringParam(_ key: String) -> String? {
+        guard case let .string(value)? = self.paramValues[key] else { return nil }
+        return value
+    }
+
+    private static let experimentIdParam = "experiment_id"
+    private static let experimentVariantParam = "experiment_variant"
+
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
-    // read directly (`metadata` is surfaced only via `stepScreenType`), and are typed with the
-    // internal `AnyDecodable`, so they're defaulted rather than exposed.
+    // read directly (`metadata` is surfaced only via `stepScreenType` and the experiment params), and
+    // are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
         type: String,
