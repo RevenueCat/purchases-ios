@@ -52,10 +52,9 @@ struct DimensionResolver: Sendable {
 
     /// Collects each provider once and merges its values into the canonical root scope.
     ///
-    /// `custom` and `backend` remain nested reserved objects. Every other value is flat.
+    /// `custom` remains a nested reserved object. Every other value is flat.
     func snapshot(
-        customVariables: [String: DimensionValue] = [:],
-        backendValues: [String: DimensionValue] = [:]
+        customVariables: [String: DimensionValue] = [:]
     ) async throws -> DimensionSnapshot {
         let appUserID = self.currentAppUserIDProvider()
         let date = self.dateProvider.now()
@@ -97,12 +96,6 @@ struct DimensionResolver: Sendable {
             root: Self.customKey,
             to: &values
         )
-        Self.addPerEvaluationValues(
-            backendValues,
-            root: Self.backendKey,
-            to: &values
-        )
-
         try Task.checkCancellation()
         guard self.currentAppUserIDProvider() == appUserID else {
             throw DimensionResolutionError.appUserChanged
@@ -124,8 +117,7 @@ struct DimensionResolver: Sendable {
 
     private static let evaluatedAtKey = "evaluated_at"
     private static let customKey = "custom"
-    private static let backendKey = "backend"
-    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey, Self.backendKey]
+    private static let reservedRootKeys: Set<String> = [Self.evaluatedAtKey, Self.customKey]
 }
 
 private enum DimensionValueConverter {

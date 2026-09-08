@@ -47,16 +47,13 @@ final class LocalRulesEvaluator: Sendable {
     ///
     /// For example, rules `[("a", false), ("b", true)]` return the second rule.
     /// Developer-supplied values are available to predicates under `custom.*`.
-    /// Backend-supplied values for this evaluation are available under `backend.*`.
     func match<Rule: LocalRule>(
         in rules: [Rule],
-        customVariables: [String: DimensionValue] = [:],
-        backendValues: [String: DimensionValue] = [:]
+        customVariables: [String: DimensionValue] = [:]
     ) async throws -> Rule? {
         return try await self.match(
             in: rules,
-            customVariables: customVariables,
-            backendValues: backendValues
+            customVariables: customVariables
         ) { $0.predicate }
     }
 
@@ -69,7 +66,6 @@ final class LocalRulesEvaluator: Sendable {
     func match<Rule: Sendable>(
         in rules: [Rule],
         customVariables: [String: DimensionValue] = [:],
-        backendValues: [String: DimensionValue] = [:],
         predicate resolvePredicate: (Rule) async throws -> String
     ) async throws -> Rule? {
         guard !rules.isEmpty else {
@@ -77,8 +73,7 @@ final class LocalRulesEvaluator: Sendable {
         }
 
         let snapshot = try await self.dimensionResolver.snapshot(
-            customVariables: customVariables,
-            backendValues: backendValues
+            customVariables: customVariables
         )
 
         var firstEvaluationError: LocalRulesEvaluationError?
