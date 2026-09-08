@@ -11,7 +11,11 @@ enum LocalRulesStrings {
 
     case customerInfoUnavailable(Error)
     case invalidDimensionName(String, parentPath: String)
-    case ruleUnresolvedVariable(ruleIndex: Int, path: String)
+    case evaluatingRules(logPrefix: String, ruleCount: Int, dimensions: [String])
+    case ruleMatched(logPrefix: String, ruleIndex: Int)
+    case ruleDidNotMatch(logPrefix: String, ruleIndex: Int)
+    case ruleUnresolvedVariable(logPrefix: String, ruleIndex: Int, path: String)
+    case ruleEvaluationFailed(logPrefix: String, ruleIndex: Int, errorKind: String)
     case subscriberAttributesUnavailable(Error)
     case subscriberDimensionsUnavailable(Error)
 
@@ -26,8 +30,17 @@ extension LocalRulesStrings: LogMessage {
         case let .invalidDimensionName(name, parentPath):
             return "Ignoring dimension name '\(name)' under '\(parentPath)': " +
                 "a dimension name cannot be empty, whitespace-only, or contain '.'."
-        case let .ruleUnresolvedVariable(ruleIndex, path):
-            return "Rule at index \(ruleIndex) did not match because variable '\(path)' could not be resolved."
+        case let .evaluatingRules(logPrefix, ruleCount, dimensions):
+            return "\(logPrefix)Evaluating \(ruleCount) rules against dimensions \(dimensions)."
+        case let .ruleMatched(logPrefix, ruleIndex):
+            return "\(logPrefix)Rule \(ruleIndex) matched."
+        case let .ruleDidNotMatch(logPrefix, ruleIndex):
+            return "\(logPrefix)Rule \(ruleIndex) did not match."
+        case let .ruleUnresolvedVariable(logPrefix, ruleIndex, path):
+            return "\(logPrefix)Rule \(ruleIndex) did not match: it reads '\(path)', " +
+                "which this SDK does not supply."
+        case let .ruleEvaluationFailed(logPrefix, ruleIndex, errorKind):
+            return "\(logPrefix)Rule \(ruleIndex) could not be evaluated (\(errorKind))."
         case let .subscriberAttributesUnavailable(error):
             return "The subscriber attributes are unavailable, so they cannot be evaluated: \(error)."
         case let .subscriberDimensionsUnavailable(error):
