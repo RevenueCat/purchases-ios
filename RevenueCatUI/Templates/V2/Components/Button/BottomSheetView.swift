@@ -217,6 +217,9 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         .onAppear {
                             self.parentHeight = proxy.size.height
                         }
+                        .onChangeOf(proxy.size.height) { height in
+                            self.parentHeight = height
+                        }
                 }
             )
             .animation(Self.presentationAnimation, value: sheetViewModel)
