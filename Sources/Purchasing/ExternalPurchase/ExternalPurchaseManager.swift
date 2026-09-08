@@ -20,13 +20,16 @@ final class ExternalPurchaseManager {
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let currentUserProvider: CurrentUserProvider
+    private let systemInfo: SystemInfo
 
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
-         currentUserProvider: CurrentUserProvider) {
+         currentUserProvider: CurrentUserProvider,
+         systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.currentUserProvider = currentUserProvider
+        self.systemInfo = systemInfo
     }
 
     /// Whether the app can offer an external purchase to this customer.
@@ -34,6 +37,11 @@ final class ExternalPurchaseManager {
     /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
     /// anything to Apple.
     func canMakeExternalPurchases() async -> Bool {
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
+            return false
+        }
+
         let canMakeExternalPurchases = await self.customLink.canMakeExternalPurchases()
         Logger.debug(Strings.externalPurchase.eligibility_resolved(canMakeExternalPurchases))
 

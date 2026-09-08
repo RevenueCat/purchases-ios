@@ -25,6 +25,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
+    private var systemInfo: MockSystemInfo!
     private var manager: ExternalPurchaseManager!
 
     override func setUp() {
@@ -36,10 +37,13 @@ class ExternalPurchaseManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
+        self.systemInfo = MockSystemInfo(finishTransactions: true)
+
         self.manager = ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            systemInfo: self.systemInfo
         )
     }
 
@@ -149,6 +153,29 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(result.shouldProceed) == true
         expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
+    }
+
+    // MARK: - Test Store
+
+    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply.
+    func testTheTestStoreCannotMakeExternalPurchases() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let canMakeExternalPurchases = await self.manager.canMakeExternalPurchases()
+
+        expect(canMakeExternalPurchases) == false
+        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 0
+    }
+
+    func testTheTestStoreSkipsTheWholeSequence() async {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.cannotMakeExternalPurchases)
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
     }
 
     // MARK: - Eligibility
