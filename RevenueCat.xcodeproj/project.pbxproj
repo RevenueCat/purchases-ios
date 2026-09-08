@@ -1944,6 +1944,7 @@
 		C4E00000000000000000A008 /* WebCheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModel.swift; sourceTree = "<group>"; };
 		C4E00000000000000000A00A /* WebCheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutView.swift; sourceTree = "<group>"; };
 		C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutReturnURLTests.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModelTests.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B008 /* WebViewNavigationFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailure.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B00A /* WebViewNavigationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailureTests.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B001 /* WebViewHTTPStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHTTPStatus.swift; sourceTree = "<group>"; };
@@ -3893,6 +3894,7 @@
 			isa = PBXGroup;
 			children = (
 				C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */,
+				C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */,
 			);
 			path = WebCheckout;
 			sourceTree = "<group>";
