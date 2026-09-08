@@ -32,10 +32,6 @@ enum WebCheckoutReturnStatus: String {
 /// The checkout page belongs to a payment provider and exposes no JavaScript bridge, so the single
 /// signal it gives is a redirect to one of the two return URLs the backend handed it. The host watches
 /// for that navigation and cancels it, so the request never leaves the device.
-///
-/// Both URLs come from the backend rather than being built here, so nothing about their shape is
-/// assumed: today they differ only by a `status` query parameter, but a change to distinct paths would
-/// work just as well.
 struct WebCheckoutReturnURL {
 
     private let success: Target
@@ -118,8 +114,8 @@ private extension WebCheckoutReturnURL {
         /// Whether `url` is this return URL specifically, rather than merely the endpoint the two share.
         ///
         /// Every parameter configured on this URL has to be present, but `url` may carry others beside
-        /// them: providers append their own, and the two return URLs are told apart by what they were
-        /// configured with, not by an exact match.
+        /// them: providers may append their own, so the two return URLs are told apart by what they
+        /// were configured with, not by an exact match.
         func matches(_ url: URL) -> Bool {
             guard self.matchesEndpoint(url) else {
                 return false
@@ -133,7 +129,7 @@ private extension WebCheckoutReturnURL {
         /// A trailing slash does not name a different endpoint, so `/a/` and `/a` compare equal.
         private static func normalizedPath(of url: URL) -> String {
             let path = url.path
-            guard path.count > 1, path.hasSuffix("/") else {
+            guard path.hasSuffix("/") else {
                 return path
             }
 
