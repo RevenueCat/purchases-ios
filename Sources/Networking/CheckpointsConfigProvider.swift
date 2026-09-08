@@ -24,6 +24,7 @@ struct CheckpointRulesSnapshot {
 enum CheckpointRulesProviderError: Error, Equatable {
 
     case payloadUnavailable
+    case stale
 
 }
 
@@ -40,21 +41,16 @@ final class CheckpointsConfigProvider: CheckpointsConfigProviderType {
     }
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
-        while true {
-            try Task.checkCancellation()
-            let configGeneration = self.manager.configGeneration
-
-            do {
+        do {
+            return try await self.manager.readConsistent {
+                let generation = self.manager.configGeneration
                 let rules = try await self.loadRules(for: identifier)
-                guard self.manager.configGeneration == configGeneration else { continue }
-
                 return rules.map {
-                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: configGeneration)
+                    CheckpointRulesSnapshot(ruleSet: $0, configGeneration: generation)
                 }
-            } catch {
-                guard self.manager.configGeneration == configGeneration else { continue }
-                throw error
             }
+        } catch RemoteConfigConsistencyError.stale {
+            throw CheckpointRulesProviderError.stale
         }
     }
 
