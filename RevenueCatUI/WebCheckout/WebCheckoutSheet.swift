@@ -94,7 +94,7 @@ private struct WebCheckoutSheetModifier: ViewModifier {
 /// Sizing comes from detents. The page belongs to a payment provider and exposes no bridge, so it
 /// cannot report its content height.
 ///
-/// Below iOS 16 there are no detents and the sheet is full height.
+/// Below iOS 16.4 there are no detents and the sheet is full height.
 @available(iOS 15.0, *)
 private struct WebCheckoutSheetPresentation: ViewModifier {
 
@@ -104,12 +104,13 @@ private struct WebCheckoutSheetPresentation: ViewModifier {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
                 // Without this a drag anywhere on the page resizes the sheet instead of scrolling the
-                // checkout, which leaves fields below the fold unreachable.
+                // checkout, which leaves fields below the fold unreachable. Detents are only offered
+                // where it is available for that reason.
                 .presentationContentInteraction(.scrolls)
         } else if #available(iOS 16.0, *) {
-            content
-                .presentationDetents([.medium, .large])
-                .presentationDragIndicator(.visible)
+            // The grabber is the only hint that the sheet comes down by swiping, which is the only way:
+            // the page has no chrome of its own.
+            content.presentationDragIndicator(.visible)
         } else {
             content
         }
