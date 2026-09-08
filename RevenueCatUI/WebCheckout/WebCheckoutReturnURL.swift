@@ -64,9 +64,6 @@ struct WebCheckoutReturnURL {
     }
 
     /// The outcome `url` reports, or `nil` if it matches neither return URL closely enough to tell.
-    ///
-    /// Cancel is tested first, so that two return URLs we cannot tell apart resolve to a cancellation
-    /// rather than to a purchase that may never have happened.
     func status(of url: URL?) -> WebCheckoutReturnStatus? {
         guard let url else {
             return nil

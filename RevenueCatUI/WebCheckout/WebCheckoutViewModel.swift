@@ -95,7 +95,6 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         configuration.setPersistentStoreIfAble(withID: dataStoreID)
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
-        // A swipe back through a payment flow lands on a stale step the provider has moved past.
         webView.allowsBackForwardNavigationGestures = false
 
         return webView
@@ -149,9 +148,6 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
             return
         }
 
-        // Everything else is allowed. The checkout URL comes from RevenueCat's backend, and the page it
-        // opens is free to send the customer through the payment provider's own domains and any bank's
-        // 3DS challenge, none of which we can enumerate ahead of time.
         decisionHandler(.allow)
     }
 
@@ -177,8 +173,7 @@ extension WebCheckoutViewModel: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        // Only the first load is worth a spinner. Once the page has painted, the provider's own steps
-        // keep their context on screen, and covering them would read as the checkout restarting.
+        // Only the first load shows a spinner. Later steps are managed by the provider.
         guard !self.hasLoadedOnce else {
             return
         }
