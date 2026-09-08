@@ -1944,6 +1944,7 @@
 		2C2AEB0E2CA64E0E00A50F38 /* Template1Preview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Template1Preview.swift; sourceTree = "<group>"; };
 		527C8FDAD4BC0E20186FB251 /* WindowSizeConditionsPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionsPreview.swift; sourceTree = "<group>"; };
 		D793578E154692425D9938B6 /* WindowSizeConditionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSizeConditionTests.swift; sourceTree = "<group>"; };
+		4B90A3E17C25D8F1206BA442 /* PaywallWindowSizeMeasurementTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallWindowSizeMeasurementTests.swift; sourceTree = "<group>"; };
 		2C2AEB3A2CA7209F00A50F38 /* PaywallPackageComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallPackageComponent.swift; sourceTree = "<group>"; };
 		2C2AEB3E2CA7235300A50F38 /* PaywallPurchaseButtonComponent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallPurchaseButtonComponent.swift; sourceTree = "<group>"; };
 		2C5F71F52C3D6C2600B0FE4B /* header.heic */ = {isa = PBXFileReference; lastKnownFileType = file; path = header.heic; sourceTree = "<group>"; };
@@ -3629,6 +3630,7 @@
 				808963A62FE168FD008E858C /* TabsComponentStateTests.swift */,
 				8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */,
 				D793578E154692425D9938B6 /* WindowSizeConditionTests.swift */,
+				4B90A3E17C25D8F1206BA442 /* PaywallWindowSizeMeasurementTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
