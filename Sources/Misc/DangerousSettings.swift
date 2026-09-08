@@ -61,6 +61,7 @@ import Foundation
         let uiPreviewMode: Bool
         let customEntitlementComputation: Bool
         let forceAllowTestStoreInReleaseBuilds: Bool
+        let useExternalPurchaseCustomLinks: Bool
     }
 
     internal let storage: Storage
@@ -105,6 +106,18 @@ import Foundation
      * never uploaded to the App Store), to make sure no builds using the Test Store reach the stores.
      */
     @objc public var forceAllowTestStoreInReleaseBuilds: Bool { self.storage.forceAllowTestStoreInReleaseBuilds }
+
+    /**
+     * Whether a web purchase button that opens its link in the external browser takes part in Apple's
+     * external purchase custom link programme: the customer is shown Apple's disclosure notice, and the
+     * purchase is reported to Apple.
+     *
+     * Disabled by default. Enabling it requires the app to be enrolled in the programme and to carry the
+     * corresponding entitlement, so only enable it if RevenueCat has asked you to.
+     */
+    @_spi(Experimental) public var useExternalPurchaseCustomLinks: Bool {
+        self.storage.useExternalPurchaseCustomLinks
+    }
 
     @objc public override convenience init() {
         self.init(autoSyncPurchases: true)
@@ -152,6 +165,23 @@ import Foundation
     }
 
     /**
+     * Only use a Dangerous Setting if suggested by RevenueCat support team.
+     *
+     * - Parameter autoSyncPurchases: Disable or enable subscribing to the StoreKit queue.
+     * If this is disabled, RevenueCat won't observe the StoreKit queue, and it will not sync any purchase
+     * automatically.
+     * - Parameter useExternalPurchaseCustomLinks: Whether a web purchase button that opens its link in the
+     * external browser takes part in Apple's external purchase custom link programme.
+     */
+    @_spi(Experimental) public convenience init(autoSyncPurchases: Bool,
+                                                useExternalPurchaseCustomLinks: Bool) {
+        self.init(autoSyncPurchases: autoSyncPurchases,
+                  customEntitlementComputation: false,
+                  internalSettings: Internal.default,
+                  useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks)
+    }
+
+    /**
      * Used to initialize the SDK in UI preview mode.
      *
      * - Parameter uiPreviewMode: if `true`, the SDK will return a set of mock products instead
@@ -166,12 +196,14 @@ import Foundation
                   customEntitlementComputation: Bool = false,
                   internalSettings: InternalDangerousSettingsType,
                   uiPreviewMode: Bool = false,
-                  forceAllowTestStoreInReleaseBuilds: Bool = false) {
+                  forceAllowTestStoreInReleaseBuilds: Bool = false,
+                  useExternalPurchaseCustomLinks: Bool = false) {
         self.storage = Storage(
             autoSyncPurchases: autoSyncPurchases,
             uiPreviewMode: uiPreviewMode,
             customEntitlementComputation: customEntitlementComputation,
-            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds
+            forceAllowTestStoreInReleaseBuilds: forceAllowTestStoreInReleaseBuilds,
+            useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
         )
         self.internalSettings = internalSettings
     }
