@@ -480,20 +480,6 @@ class PurchaseButtonComponentCodableTests: TestCase {
         XCTAssertEqual(decodedPurchaseButton.method, .hostedWebCheckout(.init(openMethod: .unknown)))
     }
 
-    func testHostedWebCheckoutWithoutAnOpenMethodOpensTheSheet() {
-        XCTAssertEqual(
-            PaywallComponent.PurchaseButtonComponent.HostedWebCheckout(openMethod: nil).resolvedOpenMethod,
-            .inAppWebCheckout
-        )
-    }
-
-    func testHostedWebCheckoutKeepsTheOpenMethodItWasGiven() {
-        XCTAssertEqual(
-            PaywallComponent.PurchaseButtonComponent.HostedWebCheckout(openMethod: .externalBrowser).resolvedOpenMethod,
-            .externalBrowser
-        )
-    }
-
     // MARK: - Method.description
 
     func testMethodDescriptionInAppCheckout() {

@@ -169,12 +169,8 @@ import Foundation
 
         public struct HostedWebCheckout: Codable, Sendable, Hashable, Equatable {
 
-            let openMethod: ButtonComponent.URLMethod?
-
-            /// Where the checkout is opened.
-            public var resolvedOpenMethod: ButtonComponent.URLMethod {
-                return self.openMethod ?? .inAppWebCheckout
-            }
+            /// Where the checkout is opened. Absent means the in-app checkout sheet.
+            public let openMethod: ButtonComponent.URLMethod?
 
             public init(openMethod: PaywallComponent.ButtonComponent.URLMethod?) {
                 self.openMethod = openMethod
