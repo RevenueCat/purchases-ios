@@ -50,8 +50,7 @@ class HostedCheckoutManagerTests: TestCase {
                 systemInfo: self.systemInfo
             ),
             webBillingAPI: self.webBillingAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            systemInfo: self.systemInfo
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID)
         )
     }
 
@@ -151,20 +150,16 @@ class HostedCheckoutManagerTests: TestCase {
         expect(result) == .failed
     }
 
-    // MARK: - Test Store
-
-    /// A Test Store key has no App Store behind it, so there is nothing to disclose or to report.
-    func testTheTestStoreCreatesTheSessionWithoutAnyOfTheAppleSteps() async {
+    /// The Test Store is not supported for now, so a `test_` key leaves the caller to buy through StoreKit.
+    func testCreatesNoSessionWithATestStoreKey() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
         let result = await self.manager.startCheckout(package: Self.package, paywall: nil)
 
-        expect(result) == .started(Self.session)
+        expect(result) == .externalPurchaseUnavailable
         expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 0
-        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
-        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
-        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.externalPurchaseTokenID).to(beNil())
+        expect(self.webBillingAPI.invokedPostHostedCheckout) == false
     }
 
 }

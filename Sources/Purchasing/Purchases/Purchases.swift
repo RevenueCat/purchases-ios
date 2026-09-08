@@ -970,8 +970,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 systemInfo: systemInfo
             ),
             webBillingAPI: backend.webBilling,
-            currentUserProvider: identityManager,
-            systemInfo: systemInfo
+            currentUserProvider: identityManager
         )
 
         super.init()
