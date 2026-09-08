@@ -3026,6 +3026,7 @@
 		88E679462C7503C1007E69D5 /* PaywallStackComponent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallStackComponent.swift; sourceTree = "<group>"; };
 		89DD761C9E00E61032AAEB44 /* WebViewEnvelope.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewEnvelope.swift; sourceTree = "<group>"; };
 		8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageComponentViewTests.swift; sourceTree = "<group>"; };
+		775B2ED4D5AEA7AA30A68390 /* SheetPresentationPlanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SheetPresentationPlanTests.swift; sourceTree = "<group>"; };
 		900D26F12F96927E00D32EDF /* RewardVerificationStatusCallback.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusCallback.swift; sourceTree = "<group>"; };
 		900D26F22F96927E00D32EDF /* RewardVerificationStatusResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RewardVerificationStatusResponse.swift; sourceTree = "<group>"; };
 		900D26F32F96927E00D32EDF /* GetRewardVerificationStatusOperation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GetRewardVerificationStatusOperation.swift; sourceTree = "<group>"; };
@@ -3631,6 +3632,7 @@
 				8BAF5880071599951932A6A1 /* ImageComponentViewTests.swift */,
 				D793578E154692425D9938B6 /* WindowSizeConditionTests.swift */,
 				4B90A3E17C25D8F1206BA442 /* PaywallWindowSizeMeasurementTests.swift */,
+				775B2ED4D5AEA7AA30A68390 /* SheetPresentationPlanTests.swift */,
 			);
 			path = PaywallsV2;
 			sourceTree = "<group>";
