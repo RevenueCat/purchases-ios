@@ -55,7 +55,8 @@ struct RelevantPurchasesListView: View {
             screen: screen,
             actionWrapper: actionWrapper,
             shouldShowSeeAllPurchases: shouldShowSeeAllPurchases,
-            purchasesProvider: purchasesProvider
+            purchasesProvider: purchasesProvider,
+            localization: customerInfoViewModel.configuration?.localization ?? .default
         )
 
         self.init(

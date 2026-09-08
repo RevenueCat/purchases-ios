@@ -112,11 +112,12 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
         expect(viewModel.relevantPathsForPurchase.first(where: { $0.type == .refundRequest })).toNot(beNil())
     }
 
-    func testCancelledDoesNotShowCancel() {
+    func testCancelledShowsResubscribeInsteadOfCancel() throws {
         let purchase = PurchaseInformation.mock(
             isSubscription: true,
             productType: .autoRenewableSubscription,
-            isCancelled: true
+            isCancelled: true,
+            renewalDate: nil
         )
 
         let viewModel = BaseManageSubscriptionViewModel(
@@ -125,9 +126,102 @@ final class BaseManageSubscriptionViewModelTests: TestCase {
             purchaseInformation: purchase,
             purchasesProvider: MockCustomerCenterPurchases())
 
-        expect(viewModel.relevantPathsForPurchase.count) == 2
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .changePlans })).toNot(beNil())
-        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .refundRequest })).toNot(beNil())
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Resubscribe"
+    }
+
+    func testResubscribeDropsSurveyAndPromotionalOffer() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        // the configured cancel path carries a feedback survey, resubscribing shouldn't ask why
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.detail).to(beNil())
+    }
+
+    func testExpiredCancelledDoesNotShowCancel() {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            isExpired: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testResubscribeUsesConfiguredLocalizedString() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: true,
+            renewalDate: nil
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases(),
+            localization: .init(locale: "en_US", localizedStrings: ["resubscribe": "Come back"]))
+
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Come back"
+    }
+
+    func testExpiredRenewingSubscriptionDoesNotShowCancel() {
+        // willRenew hasn't flipped yet but the entitlement already lapsed
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            isExpired: true,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        expect(viewModel.relevantPathsForPurchase.contains(where: { $0.type == .cancel })).to(beFalse())
+    }
+
+    func testActiveSubscriptionKeepsCancelTitleAndSurvey() throws {
+        let purchase = PurchaseInformation.mock(
+            isSubscription: true,
+            productType: .autoRenewableSubscription,
+            isCancelled: false,
+            renewalDate: Date().addingTimeInterval(86400)
+        )
+
+        let viewModel = BaseManageSubscriptionViewModel(
+            screen: BaseManageSubscriptionViewModelTests.default,
+            actionWrapper: CustomerCenterActionWrapper(),
+            purchaseInformation: purchase,
+            purchasesProvider: MockCustomerCenterPurchases())
+
+        let cancelPath = try XCTUnwrap(viewModel.relevantPathsForPurchase.first { $0.type == .cancel })
+        expect(cancelPath.title) == "Cancel subscription"
+        expect(cancelPath.detail).toNot(beNil())
     }
 
     func testShowsRefundIfRefundWindowIsForever() {
