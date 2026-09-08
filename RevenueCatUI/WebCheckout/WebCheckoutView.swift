@@ -19,9 +19,7 @@ import WebKit
 
 /// Shows a checkout page, with a spinner until it first paints.
 ///
-/// Deliberately has nothing to say about failure beyond hiding the page: the copy and the retry
-/// affordance belong to whatever presents this, which is also where the surrounding network failures
-/// surface. ``WebCheckoutViewModel/reload()`` is what such a host calls to start over.
+/// Hides the page when loading fails, without showing an error or offering a retry.
 @available(iOS 15.0, *)
 struct WebCheckoutView: View {
 
