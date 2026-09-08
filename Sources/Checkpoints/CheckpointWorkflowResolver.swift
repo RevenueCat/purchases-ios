@@ -206,7 +206,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         // The offering mapping is resolved per branch now, since only a UI workflow needs it.
         guard let rule else { return .noAction(.noMatch) }
 
-        let resolution = await self.resolve(rule)
+        let resolution = try await self.resolve(rule)
         guard self.isCurrent(rulesSnapshot, audienceConfiguration) else {
             return nil
         }
@@ -284,12 +284,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
     }
 
-    private func resolve(_ rule: CheckpointRule) async -> CheckpointResolution {
+    private func resolve(_ rule: CheckpointRule) async throws -> CheckpointResolution {
         // Deliberately the non-prewarming read: an offering workflow renders nothing, and prewarming takes
         // its fonts from `uiConfig` rather than from the workflow's screens, so it isn't free here.
         let workflowData: WorkflowDataResult
         do {
             workflowData = try await self.workflowManager.workflowData(workflowId: rule.workflowId)
+        } catch let error as CancellationError {
+            throw error
         } catch {
             return Self.unservable(rule, reason: error.localizedDescription)
         }

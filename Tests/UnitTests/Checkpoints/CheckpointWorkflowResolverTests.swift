@@ -120,6 +120,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
     }
 
+    func testCancellationWhileLoadingWorkflowPropagates() async {
+        self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .cancelled
+
+        do {
+            _ = try await self.resolve()
+            XCTFail("Expected resolution to throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Expected CancellationError, got \(error)")
+        }
+    }
+
     func testCheckpointWithNoRulesResolvesNoMatch() async throws {
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
 
