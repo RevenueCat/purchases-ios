@@ -16,12 +16,14 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
-/// Points a media asset takes up when both dimensions are `fit`: its pixel size read as points, the
-/// way the paywall editor previews it. Callers still cap it to the space available.
+/// Points a media asset takes up when both dimensions are `fit`: its pixel size divided by the display
+/// scale, the same conversion Android applies with its density. Callers still cap it to the space available.
 enum MediaIntrinsicSize {
 
-    static func points(pixelWidth: Int, pixelHeight: Int) -> CGSize {
-        return CGSize(width: max(1, pixelWidth), height: max(1, pixelHeight))
+    static func points(pixelWidth: Int, pixelHeight: Int, displayScale: CGFloat) -> CGSize {
+        let scale = max(1, displayScale)
+        return CGSize(width: max(1, CGFloat(pixelWidth)) / scale,
+                      height: max(1, CGFloat(pixelHeight)) / scale)
     }
 
 }

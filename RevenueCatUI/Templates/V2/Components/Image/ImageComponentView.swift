@@ -74,6 +74,9 @@ struct ImageComponentView: View {
     @Environment(\.requestSizeCalculation)
     private var requestSizeCalculation
 
+    @Environment(\.displayScale)
+    private var displayScale
+
     let viewModel: ImageComponentViewModel
 
     var renderForPreview: Bool {
@@ -278,7 +281,7 @@ struct ImageComponentView: View {
 
     private func intrinsicSize(style: ImageComponentStyle) -> CGSize {
         let (width, height) = self.imageSize(style: style)
-        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height)
+        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height, displayScale: self.displayScale)
     }
 
     private func imageSize(style: ImageComponentStyle) -> (width: Int, height: Int) {

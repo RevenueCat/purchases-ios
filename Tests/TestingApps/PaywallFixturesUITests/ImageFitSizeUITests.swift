@@ -19,8 +19,9 @@ final class ImageFitSizeUITests: XCTestCase {
         self.continueAfterFailure = false
     }
 
-    /// Fit means the image's own pixel size read as points, the way the paywall editor previews
-    /// it, so a 300x200 px image draws 300x200 pt whatever the stack around it offers.
+    /// Fit means the image's own pixel size divided by the display scale, the same conversion Android
+    /// applies with its density, so a 300x200 px image draws 300x200 screen pixels whatever the stack
+    /// around it offers.
     func testFitImageDrawsAtItsOwnSize() throws {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = "fit_image_in_equal_spacing_stack"
@@ -36,11 +37,8 @@ final class ImageFitSizeUITests: XCTestCase {
         let image = try XCTUnwrap(Self.boundingBoxOfSaturatedPixels(in: screenshot), "No image found on screen.")
         let diagnostics = "image=\(image) screenshot=\(screenshot.cgImage.map { "\($0.width)x\($0.height)" } ?? "?")"
 
-        let scale = screenshot.scale
-        XCTAssertEqual(image.width, 300 * scale, accuracy: 3,
-                       "Fit image is not drawn at its own width: \(diagnostics)")
-        XCTAssertEqual(image.height, 200 * scale, accuracy: 3,
-                       "Fit image is not drawn at its own height: \(diagnostics)")
+        XCTAssertEqual(image.width, 300, accuracy: 3, "Fit image is not drawn at its own width: \(diagnostics)")
+        XCTAssertEqual(image.height, 200, accuracy: 3, "Fit image is not drawn at its own height: \(diagnostics)")
     }
 
     /// Bounding box, in pixels, of every clearly colored pixel. Text is black and the page is

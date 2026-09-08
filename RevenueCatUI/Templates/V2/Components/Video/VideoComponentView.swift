@@ -29,6 +29,9 @@ struct VideoComponentView: View {
     @EnvironmentObject
     private var paywallPromoOfferCache: PaywallPromoOfferCache
 
+    @Environment(\.displayScale)
+    private var displayScale
+
     @Environment(\.componentViewState)
     private var componentViewState
 
@@ -217,7 +220,7 @@ struct VideoComponentView: View {
 
     private func intrinsicSize(style: VideoComponentStyle) -> CGSize {
         let (width, height) = self.videoSize(style: style)
-        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height)
+        return MediaIntrinsicSize.points(pixelWidth: width, pixelHeight: height, displayScale: self.displayScale)
     }
 
     private func updatePlayableState(isPlayable newValue: Bool) {
