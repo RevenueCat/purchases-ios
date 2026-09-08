@@ -78,7 +78,49 @@ protocol RemoteConfigManagerType: AnyObject {
 
 }
 
+enum RemoteConfigConsistencyError: Error, Equatable {
+
+    case stale
+
+}
+
 extension RemoteConfigManagerType {
+
+    /// Performs a read against one config generation and retries once if a successful read was
+    /// superseded while suspended. Errors and cancellation are propagated immediately. An exhausted
+    /// stale read throws `RemoteConfigConsistencyError.stale`.
+    func readConsistent<Value>(
+        _ operation: () async throws -> Value?
+    ) async throws -> Value? {
+        for attempt in 0...1 {
+            try Task.checkCancellation()
+            let generation = self.configGeneration
+            do {
+                let value = try await operation()
+                try Task.checkCancellation()
+
+                guard self.configGeneration == generation else {
+                    guard attempt == 0 else {
+                        throw RemoteConfigConsistencyError.stale
+                    }
+                    Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+                    continue
+                }
+
+                return value
+            } catch let error as CancellationError {
+                throw error
+            } catch {
+                guard self.configGeneration != generation else { throw error }
+                guard attempt == 0 else {
+                    throw RemoteConfigConsistencyError.stale
+                }
+                Logger.verbose(RemoteConfigStrings.remoteConfigReadRetry)
+            }
+        }
+
+        return nil
+    }
 
     func withCurrentConfigGeneration<T>(_ operation: (Int) -> T?) -> T? {
         let generation = self.configGeneration

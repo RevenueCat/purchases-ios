@@ -2983,6 +2983,33 @@ final class RemoteConfigManagerTests: TestCase {
         expect(self.diskCache.invokedClearCount) == 1
     }
 
+    func testReadConsistentlyStopsWhenTaskIsCanceledBeforeTheRead() async {
+        let manager = MockRemoteConfigManager()
+        let readStarted = XCTestExpectation(description: "Read started")
+        var gateContinuation: AsyncStream<Void>.Continuation!
+        let gate = AsyncStream<Void> { gateContinuation = $0 }
+        let task = Task {
+            try await manager.readConsistent {
+                readStarted.fulfill()
+                for await _ in gate { break }
+                return "value"
+            }
+        }
+        await fulfillment(of: [readStarted], timeout: 1)
+        task.cancel()
+        gateContinuation.yield(())
+        gateContinuation.finish()
+
+        do {
+            _ = try await task.value
+            XCTFail("Expected cancellation to stop the read")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
 }
 
 private extension RemoteConfigManagerTests {
@@ -3163,6 +3190,78 @@ private extension RemoteConfigManagerTests {
     struct MergedUiConfigLikeCustomVariable: Decodable, Equatable {
         let type: String
         let defaultValue: String
+    }
+
+    func testReadConsistentlyRetriesOnceWhenSuccessfulReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 {
+                manager.configGeneration = 1
+            }
+        }
+
+        let result = try await manager.readConsistent { "value" }
+
+        expect(result) == "value"
+        expect(generationReads) == 4
+    }
+
+    func testReadConsistentlyThrowsStaleAfterTwoStaleReads() async {
+        let manager = MockRemoteConfigManager()
+        var generationReads = 0
+        manager.onConfigGenerationRead = {
+            generationReads += 1
+            if generationReads == 2 || generationReads == 4 {
+                manager.configGeneration += 1
+            }
+        }
+
+        do {
+            _ = try await manager.readConsistent { "value" }
+            XCTFail("Expected the stale-read error to be thrown")
+        } catch let error as RemoteConfigConsistencyError {
+            expect(error) == .stale
+            expect(generationReads) == 4
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func testReadConsistentlyRetriesWhenThrowingReadIsSuperseded() async throws {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        let result = try await manager.readConsistent {
+            invocationCount += 1
+            if invocationCount == 1 {
+                manager.configGeneration += 1
+                throw CheckpointRulesProviderError.payloadUnavailable
+            }
+            return "value"
+        }
+
+        expect(result) == "value"
+        expect(invocationCount) == 2
+    }
+
+    func testReadConsistentlyPropagatesErrorsWithoutRetrying() async {
+        let manager = MockRemoteConfigManager()
+        var invocationCount = 0
+
+        do {
+            _ = try await manager.readConsistent {
+                invocationCount += 1
+                throw NSError(domain: "test", code: 1)
+            }
+            XCTFail("Expected the read error to be propagated")
+        } catch let error as NSError {
+            expect(error.domain) == "test"
+            expect(invocationCount) == 1
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
 }
