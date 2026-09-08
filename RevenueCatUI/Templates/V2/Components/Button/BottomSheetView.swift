@@ -218,6 +218,7 @@ struct BottomSheetOverlayModifier: ViewModifier {
                    self.settledSheetID == nil,
                    SheetPresentationPlan.reusesMountedContent(requestedSheetID: newID,
                                                               mountedSheetID: self.mountedSheetID) {
+                    self.onSheetContentAppear?()
                     self.settleAfterLayout(sheetID: newID)
                 }
             }
