@@ -174,6 +174,35 @@ class PurchaseButtonComponentCodableTests: TestCase {
         XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
     }
 
+    func testMethodWebCheckoutOpeningInTheInAppSheetDecoding() throws {
+        let jsonString = """
+        {
+            "type": "purchase_button",
+            "method": {
+                "type": "web_checkout",
+                "open_method": "in_app_web_checkout"
+            },
+            "stack": \(jsonStringDefaultStack)
+        }
+        """
+        let jsonData = jsonString.data(using: .utf8)!
+        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
+                                                                   from: jsonData)
+
+        let purchaseButtonComponent = PaywallComponent.PurchaseButtonComponent(
+            stack: .init(
+                components: [],
+                dimension: .vertical(.center, .start),
+                size: .init(width: .fill, height: .fill)
+            ),
+            action: nil,
+            method: .webCheckout(.init(autoDismiss: nil, openMethod: .inAppWebCheckout)),
+            name: nil
+        )
+
+        XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
+    }
+
     func testMethodWebProductSelectionDecoding() throws {
         let jsonString = """
         {
