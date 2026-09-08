@@ -127,7 +127,7 @@ class WorkflowsConfigProviderTests: TestCase {
         self.commit(
             workflows: ["wf-1": .init(
                 blobRef: "wf-1-ref",
-                content: ["combo_key": "exp_a=b;no_separator;=missing_id;missing_variant=;;"]
+                content: ["combo_key": "exp_a=b;exp_c=x=y;no_separator;=missing_id;missing_variant=;;"]
             )],
             uiConfig: Self.uiConfigTopic,
             blobs: Self.uiConfigBlobs.merging(["wf-1-ref": try Self.workflowJSON(id: "wf-1")]) { current, _ in current }
@@ -136,7 +136,7 @@ class WorkflowsConfigProviderTests: TestCase {
         let result = await self.provider.getWorkflow(workflowId: "wf-1")
 
         let workflowResult = try XCTUnwrap(result.value)
-        expect(workflowResult.enrolledVariants) == ["exp_a": "b"]
+        expect(workflowResult.enrolledVariants) == ["exp_a": "b", "exp_c": "x=y"]
     }
 
     func testEnrolledVariantsAreNilWhenEveryComboKeyPairIsMalformed() async throws {
@@ -153,10 +153,11 @@ class WorkflowsConfigProviderTests: TestCase {
     }
 
     func testParsesEnrolledVariantsFromARealWireDecodedTopic() async throws {
+        // Decodes literal snake_case JSON so `combo_key` is proven to survive into `content` end to end.
         let topicsJSON = """
         {
           "workflows": {
-            "wf-1": { "blob_ref": "wf-1-ref", "prefetch": true, "combo_key": "exp_a=b" }
+            "wf-1": { "blob_ref": "wf-1-ref", "combo_key": "exp_a=b" }
           },
           "ui_config": {
             "app": { "blob_ref": "app-ref" },

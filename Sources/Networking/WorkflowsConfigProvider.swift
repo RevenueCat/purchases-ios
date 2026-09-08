@@ -113,8 +113,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// A workflow is only rendered with styling resolved from the `ui_config` topic, matching Android's
     /// `PaywallViewModel` failing the whole render when its concurrent `ui_config` fetch fails.
     ///
-    /// `enrolledVariants` comes from the item's `combo_key` metadata, which the backend sets per user after
-    /// picking the pre-pruned experiment combo to serve. It is `nil` for workflows with no experiment.
+    /// `enrolledVariants` is parsed from the item's per-user `combo_key` metadata, and is `nil` for
+    /// workflows with no experiment.
     ///
     /// Cache misses validate the workflow topic's generation after `ui_config` resolves, so an in-flight
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
@@ -374,7 +374,7 @@ extension WorkflowsConfigProvider {
     /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
     /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
     /// without relying on Swift dictionary iteration order.
-    fileprivate func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
+    private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
         var map: [String: String] = [:]
         var duplicateOfferingIds: Set<String> = []
 
@@ -395,13 +395,10 @@ extension WorkflowsConfigProvider {
         return map
     }
 
-    /// Parses the item's `combo_key` (`experiment_id=variant_key` pairs joined by `;`) into a map of
-    /// experiment id to variant key. `nil` when the key is absent, `default`, or has no well-formed pair.
-    static func enrolledVariants(from item: RemoteConfiguration.ConfigItem) -> [String: String]? {
-        guard case let .string(comboKey)? = item.content[Self.comboKeyKey],
-              comboKey != Self.defaultComboKey else {
-            return nil
-        }
+    /// Parses the item's `combo_key` (`experiment_id=variant_key` pairs joined by `;`, or `default`) into a
+    /// map of experiment id to variant key. `nil` when the key is absent or has no well-formed pair.
+    private static func enrolledVariants(from item: RemoteConfiguration.ConfigItem) -> [String: String]? {
+        guard case let .string(comboKey)? = item.content[Self.comboKeyKey] else { return nil }
 
         var variants: [String: String] = [:]
         for pair in comboKey.split(separator: ";") {
@@ -412,9 +409,8 @@ extension WorkflowsConfigProvider {
         return variants.isEmpty ? nil : variants
     }
 
-    fileprivate static let offeringIdentifierKey = "offering_identifier"
+    private static let offeringIdentifierKey = "offering_identifier"
     private static let comboKeyKey = "combo_key"
-    private static let defaultComboKey = "default"
 
 }
 
