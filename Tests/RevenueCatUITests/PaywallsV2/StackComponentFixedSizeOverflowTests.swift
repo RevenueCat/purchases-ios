@@ -16,7 +16,6 @@ import XCTest
 
 #if os(iOS)
 
-/// Regression tests for https://github.com/RevenueCat/purchases-ios/issues/7646
 /// A stack with a fixed size along its scroll axis must keep that size when `overflow` is `scroll`.
 @available(iOS 15.0, *)
 @MainActor
