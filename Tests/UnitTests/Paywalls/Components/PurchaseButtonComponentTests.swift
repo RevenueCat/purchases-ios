@@ -397,43 +397,15 @@ class PurchaseButtonComponentCodableTests: TestCase {
                 size: .init(width: .fill, height: .fill)
             ),
             action: .inAppCheckout,
-            method: .hostedWebCheckout(.init(openMethod: nil)),
+            method: .hostedWebCheckout,
             name: nil
         )
 
         XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
     }
 
-    func testMethodHostedWebCheckoutOpeningInTheSheetDecoding() throws {
-        let jsonString = """
-        {
-            "type": "purchase_button",
-            "method": {
-                "type": "hosted_web_checkout",
-                "open_method": "in_app_web_checkout"
-            },
-            "stack": \(jsonStringDefaultStack)
-        }
-        """
-        let jsonData = jsonString.data(using: .utf8)!
-        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
-                                                                   from: jsonData)
-
-        let purchaseButtonComponent = PaywallComponent.PurchaseButtonComponent(
-            stack: .init(
-                components: [],
-                dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fill)
-            ),
-            action: nil,
-            method: .hostedWebCheckout(.init(openMethod: .inAppWebCheckout)),
-            name: nil
-        )
-
-        XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
-    }
-
-    func testMethodHostedWebCheckoutOpeningInTheExternalBrowserDecoding() throws {
+    /// An open method may be added later. Until this SDK reads one, it opens the checkout in the app.
+    func testMethodHostedWebCheckoutIgnoresAnythingElseInTheMethod() throws {
         let jsonString = """
         {
             "type": "purchase_button",
@@ -448,36 +420,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
         let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
                                                                    from: jsonData)
 
-        let purchaseButtonComponent = PaywallComponent.PurchaseButtonComponent(
-            stack: .init(
-                components: [],
-                dimension: .vertical(.center, .start),
-                size: .init(width: .fill, height: .fill)
-            ),
-            action: nil,
-            method: .hostedWebCheckout(.init(openMethod: .externalBrowser)),
-            name: nil
-        )
-
-        XCTAssertEqual(decodedPurchaseButton, purchaseButtonComponent)
-    }
-
-    func testMethodHostedWebCheckoutWithAnUnknownOpenMethodDecoding() throws {
-        let jsonString = """
-        {
-            "type": "purchase_button",
-            "method": {
-                "type": "hosted_web_checkout",
-                "open_method": "something_new"
-            },
-            "stack": \(jsonStringDefaultStack)
-        }
-        """
-        let jsonData = jsonString.data(using: .utf8)!
-        let decodedPurchaseButton = try JSONDecoder.default.decode(PaywallComponent.PurchaseButtonComponent.self,
-                                                                   from: jsonData)
-
-        XCTAssertEqual(decodedPurchaseButton.method, .hostedWebCheckout(.init(openMethod: .unknown)))
+        XCTAssertEqual(decodedPurchaseButton.method, .hostedWebCheckout)
     }
 
     // MARK: - Method.description
@@ -511,7 +454,7 @@ class PurchaseButtonComponentCodableTests: TestCase {
 
     func testMethodDescriptionHostedWebCheckout() {
         XCTAssertEqual(
-            PaywallComponent.PurchaseButtonComponent.Method.hostedWebCheckout(.init(openMethod: nil)).description,
+            PaywallComponent.PurchaseButtonComponent.Method.hostedWebCheckout.description,
             "hosted_web_checkout"
         )
     }

@@ -75,13 +75,6 @@ final class BrowserNavigateToTests: TestCase {
         expect(self.navigateTo(method: .inAppBrowser, openSucceeds: false).urls).to(beEmpty())
     }
 
-    func testInAppWebCheckoutFallsBackToTheExternalBrowserOnTvOS() {
-        let result = self.navigateTo(method: .inAppWebCheckout, openSucceeds: true)
-
-        expect(result.urls) == [Self.url]
-        expect(result.inAppBrowserURL).to(beNil())
-    }
-
 #else
 
     func testInAppBrowserRequestsTheBrowserWithoutNotifying() {
@@ -90,14 +83,6 @@ final class BrowserNavigateToTests: TestCase {
         // presents the browser reports the open instead (see `ButtonComponentView`), which no unit test can drive
         // without a real sheet presentation — it's covered manually in PaywallsTester.
         let result = self.navigateTo(method: .inAppBrowser, openSucceeds: true)
-
-        expect(result.urls).to(beEmpty())
-        expect(result.inAppBrowserURL) == Self.url
-    }
-
-    /// Nothing here presents the checkout sheet, so this method has to end up somewhere that works.
-    func testInAppWebCheckoutRequestsTheInAppBrowser() {
-        let result = self.navigateTo(method: .inAppWebCheckout, openSucceeds: true)
 
         expect(result.urls).to(beEmpty())
         expect(result.inAppBrowserURL) == Self.url

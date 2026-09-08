@@ -48,7 +48,7 @@ import Foundation
             case webCheckout(WebCheckout)
             case webProductSelection(WebCheckout)
             case customWebCheckout(CustomWebCheckout)
-            case hostedWebCheckout(HostedWebCheckout)
+            case hostedWebCheckout
 
             case unknown
 
@@ -73,9 +73,8 @@ import Foundation
                 case .customWebCheckout(let customWebCheckout):
                     try container.encode("custom_web_checkout", forKey: .type)
                     try customWebCheckout.encode(to: encoder)
-                case .hostedWebCheckout(let hostedWebCheckout):
+                case .hostedWebCheckout:
                     try container.encode("hosted_web_checkout", forKey: .type)
-                    try hostedWebCheckout.encode(to: encoder)
                 case .unknown:
                     try container.encode("unknown", forKey: .type)
                 }
@@ -98,8 +97,7 @@ import Foundation
                     let customCheckout = try CustomWebCheckout(from: decoder)
                     self = .customWebCheckout(customCheckout)
                 case "hosted_web_checkout":
-                    let hostedCheckout = try HostedWebCheckout(from: decoder)
-                    self = .hostedWebCheckout(hostedCheckout)
+                    self = .hostedWebCheckout
                 case "unknown":
                     self = .unknown
                 default:
@@ -166,18 +164,6 @@ import Foundation
             public let openMethod: ButtonComponent.URLMethod?
 
         }
-
-        public struct HostedWebCheckout: Codable, Sendable, Hashable, Equatable {
-
-            /// Where the checkout is opened. Absent means the in-app checkout sheet.
-            public let openMethod: ButtonComponent.URLMethod?
-
-            public init(openMethod: PaywallComponent.ButtonComponent.URLMethod?) {
-                self.openMethod = openMethod
-            }
-
-        }
-
         public init(
             stack: PaywallComponent.StackComponent,
             action: Action?,
