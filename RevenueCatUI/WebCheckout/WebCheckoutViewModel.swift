@@ -31,8 +31,7 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         case loading
         case loaded
-        /// The page could not be shown. The presenting host decides what the customer sees; ``reload()``
-        /// starts over from the checkout URL.
+        /// The page could not be shown. The presenting host decides what the customer sees.
         case failed
 
     }
@@ -86,13 +85,6 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
         }
 
         self.hasStartedLoading = true
-        self.webView.load(URLRequest(url: self.checkoutURL))
-    }
-
-    /// Starts the checkout over from the beginning, after a failure.
-    func reload() {
-        self.hasLoadedOnce = false
-        self.loadState = .loading
         self.webView.load(URLRequest(url: self.checkoutURL))
     }
 
