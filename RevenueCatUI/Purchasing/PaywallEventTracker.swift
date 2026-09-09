@@ -195,13 +195,13 @@ final class PaywallEventTracker: @unchecked Sendable {
 
     func componentInteractionLogger(
         sessionID: SessionID,
-        onInteraction: PaywallInteractionHandler? = nil
+        onInteraction: PaywallInteractionNotifier = .init()
     ) -> ComponentInteractionLogger {
         return .init { [weak self] interactionData in
             guard let event = self?.trackComponentInteraction(interactionData, sessionID: sessionID) else {
                 return false
             }
-            if let onInteraction {
+            if onInteraction.handler != nil {
                 let payload = event.paywallMap().filter { PaywallInteractionEvent.Keys.all.contains($0.key) }
                 onInteraction(PaywallInteractionEvent(rawProperties: payload))
             }
@@ -242,14 +242,13 @@ final class PaywallEventTracker: @unchecked Sendable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ComponentInteractionLogger {
 
-    private let action: @MainActor (PaywallEvent.ComponentInteractionData) -> Bool
+    private let action: (PaywallEvent.ComponentInteractionData) -> Bool
 
-    init(action: @escaping @MainActor (PaywallEvent.ComponentInteractionData) -> Bool = { _ in false }) {
+    init(action: @escaping (PaywallEvent.ComponentInteractionData) -> Bool = { _ in false }) {
         self.action = action
     }
 
     @discardableResult
-    @MainActor
     func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
         return self.action(interactionData)
     }

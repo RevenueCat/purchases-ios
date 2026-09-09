@@ -935,7 +935,7 @@ extension PurchaseHandler {
 
     func componentInteractionLogger(
         sessionID: PaywallEvent.SessionID,
-        onInteraction: PaywallInteractionHandler? = nil
+        onInteraction: PaywallInteractionNotifier = .init()
     ) -> ComponentInteractionLogger {
         return self.paywallEventTracker.componentInteractionLogger(
             sessionID: sessionID,
@@ -1316,15 +1316,34 @@ extension EnvironmentValues {
     }
 }
 
-struct PaywallInteractionHandlerKey: EnvironmentKey {
-    static let defaultValue: PaywallInteractionHandler? = nil
+/// Lightweight wrapper so views can report paywall interactions without depending on the full `PurchaseHandler`.
+struct PaywallInteractionNotifier: Sendable {
+
+    let handler: PaywallInteractionHandler?
+
+    init(_ handler: PaywallInteractionHandler? = nil) {
+        self.handler = handler
+    }
+
+    func callAsFunction(_ event: PaywallInteractionEvent) {
+        guard let handler = self.handler else { return }
+        Task { @MainActor in
+            handler(event)
+        }
+    }
+
+}
+
+/// `EnvironmentKey` for storing the notifier for paywall interactions.
+struct PaywallInteractionNotifierKey: EnvironmentKey {
+    static let defaultValue: PaywallInteractionNotifier = .init()
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension EnvironmentValues {
-    var onPaywallInteraction: PaywallInteractionHandler? {
-        get { self[PaywallInteractionHandlerKey.self] }
-        set { self[PaywallInteractionHandlerKey.self] = newValue }
+    var paywallInteractionNotifier: PaywallInteractionNotifier {
+        get { self[PaywallInteractionNotifierKey.self] }
+        set { self[PaywallInteractionNotifierKey.self] = newValue }
     }
 }
 

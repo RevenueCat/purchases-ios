@@ -24,12 +24,12 @@ struct App: View {
     private var webCheckoutOpened: WebCheckoutOpenedHandler = { () in }
     private var urlOpened: URLOpenedHandler = { (_: URL) in }
     private var interaction: PaywallInteractionHandler = { (event: PaywallInteractionEvent) in
-        let rawProperties: [String: Any] = event.rawProperties
-        let componentType: String? = event.property(for: PaywallInteractionEvent.Keys.componentType)
-        let originIndex: Int? = event.property(for: PaywallInteractionEvent.Keys.originIndex)
-        let timestamp: UInt64? = event.property(for: PaywallInteractionEvent.Keys.timestamp)
-        let darkMode: Bool? = event.property(for: PaywallInteractionEvent.Keys.darkMode)
-        let name: String = PaywallInteractionEvent.Keys.componentType.name
+        let _: [String: Any] = event.rawProperties
+        let _: String? = event.property(for: PaywallInteractionEvent.Keys.componentType)
+        let _: Int? = event.property(for: PaywallInteractionEvent.Keys.originIndex)
+        let _: UInt64? = event.property(for: PaywallInteractionEvent.Keys.timestamp)
+        let _: Bool? = event.property(for: PaywallInteractionEvent.Keys.darkMode)
+        let _: String = PaywallInteractionEvent.Keys.componentType.name
     }
     private let interactionKeys: [Any] = [
         PaywallInteractionEvent.Keys.timestamp,

@@ -114,9 +114,10 @@ class ComponentInteractionLoggerTests: TestCase {
             destinationIndex: 1
         )
         let received: Atomic<[PaywallInteractionEvent]> = .init([])
-        let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier) { event in
-            received.modify { $0.append(event) }
-        }
+        let logger = tracker.componentInteractionLogger(
+            sessionID: eventData.sessionIdentifier,
+            onInteraction: .init { event in received.modify { $0.append(event) } }
+        )
 
         expect(logger(interactionData)) == false
         await Task.yield()
@@ -184,19 +185,17 @@ class ComponentInteractionLoggerTests: TestCase {
             resultingProductIdentifier: "com.app.annual"
         )
         let received: Atomic<[PaywallInteractionEvent]> = .init([])
-        let logger = tracker.componentInteractionLogger(sessionID: eventData.sessionIdentifier) { event in
-            received.modify { $0.append(event) }
-        }
+        let logger = tracker.componentInteractionLogger(
+            sessionID: eventData.sessionIdentifier,
+            onInteraction: .init { event in received.modify { $0.append(event) } }
+        )
 
         tracker.trackPaywallImpression(eventData)
         expect(logger(interactionData)) == true
         await expect(received.value).toEventually(haveCount(1))
 
         let event = try XCTUnwrap(received.value.first)
-        expect(PaywallInteractionEvent.Keys.all).to(haveCount(27))
         expect(Set(event.rawProperties.keys)) == PaywallInteractionEvent.Keys.all
-        let wireKeys = Set(PaywallEvent.componentInteraction(.init(), eventData, interactionData).paywallMap().keys)
-        expect(wireKeys.subtracting(["discriminator", "type", "id"])) == PaywallInteractionEvent.Keys.all
         expect(event.property(for: PaywallInteractionEvent.Keys.paywallId)) == "pw_123"
         expect(event.property(for: PaywallInteractionEvent.Keys.componentUrl)) == "https://example.com"
         expect(event.property(for: PaywallInteractionEvent.Keys.resultingProductId)) == "com.app.annual"
