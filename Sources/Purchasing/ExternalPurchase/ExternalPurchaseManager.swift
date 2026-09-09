@@ -37,6 +37,10 @@ final class ExternalPurchaseManager {
     /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
     /// anything to Apple.
     func canMakeExternalPurchases() async -> Bool {
+        guard self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks else {
+            return false
+        }
+
         guard !self.systemInfo.isSimulatedStoreAPIKey else {
             Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
             return false

@@ -15,7 +15,7 @@ import Foundation
 import Nimble
 import XCTest
 
-@testable import RevenueCat
+@_spi(Experimental) @testable import RevenueCat
 
 class ExternalPurchaseManagerTests: TestCase {
 
@@ -37,14 +37,8 @@ class ExternalPurchaseManagerTests: TestCase {
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenResult = .success(.init(id: Self.tokenID))
 
-        self.systemInfo = MockSystemInfo(finishTransactions: true)
-
-        self.manager = ExternalPurchaseManager(
-            customLink: self.customLink,
-            externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
-            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
-            systemInfo: self.systemInfo
-        )
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
+        self.manager = self.makeManager()
     }
 
     // MARK: - Flow types
@@ -155,6 +149,26 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
     }
 
+    // MARK: - Dangerous setting
+
+    /// The setting stands for the app taking part in Apple's programme at all, so it gates every flow rather
+    /// than any one call site.
+    func testTheWholeSequenceIsSkippedWhileTheSettingIsDisabled() async {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        let canMakeExternalPurchases = await self.manager.canMakeExternalPurchases()
+        expect(canMakeExternalPurchases) == false
+
+        let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(result) == .stopped(.cannotMakeExternalPurchases)
+        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 0
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
     // MARK: - Test Store
 
     /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply.
@@ -193,6 +207,27 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(onceEligible) == .registered(tokenID: Self.tokenID)
 
         expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 2
+    }
+
+    // MARK: - Helpers
+
+    private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {
+        return MockSystemInfo(
+            finishTransactions: true,
+            dangerousSettings: DangerousSettings(
+                autoSyncPurchases: true,
+                useExternalPurchaseCustomLinks: useExternalPurchaseCustomLinks
+            )
+        )
+    }
+
+    private func makeManager() -> ExternalPurchaseManager {
+        return ExternalPurchaseManager(
+            customLink: self.customLink,
+            externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
+            currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            systemInfo: self.systemInfo
+        )
     }
 
 }

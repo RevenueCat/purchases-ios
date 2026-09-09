@@ -1920,12 +1920,9 @@ public extension Purchases {
     /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
     /// and every token minted is one Apple expects a report for.
     ///
-    /// Does nothing unless ``DangerousSettings/useExternalPurchaseCustomLinks`` is enabled.
+    /// Does nothing unless ``DangerousSettings/useExternalPurchaseCustomLinks`` is enabled, in which case the
+    /// caller is told to proceed with no token id to hand over.
     @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkPreparation {
-        guard self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks else {
-            return .proceed(externalPurchaseTokenID: nil)
-        }
-
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
