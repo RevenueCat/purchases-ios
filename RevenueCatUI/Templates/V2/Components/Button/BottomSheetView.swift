@@ -36,6 +36,45 @@ struct SheetViewModel: Equatable {
     }
 }
 
+/// Decides whether a sheet's content should be visible yet.
+///
+/// Content is added hidden and only slides in after one layout pass, so components that measure
+/// themselves on first layout (the carousel) are not resized mid-animation. Pure so it can be
+/// unit tested, like ``ImageRenderPlan``.
+struct SheetPresentationPlan: Equatable {
+
+    /// True once the requested sheet has completed its first layout pass.
+    let isPresented: Bool
+
+    /// Presented only when the requested sheet is the one that has settled.
+    static func make(requestedSheetID: String?, settledSheetID: String?) -> SheetPresentationPlan {
+        guard let requestedSheetID else {
+            return SheetPresentationPlan(isPresented: false)
+        }
+
+        return SheetPresentationPlan(isPresented: requestedSheetID == settledSheetID)
+    }
+
+    /// Dismissing or switching sheets clears the settled id; re-requesting the settled sheet keeps it.
+    static func settledSheetID(afterRequesting requestedSheetID: String?, previous: String?) -> String? {
+        guard let requestedSheetID else {
+            return nil
+        }
+
+        return requestedSheetID == previous ? previous : nil
+    }
+
+    /// A sheet re-requested while its content is still mounted (dismissal in flight) keeps the same
+    /// view identity, so `onAppear` does not fire again and the settle must be scheduled elsewhere.
+    static func reusesMountedContent(requestedSheetID: String?, mountedSheetID: String?) -> Bool {
+        guard let requestedSheetID else {
+            return false
+        }
+
+        return requestedSheetID == mountedSheetID
+    }
+}
+
 /// A view modifier that presents content in a sheet-like interface.
 ///
 /// This modifier handles the presentation and dismissal of a sheet view, including
@@ -49,6 +88,43 @@ struct BottomSheetOverlayModifier: ViewModifier {
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     @State private var parentHeight: CGFloat?
+
+    /// Sheet whose content has completed its first layout pass. See ``SheetPresentationPlan``.
+    @State private var settledSheetID: String?
+
+    /// Sheet whose content is currently in the hierarchy, including while its removal animates out.
+    @State private var mountedSheetID: String?
+
+    private static let presentationAnimation = Animation.spring(response: 0.35, dampingFraction: 1)
+
+    init(
+        sheetViewModel: Binding<SheetViewModel?>,
+        safeAreaInsets: EdgeInsets,
+        onSheetContentAppear: (() -> Void)?
+    ) {
+        self._sheetViewModel = sheetViewModel
+        self.safeAreaInsets = safeAreaInsets
+        self.onSheetContentAppear = onSheetContentAppear
+        // A sheet that is already requested when the overlay is created has nothing to slide in from.
+        self._settledSheetID = State(initialValue: sheetViewModel.wrappedValue?.sheet.id)
+    }
+
+    private func presentationPlan(for sheetViewModel: SheetViewModel) -> SheetPresentationPlan {
+        SheetPresentationPlan.make(
+            requestedSheetID: sheetViewModel.sheet.id,
+            settledSheetID: self.settledSheetID
+        )
+    }
+
+    /// One hop so the content's own measurements land before anything moves.
+    private func settleAfterLayout(sheetID: String) {
+        DispatchQueue.main.async {
+            guard self.sheetViewModel?.sheet.id == sheetID else { return }
+            withAnimation(Self.presentationAnimation) {
+                self.settledSheetID = sheetID
+            }
+        }
+    }
 
     var sheetHeight: CGFloat? {
         guard let size = self.sheetViewModel?.sheet.size else {
@@ -108,9 +184,22 @@ struct BottomSheetOverlayModifier: ViewModifier {
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)
                     })
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
+                    // Hidden until the first layout pass has settled, then animated in.
+                    .offset(y: self.presentationPlan(for: sheetViewModel).isPresented ? 0 : (self.parentHeight ?? 2000))
+                    .opacity(self.presentationPlan(for: sheetViewModel).isPresented ? 1 : 0)
+                    .transition(.asymmetric(
+                        insertion: .identity,
+                        removal: .move(edge: .bottom).combined(with: .opacity)
+                    ))
                     .onAppear {
                         self.onSheetContentAppear?()
+                        self.mountedSheetID = sheetViewModel.sheet.id
+                        self.settleAfterLayout(sheetID: sheetViewModel.sheet.id)
+                    }
+                    .onDisappear {
+                        if self.mountedSheetID == sheetViewModel.sheet.id {
+                            self.mountedSheetID = nil
+                        }
                     }
                     // Tie the sheet content's identity to the sheet's `id` so that
                     // switching to a different sheet disposes the previous sheet's
@@ -128,9 +217,26 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         .onAppear {
                             self.parentHeight = proxy.size.height
                         }
+                        .onChangeOf(proxy.size.height) { height in
+                            self.parentHeight = height
+                        }
                 }
             )
-            .animation(.spring(response: 0.35, dampingFraction: 1), value: sheetViewModel)
+            .animation(Self.presentationAnimation, value: sheetViewModel)
+            .onChangeOf(self.sheetViewModel?.sheet.id) { newID in
+                self.settledSheetID = SheetPresentationPlan.settledSheetID(
+                    afterRequesting: newID,
+                    previous: self.settledSheetID
+                )
+                // Reopened mid-dismissal: the same content is reused, so `onAppear` won't run again.
+                if let newID,
+                   self.settledSheetID == nil,
+                   SheetPresentationPlan.reusesMountedContent(requestedSheetID: newID,
+                                                              mountedSheetID: self.mountedSheetID) {
+                    self.onSheetContentAppear?()
+                    self.settleAfterLayout(sheetID: newID)
+                }
+            }
         }
     }
 }

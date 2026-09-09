@@ -140,6 +140,45 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
+    func testLogsRuleEvaluationWithCheckpointPrefix() async throws {
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let firstWorkflowID = "wf_first"
+        let secondWorkflowID = "wf_second"
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+            Self.rule(workflowID: firstWorkflowID, audienceID: "audience_false"),
+            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_true")
+        ]))
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience_false": "false",
+            "audience_true": "true"
+        ]
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId = [
+            firstWorkflowID: self.offeringID,
+            secondWorkflowID: self.offeringID
+        ]
+        self.workflowsProvider.stubbedGetWorkflowResult = [
+            firstWorkflowID: Self.workflowDataResult(id: firstWorkflowID),
+            secondWorkflowID: Self.workflowDataResult(id: secondWorkflowID)
+        ]
+
+        _ = try await self.resolve()
+
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 1 did not match.",
+            level: .verbose
+        )
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 2 matched.",
+            level: .verbose
+        )
+        XCTAssertTrue(self.logger.messages.allSatisfy {
+            !$0.message.contains("false") && !$0.message.contains("true")
+        })
+    }
+
     func testCheckpointWithNoWorkflowsResolvesConfigurationUnavailable() async throws {
         self.workflowsProvider.stubbedOfferingIdByWorkflowId = [:]
 
@@ -499,68 +538,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(missed), .noMatch)
     }
 
-    func testTrueBackendPredicateResultMatchesAudience() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
-    func testFalseBackendPredicateResultDoesNotMatchAudience() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",true]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(false)]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
-    }
-
-    func testMissingBackendPredicateResultUsesAuthoredDefault() async throws {
-        self.audiencesProvider.defaultRules = #"{"var":["backend.missing_hash",true]}"#
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
-    func testBackendPredicateResultsAreScopedToOneEvaluation() async throws {
-        let hash = "condition_hash"
-        self.audiencesProvider.defaultRules = #"{"var":["backend.\#(hash)",false]}"#
-        self.audiencesProvider.backendPredicateResults = [hash: .bool(true)]
-
-        let matched = try await self.resolve()
-        self.audiencesProvider.backendPredicateResults = [:]
-        let missed = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(matched)?.workflow.id, self.workflowID)
-        XCTAssertEqual(Self.noActionReason(missed), .noMatch)
-    }
-
-    func testNonBooleanBackendPredicateResultsAreAvailableToAudiencePredicates() async throws {
-        self.audiencesProvider.defaultRules = #"""
-        {"and":[
-            {"==":[{"var":"backend.variant"},"variant_b"]},
-            {"==":[{"var":"backend.count"},3]},
-            {"==":[{"var":"backend.score"},1.5]},
-            {"==":[{"var":"backend.profile.tier"},"pro"]}
-        ]}
-        """#
-        self.audiencesProvider.backendPredicateResults = [
-            "variant": .string("variant_b"),
-            "count": .int(3),
-            "score": .double(1.5),
-            "profile": .object(["tier": .string("pro")])
-        ]
-
-        let resolution = try await self.resolve()
-
-        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
-    }
-
     /// A malformed predicate is an evaluation failure, not a lookup failure: the audience was read, the engine
     /// just couldn't run it. That doesn't block a lower-priority rule from winning on its own merits.
     func testMalformedAudienceBeforeAMatchDoesNotPreventALaterWorkflow() async throws {
@@ -634,10 +611,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// No dimension provider supplies `last_seen.*`, so the lookup fails and the audience cannot be
-    /// answered at all. That is not the same answer as a customer who falls outside it, so it is reported
-    /// as unavailable rather than as `noMatch`.
-    func testAudienceOnAnUnsuppliedVariableIsNotReportedAsNoMatch() async throws {
+    /// No dimension provider supplies `last_seen.*`, so the audience rule is treated as a non-match.
+    func testAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "in": [{ "var": "last_seen.country" }, ["ES"]] } }"#
@@ -646,13 +621,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await self.resolve()
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// Negation used to invert an unsupplied variable into a match: `null == "NL"` was false, so `!` made it
-    /// true and the audience matched *everyone*, including the customers it was meant to exclude. The lookup
-    /// fails ahead of the negation now, so an unresolvable path can no longer manufacture a match.
-    func testNegatedAudienceOnAnUnsuppliedVariableDoesNotMatch() async throws {
+    /// An unresolved variable must not be converted into a match by negation.
+    func testNegatedAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "!": [{ "==": [{ "var": "last_seen.country" }, "NL"] }] } }"#
@@ -662,7 +635,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let resolution = try await self.resolve()
 
         XCTAssertNil(Self.resolvedWorkflow(resolution))
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    func testAudienceOnAnUnsuppliedVariableDoesNotBlockALaterMatch() async throws {
+        let secondWorkflowID = "wf5678"
+        self.stubTwoRules(secondWorkflowID: secondWorkflowID)
+        self.audiencesProvider.rulesByAudienceID["audience_\(self.workflowID)"] =
+            #"{ "in": [{ "var": "last_seen.country" }, ["ES"]] }"#
+        self.audiencesProvider.rulesByAudienceID["audience_\(secondWorkflowID)"] = "true"
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
     /// Decodes with the real `Audience` decoder, so what gets evaluated is the string a served payload
@@ -967,7 +952,6 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
         }
     }
     var configGeneration = 0
-    var backendPredicateResults: [String: DimensionValue] = [:]
     var configurationUnavailable = false
     var onConfiguration: (() -> Void)?
     private(set) var configurationRequestCount = 0
@@ -994,7 +978,6 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
             audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
                 (identifier, Audience(id: identifier, rules: rules))
             }),
-            backendPredicateResults: self.backendPredicateResults,
             configGeneration: self.configGeneration
         )
     }
