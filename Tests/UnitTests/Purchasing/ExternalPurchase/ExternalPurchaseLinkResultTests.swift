@@ -56,4 +56,11 @@ final class ExternalPurchaseLinkResultTests: TestCase {
         expect(result) == .stopped
     }
 
+    /// The link the customer is waiting for is the one the first preparation opens.
+    func testNothingOpensWhenAnotherLinkIsAlreadyBeingPrepared() {
+        let result = ExternalPurchaseLinkResult(preparationResult: .stopped(.alreadyPreparing))
+
+        expect(result) == .stopped
+    }
+
 }

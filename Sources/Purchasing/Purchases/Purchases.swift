@@ -1926,6 +1926,12 @@ public extension Purchases {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
+    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
+    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
+        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
+
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession

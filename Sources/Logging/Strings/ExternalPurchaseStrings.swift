@@ -21,6 +21,7 @@ enum ExternalPurchaseStrings {
     case unsupported_with_test_store
     case cannot_make_external_purchases
     case payments_not_authorized
+    case already_preparing
     case notice_cancelled
     case error_showing_notice(_ error: Error)
     case no_token_available
@@ -42,6 +43,8 @@ extension ExternalPurchaseStrings: LogMessage {
             return "Not preparing an external purchase: this app cannot offer one to this customer."
         case .payments_not_authorized:
             return "Not preparing an external purchase: this device does not authorize payments."
+        case .already_preparing:
+            return "Not preparing an external purchase: another one is already being prepared."
         case .notice_cancelled:
             return "The customer chose not to continue to the external purchase."
         case let .error_showing_notice(error):
