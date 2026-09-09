@@ -210,7 +210,7 @@ private struct FitSizeLayout: Layout {
         if self.limits.height != nil {
             intrinsicProposal.height = nil
         }
-        let intrinsicSize = subview.sizeThatFits(intrinsicProposal)
+        var intrinsicSize = subview.sizeThatFits(intrinsicProposal)
 
         var resolvedProposal = proposal
         if let width = self.limits.width {
@@ -219,6 +219,13 @@ private struct FitSizeLayout: Layout {
                 available: proposal.width,
                 limits: width
             )
+            if self.limits.height != nil {
+                // Width drives wrapping, so when both axes are limited the height clamp must see the height
+                // of the content at the resolved width rather than its unwrapped, single-line height.
+                intrinsicSize = subview.sizeThatFits(
+                    ProposedViewSize(width: resolvedProposal.width, height: nil)
+                )
+            }
         }
         if let height = self.limits.height {
             resolvedProposal.height = Self.resolve(

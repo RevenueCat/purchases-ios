@@ -971,6 +971,41 @@ struct StackComponentFitClamping_Previews: PreviewProvider {
     }
 }
 
+/// Fit limits on both axes rely on `FitSizeLayout` (iOS 16+): the width is clamped first and the height limit
+/// then clamps the *wrapped* height. Before iOS 16 the fallback clamps the height proposal with the single-line
+/// height instead, truncating the text, so these previews only exist on iOS 16 and later.
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct StackComponentFitBothAxes_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            stackFitTextWrapPreview(
+                title: "Fit(max: 140) × Fit(min: 20, max: 200): wrapped text keeps its full height",
+                width: .fit(nil, .init(min: nil, max: 140)),
+                height: .fit(nil, .init(min: 20, max: 200))
+            )
+            .previewLayout(.fixed(width: 320, height: 200))
+            .previewDisplayName("Stack · iOS 16+ · Fit limits on both axes measure wrapped height")
+
+            stackFitTextWrapPreview(
+                title: "Fit(max: 140) × Fit(min: 20, max: 60): wrapped text overflows the height maximum",
+                width: .fit(nil, .init(min: nil, max: 140)),
+                height: .fit(nil, .init(min: 20, max: 60))
+            )
+            .previewLayout(.fixed(width: 320, height: 200))
+            .previewDisplayName("Stack · iOS 16+ · Fit height maximum still caps wrapped text")
+
+            stackFitTextWrapPreview(
+                title: "Fit(min: 200) × Fit(min: 80): short text is padded on both axes",
+                width: .fit(nil, .init(min: 200, max: nil)),
+                height: .fit(nil, .init(min: 80, max: nil)),
+                text: "Short"
+            )
+            .previewLayout(.fixed(width: 320, height: 200))
+            .previewDisplayName("Stack · iOS 16+ · Fit minimums pad both axes")
+        }
+    }
+}
+
 private let stackSizingPreviewBackground = Color(
     red: 226.0 / 255.0,
     green: 232.0 / 255.0,
@@ -1117,6 +1152,7 @@ private func stackSizeConstraintLabel(_ constraint: PaywallComponent.SizeConstra
 private func stackFitTextWrapPreview(
     title: String,
     width: PaywallComponent.SizeConstraint,
+    height: PaywallComponent.SizeConstraint = .fit(nil),
     text: String = "A long label that has to wrap onto several lines to fit the maximum width"
 ) -> some View {
     let component = PaywallComponent.StackComponent(
@@ -1130,7 +1166,7 @@ private func stackFitTextWrapPreview(
                 fontSize: 14
             ))
         ],
-        size: .init(width: width, height: .fit(nil)),
+        size: .init(width: width, height: height),
         spacing: 0,
         backgroundColor: .init(light: .hex("#CBD5E1")),
         padding: .zero
