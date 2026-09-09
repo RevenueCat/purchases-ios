@@ -203,7 +203,12 @@ final class PaywallEventTracker: @unchecked Sendable {
             }
             if let onInteraction {
                 let payload = event.paywallMap().filter { PaywallInteractionEvent.Keys.all.contains($0.key) }
-                onInteraction(PaywallInteractionEvent(rawProperties: payload))
+                let interactionEvent = PaywallInteractionEvent(rawProperties: payload)
+                #if compiler(>=5.9)
+                MainActor.assumeIsolated { onInteraction(interactionEvent) }
+                #else
+                Task { @MainActor in onInteraction(interactionEvent) }
+                #endif
             }
             return true
         }
@@ -242,20 +247,15 @@ final class PaywallEventTracker: @unchecked Sendable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ComponentInteractionLogger {
 
-    private let action: @MainActor (PaywallEvent.ComponentInteractionData) -> Bool
+    private let action: (PaywallEvent.ComponentInteractionData) -> Bool
 
-    init(action: @escaping @MainActor (PaywallEvent.ComponentInteractionData) -> Bool = { _ in false }) {
+    init(action: @escaping (PaywallEvent.ComponentInteractionData) -> Bool = { _ in false }) {
         self.action = action
     }
 
     @discardableResult
     func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
-        #if compiler(>=5.9)
-        return MainActor.assumeIsolated { self.action(interactionData) }
-        #else
-        Task { @MainActor in _ = self.action(interactionData) }
-        return true
-        #endif
+        return self.action(interactionData)
     }
 
 }
