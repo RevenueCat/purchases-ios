@@ -69,12 +69,26 @@ class ExternalPurchaseManagerTests: TestCase {
 
     // MARK: - Stopping
 
-    func testMintsNothingWhenTheCustomerCannotMakeExternalPurchases() async {
-        self.customLink.stubbedCanMakeExternalPurchases = false
+    func testMintsNothingWhenTheAppIsNotEligible() async {
+        self.customLink.stubbedAvailability = .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.cannotMakeExternalPurchases)
+        expect(result) == .stopped(.notEligible)
+        expect(result.shouldProceed) == false
+        expect(self.customLink.invokedNoticeTypes).to(beEmpty())
+        expect(self.customLink.invokedTokenTypes).to(beEmpty())
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
+    /// Kept apart from being ineligible: the caller has nothing to offer instead, so it must not fall back to a
+    /// purchase of any kind.
+    func testMintsNothingWhenTheDeviceDoesNotAuthorizePayments() async {
+        self.customLink.stubbedAvailability = .paymentsNotAuthorized
+
+        let result = await self.manager.prepareExternalPurchase(flow: .inApp)
+
+        expect(result) == .stopped(.paymentsNotAuthorized)
         expect(result.shouldProceed) == false
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
@@ -157,13 +171,13 @@ class ExternalPurchaseManagerTests: TestCase {
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
         self.manager = self.makeManager()
 
-        let canMakeExternalPurchases = await self.manager.canMakeExternalPurchases()
-        expect(canMakeExternalPurchases) == false
+        let availability = await self.manager.externalPurchaseAvailability()
+        expect(availability) == .notEligible
 
         let result = await self.manager.prepareExternalPurchase(flow: .linkOut)
 
-        expect(result) == .stopped(.cannotMakeExternalPurchases)
-        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 0
+        expect(result) == .stopped(.notEligible)
+        expect(self.customLink.invokedAvailabilityCount) == 0
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -183,14 +197,15 @@ class ExternalPurchaseManagerTests: TestCase {
 
     // MARK: - Test Store
 
-    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply.
-    func testTheTestStoreCannotMakeExternalPurchases() async {
+    /// A Test Store key has no App Store behind it, so none of the StoreKit steps apply. It reads as ineligible
+    /// rather than as a device that cannot pay, so the caller keeps offering its usual way to buy.
+    func testTheTestStoreIsNotEligible() async {
         self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
 
-        let canMakeExternalPurchases = await self.manager.canMakeExternalPurchases()
+        let availability = await self.manager.externalPurchaseAvailability()
 
-        expect(canMakeExternalPurchases) == false
-        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 0
+        expect(availability) == .notEligible
+        expect(self.customLink.invokedAvailabilityCount) == 0
     }
 
     func testTheTestStoreSkipsTheWholeSequence() async {
@@ -198,7 +213,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         let result = await self.manager.prepareExternalPurchase(flow: .inApp)
 
-        expect(result) == .stopped(.cannotMakeExternalPurchases)
+        expect(result) == .stopped(.notEligible)
         expect(self.customLink.invokedNoticeTypes).to(beEmpty())
         expect(self.customLink.invokedTokenTypes).to(beEmpty())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
@@ -208,17 +223,17 @@ class ExternalPurchaseManagerTests: TestCase {
 
     /// Eligibility can change while the app is running, so every purchase asks for it again.
     func testResolvesEligibilityOnEveryPurchase() async {
-        self.customLink.stubbedCanMakeExternalPurchases = false
+        self.customLink.stubbedAvailability = .notEligible
 
         let whileIneligible = await self.manager.prepareExternalPurchase(flow: .inApp)
-        expect(whileIneligible) == .stopped(.cannotMakeExternalPurchases)
+        expect(whileIneligible) == .stopped(.notEligible)
 
-        self.customLink.stubbedCanMakeExternalPurchases = true
+        self.customLink.stubbedAvailability = .available
 
         let onceEligible = await self.manager.prepareExternalPurchase(flow: .inApp)
         expect(onceEligible) == .registered(tokenID: Self.tokenID)
 
-        expect(self.customLink.invokedCanMakeExternalPurchasesCount) == 2
+        expect(self.customLink.invokedAvailabilityCount) == 2
     }
 
     // MARK: - Helpers

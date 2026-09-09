@@ -48,6 +48,9 @@ struct ButtonComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -101,7 +104,8 @@ struct ButtonComponentView: View {
                    for: self.packageContext.package
                ),
                selectedPackageId: self.selectedPackageId,
-               customVariables: self.customVariables
+               customVariables: self.customVariables,
+               windowSize: self.paywallWindowSize
            ) {
             AsyncButton {
                 try await performAction()

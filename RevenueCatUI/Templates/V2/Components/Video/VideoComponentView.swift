@@ -35,6 +35,9 @@ struct VideoComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -81,6 +84,7 @@ struct VideoComponentView: View {
                 ),
                 selectedPackageId: self.selectedPackageId,
                 customVariables: self.customVariables,
+                windowSize: self.paywallWindowSize,
                 colorScheme: colorScheme
             ) { style in
                 if style.visible {

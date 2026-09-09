@@ -97,6 +97,7 @@ class IconComponentViewModel {
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme,
         @ViewBuilder apply: @escaping (IconComponentStyle) -> some View
     ) -> some View {
@@ -104,7 +105,8 @@ class IconComponentViewModel {
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
         let partial = PresentedIconPartial.buildPartial(
             state: state,

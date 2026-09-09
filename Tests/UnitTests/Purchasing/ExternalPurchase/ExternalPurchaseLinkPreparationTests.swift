@@ -31,12 +31,17 @@ final class ExternalPurchaseLinkPreparationTests: TestCase {
             == .proceed(externalPurchaseTokenID: nil)
     }
 
-    func testACustomerWhoCannotMakeExternalPurchasesKeepsTheLink() {
-        let preparation = ExternalPurchaseLinkPreparation(
-            preparationResult: .stopped(.cannotMakeExternalPurchases)
-        )
+    func testAnIneligibleCustomerKeepsTheLink() {
+        let preparation = ExternalPurchaseLinkPreparation(preparationResult: .stopped(.notEligible))
 
         expect(preparation) == .proceed(externalPurchaseTokenID: nil)
+    }
+
+    /// Unlike being ineligible, a device that cannot authorize payments is not offered the link either.
+    func testNothingOpensWhenThePaymentsAreNotAuthorized() {
+        let preparation = ExternalPurchaseLinkPreparation(preparationResult: .stopped(.paymentsNotAuthorized))
+
+        expect(preparation) == .stopped
     }
 
     func testNothingOpensWhenTheCustomerDeclinesTheNotice() {

@@ -20,7 +20,8 @@ import Foundation
     /// Open the link, handing `externalPurchaseTokenID` to the checkout page when there is one.
     case proceed(externalPurchaseTokenID: String?)
 
-    /// Open nothing: the customer declined Apple's disclosure notice, or it could not be shown.
+    /// Open nothing: the customer declined Apple's disclosure notice, it could not be shown, or the device does
+    /// not authorize payments.
     case stopped
 
 }
@@ -36,10 +37,14 @@ extension ExternalPurchaseLinkPreparation {
         case .unregistered:
             // The customer is still allowed to buy, with nothing for the checkout to tie the purchase back to.
             self = .proceed(externalPurchaseTokenID: nil)
-        case .stopped(.cannotMakeExternalPurchases):
+        case .stopped(.notEligible):
             // Nothing was shown and nothing was minted, so the link keeps working exactly as it did before
             // this app took part in the programme.
             self = .proceed(externalPurchaseTokenID: nil)
+        case .stopped(.paymentsNotAuthorized):
+            // Apple asks that a device which cannot authorize payments be offered no purchase at all, so the
+            // link is not opened either.
+            self = .stopped
         case .stopped(.customerCancelledNotice), .stopped(.noticeFailed):
             self = .stopped
         }

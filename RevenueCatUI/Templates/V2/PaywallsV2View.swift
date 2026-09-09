@@ -308,6 +308,7 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .measurePaywallWindowSize()
         .environment(\.paywallWebViewStaticContext, webViewContext)
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
@@ -619,6 +620,9 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -652,6 +656,7 @@ struct LoadedPaywallsV2View: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -741,6 +746,11 @@ struct LoadedPaywallsV2View: View {
             // Leaving a tab can restore a package a rule hides, and this doesn't depend on
             // `onAppear` ordering.
             .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
+                self.reconcileSelection()
+            }
+            // A window resize (rotation, Split View, Stage Manager) can hide the
+            // selected package via a window size condition.
+            .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
         }
