@@ -17,32 +17,22 @@ import SwiftUI
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexHStack: View {
-
     let alignment: VerticalAlignment
     let justifyContent: JustifyContent
     let spacing: CGFloat?
-    let fitMinimum: CGFloat?
     let componentViewModels: [PaywallComponentViewModel]
     let onDismiss: () -> Void
-
-    @State
-    private var contentWidth: CGFloat?
-
-    @State
-    private var measurementID = UUID()
 
     init(
         alignment: VerticalAlignment,
         spacing: CGFloat?,
         justifyContent: JustifyContent,
-        fitMinimum: CGFloat? = nil,
         componentViewModels: [PaywallComponentViewModel],
         onDismiss: @escaping () -> Void
     ) {
         self.alignment = alignment
         self.spacing = spacing
         self.justifyContent = justifyContent
-        self.fitMinimum = fitMinimum
         self.componentViewModels = componentViewModels
         self.onDismiss = onDismiss
     }
@@ -95,105 +85,54 @@ struct FlexHStack: View {
 
             case .spaceBetween:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    self.component(at: index)
+                    ComponentsView(
+                        componentViewModels: [self.componentViewModels[index]],
+                        onDismiss: self.onDismiss
+                    )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
-                        FlexSpacer(
-                            weight: 1,
-                            axis: .horizontal,
-                            lengthPerWeight: self.fixedSpaceLength(
-                                totalWeight: self.componentViewModels.count - 1
-                            )
-                        )
+                        Spacer(minLength: 0)
                     }
                 }
 
             case .spaceAround:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
                     if index == 0 {
-                        self.spaceAroundSpacer(weight: 1)
+                        FlexSpacer(weight: 1)
                     }
-                    self.component(at: index)
+                    ComponentsView(
+                        componentViewModels: [self.componentViewModels[index]],
+                        onDismiss: self.onDismiss
+                    )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
-                        self.spaceAroundSpacer(weight: 2)
+                        FlexSpacer(weight: 2)
                     } else {
-                        self.spaceAroundSpacer(weight: 1)
+                        FlexSpacer(weight: 1)
                     }
                 }
 
             case .spaceEvenly:
                 ForEach(0..<componentViewModels.count, id: \.self) { index in
-                    self.spaceEvenlySpacer()
-                    self.component(at: index)
+                    FlexSpacer(weight: 1)
+                    ComponentsView(
+                        componentViewModels: [self.componentViewModels[index]],
+                        onDismiss: self.onDismiss
+                    )
                     if index < self.componentViewModels.count - 1 {
                         if let spacing = self.spacing {
                             Spacer().frame(width: spacing)
                         }
                     } else {
-                        self.spaceEvenlySpacer()
+                        FlexSpacer(weight: 1)
                     }
                 }
             }
         }
-        .onPreferenceChange(FlexStackContentLengthPreferenceKey.self) {
-            let contentWidth = $0[self.measurementID] ?? 0
-            if self.fitMinimum != nil, self.contentWidth != contentWidth {
-                self.contentWidth = contentWidth
-            }
-        }
-    }
-
-    private func component(at index: Int) -> some View {
-        ComponentsView(
-            componentViewModels: [self.componentViewModels[index]],
-            onDismiss: self.onDismiss
-        )
-        .background(
-            GeometryReader { proxy in
-                Color.clear.preference(
-                    key: FlexStackContentLengthPreferenceKey.self,
-                    value: [self.measurementID: proxy.size.width]
-                )
-            }
-        )
-    }
-
-    private func spaceAroundSpacer(weight: Int) -> some View {
-        FlexSpacer(
-            weight: weight,
-            axis: .horizontal,
-            lengthPerWeight: self.fixedSpaceLength(totalWeight: self.componentViewModels.count * 2)
-        )
-    }
-
-    private func spaceEvenlySpacer() -> some View {
-        FlexSpacer(
-            weight: 1,
-            axis: .horizontal,
-            lengthPerWeight: self.fixedSpaceLength(totalWeight: self.componentViewModels.count + 1)
-        )
-    }
-
-    private func fixedSpaceLength(totalWeight: Int) -> CGFloat? {
-        guard self.fitMinimum != nil else {
-            return nil
-        }
-        guard let contentWidth = self.contentWidth else {
-            return 0
-        }
-
-        return FlexSpacer.lengthPerWeight(
-            fitMinimum: self.fitMinimum,
-            contentLength: contentWidth,
-            spacing: self.spacing,
-            componentCount: self.componentViewModels.count,
-            totalWeight: totalWeight
-        )
     }
 }
 

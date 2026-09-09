@@ -22,10 +22,34 @@ struct SizeModifier: ViewModifier {
     var hortizontalAlignment: Alignment
     var verticalAlignment: Alignment
 
+    @ViewBuilder
     func body(content: Content) -> some View {
+        if let fitLimits = FitLimits(size: self.size) {
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                FitSizeLayout(limits: fitLimits, alignment: self.alignment) {
+                    content
+                        .applyFitLayoutWidth(self.size.width, alignment: self.hortizontalAlignment)
+                        .applyFitLayoutHeight(self.size.height, alignment: self.verticalAlignment)
+                }
+            } else {
+                self.applyFrames(to: content)
+            }
+        } else {
+            self.applyFrames(to: content)
+        }
+    }
+
+    private var alignment: Alignment {
+        Alignment(
+            horizontal: self.hortizontalAlignment.horizontal,
+            vertical: self.verticalAlignment.vertical
+        )
+    }
+
+    private func applyFrames(to content: Content) -> some View {
         content
-            .applyWidth(size.width, alignment: hortizontalAlignment)
-            .applyHeight(size.height, alignment: verticalAlignment)
+            .applyWidth(self.size.width, alignment: self.hortizontalAlignment)
+            .applyHeight(self.size.height, alignment: self.verticalAlignment)
     }
 
 }
@@ -36,7 +60,10 @@ extension View {
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
         case let .fit(_, minMax):
-            self.applyFitWidthLimits(minMax, alignment: alignment)
+            // Without `FitSizeLayout` this clamps the proposal rather than the content, so flexible content
+            // fills up to the maximum. Measuring with `fixedSize` instead would stop text from wrapping,
+            // which is the more visible failure on a horizontal axis.
+            self.applyWidthLimits(minMax, alignment: alignment)
         case let .fill(minMax):
             self
                 .frame(maxWidth: .infinity, alignment: alignment)
@@ -69,44 +96,6 @@ extension View {
     }
 
     @ViewBuilder
-    private func applyFitWidthLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
-        if minMax.hasLimit {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                IntrinsicSizeLayout(axis: .horizontal, minMax: minMax) {
-                    self.frame(maxWidth: .infinity, alignment: alignment)
-                }
-            } else {
-                self
-                    .frame(minWidth: minMax.minDimension, alignment: alignment)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .frame(maxWidth: minMax.effectiveMaxDimension, alignment: alignment)
-                    .fixedSize(horizontal: true, vertical: false)
-            }
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
-    private func applyFitHeightLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
-        if minMax.hasLimit {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                IntrinsicSizeLayout(axis: .vertical, minMax: minMax) {
-                    self.frame(maxHeight: .infinity, alignment: alignment)
-                }
-            } else {
-                self
-                    .frame(minHeight: minMax.minDimension, alignment: alignment)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxHeight: minMax.effectiveMaxDimension, alignment: alignment)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        } else {
-            self
-        }
-    }
-
-    @ViewBuilder
     func applyWidthLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
         if minMax.hasLimit {
             self.frame(
@@ -132,17 +121,79 @@ extension View {
         }
     }
 
+    /// Fallback for OS versions without `Layout`: measure the content at its intrinsic height, then clamp.
+    /// The width proposal is preserved so text still wraps; the minimum is not proposed back to the content,
+    /// so flexible children are aligned inside the minimum instead of stretched to it.
+    @ViewBuilder
+    fileprivate func applyFitHeightLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
+        if minMax.hasLimit {
+            self
+                .frame(minHeight: minMax.minDimension, alignment: alignment)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxHeight: minMax.effectiveMaxDimension, alignment: alignment)
+        } else {
+            self
+        }
+    }
+
+    /// Inside `FitSizeLayout` a limited fit axis must stay flexible so the layout can propose the clamped
+    /// size back to the content, letting fill children and flex spacers consume the minimum.
+    @ViewBuilder
+    fileprivate func applyFitLayoutWidth(
+        _ sizeConstraint: PaywallComponent.SizeConstraint,
+        alignment: Alignment
+    ) -> some View {
+        if sizeConstraint.fitLimits != nil {
+            self.frame(maxWidth: .infinity, alignment: alignment)
+        } else {
+            self.applyWidth(sizeConstraint, alignment: alignment)
+        }
+    }
+
+    @ViewBuilder
+    fileprivate func applyFitLayoutHeight(
+        _ sizeConstraint: PaywallComponent.SizeConstraint,
+        alignment: Alignment
+    ) -> some View {
+        if sizeConstraint.fitLimits != nil {
+            self.frame(maxHeight: .infinity, alignment: alignment)
+        } else {
+            self.applyHeight(sizeConstraint, alignment: alignment)
+        }
+    }
+
 }
 
+/// The min/max limits of each axis that is `fit`, or `nil` when neither axis needs fit clamping.
+private struct FitLimits {
+
+    let width: MinMax?
+    let height: MinMax?
+
+    init?(size: PaywallComponent.Size) {
+        self.width = size.width.fitLimits
+        self.height = size.height.fitLimits
+
+        if self.width == nil && self.height == nil {
+            return nil
+        }
+    }
+
+}
+
+/// Sizes fit content to its intrinsic size clamped to the configured min/max.
+///
+/// `frame(minWidth:maxWidth:)` clamps the *proposal*, so flexible content grows to the maximum whenever the
+/// parent offers more space. This layout measures the content without a proposal on each fit axis first,
+/// clamps that intrinsic size, and then proposes the clamped size back. The second pass is what lets fill
+/// children and flex spacers consume a minimum without a larger parent proposal inflating the content to
+/// its maximum.
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-private struct IntrinsicSizeLayout: Layout {
+private struct FitSizeLayout: Layout {
 
-    let axis: Axis
-    let minMax: MinMax
+    let limits: FitLimits
+    let alignment: Alignment
 
-    /// Measures without a proposal on the fit axis, then proposes the bounded result back to the content.
-    /// The second pass lets flexible descendants consume a minimum without letting a larger parent proposal
-    /// expand the fit component to its maximum.
     func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
@@ -153,38 +204,40 @@ private struct IntrinsicSizeLayout: Layout {
         }
 
         var intrinsicProposal = proposal
-        switch self.axis {
-        case .horizontal:
+        if self.limits.width != nil {
             intrinsicProposal.width = nil
-        case .vertical:
+        }
+        if self.limits.height != nil {
             intrinsicProposal.height = nil
         }
-
         let intrinsicSize = subview.sizeThatFits(intrinsicProposal)
+
         var resolvedProposal = proposal
-
-        switch self.axis {
-        case .horizontal:
-            resolvedProposal.width = self.resolved(
+        if let width = self.limits.width {
+            resolvedProposal.width = Self.resolve(
                 intrinsic: intrinsicSize.width,
-                available: proposal.width
+                available: proposal.width,
+                limits: width
             )
-        case .vertical:
-            resolvedProposal.height = self.resolved(
+        }
+        if let height = self.limits.height {
+            resolvedProposal.height = Self.resolve(
                 intrinsic: intrinsicSize.height,
-                available: proposal.height
+                available: proposal.height,
+                limits: height
             )
         }
 
-        var resolvedSize = subview.sizeThatFits(resolvedProposal)
-        switch self.axis {
-        case .horizontal:
-            resolvedSize.width = resolvedProposal.width ?? resolvedSize.width
-        case .vertical:
-            resolvedSize.height = resolvedProposal.height ?? resolvedSize.height
+        // Content larger than the maximum (e.g. fixed children) must not grow the box; it overflows instead.
+        var size = subview.sizeThatFits(resolvedProposal)
+        if self.limits.width != nil, let width = resolvedProposal.width {
+            size.width = width
+        }
+        if self.limits.height != nil, let height = resolvedProposal.height {
+            size.height = height
         }
 
-        return resolvedSize
+        return size
     }
 
     func placeSubviews(
@@ -193,15 +246,58 @@ private struct IntrinsicSizeLayout: Layout {
         subviews: Subviews,
         cache: inout ()
     ) {
+        // Anchor like `frame(alignment:)` so content that overflows the maximum spills symmetrically.
+        let anchor = self.alignment.unitPoint
         subviews.first?.place(
-            at: bounds.origin,
-            anchor: .topLeading,
+            at: CGPoint(
+                x: bounds.minX + bounds.width * anchor.x,
+                y: bounds.minY + bounds.height * anchor.y
+            ),
+            anchor: anchor,
             proposal: ProposedViewSize(bounds.size)
         )
     }
 
-    private func resolved(intrinsic: CGFloat, available: CGFloat?) -> CGFloat {
-        return self.minMax.clamped(min(intrinsic, available ?? intrinsic))
+    /// Fit never exceeds what the parent offers unless the minimum requires it, matching an unconstrained fit
+    /// axis which is simply proposed the parent's size.
+    private static func resolve(intrinsic: CGFloat, available: CGFloat?, limits: MinMax) -> CGFloat {
+        return limits.clamped(min(intrinsic, available ?? intrinsic))
+    }
+
+}
+
+private extension Alignment {
+
+    // swiftlint:disable identifier_name
+    var unitPoint: UnitPoint {
+        let x: CGFloat
+        switch self.horizontal {
+        case .leading: x = 0
+        case .trailing: x = 1
+        default: x = 0.5
+        }
+
+        let y: CGFloat
+        switch self.vertical {
+        case .top: y = 0
+        case .bottom: y = 1
+        default: y = 0.5
+        }
+
+        return UnitPoint(x: x, y: y)
+    }
+    // swiftlint:enable identifier_name
+
+}
+
+private extension PaywallComponent.SizeConstraint {
+
+    var fitLimits: MinMax? {
+        guard case let .fit(_, minMax) = self, minMax.hasLimit else {
+            return nil
+        }
+
+        return minMax
     }
 
 }

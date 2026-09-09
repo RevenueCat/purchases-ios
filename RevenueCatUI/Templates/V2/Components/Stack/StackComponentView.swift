@@ -181,20 +181,6 @@ private extension Axis {
 
 }
 
-private extension PaywallComponent.SizeConstraint {
-
-    var positiveFitMinimum: CGFloat? {
-        guard case let .fit(_, minMax) = self,
-              let minimum = minMax.min,
-              minimum > 0 else {
-            return nil
-        }
-
-        return CGFloat(minimum)
-    }
-
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 fileprivate extension View {
 
@@ -319,7 +305,6 @@ struct VerticalStack: View {
                 alignment: horizontalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                fitMinimum: style.size.height.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )
@@ -356,7 +341,6 @@ struct HorizontalStack: View {
                 alignment: verticalAlignment.stackAlignment,
                 spacing: style.spacing,
                 justifyContent: distribution.justifyContent,
-                fitMinimum: style.size.width.positiveFitMinimum,
                 componentViewModels: self.viewModels,
                 onDismiss: self.onDismiss
             )
@@ -945,6 +929,48 @@ struct StackComponentMarginConstraint_Previews: PreviewProvider {
     }
 }
 
+/// Fit clamps the content, not the proposal: flexible content settles on the minimum and text still wraps
+/// at the maximum. Before iOS 16 the horizontal axis lets flexible content fill up to the maximum instead.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct StackComponentFitClamping_Previews: PreviewProvider {
+    static var previews: some View {
+        Group {
+            stackFillConstraintPreview(
+                title: "Fit(min: 60, max: 160): Fill child settles on 60",
+                horizontal: false,
+                constraints: [.fill],
+                mainAxisSize: .fit(nil, .init(min: 60, max: 160))
+            )
+            .previewLayout(.fixed(width: 320, height: 200))
+            .previewDisplayName("Stack · Vertical Fit maximum does not inflate Fill child")
+
+            stackFillConstraintPreview(
+                title: "Fit(min: 60, max: 160): Fill child settles on 60",
+                horizontal: true,
+                constraints: [.fill],
+                mainAxisSize: .fit(nil, .init(min: 60, max: 160))
+            )
+            .previewLayout(.fixed(width: 320, height: 150))
+            .previewDisplayName("Stack · Horizontal Fit maximum does not inflate Fill child")
+
+            stackFitTextWrapPreview(
+                title: "Fit(max: 140): text wraps inside the maximum",
+                width: .fit(nil, .init(min: nil, max: 140))
+            )
+            .previewLayout(.fixed(width: 320, height: 180))
+            .previewDisplayName("Stack · Fit maximum wraps text")
+
+            stackFitTextWrapPreview(
+                title: "Fit(min: 200): short text is padded to the minimum",
+                width: .fit(nil, .init(min: 200, max: nil)),
+                text: "Short"
+            )
+            .previewLayout(.fixed(width: 320, height: 150))
+            .previewDisplayName("Stack · Fit minimum pads text")
+        }
+    }
+}
+
 private let stackSizingPreviewBackground = Color(
     red: 226.0 / 255.0,
     green: 232.0 / 255.0,
@@ -1085,6 +1111,55 @@ private func stackSizeConstraintLabel(_ constraint: PaywallComponent.SizeConstra
     default:
         return "Unknown"
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private func stackFitTextWrapPreview(
+    title: String,
+    width: PaywallComponent.SizeConstraint,
+    text: String = "A long label that has to wrap onto several lines to fit the maximum width"
+) -> some View {
+    let component = PaywallComponent.StackComponent(
+        components: [
+            .text(.init(
+                text: "stack_fit_text",
+                color: .init(light: .hex("#FFFFFF")),
+                backgroundColor: .init(light: .hex(stackSizingPreviewChildColors[0])),
+                size: .init(width: .fit(nil), height: .fit(nil)),
+                padding: .init(top: 8, bottom: 8, leading: 4, trailing: 4),
+                fontSize: 14
+            ))
+        ],
+        size: .init(width: width, height: .fit(nil)),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#CBD5E1")),
+        padding: .zero
+    )
+
+    return VStack(alignment: .leading, spacing: 8) {
+        Text(title)
+        StackComponentView(
+            // swiftlint:disable:next force_try
+            viewModel: try! .init(
+                component: component,
+                localizationProvider: .init(
+                    locale: Locale.current,
+                    localizedStrings: ["stack_fit_text": .string(text)]
+                ),
+                colorScheme: .light
+            ),
+            onDismiss: {}
+        )
+        .overlay {
+            Rectangle()
+                .stroke(style: .init(lineWidth: 1))
+                .foregroundColor(.pink)
+        }
+        .previewRequiredPaywallsV2Properties()
+    }
+    .padding(16)
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    .background(stackSizingPreviewBackground)
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

@@ -242,7 +242,7 @@ extension PresentedStackPartial: PresentedPartial {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentStyle {
 
-    enum StackStrategy: Equatable {
+    enum StackStrategy {
         case normal, flex
     }
 
@@ -331,7 +331,16 @@ struct StackComponentStyle {
         case .spaceBetween, .spaceAround, .spaceEvenly:
             switch sizeConstraint {
             case let .fit(_, minMax):
-                return minMax.min.map { $0 > 0 } == true ? .flex : .normal
+                // A fit stack normally must not use a flex stack: its `Spacer()`s would expand to the
+                // parent's proposal and make the stack act as fill. With a positive minimum, `SizeModifier`
+                // proposes exactly the clamped fit size to the content on iOS 16+, so the spacers only
+                // distribute the space between the content and that minimum. Earlier OSes keep packing the
+                // content and align it with the distribution's frame alignment instead.
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *),
+                   let minimum = minMax.min, minimum > 0 {
+                    return .flex
+                }
+                return .normal
             default:
                 return .flex
             }
