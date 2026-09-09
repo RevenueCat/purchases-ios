@@ -1922,7 +1922,7 @@ public extension Purchases {
     ///
     /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
     /// proceed with no token id to hand over, so the link keeps opening as it did before.
-    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkPreparation {
+    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 

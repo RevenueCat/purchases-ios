@@ -7,7 +7,7 @@
 //
 //      https://opensource.org/licenses/MIT
 //
-//  ExternalPurchaseLinkPreparation.swift
+//  ExternalPurchaseLinkResult.swift
 //
 //  Created by Antonio Pallares on 8/9/26.
 
@@ -15,7 +15,7 @@ import Foundation
 
 /// What the caller should do once the SDK has been asked to prepare a link that takes the customer out of the
 /// app to pay on the web.
-@_spi(Internal) public enum ExternalPurchaseLinkPreparation {
+@_spi(Internal) public enum ExternalPurchaseLinkResult {
 
     /// Open the link, handing `externalPurchaseTokenID` to the checkout page when there is one.
     case proceed(externalPurchaseTokenID: String?)
@@ -26,9 +26,9 @@ import Foundation
 
 }
 
-extension ExternalPurchaseLinkPreparation: Equatable, Sendable {}
+extension ExternalPurchaseLinkResult: Equatable, Sendable {}
 
-extension ExternalPurchaseLinkPreparation {
+extension ExternalPurchaseLinkResult {
 
     init(preparationResult: ExternalPurchasePreparationResult) {
         switch preparationResult {
