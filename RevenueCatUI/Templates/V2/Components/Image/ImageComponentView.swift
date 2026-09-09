@@ -200,8 +200,7 @@ struct ImageComponentView: View {
                         self.size = newSize
                     }
                 }
-                // Applied to the decorated result rather than to the image itself, so it
-                // covers the whole subtree including the sizing and shaping wrappers.
+                // On the decorated result, so it covers the sizing and shaping wrappers too.
                 .paywallDecorativeMedia(hidden: self.imagesAccessibilityHidden ?? true)
             }
         }

@@ -41,22 +41,11 @@ extension EnvironmentValues {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension View {
 
-    /// Removes decorative paywall media from the accessibility tree, without changing how it
-    /// draws.
+    /// Removes decorative paywall media from the accessibility tree, without changing how it draws.
     ///
-    /// Uses `accessibilityRepresentation` rather than `accessibilityHidden`, and that choice is
-    /// load-bearing. Verified with VoiceOver on device, on this subtree:
-    ///
-    /// - `accessibilityHidden(true)` is disregarded, in every placement tried: on the image, on
-    ///   the outermost wrapper, with and without this helper around it.
-    /// - `accessibilityElement(children: .ignore)` does reach the children and silences an
-    ///   image, but leaves the wrapper focusable, so VoiceOver stops on an element that says
-    ///   nothing — worse than announcing it. On icons it did not even silence them.
-    /// - `accessibilityRepresentation` substitutes the subtree's accessibility with another
-    ///   view's, and an empty `Color` publishes no element at all. VoiceOver skips the media
-    ///   entirely while it stays on screen.
-    ///
-    /// Do not "simplify" this to `accessibilityHidden`.
+    /// Do not "simplify" to `accessibilityHidden`: verified on device, it is disregarded on this
+    /// subtree in every placement, and `accessibilityElement(children: .ignore)` leaves the
+    /// wrapper focusable with nothing to say.
     @ViewBuilder
     func paywallDecorativeMedia(hidden: Bool) -> some View {
         if hidden {
@@ -66,14 +55,11 @@ extension View {
         }
     }
 
-    /// Hides every image in a paywall from VoiceOver and other assistive technologies —
-    /// image components and background images alike.
+    /// Hides every paywall image, image components and background images alike, from VoiceOver.
     ///
-    /// Paywall images carry no accessibility metadata, so when they are purely decorative
-    /// (logos, hero art) screen readers announcing them as unlabeled images is noise.
-    /// Apply this to the paywall view itself. These are environment values, and a paywall
-    /// presented in a sheet gets its own hierarchy, so applying them to the presenting view
-    /// does not reach the paywall:
+    /// Paywall images carry no accessibility metadata, so decorative ones (logos, hero art) are
+    /// announced as unlabeled images. Apply this to the paywall view itself: a paywall presented
+    /// in a sheet gets its own hierarchy, so the presenting view does not reach it.
     ///
     /// ```swift
     /// .sheet(isPresented: $isPresented) {
@@ -85,12 +71,9 @@ extension View {
         environment(\.paywallImagesAccessibilityHidden, hidden)
     }
 
-    /// Hides every icon in a paywall (checkmarks, feature glyphs, and other symbols from the
-    /// icon library) from VoiceOver and other assistive technologies.
+    /// Hides every paywall icon (checkmarks, feature glyphs) from VoiceOver.
     ///
-    /// Icons are announced by default. When they only decorate adjacent text — a checkmark
-    /// next to each feature — hiding them removes redundant announcements. Apply this to the
-    /// paywall view itself, for the same reason as
+    /// Icons are announced by default. Apply to the paywall view itself, for the same reason as
     /// ``paywallImagesAccessibilityHidden(_:)``.
     public func paywallIconsAccessibilityHidden(_ hidden: Bool = true) -> some View {
         environment(\.paywallIconsAccessibilityHidden, hidden)

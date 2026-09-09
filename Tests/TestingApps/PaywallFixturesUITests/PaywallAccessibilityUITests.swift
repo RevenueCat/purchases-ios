@@ -67,11 +67,8 @@ final class PaywallAccessibilityUITests: XCTestCase {
 
     // MARK: - Decorative media (images, icons, backgrounds)
 
-    /// Paywall media carries no labels, so anything left in the accessibility tree is announced
-    /// as a bare "image". The audit counts exactly those, which makes it the oracle for what a
-    /// screen reader would say. By default the fixture leaves three: the background image and
-    /// the two free-standing feature checkmarks. The two package-card checkmarks are inside
-    /// selector buttons, whose own labels describe them.
+    /// Three by default: the background image and the two free-standing feature checkmarks. The
+    /// package-card checkmarks are inside selector buttons, whose own labels describe them.
     func testDecorativeMediaAnnouncesIconsAndBackgroundByDefault() throws {
         let app = self.launchDecorativeMedia()
 
@@ -189,12 +186,8 @@ final class PaywallAccessibilityUITests: XCTestCase {
         return app
     }
 
-    /// How many elements the audit finds with no usable description — the unlabeled media a
-    /// screen reader would announce as a bare "image". Counted with the closure form so the
-    /// issues are tallied rather than thrown, letting a test assert on exactly how many remain.
-    ///
-    /// The background image loads over the network, so this settles first: asserting before it
-    /// lands would count a paywall that has not finished rendering.
+    /// Unlabeled media a screen reader would announce as a bare "image". The closure form
+    /// tallies the issues instead of throwing. Settles first: the background image is remote.
     private func undescribedElementCount(in app: XCUIApplication) throws -> Int {
         self.settle(app, seconds: 5)
 
