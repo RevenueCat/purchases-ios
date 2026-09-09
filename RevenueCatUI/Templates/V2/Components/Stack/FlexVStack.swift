@@ -15,14 +15,6 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
-private struct FlexVStackContentHeightPreferenceKey: PreferenceKey {
-    static let defaultValue: CGFloat = 0
-
-    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
-        value += nextValue()
-    }
-}
-
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct FlexVStack: View {
     let alignment: HorizontalAlignment
@@ -34,6 +26,9 @@ struct FlexVStack: View {
 
     @State
     private var contentHeight: CGFloat?
+
+    @State
+    private var measurementID = UUID()
 
     init(
         alignment: HorizontalAlignment,
@@ -144,9 +139,10 @@ struct FlexVStack: View {
                 }
             }
         }
-        .onPreferenceChange(FlexVStackContentHeightPreferenceKey.self) {
-            if self.fitMinimum != nil, self.contentHeight != $0 {
-                self.contentHeight = $0
+        .onPreferenceChange(FlexStackContentLengthPreferenceKey.self) {
+            let contentHeight = $0[self.measurementID] ?? 0
+            if self.fitMinimum != nil, self.contentHeight != contentHeight {
+                self.contentHeight = contentHeight
             }
         }
     }
@@ -159,8 +155,8 @@ struct FlexVStack: View {
         .background(
             GeometryReader { proxy in
                 Color.clear.preference(
-                    key: FlexVStackContentHeightPreferenceKey.self,
-                    value: proxy.size.height
+                    key: FlexStackContentLengthPreferenceKey.self,
+                    value: [self.measurementID: proxy.size.height]
                 )
             }
         )

@@ -215,6 +215,25 @@ final class SizeModifierTests: TestCase {
         )
     }
 
+    func testNestedFlexStackMeasurementsDoNotInflateParentContentLength() {
+        let parentID = UUID()
+        let childID = UUID()
+        var measurements = FlexStackContentLengthPreferenceKey.defaultValue
+
+        FlexStackContentLengthPreferenceKey.reduce(value: &measurements) {
+            [parentID: 40]
+        }
+        FlexStackContentLengthPreferenceKey.reduce(value: &measurements) {
+            [childID: 10]
+        }
+        FlexStackContentLengthPreferenceKey.reduce(value: &measurements) {
+            [childID: 10]
+        }
+
+        XCTAssertEqual(measurements[parentID], 40)
+        XCTAssertEqual(measurements[childID], 20)
+    }
+
     @ViewBuilder
     private static func verticalStack(
         distribution: PaywallComponent.FlexDistribution,

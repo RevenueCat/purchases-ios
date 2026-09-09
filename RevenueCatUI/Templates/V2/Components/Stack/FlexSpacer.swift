@@ -15,6 +15,15 @@ import SwiftUI
 
 #if !os(tvOS) // For Paywalls V2
 
+/// Keeps each stack's measurements separate as preferences bubble through nested flex stacks.
+struct FlexStackContentLengthPreferenceKey: PreferenceKey {
+    static let defaultValue: [UUID: CGFloat] = [:]
+
+    static func reduce(value: inout [UUID: CGFloat], nextValue: () -> [UUID: CGFloat]) {
+        value.merge(nextValue(), uniquingKeysWith: +)
+    }
+}
+
 /// A weighted spacer that simulates flex layout spacing behavior.
 /// Creates multiple `Spacer()` instances to achieve proportional space distribution.
 /// For example, `FlexSpacer(weight: 2)` will take twice as much space as `FlexSpacer(weight: 1)`.
