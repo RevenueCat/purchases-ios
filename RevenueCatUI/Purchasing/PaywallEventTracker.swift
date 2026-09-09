@@ -249,9 +249,8 @@ struct ComponentInteractionLogger {
     }
 
     @discardableResult
-    @MainActor
     func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
-        return self.action(interactionData)
+        return MainActor.assumeIsolated { self.action(interactionData) }
     }
 
 }
