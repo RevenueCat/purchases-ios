@@ -41,6 +41,57 @@ final class SizeModifierTests: TestCase {
         )
     }
 
+    func testEmptyFitContentUsesMinimumInsteadOfMaximum() {
+        let view = VStack {}
+            .size(
+                .init(
+                    width: .fit(nil, .init(min: 64, max: 96)),
+                    height: .fit(nil, .init(min: 88, max: 110))
+                )
+            )
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 500)),
+            .init(width: 64, height: 88)
+        )
+    }
+
+    func testFitContentGrowsBetweenMinimumAndMaximum() {
+        let view = Color.clear
+            .frame(width: 75, height: 100)
+            .size(
+                .init(
+                    width: .fit(nil, .init(min: 64, max: 96)),
+                    height: .fit(nil, .init(min: 88, max: 110))
+                )
+            )
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 500)),
+            .init(width: 75, height: 100)
+        )
+    }
+
+    func testFitMinimumIsProposedToFillContent() {
+        let view = VStack(spacing: 8) {
+            Color.clear.frame(maxHeight: .infinity)
+            Color.clear
+                .frame(maxHeight: .infinity)
+                .frame(minHeight: 48, maxHeight: 64)
+        }
+        .size(
+            .init(
+                width: .fixed(100),
+                height: .fit(nil, .init(min: 120, max: 160))
+            )
+        )
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 500)).height,
+            120
+        )
+    }
+
     func testFillRespectsMaximumWidth() {
         let view = Color.clear
             .size(
