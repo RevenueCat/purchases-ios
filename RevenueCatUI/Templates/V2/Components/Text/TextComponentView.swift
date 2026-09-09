@@ -240,10 +240,8 @@ struct MarkdownLink {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension View {
 
-    /// Exposes each embedded markdown link as a VoiceOver custom action. SwiftUI `Text` links
-    /// are reachable only through the Links rotor, where focus can fall back to the enclosing
-    /// paragraph before the link can be activated; custom actions give an always-available way
-    /// to open them (swipe up/down on the text, then double-tap).
+    /// `Text` links are reachable only through the Links rotor, where focus can fall back to the
+    /// enclosing paragraph before the link is activated. Custom actions always reach them.
     @ViewBuilder
     func markdownLinkAccessibilityActions(
         _ links: [MarkdownLink],
