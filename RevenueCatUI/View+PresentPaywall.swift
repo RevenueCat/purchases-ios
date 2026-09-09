@@ -107,7 +107,6 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
-        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -126,7 +125,6 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
-            onInteraction: onInteraction,
             onDismiss: onDismiss
         )
     }
@@ -252,7 +250,6 @@ extension View {
         restoreFailure: PurchaseFailureHandler? = nil,
         webCheckoutOpened: WebCheckoutOpenedHandler? = nil,
         urlOpened: URLOpenedHandler? = nil,
-        onInteraction: PaywallInteractionHandler? = nil,
         onDismiss: (() -> Void)? = nil
     ) -> some View {
         return self.presentPaywallIfNeeded(
@@ -272,7 +269,6 @@ extension View {
             restoreFailure: restoreFailure,
             webCheckoutOpened: webCheckoutOpened,
             urlOpened: urlOpened,
-            onInteraction: onInteraction,
             onDismiss: onDismiss,
             customerInfoFetcher: {
                 guard Purchases.isConfigured else {
