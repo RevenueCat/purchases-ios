@@ -25,6 +25,7 @@
     "body" : {
       "app_user_id" : "user",
       "purchase_type" : "LINK_OUT",
+      "rc_public_id" : "ept13dcbc01adaa44db9b1691a6be2f9929",
       "token" : "storekit-token"
     },
     "method" : "POST",

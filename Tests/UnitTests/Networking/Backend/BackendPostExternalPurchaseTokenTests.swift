@@ -19,6 +19,9 @@ import XCTest
 
 class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
 
+    private static let tokenID = "ept13dcbc01adaa44db9b1691a6be2f9929"
+    private static let otherTokenID = "epta51d06bc57f344ffb386dff7e2353bea"
+
     override func createClient() -> MockHTTPClient {
         super.createClient(#file)
     }
@@ -26,12 +29,15 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
     func testSendsTheExpectedRequest() throws {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: Self.response)
+            response: .init(statusCode: .success)
         )
 
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
+        let error = self.postToken(appUserID: Self.userID,
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: "storekit-token")
 
-        expect(result).to(beSuccess())
+        expect(error).to(beNil())
         expect(self.httpClient.calls).to(haveCount(1))
 
         let call = try XCTUnwrap(self.httpClient.calls.first)
@@ -43,35 +49,43 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
         expect(body["app_user_id"] as? String) == Self.userID
         expect(body["purchase_type"] as? String) == "LINK_OUT"
+        expect(body["rc_public_id"] as? String) == Self.tokenID
         expect(body["token"] as? String) == "storekit-token"
     }
 
     func testOmitsTheTokenWhenStoreKitDidNotProvideOne() throws {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: Self.backendGeneratedResponse)
+            response: .init(statusCode: .success)
         )
 
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: nil)
+        let error = self.postToken(appUserID: Self.userID,
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: nil)
 
-        expect(result).to(beSuccess())
+        expect(error).to(beNil())
 
         let call = try XCTUnwrap(self.httpClient.calls.first)
         let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
         expect(body["app_user_id"] as? String) == Self.userID
+        expect(body["rc_public_id"] as? String) == Self.tokenID
         expect(body.keys).toNot(contain("token"))
     }
 
-    func testReturnsTheDecodedResponse() {
+    /// The identifier travels with the token, so nothing is read back and any body has to be accepted.
+    func testIgnoresTheResponseBody() {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
             response: .init(statusCode: .success, response: Self.response)
         )
 
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
+        let error = self.postToken(appUserID: Self.userID,
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: "storekit-token")
 
-        expect(result).to(beSuccess())
-        expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
+        expect(error).to(beNil())
     }
 
     /// Storing a token is idempotent on Apple's purchase identifier: the first registration answers `201`
@@ -82,68 +96,67 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
             response: .init(statusCode: .createdSuccess, response: Self.response)
         )
 
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
+        let error = self.postToken(appUserID: Self.userID,
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: "storekit-token")
 
-        expect(result).to(beSuccess())
-        expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
-    }
-
-    /// Only the identifier is read, so a response carrying nothing else must still decode.
-    func testDecodesAResponseThatOnlyCarriesAnIdentifier() {
-        self.httpClient.mock(
-            requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: ["id": "ept13dcbc01adaa44db9b1691a6be2f9929"])
-        )
-
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
-
-        expect(result).to(beSuccess())
-        expect(result?.value?.id) == "ept13dcbc01adaa44db9b1691a6be2f9929"
+        expect(error).to(beNil())
     }
 
     func testForwardsANetworkError() {
-        let error: NetworkError = .unexpectedResponse(nil)
+        let networkError: NetworkError = .unexpectedResponse(nil)
 
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(error: error)
+            response: .init(error: networkError)
         )
 
-        let result = self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")
+        let error = self.postToken(appUserID: Self.userID,
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: "storekit-token")
 
-        expect(result).to(beFailure())
-        expect(result?.error) == .networkError(error)
+        expect(error) == .networkError(networkError)
     }
 
     func testSkipsTheBackendCallWhenTheAppUserIDIsEmpty() {
-        let result = self.postToken(appUserID: "", purchaseType: .linkOut, token: "storekit-token")
+        let error = self.postToken(appUserID: "",
+                                   purchaseType: .linkOut,
+                                   tokenID: Self.tokenID,
+                                   token: "storekit-token")
 
         expect(self.httpClient.calls).to(beEmpty())
-        expect(result?.error) == .missingAppUserID()
+        expect(error) == .missingAppUserID()
     }
 
     func testIsNotDelayed() {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: Self.response)
+            response: .init(statusCode: .success)
         )
 
-        expect(self.postToken(appUserID: Self.userID, purchaseType: .linkOut, token: "storekit-token")).to(beSuccess())
+        expect(self.postToken(appUserID: Self.userID,
+                              purchaseType: .linkOut,
+                              tokenID: Self.tokenID,
+                              token: "storekit-token")).to(beNil())
         expect(self.operationDispatcher.invokedDispatchOnWorkerThreadDelayParam) == JitterableDelay.none
     }
 
-    /// A double tap on the same button must not register the same token twice.
+    /// Retrying a registration must not store it twice, so the identifier is what requests are reused on.
     func testIdenticalRequestsInFlightAreReusedForASingleCall() {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: Self.response, delay: .milliseconds(10))
+            response: .init(statusCode: .success, delay: .milliseconds(10))
         )
 
         self.externalPurchaseTokenAPI.postExternalPurchaseToken(appUserID: Self.userID,
                                                                 purchaseType: .linkOut,
+                                                                tokenID: Self.tokenID,
                                                                 token: "storekit-token") { _ in }
         self.externalPurchaseTokenAPI.postExternalPurchaseToken(appUserID: Self.userID,
                                                                 purchaseType: .linkOut,
+                                                                tokenID: Self.tokenID,
                                                                 token: "storekit-token") { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(1))
@@ -155,17 +168,19 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         )
     }
 
-    func testRequestsForDifferentPurchaseTypesAreNotReused() {
+    func testRequestsForDifferentTokenIDsAreNotReused() {
         self.httpClient.mock(
             requestPath: .postExternalPurchaseToken,
-            response: .init(statusCode: .success, response: Self.response, delay: .milliseconds(10))
+            response: .init(statusCode: .success, delay: .milliseconds(10))
         )
 
         self.externalPurchaseTokenAPI.postExternalPurchaseToken(appUserID: Self.userID,
                                                                 purchaseType: .linkOut,
+                                                                tokenID: Self.tokenID,
                                                                 token: "storekit-token") { _ in }
         self.externalPurchaseTokenAPI.postExternalPurchaseToken(appUserID: Self.userID,
-                                                                purchaseType: .inApp,
+                                                                purchaseType: .linkOut,
+                                                                tokenID: Self.otherTokenID,
                                                                 token: "storekit-token") { _ in }
 
         expect(self.httpClient.calls).toEventually(haveCount(2))
@@ -178,14 +193,22 @@ private extension BackendPostExternalPurchaseTokenTests {
     func postToken(
         appUserID: String,
         purchaseType: ExternalPurchaseTokenType,
+        tokenID: String,
         token: String?
-    ) -> Result<ExternalPurchaseTokenResponse, BackendError>? {
-        return waitUntilValue { completed in
+    ) -> BackendError? {
+        var receivedError: BackendError?
+
+        waitUntil { completed in
             self.externalPurchaseTokenAPI.postExternalPurchaseToken(appUserID: appUserID,
                                                                     purchaseType: purchaseType,
-                                                                    token: token,
-                                                                    completion: completed)
+                                                                    tokenID: tokenID,
+                                                                    token: token) { error in
+                receivedError = error
+                completed()
+            }
         }
+
+        return receivedError
     }
 
     static let response: [String: Any] = [
@@ -194,14 +217,6 @@ private extension BackendPostExternalPurchaseTokenTests {
         "is_sandbox": false,
         "purchase_type": "LINK_OUT",
         "token_source": "APPLE_SDK"
-    ]
-
-    static let backendGeneratedResponse: [String: Any] = [
-        "external_purchase_id": "$rc-81bc448a-1322-49f2-b46e-5683f317169b",
-        "id": "epta51d06bc57f344ffb386dff7e2353bea",
-        "is_sandbox": false,
-        "purchase_type": "LINK_OUT",
-        "token_source": "RC_GENERATED"
     ]
 
 }

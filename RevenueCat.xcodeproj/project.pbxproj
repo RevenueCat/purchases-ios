@@ -628,6 +628,8 @@
 		AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000011 /* ExternalPurchaseManager.swift */; };
 		AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */; };
 		AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */; };
+		AAAA44760000000000000002 /* ExternalPurchaseTokenID.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */; };
+		AAAA44760000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */; };
 		53E33BBB2E095B8900287158 /* SDKHealthManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53E33BBA2E095B8900287158 /* SDKHealthManager.swift */; };
 		551800702FF46C720055FD1B /* SecureItemStorageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */; };
 		551800772FF46C8A0055FD1B /* KeychainTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 551800762FF46C8A0055FD1B /* KeychainTests.swift */; };
@@ -997,7 +999,6 @@
 		57FFD2512922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		57FFD2522922DBED00A9A878 /* MockStoreTransaction.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */; };
 		5A6B1C303D4E5F60718293A4 /* IsPurchaseAllowedByRestoreBehaviorResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A6B1C2F3D4E5F60718293A4 /* IsPurchaseAllowedByRestoreBehaviorResponse.swift */; };
-		AAAA44730000000000000006 /* ExternalPurchaseTokenResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44730000000000000007 /* ExternalPurchaseTokenResponse.swift */; };
 		5B6786F455CB4A59F26BFA46 /* MockTokenAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2A3DB72A2707F75F2BDC90D7 /* MockTokenAPI.swift */; };
 		5FCB03AADDD3423993AD7C29 /* PaywallLoadingKey.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFE7B86606D743B4929124FD /* PaywallLoadingKey.swift */; };
 		603D49296E6E69D1D8E06EFE /* BackendTokenLoginTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64FEF3704AAACD669F3BF4E0 /* BackendTokenLoginTests.swift */; };
@@ -2418,6 +2419,8 @@
 		AAAA44740000000000000011 /* ExternalPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManager.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseStrings.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManagerTests.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenID.swift; sourceTree = "<group>"; };
+		AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenIDTests.swift; sourceTree = "<group>"; };
 		53E33BBA2E095B8900287158 /* SDKHealthManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDKHealthManager.swift; sourceTree = "<group>"; };
 		5518006F2FF46C720055FD1B /* SecureItemStorageTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecureItemStorageTests.swift; sourceTree = "<group>"; };
 		551800762FF46C8A0055FD1B /* KeychainTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeychainTests.swift; sourceTree = "<group>"; };
@@ -2762,7 +2765,6 @@
 		57FDAABF28493C13009A48F1 /* MockSandboxEnvironmentDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockSandboxEnvironmentDetector.swift; sourceTree = "<group>"; };
 		57FFD2502922DBED00A9A878 /* MockStoreTransaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockStoreTransaction.swift; sourceTree = "<group>"; };
 		5A6B1C2F3D4E5F60718293A4 /* IsPurchaseAllowedByRestoreBehaviorResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IsPurchaseAllowedByRestoreBehaviorResponse.swift; sourceTree = "<group>"; };
-		AAAA44730000000000000007 /* ExternalPurchaseTokenResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseTokenResponse.swift; sourceTree = "<group>"; };
 		5A76308A40945327EA3F6744 /* EvaluationError.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EvaluationError.swift; sourceTree = "<group>"; };
 		5A8F581105413FA192D2446A /* AccessorOperators.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccessorOperators.swift; sourceTree = "<group>"; };
 		5C3DF79A7BCAA00FD8DCBD07 /* PublishedWorkflowCodableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PublishedWorkflowCodableTests.swift; sourceTree = "<group>"; };
@@ -5023,6 +5025,7 @@
 				AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */,
 				AAAA44740000000000000011 /* ExternalPurchaseManager.swift */,
 				EF0100000000000000000011 /* ExternalPurchaseNotice.swift */,
+				AAAA44760000000000000001 /* ExternalPurchaseTokenID.swift */,
 				EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */,
 				EF0100000000000000000031 /* StoreKitExternalPurchaseCustomLink.swift */,
 			);
@@ -5035,6 +5038,7 @@
 				EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */,
 				AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */,
 				AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */,
+				AAAA44760000000000000011 /* ExternalPurchaseTokenIDTests.swift */,
 			);
 			path = ExternalPurchase;
 			sourceTree = "<group>";
@@ -5946,7 +5950,6 @@
 				5766C621282DAA700067D886 /* GetIntroEligibilityResponse.swift */,
 				57D5412D27F6311C004CC35C /* OfferingsResponse.swift */,
 				5A6B1C2F3D4E5F60718293A4 /* IsPurchaseAllowedByRestoreBehaviorResponse.swift */,
-				AAAA44730000000000000007 /* ExternalPurchaseTokenResponse.swift */,
 				75B6DFFC2E30ECB8009F0A99 /* WebOfferingProductsResponse.swift */,
 				574A2F4A282D7AEA00150D40 /* PostOfferResponse.swift */,
 				57488A7E29CA145B0000EE7E /* ProductEntitlementMappingResponse.swift */,
@@ -7855,7 +7858,6 @@
 				572247D127BEC28E00C524A7 /* Array+Extensions.swift in Sources */,
 				57D5412E27F6311C004CC35C /* OfferingsResponse.swift in Sources */,
 				5A6B1C303D4E5F60718293A4 /* IsPurchaseAllowedByRestoreBehaviorResponse.swift in Sources */,
-				AAAA44730000000000000006 /* ExternalPurchaseTokenResponse.swift in Sources */,
 				57AC4C1C2770F56200DDE30F /* SK1StoreProduct.swift in Sources */,
 				B34605C3279A6E380031CA74 /* PostOfferForSigningOperation.swift in Sources */,
 				B3843BCB285149A1009F4854 /* Attribution.swift in Sources */,
@@ -8295,6 +8297,7 @@
 				AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */,
 				AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */,
 				AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */,
+				AAAA44760000000000000002 /* ExternalPurchaseTokenID.swift in Sources */,
 				AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */,
 				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,
 				EF0100000000000000000002 /* ExternalPurchaseTokenType.swift in Sources */,
@@ -8374,6 +8377,7 @@
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */,
+				AAAA44760000000000000012 /* ExternalPurchaseTokenIDTests.swift in Sources */,
 				AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */,
 				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,

@@ -220,23 +220,25 @@ private extension ExternalPurchaseManager {
             Logger.debug(Strings.externalPurchase.no_token_available)
         }
 
-        let result: Result<ExternalPurchaseTokenResponse, BackendError> = await Async.call { completion in
+        let tokenID = ExternalPurchaseTokenID.generate()
+
+        let error: BackendError? = await Async.call { completion in
             self.externalPurchaseTokenAPI.postExternalPurchaseToken(
                 appUserID: self.currentUserProvider.currentAppUserID,
                 purchaseType: tokenType,
+                tokenID: tokenID,
                 token: token,
                 completion: completion
             )
         }
 
-        switch result {
-        case let .success(response):
-            Logger.debug(Strings.externalPurchase.token_registered(response.id))
-            return .registered(tokenID: response.id)
-        case let .failure(error):
+        if let error = error {
             Logger.error(Strings.externalPurchase.error_registering_token(error))
             return .unregistered(.registrationFailed)
         }
+
+        Logger.debug(Strings.externalPurchase.token_registered(tokenID))
+        return .registered(tokenID: tokenID)
     }
 
 }

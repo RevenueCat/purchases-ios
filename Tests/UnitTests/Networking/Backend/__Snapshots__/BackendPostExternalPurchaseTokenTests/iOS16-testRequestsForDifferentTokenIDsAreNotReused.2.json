@@ -18,15 +18,15 @@
     "X-Preferred-Locales" : "en_EN",
     "X-Retry-Count" : "0",
     "X-Storefront" : "USA",
-    "X-StoreKit-Version" : "1",
-    "X-StoreKit2-Enabled" : "false",
+    "X-StoreKit-Version" : "2",
+    "X-StoreKit2-Enabled" : "true",
     "X-Version" : "4.0.0"
   },
   "request" : {
     "body" : {
       "app_user_id" : "user",
       "purchase_type" : "LINK_OUT",
-      "rc_public_id" : "ept13dcbc01adaa44db9b1691a6be2f9929",
+      "rc_public_id" : "epta51d06bc57f344ffb386dff7e2353bea",
       "token" : "storekit-token"
     },
     "method" : "POST",
