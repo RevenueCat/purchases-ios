@@ -41,6 +41,9 @@ final class OnPaywallInteractionModifierTests: TestCase {
         expect(received.value) == ["probe"]
     }
 
+    // Swift 5.8 mis-lowers the closure literal to `Optional<PaywallInteractionHandler>` conversion below
+    // and crashes inside the handler.
+    #if compiler(>=5.9)
     func testIfSetHandlerReplacesAncestorHandler() {
         let ancestor: Atomic<[String]> = .init([])
         let helper: Atomic<[String]> = .init([])
@@ -63,6 +66,7 @@ final class OnPaywallInteractionModifierTests: TestCase {
         expect(helper.value) == ["probe"]
         expect(ancestor.value).to(beEmpty())
     }
+    #endif
 
 }
 
