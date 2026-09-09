@@ -29,6 +29,9 @@ final class PurchaseHandler: ObservableObject {
         case purchase
         case restore
 
+        /// What Apple requires before the customer leaves the app to pay on the web.
+        case externalPurchasePreparation
+
     }
 
     private var cancellables: Set<AnyCancellable> = Set()
@@ -294,6 +297,21 @@ extension PurchaseHandler {
         let result = try await continuation()
         await MainActor.run {
             if actionTypeInProgress == .pendingPurchaseContinuation {
+                self.actionTypeInProgress = nil
+            }
+        }
+        return result
+    }
+
+    /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
+    /// second trip out of the app while Apple's flow is under way.
+    func withExternalPurchasePreparation<T>(_ preparation: () async throws -> T) async rethrows -> T {
+        await MainActor.run {
+            startAction(.externalPurchasePreparation)
+        }
+        let result = try await preparation()
+        await MainActor.run {
+            if actionTypeInProgress == .externalPurchasePreparation {
                 self.actionTypeInProgress = nil
             }
         }

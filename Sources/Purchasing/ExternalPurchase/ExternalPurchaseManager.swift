@@ -22,6 +22,8 @@ final class ExternalPurchaseManager {
     private let currentUserProvider: CurrentUserProvider
     private let systemInfo: SystemInfo
 
+    private let isPreparing: Atomic<Bool> = false
+
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
@@ -56,10 +58,20 @@ final class ExternalPurchaseManager {
     ///
     /// Must not be called before then: the notice may only be shown in response to a customer interaction, and
     /// every token minted here is one Apple expects a report for, whether or not a transaction follows.
+    ///
+    /// Only one preparation runs at a time. Asking for another while one is under way stops the new one, so a
+    /// customer tapping twice sees a single notice and mints a single token.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
         guard self.takesPartInTheProgramme else {
             return .stopped(.notEligible)
         }
+
+        guard !self.isPreparing.getAndSet(true) else {
+            Logger.warn(Strings.externalPurchase.already_preparing)
+            return .stopped(.alreadyPreparing)
+        }
+
+        defer { self.isPreparing.value = false }
 
         switch await self.externalPurchaseAvailability() {
         case .available:
@@ -123,6 +135,10 @@ internal enum ExternalPurchasePreparationResult: Equatable {
         /// The notice could not be shown. Continuing without it would breach what StoreKit asks for, so this
         /// stops the purchase even though the customer did not decline.
         case noticeFailed
+
+        /// Another preparation was already under way, and that one carries the purchase. The caller is expected
+        /// to route the customer nowhere, so a second tap does not open a second checkout.
+        case alreadyPreparing
 
     }
 

@@ -80,7 +80,7 @@ struct ButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase:
+        case .purchase, .externalPurchasePreparation:
             return false
         case .restore, .pendingPurchaseContinuation:
             return true
@@ -301,7 +301,13 @@ struct ButtonComponentView: View {
     }
 
     private func openWebPaywallLink(url: URL, method: PaywallComponent.ButtonComponent.URLMethod) async {
-        guard let url = await ExternalPurchaseLink.urlToOpen(url, method: method) else {
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
+
+        guard let url = await ExternalPurchaseLink.urlToOpen(url,
+                                                             method: method,
+                                                             purchaseHandler: self.purchaseHandler) else {
             return
         }
 

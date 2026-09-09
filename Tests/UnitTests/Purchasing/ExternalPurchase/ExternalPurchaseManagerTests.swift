@@ -236,6 +236,36 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.customLink.invokedAvailabilityCount) == 2
     }
 
+    // MARK: - One preparation at a time
+
+    /// Every token minted is one Apple expects a report for, and a customer who taps twice while the notice is
+    /// coming up asked to buy once.
+    func testStopsAPreparationAskedForWhileAnotherIsUnderWay() async {
+        let manager = self.manager!
+        let secondResult: Atomic<ExternalPurchasePreparationResult?> = nil
+
+        self.customLink.whileShowingNotice = {
+            secondResult.value = await manager.prepareExternalPurchase(flow: .linkOut)
+        }
+
+        let firstResult = await manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(secondResult.value) == .stopped(.alreadyPreparing)
+        expect(firstResult) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.browser]
+        expect(self.customLink.invokedTokenTypes) == [.linkOut]
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
+    }
+
+    func testPreparesAgainOnceTheFirstOneIsDone() async {
+        let first = await self.manager.prepareExternalPurchase(flow: .linkOut)
+        let second = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(first) == .registered(tokenID: Self.tokenID)
+        expect(second) == .registered(tokenID: Self.tokenID)
+        expect(self.customLink.invokedNoticeTypes) == [.browser, .browser]
+    }
+
     // MARK: - Helpers
 
     private static func makeSystemInfo(useExternalPurchaseCustomLinks: Bool) -> MockSystemInfo {

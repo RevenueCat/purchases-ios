@@ -55,7 +55,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase, .pendingPurchaseContinuation:
+        case .purchase, .pendingPurchaseContinuation, .externalPurchasePreparation:
             return true
         case .restore:
             return false
@@ -135,6 +135,10 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
+
         guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
             packageContext: self.packageContext,
             appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
@@ -154,7 +158,8 @@ struct PurchaseButtonComponentView: View {
 
         guard let url = await ExternalPurchaseLink.urlToOpen(
             launchWebCheckout.url,
-            method: launchWebCheckout.method
+            method: launchWebCheckout.method,
+            purchaseHandler: self.purchaseHandler
         ) else {
             return
         }
