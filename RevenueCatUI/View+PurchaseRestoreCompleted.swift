@@ -507,6 +507,10 @@ extension View {
     public func onPaywallInteraction(_ handler: @escaping PaywallInteractionHandler) -> some View {
         self.environment(\.paywallInteractionNotifier, .init(handler))
     }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension View {
 
     func onPaywallInteraction(ifSet handler: PaywallInteractionHandler?) -> some View {
         self.transformEnvironment(\.paywallInteractionNotifier) { current in
@@ -515,6 +519,7 @@ extension View {
             }
         }
     }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
