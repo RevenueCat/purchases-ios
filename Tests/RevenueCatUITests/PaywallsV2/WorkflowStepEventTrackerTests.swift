@@ -152,7 +152,7 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(completed.experimentId) == "exp_abc"
         expect(completed.experimentVariant) == "b"
 
-        // step_2 has no experiment on its path: nothing to echo.
+        // step_2 has no experiment params.
         let startedStep2 = try XCTUnwrap(Self.startedData(self.recorded[2]))
         expect(startedStep2.experimentId).to(beNil())
         expect(startedStep2.experimentVariant).to(beNil())

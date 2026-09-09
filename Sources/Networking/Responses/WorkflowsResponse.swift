@@ -101,11 +101,10 @@ import Foundation
         }
     }
 
-    /// The experiment active on this step's path, set by the backend and echoed verbatim on step events.
-    /// `nil` when no experiment applies to the step.
+    /// The experiment running on this step, or `nil` if there is none.
     public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
 
-    /// The variant active on this step's path, alongside ``experimentId``.
+    /// The variant of ``experimentId`` this step belongs to.
     public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
 
     private func stringParam(_ key: String) -> String? {
