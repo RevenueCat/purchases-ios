@@ -92,7 +92,7 @@ class ExternalPurchaseCustomLinkTests: TestCase {
 
     func testCannotMakeExternalPurchasesWhenTheDeviceDoesNotAuthorizePayments() async {
         let customLink = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorizationProvider: .init(isAuthorized: { false })
+            paymentAuthorizationProvider: .init(canMakePayments: { false })
         )
 
         let canMakeExternalPurchases = await customLink.canMakeExternalPurchases()

@@ -181,7 +181,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Indicates whether the user is allowed to make payments.
      * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
-    @objc public static func canMakePayments() -> Bool { PaymentAuthorizationProvider.storeKit.isAuthorized() }
+    @objc public static func canMakePayments() -> Bool { PaymentAuthorizationProvider.storeKit.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
