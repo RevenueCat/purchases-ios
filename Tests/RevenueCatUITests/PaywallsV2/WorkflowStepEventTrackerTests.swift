@@ -172,7 +172,6 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(self.recorded).to(haveCount(3))
         expect(self.recorded[0].data.experiment?.workflowBlobRef) == "blob-ref-1"
         expect(self.recorded[1].data.experiment?.workflowBlobRef) == "blob-ref-1"
-        // step_2 has no experiment, so it carries no blob ref either.
         expect(self.recorded[2].data.experiment).to(beNil())
     }
 

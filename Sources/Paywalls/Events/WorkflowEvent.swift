@@ -66,7 +66,6 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
-        /// Set only on steps that belong to an experiment.
         public var experiment: ExperimentData?
 
         public init(
@@ -125,8 +124,6 @@ extension WorkflowEvent {
 
 extension WorkflowEvent {
 
-    /// The experiment a step belongs to, with the identity of the workflow payload it was served from so the
-    /// backend can check the claim instead of trusting it.
     @_spi(Internal) public struct ExperimentData {
 
         public var experimentId: String

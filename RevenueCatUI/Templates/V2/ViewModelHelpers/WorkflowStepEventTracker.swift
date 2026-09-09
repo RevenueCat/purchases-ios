@@ -115,8 +115,6 @@ struct WorkflowStepEventTracker {
         )
     }
 
-    /// The step's experiment params plus the payload they came from, or `nil` when the step has none. Both
-    /// params are required: half a pair identifies nothing the backend can check.
     private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
         guard let experimentId = step.experimentId,
               let experimentVariant = step.experimentVariant else {

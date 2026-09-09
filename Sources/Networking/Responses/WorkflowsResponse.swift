@@ -101,10 +101,8 @@ import Foundation
         }
     }
 
-    /// The step's `experiment_id` param, or `nil` if it has none.
     public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
 
-    /// The step's `experiment_variant` param, or `nil` if it has none.
     public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
 
     private func stringParam(_ key: String) -> String? {
@@ -112,7 +110,6 @@ import Foundation
         return value
     }
 
-    // Literal snake_case: `convertFromSnakeCase` skips keys inside `[String: AnyDecodable]`.
     private static let experimentIdParam = "experiment_id"
     private static let experimentVariantParam = "experiment_variant"
 
@@ -269,8 +266,6 @@ import Foundation
     public let workflow: PublishedWorkflow
     public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
-    /// The `blob_ref` of the config item this workflow came from, reported on the experiment events of its
-    /// steps so the backend can check their params against the payload it served.
     public var workflowBlobRef: String?
 
 }

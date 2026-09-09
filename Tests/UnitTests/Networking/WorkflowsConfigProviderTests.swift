@@ -111,7 +111,6 @@ class WorkflowsConfigProviderTests: TestCase {
             ]) { current, _ in current }
         )
 
-        // Uncached read: the blob ref comes straight off the topic item.
         let plain = await self.provider.getWorkflow(workflowId: "wf-plain")
         expect(plain.value?.workflowBlobRef) == "wf-plain-ref"
 
@@ -119,7 +118,6 @@ class WorkflowsConfigProviderTests: TestCase {
         async let uiConfigReady = self.uiConfigProvider.getUiConfig()
         _ = await (cachedWorkflowIDs, uiConfigReady)
 
-        // Cached reads and the synchronous by-offering read carry it too.
         let cachedRead = await self.provider.getWorkflow(workflowId: "wf-prefetch")
         let prewarm = await self.provider.decodeCachedWorkflowForAssetPrewarming(workflowId: "wf-prefetch")
         expect(cachedRead.value?.workflowBlobRef) == "wf-prefetch-ref"
