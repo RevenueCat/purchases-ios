@@ -90,6 +90,7 @@ struct TextComponentView: View {
             if style.visible {
                 NonLocalizedMarkdownText(
                     text: style.text,
+                    accessibilityText: style.accessibilityText,
                     font: style.font,
                     fontWeight: style.fontWeight,
                     componentName: style.name
@@ -123,6 +124,8 @@ struct NonLocalizedMarkdownText: View {
     private var urlOpenedNotifier
 
     let text: String
+    /// Spoken replacement for `text` when the displayed form reads poorly (e.g. "$1.24/mo").
+    var accessibilityText: String?
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
@@ -187,6 +190,9 @@ struct NonLocalizedMarkdownText: View {
                         self.openLink(url)
                         return .handled
                     })
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
                     .markdownLinkAccessibilityActions(
                         Self.markdownLinks(in: markdownText),
                         openLink: self.openLink
@@ -196,6 +202,9 @@ struct NonLocalizedMarkdownText: View {
                 Text(self.text)
                     .font(self.font)
                     .fontWeight(self.fontWeight)
+                    .applyIfLet(self.spokenAccessibilityLabel) { view, label in
+                        view.accessibilityLabel(label)
+                    }
             }
         }
     }
@@ -231,6 +240,24 @@ struct NonLocalizedMarkdownText: View {
                 url: url
             )
         }
+    }
+    /// What VoiceOver should say instead of the rendered text, or `nil` to leave it alone: a
+    /// spoken variant of the text itself, e.g. "$1.24 monthly" for "$1.24/mo".
+    private var spokenAccessibilityLabel: String? {
+        return self.accessibilityText.map(Self.strippingMarkdown)
+    }
+
+    /// Markdown syntax removed, so VoiceOver does not read a literal `[title](url)` when a
+    /// spoken label replaces the rendered text.
+    private static func strippingMarkdown(_ text: String) -> String {
+        guard let attrString = try? AttributedString(
+            markdown: text,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return text
+        }
+
+        return String(attrString.characters)
     }
 }
 
