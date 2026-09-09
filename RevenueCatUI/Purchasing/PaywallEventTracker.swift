@@ -250,7 +250,12 @@ struct ComponentInteractionLogger {
 
     @discardableResult
     func callAsFunction(_ interactionData: PaywallEvent.ComponentInteractionData) -> Bool {
+        #if compiler(>=5.9)
         return MainActor.assumeIsolated { self.action(interactionData) }
+        #else
+        Task { @MainActor in _ = self.action(interactionData) }
+        return true
+        #endif
     }
 
 }
