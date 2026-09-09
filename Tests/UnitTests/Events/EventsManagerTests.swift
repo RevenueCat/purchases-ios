@@ -586,8 +586,7 @@ class EventsManagerTests: TestCase {
                 localeIdentifier: "en_US",
                 traceId: "trace-xyz",
                 isFirstStep: true,
-                isLastStep: false,
-                isLastVariantStep: true
+                isLastStep: false
             )
         )
         let map = (event as FeatureEvent).toMap()
@@ -602,7 +601,6 @@ class EventsManagerTests: TestCase {
         expect(map["trace_id"] as? String) == "trace-xyz"
         expect(map["is_first_step"] as? Bool) == true
         expect(map["is_last_step"] as? Bool) == false
-        expect(map["is_last_variant_step"] as? Bool) == true
         expect(map["from_step_id"]).to(beNil())
         expect(map["to_step_id"]).to(beNil())
         expect(map["entry_reason"]).to(beNil())
@@ -620,8 +618,7 @@ class EventsManagerTests: TestCase {
                 isFirstStep: true,
                 isLastStep: false,
                 experimentId: "exp-1",
-                experimentVariant: "variant-a",
-                isLastVariantStep: true
+                experimentVariant: "variant-a"
             )
         )
         let map = (event as FeatureEvent).toMap()
@@ -633,7 +630,6 @@ class EventsManagerTests: TestCase {
         expect(map["is_last_step"] as? Bool) == false
         expect(map["experiment_id"] as? String) == "exp-1"
         expect(map["experiment_variant"] as? String) == "variant-a"
-        expect(map["is_last_variant_step"] as? Bool) == true
     }
 
     func testWorkflowEventToMapOmitsNilOptionalFields() {
@@ -651,7 +647,6 @@ class EventsManagerTests: TestCase {
         expect(map["is_last_step"]).to(beNil())
         expect(map["experiment_id"]).to(beNil())
         expect(map["experiment_variant"]).to(beNil())
-        expect(map["is_last_variant_step"]).to(beNil())
     }
 
     // MARK: - flushAllEvents

@@ -68,7 +68,6 @@ extension WorkflowEvent {
         public var isLastStep: Bool?
         public var experimentId: String?
         public var experimentVariant: String?
-        public var isLastVariantStep: Bool?
 
         public init(
             workflowId: String,
@@ -84,8 +83,7 @@ extension WorkflowEvent {
             isFirstStep: Bool? = nil,
             isLastStep: Bool? = nil,
             experimentId: String? = nil,
-            experimentVariant: String? = nil,
-            isLastVariantStep: Bool? = nil
+            experimentVariant: String? = nil
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
@@ -101,7 +99,6 @@ extension WorkflowEvent {
             self.isLastStep = isLastStep
             self.experimentId = experimentId
             self.experimentVariant = experimentVariant
-            self.isLastVariantStep = isLastVariantStep
         }
 
     }

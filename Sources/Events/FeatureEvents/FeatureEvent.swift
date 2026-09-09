@@ -263,7 +263,6 @@ private extension WorkflowEvent {
         if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
         if let experimentId = self.data.experimentId { result["experiment_id"] = experimentId }
         if let experimentVariant = self.data.experimentVariant { result["experiment_variant"] = experimentVariant }
-        if let isLastVariantStep = self.data.isLastVariantStep { result["is_last_variant_step"] = isLastVariantStep }
 
         return result
     }

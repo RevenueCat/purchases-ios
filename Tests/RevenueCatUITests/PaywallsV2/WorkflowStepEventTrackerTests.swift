@@ -127,7 +127,6 @@ final class WorkflowStepEventTrackerTests: TestCase {
         let data = self.recorded[0].data
         expect(data.experimentId).to(beNil())
         expect(data.experimentVariant).to(beNil())
-        expect(data.isLastVariantStep).to(beNil())
     }
 
     func testStepEventsEchoTheStepExperimentParams() throws {
@@ -146,7 +145,6 @@ final class WorkflowStepEventTrackerTests: TestCase {
         let started = try XCTUnwrap(Self.startedData(self.recorded[0]))
         expect(started.experimentId) == "exp_abc"
         expect(started.experimentVariant) == "b"
-        expect(started.isLastVariantStep).to(beNil())
 
         let completed = try XCTUnwrap(Self.completedData(self.recorded[1]))
         expect(completed.experimentId) == "exp_abc"

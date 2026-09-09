@@ -235,7 +235,6 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("is_last_step"))
         expect(json).toNot(contain("experiment_id"))
         expect(json).toNot(contain("experiment_variant"))
-        expect(json).toNot(contain("is_last_variant_step"))
     }
 
     func testExperimentPropertiesInWireFormat() throws {
@@ -245,8 +244,7 @@ class WorkflowEventsRequestTests: TestCase {
                 workflowId: "wfl_abc",
                 stepId: "step-1",
                 experimentId: "exp-1",
-                experimentVariant: "variant-a",
-                isLastVariantStep: true
+                experimentVariant: "variant-a"
             )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
@@ -254,7 +252,6 @@ class WorkflowEventsRequestTests: TestCase {
 
         expect(request.properties.experimentId) == "exp-1"
         expect(request.properties.experimentVariant) == "variant-a"
-        expect(request.properties.isLastVariantStep) == true
     }
 
     func testExperimentPropertiesInJSON() throws {
@@ -264,15 +261,13 @@ class WorkflowEventsRequestTests: TestCase {
                 workflowId: "wfl_abc",
                 stepId: "step-1",
                 experimentId: "exp-1",
-                experimentVariant: "variant-a",
-                isLastVariantStep: false
+                experimentVariant: "variant-a"
             )
         )
         let json = try encodedJSON(from: event)
 
         expect(json).to(contain("\"experiment_id\":\"exp-1\""))
         expect(json).to(contain("\"experiment_variant\":\"variant-a\""))
-        expect(json).to(contain("\"is_last_variant_step\":false"))
     }
 
     func testKhepriCompatibleShapeForStepStarted() throws {
