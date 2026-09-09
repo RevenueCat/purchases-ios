@@ -148,6 +148,30 @@ final class SizeModifierTests: TestCase {
         XCTAssertGreaterThan(size.height, singleLineHeight * 2)
     }
 
+    func testFitLimitsOnBothAxesMeasureWrappedHeight() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("Only `FitSizeLayout` re-proposes the clamped size")
+        }
+
+        let text = Text("A long label that has to wrap onto several lines to fit the maximum width")
+            .font(.system(size: 14))
+        let singleLineHeight = Self.fittingSize(of: text, in: .init(width: 1000, height: 500)).height
+
+        // The height limits must clamp the wrapped height, not the single-line height measured before the
+        // width was clamped; otherwise the text is truncated to a single line.
+        let view = text
+            .size(
+                .init(
+                    width: .fit(nil, .init(min: nil, max: 96)),
+                    height: .fit(nil, .init(min: 20, max: 200))
+                )
+            )
+        let size = Self.fittingSize(of: view, in: .init(width: 500, height: 500))
+
+        XCTAssertLessThanOrEqual(size.width, 96)
+        XCTAssertGreaterThan(size.height, singleLineHeight * 2)
+    }
+
     func testFitMinimumDoesNotShrinkContentLargerThanTheProposal() throws {
         guard #available(iOS 16.0, *) else {
             throw XCTSkip("Only `FitSizeLayout` re-proposes the clamped size")
