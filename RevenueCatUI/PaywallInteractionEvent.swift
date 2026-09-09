@@ -11,6 +11,7 @@
 //
 
 import Foundation
+@_spi(Internal) import RevenueCat
 
 // swiftlint:disable missing_docs
 
@@ -26,6 +27,10 @@ public final class PaywallInteractionEvent: NSObject, @unchecked Sendable {
     init(rawProperties: [String: Any]) {
         self.rawProperties = rawProperties
         super.init()
+    }
+
+    convenience init(_ event: PaywallEvent) {
+        self.init(rawProperties: event.paywallMap().filter { Keys.all.contains($0.key) })
     }
 
     /// The value for `key`, or `nil` when it does not apply to this interaction.

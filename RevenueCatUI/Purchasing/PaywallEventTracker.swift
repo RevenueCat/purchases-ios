@@ -202,8 +202,7 @@ final class PaywallEventTracker: @unchecked Sendable {
                 return false
             }
             if onInteraction.handler != nil {
-                let payload = event.paywallMap().filter { PaywallInteractionEvent.Keys.all.contains($0.key) }
-                onInteraction(PaywallInteractionEvent(rawProperties: payload))
+                onInteraction(PaywallInteractionEvent(event))
             }
             return true
         }
