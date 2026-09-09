@@ -20,7 +20,6 @@ import SwiftUI
 struct ContentView: View {
 
     @ObservedObject var model: CheckpointDemoModel
-    @ObservedObject var analyticsTracker: GlobalCheckpointAnalyticsTracker
     @StateObject private var customVariables = CustomVariables()
     @State private var isSubscriberAttributeEditorPresented = false
 
@@ -36,10 +35,6 @@ struct ContentView: View {
                     Label("Custom variables", systemImage: "slider.horizontal.3")
                 }
 
-            self.listenerLog
-                .tabItem {
-                    Label("Listener", systemImage: "waveform.path.ecg")
-                }
         }
         .sheet(isPresented: self.$isSubscriberAttributeEditorPresented) {
             SubscriberAttributeEditor()
@@ -196,39 +191,6 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("Custom variables")
-            .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
-        }
-    }
-
-    private var listenerLog: some View {
-        NavigationStack {
-            List {
-                Section {
-                    if self.analyticsTracker.events.isEmpty {
-                        Text("Global listener events will appear here as checkpoints run.")
-                            .foregroundStyle(.secondary)
-                    }
-
-                    ForEach(
-                        Array(self.analyticsTracker.events.enumerated()),
-                        id: \.offset
-                    ) { _, event in
-                        Text(event)
-                            .font(.caption.monospaced())
-                    }
-
-                    if !self.analyticsTracker.events.isEmpty {
-                        Button("Clear event log", role: .destructive) {
-                            self.analyticsTracker.clearEvents()
-                        }
-                    }
-                } header: {
-                    Text("Global checkpoint listener")
-                } footer: {
-                    Text("A global analytics tracker can observe checkpoint hits and completed results here.")
-                }
-            }
-            .navigationTitle("Global Listener")
             .subscriberAttributeToolbar(isPresented: self.$isSubscriberAttributeEditorPresented)
         }
     }
