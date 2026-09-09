@@ -108,30 +108,6 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return map[offeringId]
     }
 
-    /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
-    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
-    /// without relying on Swift dictionary iteration order.
-    private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
-        var map: [String: String] = [:]
-        var duplicateOfferingIds: Set<String> = []
-
-        for workflowId in topic.keys.sorted() {
-            guard let item = topic[workflowId] else { continue }
-            guard case let .string(offeringId)? = item.content[Self.offeringIdentifierKey] else { continue }
-
-            if map[offeringId] != nil {
-                duplicateOfferingIds.insert(offeringId)
-            }
-            map[offeringId] = workflowId
-        }
-
-        for offeringId in duplicateOfferingIds.sorted() {
-            Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
-        }
-
-        return map
-    }
-
     /// Resolves `workflowId` into a ``WorkflowDataResult``, or the specific ``WorkflowResolutionError``
     /// that prevented it: the item is unknown, its body can't be parsed, or `ui_config` isn't available.
     /// A workflow is only rendered with styling resolved from the `ui_config` topic, matching Android's
@@ -160,17 +136,20 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         // Deliberately sequential, not `async let`: a miss or malformed body returns without paying for
         // `ui_config`. A cached-body hit decodes synchronously from in-memory bytes on the caller's thread.
         if let cached = self.cachedWorkflowResult(workflowId: workflowId) {
-            return await self.makeWorkflowResult(cached.result) {
+            return await self.makeWorkflowResult(cached.result, blobRef: cached.blobRef) {
                 self.manager.configGeneration == cached.generation
             }
         }
 
         guard let snapshot = await self.manager.topicCacheSnapshot(.workflows),
-              snapshot.key[workflowId] != nil else {
+              let item = snapshot.key[workflowId] else {
             return .failure(.notFound)
         }
 
-        return await self.makeWorkflowResult(await self.fetchWorkflow(workflowId: workflowId)) {
+        return await self.makeWorkflowResult(
+            await self.fetchWorkflow(workflowId: workflowId),
+            blobRef: item.blobRef
+        ) {
             await self.manager.isCurrent(snapshot, for: .workflows)
         }
     }
@@ -194,7 +173,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             return .failure(.notFound)
         }
 
-        return await self.makeWorkflowResult(cached.result) {
+        return await self.makeWorkflowResult(cached.result, blobRef: cached.blobRef) {
             self.manager.configGeneration == cached.generation
         }
     }
@@ -223,6 +202,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
             key: topic
         )
         let offeringIdMap = self.buildOfferingIdMap(from: topic)
+        let blobRefsByWorkflowId = topic.compactMapValues(\.blobRef)
         let prefetchedWorkflowIds = topic.compactMap { workflowId, item in
             item.prefetch ? workflowId : nil
         }
@@ -254,6 +234,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         self.prefetchedWorkflowsCache.store(
             .init(
                 offeringIdMap: offeringIdMap,
+                blobRefsByWorkflowId: blobRefsByWorkflowId,
                 prefetchedWorkflowIds: prefetchedWorkflowIds,
                 workflows: workflows
             ),
@@ -279,7 +260,12 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 return nil
             }
 
-            return WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil)
+            return WorkflowDataResult(
+                workflow: workflow,
+                uiConfig: uiConfig,
+                enrolledVariants: nil,
+                blobRef: cache.blobRefsByWorkflowId[workflowId]
+            )
         }
     }
 
@@ -306,6 +292,7 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
     private func makeWorkflowResult(
         _ workflowResult: Result<PublishedWorkflow, WorkflowResolutionError>,
+        blobRef: String?,
         isCurrent: () async -> Bool
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         let workflow: PublishedWorkflow
@@ -321,20 +308,30 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         }
         guard await isCurrent() else { return .failure(.notFound) }
 
-        return .success(WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil))
+        return .success(
+            WorkflowDataResult(workflow: workflow, uiConfig: uiConfig, enrolledVariants: nil, blobRef: blobRef)
+        )
     }
 
     private func cachedWorkflowResult(
         workflowId: String,
         retainDecodedResult: Bool = true
-    ) -> (result: Result<PublishedWorkflow, WorkflowResolutionError>, generation: Int)? {
+    ) -> (
+        result: Result<PublishedWorkflow, WorkflowResolutionError>,
+        blobRef: String?,
+        generation: Int
+    )? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation),
                   let workflow = cache.workflows[workflowId] else {
                 return nil
             }
             let result = retainDecodedResult ? workflow.value() : workflow.transientValue()
-            return (result: result, generation: generation)
+            return (
+                result: result,
+                blobRef: cache.blobRefsByWorkflowId[workflowId],
+                generation: generation
+            )
         }
     }
 
@@ -377,6 +374,34 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
 
 }
 
+extension WorkflowsConfigProvider {
+
+    /// Builds the offeringId → workflowId map in a stable pass over `topic`. A duplicate `offeringId`
+    /// across items signals a backend issue and is logged once per rebuild; the last workflow id wins
+    /// without relying on Swift dictionary iteration order.
+    private func buildOfferingIdMap(from topic: RemoteConfiguration.ConfigTopic) -> [String: String] {
+        var map: [String: String] = [:]
+        var duplicateOfferingIds: Set<String> = []
+
+        for workflowId in topic.keys.sorted() {
+            guard let item = topic[workflowId] else { continue }
+            guard case let .string(offeringId)? = item.content[Self.offeringIdentifierKey] else { continue }
+
+            if map[offeringId] != nil {
+                duplicateOfferingIds.insert(offeringId)
+            }
+            map[offeringId] = workflowId
+        }
+
+        for offeringId in duplicateOfferingIds.sorted() {
+            Logger.warn(Strings.backendError.duplicate_offering_id_in_workflows(offeringId: offeringId))
+        }
+
+        return map
+    }
+
+}
+
 private func workflowIDsToPrefetch(
     prefetchedWorkflowIds: [String],
     offeringIdMap: [String: String],
@@ -392,6 +417,7 @@ private func workflowIDsToPrefetch(
 
 private struct PrefetchedWorkflowCache {
     let offeringIdMap: [String: String]
+    let blobRefsByWorkflowId: [String: String]
     let prefetchedWorkflowIds: [String]
     let workflows: [String: LazyPublishedWorkflow]
 

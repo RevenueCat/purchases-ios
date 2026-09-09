@@ -269,6 +269,9 @@ import Foundation
     public let workflow: PublishedWorkflow
     public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
+    /// The `blob_ref` of the config item this workflow came from. Reported on workflow events so the
+    /// backend can check the step's experiment params against the blob it served.
+    public var blobRef: String?
 
 }
 

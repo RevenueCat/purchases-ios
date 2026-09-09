@@ -159,6 +159,30 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(closed.experimentVariant) == "b"
     }
 
+    func testStepEventsCarryTheBlobRef() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow, blobRef: "blob-ref-1")
+        let step1 = try XCTUnwrap(workflow.steps["step_1"])
+        let step2 = try XCTUnwrap(workflow.steps["step_2"])
+
+        tracker.trackInitialStep(step1)
+        tracker.trackNavigation(from: step1, to: step2, entryReason: .forward)
+        tracker.trackClose(step2)
+
+        expect(self.recorded).to(haveCount(4))
+        expect(self.recorded.map(\.data.blobRef)).to(allPass { $0 == "blob-ref-1" })
+    }
+
+    func testBlobRefIsNilWhenTheProviderDidNotSupplyOne() throws {
+        let workflow = try Self.makeWorkflow()
+        let tracker = self.makeTracker(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        tracker.trackInitialStep(step)
+
+        expect(self.recorded[0].data.blobRef).to(beNil())
+    }
+
 }
 
 // MARK: - Helpers
@@ -168,11 +192,13 @@ private extension WorkflowStepEventTrackerTests {
 
     func makeTracker(
         workflow: PublishedWorkflow,
-        traceId: String = "trace-test"
+        traceId: String = "trace-test",
+        blobRef: String? = nil
     ) -> WorkflowStepEventTracker {
         return WorkflowStepEventTracker(
             workflow: workflow,
             traceId: traceId,
+            blobRef: blobRef,
             sink: { [weak self] event in self?.recorded.append(event) }
         )
     }

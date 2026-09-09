@@ -33,15 +33,18 @@ struct WorkflowStepEventTracker {
 
     private let workflow: PublishedWorkflow
     let traceId: String
+    private let blobRef: String?
     private let sink: (WorkflowEvent) -> Void
 
     init(
         workflow: PublishedWorkflow,
         traceId: String,
+        blobRef: String? = nil,
         sink: @escaping (WorkflowEvent) -> Void
     ) {
         self.workflow = workflow
         self.traceId = traceId
+        self.blobRef = blobRef
         self.sink = sink
     }
 
@@ -109,7 +112,8 @@ struct WorkflowStepEventTracker {
             isFirstStep: step.id == self.workflow.initialStepId,
             isLastStep: Self.isTerminalStep(step),
             experimentId: step.experimentId,
-            experimentVariant: step.experimentVariant
+            experimentVariant: step.experimentVariant,
+            blobRef: self.blobRef
         )
     }
 
