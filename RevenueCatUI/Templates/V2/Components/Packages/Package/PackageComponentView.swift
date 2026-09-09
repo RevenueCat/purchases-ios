@@ -32,6 +32,9 @@ struct PackageComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -63,7 +66,8 @@ struct PackageComponentView: View {
                    for: package
                ),
                selectedPackageId: selectedPackageId,
-               customVariables: customVariables
+               customVariables: customVariables,
+               windowSize: paywallWindowSize
            ) {
             StackComponentView(
                 viewModel: self.viewModel.stackViewModel,

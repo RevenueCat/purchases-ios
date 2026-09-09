@@ -37,6 +37,9 @@ struct TextComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
@@ -81,7 +84,8 @@ struct TextComponentView: View {
             countdownTime: countdownTime,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
