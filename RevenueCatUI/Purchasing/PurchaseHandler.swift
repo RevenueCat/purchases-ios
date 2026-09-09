@@ -305,16 +305,29 @@ extension PurchaseHandler {
 
     /// Runs `preparation` with the paywall marked as busy, so the button the customer tapped cannot start a
     /// second trip out of the app while Apple's flow is under way.
+    ///
+    /// A call that finds the paywall already busy leaves the mark alone, so it cannot free the paywall while
+    /// the flow that set it is still running.
     func withExternalPurchasePreparation<T>(_ preparation: () async throws -> T) async rethrows -> T {
-        await MainActor.run {
+        let marked = await MainActor.run { () -> Bool in
+            guard actionTypeInProgress == nil else {
+                return false
+            }
+
             startAction(.externalPurchasePreparation)
+            return true
         }
+
         let result = try await preparation()
-        await MainActor.run {
-            if actionTypeInProgress == .externalPurchasePreparation {
-                self.actionTypeInProgress = nil
+
+        if marked {
+            await MainActor.run {
+                if actionTypeInProgress == .externalPurchasePreparation {
+                    self.actionTypeInProgress = nil
+                }
             }
         }
+
         return result
     }
 
