@@ -15,12 +15,12 @@ import Foundation
 import StoreKit
 
 struct PaymentAuthorizationProvider {
-    var isAuthorized: () -> Bool
+    var canMakePayments: () -> Bool
 }
 
 extension PaymentAuthorizationProvider {
     static let storeKit = PaymentAuthorizationProvider(
-        isAuthorized: {
+        canMakePayments: {
             if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, visionOS 1.0, *) {
                 return AppStore.canMakePayments
             } else {
