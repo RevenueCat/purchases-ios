@@ -21,8 +21,8 @@ struct FixtureRootView: View {
 
     var body: some View {
         if let requestedFixture {
-            if requestedFixture == AccessibilityControlView.fixtureName {
-                AccessibilityControlView()
+            if requestedFixture == AccessibilityHiddenControlView.fixtureName {
+                AccessibilityHiddenControlView()
             } else if let fixture = PaywallFixture(rawValue: requestedFixture) {
                 FixturePaywallView(fixture: fixture)
             } else {
@@ -43,8 +43,7 @@ struct FixtureRootView: View {
 
 }
 
-/// Plain SwiftUI control, so a test can tell our bug from XCUITest ignoring the modifier.
-struct AccessibilityControlView: View {
+struct AccessibilityHiddenControlView: View {
 
     static let fixtureName = "a11y_control"
 
@@ -61,7 +60,6 @@ struct AccessibilityControlView: View {
                 .frame(width: 41, height: 41)
                 .accessibilityHidden(true)
 
-            // The paywall's own pattern: hidden after being collapsed into one element.
             Image(systemName: "bolt.fill")
                 .resizable()
                 .frame(width: 42, height: 42)

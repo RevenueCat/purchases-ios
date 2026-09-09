@@ -47,8 +47,7 @@ final class PaywallAccessibilityUITests: XCTestCase {
     /// answer "is this hidden from VoiceOver". Fails once XCUITest starts honoring the modifier.
     func testElementQueriesListEvenHiddenImages() throws {
         let app = XCUIApplication()
-        // Matches AccessibilityControlView.fixtureName in the app target, which the UI test
-        // bundle does not link against.
+        // Matches AccessibilityHiddenControlView.fixtureName; the test bundle can't link it.
         app.launchEnvironment["PAYWALL_FIXTURE"] = "a11y_control"
         app.launch()
 
