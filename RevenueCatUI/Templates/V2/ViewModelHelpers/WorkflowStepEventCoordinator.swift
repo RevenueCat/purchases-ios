@@ -32,13 +32,13 @@ final class WorkflowStepEventCoordinator {
     init(
         workflow: PublishedWorkflow,
         traceId: String,
-        blobRef: String? = nil,
+        workflowBlobRef: String? = nil,
         sink: @escaping (WorkflowEvent) -> Void
     ) {
         self.tracker = WorkflowStepEventTracker(
             workflow: workflow,
             traceId: traceId,
-            blobRef: blobRef,
+            workflowBlobRef: workflowBlobRef,
             sink: sink
         )
     }
@@ -48,10 +48,10 @@ final class WorkflowStepEventCoordinator {
     /// identity) yields a new coordinator and therefore a new `traceId`.
     convenience init(
         workflow: PublishedWorkflow,
-        blobRef: String? = nil,
+        workflowBlobRef: String? = nil,
         sink: @escaping (WorkflowEvent) -> Void
     ) {
-        self.init(workflow: workflow, traceId: UUID().uuidString, blobRef: blobRef, sink: sink)
+        self.init(workflow: workflow, traceId: UUID().uuidString, workflowBlobRef: workflowBlobRef, sink: sink)
     }
 
     /// Emits the initial `stepStarted` once, and only if the initial step actually rendered. Mirrors

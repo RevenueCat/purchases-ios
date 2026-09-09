@@ -392,7 +392,7 @@ extension PurchaseHandler {
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
                 triggerOfferingIdentifier: offering.identifier,
-                blobRef: fetchResult.blobRef
+                workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
         }
@@ -611,7 +611,7 @@ extension PurchaseHandler {
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
                 triggerOfferingIdentifier: identifier,
-                blobRef: fetchResult.blobRef
+                workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
             throw PaywallError.workflowUiConfigUnavailable(workflowId: workflowId)
@@ -632,7 +632,7 @@ extension PurchaseHandler {
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
         triggerOfferingIdentifier: String,
-        blobRef: String? = nil
+        workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId],
               let screenID = step.screenId,
@@ -665,7 +665,7 @@ extension PurchaseHandler {
             allOfferings: allOfferings,
             initialOffering: offering,
             presentedOfferingContext: presentedOfferingContext,
-            blobRef: blobRef
+            workflowBlobRef: workflowBlobRef
         )
     }
     #endif

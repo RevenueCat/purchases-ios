@@ -84,9 +84,9 @@ extension FeatureEventsRequest.WorkflowEvent {
                     entryReason: wire.entryReason,
                     isFirstStep: event.data.isFirstStep,
                     isLastStep: event.data.isLastStep,
-                    experimentId: event.data.experimentId,
-                    experimentVariant: event.data.experimentVariant,
-                    blobRef: event.data.blobRef
+                    experimentId: event.data.experiment?.experimentId,
+                    experimentVariant: event.data.experiment?.experimentVariant,
+                    blobRef: event.data.experiment?.workflowBlobRef
                 )
             )
         } catch {

@@ -125,8 +125,7 @@ final class WorkflowStepEventTrackerTests: TestCase {
         tracker.trackInitialStep(step)
 
         let data = self.recorded[0].data
-        expect(data.experimentId).to(beNil())
-        expect(data.experimentVariant).to(beNil())
+        expect(data.experiment).to(beNil())
     }
 
     func testStepEventsEchoTheStepExperimentParams() throws {
@@ -143,44 +142,50 @@ final class WorkflowStepEventTrackerTests: TestCase {
 
         expect(self.recorded).to(haveCount(4))
         let started = try XCTUnwrap(Self.startedData(self.recorded[0]))
-        expect(started.experimentId) == "exp_abc"
-        expect(started.experimentVariant) == "b"
+        expect(started.experiment?.experimentId) == "exp_abc"
+        expect(started.experiment?.experimentVariant) == "b"
 
         let completed = try XCTUnwrap(Self.completedData(self.recorded[1]))
-        expect(completed.experimentId) == "exp_abc"
-        expect(completed.experimentVariant) == "b"
+        expect(completed.experiment?.experimentId) == "exp_abc"
+        expect(completed.experiment?.experimentVariant) == "b"
 
         let startedStep2 = try XCTUnwrap(Self.startedData(self.recorded[2]))
-        expect(startedStep2.experimentId).to(beNil())
-        expect(startedStep2.experimentVariant).to(beNil())
+        expect(startedStep2.experiment).to(beNil())
 
         let closed = self.recorded[3].data
-        expect(closed.experimentId) == "exp_abc"
-        expect(closed.experimentVariant) == "b"
+        expect(closed.experiment?.experimentId) == "exp_abc"
+        expect(closed.experiment?.experimentVariant) == "b"
     }
 
-    func testStepEventsCarryTheBlobRef() throws {
-        let workflow = try Self.makeWorkflow()
-        let tracker = self.makeTracker(workflow: workflow, blobRef: "blob-ref-1")
+    func testExperimentEventsCarryTheWorkflowBlobRef() throws {
+        let workflow = try Self.makeWorkflow(
+            step1ParamValuesJSON: #"{ "experiment_id": "exp_abc", "experiment_variant": "b" }"#
+        )
+        let tracker = self.makeTracker(workflow: workflow, workflowBlobRef: "blob-ref-1")
         let step1 = try XCTUnwrap(workflow.steps["step_1"])
         let step2 = try XCTUnwrap(workflow.steps["step_2"])
 
         tracker.trackInitialStep(step1)
-        tracker.trackNavigation(from: step1, to: step2, entryReason: .forward)
-        tracker.trackClose(step2)
+        tracker.trackClose(step1)
+        tracker.trackInitialStep(step2)
 
-        expect(self.recorded).to(haveCount(4))
-        expect(self.recorded.map(\.data.blobRef)).to(allPass { $0 == "blob-ref-1" })
+        expect(self.recorded).to(haveCount(3))
+        expect(self.recorded[0].data.experiment?.workflowBlobRef) == "blob-ref-1"
+        expect(self.recorded[1].data.experiment?.workflowBlobRef) == "blob-ref-1"
+        // step_2 has no experiment, so it carries no blob ref either.
+        expect(self.recorded[2].data.experiment).to(beNil())
     }
 
-    func testBlobRefIsNilWhenTheProviderDidNotSupplyOne() throws {
-        let workflow = try Self.makeWorkflow()
-        let tracker = self.makeTracker(workflow: workflow)
+    func testHalfAnExperimentPairIsNotReported() throws {
+        let workflow = try Self.makeWorkflow(
+            step1ParamValuesJSON: #"{ "experiment_id": "exp_abc" }"#
+        )
+        let tracker = self.makeTracker(workflow: workflow, workflowBlobRef: "blob-ref-1")
         let step = try XCTUnwrap(workflow.steps["step_1"])
 
         tracker.trackInitialStep(step)
 
-        expect(self.recorded[0].data.blobRef).to(beNil())
+        expect(self.recorded[0].data.experiment).to(beNil())
     }
 
 }
@@ -193,12 +198,12 @@ private extension WorkflowStepEventTrackerTests {
     func makeTracker(
         workflow: PublishedWorkflow,
         traceId: String = "trace-test",
-        blobRef: String? = nil
+        workflowBlobRef: String? = nil
     ) -> WorkflowStepEventTracker {
         return WorkflowStepEventTracker(
             workflow: workflow,
             traceId: traceId,
-            blobRef: blobRef,
+            workflowBlobRef: workflowBlobRef,
             sink: { [weak self] event in self?.recorded.append(event) }
         )
     }

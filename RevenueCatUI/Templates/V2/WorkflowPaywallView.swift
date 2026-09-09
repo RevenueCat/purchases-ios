@@ -308,7 +308,7 @@ struct WorkflowPaywallView: View {
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
-                blobRef: context.blobRef,
+                workflowBlobRef: context.workflowBlobRef,
                 sink: { [purchaseHandler] event in purchaseHandler.track(event) }
             )
         )

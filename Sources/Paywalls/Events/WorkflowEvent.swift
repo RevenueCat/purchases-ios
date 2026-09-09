@@ -66,9 +66,8 @@ extension WorkflowEvent {
         public var entryReason: String?
         public var isFirstStep: Bool?
         public var isLastStep: Bool?
-        public var experimentId: String?
-        public var experimentVariant: String?
-        public var blobRef: String?
+        /// Set only on steps that belong to an experiment.
+        public var experiment: ExperimentData?
 
         public init(
             workflowId: String,
@@ -83,9 +82,7 @@ extension WorkflowEvent {
             entryReason: String? = nil,
             isFirstStep: Bool? = nil,
             isLastStep: Bool? = nil,
-            experimentId: String? = nil,
-            experimentVariant: String? = nil,
-            blobRef: String? = nil
+            experiment: ExperimentData? = nil
         ) {
             self.workflowId = workflowId
             self.stepId = stepId
@@ -99,9 +96,7 @@ extension WorkflowEvent {
             self.entryReason = entryReason
             self.isFirstStep = isFirstStep
             self.isLastStep = isLastStep
-            self.experimentId = experimentId
-            self.experimentVariant = experimentVariant
-            self.blobRef = blobRef
+            self.experiment = experiment
         }
 
     }
@@ -128,6 +123,27 @@ extension WorkflowEvent {
 
 }
 
+extension WorkflowEvent {
+
+    /// The experiment a step belongs to, with the identity of the workflow payload it was served from so the
+    /// backend can check the claim instead of trusting it.
+    @_spi(Internal) public struct ExperimentData {
+
+        public var experimentId: String
+        public var experimentVariant: String
+        public var workflowBlobRef: String?
+
+        public init(experimentId: String, experimentVariant: String, workflowBlobRef: String?) {
+            self.experimentId = experimentId
+            self.experimentVariant = experimentVariant
+            self.workflowBlobRef = workflowBlobRef
+        }
+
+    }
+
+}
+
 extension WorkflowEvent.CreationData: Equatable, Codable, Sendable {}
+extension WorkflowEvent.ExperimentData: Equatable, Codable, Sendable {}
 extension WorkflowEvent.Data: Equatable, Codable, Sendable {}
 extension WorkflowEvent: Equatable, Codable, Sendable {}

@@ -33,18 +33,18 @@ struct WorkflowStepEventTracker {
 
     private let workflow: PublishedWorkflow
     let traceId: String
-    private let blobRef: String?
+    private let workflowBlobRef: String?
     private let sink: (WorkflowEvent) -> Void
 
     init(
         workflow: PublishedWorkflow,
         traceId: String,
-        blobRef: String? = nil,
+        workflowBlobRef: String? = nil,
         sink: @escaping (WorkflowEvent) -> Void
     ) {
         self.workflow = workflow
         self.traceId = traceId
-        self.blobRef = blobRef
+        self.workflowBlobRef = workflowBlobRef
         self.sink = sink
     }
 
@@ -111,9 +111,22 @@ struct WorkflowStepEventTracker {
             entryReason: entryReason,
             isFirstStep: step.id == self.workflow.initialStepId,
             isLastStep: Self.isTerminalStep(step),
-            experimentId: step.experimentId,
-            experimentVariant: step.experimentVariant,
-            blobRef: self.blobRef
+            experiment: self.experimentData(for: step)
+        )
+    }
+
+    /// The step's experiment params plus the payload they came from, or `nil` when the step has none. Both
+    /// params are required: half a pair identifies nothing the backend can check.
+    private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
+        guard let experimentId = step.experimentId,
+              let experimentVariant = step.experimentVariant else {
+            return nil
+        }
+
+        return .init(
+            experimentId: experimentId,
+            experimentVariant: experimentVariant,
+            workflowBlobRef: self.workflowBlobRef
         )
     }
 

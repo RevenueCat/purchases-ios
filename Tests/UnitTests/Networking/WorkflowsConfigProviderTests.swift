@@ -94,7 +94,7 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(workflowResult.enrolledVariants).to(beNil())
     }
 
-    func testResolvedWorkflowsCarryTheirItemBlobRef() async throws {
+    func testResolvedWorkflowsCarryTheirWorkflowBlobRef() async throws {
         self.commit(
             workflows: [
                 "wf-prefetch": .init(
@@ -113,7 +113,7 @@ class WorkflowsConfigProviderTests: TestCase {
 
         // Uncached read: the blob ref comes straight off the topic item.
         let plain = await self.provider.getWorkflow(workflowId: "wf-plain")
-        expect(plain.value?.blobRef) == "wf-plain-ref"
+        expect(plain.value?.workflowBlobRef) == "wf-plain-ref"
 
         async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "basic")
         async let uiConfigReady = self.uiConfigProvider.getUiConfig()
@@ -122,9 +122,9 @@ class WorkflowsConfigProviderTests: TestCase {
         // Cached reads and the synchronous by-offering read carry it too.
         let cachedRead = await self.provider.getWorkflow(workflowId: "wf-prefetch")
         let prewarm = await self.provider.decodeCachedWorkflowForAssetPrewarming(workflowId: "wf-prefetch")
-        expect(cachedRead.value?.blobRef) == "wf-prefetch-ref"
-        expect(prewarm.value?.blobRef) == "wf-prefetch-ref"
-        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.blobRef) == "wf-prefetch-ref"
+        expect(cachedRead.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(prewarm.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflowBlobRef) == "wf-prefetch-ref"
     }
 
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {

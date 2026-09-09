@@ -261,9 +261,11 @@ private extension WorkflowEvent {
         if let entryReason = self.data.entryReason { result["entry_reason"] = entryReason }
         if let isFirstStep = self.data.isFirstStep { result["is_first_step"] = isFirstStep }
         if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
-        if let experimentId = self.data.experimentId { result["experiment_id"] = experimentId }
-        if let experimentVariant = self.data.experimentVariant { result["experiment_variant"] = experimentVariant }
-        if let blobRef = self.data.blobRef { result["blob_ref"] = blobRef }
+        if let experiment = self.data.experiment {
+            result["experiment_id"] = experiment.experimentId
+            result["experiment_variant"] = experiment.experimentVariant
+            if let workflowBlobRef = experiment.workflowBlobRef { result["blob_ref"] = workflowBlobRef }
+        }
 
         return result
     }

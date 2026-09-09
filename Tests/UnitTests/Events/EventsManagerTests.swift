@@ -617,8 +617,11 @@ class EventsManagerTests: TestCase {
                 entryReason: "start",
                 isFirstStep: true,
                 isLastStep: false,
-                experimentId: "exp-1",
-                experimentVariant: "variant-a"
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let map = (event as FeatureEvent).toMap()
@@ -630,6 +633,7 @@ class EventsManagerTests: TestCase {
         expect(map["is_last_step"] as? Bool) == false
         expect(map["experiment_id"] as? String) == "exp-1"
         expect(map["experiment_variant"] as? String) == "variant-a"
+        expect(map["blob_ref"] as? String) == "blob-ref-1"
     }
 
     func testWorkflowEventToMapOmitsNilOptionalFields() {
@@ -647,6 +651,7 @@ class EventsManagerTests: TestCase {
         expect(map["is_last_step"]).to(beNil())
         expect(map["experiment_id"]).to(beNil())
         expect(map["experiment_variant"]).to(beNil())
+        expect(map["blob_ref"]).to(beNil())
     }
 
     // MARK: - flushAllEvents

@@ -162,10 +162,14 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("entry_reason"))
     }
 
-    func testBlobRefInWireFormat() throws {
+    func testWorkflowBlobRefInWireFormat() throws {
         let event = WorkflowEvent.stepStarted(
             .init(id: id, date: date),
-            .init(workflowId: "wfl_abc", stepId: "step-1", blobRef: "blob-ref-1")
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: "blob-ref-1")
+            )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
@@ -181,8 +185,7 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experimentId: "exp-1",
-                experimentVariant: "variant-a"
+                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
             )
         )
         let json = try encodedJSON(from: event)
@@ -257,8 +260,7 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experimentId: "exp-1",
-                experimentVariant: "variant-a"
+                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
             )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
@@ -274,8 +276,7 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experimentId: "exp-1",
-                experimentVariant: "variant-a"
+                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
             )
         )
         let json = try encodedJSON(from: event)
