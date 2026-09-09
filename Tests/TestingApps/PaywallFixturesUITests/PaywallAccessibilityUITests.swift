@@ -65,6 +65,55 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
     }
 
+    // MARK: - Decorative media (images, icons, backgrounds)
+
+    /// Paywall media carries no labels, so anything left in the accessibility tree is announced
+    /// as a bare "image". The audit counts exactly those, which makes it the oracle for what a
+    /// screen reader would say. By default the fixture leaves three: the background image and
+    /// the two free-standing feature checkmarks. The two package-card checkmarks are inside
+    /// selector buttons, whose own labels describe them.
+    func testDecorativeMediaAnnouncesIconsAndBackgroundByDefault() throws {
+        let app = self.launchDecorativeMedia()
+
+        XCTAssertEqual(
+            try self.undescribedElementCount(in: app),
+            3,
+            "Default behavior changed: icons and background images are announced unless an app opts out."
+        )
+    }
+
+    /// Hiding icons leaves the background image announced, so the two opt-outs stay independent.
+    func testHidingIconsLeavesBackgroundAnnounced() throws {
+        let app = self.launchDecorativeMedia(extraEnvironment: ["PAYWALL_HIDE_ICONS": "1"])
+
+        XCTAssertEqual(
+            try self.undescribedElementCount(in: app),
+            1,
+            "Expected only the background image to remain announced."
+        )
+    }
+
+    /// Hiding images silences the background image while icons keep being announced.
+    func testHidingImagesLeavesIconsAnnounced() throws {
+        let app = self.launchDecorativeMedia(extraEnvironment: ["PAYWALL_HIDE_IMAGES": "1"])
+
+        XCTAssertEqual(
+            try self.undescribedElementCount(in: app),
+            2,
+            "Expected only the two free-standing feature icons to remain announced."
+        )
+    }
+
+    /// Both opt-outs together leave nothing undescribed: no logo, no background, no checkmarks.
+    func testHidingBothLeavesNothingUndescribed() throws {
+        let app = self.launchDecorativeMedia(extraEnvironment: [
+            "PAYWALL_HIDE_ICONS": "1",
+            "PAYWALL_HIDE_IMAGES": "1"
+        ])
+
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription])
+    }
+
     // MARK: - Spoken text
 
     /// The spoken variant is built from the source copy, so it still carries markdown when it
@@ -121,6 +170,47 @@ final class PaywallAccessibilityUITests: XCTestCase {
         )
 
         return app
+    }
+
+
+    private func launchDecorativeMedia(extraEnvironment: [String: String] = [:]) -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "decorative_media"
+        for (key, value) in extraEnvironment {
+            app.launchEnvironment[key] = value
+        }
+        app.launch()
+
+        XCTAssertTrue(
+            app.staticTexts["Unlock all Sundial Features"].waitForExistence(timeout: 30),
+            "Fixture did not render."
+        )
+
+        return app
+    }
+
+    /// How many elements the audit finds with no usable description — the unlabeled media a
+    /// screen reader would announce as a bare "image". Counted with the closure form so the
+    /// issues are tallied rather than thrown, letting a test assert on exactly how many remain.
+    ///
+    /// The background image loads over the network, so this settles first: asserting before it
+    /// lands would count a paywall that has not finished rendering.
+    private func undescribedElementCount(in app: XCUIApplication) throws -> Int {
+        self.settle(app, seconds: 5)
+
+        var count = 0
+        try app.performAccessibilityAudit(for: [.sufficientElementDescription]) { _ in
+            count += 1
+            return true
+        }
+
+        return count
+    }
+
+    /// Lets async layout and image downloads land before measuring.
+    private func settle(_ app: XCUIApplication, seconds: TimeInterval = 2) {
+        RunLoop.current.run(until: Date().addingTimeInterval(seconds))
+        _ = app.images.count
     }
 
 }
