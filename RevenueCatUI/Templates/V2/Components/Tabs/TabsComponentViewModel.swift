@@ -88,11 +88,13 @@ class TabsComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil,
         colorScheme: ColorScheme
     ) -> TabsComponentStyle {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
 
         let partial = PresentedTabsPartial.buildPartial(

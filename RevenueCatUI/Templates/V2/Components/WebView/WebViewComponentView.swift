@@ -29,6 +29,9 @@ struct WebViewComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -62,7 +65,8 @@ struct WebViewComponentView: View {
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
         )
     }
 

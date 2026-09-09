@@ -37,6 +37,9 @@ struct TimelineComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -62,7 +65,8 @@ struct TimelineComponentView: View {
                 for: self.packageContext.package
             ),
             selectedPackageId: self.selectedPackageId,
-            customVariables: self.customVariables
+            customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize
         ) { style in
             if style.visible {
                 timeline(style: style)
@@ -86,7 +90,8 @@ struct TimelineComponentView: View {
                         for: self.packageContext.package
                     ),
                     selectedPackageId: self.selectedPackageId,
-                    customVariables: self.customVariables
+                    customVariables: self.customVariables,
+                    windowSize: self.paywallWindowSize
                 ) { itemStyle in
                     if itemStyle.visible {
                         timelineRow(itemStyle: itemStyle, style: style)
@@ -113,7 +118,8 @@ struct TimelineComponentView: View {
                             for: self.packageContext.package
                         ),
                         selectedPackageId: self.selectedPackageId,
-                        customVariables: self.customVariables
+                        customVariables: self.customVariables,
+                        windowSize: self.paywallWindowSize
                     ) { itemStyle in
                         if itemStyle.visible {
                             let next = viewModel.items.indices.contains(index + 1) ? viewModel.items[index + 1] : nil
