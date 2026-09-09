@@ -101,10 +101,10 @@ import Foundation
         }
     }
 
-    /// The experiment running on this step, or `nil` if there is none.
+    /// The step's `experiment_id` param, or `nil` if it has none.
     public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
 
-    /// The variant of ``experimentId`` this step belongs to.
+    /// The step's `experiment_variant` param, or `nil` if it has none.
     public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
 
     private func stringParam(_ key: String) -> String? {
@@ -112,12 +112,13 @@ import Foundation
         return value
     }
 
+    // Literal snake_case: `convertFromSnakeCase` skips keys inside `[String: AnyDecodable]`.
     private static let experimentIdParam = "experiment_id"
     private static let experimentVariantParam = "experiment_variant"
 
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
-    // read directly (`metadata` is surfaced only via `stepScreenType` and the experiment params), and
-    // are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
+    // read directly (`metadata` via `stepScreenType`, `paramValues` via the experiment
+    // params), and are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
         type: String,

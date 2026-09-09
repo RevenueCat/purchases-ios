@@ -162,6 +162,22 @@ class WorkflowEventsRequestTests: TestCase {
         expect(json).toNot(contain("entry_reason"))
     }
 
+    func testCloseKeepsExperimentPropertiesInWireFormat() throws {
+        let event = WorkflowEvent.close(
+            .init(id: id, date: date),
+            .init(
+                workflowId: "wfl_abc",
+                stepId: "step-1",
+                experimentId: "exp-1",
+                experimentVariant: "variant-a"
+            )
+        )
+        let json = try encodedJSON(from: event)
+
+        expect(json).to(contain("\"experiment_id\":\"exp-1\""))
+        expect(json).to(contain("\"experiment_variant\":\"variant-a\""))
+    }
+
     // MARK: - JSON serialization
 
     func testTypePresentInJSON() throws {
