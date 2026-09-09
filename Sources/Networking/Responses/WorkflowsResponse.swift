@@ -101,8 +101,8 @@ import Foundation
         }
     }
 
-    /// The experiment this step belongs to, baked into `param_values` by the backend for the steps of the
-    /// enrolled variant only. Echoed verbatim on step events; `nil` for steps outside an experiment.
+    /// Set by the backend only on the steps of the enrolled variant, and echoed verbatim on step events so
+    /// khepri can enroll on exposure. `nil` for steps outside an experiment.
     public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
 
     /// The enrolled variant key, alongside ``experimentId``.

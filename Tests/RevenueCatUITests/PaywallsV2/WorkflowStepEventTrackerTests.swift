@@ -131,8 +131,6 @@ final class WorkflowStepEventTrackerTests: TestCase {
     }
 
     func testStepEventsEchoTheStepExperimentParams() throws {
-        // The backend bakes `experiment_id` / `experiment_variant` into the steps of the enrolled
-        // variant. Every step event echoes them verbatim so khepri can enroll on exposure.
         let workflow = try Self.makeWorkflow(
             step1ParamValuesJSON: #"{ "experiment_id": "exp_abc", "experiment_variant": "b" }"#
         )
