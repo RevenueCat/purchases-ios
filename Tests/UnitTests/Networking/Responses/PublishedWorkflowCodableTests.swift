@@ -38,6 +38,26 @@ class PublishedWorkflowCodableTests: TestCase {
         expect(decoded) == original
     }
 
+    func testBranchTriggerActionSurvivesAnEncodeDecodeRoundTrip() throws {
+        // Workflows are cached as encoded models, so a branch has to come back intact.
+        let json = """
+        {
+          "type": "branch",
+          "branches": [
+            { "audience_id": "aud_a", "step_id": "step_a" },
+            { "audience_id": "aud_b", "step_id": "step_b" }
+          ],
+          "fallback_step_id": "step_default"
+        }
+        """.data(using: .utf8)!
+
+        let original = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: json)
+        let encoded = try JSONEncoder.default.encode(value: original)
+        let decoded = try JSONDecoder.default.decode(WorkflowTriggerAction.self, from: encoded)
+
+        expect(decoded) == original
+    }
+
     func testEncodingOmitsUiConfig() throws {
         let workflow = PublishedWorkflow(
             id: "wf-1",
