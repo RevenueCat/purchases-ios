@@ -43,12 +43,8 @@ final class PaywallAccessibilityUITests: XCTestCase {
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])
     }
 
-    /// Element queries cannot answer "is this hidden from VoiceOver": XCUITest lists elements
-    /// that carry `accessibilityHidden(true)`. This pins that down with plain SwiftUI images so
-    /// the next person does not write an assertion that silently cannot fail.
-    ///
-    /// If this starts failing, XCUITest began honoring the modifier and element queries became
-    /// usable for these assertions.
+    /// XCUITest lists elements that carry `accessibilityHidden(true)`, so element queries cannot
+    /// answer "is this hidden from VoiceOver". Fails once XCUITest starts honoring the modifier.
     func testElementQueriesListEvenHiddenImages() throws {
         let app = XCUIApplication()
         // Matches AccessibilityControlView.fixtureName in the app target, which the UI test

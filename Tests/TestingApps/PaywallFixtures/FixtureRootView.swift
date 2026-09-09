@@ -43,10 +43,7 @@ struct FixtureRootView: View {
 
 }
 
-/// Plain SwiftUI images with no RevenueCat code involved, so a test can establish what
-/// `accessibilityHidden` is expected to do in this harness before asserting the same thing
-/// about paywall media. Without this control, a paywall image showing up in the tree cannot be
-/// told apart from the test runner simply not honoring the modifier.
+/// Plain SwiftUI control, so a test can tell our bug from XCUITest ignoring the modifier.
 struct AccessibilityControlView: View {
 
     static let fixtureName = "a11y_control"

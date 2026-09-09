@@ -30,9 +30,8 @@ enum PaywallFixture: String, CaseIterable {
 
     /// One badge rule per offer type, each with its own rule for its copy.
     case badgeRulesPerOffer = "badge_rules_per_offer"
-    /// Decorative media in every place a real paywall puts it: a logo image component, feature
-    /// rows with checkmark icons, package cards with a checkmark icon inside the selector
-    /// button, and a background image. Tests assert which of them reach the accessibility tree.
+    /// Media in every place a real paywall puts it, so a test can assert which of it reaches
+    /// the accessibility tree.
     case decorativeMedia = "decorative_media"
 
     var title: String {
@@ -488,8 +487,6 @@ private extension PaywallFixture {
         )
     }
 
-    /// A checkmark icon like the ones real paywalls put next to feature copy and inside
-    /// package cards. Purely decorative: the adjacent text carries the meaning.
     static func checkIcon(sizePoints: CGFloat = 20) -> PaywallComponent {
         return .icon(.init(
             baseUrl: "https://icons.pawwalls.com/icons",
@@ -508,8 +505,7 @@ private extension PaywallFixture {
         ))
     }
 
-    /// A remotely hosted photo standing in for a logo or background. The dimensions describe
-    /// the asset so aspect math is stable before the download finishes.
+    /// The dimensions describe the asset so aspect math is stable before the download finishes.
     static let sampleImageUrls = PaywallComponent.ThemeImageUrls(
         light: .init(
             width: 1024,
@@ -520,9 +516,6 @@ private extension PaywallFixture {
         )
     )
 
-    /// A package card shaped like a real offer button: name, price (via variables), and a
-    /// decorative checkmark icon inside the selector.
-    ///
     /// `hiddenLeadingText` puts an invisible text ahead of the name, standing in for a badge or
     /// promo line that resolved hidden. It renders nothing, so it must not be the one asked to
     /// speak the selection state.
@@ -562,7 +555,6 @@ private extension PaywallFixture {
         ))
     }
 
-    /// A feature row: checkmark icon plus the copy it decorates.
     static func featureRow(textLid: String) -> PaywallComponent {
         return .stack(.init(
             components: [
@@ -585,7 +577,6 @@ private extension PaywallFixture {
             componentsConfig: .init(base: .init(
                 stack: .init(
                     components: [
-                        // Header: logo image next to the title, like a real paywall's brand mark.
                         .stack(.init(
                             components: [
                                 .image(.init(
