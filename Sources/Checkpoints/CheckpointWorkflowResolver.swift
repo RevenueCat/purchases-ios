@@ -39,27 +39,6 @@ import Foundation
 
 }
 
-/// A workflow resolved from RevenueCat configuration and ready for RevenueCatUI to present.
-@_spi(Internal) public final class ResolvedCheckpointWorkflow: @unchecked Sendable {
-
-    /// The workflow to render.
-    public let workflow: PublishedWorkflow
-    /// UI configuration used to render the workflow.
-    public let uiConfig: UIConfig
-    /// The offering referenced by the workflow.
-    public let offering: Offering
-    /// All offerings available while executing the workflow.
-    public let offerings: Offerings
-
-    init(workflow: PublishedWorkflow, uiConfig: UIConfig, offering: Offering, offerings: Offerings) {
-        self.workflow = workflow
-        self.uiConfig = uiConfig
-        self.offering = offering
-        self.offerings = offerings
-    }
-
-}
-
 /// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
 protocol CheckpointWorkflowResolver: AnyObject {
 
@@ -349,7 +328,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
                 offering: match.offering,
-                offerings: match.offerings
+                offerings: match.offerings,
+                workflowBlobRef: workflowData.workflowBlobRef
             )
         )
     }
