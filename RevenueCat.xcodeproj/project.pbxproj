@@ -623,6 +623,9 @@
 		EF0100000000000000000053 /* MockExternalPurchaseCustomLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */; };
 		EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */; };
 		AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */; };
+		AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */; };
+		AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */; };
+		AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000021 /* ExternalPurchaseLink.swift */; };
 		AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000011 /* ExternalPurchaseManager.swift */; };
 		AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */; };
 		AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */; };
@@ -1197,6 +1200,7 @@
 		887A60CB2C1D037000E1A461 /* TemplateBackgroundImageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A605E2C1D037000E1A461 /* TemplateBackgroundImageView.swift */; };
 		887A60CC2C1D037000E1A461 /* PaywallFontProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60602C1D037000E1A461 /* PaywallFontProvider.swift */; };
 		887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60612C1D037000E1A461 /* PaywallView.swift */; };
+		7E1A0F00A1B2C3D4E5F60001 /* PaywallInteractionEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E1A0F00A1B2C3D4E5F60002 /* PaywallInteractionEvent.swift */; };
 		887A60CE2C1D037000E1A461 /* View+PresentPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60622C1D037000E1A461 /* View+PresentPaywall.swift */; };
 		887A60CF2C1D037000E1A461 /* View+PresentPaywallFooter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */; };
 		887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */ = {isa = PBXBuildFile; fileRef = 887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */; };
@@ -2285,6 +2289,7 @@
 		48D31C8D350D427BB8A5CCF0 /* ConditionDeserializationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionDeserializationTests.swift; sourceTree = "<group>"; };
 		48D31C8E350D427BB8A5CCF1 /* ToPresentedOverridesTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToPresentedOverridesTests.swift; sourceTree = "<group>"; };
 		4B7C1E3A5D2F41908A6C0D11 /* OnURLOpenedModifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnURLOpenedModifierTests.swift; sourceTree = "<group>"; };
+		7E1A0F00A1B2C3D4E5F60003 /* OnPaywallInteractionModifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnPaywallInteractionModifierTests.swift; sourceTree = "<group>"; };
 		4C390BBAC430231B23B4B5F8 /* WorkflowsConfigProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WorkflowsConfigProvider.swift; sourceTree = "<group>"; };
 		4D21041D2CF548790095D254 /* GradientView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientView.swift; sourceTree = "<group>"; };
 		4D24EF3F2B04EA6000E586D2 /* StoreEnvironmentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreEnvironmentTests.swift; sourceTree = "<group>"; };
@@ -2407,6 +2412,10 @@
 		EF0100000000000000000051 /* MockExternalPurchaseCustomLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockExternalPurchaseCustomLink.swift; sourceTree = "<group>"; };
 		EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseCustomLinkTests.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseFlow.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResult.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResultTests.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000021 /* ExternalPurchaseLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLink.swift; sourceTree = "<group>"; };
+		AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkTests.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000011 /* ExternalPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManager.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseStrings.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManagerTests.swift; sourceTree = "<group>"; };
@@ -2970,6 +2979,7 @@
 		887A605E2C1D037000E1A461 /* TemplateBackgroundImageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TemplateBackgroundImageView.swift; sourceTree = "<group>"; };
 		887A60602C1D037000E1A461 /* PaywallFontProvider.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallFontProvider.swift; sourceTree = "<group>"; };
 		887A60612C1D037000E1A461 /* PaywallView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PaywallView.swift; sourceTree = "<group>"; };
+		7E1A0F00A1B2C3D4E5F60002 /* PaywallInteractionEvent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaywallInteractionEvent.swift; sourceTree = "<group>"; };
 		887A60622C1D037000E1A461 /* View+PresentPaywall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywall.swift"; sourceTree = "<group>"; };
 		887A60632C1D037000E1A461 /* View+PresentPaywallFooter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PresentPaywallFooter.swift"; sourceTree = "<group>"; };
 		887A60642C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "View+PurchaseRestoreCompleted.swift"; sourceTree = "<group>"; };
@@ -3625,6 +3635,7 @@
 				BF1EED2238264990801EEA0B /* ButtonComponentAccessibilityLabelTests.swift */,
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
 				9F2A6D48C1B34E7295D8F0A3 /* BrowserNavigateToTests.swift */,
+				AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */,
 				834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */,
 				CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */,
 				DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */,
@@ -5012,6 +5023,7 @@
 			children = (
 				EF0100000000000000000021 /* ExternalPurchaseCustomLinkType.swift */,
 				AAAA44740000000000000001 /* ExternalPurchaseFlow.swift */,
+				AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */,
 				AAAA44740000000000000011 /* ExternalPurchaseManager.swift */,
 				EF0100000000000000000011 /* ExternalPurchaseNotice.swift */,
 				EF0100000000000000000001 /* ExternalPurchaseTokenType.swift */,
@@ -5025,6 +5037,7 @@
 			children = (
 				EF0100000000000000000061 /* ExternalPurchaseCustomLinkTests.swift */,
 				AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */,
+				AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */,
 			);
 			path = ExternalPurchase;
 			sourceTree = "<group>";
@@ -6264,6 +6277,7 @@
 				390EF015ED9989A93F4EE3E5 /* SelectionHapticFeedback.swift */,
 				887A5FED2C1D037000E1A461 /* MockPurchases.swift */,
 				887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */,
+				AAAA44750000000000000021 /* ExternalPurchaseLink.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
 				16E147A32F3B4C010089B609 /* PurchasesUIService.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
@@ -6403,6 +6417,7 @@
 				2D2AFE902C6A9EF500D1B0B4 /* Binding+Extensions.swift */,
 				887A60602C1D037000E1A461 /* PaywallFontProvider.swift */,
 				887A60612C1D037000E1A461 /* PaywallView.swift */,
+				7E1A0F00A1B2C3D4E5F60002 /* PaywallInteractionEvent.swift */,
 				552CE0E02FD323EF006E41B4 /* Purchases+PreviewPaywall.swift */,
 				887A60622C1D037000E1A461 /* View+PresentPaywall.swift */,
 				FE8FCE0314FF930204BE4D33 /* View+ExitOfferPresentation.swift */,
@@ -6466,6 +6481,7 @@
 				16E147A52F3B4C010089B609 /* PurchasesUIServiceTests.swift */,
 				45010544C32C2A21A2F323D7 /* OnWebCheckoutOpenedModifierTests.swift */,
 				4B7C1E3A5D2F41908A6C0D11 /* OnURLOpenedModifierTests.swift */,
+				7E1A0F00A1B2C3D4E5F60003 /* OnPaywallInteractionModifierTests.swift */,
 				B10A136C03A9FF34FB805EFA /* ExitOfferPresenterTests.swift */,
 				7AA86A1D9F5AE92988B20230 /* WorkflowContextTests.swift */,
 				ECEA10EF63BC10F9BE6DB9F5 /* WorkflowPreviewTests.swift */,
@@ -8280,6 +8296,7 @@
 				53AAD34F2E09857300605F51 /* PaymentAuthorizationProvider.swift in Sources */,
 				EF0100000000000000000022 /* ExternalPurchaseCustomLinkType.swift in Sources */,
 				AAAA44740000000000000002 /* ExternalPurchaseFlow.swift in Sources */,
+				AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */,
 				AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */,
 				AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */,
 				EF0100000000000000000012 /* ExternalPurchaseNotice.swift in Sources */,
@@ -8361,6 +8378,7 @@
 				EF0100000000000000000052 /* MockExternalPurchaseCustomLink.swift in Sources */,
 				EF0100000000000000000062 /* ExternalPurchaseCustomLinkTests.swift in Sources */,
 				AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */,
+				AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */,
 				C05A00000000000000000003 /* CustomVariableKeyValidatorTests.swift in Sources */,
 				73A620000000000000000001 /* CheckpointValueTests.swift in Sources */,
 				1E3084A830178A9100236A34 /* APISourceFailoverTests.swift in Sources */,
@@ -8920,6 +8938,7 @@
 				16A7F4C62E564B97001F9FC8 /* TransitionModifier.swift in Sources */,
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				DBD2A168300E81E20019DB7F /* VideoAudioSessionHandler.swift in Sources */,
+				AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
 				A82500013C8D000000000001 /* KeyWindowFocusResigner.swift in Sources */,
 				16E147A42F3B4C010089B609 /* PurchasesUIService.swift in Sources */,
@@ -9016,6 +9035,7 @@
 				887A60D02C1D037000E1A461 /* View+PurchaseRestoreCompleted.swift in Sources */,
 				03C72F8D2D3311E300297FEC /* DisplayableColor.swift in Sources */,
 				887A60CD2C1D037000E1A461 /* PaywallView.swift in Sources */,
+				7E1A0F00A1B2C3D4E5F60001 /* PaywallInteractionEvent.swift in Sources */,
 				A0F100000000000000000002 /* PaywallWebViewStaticContext.swift in Sources */,
 				887A60C12C1D037000E1A461 /* DebugErrorView.swift in Sources */,
 				887A607C2C1D037000E1A461 /* ColorInformation+MultiScheme.swift in Sources */,

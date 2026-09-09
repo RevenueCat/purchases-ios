@@ -470,6 +470,9 @@ struct LoadedOfferingPaywallView: View {
     @Environment(\.onRequestedDismissal)
     private var onRequestedDismissal: (() -> Void)?
 
+    @Environment(\.paywallInteractionNotifier)
+    private var paywallInteractionNotifier
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -573,7 +576,8 @@ struct LoadedOfferingPaywallView: View {
             .environmentObject(self.introEligibility)
             .environment(
                 \.componentInteractionLogger,
-                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                onInteraction: self.paywallInteractionNotifier)
             )
             .environmentObject(self.purchaseHandler)
             .disabled(self.purchaseHandler.actionInProgress)
