@@ -101,11 +101,11 @@ import Foundation
         }
     }
 
-    /// Set by the backend only on the steps of the enrolled variant, and echoed verbatim on step events so
-    /// khepri can enroll on exposure. `nil` for steps outside an experiment.
+    /// The experiment active on this step's path, set by the backend and echoed verbatim on step events.
+    /// `nil` when no experiment applies to the step.
     public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
 
-    /// The enrolled variant key, alongside ``experimentId``.
+    /// The variant active on this step's path, alongside ``experimentId``.
     public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
 
     private func stringParam(_ key: String) -> String? {

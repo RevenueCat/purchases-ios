@@ -454,7 +454,6 @@ class WorkflowResponseTests: TestCase {
     }
 
     func testDecodeWorkflowStepExperimentParamsNilWhenAbsent() throws {
-        // Steps outside an enrolled variant (default combo, shared steps) carry no experiment params.
         let json = """
         {
           "id": "step_1",
