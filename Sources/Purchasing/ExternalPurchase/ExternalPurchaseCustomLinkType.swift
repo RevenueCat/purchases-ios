@@ -31,8 +31,8 @@ internal enum ExternalPurchaseAvailability: Equatable {
     /// not exist on this OS version. The app's usual way to buy is still available.
     case notEligible
 
-    /// The device does not authorize payments, which parental controls, Screen Time and MDM can withhold. Apple
-    /// asks that no purchase be offered at all in that case, external or through StoreKit:
+    /// The device does not authorize payments. Apple asks that no purchase be offered at all in that case,
+    /// external or through StoreKit:
     /// https://developer.apple.com/documentation/storekit/appstore/canmakepayments
     case paymentsNotAuthorized
 
