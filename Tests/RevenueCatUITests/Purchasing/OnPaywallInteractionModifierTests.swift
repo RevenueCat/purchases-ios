@@ -22,7 +22,7 @@ import XCTest
 @MainActor
 final class OnPaywallInteractionModifierTests: TestCase {
 
-    func testIfSetNilKeepsAncestorHandler() {
+    func testIfSetNilKeepsAncestorHandler() async {
         let received: Atomic<[String]> = .init([])
 
         let view = ProbeView()
@@ -37,14 +37,10 @@ final class OnPaywallInteractionModifierTests: TestCase {
             window.rootViewController = nil
         }
 
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(received.value) == ["probe"]
+        await expect(received.value).toEventually(equal(["probe"]))
     }
 
-    // Swift 5.8 mis-lowers the closure literal to `Optional<PaywallInteractionHandler>` conversion below
-    // and crashes inside the handler.
-    #if compiler(>=5.9)
-    func testIfSetHandlerReplacesAncestorHandler() {
+    func testIfSetHandlerReplacesAncestorHandler() async {
         let ancestor: Atomic<[String]> = .init([])
         let helper: Atomic<[String]> = .init([])
 
@@ -62,23 +58,21 @@ final class OnPaywallInteractionModifierTests: TestCase {
             window.rootViewController = nil
         }
 
-        RunLoop.main.run(until: Date().addingTimeInterval(0.2))
-        expect(helper.value) == ["probe"]
+        await expect(helper.value).toEventually(equal(["probe"]))
         expect(ancestor.value).to(beEmpty())
     }
-    #endif
 
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct ProbeView: View {
 
-    @Environment(\.onPaywallInteraction) private var onPaywallInteraction
+    @Environment(\.paywallInteractionNotifier) private var paywallInteractionNotifier
 
     var body: some View {
         Color.clear
             .onAppear {
-                self.onPaywallInteraction?(PaywallInteractionEvent(rawProperties: ["origin": "probe"]))
+                self.paywallInteractionNotifier(PaywallInteractionEvent(rawProperties: ["origin": "probe"]))
             }
     }
 

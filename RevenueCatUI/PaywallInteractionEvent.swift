@@ -14,7 +14,7 @@ import Foundation
 
 // swiftlint:disable missing_docs
 
-public typealias PaywallInteractionHandler = @MainActor (_ event: PaywallInteractionEvent) -> Void
+public typealias PaywallInteractionHandler = @MainActor @Sendable (_ event: PaywallInteractionEvent) -> Void
 
 /// A paywall control interaction.
 @objc(RCPaywallInteractionEvent)

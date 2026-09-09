@@ -505,13 +505,13 @@ extension View {
     ///     }
     /// ```
     public func onPaywallInteraction(_ handler: @escaping PaywallInteractionHandler) -> some View {
-        self.environment(\.onPaywallInteraction, handler)
+        self.environment(\.paywallInteractionNotifier, .init(handler))
     }
 
     func onPaywallInteraction(ifSet handler: PaywallInteractionHandler?) -> some View {
-        self.transformEnvironment(\.onPaywallInteraction) { current in
+        self.transformEnvironment(\.paywallInteractionNotifier) { current in
             if let handler {
-                current = handler
+                current = .init(handler)
             }
         }
     }

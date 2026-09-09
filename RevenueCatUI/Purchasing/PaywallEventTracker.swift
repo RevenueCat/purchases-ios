@@ -195,20 +195,15 @@ final class PaywallEventTracker: @unchecked Sendable {
 
     func componentInteractionLogger(
         sessionID: SessionID,
-        onInteraction: PaywallInteractionHandler? = nil
+        onInteraction: PaywallInteractionNotifier = .init()
     ) -> ComponentInteractionLogger {
         return .init { [weak self] interactionData in
             guard let event = self?.trackComponentInteraction(interactionData, sessionID: sessionID) else {
                 return false
             }
-            if let onInteraction {
+            if onInteraction.handler != nil {
                 let payload = event.paywallMap().filter { PaywallInteractionEvent.Keys.all.contains($0.key) }
-                let interactionEvent = PaywallInteractionEvent(rawProperties: payload)
-                #if compiler(>=5.9)
-                MainActor.assumeIsolated { onInteraction(interactionEvent) }
-                #else
-                Task { @MainActor in onInteraction(interactionEvent) }
-                #endif
+                onInteraction(PaywallInteractionEvent(rawProperties: payload))
             }
             return true
         }

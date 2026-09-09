@@ -69,7 +69,7 @@ extension FeatureEvent {
 
 extension PaywallEvent {
 
-    /// Snake-case dictionary of this event, matching the backend wire payload keys.
+    /// Snake-case dictionary of this event, as delivered to `EventsListener`.
     @_spi(Internal) public func paywallMap() -> [String: Any] {
         let typeName: String = {
             switch self {
