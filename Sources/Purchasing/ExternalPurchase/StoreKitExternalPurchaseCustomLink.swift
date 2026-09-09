@@ -45,7 +45,7 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
             return false
         }
 
-        guard self.paymentAuthorizationProvider.isAuthorized() else {
+        guard self.paymentAuthorizationProvider.canMakePayments() else {
             return false
         }
 
