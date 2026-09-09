@@ -55,7 +55,7 @@ struct PurchaseButtonComponentView: View {
         }
 
         switch actionType {
-        case .purchase, .pendingPurchaseContinuation:
+        case .purchase, .pendingPurchaseContinuation, .externalPurchasePreparation:
             return true
         case .restore:
             return false
@@ -135,6 +135,10 @@ struct PurchaseButtonComponentView: View {
     private func purchaseInWeb() async throws {
         self.logIfInPreview(package: self.packageContext.package)
 
+        guard !self.purchaseHandler.actionInProgress else {
+            return
+        }
+
         guard let launchWebCheckout = self.viewModel.urlForWebCheckout(
             packageContext: self.packageContext,
             appUserID: Purchases.isConfigured ? Purchases.shared.appUserID : "",
@@ -152,7 +156,15 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
+        guard let url = await ExternalPurchaseLink.urlToOpen(
+            launchWebCheckout.url,
+            method: launchWebCheckout.method,
+            purchaseHandler: self.purchaseHandler
+        ) else {
+            return
+        }
+
+        self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
     }
 
     private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
@@ -184,14 +196,12 @@ struct PurchaseButtonComponentView: View {
         ))
     }
 
-    private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
+    private func openWebPaywallLink(url: URL,
+                                    launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
         Purchases.shared.invalidateCustomerInfoCache()
 
-        let method = launchWebCheckout.method
-        let url = launchWebCheckout.url
-
         Browser.navigateTo(url: url,
-                           method: method,
+                           method: launchWebCheckout.method,
                            openURL: self.openURL,
                            inAppBrowserURL: self.$inAppBrowserURL)
 

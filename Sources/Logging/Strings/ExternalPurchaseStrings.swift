@@ -17,9 +17,11 @@ import Foundation
 
 enum ExternalPurchaseStrings {
 
-    case eligibility_resolved(_ canMakeExternalPurchases: Bool)
+    case eligibility_resolved(_ availability: ExternalPurchaseAvailability)
     case unsupported_with_test_store
     case cannot_make_external_purchases
+    case payments_not_authorized
+    case already_preparing
     case notice_cancelled
     case error_showing_notice(_ error: Error)
     case no_token_available
@@ -33,12 +35,16 @@ extension ExternalPurchaseStrings: LogMessage {
 
     var description: String {
         switch self {
-        case let .eligibility_resolved(canMakeExternalPurchases):
-            return "Can make external purchases: \(canMakeExternalPurchases)."
+        case let .eligibility_resolved(availability):
+            return "External purchase availability resolved to \(availability)."
         case .unsupported_with_test_store:
             return "External purchases are not supported when the SDK is configured with a Test Store API key."
         case .cannot_make_external_purchases:
             return "Not preparing an external purchase: this app cannot offer one to this customer."
+        case .payments_not_authorized:
+            return "Not preparing an external purchase: this device does not authorize payments."
+        case .already_preparing:
+            return "Not preparing an external purchase: another one is already being prepared."
         case .notice_cancelled:
             return "The customer chose not to continue to the external purchase."
         case let .error_showing_notice(error):
