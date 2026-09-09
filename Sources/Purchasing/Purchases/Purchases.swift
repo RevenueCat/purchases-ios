@@ -1926,9 +1926,9 @@ public extension Purchases {
         return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
     }
 
-    /// Whether ``prepareExternalPurchaseLink()`` has any work to do, so that `RevenueCatUI` only tells the
-    /// customer something is under way when it really is.
-    @_spi(Internal) var preparesExternalPurchaseLinks: Bool {
+    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
+    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
         return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
     }
 

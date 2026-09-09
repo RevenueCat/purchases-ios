@@ -44,7 +44,7 @@ enum ExternalPurchaseLink {
             return false
         }
 
-        return Purchases.shared.preparesExternalPurchaseLinks
+        return Purchases.shared.useExternalPurchaseCustomLinks
     }
 
     private static func urlToOpen(_ url: URL) async -> URL? {
