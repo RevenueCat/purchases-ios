@@ -136,8 +136,7 @@ internal enum ExternalPurchasePreparationResult: Equatable {
         /// stops the purchase even though the customer did not decline.
         case noticeFailed
 
-        /// Another preparation was already under way, and that one carries the purchase. The caller is expected
-        /// to route the customer nowhere, so a second tap does not open a second checkout.
+        /// Another preparation was already under way, and that one carries the purchase.
         case alreadyPreparing
 
     }
