@@ -174,7 +174,7 @@ open class CustomPaywallFontProvider : RevenueCatUI.PaywallFontProvider {
   open func font(for textStyle: SwiftUICore.Font.TextStyle) -> SwiftUICore.Font
   @objc deinit
 }
-public typealias PaywallInteractionHandler = @_Concurrency.MainActor (_ event: RevenueCatUI.PaywallInteractionEvent) -> Swift.Void
+public typealias PaywallInteractionHandler = @_Concurrency.MainActor @Sendable (_ event: RevenueCatUI.PaywallInteractionEvent) -> Swift.Void
 @_hasMissingDesignatedInitializers @objc(RCPaywallInteractionEvent) final public class PaywallInteractionEvent : ObjectiveC.NSObject, @unchecked Swift.Sendable {
   @objc final public let rawProperties: [Swift.String : Any]
   final public func property<Value>(for key: RevenueCatUI.PaywallInteractionEvent.Key<Value>) -> Value?
