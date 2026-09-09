@@ -60,10 +60,7 @@ extension View {
     func applyWidth(_ sizeConstraint: PaywallComponent.SizeConstraint, alignment: Alignment) -> some View {
         switch sizeConstraint {
         case let .fit(_, minMax):
-            // Without `FitSizeLayout` this clamps the proposal rather than the content, so flexible content
-            // fills up to the maximum. Measuring with `fixedSize` instead would stop text from wrapping,
-            // which is the more visible failure on a horizontal axis.
-            self.applyWidthLimits(minMax, alignment: alignment)
+            self.applyFitWidthLimits(minMax, alignment: alignment)
         case let .fill(minMax):
             self
                 .frame(maxWidth: .infinity, alignment: alignment)
@@ -121,16 +118,32 @@ extension View {
         }
     }
 
+    /// Fallback for OS versions without `Layout`. A minimum provides a finite intrinsic target, so measure
+    /// around it before applying the maximum. Max-only widths keep the regular frame behavior so text wraps.
+    @ViewBuilder
+    func applyFitWidthLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
+        if minMax.min != nil {
+            self
+                .frame(minWidth: minMax.minDimension, alignment: alignment)
+                .fixedSize(horizontal: true, vertical: false)
+                .frame(maxWidth: minMax.effectiveMaxDimension, alignment: alignment)
+                .fixedSize(horizontal: true, vertical: false)
+        } else {
+            self.applyWidthLimits(minMax, alignment: alignment)
+        }
+    }
+
     /// Fallback for OS versions without `Layout`: measure the content at its intrinsic height, then clamp.
     /// The width proposal is preserved so text still wraps; the minimum is not proposed back to the content,
     /// so flexible children are aligned inside the minimum instead of stretched to it.
     @ViewBuilder
-    fileprivate func applyFitHeightLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
+    func applyFitHeightLimits(_ minMax: MinMax, alignment: Alignment) -> some View {
         if minMax.hasLimit {
             self
                 .frame(minHeight: minMax.minDimension, alignment: alignment)
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxHeight: minMax.effectiveMaxDimension, alignment: alignment)
+                .fixedSize(horizontal: false, vertical: true)
         } else {
             self
         }

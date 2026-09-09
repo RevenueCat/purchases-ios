@@ -118,14 +118,41 @@ final class SizeModifierTests: TestCase {
             )
 
         let width = Self.fittingSize(of: view, in: .init(width: 500, height: 100)).width
+        XCTAssertEqual(width, 60)
+    }
 
-        if #available(iOS 16.0, *) {
-            XCTAssertEqual(width, 60)
-        } else {
-            // The pre-`Layout` fallback keeps text wrapping on the horizontal axis at the cost of
-            // letting flexible content fill up to the maximum.
-            XCTAssertEqual(width, 120)
-        }
+    func testLegacyFitFallbackUsesMinimumForEmptyContent() {
+        let view = VStack {}
+            .applyFitWidthLimits(.init(min: 64, max: 96), alignment: .center)
+            .applyFitHeightLimits(.init(min: 88, max: 110), alignment: .center)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 500)),
+            .init(width: 64, height: 88)
+        )
+    }
+
+    func testLegacyFitFallbackGrowsToIntrinsicContent() {
+        let view = Color.clear
+            .frame(width: 75, height: 100)
+            .applyFitWidthLimits(.init(min: 64, max: 96), alignment: .center)
+            .applyFitHeightLimits(.init(min: 88, max: 110), alignment: .center)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 500, height: 500)),
+            .init(width: 75, height: 100)
+        )
+    }
+
+    func testLegacyFitFallbackUsesMinimumForFlexibleHeight() {
+        let view = Color.clear
+            .frame(maxHeight: .infinity)
+            .applyFitHeightLimits(.init(min: 60, max: 120), alignment: .center)
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 100, height: 500)).height,
+            60
+        )
     }
 
     func testFitMaximumWidthWrapsText() {
