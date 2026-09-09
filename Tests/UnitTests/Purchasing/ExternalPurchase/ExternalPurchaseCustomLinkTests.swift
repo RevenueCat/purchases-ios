@@ -93,7 +93,7 @@ class ExternalPurchaseCustomLinkTests: TestCase {
     /// Told apart from being ineligible: the caller has nothing to offer instead when the device cannot pay.
     func testPaymentsNotAuthorizedWhenTheDeviceDoesNotAuthorizePayments() async throws {
         let customLink = StoreKitExternalPurchaseCustomLink(
-            paymentAuthorizationProvider: .init(isAuthorized: { false })
+            paymentAuthorizationProvider: .init(canMakePayments: { false })
         )
 
         guard customLink.isAPIAvailable else {
