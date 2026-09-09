@@ -37,7 +37,7 @@ final class ExternalPurchaseManager {
     /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
     /// anything to Apple.
     func canMakeExternalPurchases() async -> Bool {
-        guard self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks else {
+        guard self.takesPartInTheProgramme else {
             return false
         }
 
@@ -57,6 +57,10 @@ final class ExternalPurchaseManager {
     /// Must not be called before then: the notice may only be shown in response to a customer interaction, and
     /// every token minted here is one Apple expects a report for, whether or not a transaction follows.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
+        guard self.takesPartInTheProgramme else {
+            return .stopped(.cannotMakeExternalPurchases)
+        }
+
         guard await self.canMakeExternalPurchases() else {
             Logger.warn(Strings.externalPurchase.cannot_make_external_purchases)
             return .stopped(.cannotMakeExternalPurchases)
@@ -150,6 +154,12 @@ extension ExternalPurchasePreparationResult {
 // MARK: - Private
 
 private extension ExternalPurchaseManager {
+
+    /// Whether the app takes part in Apple's external purchase custom link programme at all, which is a
+    /// precondition for everything here.
+    var takesPartInTheProgramme: Bool {
+        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
 
     enum NoticeOutcome {
         case continued
