@@ -132,7 +132,7 @@ final class WorkflowStepEventTrackerTests: TestCase {
         let workflow = try Self.makeWorkflow(
             step1ParamValuesJSON: #"{ "experiment_id": "exp_abc", "experiment_variant": "b" }"#
         )
-        let tracker = self.makeTracker(workflow: workflow)
+        let tracker = self.makeTracker(workflow: workflow, workflowBlobRef: "blob-ref-1")
         let step1 = try XCTUnwrap(workflow.steps["step_1"])
         let step2 = try XCTUnwrap(workflow.steps["step_2"])
 
@@ -173,6 +173,18 @@ final class WorkflowStepEventTrackerTests: TestCase {
         expect(self.recorded[0].data.experiment?.workflowBlobRef) == "blob-ref-1"
         expect(self.recorded[1].data.experiment?.workflowBlobRef) == "blob-ref-1"
         expect(self.recorded[2].data.experiment).to(beNil())
+    }
+
+    func testExperimentIsNotReportedWithoutTheWorkflowBlobRef() throws {
+        let workflow = try Self.makeWorkflow(
+            step1ParamValuesJSON: #"{ "experiment_id": "exp_abc", "experiment_variant": "b" }"#
+        )
+        let tracker = self.makeTracker(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        tracker.trackInitialStep(step)
+
+        expect(self.recorded[0].data.experiment).to(beNil())
     }
 
     func testHalfAnExperimentPairIsNotReported() throws {

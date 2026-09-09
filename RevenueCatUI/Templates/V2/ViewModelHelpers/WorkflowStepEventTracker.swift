@@ -117,14 +117,15 @@ struct WorkflowStepEventTracker {
 
     private func experimentData(for step: WorkflowStep) -> WorkflowEvent.ExperimentData? {
         guard let experimentId = step.experimentId,
-              let experimentVariant = step.experimentVariant else {
+              let experimentVariant = step.experimentVariant,
+              let workflowBlobRef = self.workflowBlobRef else {
             return nil
         }
 
         return .init(
             experimentId: experimentId,
             experimentVariant: experimentVariant,
-            workflowBlobRef: self.workflowBlobRef
+            workflowBlobRef: workflowBlobRef
         )
     }
 

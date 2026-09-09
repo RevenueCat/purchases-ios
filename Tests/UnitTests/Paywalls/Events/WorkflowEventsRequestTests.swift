@@ -185,7 +185,11 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let json = try encodedJSON(from: event)
@@ -260,7 +264,11 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let stored = try XCTUnwrap(storedEvent(from: event))
@@ -276,7 +284,11 @@ class WorkflowEventsRequestTests: TestCase {
             .init(
                 workflowId: "wfl_abc",
                 stepId: "step-1",
-                experiment: .init(experimentId: "exp-1", experimentVariant: "variant-a", workflowBlobRef: nil)
+                experiment: .init(
+                    experimentId: "exp-1",
+                    experimentVariant: "variant-a",
+                    workflowBlobRef: "blob-ref-1"
+                )
             )
         )
         let json = try encodedJSON(from: event)

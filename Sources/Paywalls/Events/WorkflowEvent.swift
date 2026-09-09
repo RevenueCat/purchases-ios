@@ -128,9 +128,9 @@ extension WorkflowEvent {
 
         public var experimentId: String
         public var experimentVariant: String
-        public var workflowBlobRef: String?
+        public var workflowBlobRef: String
 
-        public init(experimentId: String, experimentVariant: String, workflowBlobRef: String?) {
+        public init(experimentId: String, experimentVariant: String, workflowBlobRef: String) {
             self.experimentId = experimentId
             self.experimentVariant = experimentVariant
             self.workflowBlobRef = workflowBlobRef
