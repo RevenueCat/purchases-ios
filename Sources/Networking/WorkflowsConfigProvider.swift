@@ -30,6 +30,12 @@ enum WorkflowResolutionError: Error, Equatable {
     /// No item for this `workflowId` exists in the synced `workflows` topic.
     case notFound
 
+    /// The read was superseded by remote-config changes before it could complete consistently.
+    case configurationUnavailable
+
+    /// The read was cancelled before it could complete.
+    case cancelled
+
     /// An item exists, but its body couldn't be decoded as a ``PublishedWorkflow``.
     case decodingFailed(NSError)
 
@@ -137,6 +143,20 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// Cache misses validate the workflow topic's generation after `ui_config` resolves, so an in-flight
     /// config change fails the resolution instead of returning a mixed-generation workflow/config pair.
     func getWorkflow(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        do {
+            return try await self.manager.readConsistent {
+                await self.getWorkflowOnce(workflowId: workflowId)
+            } ?? .failure(.notFound)
+        } catch is CancellationError {
+            return .failure(.cancelled)
+        } catch RemoteConfigConsistencyError.stale {
+            return .failure(.configurationUnavailable)
+        } catch {
+            return .failure(.notFound)
+        }
+    }
+
+    private func getWorkflowOnce(workflowId: String) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         // Deliberately sequential, not `async let`: a miss or malformed body returns without paying for
         // `ui_config`. A cached-body hit decodes synchronously from in-memory bytes on the caller's thread.
         if let cached = self.cachedWorkflowResult(workflowId: workflowId) {
@@ -161,6 +181,15 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     func decodeCachedWorkflowForAssetPrewarming(
         workflowId: String
     ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
+        return await self.readConsistent(
+            { await self.decodeCachedWorkflowForAssetPrewarmingOnce(workflowId: workflowId) },
+            fallback: .failure(.notFound)
+        )
+    }
+
+    private func decodeCachedWorkflowForAssetPrewarmingOnce(
+        workflowId: String
+    ) async -> Result<WorkflowDataResult, WorkflowResolutionError> {
         guard let cached = self.cachedWorkflowResult(workflowId: workflowId, retainDecodedResult: false) else {
             return .failure(.notFound)
         }
@@ -177,12 +206,18 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
     /// its assets. Missing bodies are omitted so one failed download does not prevent the remaining workflows from
     /// proceeding.
     func cachePrefetchedWorkflowBodyData(includingOfferingId: String?) async -> [String] {
+        return await self.readConsistent(
+            { await self.cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: includingOfferingId) },
+            fallback: []
+        )
+    }
+
+    private func cachePrefetchedWorkflowBodyDataOnce(includingOfferingId: String?) async -> [String] {
         if let cache = self.currentWorkflowCache(),
            cache.containsPrefetchedWorkflowBodyData(includingOfferingId: includingOfferingId) {
             return cache.workflowIDsWhoseBodiesShouldBeCached(includingOfferingId: includingOfferingId)
         }
         guard let topic = await self.manager.awaitTopicAndPrefetchBlobsReady(.workflows) else { return [] }
-
         let snapshot = GenerationGuardedCacheSnapshot(
             generation: self.manager.configGeneration,
             key: topic
@@ -228,6 +263,13 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
         return orderedWorkflowIDsToPrefetch.filter { workflows[$0] != nil }
     }
 
+    private func readConsistent<Value>(
+        _ operation: () async -> Value?,
+        fallback: @autoclosure () -> Value
+    ) async -> Value {
+        return (try? await self.manager.readConsistent(operation)) ?? fallback()
+    }
+
     func cachedWorkflow(forOfferingId offeringId: String) -> WorkflowDataResult? {
         return self.manager.withCurrentConfigGeneration { generation in
             guard let cache = self.currentWorkflowCache(currentGeneration: generation) else { return nil }
@@ -254,6 +296,8 @@ final class WorkflowsConfigProvider: WorkflowsConfigProviderType {
                 return .failure(.notFound)
             }
             return .success(workflow)
+        } catch is CancellationError {
+            return .failure(.cancelled)
         } catch {
             Logger.error(Strings.codable.decoding_error(error, PublishedWorkflow.self))
             return .failure(.decodingFailed(error as NSError))
