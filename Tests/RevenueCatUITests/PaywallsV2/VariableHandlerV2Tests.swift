@@ -463,9 +463,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("3mo"))
     }
 
-    /// Paywall copy often types the separator and abbreviation literally, e.g. a yearly plan
-    /// showing its monthly-equivalent price as "{{ product.price_per_month }}/mo". No variable
-    /// substitution reaches that, and a screen reader reads it as "slash mo".
+    /// Paywall copy types the separator literally, which no variable substitution reaches.
     func testLiteralPeriodAbbreviationIsExpandedForAccessibility() {
         let result = variableHandler.processVariables(
             in: "{{ product.price_per_month }}/mo",
@@ -491,9 +489,7 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal("$4.49/mo"))
     }
 
-    /// The expansion runs once inside V2 substitution and again after V1 substitution, because
-    /// V1 placeholders only resolve to "$6.99/mo" at that later point. Running it twice must
-    /// leave the already-expanded text alone.
+    /// The expansion runs after both the V2 and V1 passes, so it must be idempotent.
     func testPeriodAbbreviationExpansionIsIdempotent() {
         let once = VariableHandlerV2.expandPeriodAbbreviations(
             in: "$6.99/mo and $69.99/yr",

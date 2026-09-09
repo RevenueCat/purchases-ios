@@ -241,14 +241,12 @@ struct NonLocalizedMarkdownText: View {
             )
         }
     }
-    /// What VoiceOver should say instead of the rendered text, or `nil` to leave it alone: a
-    /// spoken variant of the text itself, e.g. "$1.24 monthly" for "$1.24/mo".
+    /// What VoiceOver says instead of the rendered text, e.g. "$1.24 monthly" for "$1.24/mo".
     private var spokenAccessibilityLabel: String? {
         return self.accessibilityText.map(Self.strippingMarkdown)
     }
 
-    /// Markdown syntax removed, so VoiceOver does not read a literal `[title](url)` when a
-    /// spoken label replaces the rendered text.
+    /// Stops VoiceOver reading a literal `[title](url)` when a spoken label replaces the text.
     private static func strippingMarkdown(_ text: String) -> String {
         guard let attrString = try? AttributedString(
             markdown: text,

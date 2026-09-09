@@ -100,8 +100,7 @@ struct VariableHandlerV2 {
         return Self.expandPeriodAbbreviations(in: rendered, localizations: localizations)
     }
 
-    /// Period abbreviations paired with the word they are spoken as. Both sides come from the
-    /// paywall's own localizations, so the expansion stays in the paywall's language.
+    /// Both sides come from the paywall's localizations, so expansion stays in its language.
     private static let periodAbbreviationKeys: [(short: String, spoken: String)] = [
         ("day_short", "daily"),
         ("week_short", "weekly"),
@@ -110,11 +109,8 @@ struct VariableHandlerV2 {
         ("annual_short", "annually")
     ]
 
-    /// Rewrites "$5.83/mo" as "$5.83 monthly" for spoken text.
-    ///
-    /// Variables resolved for accessibility already avoid the separator, but paywall copy
-    /// routinely types it and the abbreviation literally — "{{ product.price_per_month }}/mo" —
-    /// and no variable substitution can reach that. A screen reader reads it as "slash mo".
+    /// Rewrites "$5.83/mo" as "$5.83 monthly". Paywall copy types the separator literally
+    /// ("{{ product.price_per_month }}/mo"), which no variable substitution reaches.
     static func expandPeriodAbbreviations(in text: String, localizations: [String: String]) -> String {
         let replacements = self.periodAbbreviationKeys.compactMap { keys -> (String, String)? in
             guard let short = localizations[keys.short], !short.isEmpty,
@@ -125,8 +121,7 @@ struct VariableHandlerV2 {
             return (short, spoken)
         }
 
-        // Longest abbreviation first: shorter ones can be a prefix of longer ones, and the
-        // short match would otherwise consume the text before the longer one is tried.
+        // Longest first: a shorter abbreviation can be a prefix of a longer one.
         return replacements
             .sorted { $0.0.count > $1.0.count }
             .reduce(text) { partial, replacement in
@@ -345,9 +340,7 @@ extension VariablesV2 {
         let date: Date
         let promoOffer: PromotionalOffer?
         let countdownTime: CountdownTime?
-        /// When true, resolves to text meant to be spoken rather than displayed: abbreviated
-        /// period units become full words and "price/period" becomes "price periodly", so a
-        /// screen reader says "$1.24 monthly" instead of "$1.24 slash mo".
+        /// Resolves to text meant to be spoken rather than displayed.
         var forAccessibility: Bool = false
     }
 
@@ -680,9 +673,7 @@ extension VariablesV2 {
         return "\(price)/\(periodAbbreviated)"
     }
 
-    /// Spoken counterpart of `productPricePerPeriod`/`productPricePerPeriodAbbreviated`:
-    /// "$1.24 monthly" rather than "$1.24/mo", since screen readers announce "/" as "slash"
-    /// and abbreviations like "mo" literally.
+    /// Spoken counterpart of `productPricePerPeriodAbbreviated`: "$1.24 monthly", not "$1.24/mo".
     func productPricePerPeriodSpoken(
         package: Package,
         localizations: [String: String],

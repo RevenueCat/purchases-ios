@@ -164,9 +164,8 @@ class TextComponentViewModel {
             return processedWithV2AndV1
         }
 
-        // Run again after V1 substitution. V1 placeholders resolve to forms like "$6.99/mo"
-        // only at this point, after the V2 pass has already expanded what it could see. The
-        // expansion is idempotent, so the text V2 already handled is left alone.
+        // V1 placeholders only resolve to forms like "$6.99/mo" here, after the V2 pass.
+        // The expansion is idempotent, so what V2 already handled is left alone.
         return VariableHandlerV2.expandPeriodAbbreviations(
             in: processedWithV2AndV1,
             localizations: config.localizations
@@ -296,8 +295,7 @@ struct TextComponentStyle {
     let visible: Bool
     let name: String?
     let text: String
-    /// Spoken replacement for `text`, present only when it differs: abbreviated period units
-    /// expanded so a screen reader says "$1.24 monthly" instead of "$1.24 slash mo".
+    /// Spoken replacement for `text`, set only when it differs from what is displayed.
     let accessibilityText: String?
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
