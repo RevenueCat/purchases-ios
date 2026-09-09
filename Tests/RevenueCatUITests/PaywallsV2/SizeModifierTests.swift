@@ -142,8 +142,35 @@ final class SizeModifierTests: TestCase {
             )
         let size = Self.fittingSize(of: view, in: .init(width: 500, height: 500))
 
-        XCTAssertEqual(size.width, 96)
+        // Fit reports the wrapped content width, which can land just under the maximum.
+        XCTAssertLessThanOrEqual(size.width, 96)
+        XCTAssertGreaterThan(size.width, 48)
         XCTAssertGreaterThan(size.height, singleLineHeight * 2)
+    }
+
+    func testFitMinimumDoesNotShrinkContentLargerThanTheProposal() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("Only `FitSizeLayout` re-proposes the clamped size")
+        }
+
+        // 450pt of rigid content in a 400pt parent: the inactive minimum must not clamp the box to the
+        // proposal, which would make the content overflow its own background.
+        let view = VStack(spacing: 0) {
+            Color.clear.frame(width: 200, height: 150)
+            Color.clear.frame(width: 200, height: 150)
+            Color.clear.frame(width: 200, height: 150)
+        }
+        .size(
+            .init(
+                width: .fixed(200),
+                height: .fit(nil, .init(min: 100, max: nil))
+            )
+        )
+
+        XCTAssertEqual(
+            Self.fittingSize(of: view, in: .init(width: 400, height: 400)),
+            .init(width: 200, height: 450)
+        )
     }
 
     func testFitMinimumIsProposedToFillContent() throws {

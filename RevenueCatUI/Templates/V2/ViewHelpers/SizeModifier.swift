@@ -228,13 +228,15 @@ private struct FitSizeLayout: Layout {
             )
         }
 
-        // Content larger than the maximum (e.g. fixed children) must not grow the box; it overflows instead.
+        // Clamp what the content actually measured rather than forcing the proposal: fixed children larger
+        // than the maximum must not grow the box (they overflow instead), but rigid content that only exceeds
+        // the parent's proposal keeps its real size, exactly like an unconstrained fit axis.
         var size = subview.sizeThatFits(resolvedProposal)
-        if self.limits.width != nil, let width = resolvedProposal.width {
-            size.width = width
+        if let width = self.limits.width {
+            size.width = width.clamped(size.width)
         }
-        if self.limits.height != nil, let height = resolvedProposal.height {
-            size.height = height
+        if let height = self.limits.height {
+            size.height = height.clamped(size.height)
         }
 
         return size
