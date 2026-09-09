@@ -152,7 +152,14 @@ struct PurchaseButtonComponentView: View {
             return
         }
 
-        self.openWebPaywallLink(launchWebCheckout: launchWebCheckout)
+        guard let url = await ExternalPurchaseLink.urlToOpen(
+            launchWebCheckout.url,
+            method: launchWebCheckout.method
+        ) else {
+            return
+        }
+
+        self.openWebPaywallLink(url: url, launchWebCheckout: launchWebCheckout)
     }
 
     private func logPurchaseButtonInteractionForInApp(selectedPackage: Package) {
@@ -184,14 +191,12 @@ struct PurchaseButtonComponentView: View {
         ))
     }
 
-    private func openWebPaywallLink(launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
+    private func openWebPaywallLink(url: URL,
+                                    launchWebCheckout: PurchaseButtonComponentViewModel.LaunchWebCheckout) {
         Purchases.shared.invalidateCustomerInfoCache()
 
-        let method = launchWebCheckout.method
-        let url = launchWebCheckout.url
-
         Browser.navigateTo(url: url,
-                           method: method,
+                           method: launchWebCheckout.method,
                            openURL: self.openURL,
                            inAppBrowserURL: self.$inAppBrowserURL)
 
