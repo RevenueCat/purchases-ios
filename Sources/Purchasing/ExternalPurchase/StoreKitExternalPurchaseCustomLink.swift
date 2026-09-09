@@ -39,19 +39,19 @@ internal struct StoreKitExternalPurchaseCustomLink: ExternalPurchaseCustomLinkTy
         #endif
     }
 
-    func canMakeExternalPurchases() async -> Bool {
+    func externalPurchaseAvailability() async -> ExternalPurchaseAvailability {
         #if compiler(>=6.0.2)
         guard #available(iOS 18.1, macOS 15.1, tvOS 18.1, watchOS 11.1, visionOS 2.1, *) else {
-            return false
+            return .notEligible
         }
 
         guard self.paymentAuthorizationProvider.isAuthorized() else {
-            return false
+            return .paymentsNotAuthorized
         }
 
-        return await ExternalPurchaseCustomLink.isEligible
+        return await ExternalPurchaseCustomLink.isEligible ? .available : .notEligible
         #else
-        return false
+        return .notEligible
         #endif
     }
 

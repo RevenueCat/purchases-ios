@@ -21,10 +21,27 @@ internal enum ExternalPurchaseError: Error, Hashable {
 
 }
 
+/// Whether the app can offer an external purchase to this customer, and what is left to offer when it cannot.
+internal enum ExternalPurchaseAvailability: Equatable {
+
+    /// The app can offer an external purchase.
+    case available
+
+    /// External purchases do not apply to this customer: StoreKit says the app is not eligible, or the API does
+    /// not exist on this OS version. The app's usual way to buy is still available.
+    case notEligible
+
+    /// The device does not authorize payments, which parental controls, Screen Time and MDM can withhold. Apple
+    /// asks that no purchase be offered at all in that case, external or through StoreKit:
+    /// https://developer.apple.com/documentation/storekit/appstore/canmakepayments
+    case paymentsNotAuthorized
+
+}
+
 /// The part of StoreKit's `ExternalPurchaseCustomLink` that the SDK uses.
 ///
-/// ``canMakeExternalPurchases()`` is a precondition for the rest, and the notice must only be shown in response to
-/// a deliberate customer interaction, such as tapping a button.
+/// ``externalPurchaseAvailability()`` is a precondition for the rest, and the notice must only be shown in
+/// response to a deliberate customer interaction, such as tapping a button.
 internal protocol ExternalPurchaseCustomLinkType {
 
     /// Whether StoreKit's external purchase custom link API exists on the current OS version.
@@ -35,13 +52,14 @@ internal protocol ExternalPurchaseCustomLinkType {
 
     /// Whether the app can offer an external purchase to this customer right now.
     ///
-    /// Covers both runtime checks Apple requires before requesting a token: StoreKit's own eligibility, which
-    /// accounts for the customer's storefront so the SDK does not determine the region itself, and whether the
-    /// device authorizes payments at all, which parental controls, Screen Time and MDM can withhold.
+    /// Covers both runtime checks Apple requires before requesting a token, in the order it asks for them:
+    /// whether the device authorizes payments at all, and StoreKit's own eligibility, which accounts for the
+    /// customer's storefront so the SDK does not determine the region itself. They are kept apart because what
+    /// the app should offer instead differs, see ``ExternalPurchaseAvailability``.
     ///
-    /// Also returns `false` when the API is unavailable, in which case ``token(for:)`` and ``showNotice(type:)``
-    /// throw ``ExternalPurchaseError/apiUnavailable``.
-    func canMakeExternalPurchases() async -> Bool
+    /// Also returns ``ExternalPurchaseAvailability/notEligible`` when the API is unavailable, in which case
+    /// ``token(for:)`` and ``showNotice(type:)`` throw ``ExternalPurchaseError/apiUnavailable``.
+    func externalPurchaseAvailability() async -> ExternalPurchaseAvailability
 
     /// Requests an external purchase token of the given type.
     ///
