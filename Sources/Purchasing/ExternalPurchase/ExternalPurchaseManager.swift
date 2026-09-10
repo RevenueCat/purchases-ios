@@ -19,6 +19,7 @@ final class ExternalPurchaseManager {
 
     private let customLink: ExternalPurchaseCustomLinkType
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
+    private let tokenStore: ExternalPurchaseTokenStoreType
     private let currentUserProvider: CurrentUserProvider
     private let systemInfo: SystemInfo
 
@@ -26,10 +27,12 @@ final class ExternalPurchaseManager {
 
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
+         tokenStore: ExternalPurchaseTokenStoreType,
          currentUserProvider: CurrentUserProvider,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
+        self.tokenStore = tokenStore
         self.currentUserProvider = currentUserProvider
         self.systemInfo = systemInfo
     }
@@ -220,25 +223,47 @@ private extension ExternalPurchaseManager {
             Logger.debug(Strings.externalPurchase.no_token_available)
         }
 
-        let tokenID = ExternalPurchaseTokenID.generate()
+        let registration = ExternalPurchaseTokenRegistration(
+            tokenID: ExternalPurchaseTokenID.generate(),
+            appUserID: self.currentUserProvider.currentAppUserID,
+            purchaseType: tokenType,
+            token: token
+        )
+
+        self.tokenStore.store(registration)
 
         let error: BackendError? = await Async.call { completion in
             self.externalPurchaseTokenAPI.postExternalPurchaseToken(
-                appUserID: self.currentUserProvider.currentAppUserID,
-                purchaseType: tokenType,
-                tokenID: tokenID,
-                token: token,
+                appUserID: registration.appUserID,
+                purchaseType: registration.purchaseType,
+                tokenID: registration.tokenID,
+                token: registration.token,
                 completion: completion
             )
         }
 
         if let error = error {
-            Logger.error(Strings.externalPurchase.error_registering_token(error))
+            self.handleFailedRegistration(registration, error: error)
             return .unregistered(.registrationFailed)
         }
 
-        Logger.debug(Strings.externalPurchase.token_registered(tokenID))
-        return .registered(tokenID: tokenID)
+        self.tokenStore.remove(registration)
+        Logger.debug(Strings.externalPurchase.token_registered(registration.tokenID))
+        return .registered(tokenID: registration.tokenID)
+    }
+
+    /// A registration the backend rejected would only be rejected again, so only one it may still accept is
+    /// kept.
+    private func handleFailedRegistration(_ registration: ExternalPurchaseTokenRegistration,
+                                          error: BackendError) {
+        Logger.error(Strings.externalPurchase.error_registering_token(error))
+
+        if error.isTransient {
+            Logger.debug(Strings.externalPurchase.registration_pending_retry(registration.tokenID))
+        } else {
+            self.tokenStore.remove(registration)
+            Logger.debug(Strings.externalPurchase.registration_discarded(registration.tokenID))
+        }
     }
 
 }
