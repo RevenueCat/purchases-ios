@@ -70,6 +70,49 @@ final class PackageComponentViewTests: TestCase {
         )
     }
 
+    /// A "Selected tab" rule is a state rule, and a package card is allowed to carry one directly.
+    /// Every other component resolves its overrides against the paywall's state snapshot; the card
+    /// has to as well, or the rule is silently dead.
+    func testStateVisibilityOverrideIsResolvedFromTheStateSnapshot() throws {
+        let viewModel = try Self.makeViewModel(
+            component: Self.stateGatedComponent(package: TestData.monthlyPackage),
+            package: TestData.monthlyPackage
+        )
+
+        XCTAssertTrue(
+            Self.visible(viewModel, stateValues: ["selected_tier": .string("monthly")]),
+            "The rule matches the current state, so the card is revealed."
+        )
+    }
+
+    /// The declared default stands in until the store publishes a value, so the first frame resolves
+    /// the same way every other component does.
+    func testStateVisibilityOverrideFallsBackToDeclaredDefault() throws {
+        let viewModel = try Self.makeViewModel(
+            component: Self.stateGatedComponent(package: TestData.monthlyPackage),
+            package: TestData.monthlyPackage
+        )
+
+        XCTAssertTrue(
+            Self.visible(viewModel, stateDefaults: ["selected_tier": .string("monthly")]),
+            "With no published value the declared default decides the rule."
+        )
+    }
+
+    /// The control: on another tier the rule does not match and the card's hidden base stands, so a
+    /// change that simply revealed every card would not pass all three.
+    func testStateVisibilityOverrideKeepsCardHiddenForAnotherState() throws {
+        let viewModel = try Self.makeViewModel(
+            component: Self.stateGatedComponent(package: TestData.monthlyPackage),
+            package: TestData.monthlyPackage
+        )
+
+        XCTAssertFalse(
+            Self.visible(viewModel, stateValues: ["selected_tier": .string("annual")]),
+            "The rule does not match, so the card stays hidden."
+        )
+    }
+
     func testInjectedHapticFeedbackPreparesOnAppearWhenEnabled() throws {
         let package = TestData.monthlyPackage
         let component = PaywallComponent.PackageComponent(
@@ -204,6 +247,45 @@ final class PackageComponentViewTests: TestCase {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private extension PackageComponentViewTests {
+
+    /// A card hidden in the base and revealed only while the tier state reads `monthly`, which is
+    /// the shape a "Selected tab" rule takes when it is authored on the package itself.
+    static func stateGatedComponent(package: Package) -> PaywallComponent.PackageComponent {
+        return PaywallComponent.PackageComponent(
+            packageID: package.identifier,
+            isSelectedByDefault: false,
+            visible: false,
+            applePromoOfferProductCode: nil,
+            stack: Self.makePackageStack(label: "Monthly"),
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .state(operator: .equals, name: "selected_tier", value: .string("monthly"))
+                    ],
+                    properties: .init(visible: true)
+                )
+            ]
+        )
+    }
+
+    /// Calls the card's own visibility resolution the way `PackageComponentView.body` does, so a
+    /// test can vary just the state snapshot.
+    static func visible(
+        _ viewModel: PackageComponentViewModel,
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+    ) -> Bool {
+        return viewModel.visible(
+            state: .default,
+            condition: .compact,
+            isEligibleForIntroOffer: false,
+            isEligibleForPromoOffer: false,
+            selectedPackageId: nil,
+            customVariables: [:],
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
+        )
+    }
 
     static func makeViewModel(
         component: PaywallComponent.PackageComponent,

@@ -66,7 +66,9 @@ class PackageComponentViewModel {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil
+        windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) -> Bool {
         return self.visibilityResolver.visible(
             state: state,
@@ -75,7 +77,9 @@ class PackageComponentViewModel {
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
-            windowSize: windowSize
+            windowSize: windowSize,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults
         )
     }
 

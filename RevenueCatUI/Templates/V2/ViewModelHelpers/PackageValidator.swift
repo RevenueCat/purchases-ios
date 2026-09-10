@@ -27,16 +27,25 @@ struct PackageSelectionContext {
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
 
+    /// The state-store snapshot for the presentation session. Rendering reads this from the
+    /// environment; selection has no environment to read from, so the caller passes it in.
+    let stateValues: [String: PaywallComponent.ConditionValue]
+    let stateDefaults: [String: PaywallComponent.ConditionValue]
+
     init(
         condition: ScreenCondition,
         customVariables: [String: CustomVariableValue],
         windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         isEligibleForIntroOffer: @escaping (Package) -> Bool,
         isEligibleForPromoOffer: @escaping (Package) -> Bool
     ) {
         self.condition = condition
         self.customVariables = customVariables
         self.windowSize = windowSize
+        self.stateValues = stateValues
+        self.stateDefaults = stateDefaults
         self.isEligibleForIntroOffer = isEligibleForIntroOffer
         self.isEligibleForPromoOffer = isEligibleForPromoOffer
     }
@@ -114,7 +123,9 @@ class PackageValidator {
             isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
             selectedPackageId: nil,
             customVariables: context.customVariables,
-            windowSize: context.windowSize
+            windowSize: context.windowSize,
+            stateValues: context.stateValues,
+            stateDefaults: context.stateDefaults
         )
     }
 

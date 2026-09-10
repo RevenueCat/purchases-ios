@@ -47,11 +47,15 @@ struct PackageVisibilityResolver {
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
-        windowSize: CGSize? = nil
+        windowSize: CGSize? = nil,
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) -> Bool {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             windowSize: windowSize
         )
 

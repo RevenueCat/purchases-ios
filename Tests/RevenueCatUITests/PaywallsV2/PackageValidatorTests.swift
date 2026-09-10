@@ -510,6 +510,60 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    // MARK: - State-driven visibility
+
+    /// A "Selected tab" rule is a state rule. Written on the package card itself, it has to hide that
+    /// card from selection the same way a custom-variable rule does.
+    func testDefaultSelectedPackageSkipsPackageHiddenByStateRule() {
+        let validator = Self.stateValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("monthly")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// The declared default stands in when the store has published no value yet, so the first frame
+    /// resolves the same way the renderer does.
+    func testDefaultSelectedPackageUsesStateDefaultWhenNoValueIsPublished() {
+        let validator = Self.stateValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: Self.context(stateDefaults: [Self.stateKey: .string("monthly")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// The authored default keeps the selection while its own state rule still matches.
+    func testDefaultSelectedPackageKeepsAuthoredDefaultWhenStateRuleDoesNotMatch() {
+        let validator = Self.stateValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("annual")])
+            )?.identifier,
+            TestData.annualPackage.identifier
+        )
+    }
+
+    /// The reconcile that runs after a tab change must move the selection off a card the new state
+    /// hides, which is what leaves the customer's paywall with nothing selected.
+    func testReconcileMovesSelectionOffPackageHiddenByStateRule() {
+        let validator = Self.stateValidator()
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(stateValues: [Self.stateKey: .string("monthly")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
     // MARK: - Mixed page and tab scopes
 
     /// A package inside a tab must not stop the page from reconciling its own packages, and must not be
@@ -666,14 +720,54 @@ private extension PackageValidatorTests {
 
     static func context(
         customVariables: [String: CustomVariableValue] = [:],
+        stateValues: [String: PaywallComponent.ConditionValue] = [:],
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
         isEligibleForIntroOffer: @escaping (Package) -> Bool = { _ in false },
         isEligibleForPromoOffer: @escaping (Package) -> Bool = { _ in false }
     ) -> PackageSelectionContext {
         return PackageSelectionContext(
             condition: .compact,
             customVariables: customVariables,
+            stateValues: stateValues,
+            stateDefaults: stateDefaults,
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer
+        )
+    }
+
+    /// The key a tabs component writes its selected tab into. Opaque in real configs; readable here.
+    static let stateKey = "selected_tier"
+
+    /// Two cards gated by the same state key, the way a "Selected tab" rule gates a tier's packages:
+    /// the annual card is the authored default and shows only while the state reads `annual`.
+    static func stateValidator() -> PackageValidator {
+        let validator = PackageValidator()
+
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            overrides: [Self.stateVisibilityOverride(whenState: "monthly", visible: false)]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: false,
+            visible: false,
+            overrides: [Self.stateVisibilityOverride(whenState: "monthly", visible: true)]
+        ))
+
+        return validator
+    }
+
+    static func stateVisibilityOverride(
+        whenState value: String,
+        visible: Bool
+    ) -> PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent> {
+        return .init(
+            extendedConditions: [
+                .state(operator: .equals, name: Self.stateKey, value: .string(value))
+            ],
+            properties: .init(visible: visible)
         )
     }
 

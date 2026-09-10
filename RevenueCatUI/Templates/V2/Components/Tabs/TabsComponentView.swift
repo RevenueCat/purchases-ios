@@ -111,6 +111,12 @@ struct LoadedTabsComponentView: View {
     @Environment(\.colorScheme)
     private var colorScheme
 
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -242,6 +248,8 @@ struct LoadedTabsComponentView: View {
             condition: self.screenCondition,
             customVariables: self.customVariables,
             windowSize: self.paywallWindowSize,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
