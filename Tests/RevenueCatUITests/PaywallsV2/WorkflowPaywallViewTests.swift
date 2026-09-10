@@ -564,6 +564,8 @@ private extension WorkflowPaywallViewTests {
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec] = [],
         initialScreenJSON: String? = nil,
+        initialStepJSON: String? = nil,
+        initialStepId: String = "step_initial",
         terminalScreenJSON: String? = nil,
         extraOfferings: [Offering] = []
     ) throws -> WorkflowContext {
@@ -572,6 +574,8 @@ private extension WorkflowPaywallViewTests {
             singleStepFallbackId: singleStepFallbackId,
             workflowPackages: workflowPackages,
             initialScreenJSON: initialScreenJSON,
+            initialStepJSON: initialStepJSON,
+            initialStepId: initialStepId,
             terminalScreenJSON: terminalScreenJSON,
             offeringId: offeringId
         )
@@ -621,12 +625,16 @@ private extension WorkflowPaywallViewTests {
         singleStepFallbackId: String?,
         workflowPackages: [PackageSpec],
         initialScreenJSON customInitialScreenJSON: String? = nil,
+        initialStepJSON customInitialStepJSON: String? = nil,
+        initialStepId: String = "step_initial",
         terminalScreenJSON customTerminalScreenJSON: String? = nil,
         offeringId: String
     ) throws -> PublishedWorkflow {
         let workflowStepIdJSON = singleStepFallbackId.map { "\"single_step_fallback_id\": \"\($0)\"," } ?? ""
         let initialScreenJSON = customInitialScreenJSON
             ?? makeScreenJSON(packages: [], offeringId: offeringId)
+        let initialStepJSON = customInitialStepJSON
+            ?? "\"step_initial\": { \"id\": \"step_initial\", \"type\": \"screen\", \"screen_id\": \"screen_initial\" },"
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
@@ -648,10 +656,10 @@ private extension WorkflowPaywallViewTests {
         {
           "id": "wf_test",
           "display_name": "Test",
-          "initial_step_id": "step_initial",
+          "initial_step_id": "\(initialStepId)",
           \(workflowStepIdJSON)
           "steps": {
-            "step_initial": { "id": "step_initial", "type": "screen", "screen_id": "screen_initial" },
+            \(initialStepJSON)
             \(terminalStepJSON)
             "step_placeholder": { "id": "step_placeholder", "type": "screen" }
           },
@@ -908,6 +916,44 @@ extension WorkflowPaywallViewTests {
         defer { dispose() }
 
         await expect(exitOffer.offering).toEventually(beNil(), timeout: .seconds(3))
+        self.logger.verifyMessageWasLogged(
+            Strings.workflow_paywall_invalid_state(
+                currentStepId: "step_initial",
+                screenId: "screen_initial"
+            ),
+            level: .error,
+            expectedCount: 1
+        )
+    }
+
+    @MainActor
+    func testInvalidSecondScreenLogsOnce() async throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            initialStepId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(self.logger.messages).toEventuallyNot(beEmpty(), timeout: .seconds(3))
+        self.logger.verifyMessageWasLogged(
+            Strings.workflow_paywall_invalid_state(
+                currentStepId: "step_terminal",
+                screenId: "screen_terminal"
+            ),
+            level: .error,
+            expectedCount: 1
+        )
     }
 
     func testExitOfferOfferingIsNotStepAware() throws {

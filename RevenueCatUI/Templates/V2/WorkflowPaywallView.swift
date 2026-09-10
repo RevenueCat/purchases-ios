@@ -420,7 +420,7 @@ struct WorkflowPaywallView: View {
             if self.presentationState.hasFailed {
                 self.exitOfferOfferingBinding.wrappedValue = nil
                 if let error = self.presentationState.error {
-                    self.reportPresentationErrorIfNeeded(error)
+                    self.reportPresentationErrorIfNeeded(error, for: self.navigator.currentStepId)
                 }
                 return
             }
@@ -929,12 +929,6 @@ struct WorkflowPaywallView: View {
         // Back navigation always targets a previously-seen step, so its page is already mounted.
         // Returning that same instance keeps its subtree (and the state it owns) intact.
         guard let seenPage = self.seenPages.first(where: { $0.stepId == stepId }) else {
-            Logger.error(
-                Strings.workflow_paywall_invalid_state(
-                    currentStepId: stepId,
-                    screenId: self.context.workflow.steps[stepId]?.screenId
-                )
-            )
             return nil
         }
 
@@ -967,12 +961,6 @@ struct WorkflowPaywallView: View {
     }
 
     private func failWorkflowPresentation(for stepId: String) {
-        Logger.error(
-            Strings.workflow_paywall_invalid_state(
-                currentStepId: stepId,
-                screenId: self.context.workflow.steps[stepId]?.screenId
-            )
-        )
         let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
         self.trackCurrentWorkflowLeft()
         self.exitOfferOfferingBinding.wrappedValue = nil
@@ -980,7 +968,7 @@ struct WorkflowPaywallView: View {
             error: error,
             hasReportedError: self.presentationState.hasReportedError
         )
-        self.reportPresentationErrorIfNeeded(error)
+        self.reportPresentationErrorIfNeeded(error, for: stepId)
     }
 
     private var workflowPresentationError: Binding<NSError?> {
@@ -999,11 +987,17 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func reportPresentationErrorIfNeeded(_ error: NSError) {
+    private func reportPresentationErrorIfNeeded(_ error: NSError, for stepId: String) {
         guard !self.presentationState.hasReportedError else {
             return
         }
         self.presentationState = .failed(error: error, hasReportedError: true)
+        Logger.error(
+            Strings.workflow_paywall_invalid_state(
+                currentStepId: stepId,
+                screenId: self.context.workflow.steps[stepId]?.screenId
+            )
+        )
         self.onPresentationError(error)
     }
 
