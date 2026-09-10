@@ -83,11 +83,11 @@ struct SoftPaywallUseCaseView: View {
     @MainActor
     private func handle(_ result: CheckpointResult) {
         switch result {
-        case let presented as CheckpointPaywallPresentedResult:
+        case let presented as CheckpointResult.PaywallPresented:
             self.handle(presented.paywallOutcome)
-        case let received as CheckpointReceivedOfferingResult:
+        case let received as CheckpointResult.ReceivedOffering:
             self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointNoActionResult:
+        case let noAction as CheckpointResult.NoAction:
             self.status = "No paywall shown (\(noAction.reason)). Content remains available."
         default:
             self.status = "Unknown checkpoint result. Content remains available."
@@ -97,13 +97,15 @@ struct SoftPaywallUseCaseView: View {
     @MainActor
     private func handle(_ outcome: CheckpointPaywallOutcome) {
         switch outcome {
-        case let purchased as CheckpointPaywallPurchasedOutcome:
+        case let purchased as CheckpointPaywallOutcome.Purchased:
             self.updateSubscriptionStatus(with: purchased.customerInfo, action: "Purchased")
-        case let restored as CheckpointPaywallRestoredOutcome:
+        case let restored as CheckpointPaywallOutcome.Restored:
             self.updateSubscriptionStatus(with: restored.customerInfo, action: "Restored")
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             self.status = "Paywall dismissed. Content remains available."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            self.status = "Web checkout opened. Content remains available."
+        case let failed as CheckpointPaywallOutcome.Error:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:
             self.status = "Unknown paywall outcome. Content remains available."

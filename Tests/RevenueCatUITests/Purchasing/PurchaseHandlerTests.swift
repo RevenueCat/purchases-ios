@@ -483,6 +483,30 @@ class PurchaseHandlerTests: TestCase {
         expect(handler.actionInProgress) == false
     }
 
+    func testExternalPurchasePreparationMarksThePaywallForAsLongAsItRuns() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
+
+        expect(handler.actionInProgress) == false
+    }
+
+    /// A second tap can reach the wrapper before the first one has marked the paywall, and must not free it
+    /// while Apple's notice from the first tap is still up.
+    func testAnExternalPurchasePreparationDoesNotFreeThePaywallItDidNotMark() async throws {
+        let handler: PurchaseHandler = .mock()
+
+        await handler.withExternalPurchasePreparation {
+            await handler.withExternalPurchasePreparation {}
+
+            expect(handler.actionTypeInProgress) == .externalPurchasePreparation
+        }
+
+        expect(handler.actionInProgress) == false
+    }
+
     func testRestorePurchases() async throws {
         let handler: PurchaseHandler = .mock()
         let result = try await handler.restorePurchases()
@@ -908,6 +932,70 @@ private extension PurchaseHandlerTests {
         """
         )
     }()
+
+}
+
+#endif
+
+#if os(macOS)
+
+@available(macOS 12.0, *)
+@MainActor
+final class PurchaseHandlerMacOSTests: TestCase {
+
+    func testResignsFirstResponderBeforePublishingActionInProgress() async throws {
+        var events: [String] = []
+        let focusResigner = KeyWindowFocusResignerSpy {
+            events.append("resigned")
+        }
+        let purchases = MockPurchases { _, _, _ in
+            return (
+                transaction: nil,
+                customerInfo: TestData.customerInfo,
+                userCancelled: false
+            )
+        } restorePurchases: {
+            return TestData.customerInfo
+        } trackEvent: { _ in
+        } customerInfo: {
+            return TestData.customerInfo
+        }
+        let handler = PurchaseHandler(
+            purchases: purchases,
+            eventTracker: .init(
+                purchases: purchases,
+                eventDispatcher: PaywallEventTrackerTestDispatcher.value
+            ),
+            keyWindowFocusResigner: focusResigner
+        )
+        let cancellable = handler.$actionTypeInProgress
+            .dropFirst()
+            .compactMap { $0 }
+            .sink { _ in
+                events.append("published")
+            }
+
+        _ = try await handler.purchase(package: TestData.packageWithIntroOffer)
+
+        expect(events.prefix(2)) == ["resigned", "published"]
+        withExtendedLifetime(cancellable) {}
+    }
+
+}
+
+@available(macOS 12.0, *)
+@MainActor
+private final class KeyWindowFocusResignerSpy: KeyWindowFocusResigning {
+
+    private let onResign: () -> Void
+
+    init(onResign: @escaping () -> Void) {
+        self.onResign = onResign
+    }
+
+    func resignFirstResponder() {
+        self.onResign()
+    }
 
 }
 

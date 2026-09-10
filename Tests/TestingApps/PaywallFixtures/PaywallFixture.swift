@@ -28,12 +28,22 @@ enum PaywallFixture: String, CaseIterable {
     /// selected, so a UI test can read the selection.
     case mixedTabsPageDefault = "mixed_tabs_page_default"
 
+    /// One badge rule per offer type, each with its own rule for its copy.
+    case badgeRulesPerOffer = "badge_rules_per_offer"
+    /// Media in every place a real paywall puts it, so a test can assert which of it reaches
+    /// the accessibility tree.
+    case decorativeMedia = "decorative_media"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
             return "Icon-only button"
         case .mixedTabsPageDefault:
             return "Mixed page and tab packages"
+        case .badgeRulesPerOffer:
+            return "Badge rules per offer type"
+        case .decorativeMedia:
+            return "Decorative media"
         }
     }
 
@@ -43,6 +53,10 @@ enum PaywallFixture: String, CaseIterable {
             return Self.iconOnlyButtonComponentsData()
         case .mixedTabsPageDefault:
             return Self.mixedTabsPageDefaultComponentsData()
+        case .badgeRulesPerOffer:
+            return Self.badgeRulesPerOfferComponentsData()
+        case .decorativeMedia:
+            return Self.decorativeMediaComponentsData()
         }
     }
 
@@ -51,12 +65,20 @@ enum PaywallFixture: String, CaseIterable {
         switch self {
         case .iconOnlyButton:
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
+        case .badgeRulesPerOffer:
+            return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
         case .mixedTabsPageDefault:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
                 Self.weeklyPackage(offeringIdentifier: self.rawValue),
                 Self.lifetimePackage(offeringIdentifier: self.rawValue)
+            ]
+        case .decorativeMedia:
+            return [
+                Self.annualPackage(offeringIdentifier: self.rawValue),
+                Self.monthlyPackage(offeringIdentifier: self.rawValue),
+                Self.weeklyPackage(offeringIdentifier: self.rawValue)
             ]
         }
     }
@@ -95,6 +117,38 @@ private extension PaywallFixture {
         ],
         variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
     )
+
+    /// Carries the `.promotional` discount the simulated promo cache looks for.
+    static func annualPackageWithPromoOffer(offeringIdentifier: String) -> Package {
+        let promo = TestStoreProductDiscount(
+            identifier: Self.promoOfferCode,
+            price: 9.99,
+            localizedPriceString: "$9.99",
+            paymentMode: .payUpFront,
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            numberOfPeriods: 1,
+            type: .promotional
+        )
+        let product = TestStoreProduct(
+            localizedTitle: "Annual",
+            price: 39.99,
+            localizedPriceString: "$39.99",
+            productIdentifier: "com.revenuecat.fixtures.annual.promo",
+            productType: .autoRenewableSubscription,
+            localizedDescription: "Annual subscription",
+            subscriptionGroupIdentifier: "group",
+            subscriptionPeriod: .init(value: 1, unit: .year),
+            discounts: [promo]
+        )
+
+        return Package(
+            identifier: "$rc_annual",
+            packageType: .annual,
+            storeProduct: product.toStoreProduct(),
+            offeringIdentifier: offeringIdentifier,
+            webCheckoutUrl: nil
+        )
+    }
 
     static func monthlyPackage(offeringIdentifier: String) -> Package {
         let product = TestStoreProduct(
@@ -289,6 +343,95 @@ private extension PaywallFixture {
         )
     }
 
+    static let promoOfferCode = "fixture_promo_offer"
+
+    /// A row with no badge of its own, gaining one from each offer rule.
+    static func badgeRulesPerOfferComponentsData() -> PaywallComponentsData {
+        func badge(baseLid: String, resolvedLid: String, condition: PaywallComponent.Condition)
+        -> PaywallComponent.Badge {
+            return .init(
+                style: .overlaid,
+                alignment: .topTrailing,
+                stack: .init(
+                    components: [
+                        .text(.init(
+                            text: baseLid,
+                            color: .init(light: .hex("#ffffff")),
+                            overrides: [
+                                .init(conditions: [condition], properties: .init(text: resolvedLid))
+                            ]
+                        ))
+                    ],
+                    size: .init(width: .fit(nil), height: .fit(nil)),
+                    backgroundColor: .init(light: .hex("#aa00ff")),
+                    padding: .init(top: 4, bottom: 4, leading: 8, trailing: 8)
+                )
+            )
+        }
+
+        return .init(
+            templateName: "fixture-badge-rules-per-offer",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .package(.init(
+                            packageID: "$rc_annual",
+                            isSelectedByDefault: true,
+                            applePromoOfferProductCode: Self.promoOfferCode,
+                            stack: .init(
+                                components: [
+                                    .text(.init(
+                                        text: "annual",
+                                        color: .init(light: .hex("#000000"))
+                                    ))
+                                ],
+                                size: .init(width: .fill, height: .fit(nil)),
+                                backgroundColor: .init(light: .hex("#eeeeee")),
+                                padding: .init(top: 16, bottom: 16, leading: 16, trailing: 16),
+                                overrides: [
+                                    .init(
+                                        conditions: [.introOffer],
+                                        properties: .init(badge: badge(
+                                            baseLid: "badge_placeholder",
+                                            resolvedLid: "badge_trial",
+                                            condition: .introOffer
+                                        ))
+                                    ),
+                                    .init(
+                                        conditions: [.promoOffer],
+                                        properties: .init(badge: badge(
+                                            baseLid: "badge_placeholder",
+                                            resolvedLid: "badge_promo",
+                                            condition: .promoOffer
+                                        ))
+                                    )
+                                ]
+                            )
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "annual": .string("Annual"),
+                    "badge_placeholder": .string("Badge"),
+                    "badge_trial": .string("TRIAL BADGE"),
+                    "badge_promo": .string("PROMO BADGE")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     static func iconOnlyButtonComponentsData() -> PaywallComponentsData {
         return .init(
             templateName: "fixture-icon-only-button",
@@ -337,6 +480,161 @@ private extension PaywallFixture {
             componentsLocalizations: [
                 "en_US": [
                     "body_lid": .string("Everything you need, in one place.")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func checkIcon(sizePoints: CGFloat = 20) -> PaywallComponent {
+        return .icon(.init(
+            baseUrl: "https://icons.pawwalls.com/icons",
+            iconName: "check",
+            formats: .init(
+                svg: "check.svg",
+                png: "check.png",
+                heic: "check.heic",
+                webp: "check.webp"
+            ),
+            size: .init(width: .fixed(UInt(sizePoints)), height: .fixed(UInt(sizePoints))),
+            padding: .zero,
+            margin: .zero,
+            color: .init(light: .hex("#000000")),
+            iconBackground: nil
+        ))
+    }
+
+    /// The dimensions describe the asset so aspect math is stable before the download finishes.
+    static let sampleImageUrls = PaywallComponent.ThemeImageUrls(
+        light: .init(
+            width: 1024,
+            height: 1024,
+            original: URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!,
+            heic: URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!,
+            heicLowRes: URL(string: "https://assets.pawwalls.com/1172568_1741034533.heic")!
+        )
+    )
+
+    /// `hiddenLeadingText` puts an invisible text ahead of the name, standing in for a badge or
+    /// promo line that resolved hidden. It renders nothing, so it must not be the one asked to
+    /// speak the selection state.
+    static func decoratedPackageCard(
+        packageID: String,
+        label: String,
+        isSelectedByDefault: Bool,
+        hiddenLeadingText: Bool = false
+    ) -> PaywallComponent {
+        return .package(.init(
+            packageID: packageID,
+            isSelectedByDefault: isSelectedByDefault,
+            applePromoOfferProductCode: nil,
+            stack: .init(
+                components: [
+                    .text(.init(
+                        visible: !hiddenLeadingText,
+                        text: hiddenLeadingText ? "hidden_badge_lid" : label,
+                        color: .init(light: .hex("#000000"))
+                    )),
+                    .text(.init(
+                        visible: hiddenLeadingText ? true : nil,
+                        text: hiddenLeadingText ? label : "price_lid",
+                        color: .init(light: .hex("#000000"))
+                    )),
+                    .text(.init(
+                        text: "price_lid",
+                        color: .init(light: .hex("#000000"))
+                    )),
+                    Self.checkIcon()
+                ],
+                dimension: .horizontal(.center, .start),
+                size: .init(width: .fill, height: .fit(nil)),
+                spacing: 8,
+                padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
+            )
+        ))
+    }
+
+    static func featureRow(textLid: String) -> PaywallComponent {
+        return .stack(.init(
+            components: [
+                Self.checkIcon(),
+                .text(.init(
+                    text: textLid,
+                    color: .init(light: .hex("#000000"))
+                ))
+            ],
+            dimension: .horizontal(.center, .start),
+            size: .init(width: .fill, height: .fit(nil)),
+            spacing: 8
+        ))
+    }
+
+    static func decorativeMediaComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "fixture-decorative-media",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .stack(.init(
+                            components: [
+                                .image(.init(
+                                    source: Self.sampleImageUrls,
+                                    size: .init(width: .fixed(60), height: .fixed(60))
+                                )),
+                                .text(.init(
+                                    text: "heading_lid",
+                                    color: .init(light: .hex("#000000"))
+                                ))
+                            ],
+                            dimension: .horizontal(.center, .start),
+                            size: .init(width: .fill, height: .fit(nil)),
+                            spacing: 12
+                        )),
+                        .text(.init(
+                            text: "body_lid",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        Self.featureRow(textLid: "feature1_lid"),
+                        Self.featureRow(textLid: "feature2_lid"),
+                        Self.decoratedPackageCard(
+                            packageID: "$rc_annual",
+                            label: "annual",
+                            isSelectedByDefault: true
+                        ),
+                        Self.decoratedPackageCard(
+                            packageID: "$rc_monthly",
+                            label: "monthly",
+                            isSelectedByDefault: false
+                        ),
+                        Self.decoratedPackageCard(
+                            packageID: "$rc_weekly",
+                            label: "weekly",
+                            isSelectedByDefault: false,
+                            hiddenLeadingText: true
+                        )
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: nil,
+                    padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .image(Self.sampleImageUrls, .fill, nil)
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "heading_lid": .string("Unlock all Sundial Features"),
+                    "body_lid": .string("Every feature, one subscription."),
+                    "feature1_lid": .string("Create alerts for 34 solar events"),
+                    "feature2_lid": .string("Full featured watch app"),
+                    "annual": .string("Yearly"),
+                    "monthly": .string("Monthly"),
+                    "price_lid": .string("{{ product.price_per_period_abbreviated }}"),
+                    "weekly": .string("Weekly"),
+                    "hidden_badge_lid": .string("Hidden badge")
                 ]
             ],
             revision: 1,

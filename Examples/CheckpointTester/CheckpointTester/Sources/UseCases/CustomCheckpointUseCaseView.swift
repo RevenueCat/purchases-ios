@@ -60,7 +60,7 @@ struct CustomCheckpointUseCaseView: View {
                 self.trimmedIdentifier,
                 customVariables: self.customVariables.checkpointCustomVariables
             )
-            self.model.showOutcome(result)
+            self.model.showOutcome(result, checkpointIdentifier: self.trimmedIdentifier)
         } catch {
             self.model.showError(error)
         }

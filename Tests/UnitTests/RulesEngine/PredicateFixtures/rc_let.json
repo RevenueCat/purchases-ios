@@ -1,0 +1,180 @@
+{
+  "fixtures": [
+    {
+      "id": "let_binding_is_readable_inside_iteration",
+      "description": "The reason this operator exists: iteration replaces the scope, and a binding survives it",
+      "predicate": {"rc.let": [{"wanted": {"var": "target"}}, {"some": [{"var": "ids"}, {"===": [{"var": ""}, {"var": "wanted"}]}]}]},
+      "variables": {"target": "pro", "ids": ["basic", "pro"]},
+      "expected": true
+    },
+    {
+      "id": "let_binding_is_readable_outside_iteration_too",
+      "predicate": {"===": [{"rc.let": [{"n": 2}, {"var": "n"}]}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_enables_comparing_an_item_against_the_enclosing_level",
+      "description": "Counting how many entries beat the outer item is the pattern no reduce could express before",
+      "predicate": {"==": [{"rc.let": [{"mine": {"var": "me.score"}}, {"reduce": [{"var": "players"}, {"+": [{"var": "accumulator"}, {"if": [{">": [{"var": "current.score"}, {"var": "mine"}]}, 1, 0]}]}, 0]}]}, 2]},
+      "variables": {"me": {"score": 10}, "players": [{"score": 10}, {"score": 30}, {"score": 20}]},
+      "expected": true
+    },
+    {
+      "id": "let_binding_survives_nested_iteration",
+      "predicate": {"rc.let": [{"top": 7}, {"some": [[1], {"some": [[2], {"===": [{"var": "top"}, 7]}]}]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_active_data_wins_over_a_binding_of_the_same_name",
+      "description": "A binding can never mask a field the scope actually has, so no existing rule changes meaning",
+      "predicate": {"rc.let": [{"score": 999}, {"some": [{"var": "players"}, {"===": [{"var": "score"}, 10]}]}]},
+      "variables": {"players": [{"score": 10}]},
+      "expected": true
+    },
+    {
+      "id": "let_current_name_blocks_nested_binding_fallback",
+      "description": "Once the first path segment resolves in current data, a missing descendant must not fall back to a binding with the same name",
+      "predicate": {"rc.let": [{"profile": {"var": "outerProfile"}}, {"some": [{"var": "players"}, {"missing": ["profile.score"]}]}]},
+      "variables": {"outerProfile": {"score": 10}, "players": [{"profile": {}}]},
+      "expected": true
+    },
+    {
+      "id": "let_binding_does_not_supply_a_missing_descendant",
+      "description": "The same shape read through var: the path is unresolved rather than answered by the bound object",
+      "predicate": {"rc.let": [{"profile": {"var": "outerProfile"}}, {"some": [{"var": "players"}, {"===": [{"var": "profile.score"}, 10]}]}]},
+      "variables": {"outerProfile": {"score": 10}, "players": [{"profile": {}}]},
+      "expected": {"error": "unresolvedVariable", "path": "profile.score"}
+    },
+    {
+      "id": "let_reduce_scope_wins_over_a_binding_named_current",
+      "description": "Same precedence rule against reduce's synthetic scope, not just real data",
+      "predicate": {"===": [{"rc.let": [{"current": "shadowed"}, {"reduce": [["a"], {"var": "current"}, "seed"]}]}, "a"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_inner_binding_shadows_the_outer_one",
+      "predicate": {"===": [{"rc.let": [{"x": 1}, {"rc.let": [{"x": 2}, {"var": "x"}]}]}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_outer_binding_still_visible_past_an_inner_one",
+      "predicate": {"===": [{"rc.let": [{"a": 1}, {"rc.let": [{"b": 2}, {"+": [{"var": "a"}, {"var": "b"}]}]}]}, 3]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_path_traversal_into_a_bound_object",
+      "predicate": {"rc.let": [{"who": {"var": "players.0"}}, {"some": [[1], {"===": [{"var": "who.id"}, "a"]}]}]},
+      "variables": {"players": [{"id": "a"}]},
+      "expected": true
+    },
+    {
+      "id": "let_bindings_cannot_see_each_other",
+      "description": "All declarations evaluate in the enclosing scope, so their order carries no meaning",
+      "predicate": {"rc.let": [{"a": 1, "b": {"var": "a"}}, {"var": "b"}]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "a"}
+    },
+    {
+      "id": "let_nesting_is_how_bindings_chain",
+      "predicate": {"===": [{"rc.let": [{"a": 1}, {"rc.let": [{"b": {"+": [{"var": "a"}, 1]}}, {"var": "b"}]}]}, 2]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_declaration_is_evaluated_in_the_enclosing_scope",
+      "description": "Binding inside a loop captures that iteration's item, not the body's scope",
+      "predicate": {"some": [{"var": "xs"}, {"rc.let": [{"mine": {"var": "id"}}, {"some": [[1], {"===": [{"var": "mine"}, "b"]}]}]}]},
+      "variables": {"xs": [{"id": "a"}, {"id": "b"}]},
+      "expected": true
+    },
+    {
+      "id": "let_binds_an_explicit_null",
+      "description": "A bound null is a known value, so it resolves rather than reading as absent",
+      "predicate": {"rc.let": [{"nothing": null}, {"===": [{"var": "nothing"}, null]}]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_missing_does_not_report_a_bound_name",
+      "description": "var and missing agree on what exists",
+      "predicate": {"===": [{"reduce": [{"rc.let": [{"bound": 1}, {"missing": ["bound"]}]}, {"+": [{"var": "accumulator"}, 1]}, 0]}, 0]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_root_var_ignores_bindings",
+      "description": "rc.rootVar means the root and nothing else, so a binding is not a place it looks",
+      "predicate": {"rc.let": [{"ghost": 1}, {"rc.rootVar": "ghost"}]},
+      "variables": {"real": 1},
+      "expected": {"error": "unresolvedVariable", "path": "ghost"}
+    },
+    {
+      "id": "let_explicit_default_still_applies_to_an_unbound_name",
+      "predicate": {"===": [{"rc.let": [{"a": 1}, {"var": ["nope", "fallback"]}]}, "fallback"]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_unbound_name_still_fails",
+      "description": "rc.let adds names; it does not soften the unresolved-variable contract",
+      "predicate": {"rc.let": [{"a": 1}, {"var": "b"}]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "b"}
+    },
+    {
+      "id": "let_binding_does_not_escape_its_body",
+      "predicate": {"and": [{"rc.let": [{"a": 1}, true]}, {"var": "a"}]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "a"}
+    },
+    {
+      "id": "let_empty_declarations_are_a_no_op",
+      "predicate": {"rc.let": [{}, true]},
+      "variables": {},
+      "expected": true
+    },
+    {
+      "id": "let_non_object_declarations_is_a_type_error",
+      "predicate": {"rc.let": [[1, 2], true]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.let"}
+    },
+    {
+      "id": "let_missing_body_is_a_type_error",
+      "predicate": {"rc.let": [{"a": 1}]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.let"}
+    },
+    {
+      "id": "let_third_argument_is_a_type_error",
+      "predicate": {"rc.let": [{"a": 1}, true, true]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.let"}
+    },
+    {
+      "id": "let_dotted_binding_name_is_a_type_error",
+      "description": "A dotted name would sit behind path traversal and be unreachable",
+      "predicate": {"rc.let": [{"a.b": 1}, true]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.let"}
+    },
+    {
+      "id": "let_empty_binding_name_is_a_type_error",
+      "description": "The empty path already means the whole scope, so an empty name could never be read",
+      "predicate": {"rc.let": [{"": 1}, true]},
+      "variables": {},
+      "expected": {"error": "typeMismatch", "operator": "rc.let"}
+    },
+    {
+      "id": "let_failing_declaration_propagates",
+      "predicate": {"rc.let": [{"a": {"var": "nope"}}, true]},
+      "variables": {},
+      "expected": {"error": "unresolvedVariable", "path": "nope"}
+    }
+  ]
+}

@@ -70,19 +70,12 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
     #endif
 
-    func testDisabledResolverResolvesDisabled() async throws {
+    func testDisabledResolverResolvesConfigurationUnavailable() async throws {
         let resolver = DisabledCheckpointWorkflowResolver()
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .disabled)
-    }
-
-    func testRemoteConfigDisabledResolvesDisabled() async throws {
-        self.checkpointsProvider.result = .failure(.remoteConfigDisabled)
-
-        let resolution = try await self.resolve()
-        XCTAssertEqual(Self.noActionReason(resolution), .disabled)
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
     func testUnconfiguredCheckpointResolvesUnknownCheckpoint() async throws {
@@ -90,6 +83,21 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await self.resolve()
         XCTAssertEqual(Self.noActionReason(resolution), .unknownCheckpoint)
+    }
+
+    func testStaleRulesReadRetriesBeforeReportingUnknownCheckpoint() async throws {
+        self.checkpointsProvider.results = [
+            .failure(.stale),
+            .success(CheckpointRuleSet(rules: [Self.rule(workflowID: self.workflowID)]))
+        ]
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(self.checkpointsProvider.requestedIdentifiers, [
+            self.checkpointIdentifier,
+            self.checkpointIdentifier
+        ])
     }
 
     func testUnavailableRulesResolveConfigurationUnavailable() async throws {
@@ -112,11 +120,63 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
     }
 
+    func testCancellationWhileLoadingWorkflowPropagates() async {
+        self.workflowsProvider.stubbedGetWorkflowError[self.workflowID] = .cancelled
+
+        do {
+            _ = try await self.resolve()
+            XCTFail("Expected resolution to throw")
+        } catch is CancellationError {
+            // Expected.
+        } catch {
+            XCTFail("Expected CancellationError, got \(error)")
+        }
+    }
+
     func testCheckpointWithNoRulesResolvesNoMatch() async throws {
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
 
         let resolution = try await self.resolve()
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    func testLogsRuleEvaluationWithCheckpointPrefix() async throws {
+        let previousLogLevel = Purchases.logLevel
+        Purchases.logLevel = .verbose
+        defer { Purchases.logLevel = previousLogLevel }
+
+        let firstWorkflowID = "wf_first"
+        let secondWorkflowID = "wf_second"
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+            Self.rule(workflowID: firstWorkflowID, audienceID: "audience_false"),
+            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_true")
+        ]))
+        self.audiencesProvider.rulesByAudienceID = [
+            "audience_false": "false",
+            "audience_true": "true"
+        ]
+        self.workflowsProvider.stubbedOfferingIdByWorkflowId = [
+            firstWorkflowID: self.offeringID,
+            secondWorkflowID: self.offeringID
+        ]
+        self.workflowsProvider.stubbedGetWorkflowResult = [
+            firstWorkflowID: Self.workflowDataResult(id: firstWorkflowID),
+            secondWorkflowID: Self.workflowDataResult(id: secondWorkflowID)
+        ]
+
+        _ = try await self.resolve()
+
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 1 did not match.",
+            level: .verbose
+        )
+        self.logger.verifyMessageWasLogged(
+            "[Checkpoint '\(self.checkpointIdentifier)'] Rule 2 matched.",
+            level: .verbose
+        )
+        XCTAssertTrue(self.logger.messages.allSatisfy {
+            !$0.message.contains("false") && !$0.message.contains("true")
+        })
     }
 
     func testCheckpointWithNoWorkflowsResolvesConfigurationUnavailable() async throws {
@@ -145,7 +205,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     func testDimensionProviderFailureResolvesConfigurationUnavailableWithoutFetchingOfferings() async throws {
         let fetchCount = Atomic<Int>(0)
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [FailingDimensionProvider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [FailingDimensionProvider()],
+            currentAppUserIDProvider: { "user" }
+        )
         let resolver = self.makeResolver(
             offeringsProvider: {
                 fetchCount.modify { $0 += 1 }
@@ -159,10 +222,17 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
         XCTAssertEqual(fetchCount.value, 0)
         XCTAssertTrue(self.workflowsProvider.invokedGetWorkflowParameters.isEmpty)
+        self.logger.verifyMessageWasLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error
+        )
     }
 
     func testCancellationWhileCollectingDimensionsPropagates() async {
-        let evaluator = LocalRulesEvaluator(dimensionProviders: [CancellingDimensionProvider()])
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [CancellingDimensionProvider()],
+            currentAppUserIDProvider: { "user" }
+        )
         let resolver = self.makeResolver(localRulesEvaluator: evaluator)
 
         do {
@@ -262,33 +332,126 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Set(resolved.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
     }
 
-    func testConfigGenerationChangeDuringResolutionReturnsConfigurationUnavailable() async throws {
+    func testConfigGenerationChangeDuringResolutionRetriesOnce() async throws {
+        let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
+            if fetchCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return self.offerings
+        }
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(fetchCount.value, 2)
+    }
+
+    func testConfigChangingDuringBothResolutionAttemptsReturnsConfigurationUnavailable() async throws {
+        let fetchCount = Atomic<Int>(0)
+        let resolver = self.makeResolver {
+            fetchCount.modify { $0 += 1 }
             self.checkpointsProvider.configGeneration += 1
+            self.audiencesProvider.configGeneration += 1
             return self.offerings
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(fetchCount.value, 2)
     }
 
-    func testConfigGenerationChangeDuringAudienceEvaluationSkipsResolution() async throws {
+    func testConfigGenerationChangeDuringAudienceEvaluationRetriesBeforeResolving() async throws {
+        let configurationCount = Atomic<Int>(0)
         let fetchCount = Atomic<Int>(0)
         let resolver = self.makeResolver {
             fetchCount.modify { $0 += 1 }
             return self.offerings
         }
-        // Audiences are read live, outside the rule snapshot's generation guard, so a refresh landing mid-walk
-        // leaves the match itself built from config that is already gone.
-        self.audiencesProvider.onLookup = { _ in
-            self.checkpointsProvider.configGeneration += 1
+        self.audiencesProvider.onConfiguration = {
+            configurationCount.modify { $0 += 1 }
+            if configurationCount.value == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
         }
 
         let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertEqual(fetchCount.value, 0, "A rule matched against stale config should not be resolved")
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+        XCTAssertEqual(fetchCount.value, 1, "The stale attempt should not resolve its matched rule")
+    }
+
+    func testStaleUnavailableAudienceConfigurationRetries() async throws {
+        let configurationCount = Atomic<Int>(0)
+        self.audiencesProvider.onConfiguration = {
+            let count = configurationCount.modify { $0 += 1; return $0 }
+            self.audiencesProvider.configurationUnavailable = count == 1
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(configurationCount.value, 2)
+    }
+
+    func testStaleEmptyRulesRetry() async throws {
+        let rulesRequestCount = Atomic<Int>(0)
+        self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: []))
+        self.checkpointsProvider.onRules = {
+            let count = rulesRequestCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+                self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
+                    Self.rule(workflowID: self.workflowID)
+                ]))
+            }
+        }
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(rulesRequestCount.value, 2)
+    }
+
+    func testAppUserChangeDuringAudienceEvaluationRetriesAgainstTheNewGeneration() async throws {
+        let currentAppUserID = Atomic("user-a")
+        let evaluationCount = Atomic(0)
+        let provider = CheckpointTestDimensionProvider(name: "identity_flipper") { _ in
+            let count = evaluationCount.modify { $0 += 1; return $0 }
+            if count == 1 {
+                currentAppUserID.value = "user-b"
+                self.checkpointsProvider.configGeneration += 1
+                self.audiencesProvider.configGeneration += 1
+            }
+            return [:]
+        }
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [provider],
+            currentAppUserIDProvider: { currentAppUserID.value }
+        )
+
+        let resolution = try await self.makeResolver(localRulesEvaluator: evaluator).resolve(
+            identifier: self.checkpointIdentifier,
+            params: self.params
+        )
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, self.workflowID)
+        XCTAssertEqual(evaluationCount.value, 2)
+        self.logger.verifyMessageWasNotLogged(
+            "The audiences for checkpoint '\(self.checkpointIdentifier)' could not be evaluated:",
+            level: .error,
+            allowNoMessages: true
+        )
     }
 
     func testOfferingsAreFetchedOnceForTheMatchingRule() async throws {
@@ -327,13 +490,13 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
-    func testAudiencesAfterTheFirstMatchAreNotLoaded() async throws {
+    func testAudienceConfigurationLoadsOnceForAllRules() async throws {
         let secondWorkflowID = "wf5678"
         self.stubTwoRules(secondWorkflowID: secondWorkflowID)
 
         _ = try await self.resolve()
 
-        XCTAssertEqual(self.audiencesProvider.requestedIdentifiers, ["audience_\(self.workflowID)"])
+        XCTAssertEqual(self.audiencesProvider.configurationRequestCount, 1)
     }
 
     func testCheckpointWhoseAudiencesAllMissMatchesResolvesNoMatch() async throws {
@@ -400,6 +563,27 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
+    func testStaleConfigurationAfterUnevaluatablePredicateRetriesBeforeReturningUnavailable() async throws {
+        let dimensionEvaluationCount = Atomic<Int>(0)
+        let evaluator = LocalRulesEvaluator(
+            dimensionProviders: [CallbackDimensionProvider {
+                let count = dimensionEvaluationCount.modify { $0 += 1; return $0 }
+                if count == 1 {
+                    self.checkpointsProvider.configGeneration += 1
+                    self.audiencesProvider.configGeneration += 1
+                }
+            }],
+            currentAppUserIDProvider: { "user" }
+        )
+        self.audiencesProvider.defaultRules = "{not-json"
+        let resolver = self.makeResolver(localRulesEvaluator: evaluator)
+
+        let resolution = try await resolver.resolve(identifier: self.checkpointIdentifier, params: self.params)
+
+        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(dimensionEvaluationCount.value, 2)
+    }
+
     // MARK: - Served audience payloads
 
     /// Empty rules are a documented payload shape. The engine only dispatches single-key objects, and every
@@ -427,10 +611,8 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// No dimension provider supplies `last_seen.*`, so the lookup fails and the audience cannot be
-    /// answered at all. That is not the same answer as a customer who falls outside it, so it is reported
-    /// as unavailable rather than as `noMatch`.
-    func testAudienceOnAnUnsuppliedVariableIsNotReportedAsNoMatch() async throws {
+    /// No dimension provider supplies `last_seen.*`, so the audience rule is treated as a non-match.
+    func testAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "in": [{ "var": "last_seen.country" }, ["ES"]] } }"#
@@ -439,13 +621,11 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         let resolution = try await self.resolve()
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
     }
 
-    /// Negation used to invert an unsupplied variable into a match: `null == "NL"` was false, so `!` made it
-    /// true and the audience matched *everyone*, including the customers it was meant to exclude. The lookup
-    /// fails ahead of the negation now, so an unresolvable path can no longer manufacture a match.
-    func testNegatedAudienceOnAnUnsuppliedVariableDoesNotMatch() async throws {
+    /// An unresolved variable must not be converted into a match by negation.
+    func testNegatedAudienceOnAnUnsuppliedVariableResolvesNoMatch() async throws {
         self.audiencesProvider.rulesByAudienceID = [
             "audience": try Self.servedRules(
                 #"{ "id": "audience", "rules": { "!": [{ "==": [{ "var": "last_seen.country" }, "NL"] }] } }"#
@@ -455,7 +635,19 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         let resolution = try await self.resolve()
 
         XCTAssertNil(Self.resolvedWorkflow(resolution))
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        XCTAssertEqual(Self.noActionReason(resolution), .noMatch)
+    }
+
+    func testAudienceOnAnUnsuppliedVariableDoesNotBlockALaterMatch() async throws {
+        let secondWorkflowID = "wf5678"
+        self.stubTwoRules(secondWorkflowID: secondWorkflowID)
+        self.audiencesProvider.rulesByAudienceID["audience_\(self.workflowID)"] =
+            #"{ "in": [{ "var": "last_seen.country" }, ["ES"]] }"#
+        self.audiencesProvider.rulesByAudienceID["audience_\(secondWorkflowID)"] = "true"
+
+        let resolution = try await self.resolve()
+
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, secondWorkflowID)
     }
 
     /// Decodes with the real `Audience` decoder, so what gets evaluated is the string a served payload
@@ -497,10 +689,12 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
     }
 
     private func stubTwoRules(secondWorkflowID: String) {
+        let audienceIDs = ["audience_\(self.workflowID)", "audience_\(secondWorkflowID)"]
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: self.workflowID, audienceID: "audience_\(self.workflowID)"),
-            Self.rule(workflowID: secondWorkflowID, audienceID: "audience_\(secondWorkflowID)")
+            Self.rule(workflowID: self.workflowID, audienceID: audienceIDs[0]),
+            Self.rule(workflowID: secondWorkflowID, audienceID: audienceIDs[1])
         ]))
+        self.audiencesProvider.registerDefaultAudienceIdentifiers(audienceIDs)
         self.workflowsProvider.stubbedOfferingIdByWorkflowId[secondWorkflowID] = self.offeringID
         self.workflowsProvider.stubbedGetWorkflowResult[secondWorkflowID] = Self.workflowDataResult(
             id: secondWorkflowID
@@ -668,7 +862,10 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
     private func makeResolver(
         offeringsProvider: (() async throws -> Offerings)? = nil,
-        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(dimensionProviders: [])
+        localRulesEvaluator: LocalRulesEvaluator = LocalRulesEvaluator(
+            dimensionProviders: [],
+            currentAppUserIDProvider: { "user" }
+        )
     ) -> DefaultCheckpointWorkflowResolver {
         return DefaultCheckpointWorkflowResolver(
             checkpointsConfigProvider: self.checkpointsProvider,
@@ -747,24 +944,53 @@ private final class MockAudiencesConfigProvider: AudiencesConfigProviderType {
     /// Every audience matches unless a test says otherwise, so rule ordering stays the subject of the
     /// tests that predate audience evaluation.
     var rulesByAudienceID: [String: String] = [:]
-    var defaultRules: String? = "true"
-    var onLookup: ((String) -> Void)?
-    private(set) var requestedIdentifiers: [String] = []
+    var defaultRules: String? = "true" {
+        didSet {
+            for identifier in self.defaultAudienceIdentifiers {
+                self.rulesByAudienceID[identifier] = self.defaultRules
+            }
+        }
+    }
+    var configGeneration = 0
+    var configurationUnavailable = false
+    var onConfiguration: (() -> Void)?
+    private(set) var configurationRequestCount = 0
+    private var defaultAudienceIdentifiers: Set<String> = ["audience"]
 
-    func getAudience(_ identifier: String) async -> Audience? {
-        self.requestedIdentifiers.append(identifier)
-        self.onLookup?(identifier)
+    init() {
+        self.rulesByAudienceID["audience"] = "true"
+    }
 
-        guard let rules = self.rulesByAudienceID[identifier] ?? self.defaultRules else { return nil }
+    func registerDefaultAudienceIdentifiers(_ identifiers: [String]) {
+        self.defaultAudienceIdentifiers.formUnion(identifiers)
+        for identifier in identifiers {
+            self.rulesByAudienceID[identifier] = self.defaultRules
+        }
+    }
 
-        return Audience(id: identifier, rules: rules)
+    func configuration() async throws -> AudienceConfigurationSnapshot? {
+        self.configurationRequestCount += 1
+        self.onConfiguration?()
+
+        guard !self.configurationUnavailable else { return nil }
+
+        return AudienceConfigurationSnapshot(
+            audiences: Dictionary(uniqueKeysWithValues: self.rulesByAudienceID.map { identifier, rules in
+                (identifier, Audience(id: identifier, rules: rules))
+            }),
+            configGeneration: self.configGeneration
+        )
+    }
+
+    func isCurrent(_ snapshot: AudienceConfigurationSnapshot) -> Bool {
+        return snapshot.configGeneration == self.configGeneration
     }
 
 }
 
 private struct FailingDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "failing"
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         throw FailingDimensionProviderError()
@@ -776,7 +1002,7 @@ private struct FailingDimensionProviderError: Error {}
 
 private struct CancellingDimensionProvider: DimensionProvider {
 
-    let namespace = DimensionNamespace.device
+    let name = "cancelling"
 
     func dimensions(at _: Date) async throws -> [String: DimensionValue] {
         throw CancellationError()
@@ -784,11 +1010,39 @@ private struct CancellingDimensionProvider: DimensionProvider {
 
 }
 
+private final class CallbackDimensionProvider: DimensionProvider, @unchecked Sendable {
+
+    let name = "device"
+    let callback: () -> Void
+
+    init(callback: @escaping () -> Void) {
+        self.callback = callback
+    }
+
+    func dimensions(at _: Date) async throws -> [String: DimensionValue] {
+        self.callback()
+        return [:]
+    }
+
+}
+
+private struct CheckpointTestDimensionProvider: DimensionProvider {
+
+    let name: String
+    let dimensionsProvider: @MainActor @Sendable (Date) async throws -> [String: DimensionValue]
+
+    func dimensions(at date: Date) async throws -> [String: DimensionValue] {
+        return try await self.dimensionsProvider(date)
+    }
+}
+
 private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType {
 
     var result: Result<CheckpointRuleSet?, CheckpointRulesProviderError> = .success(nil)
+    var results: [Result<CheckpointRuleSet?, CheckpointRulesProviderError>] = []
     var error: Error?
     var configGeneration = 0
+    var onRules: (() -> Void)?
     private(set) var requestedIdentifiers: [String] = []
 
     func rules(for identifier: String) async throws -> CheckpointRulesSnapshot? {
@@ -796,9 +1050,12 @@ private final class MockCheckpointsConfigProvider: CheckpointsConfigProviderType
         if let error = self.error {
             throw error
         }
-        return try self.result.get().map {
+        let result = self.results.isEmpty ? self.result : self.results.removeFirst()
+        let snapshot = try result.get().map {
             CheckpointRulesSnapshot(ruleSet: $0, configGeneration: self.configGeneration)
         }
+        self.onRules?()
+        return snapshot
     }
 
     func isCurrent(_ snapshot: CheckpointRulesSnapshot) -> Bool {

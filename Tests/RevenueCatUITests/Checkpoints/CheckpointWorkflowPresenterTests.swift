@@ -30,7 +30,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let error = NSError(domain: "test", code: 1)
 
         try presenter.present(presentation: Self.presentation(), delegate: delegate)
-        presenter.stage(outcome: CheckpointPaywallErrorOutcome(error: error))
+        presenter.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
 
         XCTAssertEqual(delegate.finishCount, 0)
         XCTAssertNotNil(store.call)
@@ -39,7 +39,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         presenter.presentationDidDismiss()
 
         XCTAssertEqual(delegate.finishCount, 1)
-        guard let errorOutcome = delegate.outcome as? CheckpointPaywallErrorOutcome else {
+        guard let errorOutcome = delegate.outcome as? CheckpointPaywallOutcome.Error else {
             return XCTFail("Expected an error outcome")
         }
         XCTAssertEqual(errorOutcome.error, error)
@@ -60,7 +60,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             transaction: transaction
         )
 
-        guard let stagedOutcome = store.call?.stagedOutcome as? CheckpointPaywallPurchasedOutcome else {
+        guard let stagedOutcome = store.call?.stagedOutcome as? CheckpointPaywallOutcome.Purchased else {
             return XCTFail("Expected a purchased outcome")
         }
         XCTAssertEqual(stagedOutcome.transaction, transaction)
@@ -68,11 +68,55 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         presenter.presentationDidDismiss()
 
-        guard let reportedOutcome = delegate.outcome as? CheckpointPaywallPurchasedOutcome else {
+        guard let reportedOutcome = delegate.outcome as? CheckpointPaywallOutcome.Purchased else {
             return XCTFail("Expected a purchased outcome")
         }
         XCTAssertEqual(reportedOutcome.transaction, transaction)
         XCTAssertEqual(reportedOutcome.customerInfo, TestData.customerInfo)
+    }
+
+    func testWebCheckoutCallbackStagesOutcomeUntilPresentationFinishesDismissing() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewControllerDidOpenWebCheckout(
+            PaywallViewController(offering: presentation.workflow.offering)
+        )
+
+        XCTAssertTrue(store.call?.stagedOutcome is CheckpointPaywallOutcome.WebCheckoutOpened)
+        XCTAssertNil(delegate.outcome)
+
+        presenter.presentationDidDismiss()
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.WebCheckoutOpened)
+        XCTAssertNil(store.call)
+    }
+
+    func testPurchaseOutcomeReplacesEarlierWebCheckoutOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = PaywallViewController(offering: presentation.workflow.offering)
+        let transaction = StoreTransaction(MockStoreTransaction())
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewControllerDidOpenWebCheckout(controller)
+        presenter.paywallViewController(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: transaction
+        )
+        presenter.presentationDidDismiss()
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Purchased else {
+            return XCTFail("Expected the later purchase outcome")
+        }
+        XCTAssertEqual(outcome.transaction, transaction)
+        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
     }
 
     func testCallStoreDefaultsToDismissedAndRemovesCall() {
@@ -82,7 +126,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
 
         let call = store.remove()
 
-        guard call?.stagedOutcome is CheckpointPaywallDismissedOutcome else {
+        guard call?.stagedOutcome is CheckpointPaywallOutcome.Dismissed else {
             return XCTFail("Expected a dismissed outcome")
         }
         XCTAssertTrue(call?.delegate === delegate)

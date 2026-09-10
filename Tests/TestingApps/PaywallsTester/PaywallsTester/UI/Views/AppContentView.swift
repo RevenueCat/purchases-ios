@@ -14,12 +14,27 @@ struct AppContentView: View {
     private enum Tab {
         case examples
         case livePaywalls
+        #if os(macOS) && DEBUG
+        case purchaseFocusRegression
+        #endif
     }
 
     @State
     private var selectedTab: Tab = Purchases.isConfigured ? .livePaywalls : .examples
 
     var body: some View {
+        #if os(macOS) && DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-MacOSPurchaseFocusRegression") {
+            MacOSPurchaseFocusRegressionView()
+        } else {
+            self.content
+        }
+        #else
+        self.content
+        #endif
+    }
+
+    private var content: some View {
         TabView(selection: $selectedTab) {
 
             if Purchases.isConfigured {
@@ -38,6 +53,14 @@ struct AppContentView: View {
                     Text("Examples")
                 }
                 .tag(Tab.examples)
+            #endif
+
+            #if os(macOS) && DEBUG
+            MacOSPurchaseFocusRegressionView()
+                .tabItem {
+                    Label("Focus Regression", systemImage: "keyboard")
+                }
+                .tag(Tab.purchaseFocusRegression)
             #endif
 
             if !Purchases.isConfigured {

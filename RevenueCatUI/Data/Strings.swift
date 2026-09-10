@@ -119,6 +119,7 @@ enum Strings {
     case paywall_web_view_load_failed(String)
     case paywall_web_view_http_error(statusCode: Int)
     case web_view_data_store_removal_failed(UUID, Error)
+    case web_view_context_encoding_failed(Error)
 
     // Exit Offers
     case errorFetchingOfferings(Error)
@@ -134,8 +135,7 @@ enum Strings {
     case paywall_close_workflow_action_not_handled(componentName: String?)
     case paywall_workflow_trigger_not_handled(componentName: String?)
     case workflow_package_context_unresolvable(stepId: String)
-    case workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier: String, error: Error)
-    case restored_paywall_components_for_disabled_remote_config(offeringIdentifier: String)
+    case offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier: String)
     case purchases_did_configure
 
 }
@@ -434,14 +434,12 @@ extension Strings: CustomStringConvertible {
         case let .workflow_package_context_unresolvable(stepId):
             return "Could not resolve package context for singleStepFallbackId '\(stepId)'. " +
             "Price/period variables may not resolve on packageless screens."
-        case let .workflow_fetch_failed_falling_back_to_offerings_paywall(offeringIdentifier, error):
-            return "Failed to fetch workflow for offering '\(offeringIdentifier)' (\(error)). " +
-            "Falling back to the offerings-provided paywall."
-        case let .restored_paywall_components_for_disabled_remote_config(offeringIdentifier):
-            return "Remote config is disabled, so offering '\(offeringIdentifier)' was re-resolved to restore " +
-            "its offerings-provided paywall."
+        case let .offering_has_no_workflow_falling_back_to_default_paywall(offeringIdentifier):
+            return "Offering '\(offeringIdentifier)' has no workflow. Falling back to the default paywall."
         case .purchases_did_configure:
             return "Purchases notified purchases-ui of configuration"
+        case .web_view_context_encoding_failed(let error):
+            return "Encoding web view context failed with error: \(error)"
         }
     }
 

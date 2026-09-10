@@ -72,7 +72,7 @@ import Foundation
 @_spi(Internal) public struct WorkflowStep {
 
     public let id: String
-    let type: String
+    @_spi(Internal) public let type: String
     public let screenId: String?
     @DefaultDecodable.EmptyDictionary
     var paramValues: [String: AnyDecodable]
@@ -261,6 +261,9 @@ import Foundation
 
     /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
     case uiConfigUnavailable(workflowId: String)
+
+    /// The workflow read was superseded by a remote-config update before it could complete consistently.
+    case configurationUnavailable(workflowId: String)
 
 }
 

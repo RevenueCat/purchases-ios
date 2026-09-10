@@ -28,7 +28,7 @@ class AuthenticationTests: TestCase {
     private var secureItemStorage: MockSecureItemStorage!
     private var tokenManager: TokenManager!
     // `Authentication` only holds a *weak* reference to itself inside the closure it hands to
-    // `tokenManager.reportError`, so tests that don't otherwise keep the `Authentication` returned by
+    // `tokenManager.reportTokenUpdate`, so tests that don't otherwise keep the `Authentication` returned by
     // `makeAuthentication()` alive would see it deallocated immediately, silently turning that closure
     // into a no-op. Stashing it here keeps it alive for the lifetime of the test regardless of whether
     // the caller captures the return value.
@@ -90,8 +90,8 @@ class AuthenticationTests: TestCase {
         expect(receivedCreated) == true
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogInParametersList) == [Self.appUserID]
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
-        expect(self.internalDelegate.invokedAuthenticatorDidLogInParametersList.last) == expectedInfo
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .identified
     }
 
     func testIdentifyCurrentUserWithStringFailureDoesNotNotifyInternalDelegate() {
@@ -112,7 +112,7 @@ class AuthenticationTests: TestCase {
         expect(receivedInfo).to(beNil())
         expect(receivedCreated) == false
         expect(receivedError).to(matchError(backendError.asPurchasesError))
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     func testIdentifyCurrentUserWithStringTrimsWhitespaceBeforeLoggingIn() throws {
@@ -136,7 +136,7 @@ class AuthenticationTests: TestCase {
 
         expect(receivedError).to(matchError(ErrorCode.unsupportedError))
         expect(self.identityManager.invokedLogIn) == false
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     // MARK: - identifyCurrentUser(as: StaticString, completion:) [deprecated]
@@ -228,7 +228,8 @@ class AuthenticationTests: TestCase {
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogInWithIdentityCount) == 1
         expect(self.identityManager.invokedLogInWithIdentityParametersList.first?.identitySource) == .anonymous
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logIn
     }
 
     func testLogInUsingIdentityFailureDoesNotNotifyInternalDelegate() {
@@ -246,7 +247,7 @@ class AuthenticationTests: TestCase {
 
         expect(receivedInfo).to(beNil())
         expect(receivedError).to(matchError(backendError.asPurchasesError))
-        expect(self.internalDelegate.invokedAuthenticatorDidLogIn) == false
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == false
     }
 
     func testLogInUsingIdentityPassesTheProvidedIdentityToTheIdentityManager() {
@@ -279,6 +280,7 @@ class AuthenticationTests: TestCase {
         expect(receivedError).to(beNil())
         expect(self.identityManager.invokedLogOutCount) == 1
         expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentity) == true
+        expect(self.internalDelegate.invokedAuthenticatorDidChangeIdentityParametersList.last) == .logOut
     }
 
     func testLogOutForwardsIdentityManagerErrorToCompletionAndDoesNotChangeIdentity() {
@@ -377,26 +379,63 @@ class AuthenticationTests: TestCase {
         }
     }
 
-    // MARK: - reportAuthenticationError(_:)
+    // MARK: - reportAuthenticationResult(_:)
 
-    func testReportAuthenticationErrorDoesNothingWhenNoDelegateIsSet() {
+    func testReportAuthenticationResultDoesNothingForAFailureWhenNoDelegateIsSet() {
         let authentication = self.makeAuthentication()
         authentication.delegate = nil
 
-        authentication.reportAuthenticationError(NSError(domain: "AuthenticationTests", code: 1))
+        authentication.reportAuthenticationResult(.failure(NSError(domain: "AuthenticationTests", code: 1)))
 
         expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
     }
 
-    func testReportAuthenticationErrorNotifiesTheDelegateOnTheMainThread() {
+    func testReportAuthenticationResultNotifiesTheDelegateOfAFailureOnTheMainThread() {
         let authentication = self.makeAuthentication()
         let error = NSError(domain: "AuthenticationTests", code: 1)
 
-        authentication.reportAuthenticationError(error)
+        authentication.reportAuthenticationResult(.failure(error))
 
         expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList) == [error]
+        // a failure is never accompanied by a new access token
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
+    }
+
+    func testReportAuthenticationResultDoesNothingForANewAccessTokenWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication()
+        authentication.delegate = nil
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
+    }
+
+    func testReportAuthenticationResultNotifiesTheDelegateOfANewAccessTokenOnTheMainThread() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessTokenParametersList) ==
+            ["new-access-token"]
+        // a new access token is never accompanied by an authentication error
+        expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testReportAuthenticationResultDoesNotCrashWhenTheDelegateDoesNotImplementAccessTokenUpdates() {
+        // `authenticatorDidUpdateAccessToken` is an `@objc optional` requirement, so delegates written
+        // before it existed (or that simply don't care about it) won't implement it. Reporting a new
+        // access token to one of those delegates should be a silent no-op rather than a crash.
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        let minimalDelegate = MinimalAuthenticationDelegate()
+        authentication.delegate = minimalDelegate
+
+        authentication.reportAuthenticationResult(.success("new-access-token"))
+
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == false
+        expect(minimalDelegate.invokedAuthenticatorDidEncounterError) == false
     }
 
     // MARK: - logInIfNeeded(completion:)
@@ -441,12 +480,12 @@ class AuthenticationTests: TestCase {
         )
     }
 
-    // MARK: - Token refresh failure reporting
+    // MARK: - Token refresh reporting
 
-    /// These tests exercise the wiring set up in `Authentication.init`, where `tokenManager.reportError`
-    /// is connected to `reportAuthenticationError(_:)`. This is how failures to refresh an expired access
-    /// token (which happen deep inside `HTTPClient`, well outside of any explicit, user-initiated call)
-    /// make their way to the `AuthenticationDelegate`.
+    /// These tests exercise the wiring set up in `Authentication.init`, where `tokenManager.reportTokenUpdate`
+    /// is connected to `reportAuthenticationResult(_:)`. This is how both a failed and a successful attempt
+    /// to refresh the session's access token (which happens deep inside `HTTPClient`, well outside of any
+    /// explicit, user-initiated call) makes its way to the `AuthenticationDelegate`.
     func testAuthenticationDelegateIsInvokedWhenTokenRefreshFails() {
         _ = self.makeAuthentication(tokenManagerEnabled: true)
         let networkError = NetworkError.networkError(NSError(domain: "AuthenticationTests", code: 401))
@@ -459,26 +498,21 @@ class AuthenticationTests: TestCase {
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterErrorParametersList.last).to(
             matchError(networkError.asPublicError)
         )
+        // a failed refresh never has a new access token to report
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
     }
 
-    func testAuthenticationDelegateIsNotInvokedWhenTokenRefreshSucceeds() {
+    func testAuthenticationDelegateReceivesTheNewAccessTokenWhenTokenRefreshSucceeds() {
         _ = self.makeAuthentication(tokenManagerEnabled: true)
-        let response = VerifiedHTTPResponse<TokenResponse>(
-            httpStatusCode: .success,
-            responseHeaders: [:],
-            body: TokenResponse(accessToken: "new-access-token",
-                                idToken: "new-id-token",
-                                refreshToken: "new-refresh-token",
-                                scope: "openid",
-                                expiresIn: 3600),
-            verificationResult: .notRequested,
-            isLoadShedderResponse: false,
-            isFallbackUrlResponse: false
-        )
+        let response = Self.makeTokenRefreshResponse(accessToken: "new-access-token")
 
         let didHandle = self.tokenManager.handleTokenRefreshResponse(.success(response))
 
         expect(didHandle) == true
+        expect(self.operationDispatcher.invokedDispatchOnMainThread) == true
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessTokenParametersList) ==
+            ["new-access-token"]
+        // a successful refresh never reports an authentication error
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
     }
 
@@ -490,6 +524,27 @@ class AuthenticationTests: TestCase {
         _ = self.tokenManager.handleTokenRefreshResponse(.failure(networkError))
 
         expect(self.authenticationDelegate.invokedAuthenticatorDidEncounterError) == false
+    }
+
+    func testAuthenticationDelegateIsNotInvokedForANewAccessTokenWhenNoDelegateIsSet() {
+        let authentication = self.makeAuthentication(tokenManagerEnabled: true)
+        authentication.delegate = nil
+
+        _ = self.tokenManager.handleTokenRefreshResponse(.success(Self.makeTokenRefreshResponse()))
+
+        expect(self.authenticationDelegate.invokedAuthenticatorDidUpdateAccessToken) == false
+    }
+
+}
+
+/// A minimal stand-in for a delegate implementation that predates (or simply doesn't implement)
+/// the optional `authenticatorDidUpdateAccessToken(_:)` requirement.
+private final class MinimalAuthenticationDelegate: NSObject, AuthenticationDelegate {
+
+    private(set) var invokedAuthenticatorDidEncounterError = false
+
+    func authenticatorDidEncounterError(_ error: PublicError) {
+        self.invokedAuthenticatorDidEncounterError = true
     }
 
 }
@@ -507,6 +562,23 @@ private extension AuthenticationTests {
                 "original_application_version": NSNull()
             ] as [String: Any]
         ]
+    }
+
+    static func makeTokenRefreshResponse(
+        accessToken: String = "new-access-token"
+    ) -> VerifiedHTTPResponse<TokenResponse> {
+        return VerifiedHTTPResponse<TokenResponse>(
+            httpStatusCode: .success,
+            responseHeaders: [:],
+            body: TokenResponse(accessToken: accessToken,
+                                idToken: "new-id-token",
+                                refreshToken: "new-refresh-token",
+                                scope: "openid",
+                                expiresIn: 3600),
+            verificationResult: .notRequested,
+            isLoadShedderResponse: false,
+            isFallbackUrlResponse: false
+        )
     }
 
 }

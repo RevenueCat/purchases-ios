@@ -156,7 +156,7 @@
     },
     {
       "id": "lower_array_is_type_error",
-      "description": "Unlike rc.length, an array is not valid input: there is no element-wise casing",
+      "description": "An array is not valid input: there is no element-wise casing",
       "predicate": {
         "rc.lower": [
           [

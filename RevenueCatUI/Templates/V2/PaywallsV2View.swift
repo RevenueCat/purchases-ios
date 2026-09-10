@@ -51,6 +51,9 @@ struct PaywallsV2View: View {
     @Environment(\.workflowPackageContext)
     private var workflowPackageContext
 
+    @Environment(\.paywallInteractionNotifier)
+    private var paywallInteractionNotifier
+
     /// Non-`nil` when an ancestor (i.e. `WorkflowPaywallView`) already injected the presentation
     /// session's state store; in that case this view must not shadow it with its own.
     @Environment(\.paywallStateStore)
@@ -102,6 +105,7 @@ struct PaywallsV2View: View {
     /// `workflowScreenType`, which gates whether events fire.
     private let workflowId: String?
     private let stepId: String?
+    private let workflowStepType: String?
     private let traceId: String?
     /// Whether this workflow step is the workflow's `singleStepFallbackId`. Only consulted for untagged
     /// steps (`nil` `screen_type`), where it restores the structural rule of reporting on the fallback
@@ -145,6 +149,7 @@ struct PaywallsV2View: View {
         workflowScreenType: [String]? = nil,
         workflowId: String? = nil,
         stepId: String? = nil,
+        workflowStepType: String? = nil,
         traceId: String? = nil,
         isWorkflowSingleStepFallback: Bool = false
     ) {
@@ -169,6 +174,7 @@ struct PaywallsV2View: View {
         self.workflowScreenType = workflowScreenType
         self.workflowId = workflowId
         self.stepId = stepId
+        self.workflowStepType = workflowStepType
         self.traceId = traceId
         self.isWorkflowSingleStepFallback = isWorkflowSingleStepFallback
         self._paywallPromoOfferCache = .init(wrappedValue: promoOfferCache ?? PaywallPromoOfferCache(
@@ -266,6 +272,24 @@ struct PaywallsV2View: View {
 
     private func loadedPaywallView(paywallState: PaywallState) -> some View {
         let contentLocale = paywallState.rootViewModel.localizationProvider.locale
+        let workflow: PaywallWebViewStaticContext.Workflow? = {
+            guard let workflowId = self.workflowId, let stepId = self.stepId else {
+                return nil
+            }
+            return .init(
+                id: workflowId,
+                stepID: stepId,
+                stepType: self.workflowStepType,
+                screenType: self.workflowScreenType
+            )
+        }()
+        let webViewContext = PaywallWebViewStaticContext(
+            offering: self.offering,
+            packages: self.workflowPackages ?? paywallState.packages,
+            workflow: workflow,
+            store: self.purchaseHandler.configuredStoreEnvironment.entitlementProviderName(),
+            storefrontCountryCode: self.purchaseHandler.configuredStoreEnvironment.storeFrontCountryCode
+        )
         return LoadedPaywallsV2View(
             introOfferEligibilityContext: introOfferEligibilityContext,
             paywallState: paywallState,
@@ -287,6 +311,8 @@ struct PaywallsV2View: View {
         .environment(\.locale, contentLocale)
         .environment(\.layoutDirection, contentLocale.swiftUILayoutDirection)
         .environment(\.screenCondition, ScreenCondition.from(self.horizontalSizeClass))
+        .measurePaywallWindowSize()
+        .environment(\.paywallWebViewStaticContext, webViewContext)
         .environment(\.urlOpenedNotifier, URLOpenedNotifier { [purchaseHandler] url in
             purchaseHandler.signalURLOpened(url)
         })
@@ -419,7 +445,8 @@ struct PaywallsV2View: View {
                 // instead of one bound to this page's session. Otherwise component interactions would be
                 // the one paywall event still emitted on a non-paywall step.
                 Self.componentInteractionLogger(tracksPaywallEvents: self.tracksPaywallEvents) {
-                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID)
+                    self.purchaseHandler.componentInteractionLogger(sessionID: self.paywallSessionID,
+                                                                    onInteraction: self.paywallInteractionNotifier)
                 }
             )
             .onChangeOf(self.purchaseHandler.hasPurchasedInSession) { hasPurchased in
@@ -597,6 +624,9 @@ struct LoadedPaywallsV2View: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -630,6 +660,7 @@ struct LoadedPaywallsV2View: View {
         return PackageSelectionContext(
             condition: self.screenCondition,
             customVariables: self.customVariables,
+            windowSize: self.paywallWindowSize,
             isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                 introOfferEligibilityContext.isEligible(package: $0)
             },
@@ -693,7 +724,7 @@ struct LoadedPaywallsV2View: View {
                 view
                     .edgesIgnoringSafeArea(.top)
             })
-            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height == .fill, apply: { view in
+            .applyIf(paywallState.rootViewModel.stackViewModel.component.size.height.isFill, apply: { view in
                 view.frame(maxHeight: .infinity, alignment: paywallState.rootViewModel.frameAlignment)
             })
             .backgroundStyle(
@@ -719,6 +750,11 @@ struct LoadedPaywallsV2View: View {
             // Leaving a tab can restore a package a rule hides, and this doesn't depend on
             // `onAppear` ordering.
             .onChangeOf(self.selectedPackageContext.package?.identifier) { _ in
+                self.reconcileSelection()
+            }
+            // A window resize (rotation, Split View, Stage Manager) can hide the
+            // selected package via a window size condition.
+            .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
         }

@@ -138,7 +138,7 @@ class PurchaseButtonComponentViewModel {
 
 }
 
-private extension URL {
+extension URL {
 
     /// Replaces any same-named item, leaving other query items and the fragment byte-for-byte intact.
     func upserting(_ newItems: [URLQueryItem]) -> URL {

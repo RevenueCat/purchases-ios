@@ -42,7 +42,7 @@ class TokenManager {
         self.storage = storage
     }
 
-    var reportError: ((PublicError) -> Void)?
+    var reportTokenUpdate: ((Result<String?, PublicError>) -> Void)?
 
     var hasCurrentAccessToken: Bool { currentAccessToken != nil }
 
@@ -110,12 +110,14 @@ class TokenManager {
         storage.setString(refreshToken, for: .refresh(userID))
         storage.setString(accessToken, for: .access(userID))
         storage.setString(idToken, for: .id(userID))
+        reportTokenUpdate?(.success(accessToken))
     }
 
     func deleteTokens(for userID: String) {
         storage.setString(nil, for: .refresh(userID))
         storage.setString(nil, for: .access(userID))
         storage.setString(nil, for: .id(userID))
+        reportTokenUpdate?(.success(nil))
     }
 
     func deleteAccessToken(for userID: String) {
@@ -182,7 +184,7 @@ class TokenManager {
 
         // make sure this response is a successful one
         let didHandle: Bool
-        let reportedError: PublicError?
+        let reportedResult: Result<String?, PublicError>
         switch result {
         case .success(let response):
             if response.httpStatusCode == .success {
@@ -192,15 +194,15 @@ class TokenManager {
                 self.currentAccessToken = tokens.accessToken
                 self.currentIDToken = tokens.idToken
 
-                reportedError = nil
+                reportedResult = .success(tokens.accessToken)
                 didHandle = true
             } else {
                 // a non-successful response that somehow didn't get turned into an actual error
-                reportedError = ErrorUtils.unknownError().asPublicError
+                reportedResult = .failure(ErrorUtils.unknownError().asPublicError)
                 didHandle = false
             }
         case .failure(let error):
-            reportedError = error.asPublicError
+            reportedResult = .failure(error.asPublicError)
             didHandle = false
         }
 
@@ -211,9 +213,7 @@ class TokenManager {
         }
 
         defer {
-            if let reportedError, let reportError {
-                reportError(reportedError)
-            }
+            reportTokenUpdate?(reportedResult)
         }
 
         handlers.forEach { $0(didHandle) }

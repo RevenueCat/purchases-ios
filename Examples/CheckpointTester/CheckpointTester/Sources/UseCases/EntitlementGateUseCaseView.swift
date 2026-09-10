@@ -101,11 +101,11 @@ struct EntitlementGateUseCaseView: View {
     @MainActor
     private func handle(_ result: CheckpointResult) {
         switch result {
-        case let presented as CheckpointPaywallPresentedResult:
+        case let presented as CheckpointResult.PaywallPresented:
             self.handle(presented.paywallOutcome)
-        case let received as CheckpointReceivedOfferingResult:
+        case let received as CheckpointResult.ReceivedOffering:
             self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointNoActionResult:
+        case let noAction as CheckpointResult.NoAction:
             self.status = "No paywall shown (\(noAction.reason)). Content remains locked."
         default:
             self.status = "Unknown checkpoint result. Content remains locked."
@@ -115,13 +115,15 @@ struct EntitlementGateUseCaseView: View {
     @MainActor
     private func handle(_ outcome: CheckpointPaywallOutcome) {
         switch outcome {
-        case let purchased as CheckpointPaywallPurchasedOutcome:
+        case let purchased as CheckpointPaywallOutcome.Purchased:
             self.updateAccess(with: purchased.customerInfo, action: "Purchase completed")
-        case let restored as CheckpointPaywallRestoredOutcome:
+        case let restored as CheckpointPaywallOutcome.Restored:
             self.updateAccess(with: restored.customerInfo, action: "Restore completed")
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             self.status = "Paywall dismissed. Content remains locked."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            self.status = "Web checkout opened. Refresh access after completing the purchase."
+        case let failed as CheckpointPaywallOutcome.Error:
             self.status = "Paywall failed: \(failed.error.localizedDescription)"
         default:
             self.status = "Unknown paywall outcome. Content remains locked."

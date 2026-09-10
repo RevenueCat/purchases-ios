@@ -133,7 +133,10 @@ struct ContentView: View {
                                     "this-checkpoint-does-not-exist",
                                     customVariables: self.customVariables.checkpointCustomVariables
                                 )
-                                self.model.showOutcome(result)
+                                self.model.showOutcome(
+                                    result,
+                                    checkpointIdentifier: "this-checkpoint-does-not-exist"
+                                )
                             } catch {
                                 self.model.showError(error)
                             }
@@ -151,7 +154,7 @@ struct ContentView: View {
                                     "error_checkpoint",
                                     customVariables: self.customVariables.checkpointCustomVariables
                                 )
-                                self.model.showOutcome(result)
+                                self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
                             } catch {
                                 self.model.showError(error)
                             }

@@ -44,7 +44,7 @@ class PurchasesCheckpointEventsTests: BasePurchasesTests {
             params: .init()
         )
 
-        guard case .noAction(.disabled) = resolution else {
+        guard case .noAction(.configurationUnavailable) = resolution else {
             fail("Expected resolution to report no action, got \(resolution)")
             return
         }

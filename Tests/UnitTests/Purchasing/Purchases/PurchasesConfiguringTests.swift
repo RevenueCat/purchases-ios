@@ -23,6 +23,33 @@ class PurchasesConfiguringTests: BasePurchasesTests {
         expect(self.purchases).toNot(beNil())
     }
 
+    func testConfiguredStoreEnvironmentDerivesProviderNameFromAPIKey() {
+        let environments = [
+            ("mac_key", "mac_app_store"),
+            ("appl_key", "app_store"),
+            ("test_key", "test_store"),
+            ("legacykey", "app_store"),
+            ("unknown_key", "unknown")
+        ]
+
+        for (apiKey, expectedProviderName) in environments {
+            let environment = ConfiguredStoreEnvironment(apiKey: apiKey, storeFrontCountryCode: nil)
+
+            expect(environment.entitlementProviderName()) == expectedProviderName
+        }
+    }
+
+    func testConfiguredStoreEnvironmentReadsCurrentStorefront() {
+        let systemInfo = MockSystemInfo(finishTransactions: true, apiKey: "appl_key")
+        let environment = ConfiguredStoreEnvironment(systemInfo: systemInfo)
+
+        expect(environment.storeFrontCountryCode).to(beNil())
+
+        systemInfo.stubbedStorefront = MockStorefront(countryCode: "USA")
+
+        expect(environment.storeFrontCountryCode) == "USA"
+    }
+
     func testRemoteConfigRefreshesDuringLifecycleCacheUpdatesByDefault() {
         self.setupPurchases()
 

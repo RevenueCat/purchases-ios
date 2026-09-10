@@ -126,11 +126,11 @@ struct OnboardingUseCaseView: View {
 
     private static func describe(_ result: CheckpointResult) -> String {
         switch result {
-        case let presented as CheckpointPaywallPresentedResult:
+        case let presented as CheckpointResult.PaywallPresented:
             return Self.describe(presented.paywallOutcome)
-        case let received as CheckpointReceivedOfferingResult:
+        case let received as CheckpointResult.ReceivedOffering:
             return "Received offering '\(received.offering.identifier)'."
-        case let noAction as CheckpointNoActionResult:
+        case let noAction as CheckpointResult.NoAction:
             return "No paywall shown (\(noAction.reason))."
         default:
             return "Unknown checkpoint result."
@@ -139,13 +139,15 @@ struct OnboardingUseCaseView: View {
 
     private static func describe(_ outcome: CheckpointPaywallOutcome) -> String {
         switch outcome {
-        case is CheckpointPaywallPurchasedOutcome:
+        case is CheckpointPaywallOutcome.Purchased:
             return "Purchased during onboarding."
-        case is CheckpointPaywallRestoredOutcome:
+        case is CheckpointPaywallOutcome.Restored:
             return "Restored during onboarding."
-        case is CheckpointPaywallDismissedOutcome:
+        case is CheckpointPaywallOutcome.Dismissed:
             return "Paywall dismissed."
-        case let failed as CheckpointPaywallErrorOutcome:
+        case is CheckpointPaywallOutcome.WebCheckoutOpened:
+            return "Web checkout opened."
+        case let failed as CheckpointPaywallOutcome.Error:
             return "Paywall failed: \(failed.error.localizedDescription)"
         default:
             return "Unknown paywall outcome."

@@ -132,6 +132,25 @@ extension RulesEngine {
             try argsAsList(args).map { try Evaluator.evaluateValue($0, vars: vars) }
         }
 
+        /// Rejects an argument count no overload of `operatorName` accepts.
+        ///
+        /// Only for operators that are strict about arity. Several others take
+        /// a fixed number of arguments and silently ignore extras — `substr`,
+        /// `<`, `reduce`, and anything reading through `firstArgEvaluated` —
+        /// matching `json-logic-js`, where a spread call simply drops what the
+        /// function does not declare. Whether an operator is strict is a
+        /// decision each one makes; this only spells the refusal the same way
+        /// every time.
+        static func checkArity(_ count: Int, allowed: [Int], operatorName: String) throws {
+            guard allowed.contains(count) else {
+                let expected = allowed.map(String.init).joined(separator: " or ")
+                throw EvaluationError.typeMismatch(
+                    message: "operator '\(operatorName)' expects \(expected) arguments, "
+                        + "got \(count)"
+                )
+            }
+        }
+
         /// Evaluate exactly two arguments. Used by binary operators (`==`,
         /// `!=`, `===`, `!==`).
         /// Evaluate args and return the first two operands. Missing

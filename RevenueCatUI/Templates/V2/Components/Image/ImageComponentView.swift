@@ -58,6 +58,9 @@ struct ImageComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -111,6 +114,7 @@ struct ImageComponentView: View {
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
             stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
             colorScheme: colorScheme
         ) { style in
             if style.visible {
@@ -398,7 +402,7 @@ struct ImageComponentView_Previews: PreviewProvider {
             case .relative:
                 estimatedContentWidth = min(availableContentWidth, intrinsicWidth)
             }
-        case .relative(let value):
+        case .relative(let value, _):
             estimatedContentWidth = max(0, availableContentWidth * CGFloat(value))
         }
 

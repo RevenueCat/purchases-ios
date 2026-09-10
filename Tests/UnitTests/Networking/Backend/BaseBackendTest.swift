@@ -36,6 +36,7 @@ class BaseBackendTests: TestCase {
     private(set) var internalAPI: InternalAPI!
     private(set) var customerCenterConfig: CustomerCenterConfigAPI!
     private(set) var redeemWebPurchaseAPI: RedeemWebPurchaseAPI!
+    private(set) var externalPurchaseTokenAPI: ExternalPurchaseTokenAPI!
     private(set) var virtualCurrenciesAPI: VirtualCurrenciesAPI!
     private(set) var adsAPI: AdsAPI!
     private(set) var remoteConfigAPI: RemoteConfigAPI!
@@ -96,6 +97,7 @@ class BaseBackendTests: TestCase {
         self.internalAPI = InternalAPI(backendConfig: backendConfig)
         self.customerCenterConfig = CustomerCenterConfigAPI(backendConfig: backendConfig)
         self.redeemWebPurchaseAPI = RedeemWebPurchaseAPI(backendConfig: backendConfig)
+        self.externalPurchaseTokenAPI = ExternalPurchaseTokenAPI(backendConfig: backendConfig)
         self.virtualCurrenciesAPI = VirtualCurrenciesAPI(backendConfig: backendConfig)
         self.adsAPI = AdsAPI(backendConfig: backendConfig)
         self.remoteConfigAPI = RemoteConfigAPI(backendConfig: backendConfig)
@@ -110,6 +112,7 @@ class BaseBackendTests: TestCase {
                                internalAPI: self.internalAPI,
                                customerCenterConfig: self.customerCenterConfig,
                                redeemWebPurchaseAPI: self.redeemWebPurchaseAPI,
+                               externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
                                virtualCurrenciesAPI: self.virtualCurrenciesAPI,
                                adsAPI: self.adsAPI,
                                remoteConfigAPI: self.remoteConfigAPI)

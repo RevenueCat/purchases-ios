@@ -37,6 +37,9 @@ struct TextComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.countdownTime)
     private var countdownTime: CountdownTime?
 
@@ -81,7 +84,8 @@ struct TextComponentView: View {
             countdownTime: countdownTime,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
         ) { style in
             if style.visible {
                 NonLocalizedMarkdownText(
@@ -107,7 +111,7 @@ struct TextComponentView: View {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 /// Parses markdown using AttributedString and does not use bundle assets for localization
-private struct NonLocalizedMarkdownText: View {
+struct NonLocalizedMarkdownText: View {
 
     @Environment(\.componentInteractionLogger)
     private var componentInteractionLogger
@@ -122,6 +126,18 @@ private struct NonLocalizedMarkdownText: View {
     let font: Font
     let fontWeight: Font.Weight
     let componentName: String?
+
+    init(
+        text: String,
+        font: Font,
+        fontWeight: Font.Weight,
+        componentName: String? = nil
+    ) {
+        self.text = text
+        self.font = font
+        self.fontWeight = fontWeight
+        self.componentName = componentName
+    }
 
     var markdownText: AttributedString? {
         /*
@@ -155,6 +171,9 @@ private struct NonLocalizedMarkdownText: View {
                 attrString[run.range] = substring
             }
         }
+
+        // Handle underline with <u>text</u> syntax
+        attrString = MarkdownUnderlineFormatter.apply(to: attrString)
 
         return attrString
     }
@@ -282,7 +301,7 @@ struct TextComponentView_Previews: PreviewProvider {
                     locale: Locale.current,
                     localizedStrings: [
                         // swiftlint:disable:next line_length
-                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n[RevenueCat](https://revenuecat.com)")
+                        "id_1": .string("Hello, world\n**bold**\n_italic_ \n`code`\n<u>underline</u>\n<u>**_underlined italic bold_**</u>\n[RevenueCat](https://revenuecat.com)")
                     ]
                 ),
                 uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),

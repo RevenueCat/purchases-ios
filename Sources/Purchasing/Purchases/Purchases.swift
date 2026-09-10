@@ -181,7 +181,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
      * Indicates whether the user is allowed to make payments.
      * [More information on when this might be `false` here](https://rev.cat/can-make-payments-apple)
      */
-    @objc public static func canMakePayments() -> Bool { StoreKit1Wrapper.canMakePayments() }
+    @objc public static func canMakePayments() -> Bool { PaymentAuthorizationProvider.storeKit.canMakePayments() }
 
     /**
      * Set a custom log handler for redirecting logs to your own logging system.
@@ -282,6 +282,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     private let attributionFetcher: AttributionFetcher
     private let attributionPoster: AttributionPoster
     private let _authentication: Authentication
+    private let externalPurchaseManager: ExternalPurchaseManager
     private let backend: Backend
     private let deviceCache: DeviceCache
     private let paywallCache: PaywallCacheWarmingType?
@@ -302,7 +303,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
 
     /// The ad tracker for reporting ad impressions, clicks, and revenue to RevenueCat.
     @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-    @_spi(Experimental) @objc public var adTracker: AdTracker {
+    public var adTracker: AdTracker {
         if let tracker = _adTracker as? AdTracker {
             return tracker
         }
@@ -340,6 +341,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     internal let currentConfiguration: Configuration?
 
     @_spi(Internal) public let subscriptionHistoryTracker = SubscriptionHistoryTracker()
+
+    @_spi(Internal) public let configuredStoreEnvironment: ConfiguredStoreEnvironment
 
     // swiftlint:disable:next function_body_length cyclomatic_complexity
     convenience init(apiKey: String,
@@ -670,11 +673,29 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                 dimensionProviders: [
                     DeviceDimensionProvider(),
                     StoreDimensionProvider(),
+                    CustomerInfoDimensionProvider(
+                        currentAppUserIDProvider: { identityManager.currentAppUserID },
+                        customerInfoProvider: { appUserID in
+                            try await withCheckedThrowingContinuation { continuation in
+                                customerInfoManager.customerInfo(
+                                    appUserID: appUserID,
+                                    fetchPolicy: .default,
+                                    trackDiagnostics: false,
+                                    completion: { result in continuation.resume(with: result) }
+                                )
+                            }
+                        }
+                    ),
                     SubscriberAttributesDimensionProvider(
                         deviceCache: deviceCache,
                         currentUserProvider: identityManager
+                    ),
+                    SubscriberDimensionsProvider(
+                        deviceCache: deviceCache,
+                        currentUserProvider: identityManager
                     )
-                ]
+                ],
+                currentAppUserIDProvider: { identityManager.currentAppUserID }
             )
             checkpointResolver = DefaultCheckpointWorkflowResolver(
                 checkpointsConfigProvider: checkpointsConfigProvider,
@@ -880,6 +901,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
     ) {
         self.webBundleEventBus = webBundleEventBus
 
+        self.configuredStoreEnvironment = .init(systemInfo: systemInfo)
+
         if systemInfo.dangerousSettings.customEntitlementComputation {
             Logger.info(Strings.configure.custom_entitlements_computation_enabled)
         }
@@ -939,15 +962,17 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
                                               tokenManager: tokenManager,
                                               operationDispatcher: operationDispatcher,
                                               systemInfo: systemInfo)
+        self.externalPurchaseManager = ExternalPurchaseManager(
+            customLink: StoreKitExternalPurchaseCustomLink(),
+            externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
+            currentUserProvider: identityManager,
+            systemInfo: systemInfo
+        )
 
         super.init()
         self._authentication.internalDelegate = self
 
         self.identityManager.remoteConfigManager = self.remoteConfigManager
-        self.remoteConfigManager.onRemoteConfigDisabled = { [weak self] in
-            guard let self else { return }
-            self.offeringsManager.refreshCachedOfferingsForRemoteConfigDisable(appUserID: self.appUserID)
-        }
 
         Logger.verbose(Strings.configure.purchases_init(self, paymentQueueWrapper))
 
@@ -1262,7 +1287,39 @@ public extension Purchases {
             return
         }
 
-        self.syncSubscriberAttributes(completion: {
+        let firstBlockingError: Atomic<PublicError?> = nil
+        /// Returns whether an attribute sync error should prevent offerings from being fetched.
+        let shouldBlockOfferingsFetch: @Sendable (PublicError) -> Bool = { error in
+            guard
+                error.userInfo[NSError.UserInfoKey.backendErrorCode as String] as? Int
+                    == BackendErrorCode.invalidSubscriberAttributes.rawValue,
+                let attributeErrors = error.subscriberAttributesErrors,
+                !attributeErrors.isEmpty
+            else {
+                return true
+            }
+
+            // Only `$`-prefixed errors are non-blocking: they identify reserved attributes,
+            // some of which cannot be overwritten. Non-`$` keys are custom attributes,
+            // so a failure means their intended values were not synced.
+            return attributeErrors.keys.contains { !$0.hasPrefix("$") }
+        }
+
+        self.syncSubscriberAttributes(syncedAttribute: { error in
+            // Reserved-only errors are non-blocking because those attributes cannot always be updated.
+            if let error, shouldBlockOfferingsFetch(error) {
+                firstBlockingError.modify {
+                    $0 = $0 ?? error
+                }
+            }
+        }, completion: {
+            if let error = firstBlockingError.value {
+                self.operationDispatcher.dispatchOnMainActor {
+                    completion(nil, error)
+                }
+                return
+            }
+
             self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
                 self.remoteConfigManager.refreshRemoteConfig(
                     fetchContext: .read,
@@ -1297,23 +1354,31 @@ public extension Purchases {
 
 extension Purchases: InternalAuthenticatorDelegate {
 
-    func authenticatorDidLogIn(info: CustomerInfo) {
-        self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
-            self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
-            self.remoteConfigManager.refreshRemoteConfig(
-                fetchContext: .identityChange,
-                isAppBackgrounded: isAppBackgrounded
-            )
-        }
-    }
+    func authenticatorDidChangeIdentity(reason: IdentityChangeReason,
+                                        didHandle: @escaping (Result<CustomerInfo, PublicError>?) -> Void) {
+        switch reason {
+        case .logIn:
+            self.systemInfo.isApplicationBackgrounded { isAppBackgrounded in
+                self.updateOfferingsCache(isAppBackgrounded: isAppBackgrounded)
+                self.remoteConfigManager.refreshRemoteConfig(
+                    fetchContext: .identityChange,
+                    isAppBackgrounded: isAppBackgrounded
+                )
+                didHandle(nil)
+            }
 
-    func authenticatorDidChangeIdentity(completion: @escaping (Result<CustomerInfo, PublicError>) -> Void) {
-        // The web view cache must retain the cache on login to support multipage paywalls and workflows
-        // making `.identityChange` an insufficient signal.
-        // Currently, this is only invoked on logout, but in the event that this gets invoked from login
-        // we would have an issue. 
-        Task { await self.webBundleEventBus.clearCache() }
-        self.updateAllCaches(fetchContext: .identityChange, completion: completion)
+        case .logOut:
+            // The web view cache retains the cache on login to support multipage paywalls and workflows,
+            // and clears the cache when the current user "logs out"
+            Task { await self.webBundleEventBus.clearCache() }
+
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+
+        case .identified:
+            // .logOut and .identified are both considered "identity changes"
+            self.updateAllCaches(fetchContext: .identityChange, completion: didHandle)
+        }
     }
 
 }
@@ -1893,13 +1958,31 @@ public extension Purchases {
 
 #endif
 
+    /// Used by `RevenueCatUI` before it sends the customer out of the app to pay on the web: it runs what
+    /// Apple requires around an external purchase and hands back the token id the checkout page needs.
+    ///
+    /// Only to be called when the customer has deliberately asked to buy: it shows Apple's disclosure notice,
+    /// and every token minted is one Apple expects a report for.
+    ///
+    /// Does nothing while ``DangerousSettings/useExternalPurchaseCustomLinks`` is disabled: the caller is told to
+    /// proceed with no token id to hand over, so the link keeps opening as it did before.
+    @_spi(Internal) func prepareExternalPurchaseLink() async -> ExternalPurchaseLinkResult {
+        return .init(preparationResult: await self.externalPurchaseManager.prepareExternalPurchase(flow: .linkOut))
+    }
+
+    /// ``DangerousSettings/useExternalPurchaseCustomLinks``, so that `RevenueCatUI` only tells the customer
+    /// something is under way when ``prepareExternalPurchaseLink()`` has work to do.
+    @_spi(Internal) var useExternalPurchaseCustomLinks: Bool {
+        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
+
     /// Used by `RevenueCatUI` to download and cache paywall images.
     @available(iOS 15.0, macOS 12.0, watchOS 8.0, tvOS 15.0, *)
     static let paywallImageDownloadSession: URLSession = PaywallCacheWarming.downloadSession
 
 }
 
-// MARK: - Reward Verification (Experimental SPI)
+// MARK: - Reward Verification
 
 extension Purchases {
 
@@ -1907,8 +1990,9 @@ extension Purchases {
     ///
     /// Call after the ad has loaded. Pass `customData` and `appUserID` to your ad network's
     /// server-side verification options, then stash `clientTransactionID` for use with
-    /// ``pollRewardVerification(clientTransactionID:)`` when the reward callback fires.
-    @_spi(Experimental) public func generateRewardVerificationToken(
+    /// ``pollRewardVerification(clientTransactionID:trackingMetadata:)`` when the reward callback fires.
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func generateRewardVerificationToken(
         impressionId: String
     ) -> RewardVerificationToken {
         let clientTransactionID = UUID().uuidString
@@ -1941,7 +2025,8 @@ extension Purchases {
     /// automatically track the reward events as verification progresses
     ///
     /// Refreshes local reward state before returning verified rewards.
-    @_spi(Experimental) public func pollRewardVerification(
+    @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+    public func pollRewardVerification(
         clientTransactionID: String,
         trackingMetadata: RewardedAdTrackingMetadata? = nil
     ) async -> RewardVerificationResult {
@@ -2740,11 +2825,11 @@ extension Purchases {
         return self.systemInfo.preferredLocaleOverride
     }
 
-    // Exposes whether workflows and remote config are currently available to RevenueCatUI, which
-    // can't see either the custom entitlement computation mode or the remote config manager's kill switch.
+    // Exposes whether workflows and remote config are available to RevenueCatUI, which
+    // can't see the custom entitlement computation mode.
     // swiftlint:disable missing_docs
     @_spi(Internal) public var remoteConfigEnabled: Bool {
-        return self.systemInfo.remoteConfigEnabled && !self.remoteConfigManager.isDisabled
+        return self.systemInfo.remoteConfigEnabled
     }
 
     // swiftlint:disable missing_docs

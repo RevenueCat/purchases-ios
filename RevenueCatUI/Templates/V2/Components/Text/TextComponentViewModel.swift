@@ -78,6 +78,7 @@ class TextComponentViewModel {
         customVariables: [String: CustomVariableValue] = [:],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil,
         @ViewBuilder apply: @escaping (TextComponentStyle) -> some View
     ) -> some View {
         let isEligibleForPromoOffer = promoOffer != nil
@@ -85,7 +86,8 @@ class TextComponentViewModel {
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
         let localizedPartial = LocalizedTextPartial.buildPartial(
             state: state,

@@ -14,7 +14,7 @@ extension RulesEngine {
         static func opRootVar(args: Value, vars: Scope) throws -> Value {
             try AccessorOperators.resolveVar(
                 args: args,
-                target: vars.root,
+                lookup: { AccessorOperators.lookupVar(in: vars.root, path: $0) },
                 vars: vars,
                 operatorName: "rc.rootVar"
             )

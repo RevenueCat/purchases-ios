@@ -132,6 +132,9 @@ class DeviceCache {
             userDefaults.removeObject(
                 forKey: CacheKey.customerInfo(oldAppUserID)
             )
+            userDefaults.removeObject(
+                forKey: CacheKey.subscriberDimensions(oldAppUserID)
+            )
 
             // Clear CustomerInfo cache timestamp for oldAppUserID.
             userDefaults.removeObject(forKey: CacheKey.customerInfoLastUpdated(oldAppUserID))
@@ -180,6 +183,20 @@ class DeviceCache {
         }
     }
 
+    // MARK: - Subscriber dimensions
+
+    func cachedSubscriberDimensionsData(appUserID: String) -> Data? {
+        return self.userDefaults.read {
+            $0.data(forKey: CacheKey.subscriberDimensions(appUserID))
+        }
+    }
+
+    func cache(subscriberDimensions: Data, appUserID: String) {
+        self.userDefaults.write {
+            $0.set(subscriberDimensions, forKey: CacheKey.subscriberDimensions(appUserID))
+        }
+    }
+
     func isCustomerInfoCacheStale(appUserID: String, isAppBackgrounded: Bool) -> Bool {
         return self.userDefaults.read {
             guard let cachesLastUpdated = Self.customerInfoLastUpdated($0, appUserID: appUserID) else {
@@ -214,12 +231,8 @@ class DeviceCache {
 
     // MARK: - Offerings
 
-    func cachedOfferingsContents(
-        appUserID: String,
-        decodingMode: OfferingsResponse.DecodingMode = .withPaywallComponents
-    ) -> Offerings.Contents? {
-        let decoder = OfferingsResponse.makeDecoder(decodingMode: decodingMode)
-        return self.value(for: CacheKey.offerings(appUserID), decoder: decoder)
+    func cachedOfferingsContents(appUserID: String) -> Offerings.Contents? {
+        return self.value(for: CacheKey.offerings(appUserID), decoder: JSONDecoder.makeDefault())
     }
 
     func cache(
@@ -588,6 +601,7 @@ class DeviceCache {
 
         case customerInfo(String)
         case customerInfoLastUpdated(String)
+        case subscriberDimensions(String)
         case offerings(String)
         case legacySubscriberAttributes(String)
         case attributionDataDefaults(String)
@@ -599,6 +613,7 @@ class DeviceCache {
             switch self {
             case let .customerInfo(userID): return "\(Self.base)purchaserInfo.\(userID)"
             case let .customerInfoLastUpdated(userID): return "\(Self.base)purchaserInfoLastUpdated.\(userID)"
+            case let .subscriberDimensions(userID): return "\(Self.base)subscriberDimensions.\(userID)"
             case let .offerings(userID): return "\(Self.base)offerings.\(userID)"
             case let .legacySubscriberAttributes(userID): return "\(Self.legacySubscriberAttributesBase)\(userID)"
             case let .attributionDataDefaults(userID): return "\(Self.base)attribution.\(userID)"

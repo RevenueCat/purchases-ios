@@ -54,6 +54,8 @@ enum Constants {
         }
     }
 
+    static let minimumFooterBottomPadding: CGFloat = 16
+
     static func defaultVerticalPaddingLength(_ idiom: UserInterfaceIdiom) -> CGFloat? {
         if idiom == .pad {
             return 16

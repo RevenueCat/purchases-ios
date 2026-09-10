@@ -15,6 +15,7 @@ enum UserInterfaceIdiom {
     case pad
     case mac
     case watch
+    case vision
     case unknown
 
 }
@@ -81,7 +82,7 @@ private extension UIDevice {
         case .carPlay: return .unknown
 
         #if swift(>=5.9)
-        case .vision: return .unknown
+        case .vision: return .vision
         #endif
 
         case .unspecified: fallthrough

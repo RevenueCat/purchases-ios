@@ -1,3 +1,111 @@
+## 5.89.0
+## RevenueCat SDK
+### ✨ New Features
+* feat(ads): ad tracking and rewarded ad grants beta (#7490) via Peter Porfy (@peterporfy)
+### 🐞 Bugfixes
+* Fix Paywall V2 rendering when components are provided by an offering (#7655) via Rick (@rickvdl)
+* fix: send X-Is-Sandbox header when using a Test Store API key (#7624) via Álvaro Brey (@AlvaroBrey)
+* Fix URL-open publishing on a background thread (#7631) via Rick (@rickvdl)
+
+## RevenueCatUI SDK
+### ✨ New Features
+* feat(paywalls): Add onPaywallInteraction callback (#7583) via Álvaro Brey (@AlvaroBrey)
+### 🐞 Bugfixes
+* fix: use each rule's own badge contents (#7532) via Facundo Menzella (@facumenzella)
+### Paywallsv2
+#### ✨ New Features
+* Run Apple's external purchase flow before opening a web purchase link (experimental) (#7663) via Antonio Pallares (@ajpallares)
+* Add window size conditions for paywall component overrides (#7645) via Josh Holtz (@joshdholtz)
+* Feat(Paywalls): Underline text support (#5935) via Jacob Rakidzich (@JZDesign)
+#### 🐞 Bugfixes
+* Present sheet content only after its first layout pass (#7630) via Facundo Menzella (@facumenzella)
+### Customer Center
+#### ✨ New Features
+* feat(customer center): show Resubscribe for cancelled subscriptions (#7617) via Facundo Menzella (@facumenzella)
+#### 🐞 Bugfixes
+* fix(customer center): hide refund and change plan on family-shared subs (#7605) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Prepare one external purchase at a time (#7671) via Antonio Pallares (@ajpallares)
+* Add a dangerous setting for external purchase custom links (#7662) via Antonio Pallares (@ajpallares)
+* Tell payment authorization apart from external purchase eligibility (#7667) via Antonio Pallares (@ajpallares)
+* Answer canMakePayments through AppStore rather than SKPaymentQueue (#7669) via Antonio Pallares (@ajpallares)
+* Remove assertion (#7665) via Dave DeLong (@davedelong)
+* feat(checkpoints): log checkpoint rule evaluation (#7650) via Rick (@rickvdl)
+* refactor(checkpoints): remove backend predicate results (#7603) via Rick (@rickvdl)
+* fix(checkpoints): fix audience loading and missing-dimension evaluation (#7602) via Rick (@rickvdl)
+* fix(checkpoints): ensure remote config reads are generation consistent (#7575) via Rick (@rickvdl)
+* Chore(deps): Bump fastlane from 2.238.0 to 2.239.0 (#7654) via dependabot[bot] (@dependabot[bot])
+* Skip the external purchase flow when configured with a Test Store key (#7643) via Antonio Pallares (@ajpallares)
+* Add the manager that orchestrates the external purchase StoreKit calls (#7628) via Antonio Pallares (@ajpallares)
+* feat(remote-config): remove the remote config session kill switch (#7524) via Rick (@rickvdl)
+* Add the networking layer for starting a hosted checkout (#7627) via Antonio Pallares (@ajpallares)
+* Add the networking layer for registering external purchase tokens (#7596) via Antonio Pallares (@ajpallares)
+* Add an internal wrapper over StoreKit's ExternalPurchaseCustomLink (#7594) via Antonio Pallares (@ajpallares)
+* feat(Checkpoints): namespace checkpoint result and context types (#7570) via Rick (@rickvdl)
+* fix(Checkpoints): Fail rule resolution when the app user changes (#7554) via Rick (@rickvdl)
+* feat(Checkpoints): Cache subscriber dimensions and evaluate rules against them (#7553) via Rick (@rickvdl)
+* feat(Checkpoints): Add customer purchases and entitlements as rule evaluation properties (#7550) via Rick (@rickvdl)
+* feat(Checkpoints): Reshape rule evaluation properties (#7544) via Rick (@rickvdl)
+* feat(Checkpoints): consume canonical audience configuration (#7543) via Rick (@rickvdl)
+* Remove unused shouldWarnCustomersAboutMultipleSubscriptions (#7618) via Facundo Menzella (@facumenzella)
+* Expand "isAnonymous" check (#7591) via Dave DeLong (@davedelong)
+* Add IAM-specific webbilling paths (#7572) via Dave DeLong (@davedelong)
+* ci: bump external PR notifications workflow to v8 (#7604) via Álvaro Brey (@AlvaroBrey)
+* Remove the transform entry point from the rules engine (#7576) via Antonio Pallares (@ajpallares)
+* ci: notify external PRs feed on PRs from outside the org (#7601) via Álvaro Brey (@AlvaroBrey)
+* Add `DangerousSettings.forceAllowTestStoreInReleaseBuilds` (#7600) via Toni Rico (@tonidero)
+* Remove access token revocation (#7573) via Dave DeLong (@davedelong)
+* Chore(Paywalls): Update models to support min/max sizes (#7590) via Jacob Rakidzich (@JZDesign)
+* Move the shared web view code out of the paywall component folder (#7598) via Antonio Pallares (@ajpallares)
+
+## 5.88.0
+## RevenueCat SDK
+### 🐞 Bugfixes
+* Surface attribute sync errors when fetching offerings (#7539) via Rick (@rickvdl)
+* Fall back to "en" when a workflow screen omits `default_locale` (#7523) via Monika Mateska (@MonikaMateska)
+* Cache web purchase redemption CustomerInfo for the initiating App User ID (#7533) via Rick (@rickvdl)
+
+## RevenueCatUI SDK
+### 🐞 Bugfixes
+* feat: Give the paywall sticky footer a bottom margin in mac and vision devices (#7560) via Facundo Menzella (@facumenzella)
+* [EXTERNAL] Give the paywall sticky footer a bottom margin where there is no safe area (#7548) via @t9mike (#7559) via Facundo Menzella (@facumenzella)
+* Fix(Paywalls MacOS) resolve an attribute graph cycle hang/crash (#7480) via Jacob Rakidzich (@JZDesign)
+### Paywallsv2
+#### ✨ New Features
+* Feat(Paywalls): Web Views can observe paywall data (#7542) via Jacob Rakidzich (@JZDesign)
+#### 🐞 Bugfixes
+* fix: resolve the paywall video when the appearance changes (#7569) via Facundo Menzella (@facumenzella)
+### Customer Center
+#### 🐞 Bugfixes
+* fix(customer center): show the most recent one-time purchases (#7534) via Facundo Menzella (@facumenzella)
+
+### 🔄 Other Changes
+* Share one arity check across the strict operators (#7571) via Antonio Pallares (@ajpallares)
+* Add rc.regexReplace custom operator (#7558) via Antonio Pallares (@ajpallares)
+* Add rc.regexExtract custom operator (#7557) via Antonio Pallares (@ajpallares)
+* Add rc.regexMatch custom operator (#7556) via Antonio Pallares (@ajpallares)
+* Remove the rc.length and rc.indexOf custom operators (#7568) via Antonio Pallares (@ajpallares)
+* feat(Checkpoints): refine result and listener APIs (#7526) via Rick (@rickvdl)
+* Index substr by UTF-16 code unit (#7552) via Antonio Pallares (@ajpallares)
+* Chore(deps): Bump fastlane from 2.237.0 to 2.238.0 (#7565) via dependabot[bot] (@dependabot[bot])
+* Add rc.indexOf custom operator (#7555) via Antonio Pallares (@ajpallares)
+* Gate the iOS 17 scroll anchor snapshot test behind Xcode 15 (#7564) via Facundo Menzella (@facumenzella)
+* Compare strings by UTF-16 code unit in the rules engine (#7518) via Antonio Pallares (@ajpallares)
+* Match the separator by code unit in rc.split (#7551) via Antonio Pallares (@ajpallares)
+* Add rc.let custom operator (#7506) via Antonio Pallares (@ajpallares)
+* Chore(Paywalls): Create Web View Context - #7530 (#7541) via Jacob Rakidzich (@JZDesign)
+* Add rc.slice custom operator (#7505) via Antonio Pallares (@ajpallares)
+* Add rc.sortBy custom operator (#7504) via Antonio Pallares (@ajpallares)
+* Expose access token via AuthenticationDelegate (#7536) via Dave DeLong (@davedelong)
+* Unify internal authentication delegate (#7547) via Dave DeLong (@davedelong)
+* Expose OIDC and Firebase identities (#7537) via Dave DeLong (@davedelong)
+* Chore(deps): Bump fastlane-plugin-revenuecat_internal from `7dd9ab9` to `6db1da0` (#7540) via dependabot[bot] (@dependabot[bot])
+* (Internal) Spend virtual currencies (#7507) via Dave DeLong (@davedelong)
+* chore: don't run danger on main (#7503) via Cesar de la Vega (@vegaro)
+* refactor(Checkpoints): remove Objective-C compatibility (#7515) via Rick (@rickvdl)
+* refactor(Checkpoints): remove CheckpointParams from the public API (#7512) via Rick (@rickvdl)
+
 ## 5.87.1
 ## RevenueCatUI SDK
 ### 🐞 Bugfixes

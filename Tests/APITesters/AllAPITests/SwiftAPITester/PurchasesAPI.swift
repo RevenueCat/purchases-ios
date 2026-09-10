@@ -34,7 +34,9 @@ func checkPurchasesAPI() {
     checkIdentity(purchases: purch)
     checkPurchasesPurchasingAPI(purchases: purch)
     checkPurchasesSupportAPI(purchases: purch)
-    checkRewardVerificationAPI(purchases: purch)
+    if #available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *) {
+        checkRewardVerificationAPI(purchases: purch)
+    }
 
     let _: Attribution = purch.attribution
 
@@ -284,6 +286,7 @@ private func checkPurchasesSubscriberAttributesAPI(purchases: Purchases) {
     purchases.collectDeviceIdentifiers()
 }
 
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
 private func checkRewardVerificationAPI(purchases: Purchases) {
     let token: RewardVerificationToken = purchases.generateRewardVerificationToken(impressionId: "")
     let _: String = token.customData
@@ -395,18 +398,20 @@ private func checkAsyncMethods(purchases: Purchases) async {
             webPurchaseRedemption
         )
 
-        let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
-        let _: RewardVerificationResult = await purchases.pollRewardVerification(
-            clientTransactionID: "",
-            trackingMetadata: RewardedAdTrackingMetadata(
-                networkName: nil,
-                mediatorName: .adMob,
-                adFormat: .rewarded,
-                placement: nil,
-                adUnitId: "",
-                impressionId: ""
+        if #available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *) {
+            let _: RewardVerificationResult = await purchases.pollRewardVerification(clientTransactionID: "")
+            let _: RewardVerificationResult = await purchases.pollRewardVerification(
+                clientTransactionID: "",
+                trackingMetadata: RewardedAdTrackingMetadata(
+                    networkName: nil,
+                    mediatorName: .adMob,
+                    adFormat: .rewarded,
+                    placement: nil,
+                    adUnitId: "",
+                    impressionId: ""
+                )
             )
-        )
+        }
     } catch {}
 }
 
