@@ -92,6 +92,17 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
+private struct WorkflowNavigateBackActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
+/// Records that a workflow was dismissed by navigating back from its initial step.
+/// This is separate from `closeWorkflowAction`: a close action completes a checkpoint flow,
+/// whereas an initial-step navigate-back action means the user backed out of it.
+private struct WorkflowNavigateBackDismissalActionKey: EnvironmentKey {
+    static let defaultValue: (() -> Void)? = nil
+}
+
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private struct WorkflowRenderingContextKey: EnvironmentKey {
     static let defaultValue = WorkflowRenderingContext.identity
@@ -140,6 +151,16 @@ extension EnvironmentValues {
     var closeWorkflowAction: (() -> Void)? {
         get { self[CloseWorkflowActionKey.self] }
         set { self[CloseWorkflowActionKey.self] = newValue }
+    }
+
+    var workflowNavigateBackAction: (() -> Void)? {
+        get { self[WorkflowNavigateBackActionKey.self] }
+        set { self[WorkflowNavigateBackActionKey.self] = newValue }
+    }
+
+    var workflowNavigateBackDismissalAction: (() -> Void)? {
+        get { self[WorkflowNavigateBackDismissalActionKey.self] }
+        set { self[WorkflowNavigateBackDismissalActionKey.self] = newValue }
     }
 
     /// A binding injected by `PresentingPaywallModifier` so `WorkflowPaywallView` can write the

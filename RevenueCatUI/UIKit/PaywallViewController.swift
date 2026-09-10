@@ -44,6 +44,13 @@ import UIKit
 // swiftlint:disable:next type_body_length
 public class PaywallViewController: UIViewController {
 
+    enum WorkflowDismissalReason {
+        case close
+        case navigatedBack
+    }
+
+    private(set) var workflowDismissalReason: WorkflowDismissalReason = .close
+
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
@@ -714,6 +721,7 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
+        self.workflowDismissalReason = .navigatedBack
         // Dismissal is happening (we allowed it) - clean up
         _ = self.purchaseHandler.trackPaywallClose()
         self.purchaseHandler.resetForNewSession()
@@ -909,6 +917,9 @@ private extension PaywallViewController {
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
             requestedDismissal: onRequestedDismissal,
+            workflowNavigateBackDismissal: { [weak self] in
+                self?.workflowDismissalReason = .navigatedBack
+            },
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
@@ -1041,6 +1052,7 @@ private struct PaywallContainerView: View {
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
     let requestedDismissal: () -> Void
+    let workflowNavigateBackDismissal: () -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -1065,6 +1077,7 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .environment(\.workflowNavigateBackDismissalAction, self.workflowNavigateBackDismissal)
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
                     Task { @MainActor in
