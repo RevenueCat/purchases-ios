@@ -18,7 +18,7 @@ extension RulesEngine {
     ///   an `EvaluationError` when parsing or evaluation fails.
     static func evaluate(
         predicate: String,
-        variables: [String: Value]
+        variables: ObjectValue
     ) -> Result<Bool, EvaluationError> {
         do {
             let predicateValue = try Value.fromJSONString(predicate)
