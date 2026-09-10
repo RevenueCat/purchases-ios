@@ -153,6 +153,25 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertTrue(delegate.didBackOut)
     }
 
+    func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
+        let presentationController = UIPresentationController(
+            presentedViewController: controller,
+            presenting: UIViewController()
+        )
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        controller.presentationControllerWillDismiss(presentationController)
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertFalse(delegate.didBackOut)
+    }
+
     func testPurchaseCallbackPreservesTransaction() throws {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()

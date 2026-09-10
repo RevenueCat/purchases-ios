@@ -721,7 +721,6 @@ extension PaywallViewController: UIAdaptivePresentationControllerDelegate {
 
     // swiftlint:disable:next missing_docs
     public func presentationControllerWillDismiss(_ presentationController: UIPresentationController) {
-        self.workflowDismissalReason = .navigatedBack
         // Dismissal is happening (we allowed it) - clean up
         _ = self.purchaseHandler.trackPaywallClose()
         self.purchaseHandler.resetForNewSession()
