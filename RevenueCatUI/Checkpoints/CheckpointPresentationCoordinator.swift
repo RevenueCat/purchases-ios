@@ -28,14 +28,14 @@ final class CheckpointPresentationCoordinator {
 
     func present(
         _ presentation: CheckpointPresentation,
-        paywallPresenter: PaywallPresenter?,
+        paywallPresentationHandler: PaywallPresentationHandler?,
         paywallPresentationParams: PaywallPresentationParams? = nil
     ) async throws -> PaywallOutcome {
         return try await self.withPresentationSession { session in
             try await self.handler.present(
                 presentation,
                 session: session,
-                paywallPresenter: paywallPresenter,
+                paywallPresentationHandler: paywallPresentationHandler,
                 paywallPresentationParams: paywallPresentationParams
             )
         }
@@ -99,7 +99,7 @@ protocol CheckpointPresentationHandler: AnyObject {
     func present(
         _ presentation: CheckpointPresentation,
         session: CheckpointPresentationCoordinator.Session,
-        paywallPresenter: PaywallPresenter?,
+        paywallPresentationHandler: PaywallPresentationHandler?,
         paywallPresentationParams: PaywallPresentationParams?
     ) async throws -> PaywallOutcome
 
