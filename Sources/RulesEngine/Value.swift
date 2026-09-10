@@ -30,7 +30,7 @@ extension RulesEngine {
         /// A JSON array.
         case array([Value])
         /// A JSON object.
-        case object([String: Value])
+        case object(ObjectValue)
     }
 }
 
