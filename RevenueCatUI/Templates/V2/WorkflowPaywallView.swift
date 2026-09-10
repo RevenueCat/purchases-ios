@@ -250,10 +250,17 @@ struct WorkflowPaywallView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
     @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
+    @Environment(\.workflowNavigateBackDismissalAction) private var workflowNavigateBackDismissalAction
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
         case navigateBack
+    }
+
+    enum NavigateBackAction: Equatable {
+        case navigateWithinWorkflow
+        case dismissWorkflow
+        case backOutOfCheckpoint
     }
 
     private enum Constants {
@@ -564,6 +571,7 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+        .environment(\.workflowNavigateBackAction, self.handleNavigateBackAction)
     }
 
     @ViewBuilder
@@ -647,10 +655,42 @@ struct WorkflowPaywallView: View {
         }
     }
 
+    /// A `navigate_back` action only backs out of a checkpoint when the workflow is already at its
+    /// initial step. At any deeper step it performs normal in-workflow navigation.
+    private func handleNavigateBackAction() {
+        guard !self.transitionState.isTransitioning else { return }
+
+        switch Self.navigateBackAction(
+            canNavigateBack: self.navigator.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        ) {
+        case .navigateWithinWorkflow, .dismissWorkflow:
+            self.handleDismiss()
+        case .backOutOfCheckpoint:
+            self.workflowNavigateBackDismissalAction?()
+            self.onDismiss()
+        }
+    }
+
+    static func navigateBackAction(
+        canNavigateBack: Bool,
+        hasPurchasedInSession: Bool
+    ) -> NavigateBackAction {
+        if canNavigateBack {
+            return .navigateWithinWorkflow
+        } else if hasPurchasedInSession {
+            return .dismissWorkflow
+        } else {
+            return .backOutOfCheckpoint
+        }
+    }
+
     private func syncExitOfferBinding() {
-        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
-            for: self.context, currentStepId: self.navigator.currentStepId
-        )?.exitOfferOffering
+        self.exitOfferOfferingBinding.wrappedValue = self.presentationState.hasFailed
+            ? nil
+            : Self.exitOfferContext(
+                for: self.context, currentStepId: self.navigator.currentStepId
+            )?.exitOfferOffering
     }
 
     // MARK: - Workflow step event tracking

@@ -122,6 +122,55 @@ final class CheckpointsManagerTests: TestCase {
         ])
     }
 
+    func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.didBackOut = true
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let execution = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
+
+        guard let presented = execution.result as? CheckpointResult.PaywallPresented else {
+            return XCTFail("Expected a presented-paywall result")
+        }
+        XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(execution.didBackOut)
+    }
+
+    func testRunCheckpointKeepsErrorOutcomeWhenBackedOut() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        let error = NSError(domain: "test", code: 42)
+        executor.outcome = CheckpointPaywallOutcome.Error(error: error)
+        executor.didBackOut = true
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let execution = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
+
+        guard let outcome = (execution.result as? CheckpointResult.PaywallPresented)?.paywallOutcome
+            as? CheckpointPaywallOutcome.Error else {
+            return XCTFail("Expected an error outcome")
+        }
+        XCTAssertEqual(outcome.error, error)
+        XCTAssertTrue(execution.didBackOut)
+    }
+
+    func testRunCheckpointDoesNotMarkNormalDismissalAsBackedOut() async throws {
+        let executor = MockCheckpointWorkflowExecutor()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let execution = try await manager.executeCheckpoint(identifier: "soft_paywall", params: .init())
+
+        XCTAssertFalse(execution.didBackOut)
+    }
+
     func testResolvedOfferingProducesReceivedOfferingResultWithoutPresenting() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         let manager = CheckpointsManager(
@@ -289,6 +338,22 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         )
     }
 
+    func testExecutionForwardsBackOutFromThePresenter() async throws {
+        let presenter = MockCheckpointPresenter()
+        presenter.onPresent = { presentation in
+            presentation.delegate.checkpointPresentationFinished(
+                outcome: CheckpointPaywallOutcome.Dismissed.shared,
+                didBackOut: true
+            )
+        }
+        let executor = CheckpointWorkflowExecutor { presenter }
+
+        let execution = try await executor.execute(Self.presentation())
+
+        XCTAssertTrue(execution.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(execution.didBackOut)
+    }
+
     func testPresentationFailureResumesExecutionAndAllowsRetry() async throws {
         let presenter = MockCheckpointPresenter()
         let expectedError = NSError(domain: "test", code: 42)
@@ -417,7 +482,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presenter = MockCheckpointPresenter()
         let expectedError = NSError(domain: "test", code: 42)
         let expectedOutcome = CheckpointPaywallOutcome.Error(error: expectedError)
-        var execution: Task<CheckpointPaywallOutcome, Error>?
+        var execution: Task<CheckpointWorkflowExecution, Error>?
         presenter.onPresent = { presentation in
             execution?.cancel()
             presentation.delegate.checkpointPresentationFinished(
@@ -427,7 +492,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let executor = CheckpointWorkflowExecutor { presenter }
 
         execution = Task { try await executor.execute(Self.presentation()) }
-        let outcome = try await XCTUnwrap(execution).value
+        let outcome = try await XCTUnwrap(execution).value.outcome
 
         guard let errorOutcome = outcome as? CheckpointPaywallOutcome.Error else {
             return XCTFail("Expected the completed presentation outcome")
@@ -484,15 +549,16 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
     var outcome: CheckpointPaywallOutcome = CheckpointPaywallOutcome.Dismissed.shared
+    var didBackOut = false
     var error: Error?
     private(set) var presentations: [CheckpointPresentation] = []
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointWorkflowExecution {
         self.presentations.append(presentation)
         if let error {
             throw error
         }
-        return self.outcome
+        return .init(outcome: self.outcome, didBackOut: self.didBackOut)
     }
 
 }

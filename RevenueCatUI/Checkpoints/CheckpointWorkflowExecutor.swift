@@ -24,12 +24,18 @@ struct CheckpointPresentation {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+struct CheckpointWorkflowExecution {
+    let outcome: CheckpointPaywallOutcome
+    let didBackOut: Bool
+}
+
 /// Bridges resolved checkpoint workflows into asynchronous UI outcomes.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointExecutor: AnyObject {
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointWorkflowExecution
 
 }
 
@@ -53,6 +59,16 @@ protocol CheckpointPresenter: AnyObject {
 protocol CheckpointPresentationDelegate: AnyObject {
 
     func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome)
+    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome, didBackOut: Bool)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CheckpointPresentationDelegate {
+
+    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome, didBackOut: Bool) {
+        self.checkpointPresentationFinished(outcome: outcome)
+    }
 
 }
 
@@ -63,7 +79,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
 
     typealias PresenterProvider = @MainActor () -> CheckpointPresenter?
 
-    private typealias Continuation = CheckedContinuation<CheckpointPaywallOutcome, Error>
+    private typealias Continuation = CheckedContinuation<CheckpointWorkflowExecution, Error>
 
     private var pendingContinuation: Continuation?
     private var activePresenter: CheckpointPresenter?
@@ -79,7 +95,7 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
         self.presenterProvider = presenterProvider
     }
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointPaywallOutcome {
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointWorkflowExecution {
         guard self.pendingContinuation == nil else {
             throw CheckpointError.operationAlreadyInProgress
         }
@@ -110,17 +126,21 @@ final class CheckpointWorkflowExecutor: CheckpointExecutor, CheckpointPresentati
     }
 
     func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome) {
-        self.finish(outcome: outcome)
+        self.finish(outcome: outcome, didBackOut: false)
+    }
+
+    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome, didBackOut: Bool) {
+        self.finish(outcome: outcome, didBackOut: didBackOut)
     }
 
     private func store(continuation: Continuation) {
         self.pendingContinuation = continuation
     }
 
-    private func finish(outcome: CheckpointPaywallOutcome) {
+    private func finish(outcome: CheckpointPaywallOutcome, didBackOut: Bool) {
         guard let continuation = self.takePendingContinuation() else { return }
         self.activePresenter = nil
-        continuation.resume(returning: outcome)
+        continuation.resume(returning: .init(outcome: outcome, didBackOut: didBackOut))
     }
 
     private func fail(error: Error) {

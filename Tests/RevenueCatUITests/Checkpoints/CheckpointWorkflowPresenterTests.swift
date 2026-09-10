@@ -124,6 +124,35 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.WebCheckoutOpened)
     }
 
+    func testBackingOutReportsDismissedOutcomeAndBackedOut() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
+        presenter.presentationDidDismiss(didBackOut: true)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(delegate.didBackOut)
+    }
+
+    func testBackingOutKeepsAStagedErrorOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let error = NSError(domain: "test", code: 1)
+
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
+        presenter.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+        presenter.presentationDidDismiss(didBackOut: true)
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Error else {
+            return XCTFail("Expected an error outcome")
+        }
+        XCTAssertEqual(outcome.error, error)
+        XCTAssertTrue(delegate.didBackOut)
+    }
+
     func testPurchaseCallbackPreservesTransaction() throws {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
