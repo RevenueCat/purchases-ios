@@ -53,6 +53,9 @@ struct WebViewComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.carouselState)
+    private var carouselState
+
     let viewModel: WebViewComponentViewModel
 
     private var style: WebViewComponentStyle {
@@ -94,7 +97,8 @@ struct WebViewComponentView: View {
             HostedWebViewComponentView(
                 size: style.size,
                 url: url,
-                instance: instance
+                instance: instance,
+                carouselDistance: self.carouselState?.distanceFromActive ?? 0
             )
         } else if style.visible {
             // Meant to be shown but not renderable (bad URL / no resolvable origin / missing id):
@@ -146,12 +150,15 @@ private struct HostedWebViewComponentView: View {
     @ObservedObject
     var instance: WebViewInstance
 
+    let carouselDistance: Int
+
     var body: some View {
         if !self.instance.processTerminated, !self.instance.loadFailed {
             WebViewRepresentable(
                 url: self.url,
                 instance: self.instance,
-                idStore: .shared
+                idStore: .shared,
+                carouselDistance: self.carouselDistance
             )
             .webViewSize(
                 self.size,
@@ -179,14 +186,16 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     let url: URL
     let instance: WebViewInstance
     let idStore: WebViewDataStoreIdentifierStore
+    /// See ``WebViewHostView/carouselDistance``.
+    var carouselDistance: Int = 0
 
     var expectedOrigin: WebViewOrigin {
         self.instance.session.expectedOrigin
     }
 
     /// One coordinator per instance, retained by the instance: `navigationDelegate` is weak, so a
-    /// coordinator owned by a `ViewThatFits` candidate would stop delivering callbacks the moment
-    /// that candidate is discarded.
+    /// coordinator owned by the representable would stop delivering callbacks the moment a parent
+    /// redraw discards that representable.
     func makeCoordinator() -> Coordinator {
         self.instance.navigationDelegate {
             let coordinator = Coordinator(expectedOrigin: self.expectedOrigin)
@@ -197,9 +206,9 @@ struct WebViewRepresentable: PlatformViewRepresentable {
         }
     }
 
-    // Deliberately no `dismantleNSView/dismantleUIView` implementation: a discarded subtree is usually just a
-    // `ViewThatFits` candidate losing the layout, and tearing the web view down there is what caused
-    // the component to blank out and reload. The component view model owns the web view instead.
+    // Deliberately no `dismantleNSView/dismantleUIView` implementation: a discarded subtree is usually just
+    // a parent redraw, and tearing the web view down there is what caused the component to blank out and
+    // reload. The component view model owns the web view instead.
     #if os(macOS)
     func makeNSView(context: Context) -> WebViewHostView {
         self.makeHost(context: context)
@@ -221,6 +230,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     @MainActor
     private func makeHost(context: Context) -> WebViewHostView {
         let host = WebViewHostView()
+        host.carouselDistance = self.carouselDistance
 
         _ = self.instance.webView {
             self.makeWebView(context: context)
@@ -240,6 +250,8 @@ struct WebViewRepresentable: PlatformViewRepresentable {
 
     @MainActor
     private func update(_ host: WebViewHostView) {
+        // A carousel page change re-updates every copy; the instance needs the new distance before it re-evaluates.
+        host.carouselDistance = self.carouselDistance
         if host.window != nil {
             self.instance.updateHost(host)
         }

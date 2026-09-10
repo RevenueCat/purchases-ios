@@ -28,6 +28,11 @@ struct CarouselState: Equatable {
     /// The number of original pages (before copies for looping).
     let originalCount: Int
 
+    /// How many pages this page sits from the active one in the data array. `0` for the active page.
+    var distanceFromActive: Int {
+        return abs(activeIndex - pageIndex)
+    }
+
     /// Whether this page is the currently visible page in the data array.
     var isActive: Bool {
         return activeIndex == pageIndex
@@ -36,7 +41,7 @@ struct CarouselState: Equatable {
     /// Whether this page is active or adjacent to the active page in the data array.
     /// This matches the visible "side" pages in the carousel strip.
     var isActiveOrNeighbor: Bool {
-        return abs(activeIndex - pageIndex) <= 1
+        return self.distanceFromActive <= 1
     }
 
 }

@@ -272,6 +272,89 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === displayed)
     }
 
+    // MARK: - Carousel copies
+
+    /// In a looping carousel the off-screen copy at the start of the strip enters the window first; the
+    /// copy the user is looking at must win regardless.
+    func testActiveCarouselPageTakesTheWebViewFromAnEarlierOffscreenCopy() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let offscreenCopy = self.makeWindowedHost(carouselDistance: 3)
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+
+        instance.hostDidEnterWindow(offscreenCopy)
+        XCTAssertTrue(webView.superview === offscreenCopy)
+
+        instance.hostDidEnterWindow(activeCopy)
+
+        XCTAssertTrue(webView.superview === activeCopy)
+    }
+
+    func testFartherCarouselCopyCannotTakeTheWebViewFromTheActivePage() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+        let neighborCopy = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.hostDidEnterWindow(activeCopy)
+        instance.hostDidEnterWindow(neighborCopy)
+        instance.updateHost(neighborCopy)
+
+        XCTAssertTrue(webView.superview === activeCopy)
+    }
+
+    /// Swiping changes every copy's distance without any host leaving the window.
+    func testWebViewFollowsTheActivePageWhenTheCarouselMoves() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let firstCopy = self.makeWindowedHost(carouselDistance: 0)
+        let secondCopy = self.makeWindowedHost(carouselDistance: 2)
+
+        instance.hostDidEnterWindow(firstCopy)
+        instance.hostDidEnterWindow(secondCopy)
+        XCTAssertTrue(webView.superview === firstCopy)
+
+        firstCopy.carouselDistance = 2
+        secondCopy.carouselDistance = 0
+        instance.updateHost(firstCopy)
+        instance.updateHost(secondCopy)
+
+        XCTAssertTrue(webView.superview === secondCopy)
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
+    /// A 2-page loop peeks both neighbours at equal distance; the holder must not bounce between them.
+    func testEquallyDistantCopiesDoNotStealTheWebViewFromEachOther() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let leftNeighbor = self.makeWindowedHost(carouselDistance: 1)
+        let rightNeighbor = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.hostDidEnterWindow(leftNeighbor)
+        instance.hostDidEnterWindow(rightNeighbor)
+        instance.updateHost(rightNeighbor)
+        instance.updateHost(leftNeighbor)
+
+        XCTAssertTrue(webView.superview === leftNeighbor)
+    }
+
+    func testWebViewFallsBackToTheClosestRemainingCopyWhenTheActiveOneLeaves() {
+        let instance = Self.makeInstance()
+        let webView = instance.webView { WKWebView(frame: .zero) }
+        let farCopy = self.makeWindowedHost(carouselDistance: 3)
+        let activeCopy = self.makeWindowedHost(carouselDistance: 0)
+        let nearCopy = self.makeWindowedHost(carouselDistance: 1)
+
+        instance.hostDidEnterWindow(farCopy)
+        instance.hostDidEnterWindow(activeCopy)
+        instance.hostDidEnterWindow(nearCopy)
+
+        activeCopy.removeFromSuperview()
+        instance.hostDidLeaveWindow(activeCopy)
+
+        XCTAssertTrue(webView.superview === nearCopy)
+    }
+
     // MARK: - Media playback
 
     /// The web view outlives the subtree now, so a hidden component would otherwise keep playing.
@@ -303,7 +386,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertFalse(instance.isMediaPlaybackSuspended)
     }
 
-    /// A `ViewThatFits` swap hands the web view straight over, so playback must not be interrupted.
+    /// A redraw hands the web view straight over to the new host, so playback must not be interrupted.
     func testHandoffBetweenCandidatesDoesNotSuspendMedia() {
         let instance = Self.makeInstance()
         _ = instance.webView { WKWebView(frame: .zero) }
@@ -340,8 +423,9 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         )
     }
 
-    private func makeWindowedHost() -> WebViewHostView {
+    private func makeWindowedHost(carouselDistance: Int = 0) -> WebViewHostView {
         let host = WebViewHostView()
+        host.carouselDistance = carouselDistance
 
         #if os(macOS)
         let window = NSWindow(
