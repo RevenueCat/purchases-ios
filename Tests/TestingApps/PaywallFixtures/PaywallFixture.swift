@@ -34,6 +34,10 @@ enum PaywallFixture: String, CaseIterable {
     /// the accessibility tree.
     case decorativeMedia = "decorative_media"
 
+    /// A paragraph carrying two markdown links, plus a price whose copy types "/mo" literally.
+    /// Both need a screen reader to verify, so there is no test asserting them.
+    case spokenTextAndLinks = "spoken_text_and_links"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
@@ -44,6 +48,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Badge rules per offer type"
         case .decorativeMedia:
             return "Decorative media"
+        case .spokenTextAndLinks:
+            return "Spoken text and markdown links"
         }
     }
 
@@ -57,6 +63,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.badgeRulesPerOfferComponentsData()
         case .decorativeMedia:
             return Self.decorativeMediaComponentsData()
+        case .spokenTextAndLinks:
+            return Self.spokenTextAndLinksComponentsData()
         }
     }
 
@@ -80,6 +88,8 @@ enum PaywallFixture: String, CaseIterable {
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
                 Self.weeklyPackage(offeringIdentifier: self.rawValue)
             ]
+        case .spokenTextAndLinks:
+            return [Self.annualPackage(offeringIdentifier: self.rawValue)]
         }
     }
 
@@ -425,6 +435,62 @@ private extension PaywallFixture {
                     "badge_placeholder": .string("Badge"),
                     "badge_trial": .string("TRIAL BADGE"),
                     "badge_promo": .string("PROMO BADGE")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
+    static func spokenTextAndLinksComponentsData() -> PaywallComponentsData {
+        return .init(
+            templateName: "fixture-spoken-text-and-links",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        .text(.init(
+                            text: "title_lid",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "price_lid",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "literal_price_lid",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "two_links_lid",
+                            color: .init(light: .hex("#000000"))
+                        )),
+                        .text(.init(
+                            text: "no_links_lid",
+                            color: .init(light: .hex("#000000"))
+                        ))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 24,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 80, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "title_lid": .string("Spoken text and links"),
+                    // Resolves through variable substitution, which the accessibility pass sees.
+                    "price_lid": .string("{{ product.price_per_period_abbreviated }}"),
+                    // Types the separator itself, which no variable substitution reaches.
+                    "literal_price_lid": .string("{{ product.price_per_month }}/mo"),
+                    "two_links_lid": .string(
+                        "Read the [terms of service](https://www.revenuecat.com/terms) " +
+                        "and the [privacy policy](https://www.revenuecat.com/privacy)."
+                    ),
+                    "no_links_lid": .string("This paragraph has no links, so it gains no actions.")
                 ]
             ],
             revision: 1,
