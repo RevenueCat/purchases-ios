@@ -505,7 +505,9 @@ class SigningTests: TestCase {
                     message: response.asData,
                     requestBody: LogInOperation.Body(
                         appUserID: "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
-                        newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
+                        newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3",
+                        attributes: [:],
+                        previousUnsyncedAttributes: [:]
                     ),
                     nonce: nonce,
                     etag: nil,
@@ -592,7 +594,9 @@ class SigningTests: TestCase {
                     ],
                     requestBody: LogInOperation.Body(
                         appUserID: "$RCAnonymousID:6b2787de2fb848a8b403a45f695ee74f",
-                        newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3"
+                        newAppUserID: "F72BF276-CD70-4C27-BCD2-FC1EFD988FA3",
+                        attributes: [:],
+                        previousUnsyncedAttributes: [:]
                     ),
                     nonce: nonce,
                     etag: nil,

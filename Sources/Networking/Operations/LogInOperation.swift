@@ -18,30 +18,42 @@ final class LogInOperation: CacheableNetworkOperation {
     private let loginCallbackCache: CallbackCache<LogInCallback>
     private let configuration: UserSpecificConfiguration
     private let newAppUserID: String
+    private let attributes: SubscriberAttribute.Dictionary
+    private let previousUnsyncedAttributes: SubscriberAttribute.Dictionary
 
     static func createFactory(
         configuration: UserSpecificConfiguration,
         newAppUserID: String,
+        attributes: SubscriberAttribute.Dictionary,
+        previousUnsyncedAttributes: SubscriberAttribute.Dictionary,
         loginCallbackCache: CallbackCache<LogInCallback>
     ) -> CacheableNetworkOperationFactory<LogInOperation> {
         return .init({
             .init(
                 configuration: configuration,
                 newAppUserID: newAppUserID,
+                attributes: attributes,
+                previousUnsyncedAttributes: previousUnsyncedAttributes,
                 loginCallbackCache: loginCallbackCache,
                 cacheKey: $0
             ) },
-                     individualizedCacheKeyPart: configuration.appUserID + newAppUserID)
+                     individualizedCacheKeyPart: configuration.appUserID + newAppUserID
+                     + attributes.individualizedCacheKeyPart
+                     + previousUnsyncedAttributes.individualizedCacheKeyPart)
     }
 
     private init(
         configuration: UserSpecificConfiguration,
         newAppUserID: String,
+        attributes: SubscriberAttribute.Dictionary,
+        previousUnsyncedAttributes: SubscriberAttribute.Dictionary,
         loginCallbackCache: CallbackCache<LogInCallback>,
         cacheKey: String
     ) {
         self.configuration = configuration
         self.newAppUserID = newAppUserID
+        self.attributes = attributes
+        self.previousUnsyncedAttributes = previousUnsyncedAttributes
         self.loginCallbackCache = loginCallbackCache
 
         super.init(configuration: configuration, cacheKey: cacheKey)
@@ -68,11 +80,13 @@ private extension LogInOperation {
             return
         }
 
-        let request = HTTPRequest(method: .post(Body(appUserID: self.configuration.appUserID,
-                                                     newAppUserID: self.newAppUserID)),
-                                  path: .logIn)
+        let body = Body(appUserID: self.configuration.appUserID,
+                        newAppUserID: self.newAppUserID,
+                        attributes: self.attributes,
+                        previousUnsyncedAttributes: self.previousUnsyncedAttributes)
+        let request = HTTPRequest(method: .post(body), path: .logIn)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<CustomerInfo>.Result) in
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<Response>.Result) in
             self.loginCallbackCache.performOnAllItemsAndRemoveFromCache(withCacheable: self) { callbackObject in
                 self.handleLogin(response, completion: callbackObject.completion)
             }
@@ -81,14 +95,15 @@ private extension LogInOperation {
         }
     }
 
-    func handleLogin(_ result: VerifiedHTTPResponse<CustomerInfo>.Result,
+    func handleLogin(_ result: VerifiedHTTPResponse<Response>.Result,
                      completion: IdentityAPI.LogInResponseHandler) {
-        let result: Result<(info: CustomerInfo, created: Bool), BackendError> = result
+        let result: IdentityAPI.LogInResponse = result
             .map { response in
                 (
-                    response.body.copy(with: response.verificationResult,
-                                       httpResponseOriginalSource: response.originalSource),
-                    created: response.httpStatusCode == .createdSuccess
+                    response.body.customerInfo.copy(with: response.verificationResult,
+                                                    httpResponseOriginalSource: response.originalSource),
+                    created: response.httpStatusCode == .createdSuccess,
+                    attributesErrorResponse: response.body.attributesErrorResponse
                 )
             }
             .mapError(BackendError.networkError)
@@ -111,10 +126,59 @@ extension LogInOperation {
         fileprivate enum CodingKeys: String, CodingKey {
             case appUserID = "app_user_id"
             case newAppUserID = "new_app_user_id"
+            case attributes = "attributes"
+            case previousUnsyncedAttributes = "previous_unsynced_attributes"
         }
 
         let appUserID: String
         let newAppUserID: String
+        let attributes: AnyEncodable?
+        let previousUnsyncedAttributes: AnyEncodable?
+
+        init(appUserID: String,
+             newAppUserID: String,
+             attributes: SubscriberAttribute.Dictionary,
+             previousUnsyncedAttributes: SubscriberAttribute.Dictionary) {
+            self.appUserID = appUserID
+            self.newAppUserID = newAppUserID
+            self.attributes = Self.encodedAttributes(attributes)
+            self.previousUnsyncedAttributes = Self.encodedAttributes(previousUnsyncedAttributes)
+        }
+
+        private static func encodedAttributes(_ attributes: SubscriberAttribute.Dictionary) -> AnyEncodable? {
+            guard !attributes.isEmpty else { return nil }
+
+            return AnyEncodable(SubscriberAttribute.map(subscriberAttributes: attributes))
+        }
+
+    }
+
+    /// The body of a successful `POST /subscribers/identify` response.
+    struct Response: HTTPResponseBody {
+
+        var customerInfo: CustomerInfo
+        var attributesErrorResponse: IdentifyAttributesErrorResponse?
+
+        // swiftlint:disable:next nesting
+        private struct Wrapper: Decodable {
+
+            let attributesErrorResponse: IdentifyAttributesErrorResponse
+
+        }
+
+        static func create(with data: Data) throws -> Self {
+            let wrapper: Wrapper? = try? JSONDecoder.default.decode(jsonData: data, logErrors: false)
+
+            return .init(customerInfo: try CustomerInfo.create(with: data),
+                         attributesErrorResponse: wrapper?.attributesErrorResponse)
+        }
+
+        func copy(with newRequestDate: Date) -> Self {
+            var copy = self
+            copy.customerInfo = copy.customerInfo.copy(with: newRequestDate)
+
+            return copy
+        }
 
     }
 
@@ -123,6 +187,9 @@ extension LogInOperation {
 extension LogInOperation.Body: HTTPRequestBody {
 
     var contentForSignature: [(key: String, value: String?)] {
+        // `attributes` and `previous_unsynced_attributes` are deliberately excluded: the backend hashes
+        // each declared field with Python's `repr`, which no other language reproduces for nested objects,
+        // so declaring them here would produce a permanent mismatch.
         return [
             (Self.CodingKeys.appUserID.stringValue, self.appUserID),
             (Self.CodingKeys.newAppUserID.stringValue, self.newAppUserID)
