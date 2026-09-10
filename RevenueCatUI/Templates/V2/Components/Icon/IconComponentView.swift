@@ -35,6 +35,9 @@ struct IconComponentView: View {
     @Environment(\.screenCondition)
     private var screenCondition
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.colorScheme)
     private var colorScheme
 
@@ -64,6 +67,7 @@ struct IconComponentView: View {
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
             stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize,
             colorScheme: colorScheme
         ) { style in
             if style.visible {

@@ -262,6 +262,9 @@ import Foundation
     /// The workflow itself resolved, but its `ui_config` couldn't be assembled.
     case uiConfigUnavailable(workflowId: String)
 
+    /// The workflow read was superseded by a remote-config update before it could complete consistently.
+    case configurationUnavailable(workflowId: String)
+
 }
 
 // MARK: - Codable

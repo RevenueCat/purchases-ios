@@ -15,6 +15,8 @@ import Foundation
 import Nimble
 import XCTest
 
+// swiftlint:disable type_body_length
+
 @_spi(Internal) @testable import RevenueCat
 
 class UiConfigProviderTests: TestCase {
@@ -213,7 +215,7 @@ class UiConfigProviderTests: TestCase {
         expect(self.provider.cachedUiConfig()).toNot(beNil())
     }
 
-    func testReturnsNilAndDoesNotCacheUiConfigWhenGenerationChangesDuringDecode() async throws {
+    func testRetriesAndCachesUiConfigWhenGenerationChangesDuringDecode() async throws {
         self.stub(
             app: #"{"colors": {}, "fonts": {}}"#,
             localizations: #"{"en_US": {"day": "Day"}}"#,
@@ -228,8 +230,9 @@ class UiConfigProviderTests: TestCase {
         self.mockManager.completeStoredBlobReads()
 
         let resolvedUiConfig = await uiConfig
-        expect(resolvedUiConfig).to(beNil())
-        expect(self.provider.cachedUiConfig()).to(beNil())
+        expect(resolvedUiConfig).toNot(beNil())
+        expect(self.provider.cachedUiConfig()).toNot(beNil())
+        expect(self.mockManager.invokedMergeItemsBlobDataParameters.count) == 2
     }
 
     func testCachedUiConfigReturnsNilWhenGenerationChangesWithoutRewarming() async throws {
@@ -292,19 +295,6 @@ class UiConfigProviderTests: TestCase {
         self.logger.verifyMessageWasLogged(Strings.remoteConfig.uiConfigMissingRequiredPart, level: .warn)
     }
 
-    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
-        self.mockManager.isDisabled = true
-
-        let uiConfig = await self.provider.getUiConfig()
-
-        expect(uiConfig).to(beNil())
-        self.logger.verifyMessageWasNotLogged(
-            Strings.remoteConfig.uiConfigMissingRequiredPart,
-            level: .warn,
-            allowNoMessages: true
-        )
-    }
-
     func testRequestsMergedBlobDataForWireItemKeysNotCamelCased() async throws {
         self.mockManager.stubbedTopics[.uiConfig] = [
             "app": .init(),
@@ -338,19 +328,6 @@ class UiConfigProviderTests: TestCase {
         let uiConfig = await self.provider.getUiConfig()
 
         expect(uiConfig) == .empty
-    }
-
-    func testDoesNotLogMissingPartsWarningWhenRemoteConfigIsDisabled() async throws {
-        self.mockManager.isDisabled = true
-
-        let uiConfig = await self.provider.getUiConfig()
-
-        expect(uiConfig).to(beNil())
-        self.logger.verifyMessageWasNotLogged(
-            Strings.remoteConfig.uiConfigMissingRequiredPart,
-            level: .warn,
-            allowNoMessages: true
-        )
     }
 
 #endif

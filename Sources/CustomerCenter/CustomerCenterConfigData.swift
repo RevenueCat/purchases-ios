@@ -65,6 +65,7 @@ import Foundation
             case tryCheckRestore = "try_check_restore"
             case restorePurchases = "restore_purchases"
             case cancel = "cancel"
+            case resubscribe = "resubscribe"
             case billingCycle = "billing_cycle"
             case currentPrice = "current_price"
             case expired = "expired"
@@ -220,6 +221,8 @@ import Foundation
                     "If you think this is an error, please contact support."
                 case .cancel:
                     return "Cancel"
+                case .resubscribe:
+                    return "Resubscribe"
                 case .billingCycle:
                     return "Billing cycle"
                 case .currentPrice:

@@ -96,10 +96,6 @@ class StoreKit1Wrapper: NSObject {
         self.paymentQueue.add(payment)
     }
 
-    static func canMakePayments() -> Bool {
-        return SKPaymentQueue.canMakePayments()
-    }
-
     func payment(with product: SK1Product) -> SKMutablePayment {
         let payment = SKMutablePayment(product: product)
         payment.simulatesAskToBuyInSandbox = Self.simulatesAskToBuyInSandbox
