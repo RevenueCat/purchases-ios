@@ -187,7 +187,7 @@ struct WebViewRepresentable: PlatformViewRepresentable {
     let instance: WebViewInstance
     let idStore: WebViewDataStoreIdentifierStore
     /// See ``WebViewHostView/carouselDistance``.
-    var carouselDistance: Int = 0
+    let carouselDistance: Int
 
     var expectedOrigin: WebViewOrigin {
         self.instance.session.expectedOrigin

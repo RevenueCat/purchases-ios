@@ -129,7 +129,12 @@ final class WebViewInstanceTests: TestCase {
             let owned = try XCTUnwrap(viewModel.webViewInstance())
             let ownedWebView = owned.webView { WKWebView(frame: .zero) }
             // Built through the real representable so the coordinator's captures are the shipping ones.
-            _ = WebViewRepresentable(url: Self.url, instance: owned, idStore: store).makeCoordinator()
+            _ = WebViewRepresentable(
+                url: Self.url,
+                instance: owned,
+                idStore: store,
+                carouselDistance: 0
+            ).makeCoordinator()
 
             instance = owned
             webView = ownedWebView
