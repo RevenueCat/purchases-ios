@@ -15,13 +15,8 @@ import Foundation
 
 /// The identifier of an external purchase token registration, which the checkout is handed so that the
 /// purchase can be tied back to the token.
-///
-/// Generated here rather than read back from the registration response, so the identifier exists before the
-/// backend knows about it. That is what lets a registration be retried, and lets the checkout open without
-/// waiting for one.
 enum ExternalPurchaseTokenID {
 
-    /// Follows the format the backend mints: a prefix and a UUID in hexadecimal.
     static func generate() -> String {
         let uuid = UUID().uuidString.replacingOccurrences(of: "-", with: "").lowercased()
         return Self.prefix + uuid
