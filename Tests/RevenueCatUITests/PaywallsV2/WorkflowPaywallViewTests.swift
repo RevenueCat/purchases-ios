@@ -634,7 +634,8 @@ private extension WorkflowPaywallViewTests {
         let initialScreenJSON = customInitialScreenJSON
             ?? makeScreenJSON(packages: [], offeringId: offeringId)
         let initialStepJSON = customInitialStepJSON
-            ?? "\"step_initial\": { \"id\": \"step_initial\", \"type\": \"screen\", \"screen_id\": \"screen_initial\" },"
+            ?? "\"step_initial\": { \"id\": \"step_initial\", \"type\": \"screen\", "
+                + "\"screen_id\": \"screen_initial\" },"
 
         let terminalStepJSON: String
         let terminalScreenJSON: String
