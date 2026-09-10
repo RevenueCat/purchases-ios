@@ -175,7 +175,7 @@ class WorkflowEventsRequestTests: TestCase {
         let request = try XCTUnwrap(FeatureEventsRequest.WorkflowEvent(storedEvent: stored))
         let json = try encodedJSON(from: event)
 
-        expect(request.properties.blobRef) == "blob-ref-1"
+        expect(request.properties.workflowBlobRef) == "blob-ref-1"
         expect(json).to(contain("\"blob_ref\":\"blob-ref-1\""))
     }
 
