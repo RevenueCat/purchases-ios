@@ -416,6 +416,24 @@ class WorkflowResponseTests: TestCase {
         expect(step.offeringIdentifier) == "default"
     }
 
+    func testDecodeWorkflowStepOfferingIdentifierIsNilWithoutAValidValue() throws {
+        let values = [
+            "{}",
+            #"{ "offering_identifier": "   " }"#,
+            #"{ "offering_identifier": 123 }"#
+        ]
+
+        for paramValues in values {
+            let json = #"{ "id": "step_1", "param_values": "# + paramValues + " }"
+            let step = try JSONDecoder.default.decode(
+                WorkflowStep.self,
+                from: Data(json.utf8)
+            )
+
+            expect(step.offeringIdentifier).to(beNil())
+        }
+    }
+
     func testDecodeWorkflowStepOfferingIdentifierPrefersNestedValueOverFlatFallback() throws {
         let step = try JSONDecoder.default.decode(
             WorkflowStep.self,
