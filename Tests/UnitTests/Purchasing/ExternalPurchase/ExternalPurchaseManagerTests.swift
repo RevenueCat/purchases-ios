@@ -25,6 +25,7 @@ class ExternalPurchaseManagerTests: TestCase {
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
     private var tokenStore: MockExternalPurchaseTokenStore!
+    private var operationDispatcher: MockOperationDispatcher!
     private var systemInfo: MockSystemInfo!
     private var manager: ExternalPurchaseManager!
 
@@ -36,6 +37,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
         self.tokenStore = MockExternalPurchaseTokenStore()
+        self.operationDispatcher = MockOperationDispatcher()
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.manager = self.makeManager()
@@ -321,6 +323,101 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(self.customLink.invokedNoticeTypes) == [.browser, .browser]
     }
 
+    // MARK: - Registering the tokens kept from earlier attempts
+
+    /// A token minted in a session that never reached the backend is still one Apple expects a report for.
+    func testRegistersTheTokensKeptFromEarlierAttempts() async {
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000001"))
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000002"))
+
+        await self.manager.registerPendingTokens()
+
+        expect(self.externalPurchaseTokenAPI.postedTokenIDs) == [
+            "ept00000000000000000000000000000001",
+            "ept00000000000000000000000000000002"
+        ]
+        expect(self.tokenStore.storedRegistrations).to(beEmpty())
+    }
+
+    /// The registration carries the customer the token was minted for, who may no longer be the current one.
+    func testRegistersAKeptTokenAgainstTheCustomerItWasMintedFor() async throws {
+        self.tokenStore.store(ExternalPurchaseTokenRegistration(
+            tokenID: "ept00000000000000000000000000000001",
+            appUserID: "another-app-user-id",
+            purchaseType: .inApp,
+            token: nil
+        ))
+
+        await self.manager.registerPendingTokens()
+
+        let parameters = try XCTUnwrap(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenParameters)
+        expect(parameters.appUserID) == "another-app-user-id"
+        expect(parameters.purchaseType) == .inApp
+        expect(parameters.token).to(beNil())
+    }
+
+    func testKeepsATokenWhoseRegistrationFailsTransientlyAgain() async {
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(.offlineConnection())
+
+        let registration = Self.makeRegistration(tokenID: "ept00000000000000000000000000000001")
+        self.tokenStore.store(registration)
+
+        await self.manager.registerPendingTokens()
+
+        expect(self.tokenStore.storedRegistrations) == [registration]
+    }
+
+    func testDropsAKeptTokenTheBackendRejects() async {
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(
+            .errorResponse(.defaultResponse, .invalidRequest)
+        )
+
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000001"))
+
+        await self.manager.registerPendingTokens()
+
+        expect(self.tokenStore.storedRegistrations).to(beEmpty())
+    }
+
+    func testPostsNothingWhenNoTokenIsKept() async {
+        await self.manager.registerPendingTokens()
+
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
+    /// Registering happens on a foreground pass, which must not be held up by it.
+    func testRegistersTheKeptTokensOffTheCallersThread() {
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000001"))
+
+        self.manager.registerPendingTokensIfNeeded()
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThread) == true
+        expect(self.externalPurchaseTokenAPI.postedTokenIDs) == ["ept00000000000000000000000000000001"]
+    }
+
+    func testRegistersNoKeptTokenWhileTheSettingIsDisabled() {
+        self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: false)
+        self.manager = self.makeManager()
+
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000001"))
+
+        self.manager.registerPendingTokensIfNeeded()
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThread) == false
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
+    func testRegistersNoKeptTokenWithATestStoreKey() {
+        self.systemInfo.stubbedApiKeyValidationResult = .simulatedStore
+
+        self.tokenStore.store(Self.makeRegistration(tokenID: "ept00000000000000000000000000000001"))
+
+        self.manager.registerPendingTokensIfNeeded()
+
+        expect(self.operationDispatcher.invokedDispatchAsyncOnWorkerThread) == false
+        expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseToken) == false
+    }
+
     // MARK: - Helpers
 
     /// The identifier the manager generated for the registration it last posted, which is what it is expected
@@ -345,7 +442,17 @@ class ExternalPurchaseManagerTests: TestCase {
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
             tokenStore: self.tokenStore,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
+            operationDispatcher: self.operationDispatcher,
             systemInfo: self.systemInfo
+        )
+    }
+
+    private static func makeRegistration(tokenID: String) -> ExternalPurchaseTokenRegistration {
+        return ExternalPurchaseTokenRegistration(
+            tokenID: tokenID,
+            appUserID: Self.appUserID,
+            purchaseType: .linkOut,
+            token: Self.token
         )
     }
 

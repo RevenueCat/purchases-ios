@@ -21,19 +21,23 @@ final class ExternalPurchaseManager {
     private let externalPurchaseTokenAPI: ExternalPurchaseTokenAPI
     private let tokenStore: ExternalPurchaseTokenStoreType
     private let currentUserProvider: CurrentUserProvider
+    private let operationDispatcher: OperationDispatcher
     private let systemInfo: SystemInfo
 
     private let isPreparing: Atomic<Bool> = false
+    private let isRegisteringPendingTokens: Atomic<Bool> = false
 
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          tokenStore: ExternalPurchaseTokenStoreType,
          currentUserProvider: CurrentUserProvider,
+         operationDispatcher: OperationDispatcher,
          systemInfo: SystemInfo) {
         self.customLink = customLink
         self.externalPurchaseTokenAPI = externalPurchaseTokenAPI
         self.tokenStore = tokenStore
         self.currentUserProvider = currentUserProvider
+        self.operationDispatcher = operationDispatcher
         self.systemInfo = systemInfo
     }
 
@@ -98,6 +102,43 @@ final class ExternalPurchaseManager {
         }
 
         return await self.registerToken(of: flow.tokenType)
+    }
+
+    /// Registers the tokens kept from earlier attempts, one at a time, so that a token minted in a session that
+    /// never reached the backend is still reported.
+    ///
+    /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
+    /// anything to Apple.
+    func registerPendingTokensIfNeeded() {
+        guard self.takesPartInTheProgramme, !self.systemInfo.isSimulatedStoreAPIKey else { return }
+
+        #if DEBUG
+        let delay: JitterableDelay = ProcessInfo.isRunningRevenueCatTests ? .none : .default
+        #else
+        let delay: JitterableDelay = .default
+        #endif
+
+        self.operationDispatcher.dispatchOnWorkerThread(jitterableDelay: delay) {
+            await self.registerPendingTokens()
+        }
+    }
+
+    func registerPendingTokens() async {
+        guard !self.isRegisteringPendingTokens.getAndSet(true) else {
+            Logger.debug(Strings.externalPurchase.already_registering_pending_tokens)
+            return
+        }
+
+        defer { self.isRegisteringPendingTokens.value = false }
+
+        let pending = self.tokenStore.allRegistrations()
+        guard !pending.isEmpty else { return }
+
+        Logger.debug(Strings.externalPurchase.registering_pending_tokens(pending.count))
+
+        for registration in pending {
+            await self.post(registration)
+        }
     }
 
 }
@@ -232,6 +273,17 @@ private extension ExternalPurchaseManager {
 
         self.tokenStore.store(registration)
 
+        guard await self.post(registration) else {
+            return .unregistered(.registrationFailed)
+        }
+
+        return .registered(tokenID: registration.tokenID)
+    }
+
+    /// Posts a kept registration, and drops it unless the backend may still accept it. Returns whether it was
+    /// accepted.
+    @discardableResult
+    func post(_ registration: ExternalPurchaseTokenRegistration) async -> Bool {
         let error: BackendError? = await Async.call { completion in
             self.externalPurchaseTokenAPI.postExternalPurchaseToken(
                 appUserID: registration.appUserID,
@@ -244,18 +296,18 @@ private extension ExternalPurchaseManager {
 
         if let error = error {
             self.handleFailedRegistration(registration, error: error)
-            return .unregistered(.registrationFailed)
+            return false
         }
 
         self.tokenStore.remove(registration)
         Logger.debug(Strings.externalPurchase.token_registered(registration.tokenID))
-        return .registered(tokenID: registration.tokenID)
+        return true
     }
 
     /// A registration the backend rejected would only be rejected again, so only one it may still accept is
     /// kept.
-    private func handleFailedRegistration(_ registration: ExternalPurchaseTokenRegistration,
-                                          error: BackendError) {
+    func handleFailedRegistration(_ registration: ExternalPurchaseTokenRegistration,
+                                  error: BackendError) {
         Logger.error(Strings.externalPurchase.error_registering_token(error))
 
         if error.isTransient {

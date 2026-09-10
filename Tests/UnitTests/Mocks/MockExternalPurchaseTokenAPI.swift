@@ -29,6 +29,9 @@ class MockExternalPurchaseTokenAPI: ExternalPurchaseTokenAPI {
         token: String?
     )?
 
+    /// Every identifier posted, in the order it was posted.
+    var postedTokenIDs: [String] = []
+
     var stubbedPostExternalPurchaseTokenError: BackendError?
     var postExternalPurchaseTokenCallback: (() -> Void)?
 
@@ -42,6 +45,7 @@ class MockExternalPurchaseTokenAPI: ExternalPurchaseTokenAPI {
         self.invokedPostExternalPurchaseToken = true
         self.invokedPostExternalPurchaseTokenCount += 1
         self.invokedPostExternalPurchaseTokenParameters = (appUserID, purchaseType, tokenID, token)
+        self.postedTokenIDs.append(tokenID)
 
         self.postExternalPurchaseTokenCallback?()
         completion(self.stubbedPostExternalPurchaseTokenError)
