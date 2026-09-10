@@ -15,8 +15,6 @@ import Foundation
 
 /// Registers a StoreKit external purchase token with RevenueCat, for a purchase made outside of
 /// Apple's in-app purchase system.
-///
-/// The identifier the checkout is started with travels with the token, so nothing is read from the response.
 final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
@@ -100,8 +98,7 @@ extension PostExternalPurchaseTokenOperation {
         let appUserID: String
         let purchaseType: ExternalPurchaseTokenType
 
-        /// The identifier the SDK generated for this registration, which the backend stores instead of
-        /// minting one of its own.
+        /// The identifier the SDK generated for this registration.
         let tokenID: String
 
         /// The StoreKit token. Omitted when StoreKit could not provide one, in which case the backend
