@@ -764,6 +764,12 @@ struct LoadedPaywallsV2View: View {
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection()
             }
+            // Switching tab publishes a new state value, which can hide the stack the selected
+            // package sits in. This fires once the store's snapshot reaches the environment, so the
+            // reconcile reads the new state rather than the one being replaced.
+            .onChangeOf(self.paywallStateValues) { _ in
+                self.reconcileSelection()
+            }
         }
     }
 

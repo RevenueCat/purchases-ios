@@ -30,6 +30,10 @@ enum PaywallFixture: String, CaseIterable {
 
     /// One badge rule per offer type, each with its own rule for its copy.
     case badgeRulesPerOffer = "badge_rules_per_offer"
+
+    /// Tabs that switch which tier's cards a sticky footer shows, with the rule on the wrapper stack
+    /// rather than on any card. The customer shape from a "Selected tab" rule.
+    case tabStateFooterTiers = "tab_state_footer_tiers"
     /// Media in every place a real paywall puts it, so a test can assert which of it reaches
     /// the accessibility tree.
     case decorativeMedia = "decorative_media"
@@ -44,6 +48,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Badge rules per offer type"
         case .decorativeMedia:
             return "Decorative media"
+        case .tabStateFooterTiers:
+            return "Tab-state footer tiers"
         }
     }
 
@@ -57,6 +63,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.badgeRulesPerOfferComponentsData()
         case .decorativeMedia:
             return Self.decorativeMediaComponentsData()
+        case .tabStateFooterTiers:
+            return Self.tabStateFooterTiersComponentsData()
         }
     }
 
@@ -67,7 +75,7 @@ enum PaywallFixture: String, CaseIterable {
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
-        case .mixedTabsPageDefault:
+        case .mixedTabsPageDefault, .tabStateFooterTiers:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
@@ -266,6 +274,107 @@ private extension PaywallFixture {
                 padding: .init(top: 12, bottom: 12, leading: 12, trailing: 12)
             )
         ))
+    }
+
+    /// The customer shape: tabs that carry no packages at all, and a sticky footer holding one
+    /// wrapper stack per tier. Only the wrapper stacks say when they are shown, via a state rule on
+    /// the key the tabs component publishes into; every card is marked selected by default.
+    ///
+    /// The default tab is the last tier, so the very first frame is the failing one.
+    static func tabStateFooterTiersComponentsData() -> PaywallComponentsData {
+        let stateKey = "selected_tier"
+
+        func tabButton(_ tabId: String, _ label: String) -> PaywallComponent {
+            return .tabControlButton(.init(tabId: tabId, stack: .init(components: [
+                .text(.init(text: label, color: .init(light: .hex("#000000"))))
+            ])))
+        }
+
+        func tierStack(tabId: String, packageID: String, label: String) -> PaywallComponent {
+            return .stack(.init(
+                visible: false,
+                components: [Self.packageCard(
+                    packageID: packageID,
+                    label: label,
+                    isSelectedByDefault: true
+                )],
+                overrides: [
+                    .init(
+                        extendedConditions: [
+                            .state(operator: .equals, name: stateKey, value: .string(tabId))
+                        ],
+                        properties: .init(visible: true)
+                    )
+                ]
+            ))
+        }
+
+        let tabs: PaywallComponent = .tabs(.init(
+            control: .init(
+                type: .buttons,
+                stack: .init(components: [
+                    tabButton("tier_weekly", "tab_weekly_button"),
+                    tabButton("tier_monthly", "tab_monthly_button"),
+                    tabButton("tier_annual", "tab_annual_button")
+                ])
+            ),
+            tabs: [
+                .init(id: "tier_weekly", stack: .init(components: [.tabControl(.init())])),
+                .init(id: "tier_monthly", stack: .init(components: [.tabControl(.init())])),
+                .init(id: "tier_annual", stack: .init(components: [.tabControl(.init())]))
+            ],
+            defaultTabId: "tier_annual",
+            stateUpdates: [.set(key: stateKey, value: .payloadReference)]
+        ))
+
+        return .init(
+            templateName: "fixture-tab-state-footer-tiers",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [tabs],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: .init(stack: .init(
+                    components: [
+                        tierStack(tabId: "tier_weekly", packageID: "$rc_weekly", label: "weekly"),
+                        tierStack(tabId: "tier_monthly", packageID: "$rc_monthly", label: "monthly"),
+                        tierStack(tabId: "tier_annual", packageID: "$rc_annual", label: "annual")
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fit(nil)),
+                    spacing: 8,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
+                )),
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "annual": .string("Annual"),
+                    "annual_selected": .string("Annual selected"),
+                    "monthly": .string("Monthly"),
+                    "monthly_selected": .string("Monthly selected"),
+                    "weekly": .string("Weekly"),
+                    "weekly_selected": .string("Weekly selected"),
+                    "tab_weekly_button": .string("Weekly tab"),
+                    "tab_monthly_button": .string("Monthly tab"),
+                    "tab_annual_button": .string("Annual tab")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US",
+            stateDeclarations: [
+                stateKey: .init(
+                    type: PaywallComponent.StateDeclaration.ValueType.string,
+                    defaultValue: .string("tier_annual")
+                )
+            ]
+        )
     }
 
     /// Two page packages with the default among them hidden, plus two tabs declaring their own.
