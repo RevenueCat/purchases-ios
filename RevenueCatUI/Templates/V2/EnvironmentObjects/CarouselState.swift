@@ -28,9 +28,24 @@ struct CarouselState: Equatable {
     /// The number of original pages (before copies for looping).
     let originalCount: Int
 
-    /// How many pages this page sits from the active one in the data array. `0` for the active page.
+    /// The effective distance inherited from all enclosing carousels.
+    private let ancestorDistanceFromActive: Int
+
+    init(
+        activeIndex: Int,
+        pageIndex: Int,
+        originalCount: Int,
+        ancestorDistanceFromActive: Int = 0
+    ) {
+        self.activeIndex = activeIndex
+        self.pageIndex = pageIndex
+        self.originalCount = originalCount
+        self.ancestorDistanceFromActive = ancestorDistanceFromActive
+    }
+
+    /// The greatest distance from the active page across this carousel and its ancestors.
     var distanceFromActive: Int {
-        return abs(activeIndex - pageIndex)
+        return max(abs(activeIndex - pageIndex), self.ancestorDistanceFromActive)
     }
 
     /// Whether this page is the currently visible page in the data array.
@@ -38,8 +53,7 @@ struct CarouselState: Equatable {
         return activeIndex == pageIndex
     }
 
-    /// Whether this page is active or adjacent to the active page in the data array.
-    /// This matches the visible "side" pages in the carousel strip.
+    /// Whether this page is active or adjacent in this carousel and every enclosing carousel.
     var isActiveOrNeighbor: Bool {
         return self.distanceFromActive <= 1
     }

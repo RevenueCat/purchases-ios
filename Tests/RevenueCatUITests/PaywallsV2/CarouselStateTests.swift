@@ -19,6 +19,20 @@ import XCTest
 @available(iOS 15.0, macOS 12.0, watchOS 8.0, *)
 class CarouselStateTests: TestCase {
 
+    // MARK: - Nested Carousels
+
+    func testDistanceFromActiveIncludesEnclosingCarouselDistance() {
+        let state = CarouselState(
+            activeIndex: 0,
+            pageIndex: 0,
+            originalCount: 3,
+            ancestorDistanceFromActive: 3
+        )
+
+        XCTAssertEqual(state.distanceFromActive, 3)
+        XCTAssertFalse(state.isActiveOrNeighbor)
+    }
+
     // MARK: - isActive Tests
 
     func testIsActiveReturnsTrueWhenIndicesMatch() {
