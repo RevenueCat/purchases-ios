@@ -72,6 +72,14 @@ struct PackageSelectionContext {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
+    private let visibilityGraph: PackageVisibilityGraph
+
+    /// Defaults to an empty graph, which gates nothing: correct for a validator built outside the
+    /// component walk, such as a preview.
+    init(visibilityGraph: PackageVisibilityGraph = PackageVisibilityGraph()) {
+        self.visibilityGraph = visibilityGraph
+    }
+
     struct PackageInfo {
 
         let package: Package
@@ -79,8 +87,8 @@ class PackageValidator {
         let visibilityResolver: PackageVisibilityResolver
         let promotionalOfferProductCode: String?
 
-        /// Outermost first. A package is on screen only if every stack containing it is too.
-        var ancestorResolvers: [AncestorVisibilityResolver] = []
+        /// The enclosing component this package was walked under, in the visibility graph.
+        var visibilityNode: Int?
 
     }
 
@@ -124,8 +132,8 @@ class PackageValidator {
     }
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
-        // The rule that hides a package is usually on a wrapper stack, not on the card.
-        guard info.ancestorResolvers.allSatisfy({ $0.visible(package: info.package, in: context) }) else {
+        // The rule that hides a package is usually on a container, not on the card.
+        guard self.visibilityGraph.isVisible(node: info.visibilityNode, package: info.package, in: context) else {
             return false
         }
 

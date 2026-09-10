@@ -406,6 +406,67 @@ final class PackageValidatorTests: TestCase {
     /// The reported paywall, built through the factory rather than hand-fed: two tier stacks in a
     /// sticky footer, each gated on the tab state, each holding a card marked selected by default.
     /// Walking that tree has to record which stacks each card sits under.
+    /// The container that hides a package does not have to be a stack. A carousel page gated on the
+    /// tab state hides its card the same way, and selection has to see that too.
+    func testFactoryRecordsVisibilityForPackagesInsideAHiddenCarouselPage() throws {
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "",
+            availablePackages: [TestData.monthlyPackage, TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+        let localizationProvider = LocalizationProvider(
+            locale: Locale(identifier: "en_US"),
+            localizedStrings: ["package_label": .string("Package")]
+        )
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+        let factory = ViewModelFactory()
+
+        func tierCarousel(whenState value: String, packageID: String) -> PaywallComponent {
+            return .carousel(.init(
+                visible: false,
+                pages: [
+                    .init(components: [
+                        .package(Self.makePackageComponent(
+                            packageID: packageID,
+                            isSelectedByDefault: true,
+                            visible: nil
+                        ))
+                    ])
+                ],
+                overrides: [
+                    .init(
+                        extendedConditions: [
+                            .state(operator: .equals, name: Self.stateKey, value: .string(value))
+                        ],
+                        properties: .init(visible: true)
+                    )
+                ]
+            ))
+        }
+
+        _ = try factory.toStackViewModel(
+            component: PaywallComponent.StackComponent(components: [
+                tierCarousel(whenState: "essential", packageID: TestData.annualPackage.identifier),
+                tierCarousel(whenState: "premium", packageID: TestData.monthlyPackage.identifier)
+            ]),
+            packageValidator: factory.packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
+            offering: offering,
+            colorScheme: .light
+        )
+
+        XCTAssertEqual(
+            factory.packageValidator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("premium")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier,
+            "The carousel on screen owns the selection, not the first default in document order."
+        )
+    }
+
     func testViewModelFactoryRecordsAncestorVisibilityForDefaultSelection() throws {
         let offering = Offering(
             identifier: "default",
@@ -419,7 +480,7 @@ final class PackageValidatorTests: TestCase {
         )
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
         let factory = ViewModelFactory()
-        let packageValidator = PackageValidator()
+        let packageValidator = factory.packageValidator
 
         func tierStack(
             whenState value: String,
@@ -488,7 +549,7 @@ final class PackageValidatorTests: TestCase {
         )
         let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
         let factory = ViewModelFactory()
-        let packageValidator = PackageValidator()
+        let packageValidator = factory.packageValidator
 
         _ = try factory.toViewModel(
             component: .package(
@@ -542,7 +603,7 @@ final class PackageValidatorTests: TestCase {
             webCheckoutUrl: nil
         )
         let factory = ViewModelFactory()
-        let packageValidator = PackageValidator()
+        let packageValidator = factory.packageValidator
 
         let nested = Self.makePackageComponent(
             packageID: TestData.monthlyPackage.identifier,
@@ -873,19 +934,20 @@ private extension PackageValidatorTests {
     /// Two tiers, each a wrapper stack gated on the tab state, each holding one card. Only the cards
     /// carry `isSelectedByDefault`; nothing on them says when they are shown.
     static func tieredFooterValidator() -> PackageValidator {
-        let validator = PackageValidator()
+        let graph = PackageVisibilityGraph()
+        let validator = PackageValidator(visibilityGraph: graph)
 
         validator.add(Self.makePackageInfo(
             package: TestData.annualPackage,
             isSelectedByDefault: true,
             visible: true,
-            ancestors: [Self.stateGatedStack(whenState: "essential")]
+            visibilityNode: Self.stateGatedNode(in: graph, whenState: "essential")
         ))
         validator.add(Self.makePackageInfo(
             package: TestData.monthlyPackage,
             isSelectedByDefault: true,
             visible: true,
-            ancestors: [Self.stateGatedStack(whenState: "premium")]
+            visibilityNode: Self.stateGatedNode(in: graph, whenState: "premium")
         ))
 
         return validator
@@ -944,7 +1006,7 @@ private extension PackageValidatorTests {
         isSelectedByDefault: Bool,
         visible: Bool?,
         overrides: [PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent>]? = nil,
-        ancestors: [PaywallComponent.StackComponent] = []
+        visibilityNode: Int? = nil
     ) -> PackageValidator.PackageInfo {
         let component = Self.makePackageComponent(
             packageID: package.identifier,
@@ -962,18 +1024,23 @@ private extension PackageValidatorTests {
                 discardRules: false
             ),
             promotionalOfferProductCode: nil,
-            ancestorResolvers: ancestors.compactMap {
-                AncestorVisibilityResolver(
-                    component: $0,
-                    uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-                    discardRules: false
-                )
-            }
+            visibilityNode: visibilityNode
         )
     }
 
-    /// A wrapper stack shown only while the tier state matches, which is where a "Selected tab" rule
+    /// A wrapper shown only while the tier state matches, which is where a "Selected tab" rule
     /// actually lives when each tier's cards are grouped.
+    static func stateGatedNode(in graph: PackageVisibilityGraph, whenState value: String) -> Int? {
+        return graph.addNode(
+            parent: nil,
+            visible: false,
+            overrides: Self.stateGatedStack(whenState: value).overrides,
+            visibleKeyPath: \PaywallComponent.PartialStackComponent.visible,
+            uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+            discardRules: false
+        )
+    }
+
     static func stateGatedStack(whenState value: String) -> PaywallComponent.StackComponent {
         return PaywallComponent.StackComponent(
             visible: false,
