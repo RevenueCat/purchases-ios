@@ -653,10 +653,10 @@ extension PurchaseHandler {
     /// `initialOffering` carries the workflow screen's offering with its mapped paywall components
     /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
     /// Shared by the async resolve path and the synchronous cache seed: the async path lets the thrown
-    /// error propagate, while the seed treats any throw as a miss (via `try?`) and falls through.
-    /// Throws ``PaywallError/offeringNotFound(identifier:)`` when the workflow has no initial screen
-    /// (reporting `triggerOfferingIdentifier`) or when that screen's offering is absent from
-    /// `allOfferings` (reporting the screen's own offering identifier that was actually missing).
+    /// error propagate, while the seed treats any throw as a miss (via `try?`).
+    /// Throws ``PaywallError/offeringNotFound(identifier:)`` only when the workflow has no initial screen
+    /// (reporting `triggerOfferingIdentifier`). An absent offering, whether the initial screen declares one
+    /// or not, is rendered as content-only so the workflow UI can surface its configuration error.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
@@ -671,18 +671,18 @@ extension PurchaseHandler {
             throw PaywallError.offeringNotFound(identifier: triggerOfferingIdentifier)
         }
 
-        let offeringIdentifier = workflow.offeringIdentifier(for: step)
-        guard let baseOffering = allOfferings.offering(identifier: offeringIdentifier) else {
-            throw PaywallError.offeringNotFound(identifier: offeringIdentifier ?? triggerOfferingIdentifier)
-        }
-
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(
             screen: screen,
             uiConfig: uiConfig,
             paywallId: screenID
         )
 
-        let initialOffering = baseOffering.withPaywallComponents(paywallComponents)
+        let offeringIdentifier = workflow.offeringIdentifier(for: step)
+        let baseOffering = offeringIdentifier.flatMap { allOfferings.offering(identifier: $0) }
+        let initialOffering = WorkflowContext.renderingOffering(
+            baseOffering: baseOffering,
+            paywallComponents: paywallComponents
+        )
 
         let offering: Offering
         if let presentedOfferingContext {

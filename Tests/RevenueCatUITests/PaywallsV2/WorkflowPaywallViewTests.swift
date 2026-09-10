@@ -165,6 +165,50 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(state.progress) == 1
     }
 
+    func testPresentationErrorForInitialStepWithUnavailableOffering() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: nil,
+            initialScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+
+        let error = WorkflowPaywallView.presentationError(
+            for: context.workflow.initialStepId,
+            in: context
+        )
+
+        expect(error?.code) == ErrorCode.configurationError.rawValue
+        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_initial'."
+    }
+
+    func testPresentationErrorForReachedSecondStepWithUnavailableOffering() throws {
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_terminal",
+            terminalScreenJSON: Self.makeScreenJSON(offeringId: "missing_offering")
+        )
+
+        let error = WorkflowPaywallView.presentationError(for: "step_terminal", in: context)
+
+        expect(error?.code) == ErrorCode.configurationError.rawValue
+        expect(error?.localizedDescription) == "Offering 'missing_offering' not found for step 'step_terminal'."
+    }
+
+    func testPresentationErrorForReachedStepWithoutScreen() throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        // `step_placeholder` models a trigger target whose screen cannot be resolved. It must be
+        // rejected before the navigator moves away from the currently-rendered initial step.
+        let error = WorkflowPaywallView.presentationError(for: "step_placeholder", in: context)
+
+        expect(error?.code) == ErrorCode.configurationError.rawValue
+        expect(error?.localizedDescription) == "Step 'step_placeholder' has no screen_id in workflow 'wf_test'."
+    }
+
+    func testPresentationErrorIsNilForRenderableInitialStep() throws {
+        let context = try Self.makeContext(singleStepFallbackId: nil)
+
+        expect(WorkflowPaywallView.presentationError(for: context.workflow.initialStepId, in: context)).to(beNil())
+    }
+
     func testWorkflowPackageOverridePrefersWorkflowValueOverPageDefault() {
         let defaultPackage = PaywallsV2View.effectiveDefaultPackage(
             pageDefaultPackage: TestData.monthlyPackage,
@@ -825,6 +869,47 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
+    @MainActor
+    func testInitialPresentationErrorClearsConfiguredExitOffer() async throws {
+        let exitOffering = Offering(
+            identifier: "exit_offering_a",
+            serverDescription: "Exit offering",
+            metadata: [:],
+            paywall: nil,
+            availablePackages: [],
+            webCheckoutUrl: nil
+        )
+        let initialScreenJSON = String(Self.makeScreenJSON(offeringId: "missing_offering").dropLast()) + """
+        , "exit_offers": { "dismiss": { "offering_id": "exit_offering_a" } }
+        }
+        """
+        let context = try Self.makeContext(
+            singleStepFallbackId: "step_initial",
+            initialScreenJSON: initialScreenJSON,
+            extraOfferings: [exitOffering]
+        )
+        let exitOffer = OfferingBox(exitOffering)
+        let exitOfferBinding = Binding<Offering?>(
+            get: { exitOffer.offering },
+            set: { exitOffer.offering = $0 }
+        )
+        let view = WorkflowPaywallView(
+            context: context,
+            purchaseHandler: .mock(),
+            introEligibilityChecker: .producing(eligibility: .eligible),
+            showZeroDecimalPlacePrices: false,
+            displayCloseButton: false,
+            promoOfferCache: nil,
+            onDismiss: {}
+        )
+        .environment(\.workflowExitOfferOfferingBinding, exitOfferBinding)
+
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        await expect(exitOffer.offering).toEventually(beNil(), timeout: .seconds(3))
+    }
+
     func testExitOfferOfferingIsNotStepAware() throws {
         // context.exitOfferOffering returns non-nil whenever the exit offer is configured,
         // regardless of which step is current. The binding must therefore use
@@ -1364,6 +1449,17 @@ private struct WorkflowPageActivationHost: View {
             stepId: "step_a",
             traceId: self.traceId
         )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class OfferingBox {
+
+    var offering: Offering?
+
+    init(_ offering: Offering?) {
+        self.offering = offering
     }
 
 }

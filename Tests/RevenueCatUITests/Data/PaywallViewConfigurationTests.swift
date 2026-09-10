@@ -508,10 +508,10 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsWithScreenOfferingIdWhenScreenOfferingMissing() async throws {
-        // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
-        // trigger offering "offering_a". The error must report the screen's offering id that was
-        // actually missing, not the trigger offering used to look up the workflow.
+    func testResolvePaywallViewDataReturnsContentOnlyOfferingWhenInitialScreenOfferingMissing() async throws {
+        // The workflow's initial screen resolves to "offering_b", but the offerings snapshot only contains
+        // the trigger offering "offering_a". It must still produce a content-only offering, allowing the
+        // workflow view to surface the configuration error for the reached step.
         let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -523,15 +523,16 @@ final class PaywallViewConfigurationTests: TestCase {
             try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
         }
 
-        do {
-            _ = try await handler.resolvePaywallViewData(
-                for: .offering(initialOffering),
-                remoteConfigEnabled: true
-            )
-            XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
-        }
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == ""
+        expect(result.offering.availablePackages).to(beEmpty())
+        let context = try XCTUnwrap(result.workflowContext)
+        let initialStep = try XCTUnwrap(context.workflow.steps[context.workflow.initialStepId])
+        expect(context.workflow.offeringIdentifier(for: initialStep)) == "offering_b"
     }
 
     func testResolvePaywallViewDataRendersLegacyWhenOfferingHasLegacyPaywall() async throws {

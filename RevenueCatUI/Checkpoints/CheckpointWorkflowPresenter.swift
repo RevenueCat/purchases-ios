@@ -132,7 +132,10 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
-            displayCloseButton: true
+            displayCloseButton: true,
+            workflowPresentationErrorHandler: { [weak self] error in
+                self?.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+            }
         )
         viewController.customVariables = presentation.customVariables
         return viewController

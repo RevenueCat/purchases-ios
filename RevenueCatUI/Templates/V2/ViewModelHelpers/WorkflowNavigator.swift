@@ -54,6 +54,21 @@ final class WorkflowNavigator: ObservableObject {
 
     @discardableResult
     func triggerAction(componentId: String, triggerType: WorkflowTriggerType = .onPress) -> WorkflowStep? {
+        guard let nextStep = self.triggerActionDestination(componentId: componentId, triggerType: triggerType) else {
+            return nil
+        }
+
+        backStack.append(currentStepId)
+        currentStepId = nextStep.id
+        return nextStep
+    }
+
+    /// Resolves the step targeted by an action without changing the current step or back stack.
+    /// Callers that need to ensure the target can be rendered should use this before `triggerAction`.
+    func triggerActionDestination(
+        componentId: String,
+        triggerType: WorkflowTriggerType = .onPress
+    ) -> WorkflowStep? {
         guard let step = currentStep,
               let trigger = step.stepTriggers.first(where: {
                   $0.componentId == componentId && $0.type == triggerType
@@ -65,8 +80,6 @@ final class WorkflowNavigator: ObservableObject {
             return nil
         }
 
-        backStack.append(currentStepId)
-        currentStepId = nextStep.id
         return nextStep
     }
 

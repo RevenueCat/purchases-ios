@@ -87,10 +87,17 @@ import Foundation
     public var stepTriggerActions: [String: WorkflowTriggerAction] { triggerActions }
     let metadata: [String: AnyDecodable]?
 
-    /// The offering this step presents, from `param_values.offering.identifier`.
+    /// The offering this step presents, from `param_values.offering.identifier`, or from the legacy
+    /// flat `param_values.offering_identifier` value when the nested value is absent.
     var offeringIdentifier: String? {
-        guard case let .object(offering)? = self.paramValues["offering"],
-              case let .string(identifier)? = offering["identifier"],
+        let nestedIdentifier: AnyDecodable?
+        if case let .object(offering)? = self.paramValues["offering"] {
+            nestedIdentifier = offering["identifier"]
+        } else {
+            nestedIdentifier = nil
+        }
+
+        guard case let .string(identifier)? = nestedIdentifier ?? self.paramValues["offering_identifier"],
               identifier.isNotEmpty else {
             return nil
         }

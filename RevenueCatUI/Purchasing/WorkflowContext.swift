@@ -220,14 +220,14 @@ import Foundation
         presentedOfferingContext: PresentedOfferingContext?
     ) -> Offering? {
         guard let offeringIdentifier else {
-            return initialOffering
+            return nil
         }
 
         if initialOffering.identifier == offeringIdentifier {
             return initialOffering
         }
 
-        guard let offering = allOfferings.all[offeringIdentifier] else {
+        guard let offering = allOfferings.offering(identifier: offeringIdentifier) else {
             return nil
         }
 
@@ -243,6 +243,28 @@ import Foundation
             return nil
         }
         return self.offering(for: offeringIdentifier)
+    }
+
+    /// Produces the offering that starts a workflow presentation. A content-only step has no base offering, so
+    /// it uses a package-less placeholder while still carrying the screen components needed to enter the V2 path.
+    static func renderingOffering(
+        baseOffering: Offering?,
+        paywallComponents: Offering.PaywallComponents
+    ) -> Offering {
+        guard let baseOffering else {
+            return Self.contentOnlyOffering(with: paywallComponents)
+        }
+
+        return baseOffering.withPaywallComponents(paywallComponents)
+    }
+
+    private static func contentOnlyOffering(with paywallComponents: Offering.PaywallComponents) -> Offering {
+        return Offering(
+            identifier: "",
+            serverDescription: "",
+            availablePackages: [],
+            webCheckoutUrl: nil
+        ).withPaywallComponents(paywallComponents)
     }
 
     private static func collectPackages(

@@ -174,14 +174,16 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         })
     }
 
-    func testCheckpointWhoseInitialStepHasNoOfferingResolvesConfigurationUnavailable() async throws {
+    func testCheckpointWhoseInitialStepHasNoOfferingResolvesWorkflowWithFullOfferings() async throws {
         self.workflowsProvider.stubbedGetWorkflowResult[self.workflowID] = Self.workflowDataResult(
             id: self.workflowID,
             offeringID: nil
         )
 
         let resolution = try await self.resolve()
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
+        let resolved = try XCTUnwrap(Self.resolvedWorkflow(resolution))
+        XCTAssertEqual(resolved.workflow.id, self.workflowID)
+        XCTAssertEqual(resolved.offerings.all[self.offeringID], self.offering)
     }
 
     func testCheckpointResolvesFirstRuleInServedOrder() async throws {
@@ -242,39 +244,38 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         }
     }
 
-    func testFirstRuleWithoutOfferingMetadataDoesNotFallThrough() async throws {
-        let unservableWorkflowID = "wf_without_offering"
+    func testFirstRuleWithoutOfferingMetadataResolvesWithoutFallingThrough() async throws {
+        let workflowID = "wf_without_offering"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: unservableWorkflowID),
+            Self.rule(workflowID: workflowID),
             Self.rule(workflowID: self.workflowID)
         ]))
-        self.workflowsProvider.stubbedGetWorkflowResult[unservableWorkflowID] = Self.workflowDataResult(
-            id: unservableWorkflowID,
+        self.workflowsProvider.stubbedGetWorkflowResult[workflowID] = Self.workflowDataResult(
+            id: workflowID,
             offeringID: nil
         )
 
         let resolution = try await self.resolve()
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        // The body is read before the offering mapping now, since its shape decides what else the rule needs.
-        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [unservableWorkflowID])
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, workflowID)
+        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [workflowID])
     }
 
-    func testFirstRuleWhoseOfferingIsMissingDoesNotFallThrough() async throws {
-        let unservableWorkflowID = "wf_missing_offering"
+    func testFirstRuleWhoseOfferingIsMissingResolvesWithoutFallingThrough() async throws {
+        let workflowID = "wf_missing_offering"
         self.checkpointsProvider.result = .success(CheckpointRuleSet(rules: [
-            Self.rule(workflowID: unservableWorkflowID),
+            Self.rule(workflowID: workflowID),
             Self.rule(workflowID: self.workflowID)
         ]))
-        self.workflowsProvider.stubbedGetWorkflowResult[unservableWorkflowID] = Self.workflowDataResult(
-            id: unservableWorkflowID,
+        self.workflowsProvider.stubbedGetWorkflowResult[workflowID] = Self.workflowDataResult(
+            id: workflowID,
             offeringID: "missing"
         )
 
         let resolution = try await self.resolve()
 
-        XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
-        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [unservableWorkflowID])
+        XCTAssertEqual(Self.resolvedWorkflow(resolution)?.workflow.id, workflowID)
+        XCTAssertEqual(self.workflowsProvider.invokedGetWorkflowParameters, [workflowID])
     }
 
     func testFirstRuleWhoseWorkflowFailsToLoadDoesNotFallThrough() async throws {
@@ -316,7 +317,7 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
         XCTAssertEqual(Self.noActionReason(resolution), .configurationUnavailable)
     }
 
-    func testSuccessfulResolutionIncludesWorkflowUIConfigOfferingAndAllOfferings() async throws {
+    func testSuccessfulResolutionIncludesWorkflowUIConfigAndAllOfferings() async throws {
         let secondaryOffering = Self.offering(id: "secondary")
         self.offerings = Self.offerings([self.offering, secondaryOffering])
 
@@ -325,7 +326,6 @@ final class DefaultCheckpointWorkflowResolverTests: TestCase {
 
         XCTAssertEqual(resolved.workflow.id, self.workflowID)
         XCTAssertEqual(resolved.uiConfig, .empty)
-        XCTAssertEqual(resolved.offering.identifier, self.offeringID)
         XCTAssertEqual(Set(resolved.offerings.all.keys), [self.offeringID, secondaryOffering.identifier])
     }
 

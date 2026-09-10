@@ -75,6 +75,23 @@ final class WorkflowNavigatorTests: TestCase {
         expect(navigator.canNavigateBack) == true
     }
 
+    func testTriggerActionDestinationDoesNotMutateNavigator() throws {
+        let workflow = try Self.makeWorkflow(
+            steps: [
+                makeStep(id: "step_1", triggers: [("btn_abc", "btn_abc")], triggerActions: [("btn_abc", "step_2")]),
+                makeStep(id: "step_2")
+            ],
+            initialStepId: "step_1"
+        )
+        let navigator = WorkflowNavigator(workflow: workflow)
+
+        let destination = navigator.triggerActionDestination(componentId: "btn_abc")
+
+        expect(destination?.id) == "step_2"
+        expect(navigator.currentStepId) == "step_1"
+        expect(navigator.canNavigateBack) == false
+    }
+
     // MARK: - triggerAction failure cases
 
     func testTriggerActionWithUnknownComponentIdReturnsNil() throws {

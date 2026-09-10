@@ -137,6 +137,10 @@ public class PaywallViewController: UIViewController {
         self.applyOfferingBasedExitOffer(offering)
     }
 
+    func simulateWorkflowPresentationError(_ error: NSError) {
+        self.configuration.workflowPresentationErrorHandler?(error)
+    }
+
     /// Whether we're currently showing an exit offer (to prevent multiple presentations).
     private var isShowingExitOffer: Bool = false
 
@@ -185,7 +189,8 @@ public class PaywallViewController: UIViewController {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         performPurchase: PerformPurchase? = nil,
-        performRestore: PerformRestore? = nil
+        performRestore: PerformRestore? = nil,
+        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
     ) {
         self.init(
             content: .offering(workflowContext.initialOffering),
@@ -200,6 +205,7 @@ public class PaywallViewController: UIViewController {
         var configuration = self.configuration
         configuration.introEligibility = introEligibility
         configuration.injectedWorkflowContext = workflowContext
+        configuration.workflowPresentationErrorHandler = workflowPresentationErrorHandler
         self.configuration = configuration
     }
     #endif

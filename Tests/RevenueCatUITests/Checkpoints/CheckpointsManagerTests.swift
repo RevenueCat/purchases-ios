@@ -288,7 +288,6 @@ final class CheckpointsManagerTests: TestCase {
                 screens: [:]
             ),
             uiConfig: .empty,
-            offering: offering,
             offerings: .preview(offerings: [offering])
         )
     }
@@ -505,7 +504,6 @@ final class CheckpointWorkflowExecutorTests: TestCase {
                 screens: [:]
             ),
             uiConfig: .empty,
-            offering: offering,
             offerings: .preview(offerings: [offering])
         )
     }

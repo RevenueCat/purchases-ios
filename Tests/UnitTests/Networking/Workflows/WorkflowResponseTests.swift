@@ -407,6 +407,85 @@ class WorkflowResponseTests: TestCase {
         expect(step.offeringIdentifier) == "default"
     }
 
+    func testDecodeWorkflowStepOfferingIdentifierFallsBackToFlatValue() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"{ "id": "step_1", "param_values": { "offering_identifier": "default" } }"#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "default"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierPrefersNestedValueOverFlatFallback() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": "nested" },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "nested"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenNestedOfferingHasNoIdentifier() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": {},
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierUsesFlatFallbackWhenOfferingIsNotAnObject() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": "not-an-object",
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier) == "flat"
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsInvalid() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": "   " },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
+    func testDecodeWorkflowStepOfferingIdentifierDoesNotFallBackWhenNestedIdentifierIsNotAString() throws {
+        let step = try JSONDecoder.default.decode(
+            WorkflowStep.self,
+            from: Data(#"""
+            { "id": "step_1", "param_values": {
+                "offering": { "identifier": 123 },
+                "offering_identifier": "flat"
+            } }
+            """#.utf8)
+        )
+
+        expect(step.offeringIdentifier).to(beNil())
+    }
+
     func testWorkflowOfferingIdentifierPrefersTheStepAndFallsBackToItsScreen() throws {
         let screen = try Self.decodeWorkflowScreen(offeringIdentifier: "screen-offering")
         var step = WorkflowStep(id: "step_1", type: "screen", screenId: "screen_1")
@@ -423,6 +502,9 @@ class WorkflowResponseTests: TestCase {
 
         step.paramValues = ["offering": .object(["identifier": .string("step-offering")])]
         expect(workflow.offeringIdentifier(for: step)) == "step-offering"
+
+        step.paramValues = ["offering_identifier": .string("flat-step-offering")]
+        expect(workflow.offeringIdentifier(for: step)) == "flat-step-offering"
     }
 
     func testDecodeWorkflowStepScreenTypeFromMetadata() throws {
