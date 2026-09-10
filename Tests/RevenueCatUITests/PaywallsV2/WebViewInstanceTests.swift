@@ -245,7 +245,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
 
     /// SwiftUI may mount the incoming representable before unmounting the outgoing one. The incoming
     /// request must complete when the outgoing host leaves without requiring another update callback.
-    func testPendingHostTakesTheWebViewWhenTheCurrentHostLeavesItsWindow() {
+    func testIncomingCandidateTakesTheWebViewWhenTheAttachedHostLeavesItsWindow() {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let outgoing = self.makeWindowedHost()
@@ -261,16 +261,16 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === incoming)
     }
 
-    func testPendingHostIsForgottenIfItLeavesBeforeTheCurrentHost() {
+    func testCandidateIsRemovedIfItLeavesBeforeTheAttachedHost() {
         let instance = Self.makeInstance()
         let webView = instance.webView { WKWebView(frame: .zero) }
         let displayed = self.makeWindowedHost()
-        let pending = self.makeWindowedHost()
+        let candidate = self.makeWindowedHost()
 
         instance.hostDidEnterWindow(displayed)
-        instance.hostDidEnterWindow(pending)
-        pending.removeFromSuperview()
-        instance.hostDidLeaveWindow(pending)
+        instance.hostDidEnterWindow(candidate)
+        candidate.removeFromSuperview()
+        instance.hostDidLeaveWindow(candidate)
         displayed.removeFromSuperview()
         instance.hostDidLeaveWindow(displayed)
 
