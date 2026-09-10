@@ -27,8 +27,7 @@ struct PackageSelectionContext {
     let isEligibleForIntroOffer: (Package) -> Bool
     let isEligibleForPromoOffer: (Package) -> Bool
 
-    /// The state-store snapshot for the presentation session. Rendering reads this from the
-    /// environment; selection has no environment to read from, so the caller passes it in.
+    /// Rendering reads these from the environment; selection has none, so the caller passes them in.
     let stateValues: [String: PaywallComponent.ConditionValue]
     let stateDefaults: [String: PaywallComponent.ConditionValue]
 
@@ -54,10 +53,8 @@ struct PackageSelectionContext {
     /// Rules keyed on custom variables or offer eligibility cannot be evaluated yet, so a selection made
     /// with this is provisional and has to be reconciled once the body resolves the real context.
     ///
-    /// State is the exception: the store has published nothing yet, but the screen declares its
-    /// defaults, and passing them keeps a stack that is only shown for the default state from reading
-    /// as hidden here. Without them a paywall that groups its packages that way would seed no
-    /// selection at all and paint its first frame with nothing chosen.
+    /// State is the exception: the declared defaults are known here, and without them a stack shown
+    /// only for the default state reads as hidden and nothing gets seeded.
     static func provisional(
         stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
     ) -> PackageSelectionContext {
@@ -127,8 +124,7 @@ class PackageValidator {
     }
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
-        // The rule that hides a package is usually authored on a wrapper stack, not on the card, so
-        // reading the card alone would count a package the paywall never renders.
+        // The rule that hides a package is usually on a wrapper stack, not on the card.
         guard info.ancestorResolvers.allSatisfy({ $0.visible(package: info.package, in: context) }) else {
             return false
         }

@@ -226,8 +226,6 @@ struct LoadedTabsComponentView: View {
                             // Provisional: view `init` has no environment, so variable/eligibility rules
                             // can't be evaluated yet. `reconcileSelection` corrects this once the body
                             // resolves the real context.
-                            // No state either: a view `init` cannot read the store from the
-                            // environment. Tab content gated on state is corrected by the reconcile.
                             tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional())
                         ),
                         variableContext: .init(
@@ -364,18 +362,14 @@ struct LoadedTabsComponentView: View {
                     )
                 )
             )
-            // Intro and promo eligibility both land after first render and can flip a package's
-            // visibility. `isPaywallLoading` goes false once both have resolved.
+            // Each of these can change which packages render, so the selection is re-checked:
+            // offer eligibility landing, a state update, a window resize.
             .onChangeOf(self.isPaywallLoading) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
-            // A tab's own packages can be gated on state the tabs component itself publishes, and
-            // the environment carries the new snapshot only after the switch has been applied.
             .onChangeOf(self.paywallStateValues) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
-            // A window resize (rotation, Split View, Stage Manager) can hide the selected package
-            // via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
