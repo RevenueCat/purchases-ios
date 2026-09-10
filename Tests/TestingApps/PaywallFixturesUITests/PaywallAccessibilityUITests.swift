@@ -43,6 +43,28 @@ final class PaywallAccessibilityUITests: XCTestCase {
         try app.performAccessibilityAudit(for: [.sufficientElementDescription])
     }
 
+    /// XCUITest lists elements that carry `accessibilityHidden(true)`, so element queries cannot
+    /// answer "is this hidden from VoiceOver". Fails once XCUITest starts honoring the modifier.
+    func testElementQueriesListEvenHiddenImages() throws {
+        let app = XCUIApplication()
+        // Matches AccessibilityHiddenControlView.fixtureName; the test bundle can't link it.
+        app.launchEnvironment["PAYWALL_FIXTURE"] = "a11y_control"
+        app.launch()
+
+        XCTAssertTrue(app.staticTexts["Control"].waitForExistence(timeout: 30))
+
+        let identifiers = app.images.allElementsBoundByIndex.map { $0.identifier }
+        XCTAssertTrue(identifiers.contains("star.fill"), "Visible control image missing.")
+        XCTAssertTrue(
+            identifiers.contains("heart.fill"),
+            "XCUITest now hides accessibilityHidden elements; element queries can be trusted again."
+        )
+        XCTAssertTrue(
+            identifiers.contains("bolt.fill"),
+            "XCUITest now hides collapsed-and-hidden elements; element queries can be trusted again."
+        )
+    }
+
     private func launch(fixture: String) -> XCUIApplication {
         let app = XCUIApplication()
         app.launchEnvironment["PAYWALL_FIXTURE"] = fixture
