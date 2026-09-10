@@ -49,7 +49,7 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
         expect(body["app_user_id"] as? String) == Self.userID
         expect(body["purchase_type"] as? String) == "LINK_OUT"
-        expect(body["rc_public_id"] as? String) == Self.tokenID
+        expect(body["id"] as? String) == Self.tokenID
         expect(body["token"] as? String) == "storekit-token"
     }
 
@@ -69,7 +69,7 @@ class BackendPostExternalPurchaseTokenTests: BaseBackendTests {
         let call = try XCTUnwrap(self.httpClient.calls.first)
         let body = try XCTUnwrap(call.request.requestBody?.asJSONDictionary())
         expect(body["app_user_id"] as? String) == Self.userID
-        expect(body["rc_public_id"] as? String) == Self.tokenID
+        expect(body["id"] as? String) == Self.tokenID
         expect(body.keys).toNot(contain("token"))
     }
 
