@@ -82,7 +82,7 @@ private extension DimensionScopeTests {
 
 private extension DimensionScopeTests {
 
-    static let expectedValues: [String: RulesEngine.Value] = [
+    static let expectedValues: RulesEngine.ObjectValue = [
         "evaluated_at": .int(1_700_000_000_000),
         "app_version": .string("1.2.3"),
         "platform": .string("ios"),
