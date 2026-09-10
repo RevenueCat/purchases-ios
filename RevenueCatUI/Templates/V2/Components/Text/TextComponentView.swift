@@ -132,11 +132,13 @@ struct NonLocalizedMarkdownText: View {
 
     init(
         text: String,
+        accessibilityText: String? = nil,
         font: Font,
         fontWeight: Font.Weight,
         componentName: String? = nil
     ) {
         self.text = text
+        self.accessibilityText = accessibilityText
         self.font = font
         self.fontWeight = fontWeight
         self.componentName = componentName
