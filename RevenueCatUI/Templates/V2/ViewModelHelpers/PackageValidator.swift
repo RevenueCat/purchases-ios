@@ -67,12 +67,31 @@ struct PackageSelectionContext {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 class PackageValidator {
 
-    typealias PackageInfo = (
-        package: Package,
-        isSelectedByDefault: Bool,
-        visibilityResolver: PackageVisibilityResolver,
-        promotionalOfferProductCode: String?
-    )
+    struct PackageInfo {
+
+        let package: Package
+        let isSelectedByDefault: Bool
+        let visibilityResolver: PackageVisibilityResolver
+        let promotionalOfferProductCode: String?
+
+        /// Outermost first. A package is on screen only if every stack containing it is too.
+        let ancestorResolvers: [AncestorVisibilityResolver]
+
+        init(
+            package: Package,
+            isSelectedByDefault: Bool,
+            visibilityResolver: PackageVisibilityResolver,
+            promotionalOfferProductCode: String?,
+            ancestorResolvers: [AncestorVisibilityResolver] = []
+        ) {
+            self.package = package
+            self.isSelectedByDefault = isSelectedByDefault
+            self.visibilityResolver = visibilityResolver
+            self.promotionalOfferProductCode = promotionalOfferProductCode
+            self.ancestorResolvers = ancestorResolvers
+        }
+
+    }
 
     /// Where a package was declared: a page-level resolution must never return a tab-only package.
     private enum Scope {
@@ -114,6 +133,25 @@ class PackageValidator {
     }
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
+        // A card is only on screen if every stack around it is too. The rule that hides a package is
+        // often authored on a wrapper stack rather than on the card, so reading the card alone would
+        // count a package the paywall never renders.
+        let ancestorsVisible = info.ancestorResolvers.allSatisfy { resolver in
+            resolver.visible(
+                condition: context.condition,
+                isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
+                isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
+                customVariables: context.customVariables,
+                windowSize: context.windowSize,
+                stateValues: context.stateValues,
+                stateDefaults: context.stateDefaults
+            )
+        }
+
+        guard ancestorsVisible else {
+            return false
+        }
+
         return info.visibilityResolver.visible(
             // Nothing is selected yet, since selection is what's being resolved. Pinning these keeps
             // a `selected` or `selected_package` rule from oscillating.

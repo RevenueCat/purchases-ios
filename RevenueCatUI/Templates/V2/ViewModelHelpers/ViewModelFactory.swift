@@ -115,7 +115,8 @@ struct ViewModelFactory {
         offering: Offering,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        colorScheme: ColorScheme
+        colorScheme: ColorScheme,
+        ancestorResolvers: [AncestorVisibilityResolver] = []
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
@@ -154,7 +155,8 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme
+                    colorScheme: colorScheme,
+                    ancestorResolvers: ancestorResolvers
                 )
             )
         case .button(let component):
@@ -206,7 +208,8 @@ struct ViewModelFactory {
                             uiConfigProvider: uiConfigProvider,
                             discardRules: discardRules
                         ),
-                        promotionalOfferProductCode: component.applePromoOfferProductCode
+                        promotionalOfferProductCode: component.applePromoOfferProductCode,
+                        ancestorResolvers: ancestorResolvers
                     )
                 )
             }
@@ -538,8 +541,17 @@ struct ViewModelFactory {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
-        colorScheme: ColorScheme
+        colorScheme: ColorScheme,
+        ancestorResolvers: [AncestorVisibilityResolver] = []
     ) throws -> StackComponentViewModel {
+        // A stack that can hide joins the chain for everything below it. One that cannot is left
+        // out, so the chain only holds stacks that actually decide something.
+        let childAncestorResolvers = AncestorVisibilityResolver(
+            component: component,
+            uiConfigProvider: uiConfigProvider,
+            discardRules: self.discardRules
+        ).map { ancestorResolvers + [$0] } ?? ancestorResolvers
+
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
             // New SDKs render the header from PaywallComponentsConfig.header instead.
@@ -553,7 +565,8 @@ struct ViewModelFactory {
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
+                colorScheme: colorScheme,
+                ancestorResolvers: childAncestorResolvers
             )
         }
 

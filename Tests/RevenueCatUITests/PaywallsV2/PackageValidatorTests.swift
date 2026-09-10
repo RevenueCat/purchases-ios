@@ -403,6 +403,78 @@ final class PackageValidatorTests: TestCase {
         )
     }
 
+    /// The reported paywall, built through the factory rather than hand-fed: two tier stacks in a
+    /// sticky footer, each gated on the tab state, each holding a card marked selected by default.
+    /// Walking that tree has to record which stacks each card sits under.
+    func testViewModelFactoryRecordsAncestorVisibilityForDefaultSelection() throws {
+        let offering = Offering(
+            identifier: "default",
+            serverDescription: "",
+            availablePackages: [TestData.monthlyPackage, TestData.annualPackage],
+            webCheckoutUrl: nil
+        )
+        let localizationProvider = LocalizationProvider(
+            locale: Locale(identifier: "en_US"),
+            localizedStrings: ["package_label": .string("Package")]
+        )
+        let uiConfigProvider = UIConfigProvider(uiConfig: PreviewUIConfig.make())
+        let factory = ViewModelFactory()
+        let packageValidator = PackageValidator()
+
+        func tierStack(
+            whenState value: String,
+            packageID: String
+        ) -> PaywallComponent.StackComponent {
+            return PaywallComponent.StackComponent(
+                visible: false,
+                components: [
+                    .package(Self.makePackageComponent(
+                        packageID: packageID,
+                        isSelectedByDefault: true,
+                        visible: nil
+                    ))
+                ],
+                overrides: [
+                    .init(
+                        extendedConditions: [
+                            .state(operator: .equals, name: Self.stateKey, value: .string(value))
+                        ],
+                        properties: .init(visible: true)
+                    )
+                ]
+            )
+        }
+
+        _ = try factory.toStackViewModel(
+            component: PaywallComponent.StackComponent(
+                components: [
+                    .stack(tierStack(whenState: "essential", packageID: TestData.annualPackage.identifier)),
+                    .stack(tierStack(whenState: "premium", packageID: TestData.monthlyPackage.identifier))
+                ]
+            ),
+            packageValidator: packageValidator,
+            purchaseButtonCollector: nil,
+            localizationProvider: localizationProvider,
+            uiConfigProvider: uiConfigProvider,
+            offering: offering,
+            colorScheme: .light
+        )
+
+        XCTAssertEqual(
+            packageValidator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("premium")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier,
+            "The showing tier owns the selection, not the first default in document order."
+        )
+        XCTAssertEqual(
+            packageValidator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("essential")])
+            )?.identifier,
+            TestData.annualPackage.identifier
+        )
+    }
+
     func testViewModelFactoryResolvesOverrideVisibilityForDefaultSelection() throws {
         let offering = Offering(
             identifier: "default",
@@ -507,6 +579,49 @@ final class PackageValidatorTests: TestCase {
         XCTAssertEqual(
             packageValidator.defaultSelectedPackage(in: Self.context())?.identifier,
             TestData.annualPackage.identifier
+        )
+    }
+
+    // MARK: - Ancestor-driven visibility
+
+    /// The reported paywall: each tier's cards sit in their own wrapper stack, and the "Selected tab"
+    /// rule is on the stack. The cards carry no rule at all, so a selection that only reads the card
+    /// picks one the paywall is not showing.
+    func testDefaultSelectedPackageSkipsPackageInsideAHiddenAncestor() {
+        let validator = Self.tieredFooterValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("premium")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// On the tier that is showing, its own authored default still wins.
+    func testDefaultSelectedPackageKeepsAuthoredDefaultInsideAVisibleAncestor() {
+        let validator = Self.tieredFooterValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: Self.context(stateValues: [Self.stateKey: .string("essential")])
+            )?.identifier,
+            TestData.annualPackage.identifier
+        )
+    }
+
+    /// Changing tab hides the stack holding the selection, so it has to move to the tier now showing.
+    /// This is the step that leaves the customer's paywall with nothing selected and Continue armed
+    /// with the package from another tier.
+    func testReconcileMovesSelectionOffPackageInsideAHiddenAncestor() {
+        let validator = Self.tieredFooterValidator()
+
+        XCTAssertEqual(
+            validator.reconciledSelection(
+                current: TestData.annualPackage,
+                in: Self.context(stateValues: [Self.stateKey: .string("premium")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier
         )
     }
 
@@ -735,6 +850,27 @@ private extension PackageValidatorTests {
         )
     }
 
+    /// Two tiers, each a wrapper stack gated on the tab state, each holding one card. Only the cards
+    /// carry `isSelectedByDefault`; nothing on them says when they are shown.
+    static func tieredFooterValidator() -> PackageValidator {
+        let validator = PackageValidator()
+
+        validator.add(Self.makePackageInfo(
+            package: TestData.annualPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            ancestors: [Self.stateGatedStack(whenState: "essential")]
+        ))
+        validator.add(Self.makePackageInfo(
+            package: TestData.monthlyPackage,
+            isSelectedByDefault: true,
+            visible: true,
+            ancestors: [Self.stateGatedStack(whenState: "premium")]
+        ))
+
+        return validator
+    }
+
     /// The key a tabs component writes its selected tab into. Opaque in real configs; readable here.
     static let stateKey = "selected_tier"
 
@@ -787,7 +923,8 @@ private extension PackageValidatorTests {
         package: Package,
         isSelectedByDefault: Bool,
         visible: Bool?,
-        overrides: [PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent>]? = nil
+        overrides: [PaywallComponent.ComponentOverride<PaywallComponent.PartialPackageComponent>]? = nil,
+        ancestors: [PaywallComponent.StackComponent] = []
     ) -> PackageValidator.PackageInfo {
         let component = Self.makePackageComponent(
             packageID: package.identifier,
@@ -804,7 +941,31 @@ private extension PackageValidatorTests {
                 uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
                 discardRules: false
             ),
-            promotionalOfferProductCode: nil
+            promotionalOfferProductCode: nil,
+            ancestorResolvers: ancestors.compactMap {
+                AncestorVisibilityResolver(
+                    component: $0,
+                    uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
+                    discardRules: false
+                )
+            }
+        )
+    }
+
+    /// A wrapper stack shown only while the tier state matches, which is where a "Selected tab" rule
+    /// actually lives when each tier's cards are grouped.
+    static func stateGatedStack(whenState value: String) -> PaywallComponent.StackComponent {
+        return PaywallComponent.StackComponent(
+            visible: false,
+            components: [],
+            overrides: [
+                .init(
+                    extendedConditions: [
+                        .state(operator: .equals, name: Self.stateKey, value: .string(value))
+                    ],
+                    properties: .init(visible: true)
+                )
+            ]
         )
     }
 
