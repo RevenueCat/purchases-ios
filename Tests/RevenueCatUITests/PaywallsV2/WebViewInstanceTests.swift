@@ -315,8 +315,9 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === firstCopy)
 
         firstCopy.carouselDistance = 2
-        secondCopy.carouselDistance = 0
         instance.updateHost(firstCopy)
+
+        secondCopy.carouselDistance = 0
         instance.updateHost(secondCopy)
 
         XCTAssertTrue(webView.superview === secondCopy)
