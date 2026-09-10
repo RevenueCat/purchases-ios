@@ -240,7 +240,6 @@ private extension CustomPaywallEvent {
 
 private extension WorkflowEvent {
 
-    // swiftlint:disable:next cyclomatic_complexity
     func workflowEventMap() -> [String: Any] {
         let typeName: String = {
             switch self {
@@ -266,9 +265,11 @@ private extension WorkflowEvent {
         if let entryReason = self.data.entryReason { result["entry_reason"] = entryReason }
         if let isFirstStep = self.data.isFirstStep { result["is_first_step"] = isFirstStep }
         if let isLastStep = self.data.isLastStep { result["is_last_step"] = isLastStep }
-        if let experimentId = self.data.experimentId { result["experiment_id"] = experimentId }
-        if let experimentVariant = self.data.experimentVariant { result["experiment_variant"] = experimentVariant }
-        if let isLastVariantStep = self.data.isLastVariantStep { result["is_last_variant_step"] = isLastVariantStep }
+        if let experiment = self.data.experiment {
+            result["experiment_id"] = experiment.experimentId
+            result["experiment_variant"] = experiment.experimentVariant
+            result["blob_ref"] = experiment.workflowBlobRef
+        }
 
         return result
     }

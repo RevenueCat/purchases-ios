@@ -94,6 +94,37 @@ class WorkflowsConfigProviderTests: TestCase {
         expect(workflowResult.enrolledVariants).to(beNil())
     }
 
+    func testResolvedWorkflowsCarryTheirWorkflowBlobRef() async throws {
+        self.commit(
+            workflows: [
+                "wf-prefetch": .init(
+                    blobRef: "wf-prefetch-ref",
+                    prefetch: true,
+                    content: ["offering_identifier": "premium"]
+                ),
+                "wf-plain": .init(blobRef: "wf-plain-ref", content: ["offering_identifier": "basic"])
+            ],
+            uiConfig: Self.uiConfigTopic,
+            blobs: Self.uiConfigBlobs.merging([
+                "wf-prefetch-ref": try Self.workflowJSON(id: "wf-prefetch"),
+                "wf-plain-ref": try Self.workflowJSON(id: "wf-plain")
+            ]) { current, _ in current }
+        )
+
+        let plain = await self.provider.getWorkflow(workflowId: "wf-plain")
+        expect(plain.value?.workflowBlobRef) == "wf-plain-ref"
+
+        async let cachedWorkflowIDs = self.provider.cachePrefetchedWorkflowBodyData(includingOfferingId: "basic")
+        async let uiConfigReady = self.uiConfigProvider.getUiConfig()
+        _ = await (cachedWorkflowIDs, uiConfigReady)
+
+        let cachedRead = await self.provider.getWorkflow(workflowId: "wf-prefetch")
+        let prewarm = await self.provider.decodeCachedWorkflowForAssetPrewarming(workflowId: "wf-prefetch")
+        expect(cachedRead.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(prewarm.value?.workflowBlobRef) == "wf-prefetch-ref"
+        expect(self.provider.cachedWorkflow(forOfferingId: "premium")?.workflowBlobRef) == "wf-prefetch-ref"
+    }
+
     func testFailsWithUiConfigUnavailableWhenTheWorkflowResolvesButUiConfigIsUnavailable() async throws {
         // A workflow is never rendered without `ui_config`: if it can't be assembled, the whole result
         // fails, matching Android's PaywallViewModel failing the render when its concurrent fetch fails.

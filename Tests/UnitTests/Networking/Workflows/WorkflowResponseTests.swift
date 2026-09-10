@@ -438,6 +438,66 @@ class WorkflowResponseTests: TestCase {
         expect(step.stepScreenType).to(beNil())
     }
 
+    func testDecodeWorkflowStepExperimentParams() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc", "experiment_variant": "b", "other": 1 }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant) == "b"
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenAbsent() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "offering_identifier": "premium" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsReadIndependently() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": "exp_abc" }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId) == "exp_abc"
+        expect(step.experimentVariant).to(beNil())
+    }
+
+    func testDecodeWorkflowStepExperimentParamsNilWhenNotStrings() throws {
+        let json = """
+        {
+          "id": "step_1",
+          "type": "screen",
+          "param_values": { "experiment_id": 12, "experiment_variant": null }
+        }
+        """.data(using: .utf8)!
+
+        let step = try JSONDecoder.default.decode(WorkflowStep.self, from: json)
+
+        expect(step.experimentId).to(beNil())
+        expect(step.experimentVariant).to(beNil())
+    }
+
     func testDecodeWorkflowStepScreenTypeNilWhenMetadataNull() throws {
         let json = """
         {
