@@ -235,7 +235,8 @@ class ViewModelFactoryBadgeTests: TestCase {
             ),
             uiConfigProvider: try Self.createUIConfigProvider(),
             offering: Self.mockOffering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
     }
 

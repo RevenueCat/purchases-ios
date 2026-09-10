@@ -531,7 +531,8 @@ fileprivate extension ButtonComponentViewModel {
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering,
-            colorScheme: colorScheme
+            colorScheme: colorScheme,
+            ancestorResolvers: []
         )
 
         try self.init(

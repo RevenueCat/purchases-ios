@@ -197,7 +197,8 @@ private extension TabsWorkflowDefaultPackageTests {
             offering: offering,
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         ) else {
             throw XCTSkip("Expected a .tabs PaywallComponentViewModel")
         }

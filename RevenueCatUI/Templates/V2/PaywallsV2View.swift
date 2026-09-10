@@ -183,9 +183,8 @@ struct PaywallsV2View: View {
         self._introOfferEligibilityContext = .init(
             wrappedValue: introEligibilityContext ?? .init(introEligibilityChecker: introEligibilityChecker)
         )
-        self._ownStateStore = .init(
-            wrappedValue: PaywallStateStore(declarations: paywallComponents.data.stateDeclarations ?? [:])
-        )
+        let ownStateStore = PaywallStateStore(declarations: paywallComponents.data.stateDeclarations ?? [:])
+        self._ownStateStore = .init(wrappedValue: ownStateStore)
 
         // Step 0: Decide which ComponentsConfig to use (base is default)
         let componentsConfig = paywallComponentsData.componentsConfig.base
@@ -219,7 +218,7 @@ struct PaywallsV2View: View {
                     // Provisional: `init` has no environment, so variable/eligibility rules can't be
                     // evaluated. `LoadedPaywallsV2View` reconciles once the body resolves the real context.
                     pageDefaultPackage: paywallState.viewModelFactory.packageValidator
-                        .defaultSelectedPackage(in: .provisional),
+                        .defaultSelectedPackage(in: .provisional(stateDefaults: ownStateStore.defaults)),
                     workflowDefaultPackage: workflowDefaultPackage
                 ),
                 workflowPackages: workflowPackages,

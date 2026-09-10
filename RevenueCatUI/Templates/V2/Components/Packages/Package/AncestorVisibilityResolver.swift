@@ -22,6 +22,9 @@ import Foundation
 /// showing one stack at a time with a "Selected tab" rule puts the rule on the stack, and the cards
 /// below it carry none of their own. Selection has to see that stack, or it picks a package the
 /// paywall never renders.
+///
+/// Only stacks take part. Other containers that can hide themselves, a carousel or a countdown for
+/// instance, do not contribute to a chain even where the chain reaches them.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct AncestorVisibilityResolver {
 
@@ -51,6 +54,11 @@ struct AncestorVisibilityResolver {
     /// out. An ancestor rule keyed on the selected package therefore reads as "not matching" here,
     /// which is the same pin the card's own resolution uses and carries the same limitation: such a
     /// stack is treated as hidden for selection even when the rendered paywall shows it.
+    ///
+    /// Offer eligibility diverges the other way. Selection asks per candidate card, while the
+    /// renderer resolves the stack once against whichever package is selected, so a stack gated on
+    /// offer eligibility around a mix of eligible and ineligible cards is read per card here and as
+    /// one unit on screen.
     // swiftlint:disable:next function_parameter_count
     func visible(
         condition: ScreenCondition,

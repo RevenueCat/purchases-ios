@@ -120,7 +120,8 @@ private extension ButtonComponentViewTests {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         return try ButtonComponentViewModel(

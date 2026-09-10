@@ -64,7 +64,8 @@ class ViewModelFactoryTests: TestCase {
                 offering: Self.mockOffering,
                 localizationProvider: .init(locale: .current, localizedStrings: [:]),
                 uiConfigProvider: try Self.createUIConfigProvider(),
-                colorScheme: .light
+                colorScheme: .light,
+                ancestorResolvers: []
             )
         }.toNot(throwError())
     }
@@ -830,7 +831,8 @@ class ViewModelFactoryTests: TestCase {
             ]),
             uiConfigProvider: try Self.createUIConfigProvider(),
             offering: Self.mockOffering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         expect(viewModel.firstChildIsFullWidthMedia).to(beTrue())
@@ -856,7 +858,8 @@ class ViewModelFactoryTests: TestCase {
             ]),
             uiConfigProvider: try Self.createUIConfigProvider(),
             offering: Self.mockOffering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         expect(viewModel.firstChildIsFullWidthMedia).to(beFalse())
@@ -974,7 +977,8 @@ class ViewModelFactoryTests: TestCase {
             ]),
             uiConfigProvider: try Self.createUIConfigProvider(),
             offering: Self.mockOffering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         // Only the text component should remain; fallbackHeader should be filtered out

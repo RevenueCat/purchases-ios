@@ -99,8 +99,9 @@ final class PackageComponentViewTests: TestCase {
         )
     }
 
-    /// The control: on another tier the rule does not match and the card's hidden base stands, so a
-    /// change that simply revealed every card would not pass all three.
+    /// A control rather than a regression: this passes with or without the state hand-off, since the
+    /// card's hidden base stands either way. It is here so the two above cannot be satisfied by
+    /// simply revealing every card.
     func testStateVisibilityOverrideKeepsCardHiddenForAnotherState() throws {
         let viewModel = try Self.makeViewModel(
             component: Self.stateGatedComponent(package: TestData.monthlyPackage),
@@ -308,7 +309,8 @@ private extension PackageComponentViewTests {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         return PackageComponentViewModel(

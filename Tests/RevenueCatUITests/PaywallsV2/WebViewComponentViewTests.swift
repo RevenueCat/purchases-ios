@@ -315,7 +315,8 @@ final class WebViewComponentViewTests: TestCase {
             ),
             localizationProvider: .init(locale: Locale(identifier: "en_US"), localizedStrings: [:]),
             uiConfigProvider: UIConfigProvider(uiConfig: uiConfig),
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
     }
 

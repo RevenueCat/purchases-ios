@@ -241,7 +241,7 @@ final class PackageValidatorTests: TestCase {
     func testReconcileMovesSelectionOffProvisionallySeededHiddenPackage() {
         let validator = Self.canTrialValidator()
 
-        let seeded = validator.defaultSelectedPackage(in: .provisional)
+        let seeded = validator.defaultSelectedPackage(in: .provisional())
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
 
         let reconciled = validator.reconciledSelection(
@@ -352,7 +352,7 @@ final class PackageValidatorTests: TestCase {
 
         // ...but the seeded selection is `$rc_annual`, and a visible card still carries that identifier,
         // so there is nothing to reconcile and the selection stays put. No bug to observe here.
-        let seeded = validator.defaultSelectedPackage(in: .provisional)
+        let seeded = validator.defaultSelectedPackage(in: .provisional())
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
         XCTAssertNil(validator.reconciledSelection(current: seeded, in: context))
     }
@@ -394,7 +394,7 @@ final class PackageValidatorTests: TestCase {
             isEligibleForIntroOffer: { _ in true }
         )
 
-        let seeded = validator.defaultSelectedPackage(in: .provisional)
+        let seeded = validator.defaultSelectedPackage(in: .provisional())
         XCTAssertEqual(seeded?.identifier, TestData.annualPackage.identifier)
 
         XCTAssertEqual(
@@ -457,7 +457,8 @@ final class PackageValidatorTests: TestCase {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         XCTAssertEqual(
@@ -504,7 +505,8 @@ final class PackageValidatorTests: TestCase {
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         _ = try factory.toViewModel(
@@ -520,7 +522,8 @@ final class PackageValidatorTests: TestCase {
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         XCTAssertEqual(
@@ -567,7 +570,8 @@ final class PackageValidatorTests: TestCase {
                 localizedStrings: ["package_label": .string("Package")]
             ),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         )
 
         XCTAssertEqual(
@@ -622,6 +626,26 @@ final class PackageValidatorTests: TestCase {
                 in: Self.context(stateValues: [Self.stateKey: .string("premium")])
             )?.identifier,
             TestData.monthlyPackage.identifier
+        )
+    }
+
+    /// The seed runs in view `init`, before the state store has published anything. Resolving it with
+    /// no state at all would read every tier wrapper as hidden and seed nothing, so the paywall would
+    /// paint one frame with no package selected. The declared defaults stand in.
+    func testProvisionalSeedUsesDeclaredStateDefaultsForAncestors() {
+        let validator = Self.tieredFooterValidator()
+
+        XCTAssertEqual(
+            validator.defaultSelectedPackage(
+                in: .provisional(stateDefaults: [Self.stateKey: .string("premium")])
+            )?.identifier,
+            TestData.monthlyPackage.identifier,
+            "The declared default tier owns the seeded selection."
+        )
+        XCTAssertNil(
+            validator.defaultSelectedPackage(in: .provisional()),
+            "Without the declared defaults every tier reads as hidden and nothing is seeded, which is "
+                + "the regression the parameter exists to prevent."
         )
     }
 

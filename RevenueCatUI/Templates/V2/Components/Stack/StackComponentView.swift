@@ -837,7 +837,8 @@ extension StackComponentViewModel {
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
+                colorScheme: colorScheme,
+                ancestorResolvers: []
             )
         }
 
@@ -848,7 +849,8 @@ extension StackComponentViewModel {
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme
+                colorScheme: colorScheme,
+                ancestorResolvers: []
             )
         }
 

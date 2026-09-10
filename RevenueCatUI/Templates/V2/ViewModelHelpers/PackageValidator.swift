@@ -53,10 +53,18 @@ struct PackageSelectionContext {
     /// For the few places that must seed a selection before the render environment exists (view `init`).
     /// Rules keyed on custom variables or offer eligibility cannot be evaluated yet, so a selection made
     /// with this is provisional and has to be reconciled once the body resolves the real context.
-    static var provisional: PackageSelectionContext {
+    ///
+    /// State is the exception: the store has published nothing yet, but the screen declares its
+    /// defaults, and passing them keeps a stack that is only shown for the default state from reading
+    /// as hidden here. Without them a paywall that groups its packages that way would seed no
+    /// selection at all and paint its first frame with nothing chosen.
+    static func provisional(
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+    ) -> PackageSelectionContext {
         return .init(
             condition: .compact,
             customVariables: [:],
+            stateDefaults: stateDefaults,
             isEligibleForIntroOffer: { _ in false },
             isEligibleForPromoOffer: { _ in false }
         )

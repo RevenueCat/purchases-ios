@@ -109,7 +109,8 @@ final class StackBadgeOverrideTests: TestCase {
                 localizedStrings: localizedStrings
             ),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         ) else {
             throw XCTSkip("Expected a .stack view model")
         }

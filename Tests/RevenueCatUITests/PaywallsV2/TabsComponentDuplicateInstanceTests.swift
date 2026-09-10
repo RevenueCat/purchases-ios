@@ -139,7 +139,8 @@ private extension TabsComponentDuplicateInstanceTests {
             offering: offering,
             localizationProvider: localization,
             uiConfigProvider: uiConfigProvider,
-            colorScheme: .light
+            colorScheme: .light,
+            ancestorResolvers: []
         ) else {
             XCTFail("Expected a .tabs PaywallComponentViewModel")
             throw XCTSkip("Test setup failed")

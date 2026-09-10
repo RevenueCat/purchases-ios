@@ -226,7 +226,9 @@ struct LoadedTabsComponentView: View {
                             // Provisional: view `init` has no environment, so variable/eligibility rules
                             // can't be evaluated yet. `reconcileSelection` corrects this once the body
                             // resolves the real context.
-                            tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional)
+                            // No state either: a view `init` cannot read the store from the
+                            // environment. Tab content gated on state is corrected by the reconcile.
+                            tabDefaultPackage: tabViewModel.defaultSelectedPackage(in: .provisional())
                         ),
                         variableContext: .init(
                             packages: tabViewModel.packages,
