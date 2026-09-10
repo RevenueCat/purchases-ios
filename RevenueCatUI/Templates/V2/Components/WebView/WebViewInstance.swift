@@ -139,7 +139,7 @@ final class WebViewInstance: ObservableObject {
         self.candidateHosts.append(WeakHost(host))
     }
 
-    /// Moves the web view to the host that should be showing it, or suspends playback when none is.
+    /// Moves the web view to the host that should be showing it, and suspends playback while it is off-screen.
     private func reconcileAttachment() {
         guard self.webView != nil else {
             return
@@ -156,6 +156,7 @@ final class WebViewInstance: ObservableObject {
             return
         }
 
+        self.setMediaPlaybackSuspended(preferredHost.carouselDistance > 1)
         self.attachWebView(to: preferredHost)
     }
 
@@ -183,7 +184,6 @@ final class WebViewInstance: ObservableObject {
         }
 
         self.attachedHost = host
-        self.setMediaPlaybackSuspended(false)
 
         guard webView.superview !== host else {
             return

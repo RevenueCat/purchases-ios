@@ -372,6 +372,20 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(instance.isMediaPlaybackSuspended)
     }
 
+    func testMediaIsSuspendedUntilCarouselPageIsActiveOrNeighboring() {
+        let instance = Self.makeInstance()
+        _ = instance.webView { WKWebView(frame: .zero) }
+        let host = self.makeWindowedHost(carouselDistance: 2)
+
+        instance.hostDidEnterWindow(host)
+        XCTAssertTrue(instance.isMediaPlaybackSuspended)
+
+        host.carouselDistance = 1
+        instance.updateHost(host)
+
+        XCTAssertFalse(instance.isMediaPlaybackSuspended)
+    }
+
     func testMediaResumesWhenTheComponentIsShownAgain() {
         let instance = Self.makeInstance()
         _ = instance.webView { WKWebView(frame: .zero) }
