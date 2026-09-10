@@ -124,13 +124,6 @@ final class WebViewInstance: ObservableObject {
         self.reconcileAttachment()
     }
 
-    /// Re-evaluates ownership for a host SwiftUI updated while it was already in a window, e.g. because
-    /// its ``WebViewHostView/carouselDistance`` changed when the carousel moved to another page.
-    func updateHost(_ host: WebViewHostView) {
-        self.registerCandidate(host)
-        self.reconcileAttachment()
-    }
-
     private func registerCandidate(_ host: WebViewHostView) {
         guard !self.candidateHosts.contains(where: { $0.host === host }) else {
             return

@@ -225,7 +225,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         let host = self.makeWindowedHost()
 
         instance.hostDidEnterWindow(host)
-        instance.updateHost(host)
+        instance.hostDidEnterWindow(host)
 
         XCTAssertTrue(webView.superview === host)
         XCTAssertEqual(host.subviews.count, 1)
@@ -303,7 +303,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
 
         instance.hostDidEnterWindow(activeCopy)
         instance.hostDidEnterWindow(neighborCopy)
-        instance.updateHost(neighborCopy)
+        instance.hostDidEnterWindow(neighborCopy)
 
         XCTAssertTrue(webView.superview === activeCopy)
     }
@@ -320,10 +320,10 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(webView.superview === firstCopy)
 
         firstCopy.carouselDistance = 2
-        instance.updateHost(firstCopy)
+        instance.hostDidEnterWindow(firstCopy)
 
         secondCopy.carouselDistance = 0
-        instance.updateHost(secondCopy)
+        instance.hostDidEnterWindow(secondCopy)
 
         XCTAssertTrue(webView.superview === secondCopy)
         XCTAssertFalse(instance.isMediaPlaybackSuspended)
@@ -338,8 +338,8 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
 
         instance.hostDidEnterWindow(leftNeighbor)
         instance.hostDidEnterWindow(rightNeighbor)
-        instance.updateHost(rightNeighbor)
-        instance.updateHost(leftNeighbor)
+        instance.hostDidEnterWindow(rightNeighbor)
+        instance.hostDidEnterWindow(leftNeighbor)
 
         XCTAssertTrue(webView.superview === leftNeighbor)
     }
@@ -387,7 +387,7 @@ final class WebViewInstanceHostAttachmentTests: TestCase {
         XCTAssertTrue(instance.isMediaPlaybackSuspended)
 
         host.carouselDistance = 1
-        instance.updateHost(host)
+        instance.hostDidEnterWindow(host)
 
         XCTAssertFalse(instance.isMediaPlaybackSuspended)
     }
