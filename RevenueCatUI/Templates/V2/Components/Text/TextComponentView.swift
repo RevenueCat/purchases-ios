@@ -242,6 +242,9 @@ private extension View {
 
     /// `Text` links are reachable only through the Links rotor, where focus can fall back to the
     /// enclosing paragraph before the link is activated. Custom actions always reach them.
+    ///
+    /// Covered by a VoiceOver pass on device, not a test: custom actions are not inspectable from
+    /// SwiftUI and XCUITest cannot enumerate them. `markdownLinks(in:)` is unit tested.
     @ViewBuilder
     func markdownLinkAccessibilityActions(
         _ links: [MarkdownLink],
