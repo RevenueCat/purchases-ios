@@ -849,7 +849,7 @@ struct WorkflowPaywallView: View {
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.type,
+            stepType: step.type ?? "screen",
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
@@ -1008,7 +1008,7 @@ private struct RenderedPage: Identifiable {
     let id = UUID()
     let stepId: String
     let content: CurrentStepContent
-    let stepType: String?
+    let stepType: String
     /// The step's `screen_type` classification (`nil` when the backend did not tag it). Drives whether
     /// this page reports paywall events. See `PaywallsV2View.shouldTrackPaywallEvents`.
     let screenType: [String]?
