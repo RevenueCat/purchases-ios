@@ -16,15 +16,11 @@ import Foundation
 
 #if !os(tvOS) // For Paywalls V2
 
-/// Resolves whether a stack containing a package is visible.
+/// Resolves whether a stack containing a package is visible, so selection can tell that a card is
+/// off screen when the rule that hides it lives on a wrapper stack rather than on the card.
 ///
-/// A package card is often not the thing a rule hides. Grouping each tier's cards in a stack and
-/// showing one stack at a time with a "Selected tab" rule puts the rule on the stack, and the cards
-/// below it carry none of their own. Selection has to see that stack, or it picks a package the
-/// paywall never renders.
-///
-/// Only stacks take part. Other containers that can hide themselves, a carousel or a countdown for
-/// instance, do not contribute to a chain even where the chain reaches them.
+/// Known gap: only stacks join a chain, so a package inside a hidden carousel page, button stack or
+/// countdown stack still counts as selectable.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct AncestorVisibilityResolver {
 
@@ -32,56 +28,43 @@ struct AncestorVisibilityResolver {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
-    /// `nil` when the stack can never hide anything, so an ancestor chain only carries the stacks
-    /// that actually decide something.
+    /// `nil` unless the stack can actually hide something, so a chain skips the many stacks whose
+    /// overrides only carry styling. Checked before converting the overrides, which is the expensive
+    /// part.
     init?(
         component: PaywallComponent.StackComponent,
         uiConfigProvider: UIConfigProvider,
         discardRules: Bool
     ) {
-        let overrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
+        let decidesVisibility = component.visible != nil
+            || component.overrides?.contains { $0.properties.visible != nil } == true
 
-        guard component.visible != nil || !(overrides?.isEmpty ?? true) else {
+        guard decidesVisibility else {
             return nil
         }
 
         self.componentVisible = component.visible
         self.uiConfigProvider = uiConfigProvider
-        self.presentedOverrides = overrides
+        self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
-    /// Resolved with nothing selected, because this runs while the selection is still being worked
-    /// out. An ancestor rule keyed on the selected package therefore reads as "not matching" here,
-    /// which is the same pin the card's own resolution uses and carries the same limitation: such a
-    /// stack is treated as hidden for selection even when the rendered paywall shows it.
-    ///
-    /// Offer eligibility diverges the other way. Selection asks per candidate card, while the
-    /// renderer resolves the stack once against whichever package is selected, so a stack gated on
-    /// offer eligibility around a mix of eligible and ineligible cards is read per card here and as
-    /// one unit on screen.
-    // swiftlint:disable:next function_parameter_count
-    func visible(
-        condition: ScreenCondition,
-        isEligibleForIntroOffer: Bool,
-        isEligibleForPromoOffer: Bool,
-        customVariables: [String: CustomVariableValue],
-        windowSize: CGSize?,
-        stateValues: [String: PaywallComponent.ConditionValue],
-        stateDefaults: [String: PaywallComponent.ConditionValue]
-    ) -> Bool {
+    /// Offer eligibility is read for the candidate card, while the renderer resolves the stack once
+    /// against whichever package is selected, so a stack gated on eligibility around a mix of
+    /// eligible and ineligible cards is read per card here and as one unit on screen.
+    func visible(package: Package, in context: PackageSelectionContext) -> Bool {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: nil,
-            customVariables: customVariables,
-            stateValues: stateValues,
-            stateDefaults: stateDefaults,
-            windowSize: windowSize
+            customVariables: context.customVariables,
+            stateValues: context.stateValues,
+            stateDefaults: context.stateDefaults,
+            windowSize: context.windowSize
         )
 
         let partial = PresentedStackPartial.buildPartial(
             state: .default,
-            condition: condition,
-            isEligibleForIntroOffer: isEligibleForIntroOffer,
-            isEligibleForPromoOffer: isEligibleForPromoOffer,
+            condition: context.condition,
+            isEligibleForIntroOffer: context.isEligibleForIntroOffer(package),
+            isEligibleForPromoOffer: context.isEligibleForPromoOffer(package),
             conditionContext: conditionContext,
             with: self.presentedOverrides
         )

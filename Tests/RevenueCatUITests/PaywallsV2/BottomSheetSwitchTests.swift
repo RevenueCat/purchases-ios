@@ -154,8 +154,7 @@ private extension BottomSheetSwitchTests {
             localizationProvider: localization,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         let sheet = PaywallComponent.ButtonComponent.Sheet(

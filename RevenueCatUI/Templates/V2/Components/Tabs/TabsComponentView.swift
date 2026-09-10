@@ -369,13 +369,13 @@ struct LoadedTabsComponentView: View {
             .onChangeOf(self.isPaywallLoading) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
-            // A window resize (rotation, Split View, Stage Manager) can hide the
-            // selected package via a window size condition.
             // A tab's own packages can be gated on state the tabs component itself publishes, and
             // the environment carries the new snapshot only after the switch has been applied.
             .onChangeOf(self.paywallStateValues) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }
+            // A window resize (rotation, Split View, Stage Manager) can hide the selected package
+            // via a window size condition.
             .onChangeOf(self.paywallWindowSize) { _ in
                 self.reconcileSelection(tierPackageContext, tabViewModel: activeTabViewModel)
             }

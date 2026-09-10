@@ -34,6 +34,19 @@ struct ViewModelFactory {
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false
 
+    /// The stacks enclosing whatever is being walked right now, outermost first. A struct copy per
+    /// recursion level means a container that forgets to descend through `appending` keeps the
+    /// chain it was given rather than silently starting a new one.
+    private var ancestorResolvers: [AncestorVisibilityResolver] = []
+
+    private func appending(_ resolver: AncestorVisibilityResolver?) -> ViewModelFactory {
+        guard let resolver else { return self }
+
+        var copy = self
+        copy.ancestorResolvers = self.ancestorResolvers + [resolver]
+        return copy
+    }
+
     mutating func toRootViewModel(
         componentsConfig: PaywallComponentsData.PaywallComponentsConfig,
         offering: Offering,
@@ -61,8 +74,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: []
+                colorScheme: colorScheme
             )
 
             return HeaderComponentViewModel(
@@ -79,8 +91,7 @@ struct ViewModelFactory {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: colorScheme,
-            ancestorResolvers: []
+            colorScheme: colorScheme
         )
 
         let stickyFooterViewModel = try componentsConfig.stickyFooter.flatMap {
@@ -91,8 +102,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: []
+                colorScheme: colorScheme
             )
 
             return StickyFooterComponentViewModel(
@@ -118,8 +128,7 @@ struct ViewModelFactory {
         offering: Offering,
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
-        colorScheme: ColorScheme,
-        ancestorResolvers: [AncestorVisibilityResolver]
+        colorScheme: ColorScheme
     ) throws -> PaywallComponentViewModel {
         switch component {
         case .text(let component):
@@ -158,8 +167,7 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: ancestorResolvers
+                    colorScheme: colorScheme
                 )
             )
         case .button(let component):
@@ -170,8 +178,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             var sheetStackViewModel: StackComponentViewModel?
@@ -184,8 +191,7 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: ancestorResolvers
+                    colorScheme: colorScheme
                 )
             }
 
@@ -214,7 +220,7 @@ struct ViewModelFactory {
                             discardRules: discardRules
                         ),
                         promotionalOfferProductCode: component.applePromoOfferProductCode,
-                        ancestorResolvers: ancestorResolvers
+                        ancestorResolvers: self.ancestorResolvers
                     )
                 )
             }
@@ -230,8 +236,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             let hasPurchaseButton = packagePurchaseButtonCollector.hasPurchaseButton
@@ -257,8 +262,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             return .purchaseButton(
@@ -277,8 +281,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             return .stickyFooter(
@@ -334,8 +337,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             // Fixme: use a an actual stack component returned by the backend
@@ -382,30 +384,28 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
-            // The tabs component's own visibility gates every package inside every tab, and it is
-            // carried by the synthetic stack built above.
-            let tabContentAncestorResolvers = AncestorVisibilityResolver(
+            // The tabs component's own visibility gates every package inside every tab, and the
+            // synthetic stack built above is what carries it.
+            let tabContentFactory = self.appending(AncestorVisibilityResolver(
                 component: tabsStackComponent,
                 uiConfigProvider: uiConfigProvider,
                 discardRules: self.discardRules
-            ).map { ancestorResolvers + [$0] } ?? ancestorResolvers
+            ))
 
             let tabViewModels: [TabViewModel] = try component.tabs.map { tab in
                 let tabPackageValidator = PackageValidator()
 
-                let stackViewModel = try toStackViewModel(
+                let stackViewModel = try tabContentFactory.toStackViewModel(
                     component: tab.stack,
                     packageValidator: tabPackageValidator,
                     purchaseButtonCollector: purchaseButtonCollector,
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: tabContentAncestorResolvers
+                    colorScheme: colorScheme
                 )
 
                 // Merging into entire paywall package validator
@@ -445,8 +445,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             return .tabControlButton(
@@ -473,8 +472,7 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: ancestorResolvers
+                    colorScheme: colorScheme
                 )
             }
 
@@ -504,8 +502,7 @@ struct ViewModelFactory {
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
                 offering: offering,
-                colorScheme: colorScheme,
-                ancestorResolvers: ancestorResolvers
+                colorScheme: colorScheme
             )
 
             let endStackViewModel = try component.endStack.map { endStack in
@@ -516,8 +513,7 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: ancestorResolvers
+                    colorScheme: colorScheme
                 )
             }
 
@@ -529,8 +525,7 @@ struct ViewModelFactory {
                     localizationProvider: localizationProvider,
                     uiConfigProvider: uiConfigProvider,
                     offering: offering,
-                    colorScheme: colorScheme,
-                    ancestorResolvers: ancestorResolvers
+                    colorScheme: colorScheme
                 )
             }
 
@@ -565,16 +560,15 @@ struct ViewModelFactory {
         localizationProvider: LocalizationProvider,
         uiConfigProvider: UIConfigProvider,
         offering: Offering,
-        colorScheme: ColorScheme,
-        ancestorResolvers: [AncestorVisibilityResolver]
+        colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        // A stack that can hide joins the chain for everything below it. One that cannot is left
-        // out, so the chain only holds stacks that actually decide something.
-        let childAncestorResolvers = AncestorVisibilityResolver(
+        // A stack that can hide joins the chain for everything below it. Badges keep the parent
+        // chain, matching where they render.
+        let childFactory = self.appending(AncestorVisibilityResolver(
             component: component,
             uiConfigProvider: uiConfigProvider,
             discardRules: self.discardRules
-        ).map { ancestorResolvers + [$0] } ?? ancestorResolvers
+        ))
 
         let viewModels = try component.components.filter {
             // fallback_header is injected by the dashboard for old SDK compatibility.
@@ -582,15 +576,14 @@ struct ViewModelFactory {
             if case .fallbackHeader = $0 { return false }
             return true
         }.map { component in
-            try self.toViewModel(
+            try childFactory.toViewModel(
                 component: component,
                 packageValidator: packageValidator,
                 purchaseButtonCollector: purchaseButtonCollector,
                 offering: offering,
                 localizationProvider: localizationProvider,
                 uiConfigProvider: uiConfigProvider,
-                colorScheme: colorScheme,
-                ancestorResolvers: childAncestorResolvers
+                colorScheme: colorScheme
             )
         }
 
@@ -611,8 +604,7 @@ struct ViewModelFactory {
                         offering: offering,
                         localizationProvider: localizationProvider,
                         uiConfigProvider: uiConfigProvider,
-                        colorScheme: colorScheme,
-                        ancestorResolvers: ancestorResolvers
+                        colorScheme: colorScheme
                     )
                 }
             ))

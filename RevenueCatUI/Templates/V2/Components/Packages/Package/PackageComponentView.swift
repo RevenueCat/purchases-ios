@@ -342,8 +342,7 @@ fileprivate extension PackageComponentViewModel {
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering,
-            colorScheme: colorScheme,
-            ancestorResolvers: []
+            colorScheme: colorScheme
         )
 
         self.init(

@@ -362,8 +362,7 @@ fileprivate extension PurchaseButtonComponentViewModel {
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
             offering: offering,
-            colorScheme: colorScheme,
-            ancestorResolvers: []
+            colorScheme: colorScheme
         )
 
         try self.init(

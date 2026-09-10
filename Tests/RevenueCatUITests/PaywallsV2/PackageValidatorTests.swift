@@ -457,8 +457,7 @@ final class PackageValidatorTests: TestCase {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         XCTAssertEqual(
@@ -505,8 +504,7 @@ final class PackageValidatorTests: TestCase {
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         _ = try factory.toViewModel(
@@ -522,8 +520,7 @@ final class PackageValidatorTests: TestCase {
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         XCTAssertEqual(
@@ -570,8 +567,7 @@ final class PackageValidatorTests: TestCase {
                 localizedStrings: ["package_label": .string("Package")]
             ),
             uiConfigProvider: UIConfigProvider(uiConfig: PreviewUIConfig.make()),
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         XCTAssertEqual(

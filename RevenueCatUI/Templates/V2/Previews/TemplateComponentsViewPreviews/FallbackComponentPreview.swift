@@ -124,8 +124,7 @@ struct FallbackComponentPreview_Previews: PreviewProvider {
             offering: offering,
             localizationProvider: localizationProvider,
             uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
-            colorScheme: colorScheme,
-            ancestorResolvers: []
+            colorScheme: colorScheme
         )
     }
 

@@ -309,8 +309,7 @@ private extension PackageComponentViewTests {
             localizationProvider: localizationProvider,
             uiConfigProvider: uiConfigProvider,
             offering: offering,
-            colorScheme: .light,
-            ancestorResolvers: []
+            colorScheme: .light
         )
 
         return PackageComponentViewModel(

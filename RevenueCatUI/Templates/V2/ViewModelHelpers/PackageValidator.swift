@@ -83,21 +83,7 @@ class PackageValidator {
         let promotionalOfferProductCode: String?
 
         /// Outermost first. A package is on screen only if every stack containing it is too.
-        let ancestorResolvers: [AncestorVisibilityResolver]
-
-        init(
-            package: Package,
-            isSelectedByDefault: Bool,
-            visibilityResolver: PackageVisibilityResolver,
-            promotionalOfferProductCode: String?,
-            ancestorResolvers: [AncestorVisibilityResolver] = []
-        ) {
-            self.package = package
-            self.isSelectedByDefault = isSelectedByDefault
-            self.visibilityResolver = visibilityResolver
-            self.promotionalOfferProductCode = promotionalOfferProductCode
-            self.ancestorResolvers = ancestorResolvers
-        }
+        var ancestorResolvers: [AncestorVisibilityResolver] = []
 
     }
 
@@ -141,22 +127,9 @@ class PackageValidator {
     }
 
     private func isVisible(_ info: PackageInfo, in context: PackageSelectionContext) -> Bool {
-        // A card is only on screen if every stack around it is too. The rule that hides a package is
-        // often authored on a wrapper stack rather than on the card, so reading the card alone would
-        // count a package the paywall never renders.
-        let ancestorsVisible = info.ancestorResolvers.allSatisfy { resolver in
-            resolver.visible(
-                condition: context.condition,
-                isEligibleForIntroOffer: context.isEligibleForIntroOffer(info.package),
-                isEligibleForPromoOffer: context.isEligibleForPromoOffer(info.package),
-                customVariables: context.customVariables,
-                windowSize: context.windowSize,
-                stateValues: context.stateValues,
-                stateDefaults: context.stateDefaults
-            )
-        }
-
-        guard ancestorsVisible else {
+        // The rule that hides a package is usually authored on a wrapper stack, not on the card, so
+        // reading the card alone would count a package the paywall never renders.
+        guard info.ancestorResolvers.allSatisfy({ $0.visible(package: info.package, in: context) }) else {
             return false
         }
 
