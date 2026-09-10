@@ -113,6 +113,8 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
             if result === PaywallPresentationResult.purchased {
                 self.fetchCustomerInfoAfterPurchase()
+            } else if result === PaywallPresentationResult.navigatedBack {
+                self.complete(outcome: .backedOut)
             } else {
                 self.complete(outcome: .dismissed)
             }
