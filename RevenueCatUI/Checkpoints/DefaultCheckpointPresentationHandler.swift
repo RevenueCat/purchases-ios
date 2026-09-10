@@ -22,7 +22,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
     private let executor: CheckpointExecutor
     private let fetchCustomerInfo: () async throws -> CustomerInfo
-    var paywallPresenter: CheckpointPaywallPresenter?
+    var paywallPresenter: PaywallPresenter?
 
     init(
         executor: CheckpointExecutor,
@@ -35,22 +35,27 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
     func present(
         _ presentation: CheckpointPresentation,
         session: CheckpointPresentationCoordinator.Session,
-        paywallPresenter: CheckpointPaywallPresenter?
-    ) async throws -> CheckpointPaywallOutcome {
+        paywallPresenter: PaywallPresenter?,
+        paywallPresentationParams: PaywallPresentationParams?
+    ) async throws -> PaywallOutcome {
         switch presentation {
         case .workflow:
             session.setCancellationHandler { [weak self] in
                 self?.executor.cancel()
             }
-            return try await self.executor.execute(presentation)
-        case let .offering(offering, _):
-            if let presenter = paywallPresenter {
+            return try await self.executor.execute(presentation).outcome
+        case .offering:
+            if let presenter = paywallPresenter,
+               let paywallPresentationParams {
                 return try await OfferingPresentation(
                     session: session,
                     fetchCustomerInfo: self.fetchCustomerInfo
-                ).present(offering: offering, presenter: presenter)
+                ).present(
+                    params: paywallPresentationParams,
+                    presenter: presenter
+                )
             } else {
-                return try await self.executor.execute(presentation)
+                return try await self.executor.execute(presentation).outcome
             }
         }
     }
@@ -61,7 +66,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
         private let session: CheckpointPresentationCoordinator.Session
         private let fetchCustomerInfo: () async throws -> CustomerInfo
-        private var pendingContinuation: CheckedContinuation<CheckpointPaywallOutcome, Error>?
+        private var pendingContinuation: CheckedContinuation<PaywallOutcome, Error>?
         private var hasReportedCompletion = false
         private var fetchTask: Task<Void, Never>?
 
@@ -74,9 +79,9 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         }
 
         func present(
-            offering: Offering,
-            presenter: CheckpointPaywallPresenter
-        ) async throws -> CheckpointPaywallOutcome {
+            params: PaywallPresentationParams,
+            presenter: PaywallPresenter
+        ) async throws -> PaywallOutcome {
             self.session.setCancellationHandler { [weak self] in
                 self?.fail(error: CancellationError(), force: true)
             }
@@ -88,14 +93,10 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                     }
 
                     self.pendingContinuation = continuation
-                    do {
-                        try presenter.present(
-                            offering: offering,
-                            completion: Completion(presentation: self)
-                        )
-                    } catch {
-                        self.fail(error: error)
-                    }
+                    presenter.present(
+                        params: params,
+                        completion: Completion(presentation: self)
+                    )
                 }
             } onCancel: {
                 Task { @MainActor [weak self] in
@@ -104,24 +105,32 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             }
         }
 
-        private func finished() {
+        private func completed(_ result: PaywallPresentationResult) {
             guard self.session.isActive,
                   !self.hasReportedCompletion,
                   self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
 
+            if result === PaywallPresentationResult.purchased {
+                self.fetchCustomerInfoAfterPurchase()
+            } else {
+                self.complete(outcome: .dismissed)
+            }
+        }
+
+        private func fetchCustomerInfoAfterPurchase() {
             self.fetchTask = Task { @MainActor [weak self] in
                 guard let self else { return }
                 do {
                     let customerInfo = try await self.fetchCustomerInfo()
-                    self.complete(outcome: .Finished(customerInfo: customerInfo))
+                    self.complete(outcome: .purchased(transaction: nil, customerInfo: customerInfo))
                 } catch {
-                    self.complete(outcome: .Error(error: error as NSError))
+                    self.complete(outcome: .error(error as NSError))
                 }
             }
         }
 
-        private func complete(outcome: CheckpointPaywallOutcome) {
+        private func complete(outcome: PaywallOutcome) {
             guard self.session.isActive,
                   let continuation = self.takeContinuation() else { return }
             self.fetchTask = nil
@@ -139,12 +148,12 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             continuation.resume(throwing: error)
         }
 
-        private func takeContinuation() -> CheckedContinuation<CheckpointPaywallOutcome, Error>? {
+        private func takeContinuation() -> CheckedContinuation<PaywallOutcome, Error>? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
         }
 
-        private final class Completion: CheckpointPaywallCompletion {
+        private final class Completion: PaywallPresentationCompletion {
 
             private weak var presentation: OfferingPresentation?
 
@@ -152,20 +161,8 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                 self.presentation = presentation
             }
 
-            func finished() {
-                self.presentation?.finished()
-            }
-
-            func failed() {
-                self.presentation?.fail(
-                    error: NSError(
-                        domain: ErrorCode.errorDomain,
-                        code: ErrorCode.unknownError.rawValue,
-                        userInfo: [
-                            NSLocalizedDescriptionKey: "The checkpoint paywall presenter reported a failure."
-                        ]
-                    )
-                )
+            func completed(_ result: PaywallPresentationResult) {
+                self.presentation?.completed(result)
             }
         }
     }
