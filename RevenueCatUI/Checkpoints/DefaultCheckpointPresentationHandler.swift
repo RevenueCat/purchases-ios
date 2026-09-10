@@ -95,7 +95,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                     self.pendingContinuation = continuation
                     presenter.present(
                         params: params,
-                        completion: Completion(presentation: self)
+                        completion: OfferingPresentationCompletion(presentation: self)
                     )
                 }
             } onCancel: {
@@ -105,7 +105,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             }
         }
 
-        private func completed(_ result: PaywallPresentationResult) {
+        fileprivate func completed(_ result: PaywallPresentationResult) {
             guard self.session.isActive,
                   !self.hasReportedCompletion,
                   self.pendingContinuation != nil else { return }
@@ -153,18 +153,20 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             return self.pendingContinuation
         }
 
-        private final class Completion: PaywallPresentationCompletion {
+    }
 
-            private weak var presentation: OfferingPresentation?
+    private final class OfferingPresentationCompletion: PaywallPresentationCompletion {
 
-            init(presentation: OfferingPresentation) {
-                self.presentation = presentation
-            }
+        private weak var presentation: OfferingPresentation?
 
-            func completed(_ result: PaywallPresentationResult) {
-                self.presentation?.completed(result)
-            }
+        init(presentation: OfferingPresentation) {
+            self.presentation = presentation
         }
+
+        func completed(_ result: PaywallPresentationResult) {
+            self.presentation?.completed(result)
+        }
+
     }
 
 }

@@ -49,6 +49,12 @@ public final class PaywallPresentationParams {
     /// The offering for which to present the paywall.
     public let offering: Offering
 
+    /// Creates presentation context for an offering selected by a checkpoint.
+    ///
+    /// - Parameters:
+    ///   - checkpointIdentifier: The identifier of the checkpoint that selected the offering.
+    ///   - customVariables: The custom variables supplied to the checkpoint.
+    ///   - offering: The offering for which to present the paywall.
     public init(
         checkpointIdentifier: String,
         customVariables: [String: CustomVariableValue] = [:],
