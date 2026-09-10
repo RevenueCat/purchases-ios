@@ -117,7 +117,7 @@ extension PostExternalPurchaseTokenOperation.PostData: Encodable {
 
         case appUserID = "app_user_id"
         case purchaseType = "purchase_type"
-        case tokenID = "rc_public_id"
+        case tokenID = "id"
         case token
 
     }

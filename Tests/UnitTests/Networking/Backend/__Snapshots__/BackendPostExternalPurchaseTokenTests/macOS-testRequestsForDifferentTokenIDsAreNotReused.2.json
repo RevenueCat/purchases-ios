@@ -24,8 +24,8 @@
   "request" : {
     "body" : {
       "app_user_id" : "user",
+      "id" : "epta51d06bc57f344ffb386dff7e2353bea",
       "purchase_type" : "LINK_OUT",
-      "rc_public_id" : "epta51d06bc57f344ffb386dff7e2353bea",
       "token" : "storekit-token"
     },
     "method" : "POST",
