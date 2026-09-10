@@ -34,9 +34,7 @@ struct ViewModelFactory {
     /// Set when any component in the paywall contains unsupported conditions.
     private(set) var discardRules: Bool = false
 
-    /// The stacks enclosing whatever is being walked right now, outermost first. A struct copy per
-    /// recursion level means a container that forgets to descend through `appending` keeps the
-    /// chain it was given rather than silently starting a new one.
+    /// The stacks enclosing whatever is being walked right now, outermost first.
     private var ancestorResolvers: [AncestorVisibilityResolver] = []
 
     private func appending(_ resolver: AncestorVisibilityResolver?) -> ViewModelFactory {
@@ -387,8 +385,7 @@ struct ViewModelFactory {
                 colorScheme: colorScheme
             )
 
-            // The tabs component's own visibility gates every package inside every tab, and the
-            // synthetic stack built above is what carries it.
+            // The tabs component's own visibility gates the packages in every tab.
             let tabContentFactory = self.appending(AncestorVisibilityResolver(
                 component: tabsStackComponent,
                 uiConfigProvider: uiConfigProvider,
@@ -562,8 +559,7 @@ struct ViewModelFactory {
         offering: Offering,
         colorScheme: ColorScheme
     ) throws -> StackComponentViewModel {
-        // A stack that can hide joins the chain for everything below it. Badges keep the parent
-        // chain, matching where they render.
+        // Badges keep the parent chain, matching where they render.
         let childFactory = self.appending(AncestorVisibilityResolver(
             component: component,
             uiConfigProvider: uiConfigProvider,

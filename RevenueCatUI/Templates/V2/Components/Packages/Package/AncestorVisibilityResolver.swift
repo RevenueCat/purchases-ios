@@ -16,11 +16,8 @@ import Foundation
 
 #if !os(tvOS) // For Paywalls V2
 
-/// Resolves whether a stack containing a package is visible, so selection can tell that a card is
-/// off screen when the rule that hides it lives on a wrapper stack rather than on the card.
-///
-/// Known gap: only stacks join a chain, so a package inside a hidden carousel page, button stack or
-/// countdown stack still counts as selectable.
+/// Whether a stack containing a package is visible, so selection can tell a card is off screen when
+/// the rule hiding it is on a wrapper stack. Only stacks count: a hidden carousel page does not.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct AncestorVisibilityResolver {
 
@@ -28,9 +25,8 @@ struct AncestorVisibilityResolver {
     private let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
-    /// `nil` unless the stack can actually hide something, so a chain skips the many stacks whose
-    /// overrides only carry styling. Checked before converting the overrides, which is the expensive
-    /// part.
+    /// `nil` unless the stack can actually hide something, so a chain skips stacks whose overrides
+    /// only carry styling. Checked before converting the overrides, which is the expensive part.
     init?(
         component: PaywallComponent.StackComponent,
         uiConfigProvider: UIConfigProvider,
@@ -48,9 +44,8 @@ struct AncestorVisibilityResolver {
         self.presentedOverrides = component.overrides?.toPresentedOverrides(discardRules: discardRules)
     }
 
-    /// Offer eligibility is read for the candidate card, while the renderer resolves the stack once
-    /// against whichever package is selected, so a stack gated on eligibility around a mix of
-    /// eligible and ineligible cards is read per card here and as one unit on screen.
+    /// Eligibility is read per candidate card here, but once per stack on screen, so the two can
+    /// disagree for a stack gated on eligibility.
     func visible(package: Package, in context: PackageSelectionContext) -> Bool {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: nil,
