@@ -15,22 +15,41 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// Reports the terminal outcome of an app-owned paywall presentation.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public typealias PaywallPresentationCompletion = @MainActor (PaywallPresentationResult) -> Void
+
 /// Presents a paywall for an offering selected by a checkpoint using app-owned UI.
+///
+/// Set an instance on ``Purchases/checkpointPaywallPresenter`` to use it for all checkpoint-selected offerings.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public protocol PaywallPresenter: AnyObject {
 
-    /// Presents a checkpoint-selected paywall and reports one terminal result through `completion`.
+    /// Presents a checkpoint-selected offering and reports one terminal result through `completion`.
     ///
     /// The checkpoint remains pending until `completion` is called. Only the first reported result is used;
     /// later calls are ignored.
     func present(
         params: PaywallPresentationParams,
-        completion: PaywallPresentationCompletion
+        completion: @escaping PaywallPresentationCompletion
     )
 
 }
+
+/// Presents a checkpoint-selected offering using app-owned UI.
+///
+/// The checkpoint remains pending until the completion closure is called. Only the first reported result is used;
+/// later calls are ignored. Pass this closure to ``Purchases/checkpoint(_:customVariables:paywallPresenter:_:)``
+/// to override the global presenter for one checkpoint call.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public typealias PaywallPresentationHandler = @MainActor (
+    PaywallPresentationParams,
+    @escaping PaywallPresentationCompletion
+) -> Void
 
 /// Context for an app-owned checkpoint paywall presentation.
 ///
@@ -64,17 +83,6 @@ public final class PaywallPresentationParams {
         self.customVariables = customVariables
         self.offering = offering
     }
-
-}
-
-/// Receives the terminal outcome of an app-owned checkpoint paywall presentation.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-@MainActor
-public protocol PaywallPresentationCompletion: AnyObject {
-
-    /// Reports the terminal result of the presentation.
-    func completed(_ result: PaywallPresentationResult)
 
 }
 

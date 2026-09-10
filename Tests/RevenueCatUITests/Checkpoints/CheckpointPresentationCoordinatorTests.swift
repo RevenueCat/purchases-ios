@@ -116,7 +116,7 @@ private final class MockCheckpointPresentationHandler: CheckpointPresentationHan
     func present(
         _: CheckpointPresentation,
         session _: CheckpointPresentationCoordinator.Session,
-        paywallPresenter _: PaywallPresenter?,
+        paywallPresentationHandler _: PaywallPresentationHandler?,
         paywallPresentationParams _: PaywallPresentationParams?
     ) async throws -> PaywallOutcome {
         return .dismissed

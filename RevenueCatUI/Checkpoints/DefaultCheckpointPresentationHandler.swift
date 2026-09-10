@@ -35,7 +35,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
     func present(
         _ presentation: CheckpointPresentation,
         session: CheckpointPresentationCoordinator.Session,
-        paywallPresenter: PaywallPresenter?,
+        paywallPresentationHandler: PaywallPresentationHandler?,
         paywallPresentationParams: PaywallPresentationParams?
     ) async throws -> PaywallOutcome {
         switch presentation {
@@ -45,14 +45,14 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             }
             return try await self.executor.execute(presentation).outcome
         case .offering:
-            if let presenter = paywallPresenter,
+            if let presentationHandler = paywallPresentationHandler,
                let paywallPresentationParams {
                 return try await OfferingPresentation(
                     session: session,
                     fetchCustomerInfo: self.fetchCustomerInfo
                 ).present(
                     params: paywallPresentationParams,
-                    presenter: presenter
+                    presentationHandler: presentationHandler
                 )
             } else {
                 return try await self.executor.execute(presentation).outcome
@@ -80,7 +80,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
         func present(
             params: PaywallPresentationParams,
-            presenter: PaywallPresenter
+            presentationHandler: PaywallPresentationHandler
         ) async throws -> PaywallOutcome {
             self.session.setCancellationHandler { [weak self] in
                 self?.fail(error: CancellationError(), force: true)
@@ -93,10 +93,9 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                     }
 
                     self.pendingContinuation = continuation
-                    presenter.present(
-                        params: params,
-                        completion: OfferingPresentationCompletion(presentation: self)
-                    )
+                    presentationHandler(params) { [weak self] result in
+                        self?.completed(result)
+                    }
                 }
             } onCancel: {
                 Task { @MainActor [weak self] in
@@ -153,20 +152,6 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         private func takeContinuation() -> CheckedContinuation<PaywallOutcome, Error>? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
-        }
-
-    }
-
-    private final class OfferingPresentationCompletion: PaywallPresentationCompletion {
-
-        private weak var presentation: OfferingPresentation?
-
-        init(presentation: OfferingPresentation) {
-            self.presentation = presentation
-        }
-
-        func completed(_ result: PaywallPresentationResult) {
-            self.presentation?.completed(result)
         }
 
     }
