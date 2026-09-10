@@ -40,7 +40,8 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
-        promoOfferCache: PaywallPromoOfferCache? = nil
+        promoOfferCache: PaywallPromoOfferCache? = nil,
+        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
     ) {
         self.content = content
         self.mode = mode
@@ -49,6 +50,9 @@ struct PaywallViewConfiguration {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
+        #if !os(tvOS)
+        self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+        #endif
 
         PurchasesUIService.activateIfNeeded()
     }
