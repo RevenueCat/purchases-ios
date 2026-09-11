@@ -19,13 +19,6 @@ import Foundation
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
-    /// Internal result used by checkpoint gate APIs to distinguish a completed presentation from
-    /// a user backing out of its initial workflow step.
-    struct CheckpointExecution {
-        let result: CheckpointResult
-        let didBackOut: Bool
-    }
-
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
@@ -68,41 +61,34 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
-        return try await self.executeCheckpoint(identifier: identifier, params: params).result
+        return try await self.executeCheckpoint(identifier: identifier, params: params).value
     }
 
     @MainActor
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
-    ) async throws -> CheckpointExecution {
+    ) async throws -> CheckpointExecution<CheckpointResult> {
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
-            return .init(result: result, didBackOut: false)
+            return .completed(CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier))
         }
 
-        let result: CheckpointResult
-        let didBackOut: Bool
         switch try await self.resolveCheckpoint(identifier, params) {
         case let .matchedWorkflow(workflow):
             let presentation = CheckpointPresentation(
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            let execution = try await self.executor.execute(presentation)
-            result = CheckpointResult.PaywallPresented(paywallOutcome: execution.outcome)
-            didBackOut = execution.didBackOut
+            return try await self.executor.execute(presentation).map {
+                CheckpointResult.PaywallPresented(paywallOutcome: $0)
+            }
         case let .matchedOffering(offering):
             // Data-only, so this never claims the presentation slot the executor owns.
-            result = CheckpointResult.ReceivedOffering(offering: offering)
-            didBackOut = false
+            return .completed(CheckpointResult.ReceivedOffering(offering: offering))
         case let .noAction(reason):
-            result = CheckpointResult.NoAction(reason: reason.noActionReason)
-            didBackOut = false
+            return .completed(CheckpointResult.NoAction(reason: reason.noActionReason))
         }
-
-        return .init(result: result, didBackOut: didBackOut)
     }
 
 }

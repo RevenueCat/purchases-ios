@@ -130,7 +130,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
 
         try presenter.present(presentation: Self.presentation(), delegate: delegate)
-        presenter.presentationDidDismiss(didBackOut: true)
+        presenter.presentationDidDismiss(reason: .navigatedBack)
 
         XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
         XCTAssertTrue(delegate.didBackOut)
@@ -143,8 +143,8 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let error = NSError(domain: "test", code: 1)
 
         try presenter.present(presentation: Self.presentation(), delegate: delegate)
-        presenter.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
-        presenter.presentationDidDismiss(didBackOut: true)
+        presenter.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+        presenter.presentationDidDismiss(reason: .navigatedBack)
 
         guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Error else {
             return XCTFail("Expected an error outcome")
@@ -495,12 +495,20 @@ private final class DismissRecordingPaywallController: PaywallViewController {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresenterDelegate: CheckpointPresentationDelegate {
 
-    private(set) var outcome: CheckpointPaywallOutcome?
+    private(set) var execution: CheckpointExecution<CheckpointPaywallOutcome>?
+    var outcome: CheckpointPaywallOutcome? { self.execution?.value }
+    var didBackOut: Bool {
+        guard let execution else { return false }
+        if case .backedOut = execution {
+            return true
+        }
+        return false
+    }
     private(set) var finishCount = 0
 
-    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome) {
+    func checkpointPresentationFinished(_ execution: CheckpointExecution<CheckpointPaywallOutcome>) {
         self.finishCount += 1
-        self.outcome = outcome
+        self.execution = execution
     }
 
 }
