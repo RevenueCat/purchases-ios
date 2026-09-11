@@ -65,8 +65,10 @@ final class MockCustomerCenterPurchases: @unchecked Sendable, CustomerCenterPurc
     }
 
     var customerInfoFetchPolicy: CacheFetchPolicy?
+    var customerInfoFetchCount = 0
     func customerInfo(fetchPolicy: CacheFetchPolicy) async throws -> RevenueCat.CustomerInfo {
         customerInfoFetchPolicy = fetchPolicy
+        customerInfoFetchCount += 1
 
         if let customerInfoError {
             throw customerInfoError
