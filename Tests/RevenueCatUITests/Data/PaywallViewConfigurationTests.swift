@@ -19,6 +19,20 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
+    func testWorkflowPresentationErrorHandlerIsRetained() {
+        let expectedError = NSError(domain: "test", code: 1)
+        var receivedError: NSError?
+        let configuration = PaywallViewConfiguration(
+            content: .defaultOffering,
+            purchaseHandler: .default(),
+            workflowPresentationErrorHandler: { receivedError = $0 }
+        )
+
+        configuration.workflowPresentationErrorHandler?(expectedError)
+
+        expect(receivedError) === expectedError
+    }
+
     func testCachedInitialOfferingReturnsNilForWorkflowContentWhenRemoteConfigEnabledWithoutCachedWorkflow() {
         let cachedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
@@ -382,6 +396,74 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            return try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialStepID: "missing_step"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialStepNotFound(stepID, workflowID) {
+            expect(stepID) == "missing_step"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepHasNoScreenIdentifier() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: nil
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialStepMissingScreenIdentifier(stepID, workflowID) {
+            expect(stepID) == "step_1"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: "missing_screen"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialScreenNotFound(screenID, workflowID) {
+            expect(screenID) == "missing_screen"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
     func testResolvePaywallViewDataThrowsOnCancellation() async throws {
         let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
@@ -508,10 +590,10 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsWithScreenOfferingIdWhenScreenOfferingMissing() async throws {
-        // The workflow screen resolves to "offering_b", but the offerings snapshot only contains the
-        // trigger offering "offering_a". The error must report the screen's offering id that was
-        // actually missing, not the trigger offering used to look up the workflow.
+    func testResolvePaywallViewDataReturnsContentOnlyOfferingWhenInitialScreenOfferingMissing() async throws {
+        // The workflow's initial screen resolves to "offering_b", but the offerings snapshot only contains
+        // the trigger offering "offering_a". It must still produce a content-only offering, allowing the
+        // workflow view to surface the configuration error for the reached step.
         let initialOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -523,15 +605,16 @@ final class PaywallViewConfigurationTests: TestCase {
             try Self.createWorkflowDataResult(offeringIdentifier: "offering_b")
         }
 
-        do {
-            _ = try await handler.resolvePaywallViewData(
-                for: .offering(initialOffering),
-                remoteConfigEnabled: true
-            )
-            XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.offeringNotFound(identifier) {
-            expect(identifier) == "offering_b"
-        }
+        let result = try await handler.resolvePaywallViewData(
+            for: .offering(initialOffering),
+            remoteConfigEnabled: true
+        )
+
+        expect(result.offering.identifier) == ""
+        expect(result.offering.availablePackages).to(beEmpty())
+        let context = try XCTUnwrap(result.workflowContext)
+        let initialStep = try XCTUnwrap(context.workflow.steps[context.workflow.initialStepId])
+        expect(context.workflow.offeringIdentifier(for: initialStep)) == "offering_b"
     }
 
     func testResolvePaywallViewDataRendersLegacyWhenOfferingHasLegacyPaywall() async throws {
@@ -699,25 +782,37 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
-    static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
+    static func createWorkflowDataResult(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1",
+        initialScreenID: String? = "screen_1"
+    ) throws -> WorkflowDataResult {
         return .init(
-            workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
+            workflow: try self.createWorkflow(
+                offeringIdentifier: offeringIdentifier,
+                initialStepID: initialStepID,
+                initialScreenID: initialScreenID
+            ),
             uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
         )
     }
 
-    static func createWorkflow(offeringIdentifier: String) throws -> PublishedWorkflow {
+    static func createWorkflow(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1",
+        initialScreenID: String? = "screen_1"
+    ) throws -> PublishedWorkflow {
+        let screenIdentifier = initialScreenID.map { ",\n              \"screen_id\": \"\($0)\"" } ?? ""
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test",
-          "initial_step_id": "step_1",
+          "initial_step_id": "\(initialStepID)",
           "steps": {
             "step_1": {
               "id": "step_1",
-              "type": "screen",
-              "screen_id": "screen_1"
+              "type": "screen"\(screenIdentifier)
             }
           },
           "screens": {

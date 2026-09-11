@@ -173,6 +173,26 @@ final class WorkflowStepEventCoordinatorTests: TestCase {
         expect(self.recorded).to(haveCount(1))
     }
 
+    func testLateFailureTracksCurrentStepAndAbandonmentOnlyOnceWhenDismissed() throws {
+        let workflow = try Self.makeWorkflow()
+        let coordinator = self.makeCoordinator(workflow: workflow)
+        let step = try XCTUnwrap(workflow.steps["step_1"])
+
+        coordinator.trackInitialStep(step, hasRenderedPage: true)
+        // A reached destination failed to render: mirror WorkflowPaywallView tracking the current step
+        // before it switches to the configuration-error UI.
+        coordinator.trackTerminalCompletion(currentStep: step, hasRenderedPage: true)
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+        // The error dialog then dismisses the view. Its onDisappear hook must not duplicate either event.
+        coordinator.trackTerminalCompletion(currentStep: step, hasRenderedPage: true)
+        coordinator.trackAbandonment(currentStep: step, hasRenderedPage: true, hasCompletedInSession: false)
+
+        expect(self.recorded).to(haveCount(3))
+        expect(Self.kind(self.recorded[0])) == "started"
+        expect(Self.kind(self.recorded[1])) == "completed"
+        expect(Self.kind(self.recorded[2])) == "close"
+    }
+
     // MARK: - Abandonment (workflow_close)
 
     func testAbandonmentEmitsCloseForCurrentStepWhenNotPurchased() throws {

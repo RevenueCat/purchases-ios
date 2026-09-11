@@ -19,8 +19,6 @@ import Foundation
     public let workflow: PublishedWorkflow
     /// UI configuration used to render the workflow.
     public let uiConfig: UIConfig
-    /// The offering referenced by the workflow.
-    public let offering: Offering
     /// All offerings available while executing the workflow.
     public let offerings: Offerings
     /// The `blob_ref` of the config item the workflow came from.
@@ -29,13 +27,11 @@ import Foundation
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
-        offering: Offering,
         offerings: Offerings,
         workflowBlobRef: String? = nil
     ) {
         self.workflow = workflow
         self.uiConfig = uiConfig
-        self.offering = offering
         self.offerings = offerings
         self.workflowBlobRef = workflowBlobRef
     }

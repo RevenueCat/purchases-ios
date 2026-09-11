@@ -25,6 +25,8 @@ struct PaywallViewConfiguration {
     var purchaseHandler: PurchaseHandler
     var promoOfferCache: PaywallPromoOfferCache?
     #if !os(tvOS)
+    /// Receives a workflow configuration error so checkpoint presentation can report an error outcome.
+    var workflowPresentationErrorHandler: ((NSError) -> Void)?
     /// A pre-built workflow context to seed directly (injection/preview path), bypassing the
     /// backend fetch. When set, `PaywallView` renders the workflow paywall immediately. Set by the
     /// `PaywallView(workflowContext:)` initializer; tvOS has no workflow paywall UI.
@@ -50,6 +52,30 @@ struct PaywallViewConfiguration {
 
         PurchasesUIService.activateIfNeeded()
     }
+
+#if !os(tvOS)
+    init(
+        content: Content,
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        purchaseHandler: PurchaseHandler,
+        promoOfferCache: PaywallPromoOfferCache? = nil,
+        workflowPresentationErrorHandler: ((NSError) -> Void)?
+    ) {
+        self.init(
+            content: content,
+            mode: mode,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler,
+            promoOfferCache: promoOfferCache
+        )
+        self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+    }
+#endif
 
 }
 
