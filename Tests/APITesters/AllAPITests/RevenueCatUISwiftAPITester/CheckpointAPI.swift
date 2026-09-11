@@ -50,6 +50,42 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     let _: CheckpointNoActionReason = .invalidCheckpointIdentifier
 }
 
+@MainActor
+private func checkPaywallPresentationAPI(
+    _ purchases: Purchases
+) {
+    let globalPresenter = CheckpointAPIPaywallPresenter()
+    purchases.checkpointPaywallPresenter = globalPresenter
+    let _: PaywallPresenter? = purchases.checkpointPaywallPresenter
+
+    let presenter: PaywallPresentationHandler = { params, completion in
+        let _: String = params.checkpointIdentifier
+        let _: [String: CustomVariableValue] = params.customVariables
+        let _: Offering = params.offering
+        completion(.closed)
+    }
+
+    purchases.checkpoint("test_checkpoint", paywallPresenter: presenter)
+    purchases.checkpoint("test_checkpoint", paywallPresenter: presenter) { _ in }
+
+    let _: PaywallPresentationResult = .purchased
+    let _: PaywallPresentationResult = .closed
+    let _: PaywallPresentationResult = .navigatedBack
+    let _: PaywallPresentationResult = .continuedWithoutPurchasing
+}
+
+@MainActor
+private final class CheckpointAPIPaywallPresenter: PaywallPresenter {
+
+    func present(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion
+    ) {
+        completion(.closed)
+    }
+
+}
+
 private func checkCheckpointResultAPI(_ result: CheckpointResult) {
     let _: String = result.description
 
