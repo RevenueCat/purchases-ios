@@ -27,14 +27,17 @@ import Foundation
     let presentedOfferingContext: PresentedOfferingContext?
     /// Package context from `singleStepFallbackId`, precomputed because it is stable for a workflow.
     let workflowPackageContext: WorkflowPackageContext?
+    let workflowBlobRef: String?
 
     init(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         initialOffering: Offering,
-        presentedOfferingContext: PresentedOfferingContext?
+        presentedOfferingContext: PresentedOfferingContext?,
+        workflowBlobRef: String? = nil
     ) {
+        self.workflowBlobRef = workflowBlobRef
         self.workflow = workflow
         self.uiConfig = uiConfig
         self.allOfferings = allOfferings

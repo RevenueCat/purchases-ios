@@ -39,27 +39,6 @@ import Foundation
 
 }
 
-/// A workflow resolved from RevenueCat configuration and ready for RevenueCatUI to present.
-@_spi(Internal) public final class ResolvedCheckpointWorkflow: @unchecked Sendable {
-
-    /// The workflow to render.
-    public let workflow: PublishedWorkflow
-    /// UI configuration used to render the workflow.
-    public let uiConfig: UIConfig
-    /// The offering referenced by the workflow.
-    public let offering: Offering
-    /// All offerings available while executing the workflow.
-    public let offerings: Offerings
-
-    init(workflow: PublishedWorkflow, uiConfig: UIConfig, offering: Offering, offerings: Offerings) {
-        self.workflow = workflow
-        self.uiConfig = uiConfig
-        self.offering = offering
-        self.offerings = offerings
-    }
-
-}
-
 /// Resolves a checkpoint to the workflow that should run, or the reason no workflow should run.
 protocol CheckpointWorkflowResolver: AnyObject {
 
@@ -121,14 +100,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         if let resolution = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
             return resolution
         }
-        Logger.verbose(Strings.remoteConfig.checkpointResolutionRetry(identifier: identifier))
+        Logger.verbose(Strings.checkpoints.resolutionRetry(identifier: identifier))
 
         // A `nil` attempt means its configuration became stale while resolving.
         // Retry once against the latest generation before treating repeated staleness as unavailable.
         if let resolution = try await self.attemptResolveConfiguredWorkflow(identifier: identifier, params: params) {
             return resolution
         }
-        Logger.error(Strings.remoteConfig.checkpointResolutionRepeatedlyStale(identifier: identifier))
+        Logger.error(Strings.checkpoints.resolutionRepeatedlyStale(identifier: identifier))
         return .noAction(.configurationUnavailable)
     }
 
@@ -168,7 +147,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             throw error
         } catch {
             guard self.checkpointsConfigProvider.isCurrent(rulesSnapshot) else { return nil }
-            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+            Logger.error(Strings.checkpoints.audiencesNotEvaluated(
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
@@ -180,6 +159,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
         }
 
         let ruleEvaluation = try await self.evaluateRules(
+            for: identifier,
             in: rulesSnapshot.ruleSet.rules,
             params: params,
             audienceConfiguration: audienceConfiguration
@@ -196,7 +176,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             // Only return `noMatch` when audience evaluation succeeds and no rule matches. If evaluation fails,
             // the SDK can't determine whether the app user matches, so treat the checkpoint configuration as
             // unavailable.
-            Logger.error(Strings.remoteConfig.checkpointAudiencesNotEvaluated(
+            Logger.error(Strings.checkpoints.audiencesNotEvaluated(
                 checkpointID: identifier,
                 reason: "\(error)"
             ))
@@ -224,12 +204,14 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     }
 
     private func evaluateRules(
+        for identifier: String,
         in rules: [CheckpointRule],
         params: CheckpointParams,
         audienceConfiguration: AudienceConfigurationSnapshot
     ) async throws -> AudienceRuleEvaluation {
         do {
             return .completed(try await self.matchingRule(
+                for: identifier,
                 in: rules,
                 params: params,
                 audienceConfiguration: audienceConfiguration
@@ -243,6 +225,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     /// Walks the served rules in priority order and returns the first one whose audience matches.
     private func matchingRule(
+        for identifier: String,
         in rules: [CheckpointRule],
         params: CheckpointParams,
         audienceConfiguration: AudienceConfigurationSnapshot
@@ -251,9 +234,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             in: rules,
             // Already filtered to valid keys by `DimensionResolver`, which exposes them under `custom.*`.
             customVariables: params.customVariables.mapValues(\.dimensionValue),
-            // Supplied by the same generation-bound snapshot as the audience predicates, rather than retained
-            // by a provider that could outlive this evaluation.
-            backendValues: audienceConfiguration.backendPredicateResults
+            logPrefix: "[Checkpoint '\(identifier)'] "
         ) { rule in
             guard let audience = audienceConfiguration.audiences[rule.audienceId] else {
                 throw AudienceUnavailableError(audienceID: rule.audienceId)
@@ -266,7 +247,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     private func offeringID(for rule: CheckpointRule) async -> String? {
         let offeringIdByWorkflowId = await self.workflowManager.offeringIdByWorkflowId()
         guard let offeringID = offeringIdByWorkflowId[rule.workflowId] ?? nil else {
-            Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+            Logger.warn(Strings.checkpoints.workflowRuleSkipped(
                 workflowID: rule.workflowId,
                 reason: "no offering identifier is configured"
             ))
@@ -347,7 +328,8 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
                 offering: match.offering,
-                offerings: match.offerings
+                offerings: match.offerings,
+                workflowBlobRef: workflowData.workflowBlobRef
             )
         )
     }
@@ -369,7 +351,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
 
     @discardableResult
     private static func unservable(_ rule: CheckpointRule, reason: String) -> CheckpointResolution {
-        Logger.warn(Strings.remoteConfig.checkpointWorkflowRuleSkipped(
+        Logger.warn(Strings.checkpoints.workflowRuleSkipped(
             workflowID: rule.workflowId,
             reason: reason
         ))

@@ -29,15 +29,29 @@ final class WorkflowStepEventCoordinator {
 
     var traceId: String { self.tracker.traceId }
 
-    init(workflow: PublishedWorkflow, traceId: String, sink: @escaping (WorkflowEvent) -> Void) {
-        self.tracker = WorkflowStepEventTracker(workflow: workflow, traceId: traceId, sink: sink)
+    init(
+        workflow: PublishedWorkflow,
+        traceId: String,
+        workflowBlobRef: String? = nil,
+        sink: @escaping (WorkflowEvent) -> Void
+    ) {
+        self.tracker = WorkflowStepEventTracker(
+            workflow: workflow,
+            traceId: traceId,
+            workflowBlobRef: workflowBlobRef,
+            sink: sink
+        )
     }
 
     /// Production entry point: each impression gets a fresh `traceId`, matching Android's per-impression
     /// `workflowTraceId`. Because the view creates the coordinator in `init`, a new presentation (new view
     /// identity) yields a new coordinator and therefore a new `traceId`.
-    convenience init(workflow: PublishedWorkflow, sink: @escaping (WorkflowEvent) -> Void) {
-        self.init(workflow: workflow, traceId: UUID().uuidString, sink: sink)
+    convenience init(
+        workflow: PublishedWorkflow,
+        workflowBlobRef: String? = nil,
+        sink: @escaping (WorkflowEvent) -> Void
+    ) {
+        self.init(workflow: workflow, traceId: UUID().uuidString, workflowBlobRef: workflowBlobRef, sink: sink)
     }
 
     /// Emits the initial `stepStarted` once, and only if the initial step actually rendered. Mirrors

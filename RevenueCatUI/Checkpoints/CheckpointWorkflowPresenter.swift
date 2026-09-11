@@ -127,7 +127,8 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         let workflowContext = try WorkflowPreview.makeContext(
             workflow: presentation.workflow.workflow,
             offerings: presentation.workflow.offerings,
-            uiConfig: presentation.workflow.uiConfig
+            uiConfig: presentation.workflow.uiConfig,
+            workflowBlobRef: presentation.workflow.workflowBlobRef
         )
         let viewController = PaywallViewController(
             workflowContext: workflowContext,
