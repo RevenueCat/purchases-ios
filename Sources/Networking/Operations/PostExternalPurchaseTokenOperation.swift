@@ -15,8 +15,6 @@ import Foundation
 
 /// Registers a StoreKit external purchase token with RevenueCat, for a purchase made outside of
 /// Apple's in-app purchase system.
-///
-/// The response carries the identifier that the checkout is then started with.
 final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
 
     private let configuration: AppUserConfiguration
@@ -28,7 +26,7 @@ final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
         postData: PostData,
         externalPurchaseTokenCallbackCache: CallbackCache<ExternalPurchaseTokenCallback>
     ) -> CacheableNetworkOperationFactory<PostExternalPurchaseTokenOperation> {
-        let cacheKey = "\(configuration.appUserID)-\(postData.purchaseType.rawValue)-\(postData.token ?? "")"
+        let cacheKey = "\(configuration.appUserID)-\(postData.purchaseType.rawValue)-\(postData.tokenID)"
 
         return CacheableNetworkOperationFactory({ cacheKey in
                     PostExternalPurchaseTokenOperation(
@@ -61,7 +59,7 @@ final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
 
     private func post(completion: @escaping () -> Void) {
         guard self.configuration.appUserID.isNotEmpty else {
-            self.handleResult(.failure(.missingAppUserID()))
+            self.handleResult(.missingAppUserID())
             completion()
             return
         }
@@ -70,12 +68,8 @@ final class PostExternalPurchaseTokenOperation: CacheableNetworkOperation {
                                   path: .postExternalPurchaseToken,
                                   isRetryable: true)
 
-        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<ExternalPurchaseTokenResponse>.Result) in
-            let result = response
-                .map { $0.body }
-                .mapError(BackendError.networkError)
-
-            self.handleResult(result)
+        self.httpClient.perform(request) { (response: VerifiedHTTPResponse<HTTPEmptyResponseBody>.Result) in
+            self.handleResult(response.mapError(BackendError.networkError).error)
             completion()
         }
     }
@@ -87,11 +81,11 @@ extension PostExternalPurchaseTokenOperation: @unchecked Sendable {}
 
 private extension PostExternalPurchaseTokenOperation {
 
-    func handleResult(_ result: Result<ExternalPurchaseTokenResponse, BackendError>) {
+    func handleResult(_ error: BackendError?) {
         self.externalPurchaseTokenCallbackCache.performOnAllItemsAndRemoveFromCache(
             withCacheable: self
         ) { callback in
-            callback.completion(result)
+            callback.completion(error)
         }
     }
 
@@ -103,6 +97,9 @@ extension PostExternalPurchaseTokenOperation {
 
         let appUserID: String
         let purchaseType: ExternalPurchaseTokenType
+
+        /// The identifier the SDK generated for this registration.
+        let tokenID: String
 
         /// The StoreKit token. Omitted when StoreKit could not provide one, in which case the backend
         /// generates a stand-in so the purchase can still be registered.
@@ -120,6 +117,7 @@ extension PostExternalPurchaseTokenOperation.PostData: Encodable {
 
         case appUserID = "app_user_id"
         case purchaseType = "purchase_type"
+        case tokenID = "id"
         case token
 
     }
