@@ -423,9 +423,9 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
             switch self.presentationState {
-            case let .failing(error):
+            case .failing:
                 self.exitOfferOfferingBinding.wrappedValue = nil
-                self.reportPresentationError(error, for: self.navigator.currentStepId)
+                self.reportPresentationError(for: self.navigator.currentStepId)
                 return
             case .failureReported:
                 self.exitOfferOfferingBinding.wrappedValue = nil
@@ -976,7 +976,7 @@ struct WorkflowPaywallView: View {
         self.trackCurrentWorkflowLeft()
         self.exitOfferOfferingBinding.wrappedValue = nil
         self.presentationState = .failing(error: error)
-        self.reportPresentationError(error, for: stepId)
+        self.reportPresentationError(for: stepId)
     }
 
     private var workflowPresentationError: Binding<NSError?> {
@@ -995,13 +995,14 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func reportPresentationError(_ error: NSError, for stepId: String) {
-        Logger.error(
-            Strings.workflow_paywall_invalid_state(
-                currentStepId: stepId,
-                screenId: self.context.workflow.steps[stepId]?.screenId
-            )
+    private func reportPresentationError(for stepId: String) {
+        guard let error = self.presentationState.error else { return }
+
+        let message = Strings.workflow_paywall_invalid_state(
+            currentStepId: stepId,
+            screenId: self.context.workflow.steps[stepId]?.screenId
         )
+        Logger.error("\(message): \(error.localizedDescription)")
         self.onPresentationError?(error)
     }
 

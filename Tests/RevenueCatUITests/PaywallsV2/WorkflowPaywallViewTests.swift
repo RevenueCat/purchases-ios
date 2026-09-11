@@ -920,11 +920,13 @@ extension WorkflowPaywallViewTests {
 
         await expect(exitOffer.offering).toEventually(beNil(), timeout: .seconds(3))
         await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
+        let expectedMessage = Strings.workflow_paywall_invalid_state(
+            currentStepId: "step_initial",
+            screenId: "screen_initial"
+        )
+        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_initial'."
         self.logger.verifyMessageWasLogged(
-            Strings.workflow_paywall_invalid_state(
-                currentStepId: "step_initial",
-                screenId: "screen_initial"
-            ),
+            expectedLog,
             level: .error,
             expectedCount: 1
         )
@@ -950,11 +952,13 @@ extension WorkflowPaywallViewTests {
         defer { dispose() }
 
         await expect(self.logger.messages).toEventuallyNot(beEmpty(), timeout: .seconds(3))
+        let expectedMessage = Strings.workflow_paywall_invalid_state(
+            currentStepId: "step_terminal",
+            screenId: "screen_terminal"
+        )
+        let expectedLog = "\(expectedMessage): Offering 'missing_offering' not found for step 'step_terminal'."
         self.logger.verifyMessageWasLogged(
-            Strings.workflow_paywall_invalid_state(
-                currentStepId: "step_terminal",
-                screenId: "screen_terminal"
-            ),
+            expectedLog,
             level: .error,
             expectedCount: 1
         )
