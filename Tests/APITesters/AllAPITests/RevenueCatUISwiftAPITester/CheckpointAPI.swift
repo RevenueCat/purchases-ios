@@ -32,16 +32,15 @@ func checkCheckpointAPI(_ purchases: Purchases) {
     purchases.checkpoint(
         "test_checkpoint",
         customVariables: literalCustomVariables
-    ) { (_: Result<CheckpointResult, PublicError>) in }
+    ) { (_: CheckpointFlowResult?) in }
 
-    purchases.checkpoint("test_checkpoint") { (_: Result<CheckpointResult, PublicError>) in }
+    purchases.checkpoint("test_checkpoint") { (_: CheckpointFlowResult?) in }
+    purchases.checkpoint("test_checkpoint", customVariables: explicitCustomVariables)
 
-    Task {
-        let _: CheckpointResult = try await purchases.checkpoint(
-            "test_checkpoint",
-            customVariables: explicitCustomVariables
-        )
-    }
+    let entitlement: CheckpointObtainedEntitlement? = nil
+    let _: EntitlementInfo? = entitlement?.entitlement
+    let result: CheckpointFlowResult? = nil
+    let _: Set<CheckpointObtainedEntitlement>? = result?.obtainedEntitlements
 
     let _: CheckpointNoActionReason = .noMatch
     let _: CheckpointNoActionReason = .holdout

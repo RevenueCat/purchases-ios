@@ -15,6 +15,46 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
+/// An entitlement obtained while completing a checkpoint flow.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct CheckpointObtainedEntitlement: Hashable, @unchecked Sendable {
+
+    /// Information about the entitlement obtained during the flow.
+    public let entitlement: EntitlementInfo
+
+    init(entitlement: EntitlementInfo) {
+        self.entitlement = entitlement
+    }
+
+    /// Returns whether two obtained entitlements represent the same entitlement identifier.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        return lhs.entitlement.identifier == rhs.entitlement.identifier
+    }
+
+    /// Hashes the entitlement identifier.
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(self.entitlement.identifier)
+    }
+
+}
+
+/// The result of completing a checkpoint flow.
+@_spi(CheckpointsInternal)
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+public struct CheckpointFlowResult: @unchecked Sendable {
+
+    /// Entitlements that became active while the flow was presented.
+    ///
+    /// This can include entitlements obtained from sources other than the flow while it was presented.
+    public let obtainedEntitlements: Set<CheckpointObtainedEntitlement>
+
+    init(obtainedEntitlements: Set<CheckpointObtainedEntitlement> = []) {
+        self.obtainedEntitlements = obtainedEntitlements
+    }
+
+}
+
 /// Base class for the result of evaluating a checkpoint.
 ///
 /// Inspect the concrete result type to determine what happened:

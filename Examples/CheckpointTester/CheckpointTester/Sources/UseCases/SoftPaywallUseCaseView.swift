@@ -67,16 +67,15 @@ struct SoftPaywallUseCaseView: View {
     private func runCheckpoint() async {
         guard !self.isRunning else { return }
         self.isRunning = true
-        defer { self.isRunning = false }
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "soft_paywall",
-                customVariables: self.customVariables.checkpointCustomVariables
-            )
-            self.handle(result)
-        } catch {
-            self.status = "Checkpoint failed: \(error.localizedDescription). Content remains available."
+        Purchases.shared.checkpoint(
+            "soft_paywall",
+            customVariables: self.customVariables.checkpointCustomVariables
+        ) { result in
+            self.isRunning = false
+            let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+            self.status = obtained.isEmpty
+                ? "Checkpoint completed. Content remains available."
+                : "Obtained: \(obtained.joined(separator: ", "))."
         }
     }
 
