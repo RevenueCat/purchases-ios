@@ -33,6 +33,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
 
     #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
     private weak var presentedViewController: UIViewController?
+    private var dismissalReasonBeforeExitOffer: WorkflowDismissalReason?
     #endif
 
     init(
@@ -48,6 +49,9 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         presentation: CheckpointPresentation,
         delegate: CheckpointPresentationDelegate
     ) throws {
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+        self.dismissalReasonBeforeExitOffer = nil
+        #endif
         self.callStore.store(presentation: presentation, delegate: delegate)
 
         do {
@@ -62,6 +66,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
             _ = self.callStore.remove()
             #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
             self.presentedViewController = nil
+            self.dismissalReasonBeforeExitOffer = nil
             #endif
             throw error
         }
@@ -76,6 +81,9 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
     }
 
     func dismiss(completion: @escaping () -> Void) {
+        #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+        self.dismissalReasonBeforeExitOffer = nil
+        #endif
         guard self.callStore.remove() != nil else {
             completion()
             return
@@ -113,6 +121,22 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         }
         call.delegate.checkpointPresentationFinished(execution)
     }
+
+    #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+    private func handleDismissal(of controller: PaywallViewController) {
+        let reason = self.dismissalReasonBeforeExitOffer ?? controller.workflowDismissalReason
+        self.dismissalReasonBeforeExitOffer = nil
+        self.presentationDidDismiss(reason: reason)
+    }
+
+    private func handleExitOfferPresentation(
+        from controller: PaywallViewController,
+        exitOfferController: PaywallViewController
+    ) {
+        self.dismissalReasonBeforeExitOffer = controller.workflowDismissalReason
+        self.presentedViewController = exitOfferController
+    }
+    #endif
 
     private func presentAutomatically(_ presentation: CheckpointPresentation) throws {
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
@@ -211,7 +235,7 @@ extension CheckpointWorkflowPresenter {
 
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.presentationDidDismiss(reason: controller.workflowDismissalReason)
+            self.handleDismissal(of: controller)
         }
     }
 
@@ -220,7 +244,7 @@ extension CheckpointWorkflowPresenter {
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
         MainActor.assumeIsolated {
-            self.presentedViewController = exitOfferController
+            self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
         }
     }
     #else
@@ -263,14 +287,14 @@ extension CheckpointWorkflowPresenter {
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
-        self.presentationDidDismiss(reason: controller.workflowDismissalReason)
+        self.handleDismissal(of: controller)
     }
 
     func paywallViewController(
         _ controller: PaywallViewController,
         willPresentExitOfferController exitOfferController: PaywallViewController
     ) {
-        self.presentedViewController = exitOfferController
+        self.handleExitOfferPresentation(from: controller, exitOfferController: exitOfferController)
     }
     #endif
 
