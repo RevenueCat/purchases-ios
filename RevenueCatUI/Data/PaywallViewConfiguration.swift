@@ -57,30 +57,6 @@ struct PaywallViewConfiguration {
         PurchasesUIService.activateIfNeeded()
     }
 
-#if !os(tvOS)
-    init(
-        content: Content,
-        mode: PaywallViewMode = .default,
-        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
-        displayCloseButton: Bool = false,
-        introEligibility: TrialOrIntroEligibilityChecker? = nil,
-        purchaseHandler: PurchaseHandler,
-        promoOfferCache: PaywallPromoOfferCache? = nil,
-        workflowPresentationErrorHandler: ((NSError) -> Void)?
-    ) {
-        self.init(
-            content: content,
-            mode: mode,
-            fonts: fonts,
-            displayCloseButton: displayCloseButton,
-            introEligibility: introEligibility,
-            purchaseHandler: purchaseHandler,
-            promoOfferCache: promoOfferCache
-        )
-        self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
-    }
-#endif
-
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
