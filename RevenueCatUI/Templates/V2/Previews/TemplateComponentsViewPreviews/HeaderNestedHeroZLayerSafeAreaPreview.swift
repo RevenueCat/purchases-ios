@@ -28,13 +28,6 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
     static let previewTitle = "Header and hero text clear the highlighted top guide"
     static let previewSubtitle =
         "The tinted top band marks the safe area. The nested hero image may fill it, but text should stay below it."
-    static let cappedPreviewDisplayName =
-        "Fill(max: 200): capped media receives hero treatment"
-    static let cappedPreviewTitle = "Capped 200pt media is treated as a full-width hero"
-    static let cappedPreviewSubtitle = [
-        "As implemented, the narrow image still causes the header to overlay it",
-        "and pushes the second ZStack child below the top guide."
-    ].joined(separator: " ")
 
     static let heroImageURL = Self.makeLocalPreviewImageURL(
         filename: "paywall-pw6328703e14874ca2-hero.png",
@@ -113,36 +106,32 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
         padding: .init(top: 0, bottom: 8, leading: 12, trailing: 12)
     )
 
-    static func heroZLayerStack(
-        mediaWidth: PaywallComponent.SizeConstraint
-    ) -> PaywallComponent.StackComponent {
-        .init(
-            components: [
-                .image(.init(
-                    source: .init(light: .init(
-                        width: 1024,
-                        height: 1024,
-                        original: Self.heroImageURL,
-                        heic: Self.heroImageURL,
-                        heicLowRes: Self.heroImageURL
-                    )),
-                    size: .init(width: mediaWidth, height: .fixed(300)),
-                    fitMode: .fill
+    static let heroZLayerStack = PaywallComponent.StackComponent(
+        components: [
+            .image(.init(
+                source: .init(light: .init(
+                    width: 1024,
+                    height: 1024,
+                    original: Self.heroImageURL,
+                    heic: Self.heroImageURL,
+                    heicLowRes: Self.heroImageURL
                 )),
-                .text(.init(
-                    text: "hero_overlay_label",
-                    color: .init(light: .hex("#62FC03")),
-                    padding: .zero,
-                    margin: .init(top: 8, bottom: 0, leading: 12, trailing: 0),
-                    fontSize: 14,
-                    horizontalAlignment: .leading
-                ))
-            ],
-            dimension: .zlayer(.topLeading),
-            size: .init(width: .fill, height: .fit(nil)),
-            spacing: 0
-        )
-    }
+                size: .init(width: .fill, height: .fixed(300)),
+                fitMode: .fill
+            )),
+            .text(.init(
+                text: "hero_overlay_label",
+                color: .init(light: .hex("#62FC03")),
+                padding: .zero,
+                margin: .init(top: 8, bottom: 0, leading: 12, trailing: 0),
+                fontSize: 14,
+                horizontalAlignment: .leading
+            ))
+        ],
+        dimension: .zlayer(.topLeading),
+        size: .init(width: .fill, height: .fit(nil)),
+        spacing: 0
+    )
 
     static let contentBlock = PaywallComponent.StackComponent(
         components: [
@@ -171,20 +160,16 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
         padding: .init(top: 28, bottom: 28, leading: 24, trailing: 24)
     )
 
-    static func bodyStack(
-        mediaWidth: PaywallComponent.SizeConstraint
-    ) -> PaywallComponent.StackComponent {
-        .init(
-            components: [
-                .stack(Self.heroZLayerStack(mediaWidth: mediaWidth)),
-                .stack(Self.contentBlock)
-            ],
-            dimension: .vertical(.center, .start),
-            size: .init(width: .fill, height: .fill),
-            spacing: 0,
-            backgroundColor: .init(light: .hex("#FFFFFF"))
-        )
-    }
+    static let bodyStack = PaywallComponent.StackComponent(
+        components: [
+            .stack(Self.heroZLayerStack),
+            .stack(Self.contentBlock)
+        ],
+        dimension: .vertical(.center, .start),
+        size: .init(width: .fill, height: .fill),
+        spacing: 0,
+        backgroundColor: .init(light: .hex("#FFFFFF"))
+    )
 
     static let footerStack = PaywallComponent.StackComponent(
         components: [
@@ -231,15 +216,13 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
         padding: .init(top: 12, bottom: 12, leading: 16, trailing: 16)
     )
 
-    static func rootViewModel(
-        mediaWidth: PaywallComponent.SizeConstraint
-    ) -> RootViewModel {
+    static let rootViewModel: RootViewModel = {
         var factory = ViewModelFactory()
 
         do {
             return try factory.toRootViewModel(
                 componentsConfig: .init(
-                    stack: Self.bodyStack(mediaWidth: mediaWidth),
+                    stack: Self.bodyStack,
                     header: .init(stack: Self.headerStack),
                     stickyFooter: .init(stack: Self.footerStack),
                     background: .color(.init(light: .hex("#FFFFFF")))
@@ -252,22 +235,17 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
         } catch {
             fatalError("Invalid preview configuration for pw6328703e14874ca2: \(error)")
         }
-    }
+    }()
 
-    static func preview(
-        mediaWidth: PaywallComponent.SizeConstraint,
-        title: String,
-        subtitle: String,
-        displayName: String
-    ) -> some View {
+    static func preview() -> some View {
         SafeAreaPreviewShell(
-            title: title,
-            subtitle: subtitle,
-            previewDisplayName: displayName,
+            title: Self.previewTitle,
+            subtitle: Self.previewSubtitle,
+            previewDisplayName: Self.previewDisplayName,
             safeAreaInsets: Self.safeAreaInsets
         ) {
             RootView(
-                viewModel: Self.rootViewModel(mediaWidth: mediaWidth),
+                viewModel: Self.rootViewModel,
                 onDismiss: {},
                 defaultPackage: nil
             )
@@ -280,21 +258,7 @@ private enum HeaderNestedHeroZLayerSafeAreaPreview {
 struct HeaderNestedHeroZLayerSafeAreaPreview_Previews: PreviewProvider {
 
     static var previews: some View {
-        Group {
-            HeaderNestedHeroZLayerSafeAreaPreview.preview(
-                mediaWidth: .fill,
-                title: HeaderNestedHeroZLayerSafeAreaPreview.previewTitle,
-                subtitle: HeaderNestedHeroZLayerSafeAreaPreview.previewSubtitle,
-                displayName: HeaderNestedHeroZLayerSafeAreaPreview.previewDisplayName
-            )
-
-            HeaderNestedHeroZLayerSafeAreaPreview.preview(
-                mediaWidth: .fill(.init(min: nil, max: 200)),
-                title: HeaderNestedHeroZLayerSafeAreaPreview.cappedPreviewTitle,
-                subtitle: HeaderNestedHeroZLayerSafeAreaPreview.cappedPreviewSubtitle,
-                displayName: HeaderNestedHeroZLayerSafeAreaPreview.cappedPreviewDisplayName
-            )
-        }
+        HeaderNestedHeroZLayerSafeAreaPreview.preview()
     }
 
 }
