@@ -42,61 +42,6 @@ final class CheckpointCallParams: @unchecked Sendable {
 
 }
 
-/// Context shared by checkpoint listener events.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class CheckpointContext: CustomStringConvertible, @unchecked Sendable {
-
-    /// The identifier of the checkpoint that was hit.
-    public let identifier: String
-
-    /// The custom variables supplied when the checkpoint was hit.
-    public let customVariables: [String: CustomVariableValue]
-
-    init(identifier: String, params: CheckpointCallParams) {
-        self.identifier = identifier
-        self.customVariables = params.customVariables
-    }
-
-    /// A debug description of the checkpoint context.
-    public var description: String {
-        return "CheckpointContext(identifier='\(self.identifier)', customVariables=\(self.customVariables))"
-    }
-
-    /// Context delivered when a checkpoint is hit, before evaluation starts.
-    public final class Hit: CheckpointContext, @unchecked Sendable {
-
-        override init(identifier: String, params: CheckpointCallParams) {
-            super.init(identifier: identifier, params: params)
-        }
-
-        public override var description: String {
-            return "CheckpointContext.Hit(identifier='\(self.identifier)', " +
-                "customVariables=\(self.customVariables))"
-        }
-
-    }
-
-    /// Context delivered when a checkpoint completes.
-    public final class Completed: CheckpointContext, @unchecked Sendable {
-
-        /// What the checkpoint resolved to.
-        public let result: CheckpointResult
-
-        init(identifier: String, params: CheckpointCallParams, result: CheckpointResult) {
-            self.result = result
-            super.init(identifier: identifier, params: params)
-        }
-
-        public override var description: String {
-            return "CheckpointContext.Completed(identifier='\(self.identifier)', " +
-                "customVariables=\(self.customVariables), result=\(self.result))"
-        }
-
-    }
-
-}
-
 /// The reason no experience was served for a checkpoint.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -131,36 +76,5 @@ public final class CheckpointNoActionReason: Equatable, Hashable, CustomStringCo
 
     /// A debug description of the no-action reason.
     public var description: String { return self.value }
-
-}
-
-/// Global listener for checkpoint activity. All methods are called on the main thread.
-///
-/// ``CheckpointListener/onCheckpointHit(_:)`` is called before evaluation starts. After evaluation and any
-/// presented UI finish, ``CheckpointListener/onCheckpointCompleted(_:)`` is called before the per-call
-/// checkpoint API delivers its result.
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public protocol CheckpointListener: AnyObject {
-
-    /// A checkpoint was hit and evaluation is about to start.
-    ///
-    /// This does not indicate that a targeting rule matched or that UI will be presented.
-    func onCheckpointHit(_ context: CheckpointContext.Hit)
-    /// Checkpoint evaluation and any presented UI finished.
-    ///
-    /// This is called before the per-call checkpoint API delivers its result.
-    func onCheckpointCompleted(_ context: CheckpointContext.Completed)
-
-}
-
-@_spi(CheckpointsInternal)
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public extension CheckpointListener {
-
-    /// Default no-op implementation.
-    func onCheckpointHit(_ context: CheckpointContext.Hit) {}
-    /// Default no-op implementation.
-    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {}
 
 }

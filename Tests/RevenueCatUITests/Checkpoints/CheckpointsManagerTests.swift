@@ -59,10 +59,8 @@ final class CheckpointsManagerTests: TestCase {
         ])
     }
 
-    func testNoActionResultAndListenerEventsAreBuiltInRevenueCatUI() async throws {
+    func testNoActionResultIsBuiltInRevenueCatUI() async throws {
         let manager = CheckpointsManager { _, _ in .noAction(.unknownCheckpoint) }
-        let listener = ListenerRecorder()
-        manager.listener = listener
 
         let result = try await manager.checkpoint(
             identifier: "unknown_checkpoint",
@@ -73,16 +71,6 @@ final class CheckpointsManagerTests: TestCase {
             return XCTFail("Expected a no-action result")
         }
         XCTAssertEqual(noAction.reason, .unknownCheckpoint)
-        XCTAssertEqual(
-            listener.events,
-            [.hit("unknown_checkpoint"), .completed("unknown_checkpoint")]
-        )
-        XCTAssertEqual(listener.hitContexts.first?.customVariables["name"], "Rick")
-        XCTAssertEqual(listener.completedContexts.first?.customVariables["name"], "Rick")
-        XCTAssertEqual(
-            (listener.completedContexts.first?.result as? CheckpointResult.NoAction)?.reason,
-            noAction.reason
-        )
     }
 
     func testInvalidCustomVariableKeysDoNotReachResolution() async throws {
@@ -140,9 +128,6 @@ final class CheckpointsManagerTests: TestCase {
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             executor: executor
         )
-        let listener = ListenerRecorder()
-        manager.listener = listener
-
         let result = try await manager.checkpoint(identifier: "onboarding", params: .init())
 
         guard let received = result as? CheckpointResult.ReceivedOffering else {
@@ -151,14 +136,11 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(received.offering.identifier, "offering-id")
         // Data-only, so it never claims the executor's one-presentation-at-a-time slot.
         XCTAssertTrue(executor.presentations.isEmpty)
-        XCTAssertEqual(listener.events, [.hit("onboarding"), .completed("onboarding")])
     }
 
-    func testResolutionErrorIsForwardedWithoutCompletedListenerEvent() async {
+    func testResolutionErrorIsForwarded() async {
         let expectedError = NSError(domain: "test", code: 42)
         let manager = CheckpointsManager { _, _ in throw expectedError }
-        let listener = ListenerRecorder()
-        manager.listener = listener
 
         do {
             _ = try await manager.checkpoint(identifier: "error_checkpoint", params: .init())
@@ -167,10 +149,9 @@ final class CheckpointsManagerTests: TestCase {
             XCTAssertEqual(error as NSError, expectedError)
         }
 
-        XCTAssertEqual(listener.events, [.hit("error_checkpoint")])
     }
 
-    func testPresentationErrorIsForwardedWithoutPresentedResultOrCompletedListenerEvent() async {
+    func testPresentationErrorIsForwardedWithoutPresentedResult() async {
         let expectedError = NSError(domain: "test", code: 42)
         let executor = MockCheckpointWorkflowExecutor()
         executor.error = expectedError
@@ -178,9 +159,6 @@ final class CheckpointsManagerTests: TestCase {
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
         )
-        let listener = ListenerRecorder()
-        manager.listener = listener
-
         do {
             _ = try await manager.checkpoint(identifier: "soft_paywall", params: .init())
             XCTFail("Expected checkpoint to throw")
@@ -188,7 +166,6 @@ final class CheckpointsManagerTests: TestCase {
             XCTAssertEqual(error as NSError, expectedError)
         }
 
-        XCTAssertEqual(listener.events, [.hit("soft_paywall")])
     }
 
     func testCompletionAPIForwardsResult() {
@@ -206,31 +183,24 @@ final class CheckpointsManagerTests: TestCase {
         self.waitForExpectations(timeout: 1)
     }
 
-    func testValidCheckpointIdentifierReachesListenerAndResolution() async throws {
+    func testValidCheckpointIdentifierReachesResolution() async throws {
         var resolvedIdentifiers: [String] = []
         let manager = CheckpointsManager { identifier, _ in
             resolvedIdentifiers.append(identifier)
             return .noAction(.noMatch)
         }
-        let listener = ListenerRecorder()
-        manager.listener = listener
-
         _ = try await manager.checkpoint(identifier: "A-1_b", params: .init())
 
         XCTAssertEqual(resolvedIdentifiers, ["A-1_b"])
-        XCTAssertEqual(listener.events, [.hit("A-1_b"), .completed("A-1_b")])
     }
 
-    func testInvalidCheckpointIdentifierIsLoggedAndReportedToListenerWithoutResolution() async throws {
+    func testInvalidCheckpointIdentifierIsLoggedWithoutResolution() async throws {
         let invalidIdentifier = " checkout😀"
         var resolutionCount = 0
         let manager = CheckpointsManager { _, _ in
             resolutionCount += 1
             return .noAction(.noMatch)
         }
-        let listener = ListenerRecorder()
-        manager.listener = listener
-
         let result = try await manager.checkpoint(identifier: invalidIdentifier, params: .init())
 
         guard let noActionResult = result as? CheckpointResult.NoAction else {
@@ -239,7 +209,6 @@ final class CheckpointsManagerTests: TestCase {
 
         XCTAssertEqual(noActionResult.reason, .invalidCheckpointIdentifier)
         XCTAssertEqual(resolutionCount, 0)
-        XCTAssertEqual(listener.events, [.hit(invalidIdentifier), .completed(invalidIdentifier)])
         self.logger.verifyMessageWasLogged(
             CheckpointIdentifierValidator.invalidIdentifierLogMessage(invalidIdentifier),
             level: .error
@@ -569,30 +538,6 @@ private final class MockCheckpointPresenter: CheckpointPresenter {
 
     func finishDismissing() {
         self.dismissalCompletions.removeFirst()()
-    }
-
-}
-
-@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-private final class ListenerRecorder: CheckpointListener {
-
-    enum Event: Equatable {
-        case hit(String)
-        case completed(String)
-    }
-
-    private(set) var events: [Event] = []
-    private(set) var hitContexts: [CheckpointContext.Hit] = []
-    private(set) var completedContexts: [CheckpointContext.Completed] = []
-
-    func onCheckpointHit(_ context: CheckpointContext.Hit) {
-        self.hitContexts.append(context)
-        self.events.append(.hit(context.identifier))
-    }
-
-    func onCheckpointCompleted(_ context: CheckpointContext.Completed) {
-        self.completedContexts.append(context)
-        self.events.append(.completed(context.identifier))
     }
 
 }

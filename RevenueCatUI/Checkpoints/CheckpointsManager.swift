@@ -15,25 +15,10 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Orchestrates checkpoint resolution, workflow execution, and listener delivery.
+/// Orchestrates checkpoint resolution and workflow execution.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class CheckpointsManager {
 
-    var listener: CheckpointListener? {
-        get {
-            self.listenerLock.lock()
-            defer { self.listenerLock.unlock() }
-            return self.storedListener
-        }
-        set {
-            self.listenerLock.lock()
-            self.storedListener = newValue
-            self.listenerLock.unlock()
-        }
-    }
-
-    private let listenerLock = NSLock()
-    private var storedListener: CheckpointListener?
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
 
@@ -76,15 +61,9 @@ final class CheckpointsManager {
         identifier: String,
         params: CheckpointCallParams
     ) async throws -> CheckpointResult {
-        self.listener?.onCheckpointHit(CheckpointContext.Hit(identifier: identifier, params: params))
-
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
-            let result = CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
-            self.listener?.onCheckpointCompleted(
-                CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-            )
-            return result
+            return CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier)
         }
 
         let result: CheckpointResult
@@ -103,9 +82,6 @@ final class CheckpointsManager {
             result = CheckpointResult.NoAction(reason: reason.noActionReason)
         }
 
-        self.listener?.onCheckpointCompleted(
-            CheckpointContext.Completed(identifier: identifier, params: params, result: result)
-        )
         return result
     }
 

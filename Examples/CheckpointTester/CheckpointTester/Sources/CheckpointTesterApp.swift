@@ -21,40 +21,32 @@ import SwiftUI
 struct CheckpointTesterApp: App {
 
     @StateObject private var model: CheckpointDemoModel
-    @StateObject private var analyticsTracker: GlobalCheckpointAnalyticsTracker
-
     init() {
-        let analyticsTracker = GlobalCheckpointAnalyticsTracker()
         let model = CheckpointDemoModel()
         self._model = StateObject(wrappedValue: model)
-        self._analyticsTracker = StateObject(wrappedValue: analyticsTracker)
 
         Purchases.logLevel = .debug
-        Self.configurePurchases(analyticsTracker: analyticsTracker)
+        Self.configurePurchases()
     }
 
     var body: some Scene {
         WindowGroup {
-            ContentView(
-                model: self.model,
-                analyticsTracker: self.analyticsTracker
-            )
+            ContentView(model: self.model)
         }
     }
 
     // MARK: - New checkpoint public API implementation
 
-    private static func configurePurchases(analyticsTracker: GlobalCheckpointAnalyticsTracker) {
+    private static func configurePurchases() {
         guard let apiKey = Bundle.main.object(forInfoDictionaryKey: "REVENUECAT_API_KEY") as? String,
               !apiKey.isEmpty,
               !apiKey.contains("$(") else {
             fatalError("Generate CheckpointTester with a valid TUIST_RC_API_KEY.")
         }
 
-        let purchases = Purchases.isConfigured
-            ? Purchases.shared
-            : Purchases.configure(withAPIKey: apiKey)
-        purchases.checkpointListener = analyticsTracker
+        if !Purchases.isConfigured {
+            Purchases.configure(withAPIKey: apiKey)
+        }
     }
 
 }

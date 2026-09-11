@@ -21,14 +21,6 @@ import Foundation
 @available(iOS 15.0, *)
 public extension Purchases {
 
-    /// Global listener for checkpoint activity.
-    ///
-    /// The listener is held by this ``Purchases`` instance and is cleared when the SDK is reconfigured.
-    var checkpointListener: CheckpointListener? {
-        get { return self.checkpointsManager.listener }
-        set { self.checkpointsManager.listener = newValue }
-    }
-
     /// Evaluates a checkpoint and calls `completion` with its result.
     ///
     /// Depending on the configured targeting rules, this may automatically present an experience or return a
