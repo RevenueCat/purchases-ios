@@ -101,7 +101,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.presentedViewController = nil
         #endif
 
-        let execution: CheckpointExecution<CheckpointPaywallOutcome>
+        let execution: CheckpointExecutionResult<CheckpointPaywallOutcome>
         switch (reason, call.stagedOutcome) {
         case (.navigatedBack, is CheckpointPaywallOutcome.Purchased),
              (.navigatedBack, is CheckpointPaywallOutcome.Restored):
