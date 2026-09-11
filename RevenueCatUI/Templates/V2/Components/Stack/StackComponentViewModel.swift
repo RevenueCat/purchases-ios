@@ -313,19 +313,7 @@ struct StackComponentStyle {
             return .normal
         }
 
-        switch distribution {
-        case .start, .center, .end:
-            return .normal
-        case .spaceBetween, .spaceAround, .spaceEvenly:
-            // We dont want to use a flex stack if its axis is set to fit.
-            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            switch self.size.height {
-            case .fit:
-                return .normal
-            default:
-                return .flex
-            }
-        }
+        return Self.strategy(for: distribution, sizeConstraint: self.size.height)
     }
 
     var hstackStrategy: StackStrategy {
@@ -334,14 +322,28 @@ struct StackComponentStyle {
             return .normal
         }
 
+        return Self.strategy(for: distribution, sizeConstraint: self.size.width)
+    }
+
+    static func strategy(
+        for distribution: PaywallComponent.FlexDistribution,
+        sizeConstraint: PaywallComponent.SizeConstraint
+    ) -> StackStrategy {
         switch distribution {
         case .start, .center, .end:
             return .normal
         case .spaceBetween, .spaceAround, .spaceEvenly:
-            // We dont want to use a flex stack if its axis is set to fit.
-            // Otherwise we would be adding Spacer()'s which would make the stack act as fill.
-            switch self.size.width {
-            case .fit:
+            switch sizeConstraint {
+            case let .fit(_, minMax):
+                // A fit stack normally must not use a flex stack: its `Spacer()`s would expand to the
+                // parent's proposal and make the stack act as fill. With a positive minimum, `SizeModifier`
+                // proposes exactly the clamped fit size to the content on iOS 16+, so the spacers only
+                // distribute the space between the content and that minimum. Earlier OSes keep packing the
+                // content and align it with the distribution's frame alignment instead.
+                if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *),
+                   let minimum = minMax.min, minimum > 0 {
+                    return .flex
+                }
                 return .normal
             default:
                 return .flex
