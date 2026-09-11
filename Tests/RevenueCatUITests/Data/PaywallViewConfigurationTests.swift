@@ -396,7 +396,7 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
-    func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepIsUnavailable() async throws {
         let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
         let handler = Self.createPurchaseHandler(purchases: purchases)
@@ -416,7 +416,50 @@ final class PaywallViewConfigurationTests: TestCase {
                 remoteConfigEnabled: true
             )
             XCTFail("Expected resolvePaywallViewData to throw")
-        } catch let PaywallError.workflowInitialScreenUnavailable(workflowID) {
+        } catch let PaywallError.workflowInitialStepNotFound(stepID, workflowID) {
+            expect(stepID) == "missing_step"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialStepHasNoScreenIdentifier() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: nil
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialStepMissingScreenIdentifier(stepID, workflowID) {
+            expect(stepID) == "step_1"
+            expect(workflowID) == "wf_test"
+        }
+    }
+
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = { Self.createOfferings([offering], currentOfferingID: offering.identifier) }
+        purchases.workflowBlock = { _ in
+            try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialScreenID: "missing_screen"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(for: .offering(offering), remoteConfigEnabled: true)
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialScreenNotFound(screenID, workflowID) {
+            expect(screenID) == "missing_screen"
             expect(workflowID) == "wf_test"
         }
     }
@@ -741,12 +784,14 @@ private extension PaywallViewConfigurationTests {
 
     static func createWorkflowDataResult(
         offeringIdentifier: String,
-        initialStepID: String = "step_1"
+        initialStepID: String = "step_1",
+        initialScreenID: String? = "screen_1"
     ) throws -> WorkflowDataResult {
         return .init(
             workflow: try self.createWorkflow(
                 offeringIdentifier: offeringIdentifier,
-                initialStepID: initialStepID
+                initialStepID: initialStepID,
+                initialScreenID: initialScreenID
             ),
             uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
@@ -755,8 +800,10 @@ private extension PaywallViewConfigurationTests {
 
     static func createWorkflow(
         offeringIdentifier: String,
-        initialStepID: String = "step_1"
+        initialStepID: String = "step_1",
+        initialScreenID: String? = "screen_1"
     ) throws -> PublishedWorkflow {
+        let screenIdentifier = initialScreenID.map { ",\n              \"screen_id\": \"\($0)\"" } ?? ""
         let json = """
         {
           "id": "wf_test",
@@ -765,8 +812,7 @@ private extension PaywallViewConfigurationTests {
           "steps": {
             "step_1": {
               "id": "step_1",
-              "type": "screen",
-              "screen_id": "screen_1"
+              "type": "screen"\(screenIdentifier)
             }
           },
           "screens": {
