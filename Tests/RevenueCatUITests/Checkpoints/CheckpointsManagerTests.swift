@@ -263,20 +263,137 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
-    func testResolvedOfferingProducesReceivedOfferingResultWithoutPresenting() async throws {
+    func testResolvedOfferingUsesCallSitePaywallPresenter() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
             executor: executor
         )
-        let result = try await manager.checkpoint(identifier: "onboarding", params: .init())
+        var receivedParams: PaywallPresentationParams?
+        let result = try await manager.checkpoint(
+            identifier: "onboarding",
+            params: .init(customVariables: ["source": "test"], paywallPresenter: { params, completion in
+                receivedParams = params
+                completion(.closed)
+            })
+        )
 
-        guard let received = result as? CheckpointResult.ReceivedOffering else {
-            return XCTFail("Expected a received-offering result")
+        guard let presented = result as? CheckpointResult.PaywallPresented else {
+            return XCTFail("Expected a presented-paywall result")
         }
-        XCTAssertEqual(received.offering.identifier, "offering-id")
-        // Data-only, so it never claims the executor's one-presentation-at-a-time slot.
+        XCTAssertTrue(presented.paywallOutcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertEqual(receivedParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(receivedParams?.customVariables, ["source": "test"])
+        XCTAssertEqual(receivedParams?.offering.identifier, "offering-id")
         XCTAssertTrue(executor.presentations.isEmpty)
+    }
+
+    func testCallSitePaywallPresenterOverridesGlobalPresenter() async throws {
+        let global = MockPaywallPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+        manager.paywallPresenter = global
+        var localCallCount = 0
+
+        _ = try await manager.checkpoint(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in
+                localCallCount += 1
+                completion(.closed)
+            })
+        )
+
+        XCTAssertEqual(localCallCount, 1)
+        XCTAssertEqual(global.callCount, 0)
+    }
+
+    func testResolvedOfferingUsesGlobalPaywallPresenter() async throws {
+        let global = MockPaywallPresenter()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+        manager.paywallPresenter = global
+
+        _ = try await manager.checkpoint(identifier: "onboarding", params: .init())
+
+        XCTAssertEqual(global.callCount, 1)
+        XCTAssertEqual(global.receivedParams?.checkpointIdentifier, "onboarding")
+        XCTAssertEqual(global.receivedParams?.offering.identifier, "offering-id")
+    }
+
+    func testNavigatedBackSuppressesCheckpointCallback() async {
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in completion(.navigatedBack) })
+        )
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected a backed-out presentation to suppress the callback")
+        }
+    }
+
+    func testClosedCompletesCheckpointCallbackWithoutEntitlements() async {
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in completion(.closed) })
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+    }
+
+    func testContinuedWithoutPurchasingCompletesCheckpointCallbackWithoutEntitlements() async {
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+
+        let result = await manager.checkpointForCallback(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in completion(.continuedWithoutPurchasing) })
+        )
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+    }
+
+    func testPurchasedUsesCustomerInfoReportedByPaywallPresenter() async throws {
+        let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
+            executor: MockCheckpointWorkflowExecutor()
+        )
+
+        let result = try await manager.checkpoint(
+            identifier: "onboarding",
+            params: .init(paywallPresenter: { _, completion in
+                completion(.purchased(customerInfo: customerInfo, transaction: nil))
+            })
+        )
+
+        guard let purchase = (result as? CheckpointResult.PaywallPresented)?.paywallOutcome
+            as? CheckpointPaywallOutcome.Purchased else {
+            return XCTFail("Expected a purchased paywall outcome")
+        }
+        XCTAssertEqual(purchase.customerInfo, customerInfo)
+        XCTAssertNil(purchase.transaction)
     }
 
     func testResolutionErrorIsForwarded() async {
@@ -639,6 +756,24 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
             throw error
         }
         return self.execution
+    }
+
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class MockPaywallPresenter: PaywallPresenter {
+
+    private(set) var callCount = 0
+    private(set) var receivedParams: PaywallPresentationParams?
+
+    func present(
+        params: PaywallPresentationParams,
+        completion: @escaping PaywallPresentationCompletion
+    ) {
+        self.callCount += 1
+        self.receivedParams = params
+        completion(.closed)
     }
 
 }

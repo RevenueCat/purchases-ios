@@ -17,6 +17,33 @@ import Foundation
 import RevenueCat
 @_spi(CheckpointsInternal) import RevenueCatUI
 
+enum PaywallPresenterMode: String, CaseIterable, Identifiable {
+    case `default`
+    case global
+    case localOverride
+
+    var id: Self { self }
+
+    var title: String {
+        switch self {
+        case .default: return "Default"
+        case .global: return "Global"
+        case .localOverride: return "Local"
+        }
+    }
+
+    var description: String {
+        switch self {
+        case .default:
+            return "For an offering step, RevenueCat presents its default paywall."
+        case .global:
+            return "For an offering step, Purchases.shared uses the blue global presenter."
+        case .localOverride:
+            return "For an offering step, each checkpoint call uses the purple local override."
+        }
+    }
+}
+
 final class CheckpointDemoModel: ObservableObject {
 
     struct OutcomeAlert: Identifiable {
@@ -26,6 +53,7 @@ final class CheckpointDemoModel: ObservableObject {
     }
 
     @Published private(set) var outcomeAlert: OutcomeAlert?
+    @Published var paywallPresenterMode: PaywallPresenterMode = .default
 
     private var pendingOutcomeAlerts: [OutcomeAlert] = []
 
@@ -60,6 +88,20 @@ final class CheckpointDemoModel: ObservableObject {
             title: "Checkpoint failed",
             message: error.localizedDescription
         )
+    }
+
+    @MainActor
+    func configurePaywallPresenter() {
+        Purchases.shared.checkpointPaywallPresenter = switch self.paywallPresenterMode {
+        case .global: GlobalPaywallPresenter.shared
+        case .default, .localOverride: nil
+        }
+    }
+
+    @MainActor
+    var localPaywallPresenter: PaywallPresentationHandler? {
+        guard self.paywallPresenterMode == .localOverride else { return nil }
+        return LocalPaywallPresenter.shared
     }
 
     // MARK: - Demo-only result presentation
