@@ -40,8 +40,7 @@ struct PaywallViewConfiguration {
         displayCloseButton: Bool = false,
         introEligibility: TrialOrIntroEligibilityChecker? = nil,
         purchaseHandler: PurchaseHandler,
-        promoOfferCache: PaywallPromoOfferCache? = nil,
-        workflowPresentationErrorHandler: ((NSError) -> Void)? = nil
+        promoOfferCache: PaywallPromoOfferCache? = nil
     ) {
         self.content = content
         self.mode = mode
@@ -50,12 +49,33 @@ struct PaywallViewConfiguration {
         self.introEligibility = introEligibility
         self.purchaseHandler = purchaseHandler
         self.promoOfferCache = promoOfferCache
-        #if !os(tvOS)
-        self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
-        #endif
 
         PurchasesUIService.activateIfNeeded()
     }
+
+#if !os(tvOS)
+    init(
+        content: Content,
+        mode: PaywallViewMode = .default,
+        fonts: PaywallFontProvider = DefaultPaywallFontProvider(),
+        displayCloseButton: Bool = false,
+        introEligibility: TrialOrIntroEligibilityChecker? = nil,
+        purchaseHandler: PurchaseHandler,
+        promoOfferCache: PaywallPromoOfferCache? = nil,
+        workflowPresentationErrorHandler: ((NSError) -> Void)?
+    ) {
+        self.init(
+            content: content,
+            mode: mode,
+            fonts: fonts,
+            displayCloseButton: displayCloseButton,
+            introEligibility: introEligibility,
+            purchaseHandler: purchaseHandler,
+            promoOfferCache: promoOfferCache
+        )
+        self.workflowPresentationErrorHandler = workflowPresentationErrorHandler
+    }
+#endif
 
 }
 
