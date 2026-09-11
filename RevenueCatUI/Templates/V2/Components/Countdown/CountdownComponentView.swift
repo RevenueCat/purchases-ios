@@ -14,6 +14,34 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct CountdownComponentView: View {
 
+    @EnvironmentObject
+    private var packageContext: PackageContext
+
+    @EnvironmentObject
+    private var introOfferEligibilityContext: IntroOfferEligibilityContext
+
+    @EnvironmentObject
+    private var paywallPromoOfferCache: PaywallPromoOfferCache
+
+    @Environment(\.componentViewState)
+    private var componentViewState
+
+    @Environment(\.screenCondition)
+    private var screenCondition
+
+    @Environment(\.customPaywallVariables)
+    private var customVariables
+    @Environment(\.selectedPackageId)
+    private var selectedPackageId
+
+    @Environment(\.paywallStateValues)
+    private var paywallStateValues
+    @Environment(\.paywallStateDefaults)
+    private var paywallStateDefaults
+
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     private let viewModel: CountdownComponentViewModel
     private let onDismiss: () -> Void
 
@@ -31,7 +59,28 @@ struct CountdownComponentView: View {
         ))
     }
 
+    private var visible: Bool {
+        let currentPackage = self.packageContext.package
+        return self.viewModel.visible(
+            state: self.componentViewState,
+            condition: self.screenCondition,
+            isEligibleForIntroOffer: self.introOfferEligibilityContext.isEligible(package: currentPackage),
+            isEligibleForPromoOffer: self.paywallPromoOfferCache.isMostLikelyEligible(for: currentPackage),
+            selectedPackageId: self.selectedPackageId,
+            customVariables: self.customVariables,
+            stateValues: self.paywallStateValues,
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
+        )
+    }
+
     var body: some View {
+        if self.visible {
+            self.countdownContent
+        }
+    }
+
+    private var countdownContent: some View {
         Group {
             if let endStackViewModel = viewModel.endStackViewModel, countdownState.hasEnded {
                 StackComponentView(
@@ -99,6 +148,7 @@ struct CountdownComponentView_Previews: PreviewProvider {
                         padding: .init(top: 20, bottom: 20, leading: 20, trailing: 20)
                     )
                 ),
+                uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
                 // swiftlint:disable:next force_try
                 countdownStackViewModel: try! .init(
                     component: .init(

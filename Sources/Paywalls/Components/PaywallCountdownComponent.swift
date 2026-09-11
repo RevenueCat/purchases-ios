@@ -21,6 +21,7 @@ import Foundation
 
         let type: ComponentType
         public let name: String?
+        public let visible: Bool?
         public let style: CountdownStyle
         public let countFrom: CountFrom
         public let countdownStack: PaywallComponent.StackComponent
@@ -31,6 +32,7 @@ import Foundation
         public init(
             id: String? = nil,
             name: String? = nil,
+            visible: Bool? = nil,
             style: CountdownStyle,
             countFrom: CountFrom,
             countdownStack: PaywallComponent.StackComponent,
@@ -40,6 +42,7 @@ import Foundation
         ) {
             self.type = .countdown
             self.name = name
+            self.visible = visible
             self.style = style
             self.countFrom = countFrom
             self.countdownStack = countdownStack
@@ -51,6 +54,7 @@ import Foundation
         private enum CodingKeys: String, CodingKey {
             case type
             case name
+            case visible
             case style
             case countFrom
             case countdownStack
@@ -63,6 +67,7 @@ import Foundation
             let container = try decoder.container(keyedBy: CodingKeys.self)
             self.type = try container.decode(ComponentType.self, forKey: .type)
             self.name = try container.decodeIfPresent(String.self, forKey: .name)
+            self.visible = try container.decodeIfPresent(Bool.self, forKey: .visible)
             self.style = try container.decode(CountdownStyle.self, forKey: .style)
             self.countFrom = try container.decode(CountFrom.self, forKey: .countFrom)
             self.countdownStack = try container.decode(PaywallComponent.StackComponent.self, forKey: .countdownStack)
@@ -78,6 +83,7 @@ import Foundation
             var container = encoder.container(keyedBy: CodingKeys.self)
             try container.encode(type, forKey: .type)
             try container.encodeIfPresent(name, forKey: .name)
+            try container.encodeIfPresent(visible, forKey: .visible)
             try container.encode(style, forKey: .style)
             try container.encode(countFrom, forKey: .countFrom)
             try container.encode(countdownStack, forKey: .countdownStack)
@@ -89,6 +95,7 @@ import Foundation
         public func hash(into hasher: inout Hasher) {
             hasher.combine(type)
             hasher.combine(name)
+            hasher.combine(visible)
             hasher.combine(style)
             hasher.combine(countFrom)
             hasher.combine(countdownStack)
@@ -100,6 +107,7 @@ import Foundation
         public static func == (lhs: CountdownComponent, rhs: CountdownComponent) -> Bool {
             return lhs.type == rhs.type &&
                    lhs.name == rhs.name &&
+                   lhs.visible == rhs.visible &&
                    lhs.style == rhs.style &&
                    lhs.countFrom == rhs.countFrom &&
                    lhs.countdownStack == rhs.countdownStack &&
@@ -167,18 +175,25 @@ import Foundation
     }
 
     final class PartialCountdownComponent: PaywallPartialComponent {
+        public let visible: Bool?
         public let style: CountdownComponent.CountdownStyle?
 
-        public init(style: CountdownComponent.CountdownStyle? = nil) {
+        public init(
+            visible: Bool? = nil,
+            style: CountdownComponent.CountdownStyle? = nil
+        ) {
+            self.visible = visible
             self.style = style
         }
 
         public func hash(into hasher: inout Hasher) {
+            hasher.combine(visible)
             hasher.combine(style)
         }
 
         public static func == (lhs: PartialCountdownComponent, rhs: PartialCountdownComponent) -> Bool {
-            return lhs.style == rhs.style
+            return lhs.visible == rhs.visible &&
+                   lhs.style == rhs.style
         }
     }
 
