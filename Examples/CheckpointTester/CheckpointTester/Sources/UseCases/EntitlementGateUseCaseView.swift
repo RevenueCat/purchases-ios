@@ -88,14 +88,25 @@ struct EntitlementGateUseCaseView: View {
                 return
             }
 
-            let result = try await Purchases.shared.checkpoint(
+            Purchases.shared.checkpoint(
                 "entitlement_gate",
                 customVariables: self.entitlementCheckpointCustomVariables
-            )
-            self.handle(result)
+            ) { result in
+                self.isRunning = false
+                self.handle(result)
+            }
         } catch {
             self.status = "Failed: \(error.localizedDescription)"
         }
+    }
+
+    @MainActor
+    private func handle(_ result: CheckpointFlowResult?) {
+        let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+        self.activeEntitlementIdentifiers = Array(Set(self.activeEntitlementIdentifiers + obtained)).sorted()
+        self.status = obtained.isEmpty
+            ? "Checkpoint completed without a new entitlement. Content remains locked."
+            : "Obtained: \(obtained.joined(separator: ", "))."
     }
 
     @MainActor

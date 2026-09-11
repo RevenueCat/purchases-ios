@@ -110,18 +110,16 @@ struct OnboardingUseCaseView: View {
         guard !self.isRunning else { return }
         self.isRunning = true
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "onboarding_complete",
-                customVariables: self.personalizationCheckpointCustomVariables
-            )
-            self.checkpointResult = Self.describe(result)
-        } catch {
-            self.checkpointResult = "Checkpoint failed: \(error.localizedDescription)"
+        Purchases.shared.checkpoint(
+            "onboarding_complete",
+            customVariables: self.personalizationCheckpointCustomVariables
+        ) { result in
+            self.checkpointResult = result == nil
+                ? "No matching flow."
+                : "Checkpoint flow completed."
+            self.isRunning = false
+            self.step = .done
         }
-
-        self.isRunning = false
-        self.step = .done
     }
 
     private static func describe(_ result: CheckpointResult) -> String {

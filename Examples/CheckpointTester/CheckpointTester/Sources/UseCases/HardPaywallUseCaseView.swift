@@ -76,16 +76,13 @@ struct HardPaywallUseCaseView: View {
     private func runCheckpoint() async {
         guard !self.isRunning else { return }
         self.isRunning = true
-        defer { self.isRunning = false }
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "hard_paywall",
-                customVariables: self.customVariablesForNextAttempt()
-            )
-            self.handle(result)
-        } catch {
-            self.status = "Failed: \(error.localizedDescription)"
+        Purchases.shared.checkpoint(
+            "hard_paywall",
+            customVariables: self.customVariablesForNextAttempt()
+        ) { _ in
+            self.isRunning = false
+            self.hasAccess = true
+            self.status = "Checkpoint passed. Content unlocked."
         }
     }
 

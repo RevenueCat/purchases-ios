@@ -36,6 +36,16 @@ final class CheckpointDemoModel: ObservableObject {
         )
     }
 
+    func showOutcome(_ result: CheckpointFlowResult?, checkpointIdentifier: String) {
+        let identifiers = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+        self.showOutcomeAlert(
+            title: "Checkpoint passed",
+            message: identifiers.isEmpty
+                ? "Checkpoint · \(checkpointIdentifier)\n\nNo new entitlements."
+                : "Checkpoint · \(checkpointIdentifier)\n\nObtained: \(identifiers.joined(separator: ", "))"
+        )
+    }
+
     func showError(_ error: Error) {
         self.showOutcomeAlert(
             title: "Checkpoint failed",
