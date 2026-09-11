@@ -93,7 +93,7 @@ final class CheckpointsManagerTests: TestCase {
 
     func testResolvedWorkflowProducesPaywallResult() async throws {
         let executor = MockCheckpointWorkflowExecutor()
-        executor.outcome = CheckpointPaywallOutcome.Dismissed.shared
+        executor.execution = .completed(CheckpointPaywallOutcome.Dismissed.shared)
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
             executor: executor
@@ -540,7 +540,9 @@ private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
     var error: Error?
     private(set) var presentations: [CheckpointPresentation] = []
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+    func execute(
+        _ presentation: CheckpointPresentation
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
         self.presentations.append(presentation)
         if let error {
             throw error
