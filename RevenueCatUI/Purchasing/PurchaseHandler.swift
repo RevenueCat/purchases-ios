@@ -825,6 +825,58 @@ extension PurchaseHandler {
 
     }
 
+    // MARK: - Hosted checkout
+
+    /// Reports a checkout the customer completed on a page presented inside the app.
+    ///
+    /// There is no transaction to hand over: what was bought is known to the backend, so the paywall follows
+    /// the refreshed `CustomerInfo`.
+    @MainActor
+    func handleHostedCheckoutPurchase() async {
+        #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
+        // The purchase was made outside StoreKit, so whatever is cached was fetched before it happened.
+        self.purchases.invalidateCustomerInfoCache()
+        #endif
+
+        await self.reportHostedCheckoutOutcome(userCancelled: false)
+    }
+
+    /// Reports a checkout the customer abandoned on a page presented inside the app.
+    ///
+    /// - Parameter package: The package the checkout was started for, when it is still known. Only used to
+    /// track the cancellation.
+    @MainActor
+    func handleHostedCheckoutCancellation(package: Package?) async {
+        if let package {
+            self.trackCancelledPurchase(package: package)
+        }
+
+        await self.reportHostedCheckoutOutcome(userCancelled: true)
+    }
+
+    @MainActor
+    private func reportHostedCheckoutOutcome(userCancelled: Bool) async {
+        let customerInfo: CustomerInfo
+        do {
+            customerInfo = try await self.purchases.customerInfo()
+        } catch {
+            self.purchaseError = error
+            return
+        }
+
+        let resultInfo: PurchaseResultData = (transaction: nil,
+                                              customerInfo: customerInfo,
+                                              userCancelled: userCancelled)
+
+        // Set sessionPurchaseResult BEFORE setResult so that handleMainPaywallDismiss
+        // sees the correct state when the sheet dismisses.
+        withAnimation(Constants.defaultAnimation) {
+            self.sessionPurchaseResult = resultInfo
+        }
+
+        self.setResult(resultInfo)
+    }
+
     // MARK: - Restore
 
     func restorePurchases() async throws -> (info: CustomerInfo, success: Bool) {
