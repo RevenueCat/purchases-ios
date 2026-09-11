@@ -30,13 +30,15 @@ import Foundation
             localizations: [:],
             variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
         ),
-        presentedOfferingContext: PresentedOfferingContext? = nil
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
         return try self.makeContext(
             workflow: workflow,
             offerings: .preview(offerings: offerings),
             uiConfig: uiConfig,
-            presentedOfferingContext: presentedOfferingContext
+            presentedOfferingContext: presentedOfferingContext,
+            workflowBlobRef: workflowBlobRef
         )
     }
 
@@ -49,14 +51,16 @@ import Foundation
             localizations: [:],
             variableConfig: .init(variableCompatibilityMap: [:], functionCompatibilityMap: [:])
         ),
-        presentedOfferingContext: PresentedOfferingContext? = nil
+        presentedOfferingContext: PresentedOfferingContext? = nil,
+        workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
         return try PurchaseHandler.makeWorkflowContext(
             workflow: workflow,
             uiConfig: uiConfig,
             allOfferings: offerings,
             presentedOfferingContext: presentedOfferingContext,
-            triggerOfferingIdentifier: workflow.id
+            triggerOfferingIdentifier: workflow.id,
+            workflowBlobRef: workflowBlobRef
         )
     }
 

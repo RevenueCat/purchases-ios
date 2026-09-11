@@ -44,7 +44,7 @@ extension FeatureEventsRequest {
             let isLastStep: Bool?
             let experimentId: String?
             let experimentVariant: String?
-            let isLastVariantStep: Bool?
+            let workflowBlobRef: String?
         }
         // swiftlint:enable nesting
 
@@ -84,9 +84,9 @@ extension FeatureEventsRequest.WorkflowEvent {
                     entryReason: wire.entryReason,
                     isFirstStep: event.data.isFirstStep,
                     isLastStep: event.data.isLastStep,
-                    experimentId: event.data.experimentId,
-                    experimentVariant: event.data.experimentVariant,
-                    isLastVariantStep: event.data.isLastVariantStep
+                    experimentId: event.data.experiment?.experimentId,
+                    experimentVariant: event.data.experiment?.experimentVariant,
+                    workflowBlobRef: event.data.experiment?.workflowBlobRef
                 )
             )
         } catch {
@@ -180,7 +180,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         try container.encodeIfPresent(isLastStep, forKey: .isLastStep)
         try container.encodeIfPresent(experimentId, forKey: .experimentId)
         try container.encodeIfPresent(experimentVariant, forKey: .experimentVariant)
-        try container.encodeIfPresent(isLastVariantStep, forKey: .isLastVariantStep)
+        try container.encodeIfPresent(workflowBlobRef, forKey: .workflowBlobRef)
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -195,7 +195,7 @@ extension FeatureEventsRequest.WorkflowEvent.Properties: Encodable {
         case isLastStep = "is_last_step"
         case experimentId = "experiment_id"
         case experimentVariant = "experiment_variant"
-        case isLastVariantStep = "is_last_variant_step"
+        case workflowBlobRef = "blob_ref"
 
     }
 

@@ -65,7 +65,8 @@ class PackageComponentViewModel {
         isEligibleForIntroOffer: Bool,
         isEligibleForPromoOffer: Bool,
         selectedPackageId: String?,
-        customVariables: [String: CustomVariableValue]
+        customVariables: [String: CustomVariableValue],
+        windowSize: CGSize? = nil
     ) -> Bool {
         return self.visibilityResolver.visible(
             state: state,
@@ -73,7 +74,8 @@ class PackageComponentViewModel {
             isEligibleForIntroOffer: isEligibleForIntroOffer,
             isEligibleForPromoOffer: isEligibleForPromoOffer,
             selectedPackageId: selectedPackageId,
-            customVariables: customVariables
+            customVariables: customVariables,
+            windowSize: windowSize
         )
     }
 

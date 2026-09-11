@@ -28,8 +28,8 @@ enum PredicateConformanceRunner {
 
     /// Fixture-declared variables take precedence over the reserved
     /// constants on a name collision.
-    private static func scope(for fixture: PredicateConformanceFixtureCase) -> [String: Value] {
-        reservedConstants.merging(fixture.variables) { _, fixtureValue in fixtureValue }
+    private static func scope(for fixture: PredicateConformanceFixtureCase) -> RulesEngine.ObjectValue {
+        .init(reservedConstants.merging(fixture.variables) { _, fixtureValue in fixtureValue })
     }
 
     static func run(_ fixture: PredicateConformanceFixtureCase) throws {
