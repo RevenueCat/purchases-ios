@@ -216,7 +216,7 @@ private struct LocalOverridePaywallPopup: View {
                     Text("Local override")
                 }
                 .font(.title.bold())
-                Text("This is app-owned UI, presented only for this checkpoint call.")
+                Text("This is a custom paywall, presented only for this checkpoint call.")
                     .font(.subheadline)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)

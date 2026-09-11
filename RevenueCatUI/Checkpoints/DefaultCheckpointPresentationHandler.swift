@@ -15,12 +15,13 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Routes checkpoint presentations to an app-owned presenter or RevenueCat's default presenter.
+/// Routes checkpoint presentations to a custom presenter or RevenueCat's default presenter.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler {
 
     private let executor: CheckpointExecutor
+    private let defaultPaywallPresenter: DefaultPaywallPresenting
     private let fetchCustomerInfo: () async throws -> CustomerInfo
     var paywallPresenter: PaywallPresenter?
 
@@ -29,44 +30,56 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         fetchCustomerInfo: @escaping () async throws -> CustomerInfo
     ) {
         self.executor = executor
+        self.defaultPaywallPresenter = DefaultPaywallPresenter()
         self.fetchCustomerInfo = fetchCustomerInfo
     }
 
-    func present(
-        _ presentation: CheckpointPresentation,
-        session: CheckpointPresentationCoordinator.Session,
-        paywallPresentationHandler: PaywallPresentationHandler?,
-        paywallPresentationParams: PaywallPresentationParams?
-    ) async throws -> PaywallOutcome {
-        switch presentation {
-        case .workflow:
-            session.setCancellationHandler { [weak self] in
-                self?.executor.cancel()
-            }
-            return try await self.executor.execute(presentation).outcome
-        case .offering:
-            if let presentationHandler = paywallPresentationHandler,
-               let paywallPresentationParams {
-                return try await OfferingPresentation(
-                    session: session,
-                    fetchCustomerInfo: self.fetchCustomerInfo
-                ).present(
-                    params: paywallPresentationParams,
-                    presentationHandler: presentationHandler
-                )
-            } else {
-                return try await self.executor.execute(presentation).outcome
-            }
-        }
+    init(
+        executor: CheckpointExecutor,
+        defaultPaywallPresenter: DefaultPaywallPresenting,
+        fetchCustomerInfo: @escaping () async throws -> CustomerInfo
+    ) {
+        self.executor = executor
+        self.defaultPaywallPresenter = defaultPaywallPresenter
+        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
-    /// Bridges the app-owned presenter's completion callback into the checkpoint lifecycle.
+    func presentWorkflow(
+        _ presentation: CheckpointPresentation,
+        session: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        session.setCancellationHandler { [weak self] in
+            self?.executor.cancel()
+        }
+        return try await self.executor.execute(presentation)
+    }
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        session: CheckpointPresentationCoordinator.Session,
+        paywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        guard let paywallPresentationHandler else {
+            return try await self.defaultPaywallPresenter.present(params: params, session: session)
+        }
+        return try await OfferingPresentation(
+            session: session,
+            fetchCustomerInfo: self.fetchCustomerInfo
+        ).present(
+            params: params,
+            presentationHandler: paywallPresentationHandler
+        )
+    }
+
+    /// Bridges the custom presenter's completion callback into the checkpoint lifecycle.
     @MainActor
     private final class OfferingPresentation {
 
         private let session: CheckpointPresentationCoordinator.Session
         private let fetchCustomerInfo: () async throws -> CustomerInfo
-        private var pendingContinuation: CheckedContinuation<PaywallOutcome, Error>?
+        private var pendingContinuation: CheckedContinuation<
+            CheckpointExecutionResult<CheckpointPaywallOutcome>, Error
+        >?
         private var hasReportedCompletion = false
         private var fetchTask: Task<Void, Never>?
 
@@ -81,7 +94,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         func present(
             params: PaywallPresentationParams,
             presentationHandler: PaywallPresentationHandler
-        ) async throws -> PaywallOutcome {
+        ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
             self.session.setCancellationHandler { [weak self] in
                 self?.fail(error: CancellationError(), force: true)
             }
@@ -113,9 +126,9 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             if result === PaywallPresentationResult.purchased {
                 self.fetchCustomerInfoAfterPurchase()
             } else if result === PaywallPresentationResult.navigatedBack {
-                self.complete(outcome: .backedOut)
+                self.complete(execution: .backedOut(CheckpointPaywallOutcome.Dismissed.shared))
             } else {
-                self.complete(outcome: .dismissed)
+                self.complete(execution: .completed(CheckpointPaywallOutcome.Dismissed.shared))
             }
         }
 
@@ -124,18 +137,21 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                 guard let self else { return }
                 do {
                     let customerInfo = try await self.fetchCustomerInfo()
-                    self.complete(outcome: .purchased(transaction: nil, customerInfo: customerInfo))
+                    self.complete(execution: .completed(CheckpointPaywallOutcome.Purchased(
+                        transaction: nil,
+                        customerInfo: customerInfo
+                    )))
                 } catch {
-                    self.complete(outcome: .error(error as NSError))
+                    self.complete(execution: .completed(CheckpointPaywallOutcome.Error(error: error as NSError)))
                 }
             }
         }
 
-        private func complete(outcome: PaywallOutcome) {
+        private func complete(execution: CheckpointExecutionResult<CheckpointPaywallOutcome>) {
             guard self.session.isActive,
                   let continuation = self.takeContinuation() else { return }
             self.fetchTask = nil
-            continuation.resume(returning: outcome)
+            continuation.resume(returning: execution)
         }
 
         private func fail(error: Error, force: Bool = false) {
@@ -149,7 +165,9 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             continuation.resume(throwing: error)
         }
 
-        private func takeContinuation() -> CheckedContinuation<PaywallOutcome, Error>? {
+        private func takeContinuation() -> CheckedContinuation<
+            CheckpointExecutionResult<CheckpointPaywallOutcome>, Error
+        >? {
             defer { self.pendingContinuation = nil }
             return self.pendingContinuation
         }
@@ -157,3 +175,136 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
     }
 
 }
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+protocol DefaultPaywallPresenting: AnyObject {
+    func present(
+        params: PaywallPresentationParams,
+        session: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
+}
+
+#if canImport(UIKit) && !os(tvOS) && !os(watchOS)
+import UIKit
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, *)
+private final class DefaultPaywallPresenter: NSObject, DefaultPaywallPresenting, PaywallViewControllerDelegate {
+
+    private typealias Continuation = CheckedContinuation<CheckpointExecutionResult<CheckpointPaywallOutcome>, Error>
+
+    private var continuation: Continuation?
+    private weak var presentedViewController: PaywallViewController?
+    private var outcome: CheckpointPaywallOutcome = CheckpointPaywallOutcome.Dismissed.shared
+
+    func present(
+        params: PaywallPresentationParams,
+        session: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        guard let presentationContext = UIApplication.extensionSafeApplication?.currentPresentationViewController else {
+            throw CheckpointError.noPresentationContext
+        }
+        guard self.continuation == nil else {
+            throw CheckpointError.operationAlreadyInProgress
+        }
+
+        let controller = PaywallViewController(offering: params.offering, displayCloseButton: true)
+        controller.customVariables = params.customVariables
+        controller.delegate = self
+        self.presentedViewController = controller
+        self.outcome = CheckpointPaywallOutcome.Dismissed.shared
+        session.setCancellationHandler { [weak self] in self?.cancel() }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            presentationContext.present(controller, animated: true)
+            if controller.presentingViewController == nil {
+                self.fail(CheckpointError.presentationFailed)
+            }
+        }
+    }
+
+    private func cancel() {
+        guard let continuation = self.takeContinuation() else { return }
+        guard let controller = self.presentedViewController else {
+            continuation.resume(throwing: CancellationError())
+            return
+        }
+        self.presentedViewController = nil
+        controller.dismiss(animated: true) {
+            continuation.resume(throwing: CancellationError())
+        }
+    }
+
+    private func finish() {
+        guard let continuation = self.takeContinuation() else { return }
+        self.presentedViewController = nil
+        continuation.resume(returning: .completed(self.outcome))
+    }
+
+    private func fail(_ error: Error) {
+        guard let continuation = self.takeContinuation() else { return }
+        self.presentedViewController = nil
+        continuation.resume(throwing: error)
+    }
+
+    private func takeContinuation() -> Continuation? {
+        defer { self.continuation = nil }
+        return self.continuation
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishPurchasingWith customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
+    ) {
+        MainActor.assumeIsolated {
+            self.outcome = CheckpointPaywallOutcome.Purchased(transaction: transaction, customerInfo: customerInfo)
+        }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFinishRestoringWith customerInfo: CustomerInfo
+    ) {
+        MainActor.assumeIsolated {
+            self.outcome = CheckpointPaywallOutcome.Restored(customerInfo: customerInfo)
+        }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailPurchasingWith error: NSError
+    ) {
+        MainActor.assumeIsolated { self.outcome = CheckpointPaywallOutcome.Error(error: error) }
+    }
+
+    nonisolated func paywallViewController(
+        _ controller: PaywallViewController,
+        didFailRestoringWith error: NSError
+    ) {
+        MainActor.assumeIsolated { self.outcome = CheckpointPaywallOutcome.Error(error: error) }
+    }
+
+    nonisolated func paywallViewControllerDidOpenWebCheckout(_ controller: PaywallViewController) {
+        MainActor.assumeIsolated { self.outcome = CheckpointPaywallOutcome.WebCheckoutOpened.shared }
+    }
+
+    nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
+        MainActor.assumeIsolated { self.finish() }
+    }
+
+}
+#else
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private final class DefaultPaywallPresenter: DefaultPaywallPresenting {
+    func present(
+        params: PaywallPresentationParams,
+        session: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        throw CheckpointError.missingPresenter
+    }
+}
+#endif

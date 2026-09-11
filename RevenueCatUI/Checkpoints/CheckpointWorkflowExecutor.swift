@@ -60,6 +60,13 @@ protocol CheckpointExecutor: AnyObject {
 
 }
 
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension CheckpointExecutor {
+
+    func cancel() {}
+
+}
+
 /// Presents a resolved workflow and reports its terminal outcome through a delegate.
 @MainActor
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
