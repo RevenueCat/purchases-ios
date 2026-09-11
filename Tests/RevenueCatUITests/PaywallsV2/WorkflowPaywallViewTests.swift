@@ -65,13 +65,13 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .navigateWithinWorkflow
     }
 
-    func testNavigateBackActionBacksOutOfCheckpointAtInitialStep() {
+    func testNavigateBackActionDismissesAsNavigatedBackAtInitialStep() {
         let action = WorkflowPaywallView.navigateBackAction(
             canNavigateBack: false,
             hasPurchasedInSession: false
         )
 
-        expect(action) == .backOutOfCheckpoint
+        expect(action) == .dismissAsNavigatedBack
     }
 
     func testNavigateBackActionDismissesNormallyAfterPurchaseAtInitialStep() {

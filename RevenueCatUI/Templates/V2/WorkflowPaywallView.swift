@@ -250,7 +250,7 @@ struct WorkflowPaywallView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
     @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
-    @Environment(\.workflowNavigateBackDismissalAction) private var workflowNavigateBackDismissalAction
+    @Environment(\.workflowDismissalObserver) private var workflowDismissalObserver
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
@@ -260,7 +260,7 @@ struct WorkflowPaywallView: View {
     enum NavigateBackAction: Equatable {
         case navigateWithinWorkflow
         case dismissWorkflow
-        case backOutOfCheckpoint
+        case dismissAsNavigatedBack
     }
 
     private enum Constants {
@@ -571,7 +571,7 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
-        .environment(\.workflowNavigateBackAction, self.handleNavigateBackAction)
+        .environment(\.workflowNavigateBackHandler, self.handleNavigateBack)
     }
 
     @ViewBuilder
@@ -655,9 +655,9 @@ struct WorkflowPaywallView: View {
         }
     }
 
-    /// A `navigate_back` action only backs out of a checkpoint when the workflow is already at its
-    /// initial step. At any deeper step it performs normal in-workflow navigation.
-    private func handleNavigateBackAction() {
+    /// A `navigate_back` action dismisses from the initial step. At any deeper step it performs
+    /// normal in-workflow navigation.
+    private func handleNavigateBack() {
         guard !self.transitionState.isTransitioning else { return }
 
         switch Self.navigateBackAction(
@@ -666,8 +666,8 @@ struct WorkflowPaywallView: View {
         ) {
         case .navigateWithinWorkflow, .dismissWorkflow:
             self.handleDismiss()
-        case .backOutOfCheckpoint:
-            self.workflowNavigateBackDismissalAction?()
+        case .dismissAsNavigatedBack:
+            self.workflowDismissalObserver?(.navigatedBack)
             self.onDismiss()
         }
     }
@@ -681,7 +681,7 @@ struct WorkflowPaywallView: View {
         } else if hasPurchasedInSession {
             return .dismissWorkflow
         } else {
-            return .backOutOfCheckpoint
+            return .dismissAsNavigatedBack
         }
     }
 

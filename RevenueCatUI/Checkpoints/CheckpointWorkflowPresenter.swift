@@ -71,7 +71,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.callStore.stage(update)
     }
 
-    func presentationDidDismiss(reason: PaywallViewController.WorkflowDismissalReason = .close) {
+    func presentationDidDismiss(reason: WorkflowDismissalReason = .close) {
         self.complete(reason: reason)
     }
 
@@ -94,7 +94,7 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
     }
 
-    private func complete(reason: PaywallViewController.WorkflowDismissalReason) {
+    private func complete(reason: WorkflowDismissalReason) {
         guard let call = self.callStore.remove() else { return }
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)

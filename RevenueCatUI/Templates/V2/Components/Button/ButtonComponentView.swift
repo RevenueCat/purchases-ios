@@ -61,7 +61,7 @@ struct ButtonComponentView: View {
     @Environment(\.urlOpenedNotifier) private var urlOpenedNotifier
     @Environment(\.workflowTriggerAction) private var workflowTriggerAction
     @Environment(\.closeWorkflowAction) private var closeWorkflowAction
-    @Environment(\.workflowNavigateBackAction) private var workflowNavigateBackAction
+    @Environment(\.workflowNavigateBackHandler) private var workflowNavigateBackHandler
     @Environment(\.workflowRenderingContext) private var workflowRenderingContext
 
     private let viewModel: ButtonComponentViewModel
@@ -213,8 +213,8 @@ struct ButtonComponentView: View {
     }
 
     private func navigateBack() {
-        if let workflowNavigateBackAction {
-            workflowNavigateBackAction()
+        if let workflowNavigateBackHandler {
+            workflowNavigateBackHandler()
         } else {
             onDismiss()
         }
