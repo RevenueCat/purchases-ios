@@ -627,6 +627,7 @@
 		AAAA44750000000000000002 /* ExternalPurchaseLinkResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000001 /* ExternalPurchaseLinkResult.swift */; };
 		AAAA44750000000000000012 /* ExternalPurchaseLinkResultTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */; };
 		AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44750000000000000021 /* ExternalPurchaseLink.swift */; };
+		AAAA44830000000000000012 /* HostedCheckout.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44830000000000000011 /* HostedCheckout.swift */; };
 		AAAA44740000000000000012 /* ExternalPurchaseManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000011 /* ExternalPurchaseManager.swift */; };
 		AAAA44740000000000000022 /* ExternalPurchaseStrings.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */; };
 		AAAA44740000000000000032 /* ExternalPurchaseManagerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */; };
@@ -2435,6 +2436,8 @@
 		AAAA44750000000000000011 /* ExternalPurchaseLinkResultTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkResultTests.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000021 /* ExternalPurchaseLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLink.swift; sourceTree = "<group>"; };
 		AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseLinkTests.swift; sourceTree = "<group>"; };
+		AAAA44830000000000000011 /* HostedCheckout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckout.swift; sourceTree = "<group>"; };
+		AAAA44830000000000000021 /* HostedCheckoutTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HostedCheckoutTests.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000011 /* ExternalPurchaseManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManager.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000021 /* ExternalPurchaseStrings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseStrings.swift; sourceTree = "<group>"; };
 		AAAA44740000000000000031 /* ExternalPurchaseManagerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExternalPurchaseManagerTests.swift; sourceTree = "<group>"; };
@@ -3660,6 +3663,7 @@
 				A1D3F80D2D524F51BA60157C /* ButtonComponentViewTests.swift */,
 				9F2A6D48C1B34E7295D8F0A3 /* BrowserNavigateToTests.swift */,
 				AAAA44750000000000000031 /* ExternalPurchaseLinkTests.swift */,
+				AAAA44830000000000000021 /* HostedCheckoutTests.swift */,
 				834DFBE817EAEDDF0179F323 /* PaywallZLayerScrollPolicyTests.swift */,
 				CF01A0F868569B5E2D5CA465 /* PaywallsV2LayoutFixtures.swift */,
 				DD6CFFCCD908DC638C42E150 /* RootViewLayoutSnapshotTests.swift */,
@@ -6345,6 +6349,7 @@
 				887A5FED2C1D037000E1A461 /* MockPurchases.swift */,
 				887A5FEE2C1D037000E1A461 /* PaywallPurchasesType.swift */,
 				AAAA44750000000000000021 /* ExternalPurchaseLink.swift */,
+				AAAA44830000000000000011 /* HostedCheckout.swift */,
 				887A5FEF2C1D037000E1A461 /* PurchaseHandler.swift */,
 				16E147A32F3B4C010089B609 /* PurchasesUIService.swift */,
 				887A5FF02C1D037000E1A461 /* PurchaseHandler+TestData.swift */,
@@ -9014,6 +9019,7 @@
 				887A60BE2C1D037000E1A461 /* PaywallFooterViewController.swift in Sources */,
 				DBD2A168300E81E20019DB7F /* VideoAudioSessionHandler.swift in Sources */,
 				AAAA44750000000000000022 /* ExternalPurchaseLink.swift in Sources */,
+				AAAA44830000000000000012 /* HostedCheckout.swift in Sources */,
 				887A608A2C1D037000E1A461 /* PurchaseHandler.swift in Sources */,
 				A82500013C8D000000000001 /* KeyWindowFocusResigner.swift in Sources */,
 				16E147A42F3B4C010089B609 /* PurchasesUIService.swift in Sources */,
