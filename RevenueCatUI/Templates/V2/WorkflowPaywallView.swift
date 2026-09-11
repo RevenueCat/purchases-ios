@@ -267,7 +267,7 @@ struct WorkflowPaywallView: View {
     private let showZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
-    private let onPresentationError: (NSError) -> Void
+    private let onPresentationError: ((NSError) -> Void)?
 
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
@@ -311,7 +311,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
-        self.onPresentationError = onPresentationError ?? { _ in }
+        self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
@@ -1002,7 +1002,7 @@ struct WorkflowPaywallView: View {
                 screenId: self.context.workflow.steps[stepId]?.screenId
             )
         )
-        self.onPresentationError(error)
+        self.onPresentationError?(error)
     }
 
 }
