@@ -30,7 +30,7 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         let error = NSError(domain: "test", code: 1)
 
         try presenter.present(presentation: Self.presentation(), delegate: delegate)
-        presenter.stage(outcome: CheckpointPaywallOutcome.Error(error: error))
+        presenter.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
 
         XCTAssertEqual(delegate.finishCount, 0)
         XCTAssertNotNil(store.call)
@@ -62,6 +62,66 @@ final class CheckpointWorkflowPresenterTests: TestCase {
             return XCTFail("Expected a configuration error outcome")
         }
         XCTAssertEqual(outcome.error, error)
+    }
+
+    func testWorkflowPresentationErrorDoesNotReplaceEarlierPurchaseOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        let transaction = StoreTransaction(MockStoreTransaction())
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewController(
+            controller,
+            didFinishPurchasingWith: TestData.customerInfo,
+            transaction: transaction
+        )
+        controller.simulateWorkflowPresentationError(error)
+        presenter.presentationDidDismiss()
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Purchased else {
+            return XCTFail("Expected the purchase outcome to win")
+        }
+        XCTAssertEqual(outcome.transaction, transaction)
+        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+    }
+
+    func testWorkflowPresentationErrorDoesNotReplaceEarlierRestoreOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewController(controller, didFinishRestoringWith: TestData.customerInfo)
+        controller.simulateWorkflowPresentationError(error)
+        presenter.presentationDidDismiss()
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Restored else {
+            return XCTFail("Expected the restore outcome to win")
+        }
+        XCTAssertEqual(outcome.customerInfo, TestData.customerInfo)
+    }
+
+    func testWorkflowPresentationErrorDoesNotReplaceEarlierWebCheckoutOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = try Self.renderablePresentation(customVariables: [:])
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = try presenter.makePaywallViewController(for: presentation)
+        let error = NSError(domain: ErrorCode.errorDomain, code: ErrorCode.configurationError.rawValue)
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewControllerDidOpenWebCheckout(controller)
+        controller.simulateWorkflowPresentationError(error)
+        presenter.presentationDidDismiss()
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.WebCheckoutOpened)
     }
 
     func testPurchaseCallbackPreservesTransaction() throws {
