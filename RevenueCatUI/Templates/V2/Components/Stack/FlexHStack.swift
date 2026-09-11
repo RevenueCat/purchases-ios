@@ -217,10 +217,9 @@ struct ConstrainedStackLayout: Layout {
 
         while !remainingIndices.isEmpty {
             let equalShare = remainingSpace / CGFloat(remainingIndices.count)
-            let minimumConstrained = remainingIndices.filter { equalShare < minimum($0) }
-            let constrained = minimumConstrained.isEmpty
-                ? remainingIndices.filter { equalShare > maximum($0) }
-                : minimumConstrained
+            let constrained = remainingIndices.filter {
+                equalShare < minimum($0) || equalShare > maximum($0)
+            }
 
             guard !constrained.isEmpty else {
                 for index in remainingIndices {
@@ -230,7 +229,7 @@ struct ConstrainedStackLayout: Layout {
             }
 
             for index in constrained {
-                let allocation = minimumConstrained.isEmpty ? maximum(index) : minimum(index)
+                let allocation = equalShare < minimum(index) ? minimum(index) : maximum(index)
                 result[index] = allocation
                 remainingSpace = max(0, remainingSpace - allocation)
                 remainingIndices.removeAll { $0 == index }
@@ -262,7 +261,8 @@ struct ConstrainedStackLayout: Layout {
         }
         let gapTotal = self.spacing * CGFloat(max(0, subviews.count - 1))
         let proposedMain = self.main(proposal)
-        let isFit = self.mainAxisSize.fitMinMax != nil
+        let isFit = self.mainAxisSize.isFit
+        let hasFitLimits = self.mainAxisSize.fitMinMax?.hasLimit == true
         var childSizes = Array(repeating: CGSize.zero, count: subviews.count)
         var nonFillMain = CGFloat.zero
 
@@ -293,10 +293,14 @@ struct ConstrainedStackLayout: Layout {
 
         let naturalMain = nonFillMain + gapTotal + fillContentSizes.reduce(0, +)
         let targetMain: CGFloat
-        if let fitLimits = self.mainAxisSize.fitMinMax, canHugFillChildren {
-            targetMain = fitLimits.clamped(min(naturalMain, proposedMain ?? naturalMain))
-        } else if let fitLimits = self.mainAxisSize.fitMinMax, !fillLimits.contains(where: { $0 != nil }) {
-            targetMain = fitLimits.clamped(min(naturalMain, proposedMain ?? naturalMain))
+        if hasFitLimits, let proposedMain {
+            // The outer FitSizeLayout has already resolved the stack's min/max including padding. Its proposal
+            // is the content box, so applying the component constraint here again would count padding twice.
+            targetMain = proposedMain
+        } else if isFit, canHugFillChildren {
+            targetMain = min(naturalMain, proposedMain ?? naturalMain)
+        } else if isFit, !fillLimits.contains(where: { $0 != nil }) {
+            targetMain = min(naturalMain, proposedMain ?? naturalMain)
         } else if let proposedMain {
             targetMain = proposedMain
         } else {
@@ -327,7 +331,12 @@ struct ConstrainedStackLayout: Layout {
         )
 
         let naturalCrossSize = childSizes.map(self.cross).max() ?? 0
-        let crossSize = self.resolvedCrossSize(natural: naturalCrossSize, proposed: self.cross(proposal))
+        // The stack's outer SizeModifier owns cross-axis constraints and padding. Use its content-box proposal
+        // directly so a Fit(min 80) stack with 20pt padding remains 80pt rather than becoming 120pt.
+        let crossSize = self.resolvedCrossSize(
+            natural: naturalCrossSize,
+            proposed: self.cross(proposal)
+        )
         let positions = self.mainPositions(
             childSizes: childSizes.map(self.main),
             available: targetMain
@@ -345,14 +354,13 @@ struct ConstrainedStackLayout: Layout {
 
     private func resolvedCrossSize(natural: CGFloat, proposed: CGFloat?) -> CGFloat {
         switch self.crossAxisSize {
-        case .fill(let minMax):
-            return minMax.clamped(proposed ?? natural)
-        case .fixed(let value):
-            return CGFloat(value)
-        case .fit(_, let minMax):
-            return minMax.clamped(min(natural, proposed ?? natural))
-        case .relative(_, let minMax):
-            return minMax.clamped(proposed ?? natural)
+        case .fit(_, let minMax) where !minMax.hasLimit:
+            // An unconstrained Fit axis keeps hugging its content even when an ancestor offers extra space.
+            return min(natural, proposed ?? natural)
+        case .fit, .fill, .fixed, .relative:
+            // Limited Fit and rigid/flexible axes are resolved by the outer SizeModifier. This proposal is its
+            // content box after padding has been subtracted, so use it without applying the constraint again.
+            return proposed ?? natural
         }
     }
 
@@ -494,6 +502,11 @@ private extension PaywallComponent.SizeConstraint {
     var fitMinMax: MinMax? {
         guard case let .fit(_, minMax) = self else { return nil }
         return minMax
+    }
+
+    var isFit: Bool {
+        guard case .fit = self else { return false }
+        return true
     }
 
 }
