@@ -1506,6 +1506,7 @@
 		C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */; };
 		C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A008 /* WebCheckoutViewModel.swift */; };
 		C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00A /* WebCheckoutView.swift */; };
+		C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E00000000000000000A00D /* WebCheckoutSheet.swift */; };
 		C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B008 /* WebViewNavigationFailure.swift */; };
 		C4E10000000000000000B002 /* WebViewHTTPStatus.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B001 /* WebViewHTTPStatus.swift */; };
 		C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4E10000000000000000B003 /* WebViewComponentNavigationPolicy.swift */; };
@@ -1944,7 +1945,9 @@
 		C4E00000000000000000A008 /* WebCheckoutViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModel.swift; sourceTree = "<group>"; };
 		C4E00000000000000000A00A /* WebCheckoutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutView.swift; sourceTree = "<group>"; };
 		C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutReturnURLTests.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00D /* WebCheckoutSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutSheet.swift; sourceTree = "<group>"; };
 		C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutViewModelTests.swift; sourceTree = "<group>"; };
+		C4E00000000000000000A00F /* WebCheckoutSheetOutcomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebCheckoutSheetOutcomeTests.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B008 /* WebViewNavigationFailure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailure.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B00A /* WebViewNavigationFailureTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewNavigationFailureTests.swift; sourceTree = "<group>"; };
 		C4E10000000000000000B001 /* WebViewHTTPStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebViewHTTPStatus.swift; sourceTree = "<group>"; };
@@ -3886,6 +3889,7 @@
 				C4E00000000000000000A006 /* WebCheckoutReturnURL.swift */,
 				C4E00000000000000000A008 /* WebCheckoutViewModel.swift */,
 				C4E00000000000000000A00A /* WebCheckoutView.swift */,
+				C4E00000000000000000A00D /* WebCheckoutSheet.swift */,
 			);
 			path = WebCheckout;
 			sourceTree = "<group>";
@@ -3895,6 +3899,7 @@
 			children = (
 				C4E00000000000000000A00C /* WebCheckoutReturnURLTests.swift */,
 				C4E00000000000000000A00E /* WebCheckoutViewModelTests.swift */,
+				C4E00000000000000000A00F /* WebCheckoutSheetOutcomeTests.swift */,
 			);
 			path = WebCheckout;
 			sourceTree = "<group>";
@@ -9089,6 +9094,7 @@
 				C4E00000000000000000A007 /* WebCheckoutReturnURL.swift in Sources */,
 				C4E00000000000000000A009 /* WebCheckoutViewModel.swift in Sources */,
 				C4E00000000000000000A00B /* WebCheckoutView.swift in Sources */,
+				C4E00000000000000000A010 /* WebCheckoutSheet.swift in Sources */,
 				C4E10000000000000000B009 /* WebViewNavigationFailure.swift in Sources */,
 				C4E10000000000000000B004 /* WebViewComponentNavigationPolicy.swift in Sources */,
 				FA4A2DF41FC434A9401F08CC /* PaywallWebViewValue.swift in Sources */,

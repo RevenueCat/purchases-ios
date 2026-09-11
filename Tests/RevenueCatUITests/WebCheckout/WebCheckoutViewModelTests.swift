@@ -108,6 +108,28 @@ final class WebCheckoutViewModelTests: TestCase {
         XCTAssertEqual(reported, [.success])
     }
 
+    /// Loading can begin before the sheet is presented, and with it the handler assigned.
+    func testHoldsTheReturnedStatusUntilThereIsSomethingToReportItTo() throws {
+        let viewModel = Self.makeViewModel()
+        var reported: [WebCheckoutReturnStatus] = []
+
+        _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
+        viewModel.onFinished = { reported.append($0) }
+
+        XCTAssertEqual(reported, [.success])
+    }
+
+    func testReportsAHeldStatusToNothingBeyondTheFirstHandler() throws {
+        let viewModel = Self.makeViewModel()
+        var reported: [WebCheckoutReturnStatus] = []
+
+        _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
+        viewModel.onFinished = { reported.append($0) }
+        viewModel.onFinished = { reported.append($0) }
+
+        XCTAssertEqual(reported, [.success])
+    }
+
     func testIgnoresWhatArrivesAfterTheCheckoutReturned() throws {
         let viewModel = Self.makeViewModel()
 

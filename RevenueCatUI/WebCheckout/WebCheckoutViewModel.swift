@@ -49,8 +49,13 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
     @Published private(set) var loadState: LoadState = .idle
 
-    /// Called once, when the page navigates to the return URL.
-    var onFinished: ((WebCheckoutReturnStatus) -> Void)?
+    /// Called once, when the page navigates to the return URL. A status the page returned with before
+    /// this was set is delivered as soon as it is.
+    var onFinished: ((WebCheckoutReturnStatus) -> Void)? {
+        didSet {
+            self.deliverReturnedStatus()
+        }
+    }
 
     /// Called for links the page opens outside the checkout, for the host to hand to the browser.
     var onOpenExternalURL: ((URL) -> Void)?
@@ -63,6 +68,10 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
     private var hasPainted: Bool {
         self.loadState == .loaded || self.loadState == .navigating
     }
+
+    /// The status the page returned with, until it has been handed over. Loading can begin before a
+    /// host is around, so the page can reach a return URL before anything is listening for it.
+    private var returnedStatus: WebCheckoutReturnStatus?
 
     /// - Parameter checkoutURL: The provider-hosted page to present.
     /// - Parameter successURL: Where the provider sends the customer once checkout succeeds.
@@ -138,16 +147,26 @@ final class WebCheckoutViewModel: NSObject, ObservableObject {
 
         self.loadState = .finished
 
-        guard let status = self.returnURL?.status(of: url) else {
+        if let status = self.returnURL?.status(of: url) {
+            self.returnedStatus = status
+        } else {
             Logger.warning(Strings.web_checkout_return_status_missing)
             // Reported as a cancel rather than guessed optimistically: the caller confirms the outcome
             // against the backend either way, and a wrong `success` would show the customer a purchase
             // that never happened.
-            self.onFinished?(.cancel)
+            self.returnedStatus = .cancel
+        }
+
+        self.deliverReturnedStatus()
+    }
+
+    private func deliverReturnedStatus() {
+        guard let returnedStatus = self.returnedStatus, let onFinished = self.onFinished else {
             return
         }
 
-        self.onFinished?(status)
+        self.returnedStatus = nil
+        onFinished(returnedStatus)
     }
 
 }
