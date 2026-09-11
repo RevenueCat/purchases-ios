@@ -21,7 +21,6 @@ struct SoftPaywallUseCaseView: View {
 
     @ObservedObject var customVariables: CustomVariables
 
-    @State private var isRunning = false
     @State private var didLoad = false
     @State private var isSubscriber = false
     @State private var status = "Preparing the checkpoint…"
@@ -41,7 +40,7 @@ struct SoftPaywallUseCaseView: View {
 
             Section("Subscription status") {
                 Text(self.isSubscriber ? "Subscriber" : "Free tier")
-                Text(self.isRunning ? "Running the checkpoint…" : self.status)
+                Text(self.status)
                     .foregroundStyle(.secondary)
             }
 
@@ -51,7 +50,6 @@ struct SoftPaywallUseCaseView: View {
                         await self.runCheckpoint()
                     }
                 }
-                .disabled(self.isRunning)
             }
         }
         .navigationTitle("Soft paywall")
@@ -65,13 +63,10 @@ struct SoftPaywallUseCaseView: View {
 
     @MainActor
     private func runCheckpoint() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
         Purchases.shared.checkpoint(
             "soft_paywall",
             customVariables: self.customVariables.checkpointCustomVariables
         ) { result in
-            self.isRunning = false
             let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
             self.status = obtained.isEmpty
                 ? "Checkpoint completed. Content remains available."

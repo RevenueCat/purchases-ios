@@ -47,7 +47,6 @@ struct OnboardingUseCaseView: View {
     @ObservedObject var customVariables: CustomVariables
 
     @State private var step: Step = .welcome
-    @State private var isRunning = false
     @State private var checkpointResult: String?
 
     var body: some View {
@@ -73,7 +72,6 @@ struct OnboardingUseCaseView: View {
                     Button("Back") {
                         self.step = .welcome
                     }
-                    .disabled(self.isRunning)
                 }
 
                 Spacer()
@@ -85,13 +83,12 @@ struct OnboardingUseCaseView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 case .personalize:
-                    Button(self.isRunning ? "Running checkpoint…" : "Finish onboarding") {
+                    Button("Finish onboarding") {
                         Task { @MainActor in
                             await self.finishOnboarding()
                         }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(self.isRunning)
                 case .done:
                     Button("Restart onboarding") {
                         self.step = .welcome
@@ -107,9 +104,6 @@ struct OnboardingUseCaseView: View {
 
     @MainActor
     private func finishOnboarding() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-
         Purchases.shared.checkpoint(
             "onboarding_complete",
             customVariables: self.personalizationCheckpointCustomVariables
@@ -117,9 +111,8 @@ struct OnboardingUseCaseView: View {
             self.checkpointResult = result == nil
                 ? "No matching flow."
                 : "Checkpoint flow completed."
-            self.isRunning = false
-            self.step = .done
         }
+        self.step = .done
     }
 
     private static func describe(_ result: CheckpointResult) -> String {
