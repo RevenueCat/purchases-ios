@@ -32,7 +32,11 @@ struct WebCheckoutView: View {
     var body: some View {
         ZStack {
             if self.viewModel.loadState != .failed {
+                // The page paints to the bottom edge rather than stopping above the home indicator, which
+                // would leave a strip of the host's background under a checkout that fills its sheet. What
+                // the page puts there stays reachable: the web view insets its own content by the safe area.
                 WebCheckoutWebView(webView: self.viewModel.webView)
+                    .ignoresSafeArea(.container, edges: .bottom)
             }
 
             if self.viewModel.loadState.isWaitingForFirstPaint {
