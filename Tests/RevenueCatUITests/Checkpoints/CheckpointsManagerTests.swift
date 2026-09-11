@@ -374,18 +374,17 @@ final class CheckpointsManagerTests: TestCase {
         XCTAssertEqual(flowResult?.obtainedEntitlements, [])
     }
 
-    func testPurchasedFetchesCurrentCustomerInfo() async throws {
+    func testPurchasedUsesCustomerInfoReportedByPaywallPresenter() async throws {
         let customerInfo = CustomerInfoFixtures.customerInfoWithAppleSubscriptions
         let manager = CheckpointsManager(
             resolveCheckpoint: { _, _ in .matchedOffering(Self.offering()) },
-            executor: MockCheckpointWorkflowExecutor(),
-            fetchCustomerInfo: { customerInfo }
+            executor: MockCheckpointWorkflowExecutor()
         )
 
         let result = try await manager.checkpoint(
             identifier: "onboarding",
             params: .init(paywallPresenter: { _, completion in
-                completion(.purchased)
+                completion(.purchased(customerInfo: customerInfo, transaction: nil))
             })
         )
 

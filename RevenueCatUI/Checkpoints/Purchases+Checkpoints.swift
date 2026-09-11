@@ -108,10 +108,6 @@ private extension Purchases {
             resolveCheckpoint: { [weak self] identifier, params in
                 guard let self else { throw CancellationError() }
                 return try await self.resolveCheckpoint(identifier: identifier, params: params.coreParams)
-            },
-            fetchCustomerInfo: { [weak self] in
-                guard let self else { throw CancellationError() }
-                return try await self.customerInfo(fetchPolicy: .fetchCurrent)
             }
         )
     }

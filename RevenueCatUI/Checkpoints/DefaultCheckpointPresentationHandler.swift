@@ -22,26 +22,19 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
 
     private let executor: CheckpointExecutor
     private let defaultPaywallPresenter: DefaultPaywallPresenting
-    private let fetchCustomerInfo: () async throws -> CustomerInfo
     var paywallPresenter: PaywallPresenter?
 
-    init(
-        executor: CheckpointExecutor,
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo
-    ) {
+    init(executor: CheckpointExecutor) {
         self.executor = executor
         self.defaultPaywallPresenter = DefaultPaywallPresenter()
-        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     init(
         executor: CheckpointExecutor,
-        defaultPaywallPresenter: DefaultPaywallPresenting,
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo
+        defaultPaywallPresenter: DefaultPaywallPresenting
     ) {
         self.executor = executor
         self.defaultPaywallPresenter = defaultPaywallPresenter
-        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     func presentWorkflow(
@@ -62,10 +55,7 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
         guard let paywallPresentationHandler else {
             return try await self.defaultPaywallPresenter.present(params: params, session: session)
         }
-        return try await OfferingPresentation(
-            session: session,
-            fetchCustomerInfo: self.fetchCustomerInfo
-        ).present(
+        return try await OfferingPresentation(session: session).present(
             params: params,
             presentationHandler: paywallPresentationHandler
         )
@@ -76,19 +66,13 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
     private final class OfferingPresentation {
 
         private let session: CheckpointPresentationCoordinator.Session
-        private let fetchCustomerInfo: () async throws -> CustomerInfo
         private var pendingContinuation: CheckedContinuation<
             CheckpointExecutionResult<CheckpointPaywallOutcome>, Error
         >?
         private var hasReportedCompletion = false
-        private var fetchTask: Task<Void, Never>?
 
-        init(
-            session: CheckpointPresentationCoordinator.Session,
-            fetchCustomerInfo: @escaping () async throws -> CustomerInfo
-        ) {
+        init(session: CheckpointPresentationCoordinator.Session) {
             self.session = session
-            self.fetchCustomerInfo = fetchCustomerInfo
         }
 
         func present(
@@ -123,8 +107,11 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
                   self.pendingContinuation != nil else { return }
             self.hasReportedCompletion = true
 
-            if result === PaywallPresentationResult.purchased {
-                self.fetchCustomerInfoAfterPurchase()
+            if let purchaseResult = result.purchaseResult {
+                self.complete(execution: .completed(CheckpointPaywallOutcome.Purchased(
+                    transaction: purchaseResult.transaction,
+                    customerInfo: purchaseResult.customerInfo
+                )))
             } else if result === PaywallPresentationResult.navigatedBack {
                 self.complete(execution: .backedOut(CheckpointPaywallOutcome.Dismissed.shared))
             } else {
@@ -132,25 +119,9 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             }
         }
 
-        private func fetchCustomerInfoAfterPurchase() {
-            self.fetchTask = Task { @MainActor [weak self] in
-                guard let self else { return }
-                do {
-                    let customerInfo = try await self.fetchCustomerInfo()
-                    self.complete(execution: .completed(CheckpointPaywallOutcome.Purchased(
-                        transaction: nil,
-                        customerInfo: customerInfo
-                    )))
-                } catch {
-                    self.complete(execution: .completed(CheckpointPaywallOutcome.Error(error: error as NSError)))
-                }
-            }
-        }
-
         private func complete(execution: CheckpointExecutionResult<CheckpointPaywallOutcome>) {
             guard self.session.isActive,
                   let continuation = self.takeContinuation() else { return }
-            self.fetchTask = nil
             continuation.resume(returning: execution)
         }
 
@@ -158,8 +129,6 @@ final class DefaultCheckpointPresentationHandler: CheckpointPresentationHandler 
             guard self.pendingContinuation != nil,
                   force || !self.hasReportedCompletion else { return }
             self.hasReportedCompletion = true
-            self.fetchTask?.cancel()
-            self.fetchTask = nil
             guard self.session.isActive,
                   let continuation = self.takeContinuation() else { return }
             continuation.resume(throwing: error)

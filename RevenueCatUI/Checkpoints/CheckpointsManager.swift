@@ -20,32 +20,26 @@ import Foundation
 final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
-    private let fetchCustomerInfo: () async throws -> CustomerInfo
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
     @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
-        executor: self.executor,
-        fetchCustomerInfo: self.fetchCustomerInfo
+        executor: self.executor
     )
     @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
         handler: self.presentationHandler
     )
 
     init(
-        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution
     ) {
         self.resolveCheckpoint = resolveCheckpoint
-        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor,
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
+        executor: CheckpointExecutor
     ) {
         self.resolveCheckpoint = resolveCheckpoint
-        self.fetchCustomerInfo = fetchCustomerInfo
         self.executor = executor
     }
 
