@@ -22,7 +22,7 @@ class ImageComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.ImageComponent
+    let component: PaywallComponent.ImageComponent
     var cachedMeasuredSize: CGSize?
 
     private let imageInfo: PaywallComponent.ThemeImageUrls

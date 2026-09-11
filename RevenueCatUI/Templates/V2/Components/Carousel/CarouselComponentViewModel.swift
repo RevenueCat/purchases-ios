@@ -24,7 +24,7 @@ class CarouselComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.CarouselComponent
+    let component: PaywallComponent.CarouselComponent
     let pageStackViewModels: [StackComponentViewModel]
     private let pageContextNames: [String?]
 

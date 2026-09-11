@@ -22,7 +22,7 @@ class VideoComponentViewModel {
 
     let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.VideoComponent
+    let component: PaywallComponent.VideoComponent
 
     var imageSource: PaywallComponent.ThemeImageUrls? { component.fallbackSource }
 

@@ -46,13 +46,27 @@ struct ComponentsView: View {
 
     var body: some View {
         ForEach(Array(componentViewModels.enumerated()), id: \.offset) { index, item in
-            view(for: item)
-                .padding(
-                    .top,
-                    index > 0 && pushNonFirstChildrenBelowSafeArea
-                        ? max(safeAreaInsets.top, overlaidHeaderHeight)
-                        : 0
-                )
+            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+                view(for: item)
+                    .padding(
+                        .top,
+                        index > 0 && pushNonFirstChildrenBelowSafeArea
+                            ? max(safeAreaInsets.top, overlaidHeaderHeight)
+                            : 0
+                    )
+                    .layoutValue(
+                        key: ComponentSizeLayoutValueKey.self,
+                        value: item.componentSizeLayoutValue
+                    )
+            } else {
+                view(for: item)
+                    .padding(
+                        .top,
+                        index > 0 && pushNonFirstChildrenBelowSafeArea
+                            ? max(safeAreaInsets.top, overlaidHeaderHeight)
+                            : 0
+                    )
+            }
         }
     }
 

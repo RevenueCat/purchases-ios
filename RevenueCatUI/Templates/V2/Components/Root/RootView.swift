@@ -121,6 +121,7 @@ struct RootView: View {
                     })
                 }
             }
+            .containPaywallRootWidth(enabled: self.viewModel.stackViewModel.usesMinMaxSizing)
             .onPreferenceChange(OverlaidHeaderHeightKey.self) { height in
                 overlaidHeaderHeight = height
             }
@@ -145,6 +146,7 @@ struct RootView: View {
                 }
             }
         }
+        .environment(\.paywallUsesMinMaxSizing, self.viewModel.stackViewModel.usesMinMaxSizing)
         .environment(\.paywallRootStackIsZLayer, self.paywallRootStackIsZLayer)
         .environment(\.openSheet, { sheet in
             self.sheetViewModel = sheet
@@ -205,6 +207,46 @@ struct RootView: View {
             return packageBeforeOpeningSheet ?? defaultPackage
         }
         return defaultPackage
+    }
+
+}
+
+private extension View {
+
+    @ViewBuilder
+    func containPaywallRootWidth(enabled: Bool) -> some View {
+        #if ENABLE_PAYWALL_MIN_MAX_SIZING
+        if enabled,
+           #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            PaywallRootWidthLayout {
+                self
+            }
+        } else {
+            self
+        }
+        #else
+        self
+        #endif
+    }
+
+}
+
+/// Prevents an overflowing child minimum from becoming the root paywall's reported width.
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+private struct PaywallRootWidthLayout: Layout {
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard let subview = subviews.first else { return .zero }
+        let childSize = subview.sizeThatFits(proposal)
+        return CGSize(width: proposal.width ?? childSize.width, height: childSize.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        subviews.first?.place(
+            at: bounds.origin,
+            anchor: .topLeading,
+            proposal: ProposedViewSize(width: bounds.width, height: proposal.height)
+        )
     }
 
 }

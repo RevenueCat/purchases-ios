@@ -11,7 +11,7 @@
 
 import Nimble
 @_spi(Internal) import RevenueCat
-@testable import RevenueCatUI
+@_spi(Internal) @testable import RevenueCatUI
 import SwiftUI
 import XCTest
 
@@ -286,6 +286,59 @@ final class SizeModifierTests: TestCase {
             )
 
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).width, 40)
+    }
+
+    // MARK: - Constrained stack allocation
+
+    func testConstrainedFillAllocationRedistributesAfterMaximumAndMinimum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 324,
+                constraints: [
+                    .init(min: nil, max: 60),
+                    .null,
+                    .init(min: 140, max: nil)
+                ]
+            ),
+            [60, 124, 140]
+        )
+    }
+
+    func testConstrainedFillAllocationPreservesUnsatisfiableMinimums() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 300,
+                constraints: [
+                    .init(min: 220, max: nil),
+                    .init(min: 220, max: nil)
+                ]
+            ),
+            [220, 220]
+        )
+    }
+
+    func testSerializedLegacySizeDoesNotOptIntoMinMaxLayout() throws {
+        let data = Data(#"{"width":{"type":"fill"},"height":{"type":"fit"}}"#.utf8)
+        let decoded = try JSONDecoder().decode(PaywallComponent.Size.self, from: data)
+
+        XCTAssertFalse(decoded.hasMinMaxSizing)
+    }
+
+    func testConstrainedSizeOptsIntoMinMaxLayout() {
+        XCTAssertTrue(
+            PaywallComponent.Size(
+                width: .fill(.init(min: nil, max: 60)),
+                height: .fit(nil)
+            ).hasMinMaxSizing
+        )
     }
 
     // MARK: - Sheet

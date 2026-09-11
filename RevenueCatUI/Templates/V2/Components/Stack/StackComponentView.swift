@@ -21,6 +21,9 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct StackComponentView: View {
 
+    @Environment(\.paywallUsesMinMaxSizing)
+    private var paywallUsesMinMaxSizing
+
     @EnvironmentObject
     private var packageContext: PackageContext
 
@@ -104,8 +107,30 @@ struct StackComponentView: View {
     }
 
     @ViewBuilder
-    // swiftlint:disable:next function_body_length
     private func make(style: StackComponentStyle) -> some View {
+        if self.usesMinMaxSizing {
+            self.decorate(
+                self.content(style: style)
+                    .hidden(if: self.showActivityIndicatorOverContent)
+                    .padding(style.padding.extend(by: style.border?.width ?? 0))
+                    // Component padding is content inside the declared min/max constraint.
+                    .applyStackSize(style),
+                style: style
+            )
+        } else {
+            // Preserve the pre-min/max modifier order byte-for-byte for legacy paywalls.
+            self.decorate(
+                self.content(style: style)
+                    .hidden(if: self.showActivityIndicatorOverContent)
+                    .applyStackSize(style)
+                    .padding(style.padding.extend(by: style.border?.width ?? 0)),
+                style: style
+            )
+        }
+    }
+
+    @ViewBuilder
+    private func content(style: StackComponentStyle) -> some View {
         Group {
             switch style.dimension {
             case .vertical(let horizontalAlignment, let distribution):
@@ -114,24 +139,18 @@ struct StackComponentView: View {
                     horizontalAlignment: horizontalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
+                    usesMinMaxSizing: self.usesMinMaxSizing,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
-                      horizontalAlignment: horizontalAlignment.frameAlignment,
-                      verticalAlignment: distribution.verticalFrameAlignment)
             case .horizontal(let verticalAlignment, let distribution):
                 HorizontalStack(
                     style: style,
                     verticalAlignment: verticalAlignment,
                     distribution: distribution,
                     viewModels: self.viewModel.viewModels,
+                    usesMinMaxSizing: self.usesMinMaxSizing,
                     onDismiss: self.onDismiss
                 )
-                // This alignment positions the inner VStack horizontally and vertically
-                .size(style.size,
-                      horizontalAlignment: distribution.horizontalFrameAlignment,
-                      verticalAlignment: verticalAlignment.frameAlignment)
             case .zlayer(let alignment):
                 // This alignment defines the position of inner components relative to each other
                 ZStack(alignment: alignment.stackAlignment) {
@@ -141,14 +160,16 @@ struct StackComponentView: View {
                         onDismiss: self.onDismiss
                     )
                 }
-                // These alignments define the position of inner components inside the ZStack
-                .size(style.size,
-                      horizontalAlignment: alignment.stackAlignment,
-                      verticalAlignment: alignment.stackAlignment)
             }
         }
-        .hidden(if: self.showActivityIndicatorOverContent)
-        .padding(style.padding.extend(by: style.border?.width ?? 0))
+    }
+
+    private var usesMinMaxSizing: Bool {
+        return self.paywallUsesMinMaxSizing || self.viewModel.usesMinMaxSizing
+    }
+
+    private func decorate<Content: View>(_ content: Content, style: StackComponentStyle) -> some View {
+        content
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -176,6 +197,35 @@ private extension Axis {
         switch self {
         case .horizontal: return .horizontal
         case .vertical: return .vertical
+        }
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private extension View {
+
+    @ViewBuilder
+    func applyStackSize(_ style: StackComponentStyle) -> some View {
+        switch style.dimension {
+        case .vertical(let horizontalAlignment, let distribution):
+            self.size(
+                style.size,
+                horizontalAlignment: horizontalAlignment.frameAlignment,
+                verticalAlignment: distribution.verticalFrameAlignment
+            )
+        case .horizontal(let verticalAlignment, let distribution):
+            self.size(
+                style.size,
+                horizontalAlignment: distribution.horizontalFrameAlignment,
+                verticalAlignment: verticalAlignment.frameAlignment
+            )
+        case .zlayer(let alignment):
+            self.size(
+                style.size,
+                horizontalAlignment: alignment.stackAlignment,
+                verticalAlignment: alignment.stackAlignment
+            )
         }
     }
 
@@ -280,9 +330,37 @@ struct VerticalStack: View {
     let distribution: PaywallComponent.FlexDistribution
 
     let viewModels: [PaywallComponentViewModel]
+    let usesMinMaxSizing: Bool
     let onDismiss: () -> Void
 
+    @ViewBuilder
     var body: some View {
+        #if ENABLE_PAYWALL_MIN_MAX_SIZING
+        if self.usesMinMaxSizing,
+           #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            ConstrainedStackLayout(
+                orientation: .vertical,
+                distribution: distribution,
+                crossAxisAlignment: horizontalAlignment.frameAlignment,
+                spacing: style.spacing ?? 0,
+                mainAxisSize: style.size.height,
+                crossAxisSize: style.size.width
+            ) {
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
+            }
+        } else {
+            self.legacyBody
+        }
+        #else
+        self.legacyBody
+        #endif
+    }
+
+    @ViewBuilder
+    private var legacyBody: some View {
         // This is NOT a final implementation of this
         // There are some horizontal sizing issues with using LazyVStack
         // There are so performance issues with VStack with lots of children
@@ -321,9 +399,37 @@ struct HorizontalStack: View {
     let distribution: PaywallComponent.FlexDistribution
 
     let viewModels: [PaywallComponentViewModel]
+    let usesMinMaxSizing: Bool
     let onDismiss: () -> Void
 
+    @ViewBuilder
     var body: some View {
+        #if ENABLE_PAYWALL_MIN_MAX_SIZING
+        if self.usesMinMaxSizing,
+           #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            ConstrainedStackLayout(
+                orientation: .horizontal,
+                distribution: distribution,
+                crossAxisAlignment: verticalAlignment.frameAlignment,
+                spacing: style.spacing ?? 0,
+                mainAxisSize: style.size.width,
+                crossAxisSize: style.size.height
+            ) {
+                ComponentsView(
+                    componentViewModels: self.viewModels,
+                    onDismiss: self.onDismiss
+                )
+            }
+        } else {
+            self.legacyBody
+        }
+        #else
+        self.legacyBody
+        #endif
+    }
+
+    @ViewBuilder
+    private var legacyBody: some View {
         switch style.hstackStrategy {
         case .normal:
             HStack(
