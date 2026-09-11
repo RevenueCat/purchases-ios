@@ -902,6 +902,7 @@ extension WorkflowPaywallViewTests {
             get: { exitOffer.offering },
             set: { exitOffer.offering = $0 }
         )
+        var reportedError: NSError?
         let view = WorkflowPaywallView(
             context: context,
             purchaseHandler: .mock(),
@@ -909,7 +910,8 @@ extension WorkflowPaywallViewTests {
             showZeroDecimalPlacePrices: false,
             displayCloseButton: false,
             promoOfferCache: nil,
-            onDismiss: {}
+            onDismiss: {},
+            onPresentationError: { reportedError = $0 }
         )
         .environment(\.workflowExitOfferOfferingBinding, exitOfferBinding)
 
@@ -917,6 +919,7 @@ extension WorkflowPaywallViewTests {
         defer { dispose() }
 
         await expect(exitOffer.offering).toEventually(beNil(), timeout: .seconds(3))
+        await expect(reportedError?.code).toEventually(equal(ErrorCode.configurationError.rawValue))
         self.logger.verifyMessageWasLogged(
             Strings.workflow_paywall_invalid_state(
                 currentStepId: "step_initial",

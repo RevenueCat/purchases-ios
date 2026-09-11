@@ -220,23 +220,28 @@ struct WorkflowPaywallView: View {
 
     private enum PresentationState {
         case active
-        // The alert clears `error` before dismissing, but the presentation must remain failed so
+        case failing(error: NSError)
+        // The alert clears its error before dismissing, but the presentation must remain failed so
         // an exit offer cannot be restored during dismissal.
-        case failed(error: NSError?, hasReportedError: Bool)
+        case failureReported
 
         var error: NSError? {
-            guard case let .failed(error, _) = self else { return nil }
+            guard case let .failing(error) = self else { return nil }
             return error
         }
 
         var hasFailed: Bool {
-            guard case .failed = self else { return false }
-            return true
+            switch self {
+            case .active:
+                return false
+            case .failing, .failureReported:
+                return true
+            }
         }
 
-        var hasReportedError: Bool {
-            guard case let .failed(_, hasReportedError) = self else { return false }
-            return hasReportedError
+        var canReportPresentationError: Bool {
+            guard case .failureReported = self else { return true }
+            return false
         }
     }
 
@@ -335,7 +340,7 @@ struct WorkflowPaywallView: View {
             : nil
         self._presentationState = .init(
             initialValue: initialPresentationError.map {
-                .failed(error: $0, hasReportedError: false)
+                .failing(error: $0)
             } ?? .active
         )
         self._stepEventCoordinator = .init(
@@ -417,12 +422,16 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
-            if self.presentationState.hasFailed {
+            switch self.presentationState {
+            case let .failing(error):
                 self.exitOfferOfferingBinding.wrappedValue = nil
-                if let error = self.presentationState.error {
-                    self.reportPresentationErrorIfNeeded(error, for: self.navigator.currentStepId)
-                }
+                self.reportPresentationError(error, for: self.navigator.currentStepId)
                 return
+            case .failureReported:
+                self.exitOfferOfferingBinding.wrappedValue = nil
+                return
+            case .active:
+                break
             }
             self.syncExitOfferBinding()
             self.stepEventCoordinator.trackInitialStep(
@@ -961,37 +970,32 @@ struct WorkflowPaywallView: View {
     }
 
     private func failWorkflowPresentation(for stepId: String) {
+        guard self.presentationState.canReportPresentationError else { return }
+
         let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
         self.trackCurrentWorkflowLeft()
         self.exitOfferOfferingBinding.wrappedValue = nil
-        self.presentationState = .failed(
-            error: error,
-            hasReportedError: self.presentationState.hasReportedError
-        )
-        self.reportPresentationErrorIfNeeded(error, for: stepId)
+        self.presentationState = .failing(error: error)
+        self.reportPresentationError(error, for: stepId)
     }
 
     private var workflowPresentationError: Binding<NSError?> {
         return .init(
             get: { self.presentationState.error },
             set: { error in
-                switch self.presentationState {
-                case .active:
-                    self.presentationState = error.map {
-                        .failed(error: $0, hasReportedError: false)
-                    } ?? .active
-                case let .failed(_, hasReportedError):
-                    self.presentationState = .failed(error: error, hasReportedError: hasReportedError)
+                switch (self.presentationState, error) {
+                case (_, let error?):
+                    self.presentationState = .failing(error: error)
+                case (.failing, nil):
+                    self.presentationState = .failureReported
+                case (.active, nil), (.failureReported, nil):
+                    break
                 }
             }
         )
     }
 
-    private func reportPresentationErrorIfNeeded(_ error: NSError, for stepId: String) {
-        guard !self.presentationState.hasReportedError else {
-            return
-        }
-        self.presentationState = .failed(error: error, hasReportedError: true)
+    private func reportPresentationError(_ error: NSError, for stepId: String) {
         Logger.error(
             Strings.workflow_paywall_invalid_state(
                 currentStepId: stepId,
