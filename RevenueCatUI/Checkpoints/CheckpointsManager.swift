@@ -20,19 +20,44 @@ import Foundation
 final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
+    private let fetchCustomerInfo: () async throws -> CustomerInfo
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
+    @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
+        executor: self.executor,
+        fetchCustomerInfo: self.fetchCustomerInfo
+    )
+    @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
+        handler: self.presentationHandler
+    )
 
-    init(resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution) {
+    init(
+        resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
+        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
+    ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        executor: CheckpointExecutor
+        executor: CheckpointExecutor,
+        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
+        self.fetchCustomerInfo = fetchCustomerInfo
         self.executor = executor
+    }
+
+    @MainActor
+    func setPaywallPresenter(_ presenter: PaywallPresenter?) {
+        self.presentationHandler.paywallPresenter = presenter
+    }
+
+    @MainActor
+    var paywallPresenter: PaywallPresenter? {
+        get { return self.presentationHandler.paywallPresenter }
+        set { self.setPaywallPresenter(newValue) }
     }
 
     func checkpoint(
@@ -80,12 +105,24 @@ final class CheckpointsManager {
                 workflow: workflow,
                 customVariables: params.customVariables
             )
-            return try await self.executor.execute(presentation).map {
+            return try await self.presentationCoordinator.presentWorkflow(presentation).map {
                 CheckpointResult.PaywallPresented(paywallOutcome: $0)
             }
         case let .matchedOffering(offering):
-            // Data-only, so this never claims the presentation slot the executor owns.
-            return .completed(CheckpointResult.ReceivedOffering(offering: offering))
+            let globalPresentationHandler: PaywallPresentationHandler? = self.paywallPresenter.map { presenter in
+                { params, completion in
+                    presenter.present(params: params, completion: completion)
+                }
+            }
+            let execution = try await self.presentationCoordinator.presentOffering(
+                params: .init(
+                    checkpointIdentifier: identifier,
+                    customVariables: params.customVariables,
+                    offering: offering
+                ),
+                paywallPresentationHandler: params.paywallPresentationHandler ?? globalPresentationHandler
+            )
+            return execution.map { CheckpointResult.PaywallPresented(paywallOutcome: $0) }
         case let .noAction(reason):
             return .completed(CheckpointResult.NoAction(reason: reason.noActionReason))
         }

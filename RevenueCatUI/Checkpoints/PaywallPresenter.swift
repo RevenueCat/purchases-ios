@@ -15,12 +15,12 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// Reports the terminal outcome of an app-owned paywall presentation.
+/// Reports the terminal outcome of a custom paywall presentation.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public typealias PaywallPresentationCompletion = @MainActor (PaywallPresentationResult) -> Void
 
-/// Presents a paywall for an offering selected by a checkpoint using app-owned UI.
+/// Presents a custom paywall for an offering selected by a checkpoint.
 ///
 /// Set an instance on ``Purchases/checkpointPaywallPresenter`` to use it for all checkpoint-selected offerings.
 @_spi(CheckpointsInternal)
@@ -39,7 +39,7 @@ public protocol PaywallPresenter: AnyObject {
 
 }
 
-/// Presents a checkpoint-selected offering using app-owned UI.
+/// Presents a checkpoint-selected offering using a custom paywall.
 ///
 /// The checkpoint remains pending until the completion closure is called. Only the first reported result is used;
 /// later calls are ignored. Pass this closure to ``Purchases/checkpoint(_:customVariables:paywallPresenter:_:)``
@@ -51,7 +51,7 @@ public typealias PaywallPresentationHandler = @MainActor (
     @escaping PaywallPresentationCompletion
 ) -> Void
 
-/// Context for an app-owned checkpoint paywall presentation.
+/// Context for a custom checkpoint paywall presentation.
 ///
 /// This separate type keeps the presenter's method signature extensible as presentation context grows.
 @_spi(CheckpointsInternal)
@@ -86,13 +86,13 @@ public final class PaywallPresentationParams {
 
 }
 
-/// A terminal result reported by an app-owned checkpoint paywall presenter.
+/// A terminal result reported by a custom checkpoint paywall presenter.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 @MainActor
 public final class PaywallPresentationResult {
 
-    /// The customer purchased through the app-owned paywall.
+    /// The customer purchased through the custom paywall.
     public static let purchased = PaywallPresentationResult()
 
     /// The customer closed the paywall. A soft checkpoint may continue after this result.

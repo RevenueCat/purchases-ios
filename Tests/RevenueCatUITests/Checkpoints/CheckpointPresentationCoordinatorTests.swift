@@ -113,13 +113,19 @@ final class CheckpointPresentationCoordinatorTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresentationHandler: CheckpointPresentationHandler {
 
-    func present(
+    func presentWorkflow(
         _: CheckpointPresentation,
+        session _: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        return .completed(CheckpointPaywallOutcome.Dismissed.shared)
+    }
+
+    func presentOffering(
+        params _: PaywallPresentationParams,
         session _: CheckpointPresentationCoordinator.Session,
-        paywallPresentationHandler _: PaywallPresentationHandler?,
-        paywallPresentationParams _: PaywallPresentationParams?
-    ) async throws -> PaywallOutcome {
-        return .dismissed
+        paywallPresentationHandler _: PaywallPresentationHandler?
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        return .completed(CheckpointPaywallOutcome.Dismissed.shared)
     }
 
 }

@@ -26,17 +26,23 @@ final class CheckpointPresentationCoordinator {
         self.handler = handler
     }
 
-    func present(
-        _ presentation: CheckpointPresentation,
-        paywallPresentationHandler: PaywallPresentationHandler?,
-        paywallPresentationParams: PaywallPresentationParams? = nil
-    ) async throws -> PaywallOutcome {
+    func presentWorkflow(
+        _ presentation: CheckpointPresentation
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
         return try await self.withPresentationSession { session in
-            try await self.handler.present(
-                presentation,
+            try await self.handler.presentWorkflow(presentation, session: session)
+        }
+    }
+
+    func presentOffering(
+        params: PaywallPresentationParams,
+        paywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
+        return try await self.withPresentationSession { session in
+            try await self.handler.presentOffering(
+                params: params,
                 session: session,
-                paywallPresentationHandler: paywallPresentationHandler,
-                paywallPresentationParams: paywallPresentationParams
+                paywallPresentationHandler: paywallPresentationHandler
             )
         }
     }
@@ -96,11 +102,15 @@ final class CheckpointPresentationCoordinator {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointPresentationHandler: AnyObject {
 
-    func present(
+    func presentWorkflow(
         _ presentation: CheckpointPresentation,
+        session: CheckpointPresentationCoordinator.Session
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
+
+    func presentOffering(
+        params: PaywallPresentationParams,
         session: CheckpointPresentationCoordinator.Session,
-        paywallPresentationHandler: PaywallPresentationHandler?,
-        paywallPresentationParams: PaywallPresentationParams?
-    ) async throws -> PaywallOutcome
+        paywallPresentationHandler: PaywallPresentationHandler?
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
 
 }
