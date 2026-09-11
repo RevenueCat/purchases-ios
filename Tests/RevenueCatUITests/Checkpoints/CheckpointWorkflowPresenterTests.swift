@@ -495,7 +495,7 @@ private final class DismissRecordingPaywallController: PaywallViewController {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresenterDelegate: CheckpointPresentationDelegate {
 
-    private(set) var execution: CheckpointExecution<CheckpointPaywallOutcome>?
+    private(set) var execution: CheckpointExecutionResult<CheckpointPaywallOutcome>?
     var outcome: CheckpointPaywallOutcome? { self.execution?.value }
     var didBackOut: Bool {
         guard let execution else { return false }
@@ -506,7 +506,7 @@ private final class MockCheckpointPresenterDelegate: CheckpointPresentationDeleg
     }
     private(set) var finishCount = 0
 
-    func checkpointPresentationFinished(_ execution: CheckpointExecution<CheckpointPaywallOutcome>) {
+    func checkpointPresentationFinished(_ execution: CheckpointExecutionResult<CheckpointPaywallOutcome>) {
         self.finishCount += 1
         self.execution = execution
     }

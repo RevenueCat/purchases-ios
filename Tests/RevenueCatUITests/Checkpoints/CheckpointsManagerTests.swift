@@ -472,7 +472,7 @@ final class CheckpointWorkflowExecutorTests: TestCase {
         let presenter = MockCheckpointPresenter()
         let expectedError = NSError(domain: "test", code: 42)
         let expectedOutcome = CheckpointPaywallOutcome.Error(error: expectedError)
-        var execution: Task<CheckpointExecution<CheckpointPaywallOutcome>, Error>?
+        var execution: Task<CheckpointExecutionResult<CheckpointPaywallOutcome>, Error>?
         presenter.onPresent = { presentation in
             execution?.cancel()
             presentation.delegate.checkpointPresentationFinished(.completed(expectedOutcome))
@@ -534,13 +534,13 @@ final class CheckpointWorkflowExecutorTests: TestCase {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointWorkflowExecutor: CheckpointExecutor {
 
-    var execution: CheckpointExecution<CheckpointPaywallOutcome> = .completed(
+    var execution: CheckpointExecutionResult<CheckpointPaywallOutcome> = .completed(
         CheckpointPaywallOutcome.Dismissed.shared
     )
     var error: Error?
     private(set) var presentations: [CheckpointPresentation] = []
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointExecution<CheckpointPaywallOutcome> {
+    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome> {
         self.presentations.append(presentation)
         if let error {
             throw error

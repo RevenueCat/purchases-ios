@@ -68,7 +68,7 @@ final class CheckpointsManager {
     func executeCheckpoint(
         identifier: String,
         params: CheckpointCallParams
-    ) async throws -> CheckpointExecution<CheckpointResult> {
+    ) async throws -> CheckpointExecutionResult<CheckpointResult> {
         guard CheckpointIdentifierValidator.isValid(identifier) else {
             Logger.error(CheckpointIdentifierValidator.invalidIdentifierLogMessage(identifier))
             return .completed(CheckpointResult.NoAction(reason: .invalidCheckpointIdentifier))
