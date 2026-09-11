@@ -257,10 +257,9 @@ struct WorkflowPaywallView: View {
         case navigateBack
     }
 
-    enum NavigateBackAction: Equatable {
+    enum BackNavigationResolution: Equatable {
         case navigateWithinWorkflow
-        case dismissWorkflow
-        case dismissAsNavigatedBack
+        case dismiss(WorkflowDismissalReason)
     }
 
     private enum Constants {
@@ -660,28 +659,28 @@ struct WorkflowPaywallView: View {
     private func handleNavigateBack() {
         guard !self.transitionState.isTransitioning else { return }
 
-        switch Self.navigateBackAction(
+        switch Self.backNavigationResolution(
             canNavigateBack: self.navigator.canNavigateBack,
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         ) {
-        case .navigateWithinWorkflow, .dismissWorkflow:
+        case .navigateWithinWorkflow, .dismiss(.close):
             self.handleDismiss()
-        case .dismissAsNavigatedBack:
+        case .dismiss(.navigatedBack):
             self.workflowDismissalObserver?(.navigatedBack)
             self.onDismiss()
         }
     }
 
-    static func navigateBackAction(
+    static func backNavigationResolution(
         canNavigateBack: Bool,
         hasPurchasedInSession: Bool
-    ) -> NavigateBackAction {
+    ) -> BackNavigationResolution {
         if canNavigateBack {
             return .navigateWithinWorkflow
         } else if hasPurchasedInSession {
-            return .dismissWorkflow
+            return .dismiss(.close)
         } else {
-            return .dismissAsNavigatedBack
+            return .dismiss(.navigatedBack)
         }
     }
 
