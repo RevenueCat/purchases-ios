@@ -96,7 +96,7 @@ private struct WorkflowNavigateBackHandlerKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
-enum WorkflowDismissalReason {
+enum WorkflowDismissalReason: Equatable {
     /// The workflow was dismissed through its normal close path.
     case close
 
