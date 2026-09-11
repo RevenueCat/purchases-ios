@@ -122,6 +122,97 @@ final class CheckpointsManagerTests: TestCase {
         ])
     }
 
+    func testCallbackCheckpointReturnsCompletedResultAfterWorkflowDismissal() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertEqual(flowResult?.obtainedEntitlements, [])
+    }
+
+    func testCallbackCheckpointIsSuppressedWhenWorkflowBacksOut() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.execution = .backedOut(CheckpointPaywallOutcome.Dismissed.shared)
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+    }
+
+    func testCallbackCheckpointIsSuppressedWhenAnotherFlowIsBeingPresented() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.error = CheckpointError.operationAlreadyInProgress
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+    }
+
+    func testUnmatchedCallbackCheckpointStillCompletesWhileAnotherFlowIsBeingPresented() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.error = CheckpointError.operationAlreadyInProgress
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.noMatch) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(flowResult)
+        XCTAssertTrue(executor.presentations.isEmpty)
+    }
+
+    func testCallbackCheckpointReturnsNilWhenResolutionFails() async {
+        let manager = CheckpointsManager { _, _ in throw NSError(domain: "test", code: 1) }
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(flowResult)
+    }
+
+    func testCallbackCheckpointReturnsNilWhenWorkflowErrors() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.execution = .completed(
+            CheckpointPaywallOutcome.Error(error: NSError(domain: "test", code: 1))
+        )
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(flowResult)
+    }
+
     func testRunCheckpointRecordsBackOutWithoutChangingDismissedOutcome() async throws {
         let executor = MockCheckpointWorkflowExecutor()
         executor.execution = .backedOut(CheckpointPaywallOutcome.Dismissed.shared)

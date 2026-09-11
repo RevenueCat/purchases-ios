@@ -21,7 +21,6 @@ struct SoftPaywallUseCaseView: View {
 
     @ObservedObject var customVariables: CustomVariables
 
-    @State private var isRunning = false
     @State private var didLoad = false
     @State private var isSubscriber = false
     @State private var status = "Preparing the checkpoint…"
@@ -41,7 +40,7 @@ struct SoftPaywallUseCaseView: View {
 
             Section("Subscription status") {
                 Text(self.isSubscriber ? "Subscriber" : "Free tier")
-                Text(self.isRunning ? "Running the checkpoint…" : self.status)
+                Text(self.status)
                     .foregroundStyle(.secondary)
             }
 
@@ -51,7 +50,6 @@ struct SoftPaywallUseCaseView: View {
                         await self.runCheckpoint()
                     }
                 }
-                .disabled(self.isRunning)
             }
         }
         .navigationTitle("Soft paywall")
@@ -65,57 +63,21 @@ struct SoftPaywallUseCaseView: View {
 
     @MainActor
     private func runCheckpoint() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-        defer { self.isRunning = false }
+        Purchases.shared.checkpoint(
+            "soft_paywall",
+            customVariables: self.customVariables.checkpointCustomVariables
+        ) { result in
+            guard let result else {
+                self.status = "No completed flow. Content remains available."
+                return
+            }
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "soft_paywall",
-                customVariables: self.customVariables.checkpointCustomVariables
-            )
-            self.handle(result)
-        } catch {
-            self.status = "Checkpoint failed: \(error.localizedDescription). Content remains available."
+            let obtained = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
+            self.isSubscriber = self.isSubscriber || !obtained.isEmpty
+            self.status = obtained.isEmpty
+                ? "Checkpoint completed. Content remains available."
+                : "Obtained: \(obtained.joined(separator: ", "))."
         }
-    }
-
-    @MainActor
-    private func handle(_ result: CheckpointResult) {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            self.handle(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointResult.NoAction:
-            self.status = "No paywall shown (\(noAction.reason)). Content remains available."
-        default:
-            self.status = "Unknown checkpoint result. Content remains available."
-        }
-    }
-
-    @MainActor
-    private func handle(_ outcome: CheckpointPaywallOutcome) {
-        switch outcome {
-        case let purchased as CheckpointPaywallOutcome.Purchased:
-            self.updateSubscriptionStatus(with: purchased.customerInfo, action: "Purchased")
-        case let restored as CheckpointPaywallOutcome.Restored:
-            self.updateSubscriptionStatus(with: restored.customerInfo, action: "Restored")
-        case is CheckpointPaywallOutcome.Dismissed:
-            self.status = "Paywall dismissed. Content remains available."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            self.status = "Web checkout opened. Content remains available."
-        case let failed as CheckpointPaywallOutcome.Error:
-            self.status = "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            self.status = "Unknown paywall outcome. Content remains available."
-        }
-    }
-
-    @MainActor
-    private func updateSubscriptionStatus(with customerInfo: CustomerInfo, action: String) {
-        self.isSubscriber = !customerInfo.entitlements.active.isEmpty
-        self.status = "\(action). Content remains available."
     }
 
 }

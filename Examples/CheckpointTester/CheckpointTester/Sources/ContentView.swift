@@ -122,37 +122,27 @@ struct ContentView: View {
                         subtitle: "An unknown identifier resolves without presenting UI.",
                         systemImage: "arrow.forward"
                     ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "this-checkpoint-does-not-exist",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(
-                                    result,
-                                    checkpointIdentifier: "this-checkpoint-does-not-exist"
-                                )
-                            } catch {
-                                self.model.showError(error)
-                            }
+                        Purchases.shared.checkpoint(
+                            "this-checkpoint-does-not-exist",
+                            customVariables: self.customVariables.checkpointCustomVariables
+                        ) { result in
+                            self.model.showOutcome(
+                                result,
+                                checkpointIdentifier: "this-checkpoint-does-not-exist"
+                            )
                         }
                     }
 
                     DemoButton(
                         title: "Simulated error",
-                        subtitle: "The checkpoint call throws a configuration error.",
+                        subtitle: "A configuration error completes without a flow result.",
                         systemImage: "exclamationmark.triangle"
                     ) {
-                        Task { @MainActor in
-                            do {
-                                let result = try await Purchases.shared.checkpoint(
-                                    "error_checkpoint",
-                                    customVariables: self.customVariables.checkpointCustomVariables
-                                )
-                                self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
-                            } catch {
-                                self.model.showError(error)
-                            }
+                        Purchases.shared.checkpoint(
+                            "error_checkpoint",
+                            customVariables: self.customVariables.checkpointCustomVariables
+                        ) { result in
+                            self.model.showOutcome(result, checkpointIdentifier: "error_checkpoint")
                         }
                     }
                 }

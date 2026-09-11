@@ -47,7 +47,6 @@ struct OnboardingUseCaseView: View {
     @ObservedObject var customVariables: CustomVariables
 
     @State private var step: Step = .welcome
-    @State private var isRunning = false
     @State private var checkpointResult: String?
 
     var body: some View {
@@ -73,7 +72,6 @@ struct OnboardingUseCaseView: View {
                     Button("Back") {
                         self.step = .welcome
                     }
-                    .disabled(self.isRunning)
                 }
 
                 Spacer()
@@ -85,13 +83,12 @@ struct OnboardingUseCaseView: View {
                     }
                     .buttonStyle(.borderedProminent)
                 case .personalize:
-                    Button(self.isRunning ? "Running checkpoint…" : "Finish onboarding") {
+                    Button("Finish onboarding") {
                         Task { @MainActor in
                             await self.finishOnboarding()
                         }
                     }
                     .buttonStyle(.borderedProminent)
-                    .disabled(self.isRunning)
                 case .done:
                     Button("Restart onboarding") {
                         self.step = .welcome
@@ -107,20 +104,14 @@ struct OnboardingUseCaseView: View {
 
     @MainActor
     private func finishOnboarding() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "onboarding_complete",
-                customVariables: self.personalizationCheckpointCustomVariables
-            )
-            self.checkpointResult = Self.describe(result)
-        } catch {
-            self.checkpointResult = "Checkpoint failed: \(error.localizedDescription)"
+        Purchases.shared.checkpoint(
+            "onboarding_complete",
+            customVariables: self.personalizationCheckpointCustomVariables
+        ) { result in
+            self.checkpointResult = result == nil
+                ? "No completed flow."
+                : "Checkpoint flow completed."
         }
-
-        self.isRunning = false
         self.step = .done
     }
 

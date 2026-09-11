@@ -91,6 +91,53 @@ final class CheckpointsManager {
         }
     }
 
+    @MainActor
+    func checkpointForCallback(
+        identifier: String,
+        params: CheckpointCallParams
+    ) async -> CheckpointCallbackResult {
+        do {
+            switch try await self.executeCheckpoint(identifier: identifier, params: params) {
+            case .backedOut:
+                return .suppressed
+            case let .completed(result):
+                guard let presented = result as? CheckpointResult.PaywallPresented else {
+                    return .completed(nil)
+                }
+                return .completed(self.flowResult(for: presented.paywallOutcome))
+            }
+        } catch CheckpointError.operationAlreadyInProgress {
+            return .suppressed
+        } catch {
+            return .completed(nil)
+        }
+    }
+
+    @MainActor
+    private func flowResult(for outcome: CheckpointPaywallOutcome) -> CheckpointFlowResult? {
+        let entitlements: [EntitlementInfo]
+        switch outcome {
+        case let purchased as CheckpointPaywallOutcome.Purchased:
+            entitlements = Array(purchased.customerInfo.entitlements.active.values)
+        case let restored as CheckpointPaywallOutcome.Restored:
+            entitlements = Array(restored.customerInfo.entitlements.active.values)
+        case is CheckpointPaywallOutcome.Error:
+            return nil
+        default:
+            entitlements = []
+        }
+
+        return CheckpointFlowResult(
+            obtainedEntitlements: Set(entitlements.map(CheckpointObtainedEntitlement.init))
+        )
+    }
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+enum CheckpointCallbackResult {
+    case completed(CheckpointFlowResult?)
+    case suppressed
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)

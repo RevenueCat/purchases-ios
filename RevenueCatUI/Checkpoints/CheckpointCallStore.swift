@@ -55,6 +55,11 @@ final class CheckpointCallStore {
 
         switch update {
         case let .outcome(outcome):
+            // Once the customer has purchased or restored, a later non-success outcome must not erase it.
+            // A later purchase or restore may replace it with newer CustomerInfo.
+            guard !Self.isSuccessful(call.stagedOutcome) || Self.isSuccessful(outcome) else {
+                return
+            }
             call.stagedOutcome = outcome
         case let .workflowPresentationError(error):
             // A workflow error does not supersede an outcome that was already reported by the customer.
@@ -68,6 +73,10 @@ final class CheckpointCallStore {
     func remove() -> Call? {
         defer { self.call = nil }
         return self.call
+    }
+
+    private static func isSuccessful(_ outcome: CheckpointPaywallOutcome) -> Bool {
+        return outcome is CheckpointPaywallOutcome.Purchased || outcome is CheckpointPaywallOutcome.Restored
     }
 
 }

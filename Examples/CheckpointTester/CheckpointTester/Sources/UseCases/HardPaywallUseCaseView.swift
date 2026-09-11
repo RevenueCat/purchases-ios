@@ -21,7 +21,6 @@ struct HardPaywallUseCaseView: View {
 
     @ObservedObject var customVariables: CustomVariables
 
-    @State private var isRunning = false
     @State private var didLoad = false
     @State private var attempts = 0
     @State private var hasAccess = false
@@ -40,8 +39,8 @@ struct HardPaywallUseCaseView: View {
 
                     Text(
                         self.hasAccess
-                            ? "This checkpoint returned purchased or restored, so the gated content is available."
-                            : "Only a purchased or restored result from this checkpoint unlocks the content."
+                            ? "This checkpoint reported an active entitlement, so the gated content is available."
+                            : "Only a result containing an active entitlement unlocks the content."
                     )
                     .foregroundStyle(.secondary)
                 }
@@ -49,7 +48,7 @@ struct HardPaywallUseCaseView: View {
             }
 
             Section("Latest result") {
-                Text(self.isRunning ? "Running the checkpoint…" : self.status)
+                Text(self.status)
                     .foregroundStyle(.secondary)
             }
 
@@ -60,7 +59,6 @@ struct HardPaywallUseCaseView: View {
                             await self.runCheckpoint()
                         }
                     }
-                    .disabled(self.isRunning)
                 }
             }
         }
@@ -74,52 +72,20 @@ struct HardPaywallUseCaseView: View {
 
     @MainActor
     private func runCheckpoint() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-        defer { self.isRunning = false }
+        Purchases.shared.checkpoint(
+            "hard_paywall",
+            customVariables: self.customVariablesForNextAttempt()
+        ) { result in
+            let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+            guard !obtained.isEmpty else {
+                self.status = result == nil
+                    ? "No completed flow. Content remains locked."
+                    : "Checkpoint completed without an active entitlement. Content remains locked."
+                return
+            }
 
-        do {
-            let result = try await Purchases.shared.checkpoint(
-                "hard_paywall",
-                customVariables: self.customVariablesForNextAttempt()
-            )
-            self.handle(result)
-        } catch {
-            self.status = "Failed: \(error.localizedDescription)"
-        }
-    }
-
-    @MainActor
-    private func handle(_ result: CheckpointResult) {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            self.handle(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointResult.NoAction:
-            self.status = "No paywall shown (\(noAction.reason)). Content remains locked."
-        default:
-            self.status = "Unknown checkpoint result. Content remains locked."
-        }
-    }
-
-    @MainActor
-    private func handle(_ outcome: CheckpointPaywallOutcome) {
-        switch outcome {
-        case is CheckpointPaywallOutcome.Purchased:
             self.hasAccess = true
-            self.status = "Purchase completed. Access granted."
-        case is CheckpointPaywallOutcome.Restored:
-            self.hasAccess = true
-            self.status = "Restore completed. Access granted."
-        case is CheckpointPaywallOutcome.Dismissed:
-            self.status = "Paywall dismissed. Content remains locked."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            self.status = "Web checkout opened. Complete the purchase to unlock content."
-        case let failed as CheckpointPaywallOutcome.Error:
-            self.status = "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            self.status = "Unknown paywall outcome. Content remains locked."
+            self.status = "Obtained: \(obtained.joined(separator: ", ")). Content unlocked."
         }
     }
 
