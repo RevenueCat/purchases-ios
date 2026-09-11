@@ -240,3 +240,8 @@ When reviewing a pull request:
 - **Check Android SDK** when unsure about cross-platform implementation details — new features should follow existing patterns across SDKs
 - **Never commit Claude-related files** — do not stage or commit `.claude/` directory, `settings.local.json`, or any AI tool configuration files
 - **Never commit API keys or secrets** — do not stage or commit API keys, tokens, credentials, or any sensitive data
+- **Dispatch completions to the main thread** — completion handlers and delegate callbacks in `Purchases` must be dispatched on the main thread via `operationDispatcher.dispatchOnMainThread`. Don't call completions directly from background queues.
+- **New public/SPI API requires doc comments and API tester entries** — every new `public` or `@_spi(Internal)` property/method must have a `///` doc comment and a corresponding entry in both `Tests/APITesters/SwiftAPITester` and `ObjcAPITester` (when on an `@objc` class).
+- **Prefer `let` over `var`** — use `let` for properties that never change after `init`. Declare stored properties as `var` only when mutation is required.
+- **Prefer protocol dependencies** — inject dependencies via protocol types (e.g., `CurrentUserProvider`) rather than concrete classes, following existing SDK conventions.
+- **Keep doc comments in sync** — when changing behavior, update or remove stale `///` comments. A doc comment that contradicts the code is worse than no comment.
