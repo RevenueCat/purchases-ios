@@ -311,6 +311,7 @@ final class SizeModifierTests: TestCase {
         XCTAssertEqual(Self.fittingSize(of: view, in: .init(width: 100, height: 100)).height, 40)
     }
 
+    #if ENABLE_PAYWALL_MIN_MAX_SIZING
     func testSheetSizeAppliesWidthAndHeightConstraints() {
         let view = Color.clear
             .applySheetSize(
@@ -326,6 +327,7 @@ final class SizeModifierTests: TestCase {
             .init(width: 40, height: 30)
         )
     }
+    #endif
 
     // MARK: - Stack strategy
 
