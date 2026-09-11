@@ -109,7 +109,7 @@ struct OnboardingUseCaseView: View {
             customVariables: self.personalizationCheckpointCustomVariables
         ) { result in
             self.checkpointResult = result == nil
-                ? "No matching flow."
+                ? "No completed flow."
                 : "Checkpoint flow completed."
         }
         self.step = .done

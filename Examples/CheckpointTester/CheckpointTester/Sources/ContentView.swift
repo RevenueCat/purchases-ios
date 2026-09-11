@@ -135,7 +135,7 @@ struct ContentView: View {
 
                     DemoButton(
                         title: "Simulated error",
-                        subtitle: "The checkpoint call throws a configuration error.",
+                        subtitle: "A configuration error completes without a flow result.",
                         systemImage: "exclamationmark.triangle"
                     ) {
                         Purchases.shared.checkpoint(

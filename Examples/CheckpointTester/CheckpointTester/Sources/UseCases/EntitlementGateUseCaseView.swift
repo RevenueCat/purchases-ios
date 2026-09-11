@@ -21,7 +21,6 @@ struct EntitlementGateUseCaseView: View {
 
     @ObservedObject var customVariables: CustomVariables
 
-    @State private var isRunning = false
     @State private var didLoad = false
     @State private var activeEntitlementIdentifiers: [String] = []
     @State private var status = "Checking CustomerInfo…"
@@ -52,7 +51,7 @@ struct EntitlementGateUseCaseView: View {
                 .font(.headline)
                 .foregroundStyle(self.hasAccess ? .green : .red)
 
-                Text(self.isRunning ? "Checking access…" : self.status)
+                Text(self.status)
                     .foregroundStyle(.secondary)
             }
 
@@ -62,7 +61,6 @@ struct EntitlementGateUseCaseView: View {
                         await self.refreshAccess()
                     }
                 }
-                .disabled(self.isRunning)
             }
         }
         .navigationTitle("Entitlement gate")
@@ -75,10 +73,6 @@ struct EntitlementGateUseCaseView: View {
 
     @MainActor
     private func refreshAccess() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
-        defer { self.isRunning = false }
-
         do {
             let customerInfo = try await Purchases.shared.customerInfo()
             self.activeEntitlementIdentifiers = Self.activeEntitlementIdentifiers(from: customerInfo)
@@ -92,7 +86,6 @@ struct EntitlementGateUseCaseView: View {
                 "entitlement_gate",
                 customVariables: self.entitlementCheckpointCustomVariables
             ) { result in
-                self.isRunning = false
                 self.handle(result)
             }
         } catch {
@@ -102,51 +95,16 @@ struct EntitlementGateUseCaseView: View {
 
     @MainActor
     private func handle(_ result: CheckpointFlowResult?) {
-        let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+        guard let result else {
+            self.status = "No completed flow. Content remains locked."
+            return
+        }
+
+        let obtained = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
         self.activeEntitlementIdentifiers = Array(Set(self.activeEntitlementIdentifiers + obtained)).sorted()
         self.status = obtained.isEmpty
-            ? "Checkpoint completed without a new entitlement. Content remains locked."
+            ? "Checkpoint completed without an active entitlement. Content remains locked."
             : "Obtained: \(obtained.joined(separator: ", "))."
-    }
-
-    @MainActor
-    private func handle(_ result: CheckpointResult) {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            self.handle(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointResult.NoAction:
-            self.status = "No paywall shown (\(noAction.reason)). Content remains locked."
-        default:
-            self.status = "Unknown checkpoint result. Content remains locked."
-        }
-    }
-
-    @MainActor
-    private func handle(_ outcome: CheckpointPaywallOutcome) {
-        switch outcome {
-        case let purchased as CheckpointPaywallOutcome.Purchased:
-            self.updateAccess(with: purchased.customerInfo, action: "Purchase completed")
-        case let restored as CheckpointPaywallOutcome.Restored:
-            self.updateAccess(with: restored.customerInfo, action: "Restore completed")
-        case is CheckpointPaywallOutcome.Dismissed:
-            self.status = "Paywall dismissed. Content remains locked."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            self.status = "Web checkout opened. Refresh access after completing the purchase."
-        case let failed as CheckpointPaywallOutcome.Error:
-            self.status = "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            self.status = "Unknown paywall outcome. Content remains locked."
-        }
-    }
-
-    @MainActor
-    private func updateAccess(with customerInfo: CustomerInfo, action: String) {
-        self.activeEntitlementIdentifiers = Self.activeEntitlementIdentifiers(from: customerInfo)
-        self.status = self.hasAccess
-            ? "\(action). Access granted."
-            : "\(action), but no active entitlement was found."
     }
 
     private var entitlementCheckpointCustomVariables: [String: CustomVariableValue] {

@@ -67,49 +67,17 @@ struct SoftPaywallUseCaseView: View {
             "soft_paywall",
             customVariables: self.customVariables.checkpointCustomVariables
         ) { result in
-            let obtained = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+            guard let result else {
+                self.status = "No completed flow. Content remains available."
+                return
+            }
+
+            let obtained = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
+            self.isSubscriber = self.isSubscriber || !obtained.isEmpty
             self.status = obtained.isEmpty
                 ? "Checkpoint completed. Content remains available."
                 : "Obtained: \(obtained.joined(separator: ", "))."
         }
-    }
-
-    @MainActor
-    private func handle(_ result: CheckpointResult) {
-        switch result {
-        case let presented as CheckpointResult.PaywallPresented:
-            self.handle(presented.paywallOutcome)
-        case let received as CheckpointResult.ReceivedOffering:
-            self.status = "Received offering '\(received.offering.identifier)'. The app owns what happens next."
-        case let noAction as CheckpointResult.NoAction:
-            self.status = "No paywall shown (\(noAction.reason)). Content remains available."
-        default:
-            self.status = "Unknown checkpoint result. Content remains available."
-        }
-    }
-
-    @MainActor
-    private func handle(_ outcome: CheckpointPaywallOutcome) {
-        switch outcome {
-        case let purchased as CheckpointPaywallOutcome.Purchased:
-            self.updateSubscriptionStatus(with: purchased.customerInfo, action: "Purchased")
-        case let restored as CheckpointPaywallOutcome.Restored:
-            self.updateSubscriptionStatus(with: restored.customerInfo, action: "Restored")
-        case is CheckpointPaywallOutcome.Dismissed:
-            self.status = "Paywall dismissed. Content remains available."
-        case is CheckpointPaywallOutcome.WebCheckoutOpened:
-            self.status = "Web checkout opened. Content remains available."
-        case let failed as CheckpointPaywallOutcome.Error:
-            self.status = "Paywall failed: \(failed.error.localizedDescription)"
-        default:
-            self.status = "Unknown paywall outcome. Content remains available."
-        }
-    }
-
-    @MainActor
-    private func updateSubscriptionStatus(with customerInfo: CustomerInfo, action: String) {
-        self.isSubscriber = !customerInfo.entitlements.active.isEmpty
-        self.status = "\(action). Content remains available."
     }
 
 }

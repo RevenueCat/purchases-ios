@@ -37,11 +37,20 @@ final class CheckpointDemoModel: ObservableObject {
     }
 
     func showOutcome(_ result: CheckpointFlowResult?, checkpointIdentifier: String) {
-        let identifiers = result?.obtainedEntitlements.map(\.entitlement.identifier).sorted() ?? []
+        guard let result else {
+            self.showOutcomeAlert(
+                title: "No completed flow",
+                message: "Checkpoint · \(checkpointIdentifier)\n\n" +
+                    "No matching flow was found, or the flow could not complete."
+            )
+            return
+        }
+
+        let identifiers = result.obtainedEntitlements.map(\.entitlement.identifier).sorted()
         self.showOutcomeAlert(
-            title: "Checkpoint passed",
+            title: "Checkpoint completed",
             message: identifiers.isEmpty
-                ? "Checkpoint · \(checkpointIdentifier)\n\nNo new entitlements."
+                ? "Checkpoint · \(checkpointIdentifier)\n\nNo active entitlements reported."
                 : "Checkpoint · \(checkpointIdentifier)\n\nObtained: \(identifiers.joined(separator: ", "))"
         )
     }
