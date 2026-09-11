@@ -878,6 +878,7 @@ private extension WorkflowPaywallViewTests {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension WorkflowPaywallViewTests {
 
+    #if !os(watchOS) && !os(macOS)
     @MainActor
     func testInitialPresentationErrorClearsConfiguredExitOffer() async throws {
         let exitOffering = Offering(
@@ -963,6 +964,8 @@ extension WorkflowPaywallViewTests {
             expectedCount: 1
         )
     }
+
+    #endif
 
     func testExitOfferOfferingIsNotStepAware() throws {
         // context.exitOfferOffering returns non-nil whenever the exit offer is configured,
