@@ -21,7 +21,6 @@ struct HardPaywallUseCaseView: View {
 
     @ObservedObject var customVariables: CustomVariables
 
-    @State private var isRunning = false
     @State private var didLoad = false
     @State private var attempts = 0
     @State private var hasAccess = false
@@ -49,7 +48,7 @@ struct HardPaywallUseCaseView: View {
             }
 
             Section("Latest result") {
-                Text(self.isRunning ? "Running the checkpoint…" : self.status)
+                Text(self.status)
                     .foregroundStyle(.secondary)
             }
 
@@ -60,7 +59,6 @@ struct HardPaywallUseCaseView: View {
                             await self.runCheckpoint()
                         }
                     }
-                    .disabled(self.isRunning)
                 }
             }
         }
@@ -74,13 +72,10 @@ struct HardPaywallUseCaseView: View {
 
     @MainActor
     private func runCheckpoint() async {
-        guard !self.isRunning else { return }
-        self.isRunning = true
         Purchases.shared.checkpoint(
             "hard_paywall",
             customVariables: self.customVariablesForNextAttempt()
         ) { _ in
-            self.isRunning = false
             self.hasAccess = true
             self.status = "Checkpoint passed. Content unlocked."
         }
