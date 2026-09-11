@@ -745,17 +745,17 @@ struct WorkflowPaywallView: View {
             return false
         }
 
-        guard Self.presentationError(for: destination.id, in: self.context) == nil else {
-            self.failWorkflowPresentation(for: destination.id)
+        guard Self.presentationError(for: destination.step.id, in: self.context) == nil else {
+            self.failWorkflowPresentation(for: destination.step.id)
             return true
         }
 
         guard let page = self.renderedPageForForwardNavigation(
-            stepId: destination.id,
-            canNavigateBack: self.navigator.canNavigateBack,
+            stepId: destination.step.id,
+            canNavigateBack: destination.canNavigateBackAfterNavigation,
             carryForwardPackage: self.transitionState.currentPage?.packageContext.package
         ) else {
-            self.failWorkflowPresentation(for: destination.id)
+            self.failWorkflowPresentation(for: destination.step.id)
             return true
         }
 
