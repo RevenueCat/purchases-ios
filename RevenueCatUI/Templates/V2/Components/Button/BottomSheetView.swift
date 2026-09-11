@@ -251,7 +251,9 @@ extension View {
     ) -> some View {
         if let size {
             self
+                #if ENABLE_PAYWALL_MIN_MAX_SIZING
                 .applyWidth(size.width, alignment: .center)
+                #endif
                 .applySheetHeight(size.height, parentHeight: parentHeight)
         } else {
             self

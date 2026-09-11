@@ -459,7 +459,11 @@ import Foundation
         public init(from decoder: Decoder) throws {
             do {
                 let container = try decoder.container(keyedBy: CodingKeys.self)
+                #if ENABLE_PAYWALL_MIN_MAX_SIZING
                 let minMax = (try? MinMax(from: decoder)) ?? .null
+                #else
+                let minMax = MinMax.null
+                #endif
                 let type = try container.decode(SizeConstraintType.self, forKey: .type)
 
                 switch type {
