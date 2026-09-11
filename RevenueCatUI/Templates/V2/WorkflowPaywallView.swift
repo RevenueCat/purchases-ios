@@ -308,6 +308,7 @@ struct WorkflowPaywallView: View {
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
                 workflow: context.workflow,
+                workflowBlobRef: context.workflowBlobRef,
                 sink: { [purchaseHandler] event in purchaseHandler.track(event) }
             )
         )
@@ -356,6 +357,10 @@ struct WorkflowPaywallView: View {
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
+            // Window size for window size condition evaluation (e.g. the
+            // workflow header, which renders outside PaywallsV2View's own
+            // measurement).
+            .environment(\.paywallWindowSize, proxy.size)
             .transitionClipMask(geometry: geometry)
         }
         .allowsHitTesting(!self.transitionState.isTransitioning)
@@ -934,6 +939,9 @@ private struct WorkflowHeaderOverlayPageView: View {
 
     @StateObject private var stateManager: WorkflowHeaderOverlayStateManager
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     @Environment(\.customPaywallVariables)
     private var customVariables
 
@@ -1015,6 +1023,7 @@ private struct WorkflowHeaderOverlayPageView: View {
                     in: PackageSelectionContext(
                         condition: ScreenCondition.from(self.horizontalSizeClass),
                         customVariables: self.customVariables,
+                        windowSize: self.paywallWindowSize,
                         isEligibleForIntroOffer: { [introOfferEligibilityContext] in
                             introOfferEligibilityContext.isEligible(package: $0)
                         },

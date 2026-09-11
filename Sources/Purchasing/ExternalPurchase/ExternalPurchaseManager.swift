@@ -22,6 +22,8 @@ final class ExternalPurchaseManager {
     private let currentUserProvider: CurrentUserProvider
     private let systemInfo: SystemInfo
 
+    private let isPreparing: Atomic<Bool> = false
+
     init(customLink: ExternalPurchaseCustomLinkType,
          externalPurchaseTokenAPI: ExternalPurchaseTokenAPI,
          currentUserProvider: CurrentUserProvider,
@@ -36,26 +38,50 @@ final class ExternalPurchaseManager {
     ///
     /// Safe to call before the customer intends to buy: it mints nothing, so it creates no obligation to report
     /// anything to Apple.
-    func canMakeExternalPurchases() async -> Bool {
-        guard !self.systemInfo.isSimulatedStoreAPIKey else {
-            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
-            return false
+    func externalPurchaseAvailability() async -> ExternalPurchaseAvailability {
+        guard self.takesPartInTheProgramme else {
+            return .notEligible
         }
 
-        let canMakeExternalPurchases = await self.customLink.canMakeExternalPurchases()
-        Logger.debug(Strings.externalPurchase.eligibility_resolved(canMakeExternalPurchases))
+        guard !self.systemInfo.isSimulatedStoreAPIKey else {
+            Logger.debug(Strings.externalPurchase.unsupported_with_test_store)
+            return .notEligible
+        }
 
-        return canMakeExternalPurchases
+        let availability = await self.customLink.externalPurchaseAvailability()
+        Logger.debug(Strings.externalPurchase.eligibility_resolved(availability))
+
+        return availability
     }
 
     /// Prepares an external purchase, in response to the customer deliberately asking for one.
     ///
     /// Must not be called before then: the notice may only be shown in response to a customer interaction, and
     /// every token minted here is one Apple expects a report for, whether or not a transaction follows.
+    ///
+    /// Only one preparation runs at a time. Asking for another while one is under way stops the new one, so a
+    /// customer tapping twice sees a single notice and mints a single token.
     func prepareExternalPurchase(flow: ExternalPurchaseFlow) async -> ExternalPurchasePreparationResult {
-        guard await self.canMakeExternalPurchases() else {
+        guard self.takesPartInTheProgramme else {
+            return .stopped(.notEligible)
+        }
+
+        guard !self.isPreparing.getAndSet(true) else {
+            Logger.warn(Strings.externalPurchase.already_preparing)
+            return .stopped(.alreadyPreparing)
+        }
+
+        defer { self.isPreparing.value = false }
+
+        switch await self.externalPurchaseAvailability() {
+        case .available:
+            break
+        case .notEligible:
             Logger.warn(Strings.externalPurchase.cannot_make_external_purchases)
-            return .stopped(.cannotMakeExternalPurchases)
+            return .stopped(.notEligible)
+        case .paymentsNotAuthorized:
+            Logger.warn(Strings.externalPurchase.payments_not_authorized)
+            return .stopped(.paymentsNotAuthorized)
         }
 
         switch await self.showNotice(type: flow.noticeType) {
@@ -90,13 +116,18 @@ internal enum ExternalPurchasePreparationResult: Equatable {
 
     enum StopReason: Equatable {
 
-        /// The storefront is not eligible, or the device does not authorize payments. The two are not
-        /// distinguishable, see ``ExternalPurchaseCustomLinkType/canMakeExternalPurchases()``.
+        /// External purchases do not apply to this customer, see ``ExternalPurchaseAvailability/notEligible``.
         ///
         /// The customer saw nothing of the external purchase, so the caller is expected to buy through StoreKit
         /// instead rather than leave them without a way to buy. Unlike the other reasons, this one does not change
         /// while the customer stays where they are.
-        case cannotMakeExternalPurchases
+        case notEligible
+
+        /// The device does not authorize payments, see ``ExternalPurchaseAvailability/paymentsNotAuthorized``.
+        ///
+        /// Unlike ``notEligible``, there is nothing to offer instead: the caller is expected to route the customer
+        /// nowhere at all.
+        case paymentsNotAuthorized
 
         /// The customer declined at the disclosure notice.
         case customerCancelledNotice
@@ -104,6 +135,9 @@ internal enum ExternalPurchasePreparationResult: Equatable {
         /// The notice could not be shown. Continuing without it would breach what StoreKit asks for, so this
         /// stops the purchase even though the customer did not decline.
         case noticeFailed
+
+        /// Another preparation was already under way, and that one carries the purchase.
+        case alreadyPreparing
 
     }
 
@@ -146,6 +180,12 @@ extension ExternalPurchasePreparationResult {
 // MARK: - Private
 
 private extension ExternalPurchaseManager {
+
+    /// Whether the app takes part in Apple's external purchase custom link programme at all, which is a
+    /// precondition for everything here.
+    var takesPartInTheProgramme: Bool {
+        return self.systemInfo.dangerousSettings.useExternalPurchaseCustomLinks
+    }
 
     enum NoticeOutcome {
         case continued
