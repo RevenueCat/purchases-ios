@@ -24,6 +24,7 @@ class ExternalPurchaseManagerTests: TestCase {
 
     private var customLink: MockExternalPurchaseCustomLink!
     private var externalPurchaseTokenAPI: MockExternalPurchaseTokenAPI!
+    private var tokenStore: MockExternalPurchaseTokenStore!
     private var systemInfo: MockSystemInfo!
     private var manager: ExternalPurchaseManager!
 
@@ -34,6 +35,7 @@ class ExternalPurchaseManagerTests: TestCase {
         self.customLink.stubbedTokenResult = .success(Self.token)
 
         self.externalPurchaseTokenAPI = MockExternalPurchaseTokenAPI()
+        self.tokenStore = MockExternalPurchaseTokenStore()
 
         self.systemInfo = Self.makeSystemInfo(useExternalPurchaseCustomLinks: true)
         self.manager = self.makeManager()
@@ -157,6 +159,62 @@ class ExternalPurchaseManagerTests: TestCase {
         expect(result.shouldProceed) == true
         expect(result.tokenID).to(beNil())
         expect(self.externalPurchaseTokenAPI.invokedPostExternalPurchaseTokenCount) == 1
+    }
+
+    // MARK: - Keeping the registration
+
+    /// Apple expects a report for every token minted, so the registration is kept before the post that may
+    /// never land.
+    func testKeepsTheRegistrationBeforePostingIt() async throws {
+        let store = try XCTUnwrap(self.tokenStore)
+        let keptWhilePosting: Atomic<[ExternalPurchaseTokenRegistration]> = .init([])
+
+        self.externalPurchaseTokenAPI.postExternalPurchaseTokenCallback = {
+            keptWhilePosting.value = store.storedRegistrations
+        }
+
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        let kept = try XCTUnwrap(keptWhilePosting.value.onlyElement)
+        expect(kept.tokenID) == self.postedTokenID
+        expect(kept.appUserID) == Self.appUserID
+        expect(kept.purchaseType) == .linkOut
+        expect(kept.token) == Self.token
+    }
+
+    func testDropsTheRegistrationOnceTheBackendAcceptsIt() async {
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        expect(self.tokenStore.storedRegistrations).to(beEmpty())
+    }
+
+    /// A registration lost to a connection failure can still land later, which is what keeping it is for.
+    func testKeepsTheRegistrationWhenThePostFailsTransiently() async throws {
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(.offlineConnection())
+
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        let kept = try XCTUnwrap(self.tokenStore.storedRegistrations.onlyElement)
+        expect(kept.tokenID) == self.postedTokenID
+
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.registration_pending_retry(kept.tokenID),
+                                           level: .debug)
+    }
+
+    /// A rejection is the backend's answer, so posting the same registration again would only be rejected
+    /// again.
+    func testDropsTheRegistrationWhenTheBackendRejectsIt() async throws {
+        self.externalPurchaseTokenAPI.stubbedPostExternalPurchaseTokenError = .networkError(
+            .errorResponse(.defaultResponse, .invalidRequest)
+        )
+
+        _ = await self.manager.prepareExternalPurchase(flow: .linkOut)
+
+        let tokenID = try XCTUnwrap(self.postedTokenID)
+        expect(self.tokenStore.storedRegistrations).to(beEmpty())
+
+        self.logger.verifyMessageWasLogged(Strings.externalPurchase.registration_discarded(tokenID),
+                                           level: .debug)
     }
 
     // MARK: - Dangerous setting
@@ -285,6 +343,7 @@ class ExternalPurchaseManagerTests: TestCase {
         return ExternalPurchaseManager(
             customLink: self.customLink,
             externalPurchaseTokenAPI: self.externalPurchaseTokenAPI,
+            tokenStore: self.tokenStore,
             currentUserProvider: MockCurrentUserProvider(mockAppUserID: Self.appUserID),
             systemInfo: self.systemInfo
         )

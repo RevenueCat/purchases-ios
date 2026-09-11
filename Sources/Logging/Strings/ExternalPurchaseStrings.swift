@@ -28,6 +28,8 @@ enum ExternalPurchaseStrings {
     case error_requesting_token(_ error: Error)
     case token_registered(_ tokenID: String)
     case error_registering_token(_ error: BackendError)
+    case registration_pending_retry(_ tokenID: String)
+    case registration_discarded(_ tokenID: String)
 
 }
 
@@ -57,6 +59,10 @@ extension ExternalPurchaseStrings: LogMessage {
             return "Registered external purchase token \(tokenID)."
         case let .error_registering_token(error):
             return "Error registering the external purchase token: \(error.localizedDescription)"
+        case let .registration_pending_retry(tokenID):
+            return "External purchase token \(tokenID) is kept to be registered again later."
+        case let .registration_discarded(tokenID):
+            return "External purchase token \(tokenID) will not be registered again: it was rejected."
         }
     }
 
