@@ -44,6 +44,8 @@ import UIKit
 // swiftlint:disable:next type_body_length
 public class PaywallViewController: UIViewController {
 
+    private(set) var workflowDismissalReason: WorkflowDismissalReason = .close
+
     /// See ``PaywallViewControllerDelegate`` for receiving purchase events.
     @objc public final weak var delegate: PaywallViewControllerDelegate?
 
@@ -909,6 +911,9 @@ private extension PaywallViewController {
                 self.delegate?.paywallViewController?(self, didFailRestoringWith: error)
             },
             requestedDismissal: onRequestedDismissal,
+            onWorkflowDismissal: { [weak self] reason in
+                self?.workflowDismissalReason = reason
+            },
             onSizeChange: { [weak self] in
                 guard let self else { return }
                 self.delegate?.paywallViewController?(self, didChangeSizeTo: $0)
@@ -1041,6 +1046,7 @@ private struct PaywallContainerView: View {
     let restoreStarted: RestoreStartedHandler
     let restoreFailure: PurchaseFailureHandler
     let requestedDismissal: () -> Void
+    let onWorkflowDismissal: (WorkflowDismissalReason) -> Void
 
     let onSizeChange: (CGSize) -> Void
 
@@ -1065,6 +1071,7 @@ private struct PaywallContainerView: View {
             .onRestoreFailure(self.restoreFailure)
             .onSizeChange(self.onSizeChange)
             .onRequestedDismissal(self.requestedDismissal)
+            .environment(\.workflowDismissalObserver, self.onWorkflowDismissal)
             .onPurchaseInitiated { package, resumeAction in
                 self.purchaseInitiated(package) { shouldProceed in
                     Task { @MainActor in

@@ -250,10 +250,16 @@ struct WorkflowPaywallView: View {
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @Environment(\.workflowExitOfferOfferingBinding) private var exitOfferOfferingBinding
     @Environment(\.workflowCompletedInSessionBinding) private var workflowCompletedInSessionBinding
+    @Environment(\.workflowDismissalObserver) private var workflowDismissalObserver
 
     enum DismissalAction: Equatable {
         case dismissWorkflow
         case navigateBack
+    }
+
+    enum BackNavigationResolution: Equatable {
+        case navigateWithinWorkflow
+        case dismiss(WorkflowDismissalReason)
     }
 
     private enum Constants {
@@ -564,6 +570,7 @@ struct WorkflowPaywallView: View {
         .environment(\.workflowTriggerAction, { componentId in
             return self.handleTriggeredNavigation(componentId: componentId)
         })
+        .environment(\.workflowNavigateBackHandler, self.handleNavigateBack)
     }
 
     @ViewBuilder
@@ -647,10 +654,42 @@ struct WorkflowPaywallView: View {
         }
     }
 
+    /// A `navigate_back` action dismisses from the initial step. At any deeper step it performs
+    /// normal in-workflow navigation.
+    private func handleNavigateBack() {
+        guard !self.transitionState.isTransitioning else { return }
+
+        switch Self.backNavigationResolution(
+            canNavigateBack: self.navigator.canNavigateBack,
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
+        ) {
+        case .navigateWithinWorkflow, .dismiss(.close):
+            self.handleDismiss()
+        case .dismiss(.navigatedBack):
+            self.workflowDismissalObserver?(.navigatedBack)
+            self.onDismiss()
+        }
+    }
+
+    static func backNavigationResolution(
+        canNavigateBack: Bool,
+        hasPurchasedInSession: Bool
+    ) -> BackNavigationResolution {
+        if canNavigateBack {
+            return .navigateWithinWorkflow
+        } else if hasPurchasedInSession {
+            return .dismiss(.close)
+        } else {
+            return .dismiss(.navigatedBack)
+        }
+    }
+
     private func syncExitOfferBinding() {
-        self.exitOfferOfferingBinding.wrappedValue = Self.exitOfferContext(
-            for: self.context, currentStepId: self.navigator.currentStepId
-        )?.exitOfferOffering
+        self.exitOfferOfferingBinding.wrappedValue = self.presentationState.hasFailed
+            ? nil
+            : Self.exitOfferContext(
+                for: self.context, currentStepId: self.navigator.currentStepId
+            )?.exitOfferOffering
     }
 
     // MARK: - Workflow step event tracking

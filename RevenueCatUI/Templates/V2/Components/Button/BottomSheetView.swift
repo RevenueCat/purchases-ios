@@ -176,10 +176,15 @@ struct BottomSheetOverlayModifier: ViewModifier {
                         )
                     )
                     // Dismissal in here closes the sheet, so a `navigate_back` button must not
-                    // inherit the workflow's back stack and call itself "Go back".
+                    // inherit the workflow's back stack or handler. Its label and tap both refer
+                    // to the sheet's local dismissal.
                     .environment(
                         \.workflowRenderingContext,
                         self.workflowRenderingContext.withoutBackNavigation()
+                    )
+                    .environment(
+                        \.workflowNavigateBackHandler,
+                        nil
                     )
                     .applyIfLet(self.sheetHeight, apply: { view, height in
                         view.frame(height: height)

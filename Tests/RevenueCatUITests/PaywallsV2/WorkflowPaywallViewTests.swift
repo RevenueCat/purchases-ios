@@ -56,6 +56,33 @@ final class WorkflowPaywallViewTests: TestCase {
         expect(action) == .dismissWorkflow
     }
 
+    func testBackNavigationResolutionNavigatesWithinWorkflowWhenAPreviousStepExists() {
+        let resolution = WorkflowPaywallView.backNavigationResolution(
+            canNavigateBack: true,
+            hasPurchasedInSession: false
+        )
+
+        expect(resolution) == .navigateWithinWorkflow
+    }
+
+    func testBackNavigationResolutionDismissesAsNavigatedBackAtInitialStep() {
+        let resolution = WorkflowPaywallView.backNavigationResolution(
+            canNavigateBack: false,
+            hasPurchasedInSession: false
+        )
+
+        expect(resolution) == .dismiss(.navigatedBack)
+    }
+
+    func testBackNavigationResolutionDismissesNormallyAfterPurchaseAtInitialStep() {
+        let resolution = WorkflowPaywallView.backNavigationResolution(
+            canNavigateBack: false,
+            hasPurchasedInSession: true
+        )
+
+        expect(resolution) == .dismiss(.close)
+    }
+
     func testHasCompletedInSessionTrueAfterPurchase() {
         expect(WorkflowPaywallView.hasCompletedInSession(
             hasPurchasedInSession: true,

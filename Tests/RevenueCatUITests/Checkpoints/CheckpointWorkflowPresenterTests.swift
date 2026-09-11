@@ -124,6 +124,54 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.WebCheckoutOpened)
     }
 
+    func testBackingOutReportsDismissedOutcomeAndBackedOut() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
+        presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(delegate.didBackOut)
+    }
+
+    func testBackingOutKeepsAStagedErrorOutcome() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let error = NSError(domain: "test", code: 1)
+
+        try presenter.present(presentation: Self.presentation(), delegate: delegate)
+        presenter.stage(.outcome(CheckpointPaywallOutcome.Error(error: error)))
+        presenter.presentationDidDismiss(reason: .navigatedBack)
+
+        guard let outcome = delegate.outcome as? CheckpointPaywallOutcome.Error else {
+            return XCTFail("Expected an error outcome")
+        }
+        XCTAssertEqual(outcome.error, error)
+        XCTAssertTrue(delegate.didBackOut)
+    }
+
+    func testInteractiveDismissalIsNotReportedAsBackingOut() throws {
+        let store = CheckpointCallStore()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presentation = Self.presentation()
+        let presenter = CheckpointWorkflowPresenter(callStore: store) { _ in true }
+        let controller = PaywallViewController(offering: presentation.workflow.offerings.all["offering-id"])
+        let presentationController = UIPresentationController(
+            presentedViewController: controller,
+            presenting: UIViewController()
+        )
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        controller.presentationControllerWillDismiss(presentationController)
+        presenter.paywallViewControllerWasDismissed(controller)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertFalse(delegate.didBackOut)
+    }
+
     func testPurchaseCallbackPreservesTransaction() throws {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
@@ -246,6 +294,29 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         presenter.dismiss {}
 
         XCTAssertEqual(exitOfferController.dismissCallCount, 1)
+    }
+
+    func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
+        let presentation = Self.presentation()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter { _ in true }
+        let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
+        let originalController = DismissRecordingPaywallController(
+            offering: offering,
+            workflowDismissalReason: .navigatedBack
+        )
+        let exitOfferController = DismissRecordingPaywallController(offering: offering)
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewController(
+            originalController,
+            willPresentExitOfferController: exitOfferController
+        )
+        presenter.paywallViewControllerWasDismissed(exitOfferController)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(delegate.didBackOut)
+        XCTAssertEqual(delegate.finishCount, 1)
     }
 
     func testRejectedPresentationThrowsAndCleansStoredCall() {
@@ -414,12 +485,21 @@ private final class DismissRecordingPaywallController: PaywallViewController {
 
     private(set) var dismissCallCount = 0
     private let stubbedPresentingViewController = UIViewController()
+    private let dismissalReason: WorkflowDismissalReason
 
     override var presentingViewController: UIViewController? {
         return self.stubbedPresentingViewController
     }
 
-    init(offering: Offering) {
+    override var workflowDismissalReason: WorkflowDismissalReason {
+        return self.dismissalReason
+    }
+
+    init(
+        offering: Offering,
+        workflowDismissalReason: WorkflowDismissalReason = .close
+    ) {
+        self.dismissalReason = workflowDismissalReason
         super.init(
             content: .offering(offering),
             fonts: DefaultPaywallFontProvider(),
@@ -447,12 +527,20 @@ private final class DismissRecordingPaywallController: PaywallViewController {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 private final class MockCheckpointPresenterDelegate: CheckpointPresentationDelegate {
 
-    private(set) var outcome: CheckpointPaywallOutcome?
+    private(set) var execution: CheckpointExecutionResult<CheckpointPaywallOutcome>?
+    var outcome: CheckpointPaywallOutcome? { self.execution?.value }
+    var didBackOut: Bool {
+        guard let execution else { return false }
+        if case .backedOut = execution {
+            return true
+        }
+        return false
+    }
     private(set) var finishCount = 0
 
-    func checkpointPresentationFinished(outcome: CheckpointPaywallOutcome) {
+    func checkpointPresentationFinished(_ execution: CheckpointExecutionResult<CheckpointPaywallOutcome>) {
         self.finishCount += 1
-        self.outcome = outcome
+        self.execution = execution
     }
 
 }
