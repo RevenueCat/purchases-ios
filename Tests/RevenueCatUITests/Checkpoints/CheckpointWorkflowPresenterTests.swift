@@ -296,6 +296,29 @@ final class CheckpointWorkflowPresenterTests: TestCase {
         XCTAssertEqual(exitOfferController.dismissCallCount, 1)
     }
 
+    func testBackOutReasonIsPreservedWhenExitOfferDismisses() throws {
+        let presentation = Self.presentation()
+        let delegate = MockCheckpointPresenterDelegate()
+        let presenter = CheckpointWorkflowPresenter { _ in true }
+        let offering = try XCTUnwrap(presentation.workflow.offerings.all["offering-id"])
+        let originalController = DismissRecordingPaywallController(
+            offering: offering,
+            workflowDismissalReason: .navigatedBack
+        )
+        let exitOfferController = DismissRecordingPaywallController(offering: offering)
+
+        try presenter.present(presentation: presentation, delegate: delegate)
+        presenter.paywallViewController(
+            originalController,
+            willPresentExitOfferController: exitOfferController
+        )
+        presenter.paywallViewControllerWasDismissed(exitOfferController)
+
+        XCTAssertTrue(delegate.outcome is CheckpointPaywallOutcome.Dismissed)
+        XCTAssertTrue(delegate.didBackOut)
+        XCTAssertEqual(delegate.finishCount, 1)
+    }
+
     func testRejectedPresentationThrowsAndCleansStoredCall() {
         let store = CheckpointCallStore()
         let delegate = MockCheckpointPresenterDelegate()
@@ -462,12 +485,21 @@ private final class DismissRecordingPaywallController: PaywallViewController {
 
     private(set) var dismissCallCount = 0
     private let stubbedPresentingViewController = UIViewController()
+    private let dismissalReason: WorkflowDismissalReason
 
     override var presentingViewController: UIViewController? {
         return self.stubbedPresentingViewController
     }
 
-    init(offering: Offering) {
+    override var workflowDismissalReason: WorkflowDismissalReason {
+        return self.dismissalReason
+    }
+
+    init(
+        offering: Offering,
+        workflowDismissalReason: WorkflowDismissalReason = .close
+    ) {
+        self.dismissalReason = workflowDismissalReason
         super.init(
             content: .offering(offering),
             fonts: DefaultPaywallFontProvider(),
