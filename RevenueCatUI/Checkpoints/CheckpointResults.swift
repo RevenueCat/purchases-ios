@@ -15,12 +15,12 @@
 import Foundation
 @_spi(Internal) import RevenueCat
 
-/// An entitlement obtained while completing a checkpoint flow.
+/// An active entitlement reported after completing a checkpoint flow.
 @_spi(CheckpointsInternal)
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CheckpointObtainedEntitlement: Hashable, @unchecked Sendable {
 
-    /// Information about the entitlement obtained during the flow.
+    /// Information about the active entitlement reported after the flow.
     public let entitlement: EntitlementInfo
 
     init(entitlement: EntitlementInfo) {
@@ -44,9 +44,10 @@ public struct CheckpointObtainedEntitlement: Hashable, @unchecked Sendable {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct CheckpointFlowResult: @unchecked Sendable {
 
-    /// Entitlements that became active while the flow was presented.
+    /// Active entitlements reported by the purchase or restore that completed the flow.
     ///
-    /// This can include entitlements obtained from sources other than the flow while it was presented.
+    /// Because the SDK does not capture the user's entitlements before presenting the flow, this can include
+    /// entitlements that were already active or were obtained from another source.
     public let obtainedEntitlements: Set<CheckpointObtainedEntitlement>
 
     init(obtainedEntitlements: Set<CheckpointObtainedEntitlement> = []) {
