@@ -53,7 +53,9 @@ enum CheckpointExecutionResult<Value> {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 protocol CheckpointExecutor: AnyObject {
 
-    func execute(_ presentation: CheckpointPresentation) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
+    func execute(
+        _ presentation: CheckpointPresentation
+    ) async throws -> CheckpointExecutionResult<CheckpointPaywallOutcome>
 
 }
 
