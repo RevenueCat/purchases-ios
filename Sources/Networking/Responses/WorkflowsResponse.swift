@@ -101,9 +101,21 @@ import Foundation
         }
     }
 
+    public var experimentId: String? { self.stringParam(Self.experimentIdParam) }
+
+    public var experimentVariant: String? { self.stringParam(Self.experimentVariantParam) }
+
+    private func stringParam(_ key: String) -> String? {
+        guard case let .string(value)? = self.paramValues[key] else { return nil }
+        return value
+    }
+
+    private static let experimentIdParam = "experiment_id"
+    private static let experimentVariantParam = "experiment_variant"
+
     // `paramValues`, `outputs`, and `metadata` carry backend step config that the renderer doesn't
-    // read directly (`metadata` is surfaced only via `stepScreenType`), and are typed with the
-    // internal `AnyDecodable`, so they're defaulted rather than exposed.
+    // read directly (`metadata` via `stepScreenType`, `paramValues` via the experiment
+    // params), and are typed with the internal `AnyDecodable`, so they're defaulted rather than exposed.
     @_spi(Internal) public init(
         id: String,
         type: String,
@@ -254,6 +266,7 @@ import Foundation
     public let workflow: PublishedWorkflow
     public let uiConfig: UIConfig
     public let enrolledVariants: [String: String]?
+    public var workflowBlobRef: String?
 
 }
 

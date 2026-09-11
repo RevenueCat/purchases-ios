@@ -168,16 +168,17 @@ final class PaywallEventTracker: @unchecked Sendable {
     func trackComponentInteraction(
         _ interactionData: PaywallEvent.ComponentInteractionData,
         sessionID: SessionID
-    ) -> Bool {
+    ) -> PaywallEvent? {
         guard let entry = self.stateLock.withLock({ self.sessions[sessionID] }),
               let data = entry.eventData,
               !entry.hasTrackedClose else {
             Logger.warning(Strings.attempted_to_track_event_with_missing_data)
-            return false
+            return nil
         }
 
-        self.track(.componentInteraction(.init(), data, interactionData))
-        return true
+        let event: PaywallEvent = .componentInteraction(.init(), data, interactionData)
+        self.track(event)
+        return event
     }
 
     func track(_ event: PaywallEvent) {
@@ -192,9 +193,18 @@ final class PaywallEventTracker: @unchecked Sendable {
         }
     }
 
-    func componentInteractionLogger(sessionID: SessionID) -> ComponentInteractionLogger {
+    func componentInteractionLogger(
+        sessionID: SessionID,
+        onInteraction: PaywallInteractionNotifier = .init()
+    ) -> ComponentInteractionLogger {
         return .init { [weak self] interactionData in
-            return self?.trackComponentInteraction(interactionData, sessionID: sessionID) ?? false
+            guard let event = self?.trackComponentInteraction(interactionData, sessionID: sessionID) else {
+                return false
+            }
+            if onInteraction.handler != nil {
+                onInteraction(PaywallInteractionEvent(event))
+            }
+            return true
         }
     }
 

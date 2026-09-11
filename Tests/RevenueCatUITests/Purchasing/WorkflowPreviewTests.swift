@@ -152,6 +152,21 @@ private extension WorkflowPreviewTests {
         return try JSONDecoder.default.decode(PaywallComponentsData.ComponentsConfig.self, from: data)
     }
 
+    func testMakeContextCarriesTheWorkflowBlobRef() throws {
+        let baseOffering = Self.makeOffering(identifier: "offering_a")
+        let workflow = try Self.makeWorkflow(screenOfferingIdentifier: "offering_a")
+
+        let withRef = try WorkflowPreview.makeContext(
+            workflow: workflow,
+            offerings: [baseOffering],
+            workflowBlobRef: "blob-ref-1"
+        )
+        let withoutRef = try WorkflowPreview.makeContext(workflow: workflow, offerings: [baseOffering])
+
+        expect(withRef.workflowBlobRef) == "blob-ref-1"
+        expect(withoutRef.workflowBlobRef).to(beNil())
+    }
+
 }
 
 #endif
