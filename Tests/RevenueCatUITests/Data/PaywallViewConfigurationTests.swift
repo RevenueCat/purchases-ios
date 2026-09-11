@@ -19,6 +19,20 @@ import XCTest
 final class PaywallViewConfigurationTests: TestCase {
 
 #if !os(tvOS)
+    func testWorkflowPresentationErrorHandlerIsRetained() {
+        let expectedError = NSError(domain: "test", code: 1)
+        var receivedError: NSError?
+        let configuration = PaywallViewConfiguration(
+            content: .defaultOffering,
+            purchaseHandler: .default(),
+            workflowPresentationErrorHandler: { receivedError = $0 }
+        )
+
+        configuration.workflowPresentationErrorHandler?(expectedError)
+
+        expect(receivedError) === expectedError
+    }
+
     func testCachedInitialOfferingReturnsNilForWorkflowContentWhenRemoteConfigEnabledWithoutCachedWorkflow() {
         let cachedOffering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()

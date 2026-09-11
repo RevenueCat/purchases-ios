@@ -310,7 +310,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             ResolvedCheckpointWorkflow(
                 workflow: workflowData.workflow,
                 uiConfig: workflowData.uiConfig,
-                offerings: offerings
+                offerings: offerings,
                 workflowBlobRef: workflowData.workflowBlobRef
             )
         )
