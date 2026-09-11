@@ -92,8 +92,15 @@ public final class PaywallPresentationParams {
 @MainActor
 public final class PaywallPresentationResult {
 
-    /// The customer purchased through the custom paywall.
-    public static let purchased = PaywallPresentationResult()
+    /// Reports a completed purchase from the custom paywall.
+    ///
+    /// Pass the customer information and transaction returned by ``Purchases/purchase(package:)``.
+    public static func purchased(
+        customerInfo: CustomerInfo,
+        transaction: StoreTransaction?
+    ) -> PaywallPresentationResult {
+        return PaywallPresentationResult(customerInfo: customerInfo, transaction: transaction)
+    }
 
     /// The customer closed the paywall. A soft checkpoint may continue after this result.
     public static let closed = PaywallPresentationResult()
@@ -104,6 +111,17 @@ public final class PaywallPresentationResult {
     /// The customer continued without purchasing, so RevenueCat should advance the remaining checkpoint flow.
     public static let continuedWithoutPurchasing = PaywallPresentationResult()
 
-    private init() {}
+    private let customerInfo: CustomerInfo?
+    private let transaction: StoreTransaction?
+
+    private init(customerInfo: CustomerInfo? = nil, transaction: StoreTransaction? = nil) {
+        self.customerInfo = customerInfo
+        self.transaction = transaction
+    }
+
+    var purchaseResult: (customerInfo: CustomerInfo, transaction: StoreTransaction?)? {
+        guard let customerInfo else { return nil }
+        return (customerInfo, self.transaction)
+    }
 
 }

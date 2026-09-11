@@ -114,8 +114,8 @@ private enum PaywallPresenterDemo {
                 onBack: {
                     finish(.navigatedBack)
                 },
-                onPurchase: {
-                    finish(.purchased)
+                onPurchase: { result in
+                    finish(.purchased(customerInfo: result.customerInfo, transaction: result.transaction))
                 }
             )
         )
@@ -141,8 +141,8 @@ private enum PaywallPresenterDemo {
                 onBack: {
                     finish(.navigatedBack)
                 },
-                onPurchase: {
-                    finish(.purchased)
+                onPurchase: { result in
+                    finish(.purchased(customerInfo: result.customerInfo, transaction: result.transaction))
                 }
             )
         )
@@ -173,7 +173,7 @@ private struct LocalOverridePaywallPopup: View {
     let offering: Offering
     let onClose: () -> Void
     let onBack: () -> Void
-    let onPurchase: () -> Void
+    let onPurchase: (PurchaseResultData) -> Void
 
     @State private var isPresented = false
     @State private var isCelebrating = false
@@ -269,7 +269,7 @@ private struct PaywallView: View {
     let offering: Offering
     let onClose: () -> Void
     let onBack: () -> Void
-    let onPurchase: () -> Void
+    let onPurchase: (PurchaseResultData) -> Void
 
     var body: some View {
         ScrollView {
@@ -309,7 +309,7 @@ private struct PackagePurchaseOptions: View {
 
     let offering: Offering
     let tint: Color
-    let onPurchase: () -> Void
+    let onPurchase: (PurchaseResultData) -> Void
 
     @State private var purchasingPackageIdentifier: String?
     @State private var purchaseError: String?
@@ -382,7 +382,7 @@ private struct PackagePurchaseOptions: View {
             do {
                 let result = try await Purchases.shared.purchase(package: package)
                 if !result.userCancelled {
-                    self.onPurchase()
+                    self.onPurchase(result)
                 }
             } catch {
                 self.purchaseError = error.localizedDescription
