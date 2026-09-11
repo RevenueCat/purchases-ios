@@ -5,6 +5,8 @@ import class Foundation.ProcessInfo
 import struct Foundation.URL
 import PackageDescription
 
+#warning("RevenueCat: For faster SwiftPM downloads, use https://github.com/RevenueCat/purchases-ios-spm instead.")
+
 /// This reads extra Swift compiler conditions from `CI.xcconfig`, `Local.xcconfig`, and
 /// `TUIST_SWIFT_CONDITIONS`.
 var additionalCompilerFlags: [PackageDescription.SwiftSetting] = {
