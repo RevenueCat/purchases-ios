@@ -162,6 +162,9 @@ private struct CarouselItem<Content: View>: Identifiable {
 private struct CarouselView<Content: View>: View {
     // MARK: - Configuration
 
+    @Environment(\.carouselState)
+    private var ancestorCarouselState
+
     private let pageAlignment: VerticalAlignment
     private let width: CGFloat
     private let initialIndex: Int
@@ -278,7 +281,8 @@ private struct CarouselView<Content: View>: View {
                         .environment(\.carouselState, CarouselState(
                             activeIndex: index,
                             pageIndex: pageIndex,
-                            originalCount: originalCount
+                            originalCount: originalCount,
+                            ancestorDistanceFromActive: self.ancestorCarouselState?.distanceFromActive ?? 0
                         ))
                         // ensure rendering doesn't need to wait on size calculations as the item
                         // attempts to enter the view
