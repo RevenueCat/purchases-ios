@@ -32,12 +32,19 @@ struct BadgeContents {
 class StackComponentViewModel {
 
     let component: PaywallComponent.StackComponent
+    lazy var componentSizeLayoutValue = ComponentSizeLayoutValue(self.component.size)
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
     let viewModels: [PaywallComponentViewModel]
 
     let badgeViewModels: [BadgeContents]
+
+    var usesMinMaxSizing: Bool {
+        return self.component.size.hasMinMaxSizing
+            || self.component.overrides?.contains(where: { $0.properties.size?.hasMinMaxSizing == true }) == true
+            || self.viewModels.contains(where: \.usesMinMaxSizing)
+    }
 
     /// Whether the first child is a full-width image, video, or web view.
     /// Used by ZStack rendering to push non-hero children below the safe area.
@@ -149,7 +156,7 @@ class StackComponentViewModel {
         let presentedBadgeViewModels = presentedBadge
             .flatMap { badge in self.badgeViewModels.first { $0.badge === badge }?.viewModels } ?? []
 
-        return StackComponentStyle(
+        let style = StackComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
             badgeViewModels: presentedBadgeViewModels,
             visible: partial?.visible ?? self.component.visible ?? true,
@@ -167,6 +174,10 @@ class StackComponentViewModel {
             overflow: partial?.overflow ?? self.component.overflow,
             colorScheme: colorScheme
         )
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.componentSizeLayoutValue.size = style.size
+        }
+        return style
     }
 
     @ViewBuilder

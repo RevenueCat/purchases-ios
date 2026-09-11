@@ -24,15 +24,25 @@ struct SizeModifier: ViewModifier {
 
     @ViewBuilder
     func body(content: Content) -> some View {
+        if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
+            self.applySize(to: content)
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(self.size)
+                )
+        } else {
+            self.applyFrames(to: content)
+        }
+    }
+
+    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+    @ViewBuilder
+    private func applySize(to content: Content) -> some View {
         if let fitLimits = FitLimits(size: self.size) {
-            if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
-                FitSizeLayout(limits: fitLimits, alignment: self.alignment) {
-                    content
-                        .applyFitLayoutWidth(self.size.width, alignment: self.hortizontalAlignment)
-                        .applyFitLayoutHeight(self.size.height, alignment: self.verticalAlignment)
-                }
-            } else {
-                self.applyFrames(to: content)
+            FitSizeLayout(limits: fitLimits, alignment: self.alignment) {
+                content
+                    .applyFitLayoutWidth(self.size.width, alignment: self.hortizontalAlignment)
+                    .applyFitLayoutHeight(self.size.height, alignment: self.verticalAlignment)
             }
         } else {
             self.applyFrames(to: content)
@@ -50,6 +60,31 @@ struct SizeModifier: ViewModifier {
         content
             .applyWidth(self.size.width, alignment: self.hortizontalAlignment)
             .applyHeight(self.size.height, alignment: self.verticalAlignment)
+    }
+
+}
+
+final class ComponentSizeLayoutValue {
+
+    var size: PaywallComponent.Size
+
+    init(_ size: PaywallComponent.Size) {
+        self.size = size
+    }
+
+}
+
+private struct PaywallUsesMinMaxSizingKey: EnvironmentKey {
+
+    static let defaultValue = false
+
+}
+
+extension EnvironmentValues {
+
+    var paywallUsesMinMaxSizing: Bool {
+        get { self[PaywallUsesMinMaxSizingKey.self] }
+        set { self[PaywallUsesMinMaxSizingKey.self] = newValue }
     }
 
 }
@@ -324,9 +359,16 @@ private extension PaywallComponent.SizeConstraint {
 
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+struct ComponentSizeLayoutValueKey: LayoutValueKey {
+
+    static let defaultValue: ComponentSizeLayoutValue? = nil
+
+}
+
 extension MinMax {
 
-    fileprivate var hasLimit: Bool {
+    var hasLimit: Bool {
         return self != .null
     }
 
@@ -356,6 +398,27 @@ extension MinMax {
         }
 
         return value
+    }
+
+}
+
+extension PaywallComponent.Size {
+
+    var hasMinMaxSizing: Bool {
+        return self.width.hasMinMaxSizing || self.height.hasMinMaxSizing
+    }
+
+}
+
+extension PaywallComponent.SizeConstraint {
+
+    var hasMinMaxSizing: Bool {
+        switch self {
+        case .fit(_, let minMax), .fill(let minMax), .relative(_, let minMax):
+            return minMax.hasLimit
+        case .fixed:
+            return false
+        }
     }
 
 }

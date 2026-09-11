@@ -24,7 +24,7 @@ class IconComponentViewModel {
 
     private let localizationProvider: LocalizationProvider
     let uiConfigProvider: UIConfigProvider
-    private let component: PaywallComponent.IconComponent
+    let component: PaywallComponent.IconComponent
 
     private let presentedOverrides: PresentedOverrides<PresentedIconPartial>?
 
