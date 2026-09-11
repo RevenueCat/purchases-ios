@@ -548,6 +548,77 @@ class VariableHandlerV2Test: TestCase {
         expect(result).to(equal(""))
     }
 
+    // MARK: - offer_price_with_zero
+
+    func testOfferPriceWithZeroRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testOfferPriceWithZeroPerDayRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    func testOfferPriceWithZeroPerWeekRendersTheAmountForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_week }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$0.00"))
+    }
+
+    /// Same period guard as `offer_price_per_month`: a one week trial has no monthly equivalent.
+    func testOfferPriceWithZeroPerMonthStillReturnsEmptyForAWeeklyTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero_per_month }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal(""))
+    }
+
+    /// A paid offer is unaffected: `_with_zero` only changes what a free trial renders.
+    func testOfferPriceWithZeroMatchesOfferPriceForAPaidOffer() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price_with_zero }}",
+            with: TestData.packageWithIntroOfferPayUpFront,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("$1.99"))
+    }
+
+    /// The existing variables keep substituting the word, that behavior is not changing.
+    func testOfferPriceStillRendersTheWordForAFreeTrial() {
+        let result = variableHandler.processVariables(
+            in: "{{ product.offer_price }} {{ product.offer_price_per_day }}",
+            with: TestData.packageWithIntroOffer,
+            locale: locale,
+            localizations: localizations["en_US"]!,
+            isEligibleForIntroOffer: true
+        )
+        expect(result).to(equal("free free"))
+    }
+
     func testProductPayUpFrontOfferPrice() {
         let result = variableHandler.processVariables(
             in: "{{ product.offer_price }}",
