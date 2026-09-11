@@ -422,7 +422,6 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: cachedOfferings,
                 presentedOfferingContext: offering.presentedOfferingContext,
-                triggerOfferingIdentifier: offering.identifier,
                 workflowBlobRef: fetchResult.workflowBlobRef
               ) else {
             return nil
@@ -641,7 +640,6 @@ extension PurchaseHandler {
                 uiConfig: fetchResult.uiConfig,
                 allOfferings: allOfferings,
                 presentedOfferingContext: presentedOfferingContext,
-                triggerOfferingIdentifier: identifier,
                 workflowBlobRef: fetchResult.workflowBlobRef
             )
         } catch WorkflowError.uiConfigUnavailable(let workflowId) {
@@ -654,21 +652,20 @@ extension PurchaseHandler {
     /// applied, so callers can read `context.initialOffering` instead of receiving it separately.
     /// Shared by the async resolve path and the synchronous cache seed: the async path lets the thrown
     /// error propagate, while the seed treats any throw as a miss (via `try?`).
-    /// Throws ``PaywallError/offeringNotFound(identifier:)`` only when the workflow has no initial screen
-    /// (reporting `triggerOfferingIdentifier`). An absent offering, whether the initial screen declares one
-    /// or not, is rendered as content-only so the workflow UI can surface its configuration error.
+    /// Throws ``PaywallError/workflowInitialScreenUnavailable(workflowId:)`` when the initial step or its
+    /// screen cannot be rendered. An absent offering, whether the initial screen declares one or not, is
+    /// rendered as content-only so the workflow UI can surface its configuration error.
     static func makeWorkflowContext(
         workflow: PublishedWorkflow,
         uiConfig: UIConfig,
         allOfferings: Offerings,
         presentedOfferingContext: PresentedOfferingContext?,
-        triggerOfferingIdentifier: String,
         workflowBlobRef: String? = nil
     ) throws -> WorkflowContext {
         guard let step = workflow.steps[workflow.initialStepId],
               let screenID = step.screenId,
               let screen = workflow.screens[screenID] else {
-            throw PaywallError.offeringNotFound(identifier: triggerOfferingIdentifier)
+            throw PaywallError.workflowInitialScreenUnavailable(workflowId: workflow.id)
         }
 
         let paywallComponents = WorkflowScreenMapper.toPaywallComponents(

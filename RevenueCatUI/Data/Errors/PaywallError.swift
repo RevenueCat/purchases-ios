@@ -28,6 +28,9 @@ enum PaywallError: Error {
     /// The workflow was resolved without the UI config required to render it.
     case workflowUiConfigUnavailable(workflowId: String)
 
+    /// The workflow's initial step or screen could not be rendered.
+    case workflowInitialScreenUnavailable(workflowId: String)
+
     /// The PaywallView must be initialized with ``performPurchase`` and ``performRestore``
     /// when ``purchasesAreCompletedBy`` is ``.myApp``
     case performPurchaseAndRestoreHandlersNotDefined(missingBlocks: String)
@@ -58,6 +61,8 @@ extension PaywallError: CustomNSError, CustomStringConvertible {
             return "The RevenueCat dashboard does not have an offering with identifier '\(identifier)'."
         case let .workflowUiConfigUnavailable(workflowId):
             return "The RevenueCat dashboard workflow '\(workflowId)' is missing its UI configuration."
+        case let .workflowInitialScreenUnavailable(workflowId):
+            return "Workflow '\(workflowId)' has no renderable initial screen."
         case .performPurchaseAndRestoreHandlersNotDefined:
             return "PaywallView has not been correctly initialized. purchasesAreCompletedBy is set to .myApp, and so " +
             "the PaywallView must be initialized with a PerformPurchase and PerformRestore handler."

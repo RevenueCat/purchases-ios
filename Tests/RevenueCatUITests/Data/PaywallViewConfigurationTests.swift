@@ -396,6 +396,31 @@ final class PaywallViewConfigurationTests: TestCase {
         }
     }
 
+    func testResolvePaywallViewDataThrowsWhenWorkflowInitialScreenIsUnavailable() async throws {
+        let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
+        let purchases = Self.createMockPurchases()
+        let handler = Self.createPurchaseHandler(purchases: purchases)
+        purchases.offeringsBlock = {
+            Self.createOfferings([offering], currentOfferingID: offering.identifier)
+        }
+        purchases.workflowBlock = { _ in
+            return try Self.createWorkflowDataResult(
+                offeringIdentifier: offering.identifier,
+                initialStepID: "missing_step"
+            )
+        }
+
+        do {
+            _ = try await handler.resolvePaywallViewData(
+                for: .offering(offering),
+                remoteConfigEnabled: true
+            )
+            XCTFail("Expected resolvePaywallViewData to throw")
+        } catch let PaywallError.workflowInitialScreenUnavailable(workflowID) {
+            expect(workflowID) == "wf_test"
+        }
+    }
+
     func testResolvePaywallViewDataThrowsOnCancellation() async throws {
         let offering = Self.createOffering(identifier: "offering_a", paywall: nil)
         let purchases = Self.createMockPurchases()
@@ -714,20 +739,29 @@ private extension PaywallViewConfigurationTests {
         )
     }
 
-    static func createWorkflowDataResult(offeringIdentifier: String) throws -> WorkflowDataResult {
+    static func createWorkflowDataResult(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1"
+    ) throws -> WorkflowDataResult {
         return .init(
-            workflow: try self.createWorkflow(offeringIdentifier: offeringIdentifier),
+            workflow: try self.createWorkflow(
+                offeringIdentifier: offeringIdentifier,
+                initialStepID: initialStepID
+            ),
             uiConfig: PreviewUIConfig.make(),
             enrolledVariants: nil
         )
     }
 
-    static func createWorkflow(offeringIdentifier: String) throws -> PublishedWorkflow {
+    static func createWorkflow(
+        offeringIdentifier: String,
+        initialStepID: String = "step_1"
+    ) throws -> PublishedWorkflow {
         let json = """
         {
           "id": "wf_test",
           "display_name": "Test",
-          "initial_step_id": "step_1",
+          "initial_step_id": "\(initialStepID)",
           "steps": {
             "step_1": {
               "id": "step_1",
