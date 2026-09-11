@@ -21,11 +21,9 @@ final class CheckpointsManager {
 
     private let resolveCheckpoint: (String, CheckpointCallParams) async throws -> CheckpointResolution
     private let cachedCustomerInfoProvider: @MainActor () -> CustomerInfo?
-    private let fetchCustomerInfo: () async throws -> CustomerInfo
     @MainActor private lazy var executor: CheckpointExecutor = CheckpointWorkflowExecutor()
     @MainActor private lazy var presentationHandler = DefaultCheckpointPresentationHandler(
-        executor: self.executor,
-        fetchCustomerInfo: self.fetchCustomerInfo
+        executor: self.executor
     )
     @MainActor private lazy var presentationCoordinator = CheckpointPresentationCoordinator(
         handler: self.presentationHandler
@@ -33,24 +31,20 @@ final class CheckpointsManager {
 
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.fetchCustomerInfo = fetchCustomerInfo
     }
 
     @MainActor
     init(
         resolveCheckpoint: @escaping (String, CheckpointCallParams) async throws -> CheckpointResolution,
         executor: CheckpointExecutor,
-        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil },
-        fetchCustomerInfo: @escaping () async throws -> CustomerInfo = { throw CheckpointError.missingPresenter }
+        cachedCustomerInfoProvider: @escaping @MainActor () -> CustomerInfo? = { nil }
     ) {
         self.resolveCheckpoint = resolveCheckpoint
         self.cachedCustomerInfoProvider = cachedCustomerInfoProvider
-        self.fetchCustomerInfo = fetchCustomerInfo
         self.executor = executor
     }
 
