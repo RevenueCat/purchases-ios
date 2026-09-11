@@ -92,15 +92,20 @@ private struct CloseWorkflowActionKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
-private struct WorkflowNavigateBackActionKey: EnvironmentKey {
+private struct WorkflowNavigateBackHandlerKey: EnvironmentKey {
     static let defaultValue: (() -> Void)? = nil
 }
 
-/// Records that a workflow was dismissed by navigating back from its initial step.
-/// This is separate from `closeWorkflowAction`: a close action completes a checkpoint flow,
-/// whereas an initial-step navigate-back action means the user backed out of it.
-private struct WorkflowNavigateBackDismissalActionKey: EnvironmentKey {
-    static let defaultValue: (() -> Void)? = nil
+enum WorkflowDismissalReason {
+    /// The workflow was dismissed through its normal close path.
+    case close
+
+    /// The workflow was dismissed by navigating back from its initial step.
+    case navigatedBack
+}
+
+private struct WorkflowDismissalObserverKey: EnvironmentKey {
+    static let defaultValue: ((WorkflowDismissalReason) -> Void)? = nil
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
@@ -153,14 +158,21 @@ extension EnvironmentValues {
         set { self[CloseWorkflowActionKey.self] = newValue }
     }
 
-    var workflowNavigateBackAction: (() -> Void)? {
-        get { self[WorkflowNavigateBackActionKey.self] }
-        set { self[WorkflowNavigateBackActionKey.self] = newValue }
+    /// Handles a `navigate_back` action from a button inside a workflow.
+    ///
+    /// The workflow injects this handler for its descendants so it can decide whether navigating
+    /// back means moving to a previous step or dismissing the workflow.
+    var workflowNavigateBackHandler: (() -> Void)? {
+        get { self[WorkflowNavigateBackHandlerKey.self] }
+        set { self[WorkflowNavigateBackHandlerKey.self] = newValue }
     }
 
-    var workflowNavigateBackDismissalAction: (() -> Void)? {
-        get { self[WorkflowNavigateBackDismissalActionKey.self] }
-        set { self[WorkflowNavigateBackDismissalActionKey.self] = newValue }
+    /// Notifies the host that the workflow's dismissal reason differs from the default `.close`.
+    ///
+    /// `WorkflowPaywallView` currently uses this only when navigating back from its initial step.
+    var workflowDismissalObserver: ((WorkflowDismissalReason) -> Void)? {
+        get { self[WorkflowDismissalObserverKey.self] }
+        set { self[WorkflowDismissalObserverKey.self] = newValue }
     }
 
     /// A binding injected by `PresentingPaywallModifier` so `WorkflowPaywallView` can write the
