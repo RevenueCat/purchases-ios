@@ -274,7 +274,7 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
             guard workflow.steps.count == 1 else {
                 return Self.unservable(rule, reason: "an offering step cannot be mixed with other steps")
             }
-            return await self.resolveOffering(rule, step: initialStep)
+            return await self.resolveOffering(rule, workflow: workflow, step: initialStep)
         }
 
         if workflow.steps.values.contains(where: { $0.type == Self.offeringStepType }) {
@@ -288,8 +288,12 @@ final class DefaultCheckpointWorkflowResolver: CheckpointWorkflowResolver {
     ///
     /// Only the offering identifier is validated. Anything else the step happens to carry is ignored rather
     /// than treated as unservable, since a step of this kind renders nothing.
-    private func resolveOffering(_ rule: CheckpointRule, step: WorkflowStep) async -> CheckpointResolution {
-        guard let offeringID = step.offeringIdentifier else {
+    private func resolveOffering(
+        _ rule: CheckpointRule,
+        workflow: PublishedWorkflow,
+        step: WorkflowStep
+    ) async -> CheckpointResolution {
+        guard let offeringID = workflow.offeringIdentifier(for: step) else {
             return Self.unservable(rule, reason: "the offering step has no valid offering identifier")
         }
         guard let match = await self.offering(identifier: offeringID, for: rule) else {
