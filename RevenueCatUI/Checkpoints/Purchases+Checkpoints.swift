@@ -21,6 +21,19 @@ import Foundation
 @available(iOS 15.0, *)
 public extension Purchases {
 
+    /// Passes a checkpoint without observing its completion.
+    ///
+    /// - Parameters:
+    ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
+    ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
+    ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
+    func checkpoint(
+        _ identifier: String,
+        customVariables: [String: CustomVariableValue] = [:]
+    ) {
+        self.performCheckpoint(identifier, customVariables: customVariables, onPassed: nil)
+    }
+
     /// Passes a checkpoint and calls `onPassed` after a matching flow finishes.
     ///
     /// The callback receives `nil` when the checkpoint has no matching flow or the flow cannot complete. If the user
@@ -30,27 +43,35 @@ public extension Purchases {
     ///   - identifier: The checkpoint identifier configured in the RevenueCat dashboard. It must start with a letter,
     ///     contain only ASCII letters, numbers, underscores, and hyphens, and be no more than 255 characters.
     ///   - customVariables: Values usable in checkpoint targeting rules, feature events, and the presented flow.
-    ///   - onPassed: Optionally called when the checkpoint completes.
+    ///   - onPassed: Called when the checkpoint completes.
     func checkpoint(
         _ identifier: String,
         customVariables: [String: CustomVariableValue] = [:],
-        _ onPassed: @escaping (CheckpointFlowResult?) -> Void = { _ in }
+        _ onPassed: @escaping (CheckpointFlowResult?) -> Void
     ) {
-        Task { @MainActor in
-            switch await self.checkpointsManager.checkpointForCallback(
-                identifier: identifier,
-                params: .init(customVariables: customVariables)
-            ) {
-            case let .completed(result): onPassed(result)
-            case .suppressed: break
-            }
-        }
+        self.performCheckpoint(identifier, customVariables: customVariables, onPassed: onPassed)
     }
 
 }
 
 @available(iOS 15.0, *)
 private extension Purchases {
+
+    func performCheckpoint(
+        _ identifier: String,
+        customVariables: [String: CustomVariableValue],
+        onPassed: ((CheckpointFlowResult?) -> Void)?
+    ) {
+        Task { @MainActor in
+            switch await self.checkpointsManager.checkpointForCallback(
+                identifier: identifier,
+                params: .init(customVariables: customVariables)
+            ) {
+            case let .completed(result): onPassed?(result)
+            case .suppressed: break
+            }
+        }
+    }
 
     var checkpointsManager: CheckpointsManager {
         return self.getOrCreateCheckpointsManager {
