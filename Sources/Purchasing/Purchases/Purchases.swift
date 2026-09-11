@@ -967,6 +967,7 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
             externalPurchaseTokenAPI: backend.externalPurchaseTokenAPI,
             tokenStore: ExternalPurchaseTokenStore(apiKey: systemInfo.apiKey),
             currentUserProvider: identityManager,
+            operationDispatcher: operationDispatcher,
             systemInfo: systemInfo
         )
 
@@ -1024,6 +1025,8 @@ public typealias StartPurchaseBlock = (@escaping PurchaseCompletedBlock) -> Void
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: purchasesOrchestrator.allowSharingAppStoreAccount
         )
+
+        self.externalPurchaseManager.registerPendingTokensIfNeeded()
     }
 
     deinit {
@@ -3029,6 +3032,7 @@ private extension Purchases {
         self.transactionMetadataSyncHelper.syncIfNeeded(
             allowSharingAppStoreAccount: self.purchasesOrchestrator.allowSharingAppStoreAccount
         )
+        self.externalPurchaseManager.registerPendingTokensIfNeeded()
 
         #if !ENABLE_CUSTOM_ENTITLEMENT_COMPUTATION
 
