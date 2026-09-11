@@ -127,6 +127,23 @@ final class CountdownComponentViewTests: TestCase {
         XCTAssertFalse(Self.resolvedVisible(viewModel, state: .selected))
     }
 
+    func testVisibleAppliesWindowWidthVisibilityOverride() {
+        let viewModel = Self.makeViewModel(
+            visible: true,
+            overrides: [
+                .init(
+                    extendedConditions: [.windowWidth(operator: .greaterThanOrEqual, value: 700)],
+                    properties: .init(visible: false)
+                )
+            ]
+        )
+
+        // Unknown window size never matches; narrow doesn't match; wide hides the countdown.
+        XCTAssertTrue(Self.resolvedVisible(viewModel, windowSize: nil))
+        XCTAssertTrue(Self.resolvedVisible(viewModel, windowSize: CGSize(width: 390, height: 844)))
+        XCTAssertFalse(Self.resolvedVisible(viewModel, windowSize: CGSize(width: 904, height: 640)))
+    }
+
     // MARK: - Rule discarding
 
     func testDiscardRulesStripsRuleBasedCountdownOverrides() {
@@ -243,7 +260,8 @@ final class CountdownComponentViewTests: TestCase {
     private static func resolvedVisible(
         _ viewModel: CountdownComponentViewModel,
         state: ComponentViewState = .default,
-        condition: ScreenCondition = .compact
+        condition: ScreenCondition = .compact,
+        windowSize: CGSize? = nil
     ) -> Bool {
         viewModel.visible(
             state: state,
@@ -251,7 +269,8 @@ final class CountdownComponentViewTests: TestCase {
             isEligibleForIntroOffer: false,
             isEligibleForPromoOffer: false,
             selectedPackageId: nil,
-            customVariables: [:]
+            customVariables: [:],
+            windowSize: windowSize
         )
     }
 

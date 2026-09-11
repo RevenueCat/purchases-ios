@@ -39,6 +39,9 @@ struct CountdownComponentView: View {
     @Environment(\.paywallStateDefaults)
     private var paywallStateDefaults
 
+    @Environment(\.paywallWindowSize)
+    private var paywallWindowSize
+
     private let viewModel: CountdownComponentViewModel
     private let onDismiss: () -> Void
 
@@ -66,7 +69,8 @@ struct CountdownComponentView: View {
             selectedPackageId: self.selectedPackageId,
             customVariables: self.customVariables,
             stateValues: self.paywallStateValues,
-            stateDefaults: self.paywallStateDefaults
+            stateDefaults: self.paywallStateDefaults,
+            windowSize: self.paywallWindowSize
         )
     }
 

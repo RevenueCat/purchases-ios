@@ -54,13 +54,15 @@ class CountdownComponentViewModel {
         selectedPackageId: String?,
         customVariables: [String: CustomVariableValue],
         stateValues: [String: PaywallComponent.ConditionValue] = [:],
-        stateDefaults: [String: PaywallComponent.ConditionValue] = [:]
+        stateDefaults: [String: PaywallComponent.ConditionValue] = [:],
+        windowSize: CGSize? = nil
     ) -> Bool {
         let conditionContext = self.uiConfigProvider.conditionContext(
             selectedPackageId: selectedPackageId,
             customVariables: customVariables,
             stateValues: stateValues,
-            stateDefaults: stateDefaults
+            stateDefaults: stateDefaults,
+            windowSize: windowSize
         )
 
         let partial = PresentedCountdownPartial.buildPartial(
