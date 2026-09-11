@@ -71,8 +71,8 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         self.callStore.stage(update)
     }
 
-    func presentationDidDismiss(didBackOut: Bool = false) {
-        self.complete(didBackOut: didBackOut)
+    func presentationDidDismiss(reason: PaywallViewController.WorkflowDismissalReason = .close) {
+        self.complete(reason: reason)
     }
 
     func dismiss(completion: @escaping () -> Void) {
@@ -94,19 +94,24 @@ final class CheckpointWorkflowPresenter: NSObject, CheckpointPresenter {
         #endif
     }
 
-    private func complete(didBackOut: Bool) {
+    private func complete(reason: PaywallViewController.WorkflowDismissalReason) {
         guard let call = self.callStore.remove() else { return }
 
         #if canImport(UIKit) && !os(tvOS) && !os(watchOS)
         self.presentedViewController = nil
         #endif
 
-        let completedByPurchaseOrRestore = call.stagedOutcome is CheckpointPaywallOutcome.Purchased ||
-            call.stagedOutcome is CheckpointPaywallOutcome.Restored
-        call.delegate.checkpointPresentationFinished(
-            outcome: call.stagedOutcome,
-            didBackOut: didBackOut && !completedByPurchaseOrRestore
-        )
+        let execution: CheckpointExecution<CheckpointPaywallOutcome>
+        switch (reason, call.stagedOutcome) {
+        case (.navigatedBack, is CheckpointPaywallOutcome.Purchased),
+             (.navigatedBack, is CheckpointPaywallOutcome.Restored):
+            execution = .completed(call.stagedOutcome)
+        case (.navigatedBack, _):
+            execution = .backedOut(call.stagedOutcome)
+        case (.close, _):
+            execution = .completed(call.stagedOutcome)
+        }
+        call.delegate.checkpointPresentationFinished(execution)
     }
 
     private func presentAutomatically(_ presentation: CheckpointPresentation) throws {
@@ -206,7 +211,7 @@ extension CheckpointWorkflowPresenter {
 
     nonisolated func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
         MainActor.assumeIsolated {
-            self.presentationDidDismiss(didBackOut: controller.workflowDismissalReason == .navigatedBack)
+            self.presentationDidDismiss(reason: controller.workflowDismissalReason)
         }
     }
 
@@ -258,7 +263,7 @@ extension CheckpointWorkflowPresenter {
     }
 
     func paywallViewControllerWasDismissed(_ controller: PaywallViewController) {
-        self.presentationDidDismiss(didBackOut: controller.workflowDismissalReason == .navigatedBack)
+        self.presentationDidDismiss(reason: controller.workflowDismissalReason)
     }
 
     func paywallViewController(
