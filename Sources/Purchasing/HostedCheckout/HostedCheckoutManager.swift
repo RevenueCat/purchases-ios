@@ -73,6 +73,14 @@ final class HostedCheckoutManager {
     /// Unlike the other outcomes, this one does not change while the customer stays where they are.
     case externalPurchaseUnavailable
 
+    /// The device does not authorize payments. There is nothing to present and nothing to offer instead:
+    /// Apple asks that such a device be offered no purchase at all, not even through StoreKit.
+    case paymentsNotAuthorized
+
+    /// Another checkout was already being started, and that one carries the purchase. There is nothing to
+    /// present for this one, and nothing went wrong.
+    case alreadyStarting
+
     /// The checkout could not be started. Why is logged where it happened, and a retry may well work.
     case failed
 
@@ -114,12 +122,16 @@ private extension HostedCheckoutStartResult {
 
     init(stopReason: ExternalPurchasePreparationResult.StopReason) {
         switch stopReason {
-        case .cannotMakeExternalPurchases:
+        case .notEligible:
             self = .externalPurchaseUnavailable
+        case .paymentsNotAuthorized:
+            self = .paymentsNotAuthorized
         case .customerCancelledNotice:
             self = .declinedByCustomer
         case .noticeFailed:
             self = .failed
+        case .alreadyPreparing:
+            self = .alreadyStarting
         }
     }
 
