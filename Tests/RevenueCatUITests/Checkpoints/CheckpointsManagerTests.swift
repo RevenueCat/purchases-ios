@@ -152,6 +152,38 @@ final class CheckpointsManagerTests: TestCase {
         }
     }
 
+    func testCallbackCheckpointIsSuppressedWhenAnotherFlowIsBeingPresented() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.error = CheckpointError.operationAlreadyInProgress
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .matchedWorkflow(Self.workflow()) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case .suppressed = result else {
+            return XCTFail("Expected the callback to be suppressed")
+        }
+    }
+
+    func testUnmatchedCallbackCheckpointStillCompletesWhileAnotherFlowIsBeingPresented() async {
+        let executor = MockCheckpointWorkflowExecutor()
+        executor.error = CheckpointError.operationAlreadyInProgress
+        let manager = CheckpointsManager(
+            resolveCheckpoint: { _, _ in .noAction(.noMatch) },
+            executor: executor
+        )
+
+        let result = await manager.checkpointForCallback(identifier: "soft_paywall", params: .init())
+
+        guard case let .completed(flowResult) = result else {
+            return XCTFail("Expected a completed callback")
+        }
+        XCTAssertNil(flowResult)
+        XCTAssertTrue(executor.presentations.isEmpty)
+    }
+
     func testCallbackCheckpointReturnsNilWhenResolutionFails() async {
         let manager = CheckpointsManager { _, _ in throw NSError(domain: "test", code: 1) }
 
