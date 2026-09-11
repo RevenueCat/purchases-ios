@@ -164,6 +164,9 @@ let project = Project(
             resources: [
                 "../../Tests/TestingApps/PaywallsTester/PaywallsTester/**/*.xcassets"
             ],
+            entitlements: .file(
+                path: "../../Tests/TestingApps/PaywallsTester/PaywallsTester/PaywallsTester.entitlements"
+            ),
             dependencies: [
                 .revenueCat,
                 .revenueCatUI,
