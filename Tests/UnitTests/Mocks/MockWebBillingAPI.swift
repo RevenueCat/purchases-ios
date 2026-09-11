@@ -41,6 +41,42 @@ class MockWebBillingAPI: WebBillingAPI {
         }
     }
 
+    struct PostHostedCheckoutParameters {
+
+        let appUserID: String
+        let packageID: String
+        let presentedOfferingContext: PresentedOfferingContext
+        let paywall: PostHostedCheckoutOperation.Paywall?
+        let externalPurchaseTokenID: String?
+
+    }
+
+    var invokedPostHostedCheckout = false
+    var invokedPostHostedCheckoutCount = 0
+    var invokedPostHostedCheckoutParameters: PostHostedCheckoutParameters?
+    var stubbedPostHostedCheckoutCompletionResult: Result<HostedCheckoutResponse, BackendError>?
+
+    override func postHostedCheckout(
+        appUserID: String,
+        packageID: String,
+        presentedOfferingContext: PresentedOfferingContext,
+        paywall: PostHostedCheckoutOperation.Paywall?,
+        externalPurchaseTokenID: String?,
+        completion: @escaping HostedCheckoutResponseHandler
+    ) {
+        self.invokedPostHostedCheckout = true
+        self.invokedPostHostedCheckoutCount += 1
+        self.invokedPostHostedCheckoutParameters = .init(appUserID: appUserID,
+                                                         packageID: packageID,
+                                                         presentedOfferingContext: presentedOfferingContext,
+                                                         paywall: paywall,
+                                                         externalPurchaseTokenID: externalPurchaseTokenID)
+
+        if let result = self.stubbedPostHostedCheckoutCompletionResult {
+            completion(result)
+        }
+    }
+
 }
 
 extension MockWebBillingAPI: @unchecked Sendable {}
