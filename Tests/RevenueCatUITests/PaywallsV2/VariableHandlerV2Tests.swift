@@ -490,6 +490,38 @@ class VariableHandlerV2Test: TestCase {
     }
 
     /// The expansion runs after both the V2 and V1 passes, so it must be idempotent.
+    /// A URL path segment can look exactly like an abbreviation. Rewriting one breaks the link,
+    /// and a broken link makes VoiceOver read the literal `[title](url)` markdown.
+    func testLinkURLIsNotMistakenForAPeriod() {
+        let localizations = ["month_short": "mo", "monthly": "monthly"]
+
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "[Terms](https://rev.cat/mo)",
+                localizations: localizations
+            ),
+            "[Terms](https://rev.cat/mo)"
+        )
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "See https://rev.cat/mo for details",
+                localizations: localizations
+            ),
+            "See https://rev.cat/mo for details"
+        )
+    }
+
+    /// The guard keys on the character before the slash, so a price still expands.
+    func testPriceStillExpandsAlongsideALink() {
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$5.83/mo. See [terms](https://rev.cat/mo).",
+                localizations: ["month_short": "mo", "monthly": "monthly"]
+            ),
+            "$5.83 monthly. See [terms](https://rev.cat/mo)."
+        )
+    }
+
     func testPeriodAbbreviationExpansionIsIdempotent() {
         let once = VariableHandlerV2.expandPeriodAbbreviations(
             in: "$6.99/mo and $69.99/yr",

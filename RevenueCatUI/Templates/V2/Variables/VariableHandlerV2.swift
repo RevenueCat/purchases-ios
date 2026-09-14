@@ -126,8 +126,11 @@ struct VariableHandlerV2 {
             .sorted { $0.0.count > $1.0.count }
             .reduce(text) { partial, replacement in
                 let (short, spoken) = replacement
-                // Trailing guard so "/mo" does not match inside a spelled-out "/month".
-                let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: short) + "(?![\\p{L}])"
+                // Guarded both sides: a letter before the slash means a URL path, not a price,
+                // and a letter after means a spelled-out "/month" rather than "/mo".
+                let pattern = "(?<![\\p{L}])/\\s*"
+                    + NSRegularExpression.escapedPattern(for: short)
+                    + "(?![\\p{L}])"
 
                 return partial.replacingOccurrences(
                     of: pattern,
