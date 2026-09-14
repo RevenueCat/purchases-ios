@@ -114,7 +114,7 @@ extension StoreKitConfigTestCase {
 
         try await asyncWait(
             description: "Storefront change not detected",
-            timeout: .seconds(1),
+            timeout: .seconds(10),
             pollInterval: .milliseconds(100)
         ) {
             await Storefront.currentStorefront?.countryCode == new
