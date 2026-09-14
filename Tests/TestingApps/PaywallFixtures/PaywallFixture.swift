@@ -466,6 +466,7 @@ private extension PaywallFixture {
                         .text(.init(text: "price_lid", color: .init(light: .hex("#000000")))),
                         .text(.init(text: "literal_price_lid", color: .init(light: .hex("#000000")))),
                         .text(.init(text: "two_links_lid", color: .init(light: .hex("#000000")))),
+                        .text(.init(text: "link_and_price_lid", color: .init(light: .hex("#000000")))),
                         .text(.init(text: "no_links_lid", color: .init(light: .hex("#000000"))))
                     ],
                     dimension: .vertical(.center, .start),
@@ -488,7 +489,13 @@ private extension PaywallFixture {
                         "Read the [terms of service](https://www.revenuecat.com/terms) " +
                         "and the [privacy policy](https://www.revenuecat.com/privacy)."
                     ),
-                    "no_links_lid": .string("This paragraph has no links, so it gains no actions.")
+                    "no_links_lid": .string("This paragraph has no links, so it gains no actions."),
+                    // Both in one paragraph: the only shape where the spoken label replaces text
+                    // that still carries markdown.
+                    "link_and_price_lid": .string(
+                        "Just {{ product.price_per_month }}/mo. " +
+                        "See the [terms of service](https://www.revenuecat.com/terms)."
+                    )
                 ]
             ],
             revision: 1,

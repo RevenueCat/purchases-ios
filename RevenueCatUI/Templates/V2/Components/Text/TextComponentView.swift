@@ -244,20 +244,21 @@ struct NonLocalizedMarkdownText: View {
         }
     }
 
-    private var spokenAccessibilityLabel: String? {
-        return self.accessibilityText.map(Self.strippingMarkdown)
-    }
-
-    /// Stops VoiceOver reading a literal `[title](url)` when a spoken label replaces the text.
-    private static func strippingMarkdown(_ text: String) -> String {
-        guard let attrString = try? AttributedString(
-            markdown: text,
-            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
-        ) else {
-            return text
+    /// A `Text` rather than a `String`: the spoken variant is built from the source copy, so it
+    /// still carries markdown, and `Text` is what knows how to drop it.
+    private var spokenAccessibilityLabel: Text? {
+        guard let accessibilityText = self.accessibilityText else {
+            return nil
         }
 
-        return String(attrString.characters)
+        guard let markdown = try? AttributedString(
+            markdown: accessibilityText,
+            options: AttributedString.MarkdownParsingOptions(interpretedSyntax: .inlineOnly)
+        ) else {
+            return Text(accessibilityText)
+        }
+
+        return Text(markdown)
     }
 }
 
