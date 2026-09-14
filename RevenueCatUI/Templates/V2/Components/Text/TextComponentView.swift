@@ -218,6 +218,8 @@ struct NonLocalizedMarkdownText: View {
 #endif
     }
 
+    /// One run per link: `.inlineOnly` parsing drops emphasis intents inside link text, so styling
+    /// there cannot split a link into several partial actions.
     static func markdownLinks(in attrString: AttributedString) -> [MarkdownLink] {
         attrString.runs.compactMap { run in
             guard let url = run.link else {
