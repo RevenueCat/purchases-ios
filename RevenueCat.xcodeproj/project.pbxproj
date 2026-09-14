@@ -3993,6 +3993,7 @@
 				2C08B3162CDA443A0024857B /* ViewModelFactory.swift */,
 				2C8EC71F2CCF275E00D6CCF8 /* PresentedPartials.swift */,
 				2C8EC6DC2CCC7C5500D6CCF8 /* PackageValidator.swift */,
+				FA11D0C32E4A000100AB0003 /* PackageVisibilityGraph.swift */,
 				88B1BAE72C813A3C001B7EE5 /* PaywallComponentTypeTransformers.swift */,
 				2C08B3342CDD16550024857B /* PaywallComponentViewModel.swift */,
 				DB1FC9502F9A1B23009A95EA /* WorkflowScreenMapper.swift */,
@@ -4052,7 +4053,6 @@
 				2CC7914B2CC0452100FBE120 /* PackageComponentView.swift */,
 				2CC7914C2CC0452100FBE120 /* PackageComponentViewModel.swift */,
 				FA11D0C12E4A000100AB0001 /* PackageVisibilityResolver.swift */,
-				FA11D0C32E4A000100AB0003 /* PackageVisibilityGraph.swift */,
 			);
 			path = Package;
 			sourceTree = "<group>";
