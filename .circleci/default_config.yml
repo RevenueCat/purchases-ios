@@ -987,6 +987,8 @@ jobs:
           name: Run iOS 26 tests
           command: bundle exec fastlane test_ios
           no_output_timeout: 15m
+          max_auto_reruns: 1
+          auto_rerun_delay: 10s
           environment:
             SCAN_DEVICE: iPhone 17 (26.2)
       - compress_result_bundle:

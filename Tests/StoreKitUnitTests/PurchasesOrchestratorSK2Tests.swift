@@ -254,15 +254,17 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
         backend.stubbedPostReceiptResult = .success(self.mockCustomerInfo)
 
         let product = try await fetchSk2Product()
-        let result = try await self.orchestrator.purchase(
-            sk2Product: product,
-            package: nil,
-            promotionalOffer: nil,
-            winBackOffer: nil,
-            introductoryOfferEligibilityJWS: nil,
-            billingPlanType: nil,
-            promotionalOfferOptions: nil
-        )
+        let result = try await self.performStoreKitTestOperationWithRetry {
+            try await self.orchestrator.purchase(
+                sk2Product: product,
+                package: nil,
+                promotionalOffer: nil,
+                winBackOffer: nil,
+                introductoryOfferEligibilityJWS: nil,
+                billingPlanType: nil,
+                promotionalOfferOptions: nil
+            )
+        }
         expect(result.transaction?.sk2Transaction?.appAccountToken).to(beNil())
     }
 

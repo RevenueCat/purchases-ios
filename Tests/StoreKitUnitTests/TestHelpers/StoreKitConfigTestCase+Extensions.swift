@@ -76,13 +76,27 @@ extension StoreKitConfigTestCase {
         _ product: SK2Product,
         attemptsRemaining: Int = 3
     ) async throws -> Product.PurchaseResult {
+        return try await self.performStoreKitTestOperationWithRetry(attemptsRemaining: attemptsRemaining) {
+            try await product.purchase()
+        }
+    }
+
+    /// Retries operations only when StoreKitTest loses its simulator-local service connection.
+    /// This also handles errors wrapped by higher-level SDK APIs such as `PurchasesOrchestrator`.
+    func performStoreKitTestOperationWithRetry<Value>(
+        attemptsRemaining: Int = 3,
+        operation: () async throws -> Value
+    ) async throws -> Value {
         do {
-            return try await product.purchase()
+            return try await operation()
         } catch {
             guard attemptsRemaining > 1, Self.isStoreKitTestConnectionLost(error) else { throw error }
 
             try await Task.sleep(nanoseconds: 200_000_000)
-            return try await self.purchaseWithRetry(product, attemptsRemaining: attemptsRemaining - 1)
+            return try await self.performStoreKitTestOperationWithRetry(
+                attemptsRemaining: attemptsRemaining - 1,
+                operation: operation
+            )
         }
     }
 
@@ -116,14 +130,22 @@ extension StoreKitConfigTestCase {
 }
 
 @available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
-private extension StoreKitConfigTestCase {
+extension StoreKitConfigTestCase {
 
     static func isStoreKitTestConnectionLost(_ error: Swift.Error) -> Bool {
-        guard let storeKitError = error as? StoreKitError,
-              case let .networkError(underlyingError) = storeKitError else { return false }
+        if let storeKitError = error as? StoreKitError,
+           case let .networkError(underlyingError) = storeKitError,
+           Self.isStoreKitTestConnectionLost(underlyingError) {
+            return true
+        }
 
-        let nsError = underlyingError as NSError
-        return nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorNetworkConnectionLost
+        let nsError = error as NSError
+        if nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorNetworkConnectionLost {
+            return true
+        }
+
+        guard let underlyingError = nsError.userInfo[NSUnderlyingErrorKey] as? Swift.Error else { return false }
+        return Self.isStoreKitTestConnectionLost(underlyingError)
     }
 
 }
