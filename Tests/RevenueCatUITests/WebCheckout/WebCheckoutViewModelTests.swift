@@ -97,37 +97,38 @@ final class WebCheckoutViewModelTests: TestCase {
         XCTAssertEqual(viewModel.loadState, .finished)
     }
 
-    func testReportsTheReturnedStatusOnlyOnce() throws {
+    func testReportsTheReturnOnlyOnce() throws {
         let viewModel = Self.makeViewModel()
-        var reported: [WebCheckoutReturnStatus] = []
-        viewModel.onFinished = { reported.append($0) }
+        var finished = 0
+        viewModel.onFinished = { finished += 1 }
 
         _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
         _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=cancel")
 
-        XCTAssertEqual(reported, [.success])
+        XCTAssertEqual(finished, 1)
+        XCTAssertEqual(viewModel.returnStatus, .success)
     }
 
     /// Loading can begin before the sheet is presented, and with it the handler assigned.
-    func testHoldsTheReturnedStatusUntilThereIsSomethingToReportItTo() throws {
+    func testKeepsTheReturnedStatusWhenNothingWasListening() throws {
         let viewModel = Self.makeViewModel()
-        var reported: [WebCheckoutReturnStatus] = []
 
         _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
-        viewModel.onFinished = { reported.append($0) }
 
-        XCTAssertEqual(reported, [.success])
+        XCTAssertEqual(viewModel.returnStatus, .success)
     }
 
-    func testReportsAHeldStatusToNothingBeyondTheFirstHandler() throws {
+    /// The status is there to be read, so a host that arrives late is not called about a return it
+    /// missed: it would have nothing to do with a dismissal it never presented.
+    func testTellsNothingToAHandlerAssignedAfterTheReturn() throws {
         let viewModel = Self.makeViewModel()
-        var reported: [WebCheckoutReturnStatus] = []
+        var finished = 0
 
         _ = try Self.navigate(viewModel, to: "\(Self.endpoint)?status=success")
-        viewModel.onFinished = { reported.append($0) }
-        viewModel.onFinished = { reported.append($0) }
+        viewModel.onFinished = { finished += 1 }
 
-        XCTAssertEqual(reported, [.success])
+        XCTAssertEqual(finished, 0)
+        XCTAssertEqual(viewModel.returnStatus, .success)
     }
 
     func testIgnoresWhatArrivesAfterTheCheckoutReturned() throws {
