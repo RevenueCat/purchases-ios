@@ -72,12 +72,14 @@ class HostedCheckoutManagerTests: TestCase {
         expect(paywall?.stepID) == "test-step-id"
     }
 
-    /// The backend attributes the checkout by paywall identifier, so there is nothing to attribute without one.
-    func testSendsNoAttributionForAPaywallWithoutAnIdentifier() async {
+    /// A paywall shown on iOS always has a session, and that is what joins the checkout to its events, so
+    /// one without an identifier of its own is still worth sending.
+    func testAttributesTheCheckoutToAPaywallWithoutAnIdentifier() async {
         _ = await self.manager.startCheckout(package: Self.package, paywall: Self.paywall(identifier: nil))
 
-        expect(self.webBillingAPI.invokedPostHostedCheckout) == true
-        expect(self.webBillingAPI.invokedPostHostedCheckoutParameters?.paywall).to(beNil())
+        let paywall = self.webBillingAPI.invokedPostHostedCheckoutParameters?.paywall
+        expect(paywall?.paywallID).to(beNil())
+        expect(paywall?.sessionID) == Self.paywallSessionID.uuidString
     }
 
     // MARK: - Not starting
