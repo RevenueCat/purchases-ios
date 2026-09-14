@@ -126,7 +126,6 @@ enum AvailabilityChecks {
 
          func thing(_ str: StaticString) { print("STATIC", str) }
 
-
          thing("hello") // should be of type "StaticString"
 
          let s = "world" // inferred to be of type "String"
