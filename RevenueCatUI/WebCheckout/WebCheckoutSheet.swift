@@ -65,28 +65,40 @@ private struct WebCheckoutSheetModifier: ViewModifier {
 
     let onOutcome: (WebCheckoutSheetOutcome) -> Void
 
-    /// Set when the page reaches a return URL, and read once the sheet has gone, to tell that apart
-    /// from the customer closing the sheet. Both arrive as the same dismissal.
-    @State private var returnedStatus: WebCheckoutReturnStatus?
+    @State private var presentedViewModel: WebCheckoutViewModel?
 
     func body(content: Content) -> some View {
         content.sheet(item: self.$viewModel, onDismiss: self.reportOutcome) { viewModel in
             WebCheckoutView(viewModel: viewModel)
                 .modifier(WebCheckoutSheetPresentation())
                 .onAppear {
-                    viewModel.onFinished = { status in
-                        self.returnedStatus = status
-                        self.viewModel = nil
-                    }
+                    self.presentedViewModel = viewModel
+                    viewModel.onFinished = { self.viewModel = nil }
+
+                    self.dismissIfAlreadyReturned(viewModel)
                 }
         }
     }
 
     private func reportOutcome() {
-        let outcome = WebCheckoutSheetOutcome(returnedStatus: self.returnedStatus)
-        self.returnedStatus = nil
+        let outcome = WebCheckoutSheetOutcome(returnedStatus: self.presentedViewModel?.returnStatus)
+        self.presentedViewModel = nil
 
         self.onOutcome(outcome)
+    }
+
+    private func dismissIfAlreadyReturned(_ viewModel: WebCheckoutViewModel) {
+        guard viewModel.returnStatus != nil else {
+            return
+        }
+
+        DispatchQueue.main.async {
+            guard self.viewModel === viewModel else {
+                return
+            }
+
+            self.viewModel = nil
+        }
     }
 
 }
