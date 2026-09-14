@@ -17,7 +17,7 @@ import Foundation
 /// when the customer has come back from it.
 @_spi(Internal) public struct HostedCheckoutSession {
 
-    /// Identifies the session.
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public let operationSessionID: String
 
     /// The provider-hosted page to present.
@@ -29,7 +29,7 @@ import Foundation
     /// Where the provider sends the customer once checkout is abandoned.
     @_spi(Internal) public let cancelURL: URL
 
-    /// Creates a session.
+    // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(operationSessionID: String,
                                 checkoutURL: URL,
                                 successURL: URL,
