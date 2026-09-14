@@ -33,8 +33,6 @@ final class HostedCheckoutManager {
     ///
     /// Must not be called before then: this mints an external purchase token, and every token minted is one
     /// Apple expects a report for.
-    ///
-    /// - Parameter paywall: The paywall the customer is buying from, where they are buying from one.
     func startCheckout(package: Package,
                        paywall: PaywallEvent.Data?) async -> HostedCheckoutStartResult {
         Logger.debug(Strings.hostedCheckout.starting_checkout(package.identifier))
@@ -45,8 +43,6 @@ final class HostedCheckoutManager {
         case let .registered(tokenID):
             externalPurchaseTokenID = tokenID
         case .unregistered:
-            // A checkout with no token behind it is a purchase Apple is never told about, so this fails
-            // rather than letting an unattributed one through.
             Logger.error(Strings.hostedCheckout.no_registered_token)
             return .failed
         case let .stopped(reason):
@@ -69,12 +65,10 @@ final class HostedCheckoutManager {
     /// The customer declined Apple's disclosure notice. There is nothing to present, and nothing went wrong.
     case declinedByCustomer
 
-    /// This customer cannot pay outside the App Store, so the caller has to offer them something else.
-    /// Unlike the other outcomes, this one does not change while the customer stays where they are.
+    /// This customer cannot pay outside the App Store.
     case externalPurchaseUnavailable
 
-    /// The device does not authorize payments. There is nothing to present and nothing to offer instead:
-    /// Apple asks that such a device be offered no purchase at all, not even through StoreKit.
+    /// The device does not authorize payments.
     case paymentsNotAuthorized
 
     /// Another checkout was already being started, and that one carries the purchase. There is nothing to
