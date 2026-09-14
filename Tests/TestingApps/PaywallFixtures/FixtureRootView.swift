@@ -81,8 +81,9 @@ struct FixturePaywallView: View {
     }
 
     /// XCUITest cannot turn VoiceOver on, so a test says so through the override instead.
-    private var pretendsVoiceOverIsRunning: Bool {
-        ProcessInfo.processInfo.environment["PAYWALL_VOICE_OVER"] == "1"
+    /// Stays `nil` otherwise, or it would answer for the real thing and force it off on device.
+    private var pretendsVoiceOverIsRunning: Bool? {
+        ProcessInfo.processInfo.environment["PAYWALL_VOICE_OVER"] == "1" ? true : nil
     }
 
     var body: some View {
