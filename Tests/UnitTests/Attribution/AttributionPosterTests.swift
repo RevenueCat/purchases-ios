@@ -259,6 +259,7 @@ class AdServicesAttributionPosterTests: BaseAttributionPosterTests {
         let result: Error?? = waitUntilValue { completion in
             self.attributionPoster.postAdServicesTokenOncePerInstallIfNeeded(completion: completion)
         }
+        print(result)
         let error = try XCTUnwrap(result)
         expect(error).to(beNil())
     }
