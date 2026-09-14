@@ -10,6 +10,7 @@
 //  HostedCheckoutSession.swift
 //
 //  Created by Antonio Pallares on 8/9/26.
+// swiftlint:disable missing_docs
 
 import Foundation
 
@@ -17,7 +18,6 @@ import Foundation
 /// when the customer has come back from it.
 @_spi(Internal) public struct HostedCheckoutSession {
 
-    // swiftlint:disable:next missing_docs
     @_spi(Internal) public let operationSessionID: String
 
     /// The provider-hosted page to present.
@@ -29,7 +29,6 @@ import Foundation
     /// Where the provider sends the customer once checkout is abandoned.
     @_spi(Internal) public let cancelURL: URL
 
-    // swiftlint:disable:next missing_docs
     @_spi(Internal) public init(operationSessionID: String,
                                 checkoutURL: URL,
                                 successURL: URL,
