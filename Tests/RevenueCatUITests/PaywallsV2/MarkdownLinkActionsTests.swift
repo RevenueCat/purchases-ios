@@ -27,6 +27,16 @@ final class MarkdownLinkActionsTests: TestCase {
         XCTAssertEqual(links.map(\.url), [URL(string: "https://example.com/terms")!])
     }
 
+    /// The underline formatter runs after parsing and could attribute part of a link's range,
+    /// which would split it. It does not reach inside link text at all, so the tags survive into
+    /// the title, the same way they survive into what is drawn.
+    func testUnderlineInsideLinkIsStillOneAction() throws {
+        let links = try self.links(in: "Read the [<u>terms</u> of service](https://example.com/terms).")
+
+        XCTAssertEqual(links.count, 1)
+        XCTAssertEqual(links.map(\.url), [URL(string: "https://example.com/terms")!])
+    }
+
     func testTwoLinksAreTwoActions() throws {
         let links = try self.links(
             in: "See the [terms](https://example.com/terms) and the [policy](https://example.com/policy)."
