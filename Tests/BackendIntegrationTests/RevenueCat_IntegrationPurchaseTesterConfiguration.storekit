@@ -299,6 +299,89 @@
           "referenceName" : "annual free trial",
           "subscriptionGroupID" : "727DE911",
           "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "95DE1FD9",
+              "numberOfPeriods" : 1,
+              "offerID" : "upfront.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "Upfront Promo Offer",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "internalID" : "00C03974",
+              "numberOfPeriods" : 1,
+              "offerID" : "12mocommitment.promo.offer",
+              "paymentMode" : "free",
+              "referenceName" : "12mo Commitment Promo Offer",
+              "subscriptionPeriod" : "P2M"
+            }
+          ],
+          "billingPlans" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "commitmentDisplayPrice" : "0.99",
+              "displayPrice" : "0.99",
+              "internalID" : "1261786A",
+              "isEnabled" : true
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "commitmentDisplayPrice" : "6.00",
+              "displayPrice" : "0.5",
+              "internalID" : "8BCD7D45",
+              "isEnabled" : true
+            }
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "11.88",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "3AE07F63",
+          "introductoryOffer" : {
+            "billingPlanType" : "BILLED_UPFRONT",
+            "internalID" : "9EB4AFC5",
+            "numberOfPeriods" : 1,
+            "paymentMode" : "free",
+            "subscriptionPeriod" : "P1M"
+          },
+          "introductoryOffers" : [
+            {
+              "billingPlanType" : "BILLED_UPFRONT",
+              "internalID" : "9EB4AFC5",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P1M"
+            },
+            {
+              "billingPlanType" : "MONTHLY",
+              "internalID" : "1CEEA276",
+              "numberOfPeriods" : 1,
+              "paymentMode" : "free",
+              "subscriptionPeriod" : "P2M"
+            }
+          ],
+          "localizations" : [
+            {
+              "description" : "",
+              "displayName" : "",
+              "locale" : "en_US"
+            }
+          ],
+          "productID" : "com.revenuecat.sampleapp.monthly.12mocommitment",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "sub with 12mo monthly commitment",
+          "subscriptionGroupID" : "727DE911",
+          "type" : "RecurringSubscription",
+          "winbackOffers" : [
+
+          ]
         }
       ]
     },
