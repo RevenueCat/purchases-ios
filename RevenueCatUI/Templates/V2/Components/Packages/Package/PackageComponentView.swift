@@ -354,7 +354,8 @@ fileprivate extension PackageComponentViewModel {
             offering: offering,
             stackViewModel: stackViewModel,
             hasPurchaseButton: hasPurchaseButton,
-            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make())
+            uiConfigProvider: .init(uiConfig: PreviewUIConfig.make()),
+            localizationProvider: localizationProvider
         )
     }
 

@@ -40,7 +40,7 @@ class PackageComponentViewModel {
         stackViewModel: StackComponentViewModel,
         hasPurchaseButton: Bool,
         uiConfigProvider: UIConfigProvider,
-        locale: Locale = .current,
+        localizationProvider: LocalizationProvider,
         discardRules: Bool = false
     ) {
         self.visibilityResolver = PackageVisibilityResolver(
@@ -60,7 +60,7 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
-        self.localizedBundle = Localization.localizedBundle(locale)
+        self.localizedBundle = Localization.localizedBundle(localizationProvider.locale)
     }
 
     /// Spoken selection state for the row: "Yearly, Selected" vs "Monthly, Not selected".
