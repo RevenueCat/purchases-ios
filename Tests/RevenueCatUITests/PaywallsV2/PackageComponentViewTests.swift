@@ -234,7 +234,8 @@ private extension PackageComponentViewTests {
             offering: offering,
             stackViewModel: stackViewModel,
             hasPurchaseButton: false,
-            uiConfigProvider: uiConfigProvider
+            uiConfigProvider: uiConfigProvider,
+            localizationProvider: localizationProvider
         )
     }
 
