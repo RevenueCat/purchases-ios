@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "ابدأ الفترة التجريبية التي تبلغ {{ sub_offer_duration }}، ثم {{ Total_price_and_per_month }}.";
 "Something went wrong" = "هناك خطأ ما";
 "Purchase" = "شراء";
+"Selected" = "محدد";
+"Not selected" = "غير محدد";

@@ -31,12 +31,16 @@ class PackageComponentViewModel {
 
     let visibilityResolver: PackageVisibilityResolver
 
+    /// Resolved once: the bundle lookup repeats a path search on every render.
+    private let localizedBundle: Bundle
+
     init(
         component: PaywallComponent.PackageComponent,
         offering: Offering,
         stackViewModel: StackComponentViewModel,
         hasPurchaseButton: Bool,
         uiConfigProvider: UIConfigProvider,
+        locale: Locale = .current,
         discardRules: Bool = false
     ) {
         self.visibilityResolver = PackageVisibilityResolver(
@@ -56,6 +60,16 @@ class PackageComponentViewModel {
 
         self.stackViewModel = stackViewModel
         self.hasPurchaseButton = hasPurchaseButton
+        self.localizedBundle = Localization.localizedBundle(locale)
+    }
+
+    /// Spoken selection state for the row: "Yearly, Selected" vs "Monthly, Not selected".
+    func accessibilitySelectionValue(isSelected: Bool) -> String {
+        return self.localizedBundle.localizedString(
+            forKey: isSelected ? "Selected" : "Not selected",
+            value: nil,
+            table: nil
+        )
     }
 
     // swiftlint:disable:next function_parameter_count

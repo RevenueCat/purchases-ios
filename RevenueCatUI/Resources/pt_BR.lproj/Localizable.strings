@@ -23,3 +23,5 @@
 "Default_offer_details_with_intro_offer" = "Comece sua avaliação de {{ sub_offer_duration }} e depois {{ total_price_and_per_month }}.";
 "Something went wrong" = "Algo deu errado";
 "Purchase" = "Comprar";
+"Selected" = "Selecionado";
+"Not selected" = "Não selecionado";
