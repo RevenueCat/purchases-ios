@@ -340,7 +340,6 @@ extension VariablesV2 {
         let date: Date
         let promoOffer: PromotionalOffer?
         let countdownTime: CountdownTime?
-        /// Resolves to text meant to be spoken rather than displayed.
         var forAccessibility: Bool = false
     }
 

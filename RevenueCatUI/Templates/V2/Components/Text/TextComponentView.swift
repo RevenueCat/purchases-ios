@@ -243,7 +243,7 @@ struct NonLocalizedMarkdownText: View {
             )
         }
     }
-    /// What VoiceOver says instead of the rendered text, e.g. "$1.24 monthly" for "$1.24/mo".
+
     private var spokenAccessibilityLabel: String? {
         return self.accessibilityText.map(Self.strippingMarkdown)
     }

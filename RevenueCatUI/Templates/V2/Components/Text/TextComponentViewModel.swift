@@ -295,7 +295,7 @@ struct TextComponentStyle {
     let visible: Bool
     let name: String?
     let text: String
-    /// Spoken replacement for `text`, set only when it differs from what is displayed.
+    /// Nil when the spoken and displayed forms are identical.
     let accessibilityText: String?
     let fontWeight: Font.Weight
     let color: DisplayableColorScheme
