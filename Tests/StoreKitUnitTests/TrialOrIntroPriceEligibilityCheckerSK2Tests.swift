@@ -208,7 +208,7 @@ class TrialOrIntroPriceEligibilityCheckerSK2Tests: StoreKitConfigTestCase {
 
         expect(prePurchaseStatus) == .eligible
 
-        _ = try await sk2Product.purchase()
+        _ = try await self.purchaseWithRetry(sk2Product)
 
         // Delay added to reduce flakiness on iOS 26, where eligibility may be checked too soon after purchase.
         // Allows StoreKit time to register the purchase before checking eligibility.
