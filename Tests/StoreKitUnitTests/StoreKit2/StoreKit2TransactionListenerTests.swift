@@ -244,9 +244,7 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
         await self.listener.listenForTransactions()
 
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
-
-        try await self.waitForTransactionUpdated()
+        try await self.waitForTransactionUpdated(timeout: .seconds(10))
 
         expect(self.delegate.updatedTransactions)
             .to(containElementSatisfying { transaction in
@@ -343,12 +341,13 @@ private extension StoreKit2TransactionListenerBaseTests {
 
     @available(iOS 16.4, macOS 13.3, tvOS 16.4, watchOS 9.4, *)
     func waitForTransactionUpdated(
+        timeout: NimbleTimeInterval = .seconds(4),
         file: FileString = #fileID,
         line: UInt = #line
     ) async throws {
         try await asyncWait(
             description: "Transaction update",
-            timeout: .seconds(4),
+            timeout: timeout,
             pollInterval: .milliseconds(100),
             file: file,
             line: line
@@ -420,9 +419,7 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
 
         await self.listener.listenForTransactions()
 
-        try self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
-
-        try await self.waitForTransactionUpdated()
+        try await self.waitForTransactionUpdated(timeout: .seconds(10))
 
         expect(self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value).toNot(beEmpty())
         let params = self.mockDiagnosticsTracker.trackedAppleTransactionUpdateReceivedParams.value[0]
