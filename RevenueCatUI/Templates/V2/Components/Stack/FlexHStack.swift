@@ -198,21 +198,28 @@ struct ConstrainedStackLayout: Layout {
     static func allocateConstrainedFillSpace(
         availableSpace: CGFloat,
         constraints: [MinMax?],
-        floors: [CGFloat]? = nil
+        floors: [CGFloat]? = nil,
+        constrainedMargins: [CGFloat]? = nil
     ) -> [CGFloat] {
         var result = Array(repeating: CGFloat.zero, count: constraints.count)
         var remainingIndices = constraints.indices.filter { constraints[$0] != nil }
         var remainingSpace = max(0, availableSpace)
 
+        func margin(_ index: Int) -> CGFloat {
+            guard let constrainedMargins, constrainedMargins.indices.contains(index) else { return 0 }
+            return constrainedMargins[index]
+        }
+
         func minimum(_ index: Int) -> CGFloat {
-            return max(CGFloat(constraints[index]?.min ?? 0), floors?[index] ?? 0)
+            let constrainedMinimum = CGFloat(constraints[index]?.min ?? 0)
+            return max(constrainedMinimum + margin(index), floors?[index] ?? 0)
         }
 
         func maximum(_ index: Int) -> CGFloat {
             guard let maximum = constraints[index]?.max else {
                 return .infinity
             }
-            return max(CGFloat(maximum), minimum(index))
+            return max(CGFloat(maximum) + margin(index), minimum(index))
         }
 
         while !remainingIndices.isEmpty {
@@ -251,13 +258,17 @@ struct ConstrainedStackLayout: Layout {
             return Measurement(childSizes: [], mainPositions: [], size: .zero)
         }
 
-        let sizes = subviews.map { $0[ComponentSizeLayoutValueKey.self]?.size }
-        let fillLimits = sizes.map { size -> MinMax? in
-            guard let size else { return nil }
-            if case let .fill(minMax) = self.mainConstraint(size) {
+        let layoutValues = subviews.map { $0[ComponentSizeLayoutValueKey.self] }
+        let fillLimits = layoutValues.map { layoutValue -> MinMax? in
+            guard let layoutValue else { return nil }
+            if case let .fill(minMax) = self.mainConstraint(layoutValue.size) {
                 return minMax
             }
             return nil
+        }
+        let constrainedMargins = layoutValues.enumerated().map { index, layoutValue -> CGFloat in
+            guard fillLimits[index]?.hasLimit == true, let layoutValue else { return 0 }
+            return self.main(layoutValue.margin)
         }
         let gapTotal = self.spacing * CGFloat(max(0, subviews.count - 1))
         let proposedMain = self.main(proposal)
@@ -306,7 +317,8 @@ struct ConstrainedStackLayout: Layout {
         } else {
             let minimumFill = Self.allocateConstrainedFillSpace(
                 availableSpace: 0,
-                constraints: fillLimits
+                constraints: fillLimits,
+                constrainedMargins: constrainedMargins
             ).reduce(0, +)
             targetMain = naturalMain + minimumFill
         }
@@ -315,7 +327,8 @@ struct ConstrainedStackLayout: Layout {
         let fillAllocations = Self.allocateConstrainedFillSpace(
             availableSpace: max(0, targetMain - nonFillMain - gapTotal),
             constraints: fillLimits,
-            floors: fillFloors
+            floors: fillFloors,
+            constrainedMargins: constrainedMargins
         )
         for index in subviews.indices where fillLimits[index] != nil {
             childSizes[index] = subviews[index].sizeThatFits(
@@ -325,7 +338,7 @@ struct ConstrainedStackLayout: Layout {
 
         self.remeasureCrossAxisFillChildren(
             subviews: subviews,
-            sizes: sizes,
+            layoutValues: layoutValues,
             childSizes: &childSizes,
             proposal: proposal
         )
@@ -366,15 +379,15 @@ struct ConstrainedStackLayout: Layout {
 
     private func remeasureCrossAxisFillChildren(
         subviews: Subviews,
-        sizes: [PaywallComponent.Size?],
+        layoutValues: [ComponentSizeLayoutValue?],
         childSizes: inout [CGSize],
         proposal: ProposedViewSize
     ) {
         guard self.cross(proposal) == nil else { return }
 
-        let crossFillLimits = sizes.map { size -> MinMax? in
-            guard let size else { return nil }
-            if case let .fill(minMax) = self.crossConstraint(size) {
+        let crossFillLimits = layoutValues.map { layoutValue -> MinMax? in
+            guard let layoutValue else { return nil }
+            if case let .fill(minMax) = self.crossConstraint(layoutValue.size) {
                 return minMax
             }
             return nil
@@ -387,7 +400,10 @@ struct ConstrainedStackLayout: Layout {
             .filter { crossFillLimits[$0] == nil }
             .map { self.cross(childSizes[$0]) }
             .max() ?? 0
-        let minimumCross = crossFillLimits.compactMap { $0?.min }.map { CGFloat($0) }.max() ?? 0
+        let minimumCross = crossFillLimits.enumerated().compactMap { index, limits -> CGFloat? in
+            guard let minimum = limits?.min else { return nil }
+            return CGFloat(minimum) + self.cross(layoutValues[index]?.margin ?? EdgeInsets())
+        }.max() ?? 0
         let targetCross = max(contentCross, minimumCross)
 
         for index in subviews.indices where crossFillLimits[index] != nil {
@@ -490,6 +506,20 @@ struct ConstrainedStackLayout: Layout {
         switch self.orientation {
         case .horizontal: return size.height
         case .vertical: return size.width
+        }
+    }
+
+    private func main(_ margin: EdgeInsets) -> CGFloat {
+        switch self.orientation {
+        case .horizontal: return margin.leading + margin.trailing
+        case .vertical: return margin.top + margin.bottom
+        }
+    }
+
+    private func cross(_ margin: EdgeInsets) -> CGFloat {
+        switch self.orientation {
+        case .horizontal: return margin.top + margin.bottom
+        case .vertical: return margin.leading + margin.trailing
         }
     }
 

@@ -169,7 +169,12 @@ struct StackComponentView: View {
     }
 
     private func decorate<Content: View>(_ content: Content, style: StackComponentStyle) -> some View {
-        content
+        let contentClipping = Self.shapeContentClipping(
+            usesMinMaxSizing: self.usesMinMaxSizing,
+            hasExplicitShape: style.shape != nil
+        )
+
+        return content
         .padding(additionalPadding)
         .applyIf(self.showActivityIndicatorOverContent, apply: { view in
             view.progressOverlay(for: style.backgroundStyle)
@@ -185,15 +190,26 @@ struct StackComponentView: View {
                shape: style.shape,
                background: style.backgroundStyle,
                uiConfigProvider: self.viewModel.uiConfigProvider,
-               clipsContent: !self.usesMinMaxSizing)
+               contentClipping: contentClipping)
         .apply(
             badge: style.badge,
             border: style.border,
             shadow: style.shadow,
             shape: style.shape,
-            clipsContent: !self.usesMinMaxSizing
+            contentClipping: contentClipping
         )
         .padding(style.margin)
+    }
+
+    static func shapeContentClipping(
+        usesMinMaxSizing: Bool,
+        hasExplicitShape: Bool
+    ) -> ShapeModifier.ContentClipping {
+        guard usesMinMaxSizing else {
+            return .automatic
+        }
+
+        return hasExplicitShape ? .enabled : .disabled
     }
 
 }
@@ -218,18 +234,21 @@ private extension View {
         case .vertical(let horizontalAlignment, let distribution):
             self.size(
                 style.size,
+                margin: style.margin,
                 horizontalAlignment: horizontalAlignment.frameAlignment,
                 verticalAlignment: distribution.verticalFrameAlignment
             )
         case .horizontal(let verticalAlignment, let distribution):
             self.size(
                 style.size,
+                margin: style.margin,
                 horizontalAlignment: distribution.horizontalFrameAlignment,
                 verticalAlignment: verticalAlignment.frameAlignment
             )
         case .zlayer(let alignment):
             self.size(
                 style.size,
+                margin: style.margin,
                 horizontalAlignment: alignment.stackAlignment,
                 verticalAlignment: alignment.stackAlignment
             )
@@ -299,7 +318,7 @@ fileprivate extension View {
                border: ShapeModifier.BorderInfo?,
                shadow: ShadowModifier.ShadowInfo?,
                shape: ShapeModifier.Shape?,
-               clipsContent: Bool = true) -> some View {
+               contentClipping: ShapeModifier.ContentClipping) -> some View {
         switch badge?.style {
         case .edgeToEdge:
             switch badge?.alignment {
@@ -308,21 +327,21 @@ fileprivate extension View {
                 // this requires the badge be added before the shadow so the shadow is not clipped.
                 // However for edge-to-edge top/bottom badges, the shadow should be applied first so the badge
                 // appears behind the shadow.
-                self.shape(border: border, shape: shape, clipsContent: clipsContent)
+                self.shape(border: border, shape: shape, contentClipping: contentClipping)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
                     .stackBadge(badge)
             default:
-                self.shape(border: border, shape: shape, clipsContent: clipsContent)
+                self.shape(border: border, shape: shape, contentClipping: contentClipping)
                     .stackBadge(badge)
                     .shadow(shadow: shadow, shape: shape?.toInsettableShape())
             }
         case .nested:
             // For nested badges, we want the border to be applied last so it appears over the badge.
             self.stackBadge(badge)
-                .shape(border: border, shape: shape, clipsContent: clipsContent)
+                .shape(border: border, shape: shape, contentClipping: contentClipping)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         default:
-            self.shape(border: border, shape: shape, clipsContent: clipsContent)
+            self.shape(border: border, shape: shape, contentClipping: contentClipping)
                 .stackBadge(badge)
                 .shadow(shadow: shadow, shape: shape?.toInsettableShape())
         }

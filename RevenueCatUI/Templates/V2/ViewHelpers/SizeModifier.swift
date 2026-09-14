@@ -19,6 +19,7 @@ import SwiftUI
 struct SizeModifier: ViewModifier {
 
     var size: PaywallComponent.Size
+    var margin: EdgeInsets
     var hortizontalAlignment: Alignment
     var verticalAlignment: Alignment
 
@@ -28,7 +29,7 @@ struct SizeModifier: ViewModifier {
             self.applySize(to: content)
                 .layoutValue(
                     key: ComponentSizeLayoutValueKey.self,
-                    value: ComponentSizeLayoutValue(self.size)
+                    value: ComponentSizeLayoutValue(self.size, margin: self.margin)
                 )
         } else {
             self.applyFrames(to: content)
@@ -67,9 +68,11 @@ struct SizeModifier: ViewModifier {
 final class ComponentSizeLayoutValue {
 
     var size: PaywallComponent.Size
+    var margin: EdgeInsets
 
-    init(_ size: PaywallComponent.Size) {
+    init(_ size: PaywallComponent.Size, margin: EdgeInsets = EdgeInsets()) {
         self.size = size
+        self.margin = margin
     }
 
 }
@@ -426,9 +429,11 @@ extension PaywallComponent.SizeConstraint {
 extension View {
 
     func size(_ size: PaywallComponent.Size,
+              margin: EdgeInsets = EdgeInsets(),
               horizontalAlignment: Alignment = .center,
               verticalAlignment: Alignment = .center) -> some View {
         self.modifier(SizeModifier(size: size,
+                                   margin: margin,
                                    hortizontalAlignment: horizontalAlignment,
                                    verticalAlignment: verticalAlignment))
     }

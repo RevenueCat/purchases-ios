@@ -32,7 +32,10 @@ struct BadgeContents {
 class StackComponentViewModel {
 
     let component: PaywallComponent.StackComponent
-    lazy var componentSizeLayoutValue = ComponentSizeLayoutValue(self.component.size)
+    lazy var componentSizeLayoutValue = ComponentSizeLayoutValue(
+        self.component.size,
+        margin: self.component.margin.edgeInsets
+    )
     let uiConfigProvider: UIConfigProvider
     private let presentedOverrides: PresentedOverrides<PresentedStackPartial>?
 
@@ -176,6 +179,7 @@ class StackComponentViewModel {
         )
         if #available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *) {
             self.componentSizeLayoutValue.size = style.size
+            self.componentSizeLayoutValue.margin = style.margin
         }
         return style
     }

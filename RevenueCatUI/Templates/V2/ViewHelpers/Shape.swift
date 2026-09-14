@@ -23,6 +23,25 @@ import SwiftUI
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct ShapeModifier: ViewModifier {
 
+    enum ContentClipping: Equatable {
+
+        case automatic
+        case enabled
+        case disabled
+
+        func resolve(legacyValue: Bool) -> Bool {
+            switch self {
+            case .automatic:
+                return legacyValue
+            case .enabled:
+                return true
+            case .disabled:
+                return false
+            }
+        }
+
+    }
+
     struct BorderInfo: Hashable {
 
         let color: DisplayableColorScheme
@@ -112,7 +131,7 @@ struct ShapeModifier: ViewModifier {
     var shape: Shape
     var background: BackgroundStyle?
     var uiConfigProvider: UIConfigProvider?
-    var clipsContent: Bool
+    var contentClipping: ContentClipping
 
     @Environment(\.colorScheme) var colorScheme
 
@@ -120,13 +139,13 @@ struct ShapeModifier: ViewModifier {
          shape: Shape?,
          background: BackgroundStyle?,
          uiConfigProvider: UIConfigProvider?,
-         clipsContent: Bool
+         contentClipping: ContentClipping = .automatic
     ) {
         self.border = border
         self.shape = shape ?? .rectangle(nil)
         self.background = background
         self.uiConfigProvider = uiConfigProvider
-        self.clipsContent = clipsContent
+        self.contentClipping = contentClipping
     }
 
     @ViewBuilder
@@ -134,44 +153,31 @@ struct ShapeModifier: ViewModifier {
         switch self.shape {
         case .circle, .pill, .rectangle:
             if let shape = self.shape.toInsettableShape() {
-                if self.clipsContent {
-                    content
-                        .backgroundStyle(background)
-                    // We want to clip only in case there is a non-Rectangle shape
-                    // or if there's a border
-                        .applyIf(!shape.isRectangle() || border != nil) { view in
-                            view
-                                .clipShape(
-                                    // Adding inset to clip contents within the border
-                                    // Mainly to handle transparent borders not showing content
-                                    shape.inset(by: border?.width ?? 0 / 2)
-                                )
-                        }
-                    // Place border on top of content
-                        .applyIfLet(border) { view, border in
-                            view.clipShape(shape).overlay {
+                let clipsContent = self.contentClipping.resolve(
+                    legacyValue: !shape.isRectangle() || border != nil
+                )
+                content
+                    .backgroundStyle(background)
+                    .applyIf(clipsContent) { view in
+                        view
+                            .clipShape(
+                                // Adding inset to clip contents within the border
+                                // Mainly to handle transparent borders not showing content
+                                shape.inset(by: border?.width ?? 0 / 2)
+                            )
+                    }
+                // Place border on top of content
+                    .applyIfLet(border) { view, border in
+                        view
+                            .applyIf(clipsContent) { borderedView in
+                                borderedView.clipShape(shape)
+                            }
+                            .overlay {
                                 border.color.toView(colorScheme: colorScheme)
                                     .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
                                     .allowsHitTesting(false)
                             }
-                        }
-                } else {
-                    // A stack's shape belongs to its own background and border. It must not mask descendants
-                    // whose minimum size intentionally overflows the stack's bounds.
-                    content
-                        .background {
-                            Color.clear
-                                .backgroundStyle(background)
-                                .clipShape(shape)
-                        }
-                        .overlay {
-                            if let border {
-                                border.color.toView(colorScheme: colorScheme)
-                                    .mask(shape.strokeBorder(Color.black, lineWidth: border.width))
-                                    .allowsHitTesting(false)
-                            }
-                        }
-                }
+                    }
             }
         case .concave:
             content
@@ -439,7 +445,7 @@ extension View {
         shape: ShapeModifier.Shape?,
         background: BackgroundStyle? = nil,
         uiConfigProvider: UIConfigProvider? = nil,
-        clipsContent: Bool = true
+        contentClipping: ShapeModifier.ContentClipping = .automatic
     ) -> some View {
         self.modifier(
             ShapeModifier(
@@ -447,7 +453,7 @@ extension View {
                 shape: shape,
                 background: background,
                 uiConfigProvider: uiConfigProvider,
-                clipsContent: clipsContent
+                contentClipping: contentClipping
             )
         )
     }

@@ -377,6 +377,71 @@ final class SizeModifierTests: TestCase {
         )
     }
 
+    func testConstrainedFillAllocationAddsMarginsOutsideMaximum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        XCTAssertEqual(
+            ConstrainedStackLayout.allocateConstrainedFillSpace(
+                availableSpace: 338,
+                constraints: [
+                    .init(min: nil, max: 100),
+                    .null
+                ],
+                constrainedMargins: [32, 0]
+            ),
+            [132, 206]
+        )
+    }
+
+    func testConstrainedStackKeepsMarginsOutsidePaintedMaximum() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        let paintedSize = MeasuredSize()
+        let occupiedSize = MeasuredSize()
+        let margin = EdgeInsets(top: 16, leading: 16, bottom: 16, trailing: 16)
+        let constrainedSize = PaywallComponent.Size(
+            width: .fill(.init(min: nil, max: 100)),
+            height: .fixed(48)
+        )
+        let unconstrainedSize = PaywallComponent.Size(width: .fill, height: .fixed(48))
+        let view = ConstrainedStackLayout(
+            orientation: .horizontal,
+            distribution: .start,
+            crossAxisAlignment: .center,
+            spacing: 0,
+            mainAxisSize: .fixed(338),
+            crossAxisSize: .fixed(80)
+        ) {
+            Color.blue
+                .size(constrainedSize, margin: margin)
+                .background(Self.measure(with: paintedSize))
+                .padding(margin)
+                .background(Self.measure(with: occupiedSize))
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(constrainedSize, margin: margin)
+                )
+
+            Color.orange
+                .size(unconstrainedSize)
+                .layoutValue(
+                    key: ComponentSizeLayoutValueKey.self,
+                    value: ComponentSizeLayoutValue(unconstrainedSize)
+                )
+        }
+        .frame(width: 338, height: 80)
+
+        let dispose = try view.addToHierarchy()
+        defer { dispose() }
+
+        expect(paintedSize.size?.width).toEventually(equal(100))
+        expect(occupiedSize.size?.width).toEventually(equal(132))
+    }
+
     func testConstrainedStackSafelyAlignsCrossAxisOverflowAtStart() throws {
         guard #available(iOS 16.0, *) else {
             throw XCTSkip("ConstrainedStackLayout requires iOS 16")
@@ -443,6 +508,47 @@ final class SizeModifierTests: TestCase {
                 height: .fit(nil)
             ).hasMinMaxSizing
         )
+    }
+
+    // MARK: - Shape clipping
+
+    func testLegacyPaywallRetainsAutomaticShapeClipping() {
+        XCTAssertEqual(
+            StackComponentView.shapeContentClipping(
+                usesMinMaxSizing: false,
+                hasExplicitShape: false
+            ),
+            .automatic
+        )
+        XCTAssertEqual(
+            StackComponentView.shapeContentClipping(
+                usesMinMaxSizing: false,
+                hasExplicitShape: true
+            ),
+            .automatic
+        )
+    }
+
+    func testMinMaxPaywallOnlyClipsStacksWithExplicitShapes() {
+        XCTAssertEqual(
+            StackComponentView.shapeContentClipping(
+                usesMinMaxSizing: true,
+                hasExplicitShape: false
+            ),
+            .disabled
+        )
+        XCTAssertEqual(
+            StackComponentView.shapeContentClipping(
+                usesMinMaxSizing: true,
+                hasExplicitShape: true
+            ),
+            .enabled
+        )
+    }
+
+    func testExplicitClippingOverridesLegacyRectangleHeuristic() {
+        XCTAssertTrue(ShapeModifier.ContentClipping.enabled.resolve(legacyValue: false))
+        XCTAssertFalse(ShapeModifier.ContentClipping.disabled.resolve(legacyValue: true))
     }
 
     // MARK: - Sheet
@@ -528,6 +634,14 @@ final class SizeModifierTests: TestCase {
 
     private static func fittingSize<Content: View>(of view: Content, in proposal: CGSize) -> CGSize {
         UIHostingController(rootView: view).sizeThatFits(in: proposal)
+    }
+
+    private static func measure(with measuredSize: MeasuredSize) -> some View {
+        GeometryReader { proxy in
+            Color.clear
+                .onAppear { measuredSize.size = proxy.size }
+                .onChangeOf(proxy.size) { measuredSize.size = $0 }
+        }
     }
 
 }
