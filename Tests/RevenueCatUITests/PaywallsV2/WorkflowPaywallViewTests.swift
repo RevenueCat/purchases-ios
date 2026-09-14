@@ -26,7 +26,7 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: true
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testDismissalActionNavigatesBackWhenPurchaseHasNotCompleted() {
@@ -44,7 +44,7 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: false
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testDismissalActionDismissesWorkflowAtRootStepAfterPurchase() {
@@ -53,34 +53,37 @@ final class WorkflowPaywallViewTests: TestCase {
             hasPurchasedInSession: true
         )
 
-        expect(action) == .dismissWorkflow
+        expect(action) == .dismissWorkflow(.close)
     }
 
-    func testBackNavigationResolutionNavigatesWithinWorkflowWhenAPreviousStepExists() {
-        let resolution = WorkflowPaywallView.backNavigationResolution(
+    func testDismissalActionNavigatesWithinWorkflowWhenNavigatingBackFromADeeperStep() {
+        let action = WorkflowPaywallView.dismissalAction(
             canNavigateBack: true,
-            hasPurchasedInSession: false
+            hasPurchasedInSession: false,
+            dismissalReason: .navigatedBack
         )
 
-        expect(resolution) == .navigateWithinWorkflow
+        expect(action) == .navigateBack
     }
 
-    func testBackNavigationResolutionDismissesAsNavigatedBackAtInitialStep() {
-        let resolution = WorkflowPaywallView.backNavigationResolution(
+    func testDismissalActionDismissesAsNavigatedBackAtInitialStep() {
+        let action = WorkflowPaywallView.dismissalAction(
             canNavigateBack: false,
-            hasPurchasedInSession: false
+            hasPurchasedInSession: false,
+            dismissalReason: .navigatedBack
         )
 
-        expect(resolution) == .dismiss(.navigatedBack)
+        expect(action) == .dismissWorkflow(.navigatedBack)
     }
 
-    func testBackNavigationResolutionDismissesNormallyAfterPurchaseAtInitialStep() {
-        let resolution = WorkflowPaywallView.backNavigationResolution(
+    func testDismissalActionDismissesNormallyAfterPurchaseWhenNavigatingBackFromInitialStep() {
+        let action = WorkflowPaywallView.dismissalAction(
             canNavigateBack: false,
-            hasPurchasedInSession: true
+            hasPurchasedInSession: true,
+            dismissalReason: .navigatedBack
         )
 
-        expect(resolution) == .dismiss(.close)
+        expect(action) == .dismissWorkflow(.close)
     }
 
     func testHasCompletedInSessionTrueAfterPurchase() {

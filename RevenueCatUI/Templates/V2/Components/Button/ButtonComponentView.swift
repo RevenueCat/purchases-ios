@@ -156,9 +156,14 @@ struct ButtonComponentView: View {
             hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession
         )
 
-        return self.viewModel.derivedAccessibilityLabel(
-            dismissesPaywall: dismissal == .dismissWorkflow
-        )
+        let dismissesWorkflow: Bool
+        if case .dismissWorkflow = dismissal {
+            dismissesWorkflow = true
+        } else {
+            dismissesWorkflow = false
+        }
+
+        return self.viewModel.derivedAccessibilityLabel(dismissesPaywall: dismissesWorkflow)
     }
 
     private var headerPageOffset: CGFloat {
