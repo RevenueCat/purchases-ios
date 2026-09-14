@@ -415,82 +415,100 @@ extension VariablesV2 {
             }
         case .productOfferPrice:
             if let package {
-                return self.productOfferPrice(
+                return self.offerPrice(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerDay:
             if let package {
-                return self.productOfferPricePerDay(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .day,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerWeek:
             if let package {
-                return self.productOfferPricePerWeek(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .week,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerMonth:
             if let package {
-                return self.productOfferPricePerMonth(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .month,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPricePerYear:
             if let package {
-                return self.productOfferPricePerYear(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .year,
+                    freeTrialRendering: .word
                 )
             }
         case .productOfferPriceWithZero:
             if let package {
-                return self.productOfferPriceWithZero(
+                return self.offerPrice(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPriceWithZeroPerDay:
             if let package {
-                return self.productOfferPriceWithZeroPerDay(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .day,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPriceWithZeroPerWeek:
             if let package {
-                return self.productOfferPriceWithZeroPerWeek(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .week,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPriceWithZeroPerMonth:
             if let package {
-                return self.productOfferPriceWithZeroPerMonth(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .month,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPriceWithZeroPerYear:
             if let package {
-                return self.productOfferPriceWithZeroPerYear(
+                return self.offerPricePerPeriod(
                     package: package,
                     localizations: localizations,
-                    offerContext: offerContext
+                    offerContext: offerContext,
+                    unit: .year,
+                    freeTrialRendering: .amount
                 )
             }
         case .productOfferPeriod:
@@ -773,28 +791,6 @@ extension VariablesV2 {
         return String(format: localizedFormat, period.value)
     }
 
-    func productOfferPrice(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPrice(package: package,
-                               localizations: localizations,
-                               offerContext: offerContext,
-                               freeTrialRendering: .word)
-    }
-
-    func productOfferPriceWithZero(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPrice(package: package,
-                               localizations: localizations,
-                               offerContext: offerContext,
-                               freeTrialRendering: .amount)
-    }
-
     private func offerPrice(
         package: Package,
         localizations: [String: String],
@@ -819,79 +815,8 @@ extension VariablesV2 {
         )
     }
 
-    // Note: the per-period offer variables below still reformat through `NumberFormatter`, so their
-    // currency token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
-    func productOfferPricePerDay(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .day, freeTrialRendering: .word)
-    }
-
-    func productOfferPricePerWeek(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .week, freeTrialRendering: .word)
-    }
-
-    func productOfferPricePerMonth(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .month, freeTrialRendering: .word)
-    }
-
-    func productOfferPricePerYear(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .year, freeTrialRendering: .word)
-    }
-
-    func productOfferPriceWithZeroPerDay(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .day, freeTrialRendering: .amount)
-    }
-
-    func productOfferPriceWithZeroPerWeek(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .week, freeTrialRendering: .amount)
-    }
-
-    func productOfferPriceWithZeroPerMonth(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .month, freeTrialRendering: .amount)
-    }
-
-    func productOfferPriceWithZeroPerYear(
-        package: Package,
-        localizations: [String: String],
-        offerContext: OfferContext
-    ) -> String {
-        return self.offerPricePerPeriod(package: package, localizations: localizations,
-                                        offerContext: offerContext, unit: .year, freeTrialRendering: .amount)
-    }
+    // Note: the per-period offer variables reformat through `NumberFormatter`, so their currency
+    // token can differ from `offer_price`. `StoreProductDiscount` exposes no per-period string.
 
     private func offerPricePerPeriod(
         package: Package,
