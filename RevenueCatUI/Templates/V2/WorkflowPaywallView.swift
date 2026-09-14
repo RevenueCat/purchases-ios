@@ -218,6 +218,33 @@ struct WorkflowTransitionGeometry {
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 struct WorkflowPaywallView: View {
 
+    private enum PresentationState {
+        case active
+        case failing(error: NSError)
+        // The alert clears its error before dismissing, but the presentation must remain failed so
+        // an exit offer cannot be restored during dismissal.
+        case failureReported
+
+        var error: NSError? {
+            guard case let .failing(error) = self else { return nil }
+            return error
+        }
+
+        var hasFailed: Bool {
+            switch self {
+            case .active:
+                return false
+            case .failing, .failureReported:
+                return true
+            }
+        }
+
+        var canReportPresentationError: Bool {
+            guard case .failureReported = self else { return true }
+            return false
+        }
+    }
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
@@ -240,6 +267,7 @@ struct WorkflowPaywallView: View {
     private let showZeroDecimalPlacePrices: Bool
     private let displayCloseButton: Bool
     private let onDismiss: () -> Void
+    private let onPresentationError: ((NSError) -> Void)?
 
     @StateObject private var navigator: WorkflowNavigator
     /// One paywall state store per workflow presentation: all screens read and write the same
@@ -252,7 +280,7 @@ struct WorkflowPaywallView: View {
     // without subscribing to its @Published changes: body only forwards the cache to children.
     // Observing it directly would re-render the whole page ForEach + header overlay on each update.
     @StateObject private var promoOfferCacheOwner: PromoOfferCacheOwner
-    @State private var hasLoggedInvalidState = false
+    @State private var presentationState: PresentationState
     /// Owns the per-impression workflow step event state machine (trace id, fire-once flags, gating).
     /// Created in `init`, so a new presentation (new view identity) yields a fresh `traceId`, matching
     /// Android's per-impression `workflowTraceId`. Its sequence/gating is unit tested in
@@ -274,7 +302,8 @@ struct WorkflowPaywallView: View {
         showZeroDecimalPlacePrices: Bool,
         displayCloseButton: Bool,
         promoOfferCache: PaywallPromoOfferCache?,
-        onDismiss: @escaping () -> Void
+        onDismiss: @escaping () -> Void,
+        onPresentationError: ((NSError) -> Void)? = nil
     ) {
         self.context = context
         self.purchaseHandler = purchaseHandler
@@ -282,6 +311,7 @@ struct WorkflowPaywallView: View {
         self.showZeroDecimalPlacePrices = showZeroDecimalPlacePrices
         self.displayCloseButton = displayCloseButton
         self.onDismiss = onDismiss
+        self.onPresentationError = onPresentationError
         self._navigator = .init(wrappedValue: WorkflowNavigator(workflow: context.workflow))
         self._stateStore = .init(
             wrappedValue: PaywallStateStore(declarations: Self.mergedStateDeclarations(in: context.workflow))
@@ -298,12 +328,20 @@ struct WorkflowPaywallView: View {
             preferredPackage: nil,
             showZeroDecimalPlacePrices: showZeroDecimalPlacePrices
         )
-        let initialPage = Self.renderedPage(
-            from: context,
-            stepId: initialStepId,
-            showCloseButton: displayCloseButton,
-            introEligibilityChecker: introEligibilityChecker,
-            packageInput: initialPackageInput
+        let initialPresentationError = Self.presentationError(for: initialStepId, in: context)
+        let initialPage = initialPresentationError == nil
+            ? Self.renderedPage(
+                from: context,
+                stepId: initialStepId,
+                showCloseButton: displayCloseButton,
+                introEligibilityChecker: introEligibilityChecker,
+                packageInput: initialPackageInput
+            )
+            : nil
+        self._presentationState = .init(
+            initialValue: initialPresentationError.map {
+                .failing(error: $0)
+            } ?? .active
         )
         self._stepEventCoordinator = .init(
             wrappedValue: WorkflowStepEventCoordinator(
@@ -347,14 +385,6 @@ struct WorkflowPaywallView: View {
                 self.workflowHeaderOverlay(geometry: geometry)
                     .zIndex(2)
 
-                if self.transitionState.currentPage == nil {
-                    Color.clear
-                        .frame(width: 0, height: 0)
-                        .accessibilityHidden(true)
-                        .onAppear {
-                            self.logInvalidWorkflowStateIfNeeded()
-                        }
-                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             // Window size for window size condition evaluation (e.g. the
@@ -363,7 +393,7 @@ struct WorkflowPaywallView: View {
             .environment(\.paywallWindowSize, proxy.size)
             .transitionClipMask(geometry: geometry)
         }
-        .allowsHitTesting(!self.transitionState.isTransitioning)
+        .allowsHitTesting(!self.transitionState.isTransitioning && !self.presentationState.hasFailed)
         .workflowTransitionAnimationCompletion(
             progress: self.transitionState.progress,
             activeTransitionID: self.activeTransitionID,
@@ -382,7 +412,9 @@ struct WorkflowPaywallView: View {
         // exitOfferOffering — matching Android's shouldTriggerExitOfferForCurrentStep guard.
         .preference(
             key: WorkflowExitOfferPreferenceKey.self,
-            value: Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
+            value: self.presentationState.hasFailed
+                ? nil
+                : Self.exitOfferContext(for: self.context, currentStepId: self.navigator.currentStepId)
         )
         // Write the exit offer directly via the binding injected by PresentingPaywallModifier.
         // This is more reliable than the preference key when the workflow is inside a sheet,
@@ -390,35 +422,29 @@ struct WorkflowPaywallView: View {
         // Must use exitOfferContext(for:currentStepId:), not context.exitOfferOffering, because
         // exitOfferOffering is not step-aware — it is non-nil for any step whenever configured.
         .onAppear {
+            switch self.presentationState {
+            case .failing:
+                self.exitOfferOfferingBinding.wrappedValue = nil
+                self.reportPresentationError(for: self.navigator.currentStepId)
+                return
+            case .failureReported:
+                self.exitOfferOfferingBinding.wrappedValue = nil
+                return
+            case .active:
+                break
+            }
             self.syncExitOfferBinding()
             self.stepEventCoordinator.trackInitialStep(
                 self.navigator.currentStep,
                 hasRenderedPage: self.transitionState.currentPage != nil
             )
         }
-        // Terminal `stepCompleted` is anchored here, mirroring how `paywall_close` is tracked on
-        // PaywallsV2View.onDisappear. This is the single dismissal signal that catches every path the
-        // workflow can go away — close button, post-purchase auto-dismiss, swipe-to-dismiss on a sheet,
-        // and programmatic parent dismiss — without firing during inner step transitions (the outer
-        // view stays mounted while pages swap).
+        // This catches dismissal paths that do not pass through a workflow failure: close button,
+        // post-purchase auto-dismiss, swipe-to-dismiss on a sheet, and programmatic parent dismiss.
+        // A late configuration failure tracks the same lifecycle immediately before showing its error;
+        // the coordinator's fire-once guards prevent this hook from duplicating those events later.
         .onDisappear {
-            // Workflow abandonment: fires unless the workflow completed naturally before dismissal.
-            // The completion signal is explicit because UIKit can reset PurchaseHandler before this
-            // view disappears, and restore only completes a workflow when the presenter actually
-            // closes it.
-            self.stepEventCoordinator.trackAbandonment(
-                currentStep: self.navigator.currentStep,
-                hasRenderedPage: self.transitionState.currentPage != nil,
-                hasCompletedInSession: Self.hasCompletedInSession(
-                    hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
-                    hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
-                        self.workflowCompletedInSessionBinding.wrappedValue
-                )
-            )
-            self.stepEventCoordinator.trackTerminalCompletion(
-                currentStep: self.navigator.currentStep,
-                hasRenderedPage: self.transitionState.currentPage != nil
-            )
+            self.trackCurrentWorkflowLeft()
         }
         .onChangeOf(self.navigator.currentStepId) { _ in
             self.syncExitOfferBinding()
@@ -432,6 +458,7 @@ struct WorkflowPaywallView: View {
         // values every page reads when re-resolving `state` conditions.
         .environment(\.paywallStateValues, self.stateStore.values)
         .environment(\.paywallStateDefaults, self.stateStore.defaults)
+        .displayError(self.workflowPresentationError, onDismiss: self.onDismiss)
     }
 
     // MARK: - Helpers
@@ -597,8 +624,12 @@ struct WorkflowPaywallView: View {
             self.onDismiss()
         case .navigateBack:
             let fromStep = self.navigator.currentStep
-            guard let destination = self.navigator.backNavigationDestination,
+            guard let destination = self.navigator.backNavigationDestination else {
+                return
+            }
+            guard Self.presentationError(for: destination.step.id, in: self.context) == nil,
                   let page = self.renderedPageForBackNavigation(stepId: destination.step.id) else {
+                self.failWorkflowPresentation(for: destination.step.id)
                 return
             }
 
@@ -641,6 +672,27 @@ struct WorkflowPaywallView: View {
     private func markWorkflowCompletedInSession() {
         self.hasCompletedWorkflowInSession = true
         self.workflowCompletedInSessionBinding.wrappedValue = true
+    }
+
+    /// Finishes the current step and, unless purchase or restore completed this presentation, records
+    /// workflow abandonment. Called both when the paywall goes away and when a reached step is found to be
+    /// unservable.
+    private func trackCurrentWorkflowLeft() {
+        let hasRenderedPage = self.transitionState.currentPage != nil
+        let completedInSession = Self.hasCompletedInSession(
+            hasPurchasedInSession: self.purchaseHandler.hasPurchasedInSession,
+            hasCompletedWorkflowInSession: self.hasCompletedWorkflowInSession ||
+                self.workflowCompletedInSessionBinding.wrappedValue
+        )
+        self.stepEventCoordinator.trackTerminalCompletion(
+            currentStep: self.navigator.currentStep,
+            hasRenderedPage: hasRenderedPage
+        )
+        self.stepEventCoordinator.trackAbandonment(
+            currentStep: self.navigator.currentStep,
+            hasRenderedPage: hasRenderedPage,
+            hasCompletedInSession: completedInSession
+        )
     }
 
     /// Whether the workflow reached a natural completion (so dismissing it is not an abandonment).
@@ -686,22 +738,35 @@ struct WorkflowPaywallView: View {
             return false
         }
 
-        // Capture the step we are leaving before triggerAction mutates the navigator.
+        // Resolve and validate the destination before mutating the navigator. A malformed reached
+        // step is a configuration error, not a transition to an empty workflow page.
         let fromStep = self.navigator.currentStep
+        guard let destination = self.navigator.triggerActionDestination(componentId: componentId) else {
+            return false
+        }
+
+        guard Self.presentationError(for: destination.step.id, in: self.context) == nil else {
+            self.failWorkflowPresentation(for: destination.step.id)
+            return true
+        }
+
+        guard let page = self.renderedPageForForwardNavigation(
+            stepId: destination.step.id,
+            canNavigateBack: destination.canNavigateBackAfterNavigation,
+            carryForwardPackage: self.transitionState.currentPage?.packageContext.package
+        ) else {
+            self.failWorkflowPresentation(for: destination.step.id)
+            return true
+        }
+
         guard let nextStep = self.navigator.triggerAction(componentId: componentId) else {
             return false
         }
 
-        let page = self.renderedPageForForwardNavigation(
-            stepId: nextStep.id,
-            canNavigateBack: self.navigator.canNavigateBack,
-            carryForwardPackage: self.transitionState.currentPage?.packageContext.package
-        )
-
         self.stepEventCoordinator.trackTransition(
             from: fromStep,
             to: nextStep,
-            renderedPageIsNil: page == nil,
+            renderedPageIsNil: false,
             entryReason: .forward
         )
         self.startTransition(to: page, direction: .forward)
@@ -776,8 +841,7 @@ struct WorkflowPaywallView: View {
     ) -> RenderedPage? {
         guard let step = context.workflow.steps[stepId],
               let screenId = step.screenId,
-              let screen = context.workflow.screens[screenId],
-              let offering = context.offering(for: screen.offeringIdentifier) else {
+              let screen = context.workflow.screens[screenId] else {
             return nil
         }
 
@@ -786,11 +850,15 @@ struct WorkflowPaywallView: View {
             uiConfig: context.uiConfig,
             paywallId: screenId
         )
+        let offering = WorkflowContext.renderingOffering(
+            baseOffering: context.offering(for: step),
+            paywallComponents: paywallComponents
+        )
 
         return .init(
             stepId: stepId,
             content: .init(paywallComponents: paywallComponents, offering: offering),
-            stepType: step.type,
+            stepType: step.type ?? "screen",
             screenType: step.stepScreenType,
             isSingleStepFallback: stepId == context.workflow.singleStepFallbackId,
             headerComponent: screen.componentsConfig.base.header,
@@ -799,6 +867,41 @@ struct WorkflowPaywallView: View {
             packageContext: packageInput.packageContext,
             effectiveWorkflowPackageContext: packageInput.effectiveWorkflowPackageContext
         )
+    }
+
+    /// A reached step must have a screen, and any offering it declares must be available, before it is made
+    /// current. Steps without an offering are valid content-only pages. This preserves the current page while
+    /// presenting a configuration error instead of replacing it with a blank view.
+    static func presentationError(for stepId: String, in context: WorkflowContext) -> NSError? {
+        guard let step = context.workflow.steps[stepId] else {
+            return WorkflowPresentationError.stepNotFound(
+                stepID: stepId,
+                workflowID: context.workflow.id
+            ) as NSError
+        }
+        guard let screenId = step.screenId else {
+            return WorkflowPresentationError.missingScreenIdentifier(
+                stepID: step.id,
+                workflowID: context.workflow.id
+            ) as NSError
+        }
+        guard context.workflow.screens[screenId] != nil else {
+            return WorkflowPresentationError.screenNotFound(
+                screenID: screenId,
+                workflowID: context.workflow.id
+            ) as NSError
+        }
+        guard let offeringIdentifier = context.workflow.offeringIdentifier(for: step) else {
+            return nil
+        }
+        guard context.offering(for: step) != nil else {
+            return WorkflowPresentationError.offeringNotFound(
+                offeringID: offeringIdentifier,
+                stepID: step.id
+            ) as NSError
+        }
+
+        return nil
     }
 
     static func buildPackageInput(
@@ -835,12 +938,6 @@ struct WorkflowPaywallView: View {
         // Back navigation always targets a previously-seen step, so its page is already mounted.
         // Returning that same instance keeps its subtree (and the state it owns) intact.
         guard let seenPage = self.seenPages.first(where: { $0.stepId == stepId }) else {
-            Logger.error(
-                Strings.workflow_paywall_invalid_state(
-                    currentStepId: stepId,
-                    screenId: self.context.workflow.steps[stepId]?.screenId
-                )
-            )
             return nil
         }
 
@@ -872,18 +969,41 @@ struct WorkflowPaywallView: View {
         )
     }
 
-    private func logInvalidWorkflowStateIfNeeded() {
-        guard !self.hasLoggedInvalidState else {
-            return
-        }
+    private func failWorkflowPresentation(for stepId: String) {
+        guard self.presentationState.canReportPresentationError else { return }
 
-        self.hasLoggedInvalidState = true
-        Logger.error(
-            Strings.workflow_paywall_invalid_state(
-                currentStepId: self.navigator.currentStepId,
-                screenId: self.navigator.currentStep?.screenId
-            )
+        let error = Self.presentationError(for: stepId, in: self.context) ?? ErrorCode.configurationError as NSError
+        self.trackCurrentWorkflowLeft()
+        self.exitOfferOfferingBinding.wrappedValue = nil
+        self.presentationState = .failing(error: error)
+        self.reportPresentationError(for: stepId)
+    }
+
+    private var workflowPresentationError: Binding<NSError?> {
+        return .init(
+            get: { self.presentationState.error },
+            set: { error in
+                switch (self.presentationState, error) {
+                case (_, let error?):
+                    self.presentationState = .failing(error: error)
+                case (.failing, nil):
+                    self.presentationState = .failureReported
+                case (.active, nil), (.failureReported, nil):
+                    break
+                }
+            }
         )
+    }
+
+    private func reportPresentationError(for stepId: String) {
+        guard let error = self.presentationState.error else { return }
+
+        let message = Strings.workflow_paywall_invalid_state(
+            currentStepId: stepId,
+            screenId: self.context.workflow.steps[stepId]?.screenId
+        )
+        Logger.error("\(message): \(error.localizedDescription)")
+        self.onPresentationError?(error)
     }
 
 }
@@ -920,6 +1040,43 @@ private struct DisplayedPage: Identifiable {
 private struct CurrentStepContent {
     let paywallComponents: Offering.PaywallComponents
     let offering: Offering
+}
+
+/// A workflow configuration problem presented to the customer. Its code stays compatible with the SDK
+/// configuration error.
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private enum WorkflowPresentationError: Error {
+
+    case stepNotFound(stepID: String, workflowID: String)
+    case missingScreenIdentifier(stepID: String, workflowID: String)
+    case screenNotFound(screenID: String, workflowID: String)
+    case offeringNotFound(offeringID: String, stepID: String)
+
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+extension WorkflowPresentationError: CustomNSError {
+
+    static let errorDomain = ErrorCode.errorDomain
+    var errorCode: Int { return ErrorCode.configurationError.rawValue }
+
+    var errorUserInfo: [String: Any] {
+        return [NSLocalizedDescriptionKey: self.description]
+    }
+
+    private var description: String {
+        switch self {
+        case let .stepNotFound(stepID, workflowID):
+            return "Step '\(stepID)' not found in workflow '\(workflowID)'."
+        case let .missingScreenIdentifier(stepID, workflowID):
+            return "Step '\(stepID)' has no screen_id in workflow '\(workflowID)'."
+        case let .screenNotFound(screenID, workflowID):
+            return "Screen '\(screenID)' not found in workflow '\(workflowID)'."
+        case let .offeringNotFound(offeringID, stepID):
+            return "Offering '\(offeringID)' not found for step '\(stepID)'."
+        }
+    }
+
 }
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
