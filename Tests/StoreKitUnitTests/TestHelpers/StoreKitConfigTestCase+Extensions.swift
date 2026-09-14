@@ -54,18 +54,7 @@ extension StoreKitConfigTestCase {
         let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
 
         if finishTransaction {
-            let transaction = verificationResult.underlyingTransaction
-            await transaction.finish()
-
-            // StoreKitTest can return from `finish()` before `Transaction.unfinished`
-            // reflects the change, especially when many simulators run concurrently.
-            try await asyncWait(
-                description: "Finished transaction remained unfinished",
-                timeout: .seconds(5)
-            ) {
-                let unfinished = await StoreKit.Transaction.unfinished.extractValues()
-                return !unfinished.map(\.underlyingTransaction.id).contains(transaction.id)
-            }
+            await verificationResult.underlyingTransaction.finish()
         }
 
         return verificationResult

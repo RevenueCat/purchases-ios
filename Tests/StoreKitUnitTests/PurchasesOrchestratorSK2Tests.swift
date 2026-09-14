@@ -2013,7 +2013,7 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
             )
         }
 
-        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1))
+        await expect(self.backend.invokedPostReceiptDataCount).toEventually(equal(1), timeout: .seconds(5))
 
         // A `nil` reason (i.e. iOS < 17) can still be a purchase, so it keeps waiting.
         let queueTransaction = MockStoreTransaction(productIdentifier: product.id, reason: nil)

@@ -240,12 +240,11 @@ class StoreKit2TransactionListenerTransactionUpdatesTests: StoreKit2TransactionL
 
         setShortestTestSessionTimeRate(self.testSession)
 
-        try await self.simulateAnyPurchase(finishTransaction: true)
+        try await self.createFinishedPurchaseForRenewal()
 
         await self.listener.listenForTransactions()
 
-        // swiftlint:disable:next force_try
-        try! await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
 
         try await self.waitForTransactionUpdated()
 
@@ -307,6 +306,15 @@ private extension StoreKit2TransactionListenerBaseTests {
 
     private enum Error: Swift.Error {
         case invalidResult(Product.PurchaseResult)
+    }
+
+    func createFinishedPurchaseForRenewal() async throws {
+        if #available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *) {
+            let transaction = try await self.testSession.buyProduct(identifier: Self.productID)
+            await transaction.finish()
+        } else {
+            try await self.simulateAnyPurchase(finishTransaction: true)
+        }
     }
 
     func purchase() async throws -> (
@@ -408,11 +416,11 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
 
         setShortestTestSessionTimeRate(self.testSession)
 
-        try await self.simulateAnyPurchase(finishTransaction: true)
+        try await self.createFinishedPurchaseForRenewal()
 
         await self.listener.listenForTransactions()
 
-        try await Task.sleep(nanoseconds: 3 * 1_000_000_000)
+        try self.testSession.forceRenewalOfSubscription(productIdentifier: Self.productID)
 
         try await self.waitForTransactionUpdated()
 
