@@ -121,23 +121,46 @@ struct VariableHandlerV2 {
             return (short, spoken)
         }
 
-        // Longest first: a shorter abbreviation can be a prefix of a longer one.
-        return replacements
-            .sorted { $0.0.count > $1.0.count }
-            .reduce(text) { partial, replacement in
-                let (short, spoken) = replacement
-                // Guarded both sides: a letter before the slash means a URL path, not a price,
-                // and a letter after means a spelled-out "/month" rather than "/mo".
-                let pattern = "(?<![\\p{L}])/\\s*"
-                    + NSRegularExpression.escapedPattern(for: short)
-                    + "(?![\\p{L}])"
+        // A URL path segment can read exactly like an abbreviation ("day" is `day_short` in
+        // English), and rewriting one breaks the link.
+        return Self.outsideURLs(of: text) { segment in
+            // Longest first: a shorter abbreviation can be a prefix of a longer one.
+            replacements
+                .sorted { $0.0.count > $1.0.count }
+                .reduce(segment) { partial, replacement in
+                    let (short, spoken) = replacement
+                    // Trailing guard so "/mo" does not match inside a spelled-out "/month".
+                    let pattern = "/\\s*" + NSRegularExpression.escapedPattern(for: short) + "(?![\\p{L}])"
 
-                return partial.replacingOccurrences(
-                    of: pattern,
-                    with: " " + spoken,
-                    options: [.regularExpression, .caseInsensitive]
-                )
-            }
+                    return partial.replacingOccurrences(
+                        of: pattern,
+                        with: " " + spoken,
+                        options: [.regularExpression, .caseInsensitive]
+                    )
+                }
+        }
+    }
+
+    private static let urlPattern = "[A-Za-z][A-Za-z0-9+.-]*://[^\\s)]+"
+
+    /// Applies `transform` to everything except the URLs, which are left byte for byte.
+    private static func outsideURLs(of text: String, transform: (String) -> String) -> String {
+        guard let regex = try? NSRegularExpression(pattern: Self.urlPattern) else {
+            return transform(text)
+        }
+
+        let full = text as NSString
+        var result = ""
+        var consumed = 0
+
+        for match in regex.matches(in: text, range: NSRange(location: 0, length: full.length)) {
+            let before = NSRange(location: consumed, length: match.range.location - consumed)
+            result += transform(full.substring(with: before))
+            result += full.substring(with: match.range)
+            consumed = match.range.location + match.range.length
+        }
+
+        return result + transform(full.substring(from: consumed))
     }
 
     /// Process a custom variable, returning the resolved value.

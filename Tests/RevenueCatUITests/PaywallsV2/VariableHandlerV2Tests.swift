@@ -509,6 +509,33 @@ class VariableHandlerV2Test: TestCase {
             ),
             "See https://rev.cat/mo for details"
         )
+        // A digit before the segment is what a price looks like, so the URL has to be skipped
+        // as a URL rather than by what precedes the slash.
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "[Docs](https://rev.cat/v2/mo)",
+                localizations: localizations
+            ),
+            "[Docs](https://rev.cat/v2/mo)"
+        )
+    }
+
+    /// `day_short` is "day" in English, so an ordinary URL path hits this.
+    func testLinkURLWithDayPathIsNotExpanded() {
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "See https://rev.cat/2024/day for details",
+                localizations: ["day_short": "day", "daily": "daily"]
+            ),
+            "See https://rev.cat/2024/day for details"
+        )
+        XCTAssertEqual(
+            VariableHandlerV2.expandPeriodAbbreviations(
+                in: "$1/day",
+                localizations: ["day_short": "day", "daily": "daily"]
+            ),
+            "$1 daily"
+        )
     }
 
     /// The guard keys on the character before the slash, so a price still expands.
