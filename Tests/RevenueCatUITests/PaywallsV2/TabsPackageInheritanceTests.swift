@@ -571,6 +571,7 @@ final class TabsPackageInheritanceTests: TestCase {
         )
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: parentOwnedPackage,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -600,6 +601,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let tab2Packages = [self.parentPackageA, self.parentPackageB, self.tabPackageC]
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: parentOwnedPackage,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -628,6 +630,7 @@ final class TabsPackageInheritanceTests: TestCase {
         // Given: Tab packages differ from parent packages
         let tabPackages = [self.parentPackageB, self.tabPackageC]
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: parentOwnedPackage,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -654,6 +657,7 @@ final class TabsPackageInheritanceTests: TestCase {
         // Given: Tab 1 has only Package C
         let tab1Packages = [self.tabPackageC]
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: parentOwnedPackage,
             parentOwnedVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
             parentCurrentVariableContext: .init(packages: [self.parentPackageA, self.parentPackageB]),
@@ -903,6 +907,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
             parentOwnedVariableContext: .init(packages: tab1Packages),
             parentCurrentVariableContext: .init(packages: tab1Packages),
@@ -917,6 +922,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
             parentOwnedVariableContext: .init(packages: tab2Packages),
             parentCurrentVariableContext: .init(packages: tab2Packages),
@@ -957,6 +963,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let effectiveParentOwnedPackageForTab2: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab2UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: effectiveParentOwnedPackageForTab2,
             parentOwnedVariableContext: .init(packages: tab1Packages),
             parentCurrentVariableContext: .init(packages: tab1Packages),
@@ -971,6 +978,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let effectiveParentOwnedPackageForTab1: Package? = didUserSelectPackage ? parentOwnedPackage : nil
 
         let tab1UpdatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: effectiveParentOwnedPackageForTab1,
             parentOwnedVariableContext: .init(packages: tab2Packages),
             parentCurrentVariableContext: .init(packages: tab2Packages),
@@ -1061,6 +1069,7 @@ final class TabsPackageInheritanceTests: TestCase {
         let effectiveParentOwnedPackage: Package? = parentOwnedPackage
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: effectiveParentOwnedPackage,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -1224,6 +1233,7 @@ extension TabsPackageInheritanceTests {
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
             // No explicit user selection yet, so the tabs view passes nil here.
+            parentCurrentPackage: nil,
             parentOwnedPackage: nil,
             parentOwnedVariableContext: variableContext,
             parentCurrentVariableContext: variableContext,
@@ -1258,6 +1268,7 @@ extension TabsPackageInheritanceTests {
         let variableContext = PackageContext.VariableContext(packages: tab2Packages)
 
         let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: nil,
             parentOwnedVariableContext: variableContext,
             parentCurrentVariableContext: variableContext,

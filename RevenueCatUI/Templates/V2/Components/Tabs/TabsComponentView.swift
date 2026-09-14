@@ -406,6 +406,7 @@ struct LoadedTabsComponentView: View {
                 }
 
                 let updatePlan = TabsPackageSelectionResolver.resolveTabSwitch(
+                    parentCurrentPackage: self.packageContext.package,
                     parentOwnedPackage: effectiveParentOwnedPackage(for: newTabViewModel),
                     parentOwnedVariableContext: self.parentOwnedVariableContext,
                     parentCurrentVariableContext: self.packageContext.variableContext,
