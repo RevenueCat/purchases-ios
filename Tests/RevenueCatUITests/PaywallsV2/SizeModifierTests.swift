@@ -377,6 +377,24 @@ final class SizeModifierTests: TestCase {
         )
     }
 
+    func testConstrainedStackSafelyAlignsCrossAxisOverflowAtStart() throws {
+        guard #available(iOS 16.0, *) else {
+            throw XCTSkip("ConstrainedStackLayout requires iOS 16")
+        }
+
+        let layout = ConstrainedStackLayout(
+            orientation: .horizontal,
+            distribution: .start,
+            crossAxisAlignment: .center,
+            spacing: 0,
+            mainAxisSize: .fixed(200),
+            crossAxisSize: .fixed(40)
+        )
+
+        XCTAssertEqual(layout.crossAxisPosition(childSize: 64, available: 40), 0)
+        XCTAssertEqual(layout.crossAxisPosition(childSize: 24, available: 40), 8)
+    }
+
     func testConstrainedStackPaddingLivesInsideFitMinimumHeight() throws {
         guard #available(iOS 16.0, *) else {
             throw XCTSkip("ConstrainedStackLayout requires iOS 16")

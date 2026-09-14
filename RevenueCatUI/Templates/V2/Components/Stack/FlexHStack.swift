@@ -434,7 +434,12 @@ struct ConstrainedStackLayout: Layout {
         return result
     }
 
-    private func crossAxisPosition(childSize: CGFloat, available: CGFloat) -> CGFloat {
+    func crossAxisPosition(childSize: CGFloat, available: CGFloat) -> CGFloat {
+        // Match the paywall flexbox reference's safe cross-axis alignment: an oversized child cannot be centered
+        // without hiding its leading edge outside the parent. Anchor it at the start and let the minimum
+        // overflow toward the end instead.
+        guard childSize <= available else { return 0 }
+
         switch self.orientation {
         case .horizontal:
             if self.crossAxisAlignment.vertical == .top { return 0 }
