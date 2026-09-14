@@ -473,6 +473,9 @@ extension VariablesV2 {
         case .productPeriodAbbreviated:
             if let package {
                 if context.spoken {
+                    // The full noun, so a screen reader says "month" and not "mo". Copy that
+                    // supplies its own slash then reads as "/month", which
+                    // `expandPeriodAbbreviations` leaves alone on purpose.
                     return self.productPeriod(package: package, localizations: localizations)
                 }
                 return self.productPeriodAbbreviated(package: package, localizations: localizations)
