@@ -50,11 +50,22 @@ extension StoreKitConfigTestCase {
             productToPurchase = try await self.fetchSk2Product()
         }
 
-        let result = try await productToPurchase.purchase()
+        let result = try await self.purchaseWithRetry(productToPurchase)
         let verificationResult = try XCTUnwrap(result.verificationResult, "Purchase did not succeed: \(result)")
 
         if finishTransaction {
-            await verificationResult.underlyingTransaction.finish()
+            let transaction = verificationResult.underlyingTransaction
+            await transaction.finish()
+
+            // StoreKitTest can return from `finish()` before `Transaction.unfinished`
+            // reflects the change, especially when many simulators run concurrently.
+            try await asyncWait(
+                description: "Finished transaction remained unfinished",
+                timeout: .seconds(5)
+            ) {
+                let unfinished = await StoreKit.Transaction.unfinished.extractValues()
+                return !unfinished.map(\.underlyingTransaction.id).contains(transaction.id)
+            }
         }
 
         return verificationResult
@@ -68,6 +79,22 @@ extension StoreKitConfigTestCase {
     func fetchSk2Product(_ productID: String = StoreKitConfigTestCase.productID) async throws -> SK2Product {
         let products: [SK2Product] = try await StoreKit.Product.products(for: [productID])
         return try XCTUnwrap(products.first)
+    }
+
+    /// StoreKitTest occasionally loses its connection to the simulator-local purchase service under CI load.
+    /// Retry only that transient error; all other purchase failures still surface immediately.
+    func purchaseWithRetry(
+        _ product: SK2Product,
+        attemptsRemaining: Int = 3
+    ) async throws -> Product.PurchaseResult {
+        do {
+            return try await product.purchase()
+        } catch {
+            guard attemptsRemaining > 1, Self.isStoreKitTestConnectionLost(error) else { throw error }
+
+            try await Task.sleep(nanoseconds: 200_000_000)
+            return try await self.purchaseWithRetry(product, attemptsRemaining: attemptsRemaining - 1)
+        }
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)
@@ -95,6 +122,19 @@ extension StoreKitConfigTestCase {
             jwsRepresentation: result.jwsRepresentation,
             environmentOverride: environment
         )
+    }
+
+}
+
+@available(iOS 15.0, tvOS 15.0, macOS 12.0, watchOS 8.0, *)
+private extension StoreKitConfigTestCase {
+
+    static func isStoreKitTestConnectionLost(_ error: Swift.Error) -> Bool {
+        guard let storeKitError = error as? StoreKitError,
+              case let .networkError(underlyingError) = storeKitError else { return false }
+
+        let nsError = underlyingError as NSError
+        return nsError.domain == NSURLErrorDomain && nsError.code == NSURLErrorNetworkConnectionLost
     }
 
 }

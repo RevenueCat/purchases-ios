@@ -24,6 +24,7 @@ class StoreKit2StorefrontListenerTests: TestCase {
     private var delegate: MockStoreKit2StorefrontListenerDelegate! = nil
     private var listener: StoreKit2StorefrontListener! = nil
     private var userDefaults: UserDefaults! = nil
+    private var userDefaultsSuiteName: String! = nil
 
     private static let defaultStorefronts = [
         MockStorefront(countryCode: "ESP"),
@@ -34,9 +35,11 @@ class StoreKit2StorefrontListenerTests: TestCase {
     override func setUpWithError() throws {
         try super.setUpWithError()
 
-        // Create isolated UserDefaults for each test
-        self.userDefaults = UserDefaults(suiteName: Self.userDefaultsSuiteName)
-        self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
+        // XCTest can run methods in this class concurrently. A suite shared by the whole class lets
+        // another test persist the same storefront while this listener is starting, suppressing its update.
+        self.userDefaultsSuiteName = "\(Self.userDefaultsSuiteName).\(self.name).\(UUID().uuidString)"
+        self.userDefaults = UserDefaults(suiteName: self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.userDefaults.synchronize()
 
         self.delegate = .init()
@@ -46,7 +49,7 @@ class StoreKit2StorefrontListenerTests: TestCase {
 
     override func tearDown() {
         // Clean up UserDefaults after each test
-        self.userDefaults.removePersistentDomain(forName: Self.userDefaultsSuiteName)
+        self.userDefaults.removePersistentDomain(forName: self.userDefaultsSuiteName)
         self.userDefaults.synchronize()
 
         super.tearDown()

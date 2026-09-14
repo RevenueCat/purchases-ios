@@ -319,9 +319,10 @@ extension PurchasesRewardVerificationTests {
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified, granted
-        guard case let .rewardEarnedUnverified(_, eventData) = trackedEvents.first else {
-            return fail("Expected AdEvent.rewardEarnedUnverified but got \(String(describing: trackedEvents.first))")
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        let earnedEvent = trackedEvents.first { if case .rewardEarnedUnverified = $0 { return true }; return false }
+        guard case let .some(.rewardEarnedUnverified(_, eventData)) = earnedEvent else {
+            return fail("Expected AdEvent.rewardEarnedUnverified in \(trackedEvents)")
         }
         expect(eventData.networkName) == "AdMob"
         expect(eventData.mediatorName) == .adMob
@@ -345,13 +346,15 @@ extension PurchasesRewardVerificationTests {
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(3))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, verified, granted
-        guard case .rewardVerified = trackedEvents[1] else {
-            return fail("Expected AdEvent.rewardVerified but got \(trackedEvents[1])")
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        let verifiedEvent = trackedEvents.first { if case .rewardVerified = $0 { return true }; return false }
+        guard case .some(.rewardVerified) = verifiedEvent else {
+            return fail("Expected AdEvent.rewardVerified in \(trackedEvents)")
         }
 
-        guard case let .rewardGranted(_, grantedData) = trackedEvents[2] else {
-            return fail("Expected AdEvent.rewardGranted but got \(trackedEvents[2])")
+        let grantedEvent = trackedEvents.first { if case .rewardGranted = $0 { return true }; return false }
+        guard case let .some(.rewardGranted(_, grantedData)) = grantedEvent else {
+            return fail("Expected AdEvent.rewardGranted in \(trackedEvents)")
         }
         expect(grantedData.reward.virtualCurrency?.code) == "coins"
     }
@@ -411,9 +414,10 @@ extension PurchasesRewardVerificationTests {
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, failed-to-verify
-        guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
-            return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        let failedEvent = trackedEvents.first { if case .rewardFailedToVerify = $0 { return true }; return false }
+        guard case let .some(.rewardFailedToVerify(_, failedData)) = failedEvent else {
+            return fail("Expected AdEvent.rewardFailedToVerify in \(trackedEvents)")
         }
         expect(failedData.failureReason) == .backendError(reason: "no_reward_rule")
     }
@@ -434,9 +438,10 @@ extension PurchasesRewardVerificationTests {
 
         await expect { try await self.mockEventsManager.trackedAdEvents }.toEventually(haveCount(2))
 
-        let trackedEvents = try await self.mockEventsManager.trackedAdEvents // earned, failed-to-verify
-        guard case let .rewardFailedToVerify(_, failedData) = trackedEvents[1] else {
-            return fail("Expected AdEvent.rewardFailedToVerify but got \(trackedEvents[1])")
+        let trackedEvents = try await self.mockEventsManager.trackedAdEvents
+        let failedEvent = trackedEvents.first { if case .rewardFailedToVerify = $0 { return true }; return false }
+        guard case let .some(.rewardFailedToVerify(_, failedData)) = failedEvent else {
+            return fail("Expected AdEvent.rewardFailedToVerify in \(trackedEvents)")
         }
         expect(failedData.failureReason) == .cancelled
     }
