@@ -60,7 +60,7 @@ struct VariableHandlerV2 {
         isEligibleForIntroOffer: Bool,
         promoOffer: PromotionalOffer? = nil,
         countdownTime: CountdownTime? = nil,
-        forAccessibility: Bool = false
+        spoken: Bool = false
     ) -> String {
         let context = VariablesV2.ProcessContext(
             package: package,
@@ -72,7 +72,7 @@ struct VariableHandlerV2 {
             date: self.dateProvider(),
             promoOffer: promoOffer,
             countdownTime: countdownTime,
-            forAccessibility: forAccessibility
+            spoken: spoken
         )
 
         let whisker = Whisker(template: text) { variableRaw, functionRaw in
@@ -93,7 +93,7 @@ struct VariableHandlerV2 {
 
         let rendered = whisker.render()
 
-        guard forAccessibility else {
+        guard spoken else {
             return rendered
         }
 
@@ -340,7 +340,7 @@ extension VariablesV2 {
         let date: Date
         let promoOffer: PromotionalOffer?
         let countdownTime: CountdownTime?
-        var forAccessibility: Bool = false
+        var spoken: Bool = false
     }
 
     struct OfferContext {
@@ -384,7 +384,7 @@ extension VariablesV2 {
             }
         case .productPricePerPeriod:
             if let package {
-                if context.forAccessibility {
+                if context.spoken {
                     return self.productPricePerPeriodSpoken(
                         package: package,
                         localizations: localizations,
@@ -399,7 +399,7 @@ extension VariablesV2 {
             }
         case .productPricePerPeriodAbbreviated:
             if let package {
-                if context.forAccessibility {
+                if context.spoken {
                     return self.productPricePerPeriodSpoken(
                         package: package,
                         localizations: localizations,
@@ -446,7 +446,7 @@ extension VariablesV2 {
             }
         case .productPeriodAbbreviated:
             if let package {
-                if context.forAccessibility {
+                if context.spoken {
                     return self.productPeriod(package: package, localizations: localizations)
                 }
                 return self.productPeriodAbbreviated(package: package, localizations: localizations)
@@ -521,7 +521,7 @@ extension VariablesV2 {
             }
         case .productOfferPeriodAbbreviated:
             if let package {
-                if context.forAccessibility {
+                if context.spoken {
                     return self.productOfferPeriod(
                         package: package,
                         localizations: localizations,
@@ -589,7 +589,7 @@ extension VariablesV2 {
             }
         case .productSecondaryOfferPeriodAbbreviated:
             if let package {
-                if context.forAccessibility {
+                if context.spoken {
                     return self.productSecondaryOfferPeriod(package: package)
                 }
                 return self.productSecondaryOfferPeriodAbbreviated(package: package)

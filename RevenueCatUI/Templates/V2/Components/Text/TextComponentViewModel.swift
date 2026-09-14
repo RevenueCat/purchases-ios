@@ -113,7 +113,7 @@ class TextComponentViewModel {
         )
 
         let processedText = Self.processText(text, config: config)
-        let spokenText = Self.processText(text, config: config, forAccessibility: true)
+        let spokenText = Self.processText(text, config: config, spoken: true)
 
         let style = TextComponentStyle(
             uiConfigProvider: self.uiConfigProvider,
@@ -150,9 +150,9 @@ class TextComponentViewModel {
     private static func processText(
         _ text: String,
         config: TextProcessingConfig,
-        forAccessibility: Bool = false
+        spoken: Bool = false
     ) -> String {
-        let processedWithV2 = Self.processTextV2(text, config: config, forAccessibility: forAccessibility)
+        let processedWithV2 = Self.processTextV2(text, config: config, spoken: spoken)
 
         let processedWithV2AndV1 = Self.processTextV1(
             processedWithV2,
@@ -160,7 +160,7 @@ class TextComponentViewModel {
             locale: config.locale
         )
 
-        guard forAccessibility else {
+        guard spoken else {
             return processedWithV2AndV1
         }
 
@@ -175,7 +175,7 @@ class TextComponentViewModel {
     private static func processTextV2(
         _ text: String,
         config: TextProcessingConfig,
-        forAccessibility: Bool = false
+        spoken: Bool = false
     ) -> String {
         let pkg = config.packageContext.package
 
@@ -203,7 +203,7 @@ class TextComponentViewModel {
             isEligibleForIntroOffer: config.isEligibleForIntroOffer,
             promoOffer: config.promoOffer,
             countdownTime: config.countdownTime,
-            forAccessibility: forAccessibility
+            spoken: spoken
         )
     }
 
