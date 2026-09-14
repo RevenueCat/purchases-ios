@@ -62,7 +62,7 @@ final class HostedCheckoutManager {
     /// Present this checkout to the customer.
     case started(HostedCheckoutSession)
 
-    /// The customer declined Apple's disclosure notice. There is nothing to present, and nothing went wrong.
+    /// The customer declined Apple's disclosure notice.
     case declinedByCustomer
 
     /// This customer cannot pay outside the App Store.
@@ -71,8 +71,7 @@ final class HostedCheckoutManager {
     /// The device does not authorize payments.
     case paymentsNotAuthorized
 
-    /// Another checkout was already being started, and that one carries the purchase. There is nothing to
-    /// present for this one, and nothing went wrong.
+    /// Another checkout was already being started, and that one carries the purchase.
     case alreadyStarting
 
     /// The checkout could not be started. Why is logged where it happened, and a retry may well work.
