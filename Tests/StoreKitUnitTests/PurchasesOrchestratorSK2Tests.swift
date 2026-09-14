@@ -2496,8 +2496,8 @@ class PurchasesOrchestratorSK2Tests: BasePurchasesOrchestratorTests, PurchasesOr
                                storeKit2ProductPurchaser: storeKit2ProductPurchaser)
 
         expect(transactionListener.invokedDelegateSetter).toEventually(beTrue())
+        expect(transactionListener.invokedListenForTransactionsCount).toEventually(equal(1))
         expect(transactionListener.invokedListenForTransactions) == true
-        expect(transactionListener.invokedListenForTransactionsCount) == 1
     }
 
     func testSK2DoesNotListenForSK2TransactionsInSimulatedStore() throws {
