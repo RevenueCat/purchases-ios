@@ -430,7 +430,8 @@ class StoreKit2TransactionListenerDiagnosticsTests: StoreKit2TransactionListener
         expect(params.environment) == "xcode"
 
         let expirationDate = try XCTUnwrap(params.expirationDate)
-        expect(expirationDate.timeIntervalSince(params.purchaseDate)) == 2 // see setShortestTestSessionTimeRate()
+        // Explicitly forced renewals do not advance StoreKitTest's clock by the configured two-second interval.
+        expect(expirationDate).to(beGreaterThan(params.purchaseDate))
 
         #if compiler(>=6.0)
         expect(params.price) == 4.99
