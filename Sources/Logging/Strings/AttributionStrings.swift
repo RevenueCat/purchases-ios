@@ -20,6 +20,10 @@ enum AttributionStrings {
     case appsflyer_id_deprecated
     case attributes_sync_error(error: NSError?)
     case attributes_sync_success(appUserID: String)
+    case attributes_sent_on_login_error(appUserID: String,
+                                        code: Int,
+                                        message: String?,
+                                        attributeErrors: [String: String])
     case empty_subscriber_attributes
     case marking_attributes_synced(appUserID: String, attributes: SubscriberAttribute.Dictionary)
     case setting_reserved_attribute(_ reservedAttribute: ReservedSubscriberAttribute)
@@ -63,6 +67,10 @@ extension AttributionStrings: LogMessage {
 
         case .attributes_sync_success(let appUserID):
             return "Subscriber attributes synced successfully for App User ID: \(appUserID)"
+
+        case let .attributes_sent_on_login_error(appUserID, code, message, attributeErrors):
+            return "Subscriber attributes sent with the log in request weren't applied for App User ID: " +
+            "\(appUserID). Code: \(code). Details: \(message ?? "")\nAttribute errors: \(attributeErrors)"
 
         case .empty_subscriber_attributes:
             return "Called post subscriber attributes with an empty attributes dictionary!"

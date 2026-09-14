@@ -544,6 +544,7 @@ private func checkAsyncDeprecatedMethods(_ purchases: Purchases, _ stp: StorePro
         product: stp
     )
     let _: (CustomerInfo, Bool) = try await purchases.logIn("")
+    let _: (CustomerInfo, Bool) = try await purchases.logIn("", attributes: [String: String]())
 }
 
 @available(*, deprecated) // Ignore deprecation warnings
@@ -557,6 +558,7 @@ private func checkDeprecatedMethods(_ purchases: Purchases) {
     purchases.checkTrialOrIntroDiscountEligibility([String]()) { (_: [String: IntroEligibility]) in }
 
     purchases.logIn("") { (_: CustomerInfo?, _: Bool, _: Error?) in }
+    purchases.logIn("", attributes: [String: String]()) { (_: CustomerInfo?, _: Bool, _: Error?) in }
 
     Purchases.configure(withAPIKey: "", appUserID: "")
 
