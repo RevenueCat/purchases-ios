@@ -58,6 +58,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
         )
 
         let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: self.parentPackageA,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -79,6 +80,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
         let expectedTabVariableContext = PackageContext.VariableContext(packages: tabPackages)
 
         let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: self.parentPackageB,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -100,6 +102,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
         let expectedTabVariableContext = PackageContext.VariableContext(packages: tabPackages)
 
         let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: self.parentPackageA,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,
@@ -113,6 +116,28 @@ final class TabsPackageSelectionResolverTests: TestCase {
             == expectedTabVariableContext.mostExpensivePricePerMonth
     }
 
+    /// The reported wrong charge: the page-level context still holds the tab we just left, so the
+    /// fine print shows that tab's price and Continue buys it. It must never keep a package the
+    /// tab now showing does not offer.
+    func testTabWithPackagesAndNilDefaultClearsAPackageFromAnotherTab() {
+        let parentOwnedVariableContext = PackageContext.VariableContext(
+            packages: [self.parentPackageA, self.parentPackageB]
+        )
+
+        let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: self.parentPackageA,
+            parentOwnedPackage: nil,
+            parentOwnedVariableContext: parentOwnedVariableContext,
+            parentCurrentVariableContext: parentOwnedVariableContext,
+            tabPackages: [self.tabPackageC],
+            tabDefaultPackage: nil
+        )
+
+        expect(plan.parentUpdate).toNot(beNil())
+        expect(plan.parentUpdate?.package).to(beNil())
+    }
+
+    /// Nothing to correct when the page context is already empty.
     func testTabWithPackagesAndNilDefaultYieldsNoUpdates() {
         let parentOwnedVariableContext = PackageContext.VariableContext(
             packages: [self.parentPackageA, self.parentPackageB]
@@ -120,6 +145,7 @@ final class TabsPackageSelectionResolverTests: TestCase {
         let tabPackages = [self.tabPackageC]
 
         let plan = TabsPackageSelectionResolver.resolveTabSwitch(
+            parentCurrentPackage: nil,
             parentOwnedPackage: nil,
             parentOwnedVariableContext: parentOwnedVariableContext,
             parentCurrentVariableContext: parentOwnedVariableContext,

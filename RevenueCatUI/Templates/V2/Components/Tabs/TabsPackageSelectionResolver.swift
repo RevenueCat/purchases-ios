@@ -29,7 +29,9 @@ enum TabsPackageSelectionResolver {
         let tabUpdate: PackageContextUpdate?
     }
 
+    // swiftlint:disable:next function_parameter_count
     static func resolveTabSwitch(
+        parentCurrentPackage: Package?,
         parentOwnedPackage: Package?,
         parentOwnedVariableContext: PackageContext.VariableContext,
         parentCurrentVariableContext: PackageContext.VariableContext,
@@ -64,7 +66,24 @@ enum TabsPackageSelectionResolver {
         // Never select a package the tab doesn't offer: it would leave every row unselected.
         guard let defaultPackage = tabDefaultPackage,
               tabPackageIdentifiers.contains(defaultPackage.identifier) else {
-            return .init(parentUpdate: nil, tabUpdate: nil)
+            // Nothing to select here, but the page context must not keep the tab we just left:
+            // its price would stay in the footer and the purchase button would buy it.
+            guard let parentCurrentPackage,
+                  !tabPackageIdentifiers.contains(parentCurrentPackage.identifier) else {
+                return .init(parentUpdate: nil, tabUpdate: nil)
+            }
+
+            return .init(
+                parentUpdate: .init(
+                    package: nil,
+                    variableContext: PackageContext.VariableContext(
+                        packages: tabPackages,
+                        showZeroDecimalPlacePrices: parentCurrentVariableContext
+                            .showZeroDecimalPlacePrices
+                    )
+                ),
+                tabUpdate: nil
+            )
         }
 
         let tabVariableContext = PackageContext.VariableContext(
