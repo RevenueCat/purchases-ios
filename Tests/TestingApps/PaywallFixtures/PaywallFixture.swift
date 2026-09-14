@@ -38,6 +38,10 @@ enum PaywallFixture: String, CaseIterable {
     /// the height of its row.
     case fixedPillOverflowScroll = "fixed_pill_overflow_scroll"
 
+    /// Two tabs and a price outside them. The second tab's only package is hidden, so that tab has
+    /// no default to select: the price must not keep naming the first tab's package.
+    case tabStaleFooterPrice = "tab_stale_footer_price"
+
     var title: String {
         switch self {
         case .iconOnlyButton:
@@ -50,6 +54,8 @@ enum PaywallFixture: String, CaseIterable {
             return "Decorative media"
         case .fixedPillOverflowScroll:
             return "Fixed pill with overflow scroll"
+        case .tabStaleFooterPrice:
+            return "Tab stale footer price"
         }
     }
 
@@ -65,6 +71,8 @@ enum PaywallFixture: String, CaseIterable {
             return Self.decorativeMediaComponentsData()
         case .fixedPillOverflowScroll:
             return Self.fixedPillOverflowScrollComponentsData()
+        case .tabStaleFooterPrice:
+            return Self.tabStaleFooterPriceComponentsData()
         }
     }
 
@@ -75,7 +83,7 @@ enum PaywallFixture: String, CaseIterable {
             return [Self.monthlyPackage(offeringIdentifier: self.rawValue)]
         case .badgeRulesPerOffer:
             return [Self.annualPackageWithPromoOffer(offeringIdentifier: self.rawValue)]
-        case .mixedTabsPageDefault:
+        case .mixedTabsPageDefault, .tabStaleFooterPrice:
             return [
                 Self.annualPackage(offeringIdentifier: self.rawValue),
                 Self.monthlyPackage(offeringIdentifier: self.rawValue),
@@ -445,6 +453,80 @@ private extension PaywallFixture {
 
     /// A package row with a fixed 22x22 pill ring and a 10x10 dot. `overflow: scroll` wraps the
     /// ring in a scroll view, which must not change its size.
+    /// Reproduces the reported wrong charge: the price lives outside the tabs, so it renders from
+    /// the page-level context, which is the context the purchase button buys from.
+    static func tabStaleFooterPriceComponentsData() -> PaywallComponentsData {
+        func tabButton(_ tabId: String, _ label: String) -> PaywallComponent {
+            return .tabControlButton(.init(tabId: tabId, stack: .init(components: [
+                .text(.init(text: label, color: .init(light: .hex("#000000"))))
+            ])))
+        }
+
+        let tabs: PaywallComponent = .tabs(.init(
+            control: .init(
+                type: .buttons,
+                stack: .init(components: [
+                    tabButton("tier_a", "tab_a_button"),
+                    tabButton("tier_b", "tab_b_button")
+                ])
+            ),
+            tabs: [
+                .init(id: "tier_a", stack: .init(components: [
+                    .tabControl(.init()),
+                    Self.packageCard(packageID: "$rc_monthly", label: "monthly", isSelectedByDefault: true),
+                    Self.packageCard(packageID: "$rc_annual", label: "annual", isSelectedByDefault: false)
+                ])),
+                // Its only package is hidden, so this tab has no default to offer.
+                .init(id: "tier_b", stack: .init(components: [
+                    .tabControl(.init()),
+                    Self.packageCard(
+                        packageID: "$rc_weekly",
+                        label: "weekly",
+                        isSelectedByDefault: false,
+                        visible: false
+                    )
+                ]))
+            ],
+            defaultTabId: "tier_a"
+        ))
+
+        return .init(
+            templateName: "fixture-tab-stale-footer-price",
+            assetBaseURL: URL(string: "https://assets.pawwalls.com")!,
+            componentsConfig: .init(base: .init(
+                stack: .init(
+                    components: [
+                        tabs,
+                        // Outside the tabs, so it renders from the page-level context.
+                        .text(.init(text: "footer_price_lid", color: .init(light: .hex("#000000"))))
+                    ],
+                    dimension: .vertical(.center, .start),
+                    size: .init(width: .fill, height: .fill),
+                    spacing: 16,
+                    backgroundColor: .init(light: .hex("#ffffff")),
+                    padding: .init(top: 60, bottom: 24, leading: 16, trailing: 16)
+                ),
+                stickyFooter: nil,
+                background: .color(.init(light: .hex("#ffffff")))
+            )),
+            componentsLocalizations: [
+                "en_US": [
+                    "monthly": .string("Monthly"),
+                    "monthly_selected": .string("Monthly selected"),
+                    "annual": .string("Annual"),
+                    "annual_selected": .string("Annual selected"),
+                    "weekly": .string("Weekly"),
+                    "weekly_selected": .string("Weekly selected"),
+                    "tab_a_button": .string("Tab A"),
+                    "tab_b_button": .string("Tab B"),
+                    "footer_price_lid": .string("Footer {{ product.price }}")
+                ]
+            ],
+            revision: 1,
+            defaultLocaleIdentifier: "en_US"
+        )
+    }
+
     static func fixedPillOverflowScrollComponentsData() -> PaywallComponentsData {
         let ring: PaywallComponent = .stack(.init(
             components: [
