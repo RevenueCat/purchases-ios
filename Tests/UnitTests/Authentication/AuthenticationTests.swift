@@ -143,7 +143,7 @@ class AuthenticationTests: TestCase {
 
     @available(*, deprecated)
     func testIdentifyCurrentUserWithStaticStringLogsDeprecationWarningAndDelegatesToStringOverload() throws {
-        try AvailabilityChecks.skipIfSwift63OrLater()
+        try AvailabilityChecks.skipIfCompiler63OrLater()
         let authentication = self.makeAuthentication()
         let info = try XCTUnwrap(CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")))
         self.identityManager.mockLogInResult = .success((info, true))
@@ -184,7 +184,7 @@ class AuthenticationTests: TestCase {
 
     @available(*, deprecated)
     func testIdentifyCurrentUserAsyncWithStaticStringLogsDeprecationWarning() async throws {
-        try AvailabilityChecks.skipIfSwift63OrLater()
+        try AvailabilityChecks.skipIfCompiler63OrLater()
         let authentication = self.makeAuthentication()
         self.identityManager.mockLogInResult = .success(
             (try CustomerInfo(data: Self.customerInfoData(originalAppUserId: "logged-in-user")), true)

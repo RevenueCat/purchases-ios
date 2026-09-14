@@ -113,8 +113,8 @@ enum AvailabilityChecks {
         }
     }
 
-    static func skipIfSwift63OrLater() throws {
-        #if swift(>=6.3)
+    static func skipIfCompiler63OrLater() throws {
+        #if compiler(>=6.3)
         throw XCTSkip("Unavailable on Swift 6.3 or later")
         #endif
     }
